@@ -536,6 +536,19 @@ export class Renderer {
           items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
           if (s && s.glow && a.load > 0) glows.push({ s, x: wx, y: wy + 8, a: 0.8 });
           if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
+        } else if (sp === 'rider' || sp === 'airship') {
+          const alt = a.alt ?? 0;
+          const big = sp === 'airship';
+          const s = this.atlas.get(big ? `airship_${Math.floor(this.time * 2) % 2}` : `rider_${Math.floor(this.time * 6 + a.id) % 2}`);
+          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
+            const ctx2 = this.ctx;
+            ctx2.fillStyle = `rgba(10,8,16,${(big ? 0.4 : 0.3) - alt / 220})`;
+            ctx2.beginPath();
+            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), big ? 20 : 8, big ? 8 : 3, 0, 0, Math.PI * 2);
+            ctx2.fill();
+          } });
+          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: 4 });
+          if (big && Math.random() < 0.3) this.particles.emit({ x: wx - 14, y: wy + 6 - alt, vx: -8, vy: -2, maxLife: 1.2, size: 1, color: PAL.smoke, glow: false, kind: 'smoke' });
         } else if (sp === 'skyray') {
           const alt = a.alt ?? 0;
           const s = this.atlas.get(`skyray_${Math.floor(this.time * 1.5 + a.id) % 2}`);
@@ -561,7 +574,11 @@ export class Renderer {
       else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);
-      const bob = a.kind === AgentKind.Restless ? Math.sin(this.time * 3 + a.id) * 2 - 3 : 0;
+      const floating = a.kind === AgentKind.Cart && a.variant === 3;
+      const bob = a.kind === AgentKind.Restless ? Math.sin(this.time * 3 + a.id) * 2 - 3 : floating ? Math.sin(this.time * 2.5 + a.id) * 1.5 - 5 : 0;
+      if (floating && s && s.glow && night > 0.05) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });
+      if (floating && Math.random() < 0.2) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 10, vx: 0, vy: 3, maxLife: 0.5, size: 1, color: PAL.arcane2, glow: true, kind: 'spark' });
+      if (a.kind === AgentKind.Cart && a.variant === 4 && a.pathIdx < a.path.length && Math.random() < 0.3) this.particles.emit({ x: wx + (Math.random() - 0.5) * 6, y: wy + 10, vx: (Math.random() - 0.5) * 6, vy: -1, maxLife: 0.7, size: 1, color: PAL.waterHi, glow: false, kind: 'mote' });
       items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob) });
       if (a.kind === AgentKind.Restless) {
         if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });

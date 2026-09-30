@@ -1,5 +1,6 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
 import { effects } from './hazards';
+import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
@@ -196,7 +197,7 @@ export function dailyAgents(state: GameState): void {
   let carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
   }
   // remove agents whose home vanished
   state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.kind === AgentKind.Creature || a.homeId >= 0);
@@ -204,7 +205,7 @@ export function dailyAgents(state: GameState): void {
   carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
   }
   while (citizens > targetCitizens) {
     const i = state.agents.findIndex((a) => a.kind === AgentKind.Citizen);
@@ -213,7 +214,7 @@ export function dailyAgents(state: GameState): void {
     citizens--;
   }
   while (carts > targetCarts) {
-    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && !mines.some((m) => m.id === a.homeId));
+    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && !mines.some((m) => m.id === a.homeId));
     if (i < 0) break;
     state.agents.splice(i, 1);
     carts--;
@@ -258,6 +259,7 @@ export function dailyAgents(state: GameState): void {
     }
   }
   const cartHomes = crafts;
+  let floatLeft = floatingTarget(state) - floatingCarts(state);
   if (cartHomes.length && markets.length) {
     let spawned = 0;
     while (carts < targetCarts && spawned < 30) {
@@ -276,7 +278,7 @@ export function dailyAgents(state: GameState): void {
         homeId: home.id,
         targetId: -1,
         timer: rng.int(300),
-        variant: home.kind === 'mine' ? 0 : 1 + rng.int(2),
+        variant: home.kind === 'mine' ? 0 : floatLeft-- > 0 ? FLOAT_VARIANT : 1 + rng.int(2),
         dir: 0,
         load: 0,
       });
@@ -428,6 +430,7 @@ export function tickAgents(state: GameState): void {
       a.timer--;
       continue;
     }
+    if (a.pathIdx >= a.path.length && a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT) { a.homeId = -2; continue; }
     if (a.pathIdx >= a.path.length) {
       chooseTrip(state, a, rng, getPools());
       if (a.pathIdx >= a.path.length && a.timer === 0) a.timer = 60 + rng.int(120);
@@ -438,7 +441,9 @@ export function tickAgents(state: GameState): void {
     const ty = ((t / MAP_W) | 0) + 0.5;
     const rt = state.road[t] || 1;
     const congestion = state.trafficSmooth[t] / 255;
-    let sp = a.speed * ROAD_BY_TYPE[rt].speed * (1 - congestion * 0.6) * dt;
+    const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
+    const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
+    let sp = a.speed * (barge ? 1.2 : ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;
@@ -456,7 +461,12 @@ export function tickAgents(state: GameState): void {
       a.x = tx;
       a.y = ty;
       a.pathIdx++;
-      if (t < state.traffic.length) state.traffic[t] += a.kind === AgentKind.Cart ? 3 : 1;
+      if (t < state.traffic.length && !floating && !barge) state.traffic[t] += a.kind === AgentKind.Cart ? 3 : 1;
+      if (a.pathIdx >= a.path.length && barge) {
+        deliverBarge(state, a);
+        a.homeId = -2; // removed below
+        continue;
+      }
       if (a.pathIdx >= a.path.length) {
         // arrived
         a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : 150 + rng.int(450);
@@ -479,6 +489,7 @@ export function tickAgents(state: GameState): void {
     // restless not on a road: drift toward nearest road
     if (a.kind === AgentKind.Restless && !state.road[t]) a.pathIdx = a.path.length;
   }
+  if (state.agents.some((a) => a.homeId === -2)) state.agents = state.agents.filter((a) => a.homeId !== -2);
   commitRng(state, rng);
 }
 

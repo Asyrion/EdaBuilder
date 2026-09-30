@@ -78,7 +78,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues'] as const) state.stats[k] = state.stats[k] ?? 0;
+  state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
   // rebuild derived layers
   const n = state.w * state.h;

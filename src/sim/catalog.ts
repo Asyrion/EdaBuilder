@@ -376,6 +376,19 @@ export const BUILDINGS: BuildingDef[] = [
     w: 2, h: 2, cost: 5500, upkeep: 60, manaUse: 6, unlock: 6, needsMana: true,
   },
 
+  {
+    key: 'quay', name: 'Quay', category: 'service',
+    desc: 'A stone landing on the river or lake. Each day a barge carries up to 40 goods from works within 8 tiles to the markets around another Quay, along the water. Two quays on the same water make a trade route that no road congestion touches.',
+    flavor: 'The Veshari say the river was theirs first. The bargemen say the river was nobody\'s.',
+    w: 1, h: 1, cost: 3200, upkeep: 25, manaUse: 0, unlock: 3, nearWater: true,
+  },
+  {
+    key: 'skydock', name: 'Sky-Dock', category: 'wonder',
+    desc: 'A mooring tower for the airship of the wardlights. On the third day of each season the ship leaves with up to 200 surplus goods and returns ten days later with crowns at 1.6x the season price, and sometimes a tale. 30 mana.',
+    flavor: 'The next lantern on the horizon has a dock like this one. That is how you know it is a lantern.',
+    w: 2, h: 2, cost: 26000, upkeep: 150, manaUse: 30, unlock: 8, wonder: true, needsMana: true, landValue: 15,
+  },
+
   // ---- special ----
   {
     key: 'stake', name: 'Founding Stake', category: 'special',
@@ -450,7 +463,7 @@ export const MILESTONES: Milestone[] = [
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
   { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt'],
     text: 'The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken.' },
-  { name: 'Beacon of Eda', pop: 2200, grant: 25000, unlocks: [],
+  { name: 'Beacon of Eda', pop: 2200, grant: 25000, unlocks: ['skydock'],
     text: 'Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley.' },
 ];
 

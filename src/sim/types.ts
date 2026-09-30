@@ -93,7 +93,7 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship';
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
@@ -293,6 +293,7 @@ export interface GameState {
   nextDragonId: number;
   materials: Materials;
   wyrm: WyrmState;
+  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number };
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
   modifiers: Modifier[];
@@ -324,6 +325,10 @@ export interface GameState {
     golemsBound: number;
     skyraySchools: number;
     rayscaleTotal: number;
+    bargeTrips: number;
+    airshipVoyages: number;
+    airshipCrowns: number;
+    riderRescues: number;
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;

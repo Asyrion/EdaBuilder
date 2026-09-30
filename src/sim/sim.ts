@@ -7,6 +7,7 @@ import { dailyDragons, seasonalBout } from './wyrmcraft';
 import { checkQuests } from './quests';
 import { dailyWyrm } from './wyrm';
 import { dailyBeasts } from './beasts';
+import { dailyAirship, dailyBarges } from './vehicles';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -65,6 +66,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     seasonalBout(state);
     dailyWyrm(state);
     dailyBeasts(state);
+    dailyBarges(state);
+    dailyAirship(state);
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);

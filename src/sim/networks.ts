@@ -5,6 +5,7 @@ import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
 import { modifierSum } from './edicts';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
+import { floatingMana } from './vehicles';
 import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
@@ -199,6 +200,7 @@ export function updateMana(state: GameState): void {
   for (let i = 0; i < n; i++) if (roadLit[i]) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
   demand += roadDemand;
   demand += foundryMana(state);
+  demand += floatingMana(state);
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   void f;
 

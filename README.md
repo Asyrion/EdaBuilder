@@ -79,12 +79,17 @@ main node.
     a lit **Ley Beacon** keeps a school for the season (happiness, rayscale for the
     enchanters). A **Drake Mews** doubles Watch House reach. Three taming edicts trade
     one beast for another.
-15. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+15. **Vehicles** — a level-3 Arcane workshop puts two **floating carts** on the roads
+    (no congestion, a little mana). Two **Quays** on the same water send **barges** with
+    goods from works to markets. A lit **Drake Mews** flies **riders** to the restless and
+    to fires. At Beacon of Eda the **Sky-Dock** launches an **airship** each season with
+    your surplus; it returns with crowns and sometimes a story.
+16. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-16. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+17. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -145,6 +150,9 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- Vehicles: floating carts from level-3 Arcane workshops, barges between Quays, drake
+  riders from the Drake Mews, and the Sky-Dock's airship that trades the season's surplus
+  beyond the Gloam.
 - Beasts of the Concord and the sky: Concord Wardens woken by mining and bound at the
   Golem Foundry into tireless labour, skyray schools kept by a Ley Beacon, the Drake
   Mews, and three taming edicts.

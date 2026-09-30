@@ -6,13 +6,14 @@
  */
 import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
 import { beacon } from './beasts';
+import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { edictOn } from './edicts';
 import { igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
@@ -180,6 +181,24 @@ export function updateCreatures(state: GameState): void {
     a.alt = 0;
     a.phase = 0;
   }
+  // ---- drake riders: two per lit Drake Mews
+  {
+    const want = riderTarget(state);
+    let have = creatureCount(state, 'rider');
+    if (have < want) {
+      forEachBuilding(state, (m) => {
+        if (m.kind !== 'drakemews' || m.state !== 'ok' || !m.lit || have >= want) return;
+        const here = state.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'rider' && a.anchorId === m.id).length;
+        for (let k = here; k < 2 && have < want; k++) {
+          const a = spawn(state, 'rider', m.x + 1, m.y + 2, m.id);
+          a.speed = 3.2;
+          a.alt = 0;
+          a.phase = 0;
+          have++;
+        }
+      });
+    }
+  }
   // ---- despawn: moths by day, hares at night, surplus wisps
   const keepWisps = want;
   let wispSeen = 0;
@@ -189,6 +208,8 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && edictOn(state, 'bounty')) return false; // pelts
     if (a.species === 'golem') return true;
+    if (a.species === 'rider') return state.buildings.some((b) => b && b.id === a.anchorId && b.state === 'ok' && b.lit);
+    if (a.species === 'airship') return a.timer >= 0;
     if (a.species === 'skyray') return a.timer >= 0;
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
     if (a.species === 'hound' && wyrmGuards(state) && inLair(state, a.x, a.y)) return false; // nothing hunts under the wyrm's eye
@@ -282,6 +303,72 @@ export function tickCreatures(state: GameState): void {
         a.alt = 60 + Math.sin(t * 0.7 + a.id) * 5;
         if (dist <= sp) { a.path = []; a.timer = -1; }
         else { a.x += (dx / dist) * sp + Math.sin(t * 0.5 + a.id) * 0.01; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+        break;
+      }
+      case 'rider': {
+        // fly straight to the nearest restless or burning building within range of the mews; lay it down, or douse it
+        if (a.timer > 0) { a.timer--; a.alt = Math.max(0, (a.alt ?? 0) - 2); break; }
+        if (a.path.length === 0 && a.targetId < 0) {
+          let best = -1;
+          let bd = RIDER_RANGE;
+          let bx = 0;
+          let by = 0;
+          let kind = 0;
+          for (const o of state.agents) {
+            if (o.kind !== AgentKind.Restless) continue;
+            const d = Math.hypot(o.x - ax, o.y - ay);
+            if (d < bd) { bd = d; best = o.id; bx = o.x; by = o.y; kind = 1; }
+          }
+          for (const b of state.buildings) {
+            if (!b || b.state !== 'burning') continue;
+            const d = Math.hypot(b.x - ax, b.y - ay);
+            if (d < bd) { bd = d; best = b.id; bx = b.x + 0.5; by = b.y + 0.5; kind = 2; }
+          }
+          if (best < 0) { a.timer = 40; break; }
+          a.targetId = best;
+          a.load = kind;
+          a.path = [idx(Math.floor(bx), Math.floor(by))];
+        } else if (a.path.length === 0) {
+          // going home
+          a.path = [idx(Math.floor(ax), Math.floor(ay))];
+          a.load = 0;
+        }
+        const tx = (a.path[0] % MAP_W) + 0.5;
+        const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        a.alt = dist > 2 ? Math.min(24, (a.alt ?? 0) + 3) : Math.max(0, (a.alt ?? 0) - 3);
+        if (dist <= sp) {
+          a.x = tx; a.y = ty; a.path = [];
+          if (a.load === 1) {
+            const n = state.agents.length;
+            state.agents = state.agents.filter((o) => o.id !== a.targetId);
+            if (state.agents.length < n) { state.stats.restlessLaid++; state.stats.riderRescues++; }
+          } else if (a.load === 2) {
+            const b = state.buildings.find((o) => o && o.id === a.targetId);
+            if (b && b.state === 'burning' && rng.chance(0.6)) { b.state = 'ok'; b.stateDays = 0; markDirty(state, b.x, b.y); state.stats.riderRescues++; }
+          }
+          if (a.load > 0) { a.load = 0; a.targetId = -1; a.path = [idx(Math.floor(ax), Math.floor(ay))]; }
+          else { a.targetId = -1; a.timer = 60 + rng.int(60); }
+        } else { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+        break;
+      }
+      case 'airship': {
+        // phase 0: leaving to the map edge (climbing); phase 1: returning to the dock (descending near it)
+        if (a.path.length === 0) { a.timer = -1; break; }
+        const tx = (a.path[0] % MAP_W) + 0.5;
+        const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        a.alt = a.phase === 0 ? Math.min(70, (a.alt ?? 0) + 0.6) : dist < 12 ? Math.max(10, (a.alt ?? 70) - 0.6) : 70;
+        if (dist <= sp) {
+          a.x = tx; a.y = ty; a.path = []; a.timer = -1;
+          if (a.phase === 1) airshipArrives(state);
+        } else { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
         break;
       }
       case 'thrumhare': {
