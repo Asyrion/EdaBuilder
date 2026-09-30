@@ -5,6 +5,9 @@ import { LINE_INFO, addEgg } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
+import { TIGER_FOREST, forestTiles, marketDistrict } from './lore';
+import { districtName, markDirty } from './world';
+import { inBounds, idx } from './types';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
@@ -264,6 +267,60 @@ const EGGS: EventDef[] = [
 
 /** Visitors from the wider Eda (lore drop). */
 const VISITORS: EventDef[] = [
+  {
+    id: 'fennex', title: 'The Fen-Nex come to market', once: true,
+    text: 'Fox-folk in travelling cloaks, seven of them, or nine, or five: they change between counts. They trade honestly exactly half the time and are proud of it. Their speaker offers a deal, or a quarter of the city to make their own.',
+    when: (s) => s.milestone >= 4 && s.population > 250,
+    choices: [
+      { label: 'Trade with them', desc: 'Half the time +3,000 crowns; half the time −1,500 crowns and a week of grumbling.', apply: (s) => { const rng = rngOf(s); const honest = rng.chance(0.5); commitRng(s, rng); if (honest) { s.treasury += 3000; return 'Honest, this time. Salts, dyes and a set of scales that weigh true, paid for in coin that stays coin.'; } s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 7, label: 'Swindled by foxes' }); return 'The coin turns to leaves by morning. The Fen-Nex are already two valleys away, laughing.'; } },
+      { label: 'Grant them a quarter', desc: 'The district with the most markets becomes the Fen-Nex quarter: its markets pay no tithe but hold twice the goods. Needs a painted district with markets.', apply: (s) => { const d = marketDistrict(s); if (!d) return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
+      { label: 'Turn them away', desc: 'No effect, probably.', apply: () => 'They bow, and bow, and are gone. One of the Watch lanterns is missing in the morning.' },
+    ],
+  },
+  {
+    id: 'fennex_gift', title: 'A gift from the quarter', once: true,
+    text: 'The Fen-Nex speaker brings a basket to the Founding Stake: in it, an egg the colour of fox fur, warm and purring. "Half our gifts are real," she says. "Guess which half."',
+    when: (s) => s.fenNex > 0 && s.day - s.lastEventDay >= 20 && s.buildings.some((b) => b && b.kind === 'cradle' && b.state === 'ok'),
+    choices: [
+      { label: 'Take the egg', desc: 'A fen-drake egg, if a cradle has room; or a basket of leaves.', apply: (s) => { const rng = rngOf(s); const real = rng.chance(0.5); commitRng(s, rng); if (!real) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'A good joke' }); return 'Leaves. Very warm leaves. The whole quarter is laughing and, somehow, so is the city.'; } const d = addEgg(s, 'fen'); return d ? `Real. The tamers call it ${d.name}; it is already stealing shoes.` : 'Real, and no cradle has room. The speaker takes it back with a look of sympathy.'; } },
+      { label: 'Decline', desc: 'Nothing changes.', apply: () => '"Wise," she says, in a tone that means the opposite.' },
+    ],
+  },
+  {
+    id: 'longwood_sighting', title: 'Something out of Longwood',
+    text: 'Woodcutters at the forest edge saw a creature no bestiary in Vell describes: antlered, luminous, walking on the mist. It looked at them for a long moment and went back into the trees.',
+    when: (s) => forestTiles(s) >= TIGER_FOREST && s.milestone >= 2,
+    choices: [
+      { label: 'Let it be told', desc: 'Happiness +3 for 12 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 12, label: 'A wonder in the woods' }); return 'The story grows a head each telling. Children leave apples at the forest edge.'; } },
+      { label: 'Send hunters after it (400 crowns)', desc: 'It is never found; unrest −3% for 10 days (the hunt is a holiday).', apply: (s) => { s.treasury -= 400; s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'The hunt' }); return 'Three days in the trees, a great deal of ale, and one very clear hoofprint.'; } },
+    ],
+  },
+  {
+    id: 'dr_jelly', title: 'Dr. Jelly', once: true,
+    text: 'An alchemist in a coat of many pockets, who introduces himself as Dr. Jelly and is very sorry about the name, offers one potion for 1,200 crowns. He will not say what it does. He is fairly sure it is not fatal.',
+    when: (s) => s.milestone >= 3 && s.treasury > 3000,
+    choices: [
+      { label: 'Buy the potion', desc: 'A random large effect: crowns, happiness, schooling, or a mana headache.', apply: (s) => { s.treasury -= 1200; const rng = rngOf(s); const r = rng.int(4); commitRng(s, rng); if (r === 0) { s.treasury += 6000; return 'Drunk by the Warden-Reeve at noon. By dusk a vein of silver is found under the square: +6,000 crowns.'; } if (r === 1) { s.modifiers.push({ kind: 'happiness', value: 10, until: s.day + 20, label: "Dr. Jelly's potion" }); return 'Poured into the well. Everyone is very, very cheerful for three weeks.'; } if (r === 2) { s.educated = Math.min(0.95, s.educated + 0.1); return 'Given to the Academy. The students understand leystone perfectly for one afternoon, and write it all down.'; } s.modifiers.push({ kind: 'mana', value: 0.3, until: s.day + 10, label: 'Ley headache' }); return 'The spires hum a note nobody asked for. Mana demand +30% for ten days.'; } },
+      { label: 'Decline', desc: 'He sells it to someone in the Craft district instead.', apply: (s) => { s.modifiers.push({ kind: 'goods', value: 0.1, until: s.day + 10, label: 'Strange batch' }); return 'The stills run strange and strong for a week. Craft goods +10%.'; } },
+    ],
+  },
+  {
+    id: 'cloud_wizard', title: 'The Cloud Forest Wizard', once: true,
+    text: 'A wizard who smells of rain and moss offers to plant a grove of glimwood beside your founding node: trees that light themselves, as in the cloud forests of the far south. He asks only that nobody cut them.',
+    when: (s) => s.milestone >= 4,
+    choices: [
+      { label: 'Let him plant', desc: 'Twelve tiles near the founding node become glimwood forest: land value and happiness +4 for a season.', apply: (s) => { const f = s.founding; let n = 0; const rng = rngOf(s); for (let tries = 0; tries < 200 && n < 12; tries++) { const x = f.x + rng.int(17) - 8; const y = f.y + rng.int(17) - 8; if (!inBounds(x, y)) continue; const i = idx(x, y); if (s.terrain[i] !== Terrain.Grass && s.terrain[i] !== Terrain.Meadow) continue; if (s.bIndex[i] >= 0 || s.road[i] || s.zone[i] || s.wall[i]) continue; s.terrain[i] = Terrain.Forest; markDirty(s, x, y); n++; } commitRng(s, rng); s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 30, label: 'The glimwood grove' }); return `${n} glimwood saplings, waist-high by morning and glowing by the next night.`; } },
+      { label: 'Thank him and decline', desc: 'No effect.', apply: () => 'He leaves a single seed on the Stake. It has not sprouted. Yet.' },
+    ],
+  },
+  {
+    id: 'asyrion', title: 'A traveller at the gate', once: true,
+    text: 'A quiet traveller stops at the Founding Stake, studies the spires for a long while as if checking them against a drawing, and asks nothing. Before leaving they set down a purse and a single line on a scrap of paper: "It is good. Keep going."',
+    when: (s) => s.milestone >= 5 && s.day > 60,
+    choices: [
+      { label: 'Keep the note', desc: '+500 crowns; happiness +2 for 10 days.', apply: (s) => { s.treasury += 500; s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'A kind word' }); return 'The note is pinned inside the Stake. Nobody agrees on what the traveller looked like.'; } },
+    ],
+  },
   {
     id: 'stormcaller', title: 'A storm caller of the Huruhui', once: true,
     text: 'A traveller with white hair and glowing sigils on their arms asks for a hilltop to work from. They say the valleys beyond the Pass of Buluiain taught them to call rain, and that your Craft district smells like it needs some.',

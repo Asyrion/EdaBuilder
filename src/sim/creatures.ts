@@ -7,13 +7,14 @@
 import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
 import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
+import { maybeSpawnTiger } from './lore';
 import { edictOn } from './edicts';
 import { igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
-import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
+import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
@@ -181,6 +182,7 @@ export function updateCreatures(state: GameState): void {
     a.alt = 0;
     a.phase = 0;
   }
+  maybeSpawnTiger(state, night);
   // ---- drake riders: two per lit Drake Mews
   {
     const want = riderTarget(state);
@@ -208,6 +210,7 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && edictOn(state, 'bounty')) return false; // pelts
     if (a.species === 'golem') return true;
+    if (a.species === 'tiger' && !night) return rng.chance(0.85); // slips back into the trees by day, mostly
     if (a.species === 'rider') return state.buildings.some((b) => b && b.id === a.anchorId && b.state === 'ok' && b.lit);
     if (a.species === 'airship') return a.timer >= 0;
     if (a.species === 'skyray') return a.timer >= 0;
@@ -303,6 +306,41 @@ export function tickCreatures(state: GameState): void {
         a.alt = 60 + Math.sin(t * 0.7 + a.id) * 5;
         if (dist <= sp) { a.path = []; a.timer = -1; }
         else { a.x += (dx / dist) * sp + Math.sin(t * 0.5 + a.id) * 0.01; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+        break;
+      }
+      case 'tiger': {
+        // stalks the nearest hearth by night, unafraid of light; lies up in the forest by day
+        if (a.timer > 0) { a.timer--; break; }
+        if (a.path.length === 0 || rng.chance(0.01)) {
+          let best = -1;
+          let bd = 30;
+          if (isNight(state)) {
+            for (let s2 = 0; s2 < state.buildings.length; s2++) {
+              const b = state.buildings[s2];
+              if (!b || b.state !== 'ok' || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || b.residents <= 0) continue;
+              const d = Math.hypot(b.x - a.x, b.y - a.y);
+              if (d < bd && state.coverage.watch[idx(b.x, b.y)] < 160) { bd = d; best = s2; }
+            }
+          }
+          if (best >= 0) a.path = [idx(state.buildings[best]!.x + 1, state.buildings[best]!.y)];
+          else {
+            for (let k = 0; k < 6; k++) {
+              const nx = Math.floor(ax + (rng.next() - 0.5) * 12);
+              const ny = Math.floor(ay + (rng.next() - 0.5) * 12);
+              if (inBounds(nx, ny) && state.terrain[idx(nx, ny)] === Terrain.Forest) { a.path = [idx(nx, ny)]; break; }
+            }
+          }
+          if (a.path.length === 0) { a.timer = 40; break; }
+        }
+        const tx = (a.path[0] % MAP_W) + 0.5;
+        const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        if (dist <= sp) { a.x = tx; a.y = ty; a.path = []; a.timer = 80 + rng.int(120); }
+        else if (!isWater(state.terrain[idx(Math.floor(a.x + (dx / dist) * sp), Math.floor(a.y + (dy / dist) * sp))])) { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+        else { a.path = []; a.timer = 20; }
         break;
       }
       case 'rider': {

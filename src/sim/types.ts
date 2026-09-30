@@ -93,9 +93,9 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger';
 
-export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
+export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm' | 'fen';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
 export type DragonRole = 'none' | 'warden' | 'delver' | 'courier' | 'champion';
 export type Training = 'gentle' | 'hard' | 'wild';
@@ -293,6 +293,8 @@ export interface GameState {
   nextDragonId: number;
   materials: Materials;
   wyrm: WyrmState;
+  fenNex: number; // district granted to the Fen-Nex, 0 none
+  storms: { x: number; y: number; until: number; vx: number; vy: number }[];
   airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number };
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
@@ -329,6 +331,9 @@ export interface GameState {
     airshipVoyages: number;
     airshipCrowns: number;
     riderRescues: number;
+    stormWarps: number;
+    tigersTotal: number;
+    tigersKilled: number;
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;

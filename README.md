@@ -84,12 +84,18 @@ main node.
     goods from works to markets. A lit **Drake Mews** flies **riders** to the restless and
     to fires. At Beacon of Eda the **Sky-Dock** launches an **airship** each season with
     your surplus; it returns with crowns and sometimes a story.
-16. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+16. **Longwood and the Fen-Nex** — on forest-heavy maps **war-tigers** stalk hearths by
+    night; hunters, strong Watch or a warden drake's district kill them. The **Fen-Nex**
+    fox-folk trade honestly half the time and may take a market district as their
+    tithe-free, double-shelved quarter. Every wild surge leaves a drifting **mana-storm**
+    that warps buildings until wards dissolve it. The **Font of Quieting** (Free City)
+    makes the dead easy to lay down.
+17. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-17. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+18. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -150,6 +156,9 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- Longwood and the Fen-Nex: war-tigers on forest-heavy maps, the Fen-Nex fox-folk and
+  their tithe-free quarter (and fen-drake eggs), mana-storms after every surge, the Font
+  of Quieting, and cameo visitors.
 - Vehicles: floating carts from level-3 Arcane workshops, barges between Quays, drake
   riders from the Drake Mews, and the Sky-Dock's airship that trades the season's surplus
   beyond the Gloam.

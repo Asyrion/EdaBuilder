@@ -1,4 +1,5 @@
 /** Daily tithe: taxes and upkeep. */
+import { inFenNex } from './lore';
 import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
@@ -34,7 +35,7 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1); break;
+        case Zone.Market: if (!inFenNex(state, b)) l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1); break;
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }

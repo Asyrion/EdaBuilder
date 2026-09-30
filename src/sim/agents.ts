@@ -1,6 +1,7 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
 import { effects } from './hazards';
 import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
+import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
@@ -141,8 +142,15 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 }
 
 /** A road tile adjacent to the building footprint, or -1. */
+let fenD = 0;
+let fenGrid: Uint8Array | null = null;
+/** Set once a tick so marketStockCap can know the Fen-Nex quarter without a state argument. */
+export function setFenNex(d: number, grid: Uint8Array): void {
+  fenD = d;
+  fenGrid = grid;
+}
 export function marketStockCap(b: Building): number {
-  return 20 * b.level;
+  return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1);
 }
 
 export function roadTileOf(state: GameState, b: Building): number {
@@ -514,7 +522,7 @@ export function dailyRestless(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Restless) return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew', i) ? 1.4 : 1);
+    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew', i) ? 1.4 : 1) + (fontOfQuieting(state) ? 0.25 : 0);
     if (rng.chance(Math.min(0.9, p))) {
       cleared++;
       return false;

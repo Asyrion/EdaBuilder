@@ -9,6 +9,7 @@ import { edictOn, modifierSum } from './edicts';
 import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
+import { fontOfQuieting, startStorm } from './lore';
 
 export interface Effect {
   x: number;
@@ -107,6 +108,7 @@ export function dailySurge(state: GameState): void {
       b.workers = 0;
       markDirty(state, b.x, b.y);
       effects.push({ x: b.x, y: b.y, kind: 'surge', tick: state.tick });
+      if (k === 0) startStorm(state, b.x, b.y);
     }
     state.stats.surgesTotal++;
     surgeMaddensGolems(state);
@@ -295,6 +297,7 @@ export function dailyDeath(state: GameState): void {
     if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1);
   });
   quietCap += wyrmBoneQuiet(state);
+  if (fontOfQuieting(state)) quietCap *= 1.5;
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);
   pool -= quieted;

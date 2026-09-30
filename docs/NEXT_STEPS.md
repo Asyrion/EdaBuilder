@@ -115,6 +115,13 @@
   Drake Mews that lay the restless down and douse fires, and the Sky-Dock whose airship
   sells the season's surplus beyond the Gloam and brings back a story.
 
+## Done in iteration 16 (Longwood and the Fen-Nex)
+
+- War-tigers on forest-heavy maps (night stalkers of hearths; hunters, strong Watch and
+  warden drakes kill them), the Fen-Nex trickster events with the tithe-free, double-
+  shelved Fen-Nex quarter and the fen-drake line, mana-storms after every surge, the Font
+  of Quieting, and three cameo events (Dr. Jelly, the Cloud Forest Wizard, a traveller).
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -151,8 +158,9 @@ hints and the Chronicle; (11, done) the Sleeping Wyrm: waking, tribute, flyover,
 binding; (12, done) magical buildings I: Glimhouse, Torrent Mill, Observatory, Hanging Gardens,
 Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, minimap; (14, done)
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
-vehicles: floating carts, barges, drake riders, airships; (16) Fen-Nex visitors,
-war-tigers, cameos; (17) Font of Quieting, mana-storms, rare-goods Marvels.
+vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
+war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
+lore-drop list of §11 are complete except swamp and atoll maps (scenario charters).
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 

@@ -435,7 +435,7 @@ living Hanging Gardens, and lit tiles light adjacent buildings like a lantern-wa
 price is deliberately above the lantern-way's, since the light is free of mana forever.
 Green vine-light at night; the road manifest gains `road_glowvine_0..15`.
 
-Not yet built from §8.3: the Font of Quieting.
+Everything in §8.3 that the design kept is now built (the Weather Vane became the Storm-Caller's Peak).
 
 ### 4.32 Longwood and Lukuku: Portal Arches, the World Tree, the Ruins (iteration 13)
 
@@ -520,6 +520,33 @@ tasks.
   1.6. Half the time the captain brings *The captain's story*: rayscale and a goods
   modifier, thirty passengers, or happiness.
 - Golem haulers from §8.4 are folded into the foundry's labour and not built separately.
+
+### 4.37 Longwood and the Fen-Nex (iteration 16)
+
+- **War-tigers** (species `tiger`). On maps with 220 or more forest tiles, from day 40 and
+  Village up, a tiger may come out of the forest at night near a building (5 % a night in
+  Ember, 8 % in the Hush, 2 % otherwise, halved under Hunters' Bounty; cap 4). By night it
+  stalks the nearest hearth with fewer than full Watch coverage, unafraid of light; by day
+  it mostly lies up in the trees. Each day a tiger lying beside a hearth may take a
+  resident (unquieted +1). Buildings within 5 tiles lose 12 happiness. Killed by Hunters'
+  Lodges within 12 (20 under the Bounty, 35 % a day), Watch coverage above 160 (25 %), or
+  in a warden drake's district (50 %). A rare *Something out of Longwood* sighting lifts
+  happiness on such maps.
+- **The Fen-Nex** (events). *The Fen-Nex come to market* (Township, 250 folk): trade
+  (honest half the time), grant them a quarter, or turn them away. The **Fen-Nex quarter**
+  is the painted district with the most markets: its markets pay no tithe and hold twice
+  the goods (`marketStockCap` reads a per-tick district snapshot). Twenty days later *A
+  gift from the quarter*: a **fen-drake egg** (new ground line `fen`, russet cat-dragon,
+  ninth sprite palette) or a basket of warm leaves, half and half.
+- **Mana-storms** (`state.storms`). Every wild surge leaves one at its first ruin: a pocket
+  of radius 5 that drifts up to three tiles a day for four days, and each day gives every
+  zoned building under it a 35 % chance to level up or down at random. Ward coverage
+  above 90 at its eye dissolves it. Rendered as a violet light with rising motes.
+- **Font of Quieting** (Services, Free City, 15 mana, one only): every deathcare building
+  quiets 50 % more dead and the restless are laid down with an extra 25 % a day everywhere.
+- **Cameos**: *Dr. Jelly* (one potion, one of four large effects), *The Cloud Forest
+  Wizard* (twelve glimwood tiles near the founding node, a season of happiness), and a
+  quiet traveller who leaves a purse and a note. Descriptions only, no sprites.
 
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
@@ -689,7 +716,7 @@ people, sleeping coiled around the deepest nodes. Rules:
   artifacts made with rare goods sell for 3× and unlock the *Marvels* row of the catalog.
 - **Migrations and seasons:** skyrays in Bloom and Ember, hounds in the Hush, wyrms in
   Bloom, glimmoths every night. The Observatory turns these into forecasts.
-- **Mana-storms:** after a wild surge a roaming pocket of wild magic drifts across the map
+- ✅ **Mana-storms:** after a wild surge a roaming pocket of wild magic drifts across the map
   for a few days (buildings in it level up or down at random, agents take detours); wards
   dissolve it.
 - **Taming edicts:** Beastmasters' Charter (drakes and golems cost less mana, hounds more
@@ -849,11 +876,11 @@ consistent with `EDA_LORE.md` §9.
    at good prices, offers strider mounts (Watch reach +, later couriers) and, rarely, an
    egg. The **Wandering Merchant of Belerial** is a named recurring visitor with a
    memory of past deals.
-5. **Fen-Nex visitors.** Fox-folk shapeshifters arrive as a trickster event chain:
+5. ✅ **Fen-Nex visitors.** Fox-folk shapeshifters arrive as a trickster event chain:
    honest trades and swindles at fifty-fifty, a Fen-Nex district that pays no tithe but
    doubles market stock, and a **fen-drake**: a cat-dragon line hatched only from a
    Fen-Nex gift.
-6. **Longwood escapees.** **War-tigers** as a forest predator far worse than hounds
+6. ✅ **Longwood escapees.** **War-tigers** as a forest predator far worse than hounds
    (Hunters' Lodge or a bound drake needed); exotic creatures of Longwood as rare
    sightings that raise happiness.
 7. ✅ **Ruins of Lukuku.** Map generation can seed an ancient ruin cluster in the forest;
@@ -866,7 +893,7 @@ consistent with `EDA_LORE.md` §9.
    (a Huruhui renewable), with an animated torrent; the Veshari claim the design.
 10. **Swamp biome and atoll maps.** Marsh terrain (buildable after a Drainage edict,
     marsh-wyrm home) and island maps for scenario charters (Patagoi Atoll).
-11. **Cameos as events.** Dr. Jelly (an eccentric alchemist selling one strange potion:
+11. ✅ **Cameos as events.** Dr. Jelly (an eccentric alchemist selling one strange potion:
     a random large effect), the Cloud Forest Wizard (offers a glimwood grove), and a
     guarded cameo of Asyrion (a description only, never a sprite, unless asked).
 
@@ -961,3 +988,8 @@ consistent with `EDA_LORE.md` §9.
 - *Vehicles reuse the cart:* floating carts and barges are cart variants with two flags in
   the movement step, so every delivery, counter and inspector row already applies to them;
   only barges needed their own (water) path search.
+- *Tigers are a map feature, not a timer:* they exist only on forest-heavy maps, so a
+  player who chose a meadow valley never meets one, and a forest valley has a reason for
+  its lodges and wardens.
+- *The Fen-Nex quarter is one number:* a district id on the state, read by the tithe and
+  the shelf cap, keeps the fox-folk a bargain rather than a system.
