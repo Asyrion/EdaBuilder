@@ -19,6 +19,15 @@
 - Colour-blind overlay ramps and UI scale in the menu; 4-frame walk cycle; wells and
   spires no longer catch fire.
 
+## Done in iteration 4
+
+- Trade Depot with seasonal prices and an Import Goods edict.
+- Three yearly calendar festivals (Thaw-day, the Remembrance, the Hush vigil).
+- Ley node panel with "Deepen the Wellspring" (twice per node) for the mana ceiling.
+- Undo (Ctrl+Z, 12 steps) for roads, zones, districts, buildings and bulldozing.
+- District statistics and renaming; daily autosave; quarter-resolution light map at 1×.
+- Night flicker fixed (strobing particle lights, unison flicker, brownout boundary blinking).
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -35,23 +44,20 @@
 - **Cross-chunk depth**: props are cached per ground chunk and depth-sorted per frame, but a
   very tall tree directly behind a tall building on a chunk boundary can overlap by a pixel
   or two.
-- **Mana is the late-game ceiling.** 4–6 nodes give 360–540 mana/day, which carries roughly
-  450–600 buildings before Thrum Fonts (40 mana, 6,500 crowns) are needed. This is
-  intentional, but a second tier of node upgrades ("deepen the Wellspring") would give
-  players a clearer path past 3,000 folk.
-- **No undo** for roads and bulldozing; misclicks cost crowns.
-- **Autosave** writes every three game days; a crash between saves loses up to three days.
+- **Mana** is still the late-game budget: 4–6 nodes, deepened twice, plus Thrum Fonts carry
+  roughly 3,000–4,000 folk. Past that the intended answer is a second charter, not more spires.
+- **Undo** covers player actions only; a building the Gloam or a fire removed is not undoable.
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second
   job.
 
 ## Prioritized ideas for the next iteration
 
-1. **District statistics and naming.** Per-district population, happiness and income in
-   the district overlay, and player-renamable districts.
-2. **Trade depot.** Export surplus goods and leystone at a road that reaches the map
-   edge, with prices that drift by season; import when short.
-3. **More chains and a calendar of festivals.** Thaw-day, the Hush vigil, a Concord
-   remembrance, each with a small choice.
+1. **Per-district problem summary** in the district overlay (unlit / dry / no goods
+   counts) to replace per-building icon clutter in dense districts.
+2. **Scenario charters.** Pre-built maps with a goal and a twist (a valley with one node,
+   a Gloam-locked island, a city inherited mid-collapse) selectable from the title screen.
+3. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
+   the treasury, once the first is a Beacon.
 4. **Hand-made art pass.** The atlas manifest is ready; the biggest wins are level-3
    townhouses, the temple, and citizen sprites with real walk cycles.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a

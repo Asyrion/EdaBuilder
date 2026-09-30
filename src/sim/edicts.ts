@@ -49,6 +49,12 @@ export const EDICTS: EdictDef[] = [
     costPerDay: () => 0, unlock: 3,
   },
   {
+    key: 'imports', name: 'Import Goods',
+    desc: 'The Trade Depot buys goods for markets with empty shelves at twice the export price. Needs a Trade Depot.',
+    flavor: 'Potions from Vell-on-Sable, sold at Vell-on-Sable prices.',
+    costPerDay: (s) => s.trade.importCost, unlock: 3,
+  },
+  {
     key: 'scholars', name: 'Scholars\' Stipend',
     desc: 'Free schooling for Grimmen and Tallowkin children. Educated share grows 50% faster. 0.2 crowns per resident per day.',
     flavor: 'The girl who reads leystone like a book now has forty classmates.',

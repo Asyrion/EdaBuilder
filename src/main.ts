@@ -15,6 +15,8 @@ import { bumpRoadVersion } from './sim/agents';
 import { resolveEvent, maybeFireEvent } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
+import { takeSnapshot, restoreSnapshot, type Snapshot } from './sim/actions';
+import { deepenNode, canDeepenNode } from './sim/world';
 import { Bot } from './sim/bot';
 
 const SAVE_KEY = 'wardlight.save.v1';
@@ -29,6 +31,8 @@ class Game {
   speed = 1;
   paused = false;
   selected: Building | null = null;
+  selectedNode = -1;
+  undoStack: Snapshot[] = [];
   muted = false;
   settings = { colorBlind: false, uiScale: 1 };
   perf = { fps: 60, ms: 0, drawn: 0 };
@@ -54,6 +58,8 @@ class Game {
       camera: this.renderer.camera,
       onAction: (kind, msg) => this.onAction(kind, msg),
       onSelect: (b) => this.select(b),
+      onSelectNode: (i) => { this.selectedNode = i; this.ui.refresh(); },
+      beforeAction: (label) => this.pushUndo(label),
       onKey: (k, e) => this.onKey(k, e),
       refreshUI: () => {
         this.ui.refreshItems();
@@ -85,6 +91,12 @@ class Game {
       setTax: (z, v) => setTax(this.state, z, v),
       setEdict: (k, on, district) => { if (district) this.state.districtEdicts[`${district}:${k}`] = on; else this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
       get settings() { return game.settings; },
+      get selectedNode() { return game.selectedNode; },
+      deepenNode: (i) => { const why = deepenNode(this.state, i); if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); },
+      canDeepenNode: (i) => canDeepenNode(this.state, i),
+      renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
+      undo: () => this.undo(),
+      get undoLabel() { return game.undoStack.length ? game.undoStack[game.undoStack.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
@@ -105,6 +117,8 @@ class Game {
     (this.tools as unknown as { host: { state: GameState } }).host.state = s;
     this.renderer.invalidateAll();
     this.renderer.particles.list.length = 0;
+    this.undoStack = [];
+    this.selectedNode = -1;
     this.select(null);
     this.tools.setTool({ kind: 'select' });
     this.view.overlay = null;
@@ -185,7 +199,28 @@ class Game {
     });
   }
 
+  pushUndo(label: string): void {
+    this.undoStack.push(takeSnapshot(this.state, label));
+    if (this.undoStack.length > 12) this.undoStack.shift();
+  }
+
+  undo(): boolean {
+    const snap = this.undoStack.pop();
+    if (!snap) return false;
+    restoreSnapshot(this.state, snap);
+    bumpRoadVersion();
+    recomputeAll(this.state);
+    this.renderer.invalidateAll();
+    this.renderer.overlayVersion++;
+    this.select(null);
+    this.audio.click();
+    this.ui.toast(`<p>Undid: ${snap.label}.</p>`, 1500);
+    this.ui.refresh();
+    return true;
+  }
+
   select(b: Building | null): void {
+    if (b) this.selectedNode = -1;
     this.selected = b;
     this.view.selected = b;
     this.ui.refresh();
@@ -224,6 +259,7 @@ class Game {
       case 'tab': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
       case 'g': if (e.shiftKey) { this.view.showGrid = !this.view.showGrid; return true; } return false;
       case 'f5': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
+      case 'z': if (e.ctrlKey || e.metaKey) { this.undo(); return true; } return false;
       case 'f9': this.load(); return true;
       case 'escape': {
         let handled = false;
@@ -287,7 +323,7 @@ class Game {
           void prevMilestone;
           this.lastDay = this.state.day;
           this.renderer.overlayVersion++;
-          if (this.state.day % 3 === 0) this.save();
+          this.save();
           const lastMsg = this.state.messages[this.state.messages.length - 1];
           if (lastMsg && lastMsg.tick === this.state.tick && lastMsg.kind === 'milestone' && this.state.day > 0) this.audio.melody(this.state.milestone * 7 + this.state.seed);
         }

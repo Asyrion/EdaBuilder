@@ -646,6 +646,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   garden: { w: 1, h: 1, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 19 },
   square: { w: 2, h: 2, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 20 },
   guildhall: { w: 2, h: 2, height: 18, roofH: 8, wall: 'timber', roof: 'tile', windows: 3, windowRows: 3, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true },
+  depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true },
 };
 

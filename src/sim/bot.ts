@@ -6,7 +6,7 @@
 import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath } from './actions';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, forEachBuilding } from './world';
+import { canPlaceBuilding, deepenNode, forEachBuilding } from './world';
 import { resolveEvent } from './events';
 
 export interface BotOptions {
@@ -237,6 +237,12 @@ export class Bot {
     want('ossuary', Math.floor(s.population / 1200));
     want('hospice', Math.floor(buildings / 250));
     want('guildhall', 1);
+    want('depot', 1);
+    // deepen the founding Wellspring when mana runs short
+    if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {
+      const i = s.nodes.findIndex((n) => (n.depth ?? 0) < 2);
+      if (i >= 0) deepenNode(s, i);
+    }
     want('nexus', Math.floor(buildings / 220));
     if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && s.treasury > 4500) this.buildMine();
     want('temple', 1);

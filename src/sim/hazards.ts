@@ -151,7 +151,7 @@ export function dailyGloam(state: GameState): void {
   });
   // 2. creep
   const creepEvery = 4;
-  if (state.day % creepEvery === 0 && state.day > 0) {
+  if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
     const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1);
     const gloam = state.gloam;
     const newTiles: number[] = [];

@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
   DAYS_PER_SEASON,
+  DISTRICT_NAMES,
   MAP_H,
   MAP_W,
   RoadType,
@@ -84,7 +85,10 @@ export function createGame(seed: number, cityName?: string): GameState {
     messages: [],
     edicts: {},
     districtEdicts: {},
+    districtNames: {},
+    trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     artifactsSold: 0,
+    tradeIncomeToday: 0,
     modifiers: [],
     pendingEvent: null,
     lastEventDay: 0,
@@ -114,7 +118,7 @@ export function createGame(seed: number, cityName?: string): GameState {
 }
 
 export function emptyLedger() {
-  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
+  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
 }
 
 export function seedFromName(name: string): number {
@@ -295,4 +299,39 @@ export function timeOfDay(state: GameState): number {
   if (t >= 0.5 - half && t <= 0.5 + half) return 0.25 + ((t - (0.5 - half)) / dayShare) * 0.5;
   if (t < 0.5 - half) return (t / (0.5 - half)) * 0.25;
   return 0.75 + ((t - (0.5 + half)) / (0.5 - half)) * 0.25;
+}
+
+export function districtName(state: GameState, d: number): string {
+  return state.districtNames[d] || DISTRICT_NAMES[d - 1] || `District ${d}`;
+}
+
+export const NODE_DEEPEN_COST = [8000, 14000];
+export const NODE_DEEPEN_MANA = 45;
+
+/** Extra mana from deepened nodes. */
+export function nodeMana(state: GameState): number {
+  let m = 0;
+  for (const n of state.nodes) m += (n.depth ?? 0) * NODE_DEEPEN_MANA;
+  return m;
+}
+
+export function canDeepenNode(state: GameState, ni: number): string | null {
+  const n = state.nodes[ni];
+  if (!n) return 'No such node';
+  const depth = n.depth ?? 0;
+  if (depth >= NODE_DEEPEN_COST.length) return 'This Wellspring is as deep as it goes';
+  if (state.milestone < 6) return 'Unlocks at Burgh';
+  if (state.treasury < NODE_DEEPEN_COST[depth]) return 'Not enough crowns';
+  return null;
+}
+
+export function deepenNode(state: GameState, ni: number): string | null {
+  const why = canDeepenNode(state, ni);
+  if (why) return why;
+  const n = state.nodes[ni];
+  const depth = n.depth ?? 0;
+  state.treasury -= NODE_DEEPEN_COST[depth];
+  n.depth = depth + 1;
+  pushMessage(state, `The Wellspring at (${n.x},${n.y}) is deepened. Tallowkin bore-singers coax ${NODE_DEEPEN_MANA} more mana a day from the Vein.`, 'milestone');
+  return null;
 }

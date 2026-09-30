@@ -4,7 +4,7 @@ export const MAP_W = 128;
 export const MAP_H = 128;
 export const TICKS_PER_SEC = 10;
 export const TICKS_PER_DAY = 900; // 90 s of game time at 1x
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const MAX_DISTRICTS = 8;
 export const DISTRICT_NAMES = ['Hearthside', 'Stillward', 'Spirefield', 'Lanternrow', 'Greywall', 'Marketcross', 'Candlerow', 'Boneward'];
 export const DAYS_PER_SEASON = 30;
@@ -131,6 +131,7 @@ export interface DayLedger {
   taxCraft: number;
   taxArcane: number;
   artifacts: number;
+  trade: number;
   upkeepRoads: number;
   upkeepBuildings: number;
   upkeepEdicts: number;
@@ -139,7 +140,7 @@ export interface DayLedger {
 }
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold';
   value: number;
   until: number; // day
   label: string;
@@ -177,7 +178,7 @@ export interface GameState {
   trafficSmooth: Uint8Array; // 0..255 relative congestion
   waterDist: Uint8Array; // distance to nearest water, capped 15
   gloamDist: Uint8Array; // distance to nearest gloam, capped 15
-  nodes: { x: number; y: number }[];
+  nodes: { x: number; y: number; depth?: number }[]; // depth: times deepened (0..2)
   founding: { x: number; y: number };
   // entities
   buildings: (Building | null)[];
@@ -217,7 +218,10 @@ export interface GameState {
   messages: Message[];
   edicts: Record<string, boolean>;
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
+  districtNames: Record<number, string>; // player renames
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number }; // today
   artifactsSold: number; // crowns from artifacts today
+  tradeIncomeToday: number;
   modifiers: Modifier[];
   pendingEvent: PendingEvent | null;
   lastEventDay: number;

@@ -115,6 +115,7 @@ export function workforceOf(state: GameState): number {
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
 export function dailyBuildings(state: GameState): void {
   const rng = rngOf(state);
+  dailyTrade(state);
   state.artifactsSold = 0;
   state.goodsProduced = 0;
   state.goodsSold = 0;
@@ -359,4 +360,51 @@ export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: nu
       if (inBounds(tx, ty) && state.bIndex[idx(tx, ty)] >= 0) return true;
     }
   return false;
+}
+
+/** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. */
+export function dailyTrade(state: GameState): void {
+  const t = state.trade;
+  const season = seasonOf(state);
+  // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
+  t.priceGoods = [2, 2, 2.5, 3][season];
+  t.priceLeystone = [3, 4, 3, 2.5][season];
+  t.exported = 0;
+  t.imported = 0;
+  t.importCost = 0;
+  const depots = state.buildings.filter((b) => b && b.kind === 'depot' && b.state === 'ok');
+  if (!depots.length) return;
+  const hasBuyers = state.buildings.some((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok');
+  let crowns = 0;
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (b.state !== 'ok') return;
+    if (def.zone === Zone.Craft && b.stock >= craftStockCap(b) * 0.8) {
+      const sell = Math.min(b.stock - craftStockCap(b) * 0.5, 8 * depots.length);
+      if (sell > 0) {
+        b.stock -= sell;
+        t.exported += sell;
+        crowns += sell * t.priceGoods;
+      }
+    } else if (def.leystone && !hasBuyers && b.stock >= 30) {
+      const sell = Math.min(b.stock - 10, 8 * depots.length);
+      b.stock -= sell;
+      t.exported += sell;
+      crowns += sell * t.priceLeystone;
+    }
+  });
+  if (edictOn(state, 'imports')) {
+    forEachBuilding(state, (b) => {
+      if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
+      if (b.stock > 2) return;
+      const buy = Math.min(8, marketStockCap(b) - b.stock);
+      b.stock += buy;
+      t.imported += buy;
+      t.importCost += buy * t.priceGoods * 2;
+    });
+  }
+  state.artifactsSold += 0; // artifacts handled separately
+  state.treasury += crowns; // exports are cash on the day
+  t.exported = Math.round(t.exported);
+  state.tradeIncomeToday = Math.round(crowns);
 }

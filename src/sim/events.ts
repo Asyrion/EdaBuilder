@@ -149,7 +149,55 @@ function findSpot(s: GameState, key: string): [number, number] | null {
   return null;
 }
 
-export const ALL_EVENTS = [...EVENTS, ...CHAINS];
+/** Calendar events fire on fixed days of the season, at most once per year each. */
+const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
+  {
+    id: 'thawday', title: 'Thaw-day', season: 0, seasonDay: 2,
+    text: 'The ice has cracked on the river. By old Vellish custom the Warden-Reeve opens the Thaw with a feast on the square, or with a day of labour on the wards.',
+    when: (s) => s.population > 40,
+    choices: [
+      { label: 'A feast (600 crowns)', desc: 'Happiness +6 for 15 days.', apply: (s) => { s.treasury -= 600; s.modifiers.push({ kind: 'happiness', value: 6, until: s.day + 15, label: 'Thaw feast' }); return 'Bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.'; } },
+      { label: 'A day on the wards', desc: 'Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 5, label: 'Ward labour' }); let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i] && s.coverage.ward[i] > 0) { s.gloam[i] = 0; n++; } return `${n} tiles of grey grass are cut and burned under the lanterns.`; } },
+    ],
+  },
+  {
+    id: 'remembrance', title: 'The Remembrance', season: 2, seasonDay: 15,
+    text: 'Mid-Ember is the Remembrance of the Hollowing. Scholars ask to read the names of the nine houses aloud from the Founding Stake; the priests of Morrow would rather the names stayed buried.',
+    when: (s) => s.population > 80,
+    choices: [
+      { label: 'Read the names', desc: 'Educated share +4%; unquieted dead +8 (the ley stirs).', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.04); s.unquieted += 8; return 'The names are read. The spires hum a half-tone flat until dawn.'; } },
+      { label: 'Keep the silence', desc: 'Unquieted dead −8; the Four Vigils are pleased: happiness +2 for 10 days.', apply: (s) => { s.unquieted = Math.max(0, s.unquieted - 8); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'Remembrance kept' }); return 'A night of candles and no speeches. Morrow approves.'; } },
+    ],
+  },
+  {
+    id: 'vigil', title: 'The Hush vigil', season: 3, seasonDay: 1,
+    text: 'The first night of the Hush. Tradition asks every hearth to keep a lamp burning until dawn, so that the Gloam finds no dark window to whisper at.',
+    when: (s) => s.population > 40,
+    choices: [
+      { label: 'Keep the vigil', desc: 'Mana demand +15% for 10 days; the Gloam does not creep for 10 days.', apply: (s) => { s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + 10, label: 'Vigil holds the Gloam' }); return 'Every window in the valley burns amber. Beyond the last lantern, the grey grass waits.'; } },
+      { label: 'Let folk sleep', desc: 'No cost. The whispering is louder this Hush: happiness −3 for 20 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 20, label: 'Vigil skipped' }); return 'Old Maud keeps her lamp lit anyway. She says the dark remembers who did not.'; } },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...CALENDAR];
+
+/** Fires the calendar event of today, if any (once per year). */
+export function maybeFireCalendar(s: GameState): void {
+  if (s.pendingEvent || s.gameOver || s.day < 30) return; // the founding Thaw has no festivals
+  const season = Math.floor(s.day / 30) % 4;
+  const dayOfSeason = s.day % 30;
+  const year = Math.floor(s.day / 120);
+  for (const e of CALENDAR) {
+    if (e.season !== season || e.seasonDay !== dayOfSeason || !e.when(s)) continue;
+    const tag = `${e.id}@${year}`;
+    if (s.firedEvents.some((f) => f.startsWith(tag))) continue;
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.firedEvents.push(`${tag}:?`);
+    s.lastEventDay = s.day;
+    return;
+  }
+}
 
 export function maybeFireEvent(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
@@ -161,7 +209,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = ALL_EVENTS.filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
@@ -180,7 +228,10 @@ export function resolveEvent(s: GameState, choice: number): void {
   if (!def) return;
   const ci = Math.max(0, Math.min(def.choices.length - 1, choice));
   const c = def.choices[ci];
-  for (let k = s.firedEvents.length - 1; k >= 0; k--) if (s.firedEvents[k] === `${def.id}:?`) { s.firedEvents[k] = `${def.id}:${ci}`; break; }
+  for (let k = s.firedEvents.length - 1; k >= 0; k--) {
+    const f = s.firedEvents[k];
+    if (f.endsWith(':?') && (f === `${def.id}:?` || f.startsWith(`${def.id}@`))) { s.firedEvents[k] = f.slice(0, -1) + ci; break; }
+  }
   const result = c.apply(s);
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }
