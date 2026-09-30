@@ -1,0 +1,60 @@
+/** JSON serialization of GameState. Typed arrays are base64-encoded. */
+import { SAVE_VERSION, SERVICE_TYPES, type GameState, type ServiceType } from './types';
+import { markAllDirty } from './world';
+import { recomputeAll } from './sim';
+
+function toB64(bytes: Uint8Array): string {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
+  if (typeof btoa === 'function') return btoa(s);
+  return Buffer.from(s, 'binary').toString('base64');
+}
+function fromB64(s: string): Uint8Array {
+  const bin = typeof atob === 'function' ? atob(s) : Buffer.from(s, 'base64').toString('binary');
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+const U8_FIELDS = ['terrain', 'gloam', 'zone', 'road', 'trafficSmooth'] as const;
+
+export function serialize(state: GameState): string {
+  const o: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(state)) {
+    if (k === 'dirtyChunks' || k === 'zoneList' || k === 'zoneListDirty') continue;
+    if (k === 'coverage' || k === 'lit' || k === 'watered' || k === 'landValue' || k === 'miasma' || k === 'traffic' || k === 'waterDist' || k === 'gloamDist') continue;
+    if (v instanceof Uint8Array) o[k] = { u8: toB64(v) };
+    else if (v instanceof Int32Array) o[k] = { i32: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
+    else if (v instanceof Uint16Array) o[k] = { u16: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
+    else o[k] = v;
+  }
+  return JSON.stringify(o);
+}
+
+export function deserialize(json: string, fresh: (seed: number) => GameState): GameState {
+  const o = JSON.parse(json) as Record<string, any>;
+  if (typeof o.seed !== 'number') throw new Error('Not a Wardlight save');
+  const state = fresh(o.seed);
+  for (const [k, v] of Object.entries(o)) {
+    if (!(k in state)) continue;
+    if (v && typeof v === 'object' && 'u8' in v) (state as any)[k] = fromB64(v.u8);
+    else if (v && typeof v === 'object' && 'i32' in v) {
+      const b = fromB64(v.i32);
+      (state as any)[k] = new Int32Array(b.buffer, b.byteOffset, b.byteLength / 4);
+    } else if (v && typeof v === 'object' && 'u16' in v) {
+      const b = fromB64(v.u16);
+      (state as any)[k] = new Uint16Array(b.buffer, b.byteOffset, b.byteLength / 2);
+    } else (state as any)[k] = v;
+  }
+  state.version = SAVE_VERSION;
+  // rebuild derived layers
+  const n = state.w * state.h;
+  for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);
+  state.traffic = new Uint16Array(n);
+  state.zoneListDirty = true;
+  state.dirtyChunks = new Set();
+  markAllDirty(state);
+  void U8_FIELDS;
+  recomputeAll(state);
+  return state;
+}

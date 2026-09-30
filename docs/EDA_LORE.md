@@ -1,0 +1,152 @@
+# Eda — World Bible for *Wardlight*
+
+> Everything in this file was invented for *Wardlight*. At the time of writing the
+> repository contained no prior Eda canon (only the name of the world and the fact
+> that a sister game, *Ossuary*, focuses on potions and alchemy). Treat the whole
+> document as **proposed canon**; see `EDA_CITY_LORE.md` for the same material
+> split into "given" vs "proposed" and for the city-founding story used in play.
+
+---
+
+## 1. The shape of the world
+
+Eda is an old world, and a wounded one. Beneath its soil run the **Veins**: rivers of
+raw magic the scholars call **thrum** and everyone else calls **ley**. Where a Vein
+rises close to the surface it breaks through as a **ley node**, a spring of light
+that hums like a struck bell. Grass around a node grows in spirals. Stones float a
+finger's width off the ground. Children born within a mile of one have a glint of
+fire behind the eyes.
+
+Ley is not evil and not good. It is weather. Channelled, it lights streets, heats
+kilns, cools cellars, lifts water and cures fevers. Left to pool, it curdles into
+**wild magic**: doors that open onto yesterday, cattle that speak in the voice of
+dead grandmothers, a house that grows a second floor overnight and a third floor
+into the ground.
+
+Eda's people therefore live like moths: as close to the light as they dare, and no
+closer.
+
+## 2. History
+
+### The Age of Lanterns (c. –900 to –300)
+For six centuries the continent of **Orrin** was governed by the **Aurel Concord**, a
+magocracy of nine mage-houses. The Concord's masterpiece was the **Great Conduit**:
+a lattice of leystone spires that carried thrum from node to node across the whole
+continent. Every town glowed. Roads were lit by cold blue lanterns that needed no
+oil. The Concord's founder-god, **the Aurel**, was worshipped as the "Lantern That
+Does Not Gutter".
+
+### The Hollowing (–300)
+The Concord grew ambitious. Its final project, the **Undying Court**, sought to bind
+the souls of the nine houses to the Conduit itself so that they might rule for ever.
+To power the rite the mages drew on every node at once.
+
+The Conduit burst.
+
+For a year and a day wild magic scoured Orrin. Forests forgot how to be forests and
+became the **Gloam**: a grey, whispering wilderness where the ley runs backward and
+things that should be dead remember how to walk. The bound souls of the Undying
+Court did not die and did not live; scholars believe they *are* the Gloam. Three
+towns in four were abandoned. The survivors call the event the Hollowing, and date
+everything from it.
+
+### The Long Dusk (–300 to now)
+Civilization survives as islands. A settlement is only possible where a ley node can
+be tamed and its light used to hold the Gloam at bay; such a settlement is called a
+**wardlight**. The greatest of the surviving realms is the **Ashen Crown of Vell**,
+a kingdom of river valleys ruled from the ancient wardlight of **Vell-on-Sable**.
+
+The Crown cannot govern land it cannot light. So it issues **Charters**: a Charter
+grants a **Warden-Reeve** the right to found a new wardlight at an untamed node, to
+levy tithes, to raise a watch, and to be left alone as long as the light holds.
+
+**You are a Warden-Reeve. The game is your Charter.**
+
+## 3. Peoples of Vell
+
+Eda has many peoples; these three live in every wardlight of Vell and appear as the
+citizens of the game. They intermarry freely and share streets; the differences are
+cultural and physical, never mechanical privilege.
+
+- **Hearthfolk** — the ordinary humans of Vell. Farmers, carters, merchants,
+  masons. They keep the hearth-cult of Aume and measure wealth in chimneys.
+- **Tallowkin** — a small people (chest-high to a Hearthfolk) born only near ley
+  nodes, with eyes that glow like candle-flames in the dark. They feel thrum the
+  way sailors feel weather, and almost every ley-tender, spire-wright and
+  enchanter is Tallowkin. They live in narrow tall "wickhouses" and consider it
+  rude to close a window at night.
+- **Grimmen** — humans whose ancestors survived inside the Gloam. Ash-grey skin,
+  white hair from birth, and a total immunity to wild magic. Because the Gloam
+  cannot touch them they are the traditional keepers of graveyards and edge-towers,
+  and the best miners of leystone. Old Vellish superstition once shunned them; in a
+  young wardlight nobody can afford superstition.
+
+## 4. The Four Vigils (gods)
+
+The Concord's god the Aurel is no longer worshipped, only remembered. Vell keeps
+**the Four Vigils**, each a "watch" of the night:
+
+| Vigil | Domain | In the city |
+|---|---|---|
+| **Aume the Hearthkeeper** | home, harvest, bread, welcome | Shrines of Aume raise happiness; every house has an Aume-niche by the door |
+| **Vesh of the Waters** | rivers, rain, cleansing, fire-quenching | Water-mages ("Veshari") form the fire brigades; wells are blessed in her name |
+| **Morrow the Quiet** | death, rest, memory | Boneyards and Ossuaries are "Morrow's gardens"; the Rite of Quieting keeps the dead asleep |
+| **Ilka of the Wild** | beasts, forests, wild magic, luck | Feared and thanked in equal measure; the Gloam is said to be her grief |
+
+## 5. How magic works (the rules the game is built on)
+
+1. **Ley must be channelled.** Raw thrum from a node dissipates within a few dozen
+   paces. Carved **leystone** conducts it. A **Ley Spire** (a spire of leystone) drinks
+   from a node or from another lit spire and lights everything within its reach.
+   Buildings that touch a lit building are lit too: thrum runs along shared walls.
+2. **Every use costs.** Lamps, kilns, cisterns, wards and enchanting all *draw*
+   mana. A node yields a fixed flow. Draw more than the flow and the spires flicker:
+   first the lights go out, then the ley goes wild. This is the **wild surge**.
+3. **Ley remembers the dead.** A body buried without the **Rite of Quieting** keeps
+   its glim. Near a node it will, in time, get up. Deathcare is therefore a public
+   necessity, not a courtesy. A neglected Boneyard produces the **restless**.
+4. **The Gloam is patient.** Unlit, unwatched land at the edge of the world slowly
+   greys. Blight kills crops, empties houses and unsettles the living. **Ward
+   Lanterns** (lit by mana) push it back; so does simple settlement, but slowly.
+5. **Alchemy is ley made drinkable.** Herbs grown in node-touched soil (*glimherb*,
+   *moonwort*, *ashcap*, *saltbriar*) carry thrum. Distilled, they become potions:
+   healing draughts, warding salts, the "quiet water" used in the Rite. Alchemy is
+   Vell's most valuable trade and the backbone of the **Craft** districts.
+6. **Enchanting is ley made permanent.** Leystone cut and sung over by Tallowkin
+   holds a charge for years: lantern-cores, ward-stones, floating carts. This is the
+   work of the **Arcane** districts, and it needs schooling.
+
+## 6. Everyday life in a wardlight
+
+- **Money** is the Vellish **crown**, a silver coin stamped with a lantern.
+- **Time** is counted in days and the **daily tithe**; four seasons — Thaw, Bloom,
+  Ember and Hush — of ninety days each. The Hush is long and dark and hard on the
+  wards.
+- **Streets** begin as dirt tracks and are cobbled as a town prospers; the finest
+  are lit by lantern-cores and called **lantern-ways**.
+- **Houses** grow with their families: a *sod hut* becomes a *timber house* becomes
+  a *stone townhouse* with an Aume-niche and a ley-lamp in every window.
+- **Carts** haul herbs to the alchemists and potions to the markets; a wardlight
+  that cannot move its goods starves in the middle of plenty.
+- **Fire** is fought by the Veshari with called water; **crime** is met by the
+  **Watch**; **sickness** by healers who are half priest, half alchemist.
+- **Night** is when a wardlight is most itself: windows amber, spires blue, the
+  ley-lines faintly visible in the streets like veins under skin, and beyond the last
+  lantern the grey hush of the Gloam.
+
+## 7. Glossary
+
+- **Charter** — the royal writ that founds a wardlight; also the game's save.
+- **Gloam** — the blighted wilderness; the game's creeping hazard.
+- **Glim** — the trace of thrum in a living (or formerly living) body.
+- **Leystone** — crystal that conducts ley; mined in hills.
+- **Ley node / Wellspring** — where a Vein surfaces; the city's power source.
+- **Ley Spire** — leystone pylon that distributes mana.
+- **Miasma** — the sour alchemical fog of Craft districts; lowers health.
+- **Quieting, Rite of** — the funeral rite that keeps the dead asleep.
+- **Restless** — the dead who were not quieted.
+- **Thrum / ley / mana** — the same thing in scholarly, common and ledger speech.
+- **Veshari** — water-mages of Vesh; the fire brigade.
+- **Warden-Reeve** — the player.
+- **Wardlight** — a chartered settlement; also the name of this game.
+- **Wild surge** — a burst of uncontrolled ley caused by overdraw.

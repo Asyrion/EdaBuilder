@@ -1,0 +1,21 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+await page.goto('http://localhost:4173/');
+await page.waitForFunction(() => window.__game);
+const data = await page.evaluate((scale) => {
+  const atlas = window.__wardlight.atlas;
+  const src = atlas.image;
+  const c = document.createElement('canvas');
+  c.width = src.width * scale; c.height = src.height * scale;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#404050'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}, Number(process.argv[2] ?? 3));
+fs.writeFileSync('shots/atlas.png', Buffer.from(data.split(',')[1], 'base64'));
+const dims = await page.evaluate(() => [window.__wardlight.atlas.image.width, window.__wardlight.atlas.image.height]);
+console.log('atlas', dims);
+await browser.close();
