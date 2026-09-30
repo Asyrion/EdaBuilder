@@ -42,6 +42,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     zone: new Uint8Array(n),
     road: new Uint8Array(n),
     district: new Uint8Array(n),
+    wall: new Uint8Array(n),
     bIndex: new Int32Array(n).fill(-1),
     lit: new Uint8Array(n),
     watered: new Uint8Array(n),
@@ -97,7 +98,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -149,6 +150,15 @@ export function markDirty(state: GameState, x: number, y: number): void {
   const cy = (y / CHUNK) | 0;
   state.dirtyChunks.add(cy * CHUNKS_X + cx);
 }
+/** Dirty a tile and its 4 neighbours: autotiles (roads, walls) of neighbours change with it. */
+export function markDirtyAround(state: GameState, x: number, y: number): void {
+  markDirty(state, x, y);
+  if (x > 0) markDirty(state, x - 1, y);
+  if (x < MAP_W - 1) markDirty(state, x + 1, y);
+  if (y > 0) markDirty(state, x, y - 1);
+  if (y < MAP_H - 1) markDirty(state, x, y + 1);
+}
+
 export function markAllDirty(state: GameState): void {
   if (!state.dirtyChunks) state.dirtyChunks = new Set();
   for (let i = 0; i < CHUNKS_X * CHUNKS_Y; i++) state.dirtyChunks.add(i);
@@ -178,6 +188,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
         if (state.terrain[i] !== Terrain.Hills) return 'Must be dug into hills';
       } else if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
+      if (state.wall[i]) return 'The Warding Wall is in the way';
       if (state.bIndex[i] >= 0) return 'Something is already built here';
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }

@@ -115,6 +115,44 @@ function roadTile(type: 'track' | 'cobble' | 'lantern', mask: number): Painter {
   });
 }
 
+function wallTile(mask: number): { p: Painter; glow: Painter } {
+  // low stone wall with leystone inlay; arms toward connected neighbours (same mask bits as roads)
+  const p = new Painter(32, 26);
+  const glow = new Painter(32, 26);
+  const n = !!(mask & 1);
+  const e = !!(mask & 2);
+  const sIt = !!(mask & 4);
+  const w = !!(mask & 8);
+  const H = 7;
+  // centre post
+  const post = (cx: number, cy: number, h: number) => {
+    p.rect(cx - 1, cy - h, 3, h, 'stone2');
+    p.rect(cx - 1, cy - h, 1, h, 'stone1');
+    p.px(cx, cy - h - 1, 'stone3');
+    p.px(cx, cy - Math.floor(h / 2), 'ley1');
+    glow.px(cx, cy - Math.floor(h / 2), 'ley1', 220);
+  };
+  // arms as parallelograms from centre (16,18) toward edge midpoints
+  const arm = (dx: number, dy: number, left: boolean) => {
+    // draw a segment of wall from centre toward (16+dx*8, 18+dy*4)
+    for (let k = 0; k <= 8; k++) {
+      const x = 16 + Math.round((dx * 8 * k) / 8);
+      const y = 18 + Math.round((dy * 4 * k) / 8);
+      for (let h = 0; h < H; h++) p.px(x, y - h, left ? 'stone1' : 'stone2');
+      p.px(x, y - H, 'stone3');
+      p.px(x, y, 'outline');
+      if (k % 4 === 2) { p.px(x, y - 3, 'ley1'); glow.px(x, y - 3, 'ley1', 160); }
+    }
+  };
+  if (w) arm(-2, -1, true);   // toward up-left edge (x-1)
+  if (n) arm(2, -1, false);   // toward up-right (y-1)
+  if (sIt) arm(-2, 1, true);  // down-left (y+1)
+  if (e) arm(2, 1, false);    // down-right (x+1)
+  post(16, 18, H + 2);
+  p.outline('outline');
+  return { p, glow };
+}
+
 // ---------- buildings ----------
 export type Wall = 'sod' | 'timber' | 'stone' | 'whitewash' | 'arcane' | 'bone' | 'darkstone' | 'plaster' | 'bluewash';
 export type Roof = 'thatch' | 'shingle' | 'slate' | 'tile' | 'arcane' | 'flat' | 'cone' | 'dome' | 'green' | 'awning' | 'moss' | 'copper' | 'none';
@@ -848,6 +886,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4, runeBand: true, orbit: true },
   mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true, lanternPost: true },
   mothloft: { w: 1, h: 1, height: 16, roofH: 5, wall: 'timber', roof: 'cone', windows: 2, windowRows: 3, seed: 25, runeBand: true, orbit: true },
+  hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1086,6 +1125,8 @@ export function generateSprites(): SpriteDef[] {
   }
   // roads
   for (const t of ['track', 'cobble', 'lantern'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
+  // warding wall autotiles
+  for (let m = 0; m < 16; m++) { const wt = wallTile(m); out.push({ name: `wall_${m}`, p: wt.p, glow: wt.glow, ax: 16, ay: 2 }); }
   // zone overlays
   const zoneCols: [string, Col][] = [['hearth', 'zoneHearth'], ['market', 'zoneMarket'], ['craft', 'zoneCraft'], ['arcane', 'zoneArcane']];
   for (const [z, c] of zoneCols) {
@@ -1224,6 +1265,23 @@ export function generateSprites(): SpriteDef[] {
     glow.rect(0, top, 5, 7, 'restless', 140);
     glow.px(2, top + 1, 'glassGlow');
     out.push({ name: `wisp_${f}`, p, glow, ax: 2, ay: 7 });
+  }
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(12, 8);
+    const glow = new Painter(12, 8);
+    // lean grey hound, low head, ragged back
+    p.rect(2, 3, 8, 3, 'gloam2');
+    p.rect(3, 2, 6, 1, 'gloam3');
+    p.rect(9, 2, 3, 2, 'gloam2'); // head
+    p.px(11, 3, 'gloam1');
+    p.px(1, 2, 'gloam2'); // tail
+    p.px(0, 1, 'gloam2');
+    if (f === 0) { p.rect(3, 6, 1, 2, 'gloam1'); p.rect(8, 6, 1, 2, 'gloam1'); } else { p.rect(4, 6, 1, 2, 'gloam1'); p.rect(7, 6, 1, 1, 'gloam1'); p.px(9, 7, 'gloam1'); }
+    p.px(10, 2, 'gloamEye');
+    glow.px(10, 2, 'gloamEye');
+    glow.rect(2, 2, 10, 4, 'gloam3', 60);
+    p.outline('outline');
+    out.push({ name: `hound_${f}`, p, glow, ax: 6, ay: 8 });
   }
   // icons
   for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });

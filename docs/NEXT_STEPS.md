@@ -41,6 +41,12 @@
   boneyards that multiply with the unquieted dead and follow the restless.
 - Moth-Loft building harvesting glim-dust for nearby Craft works.
 
+## Done in iteration 7 (hounds, lodge, wall)
+
+- Gloam-hounds hunt at night near the Gloam, bolder in the Hush; Hunters' Lodge; Warding
+  Wall line tool with glowing autotiles that blocks hounds and gloam creep.
+- Fixed: road/wall joins placed later showed a gap (neighbour chunk not redrawn).
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -66,7 +72,7 @@
 ## Fantasy roadmap (see DESIGN.md §8)
 
 Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhares and wisps;
-(7) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) Wyrmcraft I: egg events, Wyrm-Cradle,
+(7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) Wyrmcraft I: egg events, Wyrm-Cradle,
 Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9) Wyrmcraft II: sky
 layer, wyvern couriers, the Wyrm-Ring; (10) the Sleeping Wyrm: waking, tribute, flyover,
 Wyrm-Court binding; (11) magical buildings: Glimhouse, Weather Vane, Observatory, Portal

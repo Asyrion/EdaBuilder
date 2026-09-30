@@ -277,6 +277,22 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   8 unquieted dead: the visible early warning that the dead are stirring.
 - **Moth-Loft** (Thorp, needs a node or spire within 6): Craft goods +20 % within 8 tiles.
 
+### 4.25 Gloam-hounds, the Hunters' Lodge and the Warding Wall (iteration 7)
+- **Gloam-hounds** spawn at night (from day 6) in packs of 3–5 on Gloam tiles within 22
+  of a building that lies within 14 tiles of the Gloam; more packs with population and
+  2.2× as often in the Hush. They stalk the nearest unlit, unwarded building, frighten
+  buildings within 3 tiles (happiness −5) and, rarely, tear a level-1 building to ruin.
+  Lit tiles, ward coverage and strong Watch coverage scare them back to their spawn tile;
+  they slink into the grey at dawn.
+- **Hunters' Lodge** (Thorp, 2×2): each day kills hounds within 12 tiles (80 %); strong
+  Watch coverage clears some too. Small leisure bonus.
+- **Warding Wall** (Thorp): a line tool like roads, 60 crowns/tile (120 in hills), 0.4
+  upkeep and 0.5 mana per tile. Gloam creep never crosses a wall tile; hounds cannot enter
+  one and slide along it. Walls draw as autotiled stone with leystone inlays that glow.
+- **Bug fix:** roads (and walls) placed later left a visual gap at the join because the
+  existing neighbour's autotile lived in a chunk that was never marked dirty; changes now
+  dirty the four neighbours as well (`markDirtyAround`).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -505,6 +521,44 @@ regresses a stage, unrest +5 %. The Ring is also a **leisure** building (land va
 happiness in radius 10) and draws carts of goods on bout day. The Ring never kills a
 dragon; Vell forbids it, and the Grimmen sextons would refuse to quiet the ground.
 
+**Dragon taxonomy: body types × lines.** Every dragon is one *body type* (its shape and
+what it can physically do) and one *line* (its origin, colour, breath and calling). The
+egg fixes the line; the line fixes which body types it can grow into; the player's
+training and role choices pick among them. Each combination looks different in the atlas
+and does a different job.
+
+| Body type | Silhouette | Moves | Grows to |
+|---|---|---|---|
+| **Drake** | four-legged, wingless, a long low body with a frilled crest; dog- to pony-sized | walks roads and open ground like an agent | stage 3 of any line |
+| **Wyvern** | two hind legs, wings for arms, a barbed tail; horse-sized, lean | flies in the sky layer with a ground shadow | stage 4 of winged lines |
+| **Wyrm** | serpentine, no wings, a crested head and a body as long as a street; coils around its lair | never leaves its lair tile group, but its reach is a radius | stage 5 of the deep lines |
+
+| Line | Egg from | Colour and look | Glow / particles | Body types | Calling |
+|---|---|---|---|---|---|
+| **Ember** | warm stone in a mine | brick red scales, black horns, orange belly | ember sparks, smoke curls | drake, wyvern | Delver in mines, warms Glimhouses, breathes *wyrmfire*; a wyvern Ember is the best Ring champion |
+| **Vein** | a bound wyrm's clutch | ley-blue with white spines, runes along the flank | cyan glow like a spire, rune ring under it | drake, wyvern, wyrm | roosting on a Nexus adds 30 mana/day; a Vein wyrm is a second Wellspring |
+| **Sky** | a skyray nest | white and silver, huge wing area, no horns | wind streaks, a trail of glim-dust | wyvern only | the fastest Courier; carries 40 goods and never tires |
+| **Grey** | a Concord vault | ash-grey, half stone, cracked like a statue, one violet eye | grey motes, the Gloam parts around it | drake, wyrm | Ward-beast: stops Gloam creep in 12 and breaks Warding Wall siege by hounds |
+| **Bone** | a quiet boneyard | ivory plates over black skin, a skull-like head | wisps follow it, faint green light | drake, wyrm | Quiet-wyrm at an Ossuary; the restless lie down in its shadow |
+| **Tide** | a marsh-wyrm nest at a Quay | teal and blue-green, finned, webbed feet | water drips, ripples | drake, wyrm | swims the river: a barge that needs no crew; drinks fires out along the banks |
+| **Storm** | a mana-storm that passes a cradle | violet-black with white lightning veins, ragged wings | arcs of lightning, a crackle | wyvern | roosting on a Ley Spire during the Hush generates mana from the storm; risky: a surge in radius 6 if unfed |
+| **Glim** | a Moth-Loft that has stood 40 days | tiny, pale gold, translucent wings like a moth | a warm lamp glow | drake only (cat-sized) | a flock of Glim-drakes lights a district like lantern-ways, no mana; children adore them: happiness +4 in radius 8 |
+
+*Wyverns and drakes of the same line share colours but not silhouettes; a wyrm of a line is
+unmistakable at a glance.* The **Wyrm-Ring** pairs champions by body type (drakes fight
+drakes, wyverns wyverns) so every line can compete.
+
+**Sprite plan.** A `drawDragon({ body, line, stage, frame })` generator beside
+`drawBuilding`: body type picks a silhouette template (drake: 20×12, wyvern: 28×20 with
+two wing frames, wyrm: 3×3 coiled 96×64 with a breathing loop); line picks the palette
+triplet (base, belly, accent), horn/crest shapes, eye colour and the glow layer; stage
+scales the template and adds crest and horn growth. Eggs are 8×10 with a line-coloured
+mottle; hatchlings reuse the drake template at half size. Every dragon gets an emissive
+layer for the night pass and a particle signature (ember sparks, cyan motes, wind
+streaks, grey motes, wisps, drips, lightning, lamp-glow). Flying bodies are drawn in the
+sky layer with an elliptical shadow on the ground and a `altitude` offset that dips as
+they land.
+
 **Flying trade (the future).** A wyvern courier is a first vehicle. At Beacon of Eda the
 **Sky-Dock** (8.3) can send a wyvern instead of an airship: faster, no mana, but the
 trade event may return a *rival wardlight's* egg offer or a challenge for the Ring.
@@ -528,7 +582,7 @@ without an event.
 
 ## 9. Verification
 
-- `npm test` runs 48 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 54 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread

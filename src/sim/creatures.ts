@@ -6,9 +6,9 @@
  */
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
-import { commitRng, forEachBuilding, rngOf, timeOfDay } from './world';
+import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30 };
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -30,7 +30,7 @@ function spawn(state: GameState, species: Species, x: number, y: number, anchorI
     y: y + 0.5,
     path: [],
     pathIdx: 0,
-    speed: species === 'thrumhare' ? 1.6 : species === 'glimmoth' ? 1.2 : 0.4,
+    speed: species === 'thrumhare' ? 1.6 : species === 'glimmoth' ? 1.2 : species === 'hound' ? 1.3 : 0.4,
     homeId: -1,
     targetId: -1,
     timer: 0,
@@ -124,6 +124,40 @@ export function updateCreatures(state: GameState): void {
       rng.state = state.rngState;
     }
   }
+  // ---- Gloam-hounds: packs come out of the Gloam at night, bolder in the Hush
+  const hounds = creatureCount(state, 'hound');
+  if (night && state.stats.gloamTiles > 0 && state.day >= 6) {
+    const hush = seasonOf(state) === 3;
+    const packs = Math.min(CAP.hound, Math.floor((state.population / 250 + 1) * (hush ? 2.2 : 1) * 3));
+    if (hounds < packs && rng.chance(hush ? 0.35 : 0.15)) {
+      // spawn a pack on a gloam tile within 22 tiles of a random building
+      const spots: number[] = [];
+      const blds = state.buildings.filter((b) => b && b.state === 'ok' && state.gloamDist[idx(b.x, b.y)] <= 14) as Building[];
+      if (blds.length) {
+        const b = rng.pick(blds);
+        for (let dy = -22; dy <= 22; dy++)
+          for (let dx = -22; dx <= 22; dx++) {
+            const tx = b.x + dx;
+            const ty = b.y + dy;
+            if (inBounds(tx, ty) && state.gloam[idx(tx, ty)]) spots.push(idx(tx, ty));
+          }
+        if (spots.length) {
+          const pick = spots[rng.int(spots.length)];
+          spots.length = 0;
+          spots.push(pick);
+        }
+      }
+      if (spots.length) {
+        const i = spots[0];
+        const n = 3 + rng.int(3);
+        commitRng(state, rng);
+        for (let k = 0; k < n; k++) spawn(state, 'hound', i % MAP_W, (i / MAP_W) | 0);
+        rng.state = state.rngState;
+        state.stats.houndsTotal += n;
+        if (rng.chance(0.6)) pushMessage(state, `Gloam-hounds howl at the ${((i / MAP_W) | 0) < state.founding.y ? 'north' : 'south'}ern edge. ${hush ? 'The Hush makes them bold.' : ''} Ward Lanterns and the Watch drive them off; a Hunters' Lodge ends them.`, 'warn');
+      }
+    }
+  }
   // ---- despawn: moths by day, hares at night, surplus wisps
   const keepWisps = want;
   let wispSeen = 0;
@@ -131,6 +165,7 @@ export function updateCreatures(state: GameState): void {
     if (a.kind !== AgentKind.Creature) return true;
     if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
+    if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
     if (a.species === 'wisp') {
       wispSeen++;
       if (wispSeen > keepWisps) return false;
@@ -202,6 +237,84 @@ export function tickCreatures(state: GameState): void {
         }
         break;
       }
+      case 'hound': {
+        if (a.timer > 0) {
+          a.timer--;
+          break;
+        }
+        const hx = Math.floor(a.x);
+        const hy = Math.floor(a.y);
+        const hi = idx(hx, hy);
+        // light and wards hurt: flee toward the anchor (its gloam tile)
+        const scared = state.coverage.ward[hi] > 0 || state.lit[hi] === 1 || state.coverage.watch[hi] > 90;
+        let tx: number;
+        let ty: number;
+        if (scared) {
+          tx = ax;
+          ty = ay;
+          a.timer = 10;
+        } else {
+          // stalk the nearest unlit, unwarded building
+          if (a.path.length === 0 || rng.chance(0.02)) {
+            let best = -1;
+            let bd = 26;
+            for (let s2 = 0; s2 < state.buildings.length; s2++) {
+              const b = state.buildings[s2];
+              if (!b || b.state !== 'ok') continue;
+              const d = Math.hypot(b.x - a.x, b.y - a.y);
+              if (d >= bd) continue;
+              const bi = idx(b.x, b.y);
+              if (state.coverage.ward[bi] > 0 || (b.lit && state.coverage.watch[bi] > 60)) continue;
+              bd = d;
+              best = s2;
+            }
+            a.path = best >= 0 ? [idx(state.buildings[best]!.x, state.buildings[best]!.y)] : [];
+            a.targetId = best >= 0 ? state.buildings[best]!.id : -1;
+          }
+          if (a.path.length === 0) {
+            tx = ax + (rng.next() - 0.5) * 6;
+            ty = ay + (rng.next() - 0.5) * 6;
+          } else {
+            tx = (a.path[0] % MAP_W) + 0.5;
+            ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+          }
+        }
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const d = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        if (d > 1.2) {
+          const nx = a.x + (dx / d) * sp;
+          const ny = a.y + (dy / d) * sp;
+          const ni = idx(Math.floor(nx), Math.floor(ny));
+          // walls and water stop them; slide along instead
+          if (inBounds(Math.floor(nx), Math.floor(ny)) && !state.wall[ni] && !isWater(state.terrain[ni]) && state.bIndex[ni] < 0) {
+            a.x = nx;
+            a.y = ny;
+          } else if (inBounds(Math.floor(nx), hy) && !state.wall[idx(Math.floor(nx), hy)] && !isWater(state.terrain[idx(Math.floor(nx), hy)]) && state.bIndex[idx(Math.floor(nx), hy)] < 0) {
+            a.x = nx;
+          } else if (inBounds(hx, Math.floor(ny)) && !state.wall[idx(hx, Math.floor(ny))] && !isWater(state.terrain[idx(hx, Math.floor(ny))]) && state.bIndex[idx(hx, Math.floor(ny))] < 0) {
+            a.y = ny;
+          } else a.timer = 15;
+          a.dir = dx > 0 ? 0 : 2;
+        } else if (!scared && a.targetId >= 0) {
+          // at the building: harass (rarely, real damage)
+          a.timer = 40 + rng.int(40);
+          if (rng.chance(0.01)) {
+            const b = state.buildings.find((o) => o && o.id === a.targetId);
+            if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone' && b.level === 1) {
+              b.state = 'ruin';
+              b.stateDays = 0;
+              b.residents = 0;
+              b.workers = 0;
+              markDirty(state, b.x, b.y);
+              state.stats.houndRaids++;
+              pushMessage(state, `Gloam-hounds tore through the ${BUILDING_BY_KEY[b.kind].name.split(' ')[0].toLowerCase()} at (${b.x},${b.y}).`, 'bad');
+            }
+          }
+        }
+        break;
+      }
       case 'wisp': {
         // drift around the anchor; follow restless if anchored to one
         let cx = ax;
@@ -242,4 +355,24 @@ export function mothBonus(state: GameState, b: Building): number {
 
 export function isCreatureWater(state: GameState, x: number, y: number): boolean {
   return inBounds(Math.floor(x), Math.floor(y)) && isWater(state.terrain[idx(Math.floor(x), Math.floor(y))]);
+}
+
+/** Daily: Hunters' Lodges kill hounds within 12; strong Watch coverage drives them off. */
+export function dailyHunt(state: GameState): number {
+  const rng = rngOf(state);
+  const lodges: Building[] = [];
+  forEachBuilding(state, (b) => {
+    if (b.kind === 'hunterslodge' && b.state === 'ok') lodges.push(b);
+  });
+  let killed = 0;
+  state.agents = state.agents.filter((a) => {
+    if (a.kind !== AgentKind.Creature || a.species !== 'hound') return true;
+    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= 12 && rng.chance(0.8)) { killed++; return false; }
+    const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
+    if (state.coverage.watch[i] > 120 && rng.chance(0.3)) { killed++; return false; }
+    return true;
+  });
+  commitRng(state, rng);
+  if (killed > 0 && lodges.length && rng.chance(0.5)) pushMessage(state, `The hunters bring back ${killed} hound pelt${killed > 1 ? 's' : ''}. Another notch on the lodge door.`, 'good');
+  return killed;
 }

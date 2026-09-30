@@ -162,7 +162,7 @@ export function dailyGloam(state: GameState): void {
         for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]] as const) {
           if (!inBounds(nx, ny)) continue;
           const j = idx(nx, ny);
-          if (gloam[j] || isWater(state.terrain[j])) continue;
+          if (gloam[j] || isWater(state.terrain[j]) || state.wall[j]) continue;
           if (state.coverage.ward[j] > 0) continue;
           if (hasBuildingNear(state, nx, ny, 2)) continue;
           if (rng.chance(p * 0.25)) newTiles.push(j);

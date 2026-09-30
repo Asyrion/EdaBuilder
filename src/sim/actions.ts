@@ -1,7 +1,7 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
-import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
+import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, markDirty, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
+import { canPlaceBuilding, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 
 export interface ActionResult {
   ok: boolean;
@@ -16,6 +16,7 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0) return -1;
   if (state.gloam[i]) return -1;
+  if (state.wall[i]) return -1;
   let cost = def.cost;
   if (t === Terrain.Water) cost *= 4; // bridge
   if (t === Terrain.Hills) cost *= 3; // cut into rock
@@ -80,7 +81,7 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
     state.road[i] = type;
     state.zone[i] = Zone.None;
     built++;
-    markDirty(state, i % state.w, (i / state.w) | 0);
+    markDirtyAround(state, i % state.w, (i / state.w) | 0);
   }
   if (built === 0) return { ok: false, reason: 'Nothing to build there' };
   state.treasury -= cost;
@@ -152,8 +153,13 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
   if (state.road[i]) {
     state.road[i] = RoadType.None;
     state.treasury -= BULLDOZE_COST;
-    markDirty(state, x, y);
+    markDirtyAround(state, x, y);
     return { ok: true, cost: BULLDOZE_COST };
+  }
+  if (state.wall[i]) {
+    state.wall[i] = 0;
+    markDirtyAround(state, x, y);
+    return { ok: true, cost: 0 };
   }
   if (state.zone[i]) {
     state.zone[i] = Zone.None;
@@ -193,6 +199,7 @@ export interface Snapshot {
   road: Uint8Array;
   zone: Uint8Array;
   district: Uint8Array;
+  wall: Uint8Array;
   bIndex: Int32Array;
   buildings: string; // JSON of the buildings array
   nextBuildingId: number;
@@ -205,6 +212,7 @@ export function takeSnapshot(state: GameState, label: string): Snapshot {
     road: state.road.slice(),
     zone: state.zone.slice(),
     district: state.district.slice(),
+    wall: state.wall.slice(),
     bIndex: state.bIndex.slice(),
     buildings: JSON.stringify(state.buildings),
     nextBuildingId: state.nextBuildingId,
@@ -217,6 +225,7 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
   state.road.set(snap.road);
   state.zone.set(snap.zone);
   state.district.set(snap.district);
+  state.wall.set(snap.wall);
   state.bIndex.set(snap.bIndex);
   state.buildings = JSON.parse(snap.buildings);
   state.nextBuildingId = snap.nextBuildingId;
@@ -227,4 +236,49 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
     if (a.homeId >= 0 && !ids.has(a.homeId)) a.homeId = -1;
     if (a.targetId >= 0 && !ids.has(a.targetId)) { a.targetId = -1; a.path = []; a.pathIdx = 0; }
   }
+}
+
+/** Warding Wall: a line of leystone-inlaid stone the Gloam cannot cross and hounds cannot pass. */
+export function wallTileCost(state: GameState, i: number): number {
+  const t = state.terrain[i];
+  if (isWater(t) || t === Terrain.LeyNode) return -1;
+  if (state.bIndex[i] >= 0 || state.road[i] || state.gloam[i]) return -1;
+  if (state.wall[i]) return 0;
+  return t === Terrain.Hills ? WALL_COST * 2 : WALL_COST;
+}
+
+export function previewWall(state: GameState, tiles: number[]): { cost: number; valid: boolean[] } {
+  let cost = 0;
+  const valid: boolean[] = [];
+  for (const i of tiles) {
+    const c = wallTileCost(state, i);
+    valid.push(c >= 0);
+    if (c > 0) cost += c;
+  }
+  return { cost, valid };
+}
+
+export function buildWall(state: GameState, tiles: number[]): ActionResult {
+  if (state.milestone < WALL_UNLOCK) return { ok: false, reason: 'Not yet unlocked' };
+  const { cost } = previewWall(state, tiles);
+  if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
+  let built = 0;
+  for (const i of tiles) {
+    const c = wallTileCost(state, i);
+    if (c <= 0) continue;
+    state.wall[i] = 1;
+    state.zone[i] = Zone.None;
+    built++;
+    markDirtyAround(state, i % state.w, (i / state.w) | 0);
+  }
+  if (built === 0) return { ok: false, reason: 'Nothing to build there' };
+  state.treasury -= cost;
+  state.zoneListDirty = true;
+  return { ok: true, cost };
+}
+
+export function wallCount(state: GameState): number {
+  let n = 0;
+  for (let i = 0; i < state.wall.length; i++) n += state.wall[i];
+  return n;
 }

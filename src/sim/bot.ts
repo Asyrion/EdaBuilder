@@ -238,6 +238,7 @@ export class Bot {
     want('hospice', Math.floor(buildings / 250));
     want('guildhall', 1);
     want('depot', 1);
+    want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     // deepen the founding Wellspring when mana runs short
     if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {
       const i = s.nodes.findIndex((n) => (n.depth ?? 0) < 2);

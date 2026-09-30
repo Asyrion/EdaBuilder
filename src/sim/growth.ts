@@ -66,10 +66,13 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (gd < 7) h -= (7 - gd) * 3 * (1 - cov.ward[i] / 255);
   h -= (state.trafficSmooth[i] / 255) * 10;
   h -= state.unrest * 15;
-  // the restless nearby frighten everyone
+  // the restless and Gloam-hounds nearby frighten everyone
   for (const a of state.agents) {
-    if (a.kind !== 2) continue;
-    if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 8;
+    if (a.kind === 2) {
+      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 8;
+    } else if (a.kind === 3 && a.species === 'hound') {
+      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) h -= 5;
+    }
   }
   let tax = 10;
   switch (def.zone) {

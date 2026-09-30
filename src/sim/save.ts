@@ -60,6 +60,9 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.tradeIncomeToday = state.tradeIncomeToday ?? 0;
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
+  if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
+  state.stats.houndsTotal = state.stats.houndsTotal ?? 0;
+  state.stats.houndRaids = state.stats.houndRaids ?? 0;
   // rebuild derived layers
   const n = state.w * state.h;
   for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);
