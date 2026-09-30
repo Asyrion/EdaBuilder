@@ -40,7 +40,8 @@ material; where the given material is silent it invents.
 ### Creatures and wyrms *(proposed)*
 - Glim-born, Gloam-born, Concord-made, sky-born and Vein-born creatures as listed in
   `EDA_LORE.md` §8; Vein-Wyrms as Eda's dragons; drakes as their bred cousins; rare
-  reagents (glim-dust, rayscale, wyrm-scale). Design mechanics in `DESIGN.md` §8.
+  reagents (glim-dust, rayscale, wyrm-scale). Wyrmcraft: five dragon lines from eggs,
+  cradles, tamers and the Wyrm-Ring. Design mechanics in `DESIGN.md` §8.
 
 ### Relationship to *Ossuary* *(proposed, deliberately loose)*
 Wardlight treats alchemy as Vell's premier trade and names its advanced deathcare

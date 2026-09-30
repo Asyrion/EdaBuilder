@@ -165,12 +165,28 @@ of the Long Dusk by how much thrum they carry.
 The Concord kept wyrms as engines. That, the Grimmen say, is what the Veins were really
 angry about.
 
+**Wyrmcraft.** Dragons lay rarely and hide their eggs in warm stone, deep seams, skyray
+nests and, strangest of all, in quiet boneyards. A wardlight that finds an egg may raise
+it in a **Wyrm-Cradle**, a stone nest warmed by the ley, under the eye of a **Wyrm-Tamer**
+(Tallowkin, almost always: the candle-eyed can see a dragon's mood as colour). A raised
+dragon grows from hatchling to drake to wyvern, and the vein-born and Gloam-born lines
+grow on to true wyrms. Vell's cities put them to work as couriers over the Gloam roads,
+wardens over the districts, delvers in the leystone seams, and champions in the
+**Wyrm-Ring**, where bouts are fought to first blood and never to death. Their shed
+scale is armour and artifact; ember-drakes breathe *wyrmfire* that alchemists prize above
+moonwort. The five known lines: **ember** (red, from warm stone), **vein** (ley-blue,
+from a wyrm's own clutch), **sky** (white, from skyray nests), **grey** (ash, half
+fossil, out of the Concord vaults; the Gloam cannot touch them) and **bone** (ivory,
+from boneyards; they keep the dead asleep).
+
 ## 7. Glossary
 
 - **Charter** — the royal writ that founds a wardlight; also the game's save.
 - **Glim-dust, rayscale, wyrm-scale** — rare reagents from glimmoths, skyrays and wyrms.
 - **Gloam-hound** — grey pack-beast of the Gloam; hunts at night, bold in the Hush.
 - **Vein-Wyrm** — a dragon of Eda, sleeping around a deep node; see §8.
+- **Wyrm-Cradle, Wyrm-Tamer, Wyrm-Ring** — hatchery, dragon-keeper and arena; see §8.
+- **Wyrmfire** — the breath of an ember-drake, bottled; an alchemical reagent.
 - **Warden (Concord)** — a sleeping stone construct in the hills; not to be confused with
   the Warden-Reeve.
 - **Gloam** — the blighted wilderness; the game's creeping hazard.
