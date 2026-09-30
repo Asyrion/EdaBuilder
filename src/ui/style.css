@@ -70,6 +70,10 @@ h3 { font-size: 13px; color: var(--gold); }
 #views { position: absolute; right: 8px; top: 50px; width: 190px; padding: 8px; max-height: calc(100vh - 260px); overflow: auto; }
 .grip { cursor: move; color: var(--muted); font-size: 11px; letter-spacing: -2px; user-select: none; padding: 0 4px; }
 #log .grip { position: absolute; right: 6px; top: 4px; }
+#minimap { position: absolute; right: 396px; bottom: 8px; padding: 4px; }
+#minimap canvas { display: block; image-rendering: pixelated; cursor: crosshair; border: 1px solid var(--border); }
+#minimap .grip { position: absolute; left: 6px; top: -1px; z-index: 1; text-shadow: 0 0 3px #000; }
+#minimap .min { position: absolute; right: 4px; top: 2px; padding: 0 5px; line-height: 1.2; font-size: 11px; z-index: 1; }
 #views h3, #info h2 { cursor: move; }
 #views button { display: block; width: 100%; text-align: left; margin-bottom: 3px; font-size: 12px; padding: 3px 6px; }
 #views button kbd { float: right; color: var(--muted); font-family: inherit; }

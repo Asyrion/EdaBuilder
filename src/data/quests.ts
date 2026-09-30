@@ -7,7 +7,7 @@ export type Focus =
   | { build: string }
   | { panel: 'edicts' | 'wyrms' | 'budget' | 'views' | 'chronicle' }
   | { overlay: string }
-  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' };
+  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' | 'ruins' };
 
 export interface QuestDef {
   id: string;
@@ -87,6 +87,11 @@ export const QUESTS: QuestDef[] = [
   { id: 'k_gardens', chapter: 'The riverbank', title: 'Plant Hanging Gardens against the hills', hint: 'Services tab, Township. Goods, health and light with no mana; unlocks the Glowvine Lane.', when: (s) => s.milestone >= 4, done: (s) => has(s, 'hanginggardens'), focus: { build: 'hanginggardens' }, reward: 800, priority: 46 },
   { id: 'k_glowvine', chapter: 'The riverbank', title: 'Lay 12 tiles of Glowvine Lane', hint: 'Roads tab. Lit by the vines within 12 tiles of a Hanging Gardens, no mana.', when: (s) => has(s, 'hanginggardens'), done: (s) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i] === 4) c++; return c >= 12; }, focus: { tool: 'road' }, reward: 600, priority: 47 },
   { id: 'k_obs', chapter: 'Seasons', title: 'Raise an Astral Observatory', hint: 'Services tab, Market Town. The week ahead appears in the Ledger.', when: (s) => s.milestone >= 5, done: (s) => has(s, 'observatory'), focus: { build: 'observatory' }, reward: 1000, priority: 48 },
+  // Longwood and Lukuku
+  { id: 'p_arch', chapter: 'The arcane', title: 'Raise a pair of Portal Arches', hint: 'Ley tab, Market Town. Both lit, 12 mana each; carts step from one to the other.', when: (s) => s.milestone >= 5, done: (s) => has(s, 'portalarch', 2), focus: { build: 'portalarch' }, reward: 1200, priority: 49 },
+  { id: 'r_delve', chapter: 'The riverbank', title: 'Dig at the Ruins of Lukuku', hint: 'Flagstones in a forest, somewhere on the map. A Ruin Delve there brings up relics.', when: (s) => s.milestone >= 4 && s.terrain.some((t) => t === 8), done: (s) => has(s, 'ruindelve'), focus: { center: 'ruins' }, reward: 800, priority: 50 },
+  { id: 't_plant', chapter: 'The Crown', title: 'Plant the World Tree Sapling', hint: 'Leisure tab, Free City. Twenty thousand crowns and four seasons of patience.', when: (s) => s.milestone >= 7, done: (s) => has(s, 'worldtree'), focus: { build: 'worldtree' }, reward: 2000, priority: 67 },
+  { id: 't_grown', chapter: 'The Crown', title: 'See the World Tree full-grown', hint: 'Four seasons after planting its shade reaches 24 tiles.', when: (s) => has(s, 'worldtree'), done: (s) => s.buildings.some((b) => b && b.kind === 'worldtree' && b.age >= 90), reward: 3000, priority: 68 },
   // The Vein-Wyrm
   { id: 'v_find', chapter: 'The Vein-Wyrm', title: 'Find the Sleeping Wyrm', hint: 'One distant node is ringed with scale, not stone. Click it. Spires there would wake it.', when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },
   { id: 'v_tribute', chapter: 'The Vein-Wyrm', title: 'Settle a tribute', hint: 'Awake, it asks each season: crowns or goods. Refuse and it burns.', when: (s) => s.wyrm.state === 'awake', done: (s) => s.stats.wyrmTributes > 0, focus: { center: 'wyrm' }, reward: 500, priority: 42 },

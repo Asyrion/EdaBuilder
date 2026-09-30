@@ -956,6 +956,46 @@ function drawWyrmFly(frame: number): { p: Painter; glow: Painter } {
   return { p, glow };
 }
 
+/** The World Tree over four growth stages, on a 3x3 footprint. */
+function drawWorldTree(stage: number): { p: Painter; glow: Painter; ax: number; ay: number } {
+  const W = 98;
+  const canopyH = [14, 30, 52, 78][stage];
+  const H = 56 + canopyH;
+  const p = new Painter(W, H);
+  const glow = new Painter(W, H);
+  const cx = 49;
+  const groundY = H - 24; // footprint diamond centre
+  // footprint: roots and moss
+  p.poly([[cx, groundY - 24], [97, groundY], [cx, groundY + 24], [1, groundY]], 'shadow', 90);
+  p.poly([[cx, groundY - 22], [95, groundY], [cx, groundY + 22], [3, groundY]], 'forestFloor');
+  for (let k = 0; k < 40; k++) { const a = (k / 40) * Math.PI * 2; const r = 8 + h2(k, stage, 1) * 12; p.px(Math.round(cx + Math.cos(a) * r * 2), Math.round(groundY + Math.sin(a) * r), k % 3 ? 'meadow2' : 'glimleaf'); }
+  // trunk
+  const trunkW = [3, 5, 8, 12][stage];
+  const trunkH = [10, 20, 34, 50][stage];
+  p.rect(cx - (trunkW >> 1), groundY - trunkH, trunkW, trunkH, 'trunk');
+  p.rect(cx - (trunkW >> 1), groundY - trunkH, Math.max(1, trunkW >> 2), trunkH, 'wood3');
+  // roots
+  for (let k = 0; k < 2 + stage * 2; k++) { const dir = k % 2 ? 1 : -1; const len = 4 + stage * 4; p.line(cx, groundY - 2, cx + dir * (len * 2), groundY + (k % 3) * 3, 'trunk'); }
+  // canopy: layered blobs, glim leaves; glow points
+  const top = groundY - trunkH;
+  const layers = 1 + stage;
+  for (let l = 0; l < layers; l++) {
+    const ry = Math.round(canopyH / (layers + 1)) + 4;
+    const rx = [10, 18, 28, 40][stage] - l * 4;
+    const cy = top - l * ry * 0.9 + 2;
+    for (let y = -ry; y <= ry; y++)
+      for (let x = -rx; x <= rx; x++) {
+        if ((x * x) / (rx * rx) + (y * y) / (ry * ry) > 1) continue;
+        const r = h2(x + 100, y + 100 + l * 7, stage + 11);
+        const c: Col = y < -ry * 0.3 ? (r < 0.2 ? 'glimleaf' : 'leaf1') : y > ry * 0.4 ? 'leaf3' : r < 0.12 ? 'glimleaf' : 'leaf2';
+        p.px(cx + x, Math.round(cy + y), c);
+        if (r < 0.03 + stage * 0.01) { p.px(cx + x, Math.round(cy + y), 'leyGlow'); glow.px(cx + x, Math.round(cy + y), 'leyGlow', 200); }
+      }
+  }
+  p.outline('outline');
+  return { p, glow, ax: cx, ay: groundY - 24 };
+}
+
 function drawRing(): { p: Painter; glow: Painter; ax: number; ay: number } {
   // 3x3 arena: sand oval inside a stone stand
   const W = 96;
@@ -1218,6 +1258,8 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   glimhouse: { w: 2, h: 2, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 3, windowRows: 1, glowWindows: true, seed: 31, glassDome: true, runeBand: true },
   observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
   hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
+  portalarch: { w: 1, h: 1, height: 16, roofH: 2, wall: 'arcane', roof: 'flat', windows: 0, seed: 35, runeBand: true, orbit: true, leyLamps: true },
+  ruindelve: { w: 2, h: 2, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 1, windowRows: 1, door: true, seed: 36, lanternPost: true, standingStones: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1420,6 +1462,7 @@ export function generateSprites(): SpriteDef[] {
   out.push(...groundVariants('forest', ['forestFloor', 'leaf1', 'forestFloor'], ['leaf2', 'trunk'], 0.1, 3, 3));
   out.push(...groundVariants('hills', ['rock1', 'rock2', 'hillGrass'], ['rock3', 'rock2'], 0.18, 4, 3));
   out.push(...groundVariants('shore', ['sand', 'sand2', 'sand'], ['sand2', 'grass3'], 0.1, 5, 2));
+  out.push(...groundVariants('ruins', ['stone2', 'stone1', 'grass3', 'stone2'], ['stone3', 'outline', 'moss', 'grass2'], 0.16, 9, 3));
   out.push(...groundVariants('gloam', ['gloam1', 'gloam2', 'gloamGrass', 'deepPurple'], ['gloam3', 'outline', 'bone'], 0.14, 6, 3));
   out.push(...waterFrames('water', 'water2', 'water3', 'waterHi', 4, 7));
   out.push(...waterFrames('deep', 'water1', 'water2', 'water3', 4, 8));
@@ -1579,6 +1622,7 @@ export function generateSprites(): SpriteDef[] {
   }
   for (let f = 0; f < 2; f++) { const w = drawWyrmFly(f); out.push({ name: `wyrm_fly_${f}`, p: w.p, glow: w.glow, ax: 30, ay: 34 }); }
   push('b_ring', drawRing());
+  for (let st = 0; st < 4; st++) push(`b_worldtree_${st}`, drawWorldTree(st));
   push('gate_2', drawGate(2));
   push('gate_3', drawGate(3));
   // creatures

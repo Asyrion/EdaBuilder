@@ -75,6 +75,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.houndRaids = state.stats.houndRaids ?? 0;
   state.stats.wyrmTributes = state.stats.wyrmTributes ?? 0;
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
+  state.stats.relics = state.stats.relics ?? 0;
+  state.stats.portalTrips = state.stats.portalTrips ?? 0;
   if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
   // rebuild derived layers
   const n = state.w * state.h;

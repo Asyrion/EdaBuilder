@@ -68,12 +68,17 @@ main node.
     mana and unlock the **Glowvine Lane**; a **Glimhouse** keeps Craft works warm through
     the Hush (works otherwise make 20% less); the **Astral Observatory** forecasts the
     week ahead in the Ledger.
-13. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+13. **Longwood and Lukuku** — two **Portal Arches** (Market Town), both lit, let carts and
+    folk step across the map. Somewhere in a forest lie the **Ruins of Lukuku**: a **Ruin
+    Delve** there brings up relics (artifacts sell for more) and opens old doors. At Free
+    City plant the **World Tree Sapling**: four seasons later its shade reaches 24 tiles and
+    the Gloam will not cross it. The **minimap** (bottom right) jumps the camera where you click.
+14. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-14. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+15. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -132,7 +137,11 @@ Charter as `.json`.
 - Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
   the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
-- Panels never overlap: the toolbar and Ledger stack; views, info and the ticker drag.
+- Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
+  drag. The minimap jumps the camera where you click.
+- Longwood and Lukuku: a pair of Portal Arches carts step through, the Ruins of Lukuku
+  with a Ruin Delve and its relic chain, and the World Tree Sapling wonder that grows over
+  four seasons.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

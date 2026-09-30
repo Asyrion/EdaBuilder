@@ -6,6 +6,19 @@ import { seasonOf } from './world';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
 
+/** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
+export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
+export const TREE_WARD_RADIUS = [4, 8, 14, 20];
+export function treeStage(b: Building): 0 | 1 | 2 | 3 {
+  return Math.min(3, Math.floor(b.age / 30)) as 0 | 1 | 2 | 3;
+}
+export function worldTree(state: GameState): Building | null {
+  return (state.buildings.find((b) => b && b.kind === 'worldtree' && b.state === 'ok') as Building | undefined) ?? null;
+}
+export function delveActive(state: GameState): boolean {
+  return state.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok');
+}
+
 /** Craft output multiplier in the Hush (a lit Glimhouse within 8 lifts it). */
 export const HUSH_CRAFT = 0.8;
 
@@ -99,6 +112,8 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   h -= (tax - 10) * 1.6;
   h += modifierSum(state, 'happiness');
   if (wyrmGuards(state)) h += 10;
+  const tree = worldTree(state);
+  if (tree) h += treeStage(tree);
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
@@ -156,6 +171,15 @@ export function dailyBuildings(state: GameState): void {
         const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5));
         b.stock += Math.max(0, made);
         state.goodsProduced += Math.max(0, made);
+      }
+      if (b.kind === 'worldtree' && b.age % 30 === 0 && b.age <= 90) {
+        markDirty(state, b.x, b.y);
+        const st = treeStage(b);
+        if (st > 0) pushMessage(state, st === 3 ? `The World Tree at (${b.x},${b.y}) is full-grown: its crown stands above the Lantern of Vell, and the Gloam will not cross its shade.` : `The World Tree at (${b.x},${b.y}) has grown another season; its shade now reaches ${TREE_LEISURE_RADIUS[st]} tiles.`, 'milestone', true, { x: b.x, y: b.y });
+      }
+      if (b.kind === 'ruindelve' && b.state === 'ok') {
+        state.stats.relics++;
+        state.unquieted += 0.5;
       }
       return;
     }
@@ -230,7 +254,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
       b.stock -= use;
-      state.artifactsSold += use * 5;
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1);
     }
     // levelling
     const i = idx(b.x, b.y);

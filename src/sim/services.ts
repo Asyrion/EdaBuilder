@@ -6,6 +6,7 @@ import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
+import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -18,7 +19,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
-    const r = def.service.radius;
+    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -50,6 +51,22 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
           const d = Math.hypot(dx, dy);
           if (d > r) continue;
           acc[idx(x, y)] += str * (1 - (d / r) * 0.6);
+        }
+    }
+  }
+  if (type === 'ward') {
+    // the World Tree's roots hold the Gloam under its shade (no burning, just holding)
+    const tree = worldTree(state);
+    if (tree) {
+      const r = TREE_WARD_RADIUS[treeStage(tree)];
+      const cx = tree.x + 1;
+      const cy = tree.y + 1;
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          const x = cx + dx;
+          const y = cy + dy;
+          if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
+          acc[idx(x, y)] += 0.6;
         }
     }
   }

@@ -146,6 +146,29 @@ export function generateTerrain(seed: number): TerrainResult {
   clearAround(fx, fy, 5);
   terrain[idx(fx, fy)] = Terrain.LeyNode;
 
+  // The Ruins of Lukuku: one flagstone cluster in a forest, well away from the founding node.
+  for (let tries = 0; tries < 400; tries++) {
+    const x = 12 + rng.int(MAP_W - 24);
+    const y = 12 + rng.int(MAP_H - 24);
+    if (terrain[idx(x, y)] !== Terrain.Forest) continue;
+    if (Math.hypot(x - fx, y - fy) < 28) continue;
+    if (nodes.some((n) => Math.hypot(n.x - x, n.y - y) < 9)) continue;
+    let placed = 0;
+    for (let dy = -3; dy <= 3; dy++)
+      for (let dx = -3; dx <= 3; dx++) {
+        const tx = x + dx;
+        const ty = y + dy;
+        if (!inBounds(tx, ty)) continue;
+        const d = Math.hypot(dx, dy) + nz2.noise(tx / 3 + 500, ty / 3 + 500) * 1.2;
+        if (d > 2.6) continue;
+        const t = terrain[idx(tx, ty)];
+        if (t === Terrain.Forest || t === Terrain.Grass || t === Terrain.Meadow) { terrain[idx(tx, ty)] = Terrain.Ruins; placed++; }
+      }
+    if (placed >= 6) break;
+    // undo a too-small cluster
+    for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (inBounds(x + dx, y + dy) && terrain[idx(x + dx, y + dy)] === Terrain.Ruins) terrain[idx(x + dx, y + dy)] = Terrain.Forest;
+  }
+
   // Gloam on the map rim, with noisy pockets.
   for (let y = 0; y < MAP_H; y++)
     for (let x = 0; x < MAP_W; x++) {

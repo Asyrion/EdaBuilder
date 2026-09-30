@@ -1,4 +1,5 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
+import { effects } from './hazards';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
@@ -31,7 +32,32 @@ export function findPath(state: GameState, start: number, goal: number, maxNodes
   return result ? result.slice() : null;
 }
 
+/** Road tiles next to each lit Portal Arch, if exactly two stand lit: [tilesAtA, tilesAtB]. */
+export function portalGates(state: GameState): [number[], number[]] | null {
+  const arches: Building[] = [];
+  forEachBuilding(state, (b) => { if (b.kind === 'portalarch' && b.state === 'ok' && b.lit) arches.push(b); });
+  if (arches.length < 2) return null;
+  const roadsAround = (b: Building) => {
+    const out: number[] = [];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as [number, number][]) {
+      const x = b.x + dx;
+      const y = b.y + dy;
+      if (inBounds(x, y) && state.road[idx(x, y)]) out.push(idx(x, y));
+    }
+    return out;
+  };
+  const a = roadsAround(arches[0]);
+  const b = roadsAround(arches[1]);
+  return a.length && b.length ? [a, b] : null;
+}
+
 function astar(state: GameState, start: number, goal: number, maxNodes: number): number[] | null {
+  const gates = portalGates(state);
+  const portal = new Map<number, number[]>();
+  if (gates) {
+    for (const t of gates[0]) portal.set(t, gates[1]);
+    for (const t of gates[1]) portal.set(t, gates[0]);
+  }
   const gx = goal % MAP_W;
   const gy = (goal / MAP_W) | 0;
   const g = new Map<number, number>();
@@ -92,10 +118,11 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
     const x = cur % MAP_W;
     const y = (cur / MAP_W) | 0;
     const gc = g.get(cur)!;
-    const nb = [cur - 1, cur + 1, cur - MAP_W, cur + MAP_W];
+    const far = portal.get(cur);
+    const nb = [cur - 1, cur + 1, cur - MAP_W, cur + MAP_W, ...(far ?? [])];
     const ok = [x > 0, x < MAP_W - 1, y > 0, y < MAP_H - 1];
-    for (let k = 0; k < 4; k++) {
-      if (!ok[k]) continue;
+    for (let k = 0; k < nb.length; k++) {
+      if (k < 4 && !ok[k]) continue;
       const j = nb[k];
       const rt = state.road[j];
       if (!rt) continue;
@@ -415,7 +442,16 @@ export function tickAgents(state: GameState): void {
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;
-    const d = Math.hypot(dx, dy);
+    let d = Math.hypot(dx, dy);
+    if (d > 1.6) {
+      // a Portal Arch: step out of the far arch
+      effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'portal', tick: state.tick });
+      effects.push({ x: t % MAP_W, y: (t / MAP_W) | 0, kind: 'portal', tick: state.tick });
+      state.stats.portalTrips++;
+      a.x = tx;
+      a.y = ty;
+      d = 0;
+    }
     if (d <= sp) {
       a.x = tx;
       a.y = ty;
