@@ -536,6 +536,10 @@ export class Renderer {
           items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
           if (s && s.glow && a.load > 0) glows.push({ s, x: wx, y: wy + 8, a: 0.8 });
           if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
+        } else if (sp === 'tiger') {
+          const s = this.atlas.get(`tiger_${a.path.length ? Math.floor(this.time * 8 + a.id) % 2 : 0}`);
+          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+          if (s && s.glow) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
         } else if (sp === 'rider' || sp === 'airship') {
           const alt = a.alt ?? 0;
           const big = sp === 'airship';
@@ -665,6 +669,18 @@ export class Renderer {
     for (const f of sky) {
       this.draw(f.s, f.x, f.y);
       if (f.s && f.s.glow && night > 0.05) { ctx.globalCompositeOperation = 'lighter'; this.drawGlow(f.s, f.x, f.y, 0.9 * night); ctx.globalCompositeOperation = 'source-over'; }
+    }
+    // mana-storms: a pocket of wild ley
+    for (const st of state.storms) {
+      if (st.x < minX - 6 || st.x > maxX + 6 || st.y < minY - 6 || st.y > maxY + 6) continue;
+      const [sx, sy] = tileToWorld(st.x, st.y);
+      lights.push({ x: sx, y: sy + 8, r: 90, c: PAL.arcane2, i: 0.5 + 0.2 * Math.sin(this.time * 3) });
+      for (let k = 0; k < 3; k++) {
+        const ang = Math.random() * Math.PI * 2;
+        const rr = Math.random() * 5;
+        const [px, py] = tileToWorld(st.x + Math.cos(ang) * rr, st.y + Math.sin(ang) * rr);
+        this.particles.emit({ x: px, y: py - Math.random() * 20, vx: (Math.random() - 0.5) * 10, vy: -6 - Math.random() * 8, maxLife: 1.2, size: 1, color: Math.random() < 0.5 ? PAL.arcane2 : PAL.ley1, glow: true, kind: 'surge' });
+      }
     }
     // icons (always on top, bobbing)
     const bobY = Math.round(Math.sin(this.time * 4) * 1.5);

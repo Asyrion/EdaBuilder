@@ -8,6 +8,9 @@ import { checkQuests } from './quests';
 import { dailyWyrm } from './wyrm';
 import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
+import { dailyStorms, dailyTigers } from './lore';
+import { wardenDistricts } from './wyrmcraft';
+import { setFenNex } from './agents';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -34,6 +37,7 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
+  setFenNex(state.fenNex, state.district);
   if (state.gameOver || state.pendingEvent) return;
   state.tick++;
   const t = state.tick;
@@ -68,6 +72,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyBeasts(state);
     dailyBarges(state);
     dailyAirship(state);
+    dailyStorms(state);
+    dailyTigers(state, wardenDistricts(state));
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);

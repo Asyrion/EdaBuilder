@@ -23,6 +23,7 @@ export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: 
   grey: { name: 'Grey', scale: 9, desc: 'ash and stone; the Gloam parts around it' },
   tide: { name: 'Tide', scale: 6, desc: 'teal and finned; swims the river' },
   storm: { name: 'Storm', scale: 7, desc: 'violet with lightning; eats weather' },
+  fen: { name: 'Fen', scale: 4, desc: 'a cat-dragon of the Fen-Nex, russet and clever; a warden that hounds cannot see' },
 };
 const NAMES = ['Ashvel', 'Tammet', 'Orrin', 'Sablewick', 'Morrowlight', 'Pell', 'Vessa', 'Glimmer', 'Cinder', 'Ossa', 'Hollow', 'Brightscale', 'Quiet', 'Ember-of-Vell', 'Wick', 'Thrum'];
 
@@ -233,7 +234,7 @@ export function cradleTileOf(state: GameState, d: Dragon): [number, number] | nu
 }
 
 export function lineIndex(line: DragonLine): number {
-  return (['ember', 'bone', 'glim', 'vein', 'sky', 'grey', 'tide', 'storm'] as DragonLine[]).indexOf(line);
+  return (['ember', 'bone', 'glim', 'vein', 'sky', 'grey', 'tide', 'storm', 'fen'] as DragonLine[]).indexOf(line);
 }
 
 export function districtTiles(state: GameState, d: number): number[] {

@@ -103,6 +103,8 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
       if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) h -= 5;
     } else if (a.kind === 3 && a.species === 'golem' && a.load === 0) {
       if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 10;
+    } else if (a.kind === 3 && a.species === 'tiger') {
+      if (Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) < 5) h -= 12;
     }
   }
   let tax = 10;

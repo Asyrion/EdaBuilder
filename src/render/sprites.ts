@@ -752,6 +752,7 @@ const DRAGON_LINES: { base: Col; belly: Col; accent: Col; eye: Col }[] = [
   { base: 'stone1', belly: 'stone2', accent: 'gloam2', eye: 'gloamEye' }, // grey
   { base: 'verdigris', belly: 'glass', accent: 'water1', eye: 'waterHi' }, // tide
   { base: 'deepPurple', belly: 'runeViolet', accent: 'flower3', eye: 'flower3' }, // storm
+  { base: 'copper', belly: 'cloth5', accent: 'whitewash', eye: 'leafAutumn' }, // fen
 ];
 
 /** Four-legged, wingless drake (stage 2) or a hatchling (stage 1, smaller). */
@@ -1288,6 +1289,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   golemfoundry: { w: 2, h: 2, height: 14, roofH: 6, wall: 'darkstone', roof: 'copper', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 37, runeBand: true, alembic: true },
   leybeacon: { w: 1, h: 1, height: 24, roofH: 5, wall: 'stone', roof: 'cone', windows: 1, windowRows: 3, seed: 38, spire: true, crystal: true, runeBand: true },
   drakemews: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 2, windowRows: 1, door: true, banner: true, glowWindows: true, seed: 39, lanternPost: true, ridgeOrnament: true },
+  fontquieting: { w: 2, h: 2, height: 10, roofH: 6, wall: 'whitewash', roof: 'dome', windows: 2, windowRows: 1, seed: 42, runeBand: true, wisps: true, leyLamps: true },
   quay: { w: 1, h: 1, height: 4, roofH: 3, wall: 'stone', roof: 'none', windows: 0, seed: 40, lanternPost: true },
   skydock: { w: 2, h: 2, height: 30, roofH: 4, wall: 'stone', roof: 'flat', windows: 2, windowRows: 4, door: true, glowWindows: true, seed: 41, runeBand: true, leyLamps: true, spire: true, banner: true },
   portalarch: { w: 1, h: 1, height: 16, roofH: 2, wall: 'arcane', roof: 'flat', windows: 0, seed: 35, runeBand: true, orbit: true, leyLamps: true },
@@ -1639,6 +1641,22 @@ export function generateSprites(): SpriteDef[] {
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
     else out.push({ name: `cart_${v}`, p, ax: 9, ay: 11 });
   }
+  // war-tiger: long, striped, low; two stride frames
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(18, 10);
+    const glow = new Painter(18, 10);
+    p.rect(3, 3, 11, 4, 'copper');
+    for (let k = 0; k < 5; k++) p.rect(4 + k * 2, 3, 1, 4, 'outline');
+    p.rect(13, 2, 4, 3, 'copper');
+    p.px(16, 3, 'whitewash');
+    p.px(15, 2, 'leafAutumn');
+    glow.px(15, 2, 'leafAutumn', 200);
+    p.px(2, 2, 'copper');
+    p.px(1, 1, 'outline');
+    if (f === 0) { p.rect(4, 7, 1, 3, 'copper'); p.rect(12, 7, 1, 3, 'copper'); p.rect(7, 7, 1, 2, 'copper'); } else { p.rect(5, 7, 1, 2, 'copper'); p.rect(11, 7, 1, 3, 'copper'); p.rect(8, 7, 1, 3, 'copper'); }
+    p.outline('outline');
+    out.push({ name: `tiger_${f}`, p, glow, ax: 9, ay: 10 });
+  }
   // drake rider: a Watch drake with a rider, two wing frames
   for (let f = 0; f < 2; f++) {
     const p = new Painter(20, 14);
@@ -1683,13 +1701,13 @@ export function generateSprites(): SpriteDef[] {
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });
   }
   // dragons: 8 lines x hatchling/drake x 2 frames
-  for (let line = 0; line < 8; line++)
+  for (let line = 0; line < 9; line++)
     for (const stage of [1, 2])
       for (let f = 0; f < 2; f++) {
         const d = drawDrake(line, stage, f);
         out.push({ name: `dragon_${line}_${stage}_${f}`, p: d.p, glow: d.glow, ax: Math.floor(d.p.w / 2), ay: d.p.h });
       }
-  for (let line = 0; line < 8; line++) for (let f = 0; f < 2; f++) { const w = drawWyvern(line, f); out.push({ name: `wyvern_${line}_${f}`, p: w.p, glow: w.glow, ax: 14, ay: 18 }); }
+  for (let line = 0; line < 9; line++) for (let f = 0; f < 2; f++) { const w = drawWyvern(line, f); out.push({ name: `wyvern_${line}_${f}`, p: w.p, glow: w.glow, ax: 14, ay: 18 }); }
   for (const st of ['sleeping', 'awake', 'dead'] as const) {
     const w = drawWyrmCoil(st);
     out.push({ name: `wyrm_${st}_back`, p: w.back, glow: w.glowBack, ax: 52, ay: 36 });

@@ -389,6 +389,13 @@ export const BUILDINGS: BuildingDef[] = [
     w: 2, h: 2, cost: 26000, upkeep: 150, manaUse: 30, unlock: 8, wonder: true, needsMana: true, landValue: 15,
   },
 
+  {
+    key: 'fontquieting', name: 'Font of Quieting', category: 'service',
+    desc: 'A basin of still water sung over by Grimmen sextons. Every Boneyard and Ossuary in the city quiets 50% more dead, and the wisps become allies: the restless are laid down far more easily everywhere. 15 mana.',
+    flavor: 'Nothing moves on the water. That is the point.',
+    w: 2, h: 2, cost: 12000, upkeep: 90, manaUse: 15, unlock: 7, needsMana: true, maxCount: 1,
+  },
+
   // ---- special ----
   {
     key: 'stake', name: 'Founding Stake', category: 'special',
@@ -461,7 +468,7 @@ export const MILESTONES: Milestone[] = [
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
   { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'golemfoundry', 'leybeacon', 'drakemews'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
-  { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt'],
+  { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt', 'fontquieting'],
     text: 'The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken.' },
   { name: 'Beacon of Eda', pop: 2200, grant: 25000, unlocks: ['skydock'],
     text: 'Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley.' },
