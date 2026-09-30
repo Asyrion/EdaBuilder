@@ -435,8 +435,37 @@ living Hanging Gardens, and lit tiles light adjacent buildings like a lantern-wa
 price is deliberately above the lantern-way's, since the light is free of mana forever.
 Green vine-light at night; the road manifest gains `road_glowvine_0..15`.
 
-Not yet built from §8.3: the Portal Arch pair, Golem Foundry, Ley Beacon, Drake Mews,
+Not yet built from §8.3: the Golem Foundry, Ley Beacon, Drake Mews,
 Font of Quieting, Sky-Dock and Quay.
+
+### 4.32 Longwood and Lukuku: Portal Arches, the World Tree, the Ruins (iteration 13)
+
+- **Portal Arch** (Ley tab, Market Town, 1×1, 4,000 crowns, 12 mana, at most two). When
+  both arches are lit, the road A* gains edges from every road tile beside one arch to
+  every road tile beside the other at cost 1, so carts, citizens and the restless route
+  through them; an agent whose next path tile is more than 1.6 tiles away steps out of the
+  far arch at once with a violet burst at both ends (`portalTrips` stat). The path cache is
+  bumped whenever an arch's lit state changes.
+- **Ruins of Lukuku** (terrain type 8): map generation seeds one flagstone cluster of six
+  or more tiles in a forest at least 28 tiles from the founding node and 9 from any ley
+  node (most seeds; some maps have none). Flagstone ground tiles with broken columns, dead
+  trees and rocks as props; not zonable or buildable, roads may cross. The **Ruin Delve**
+  (Services, Township, 2×2, must stand on ruins) brings up a relic a day, raises artifact
+  income 15 % while it works, and disturbs half an unquieted dead a day. Its chain: *The
+  first fall* (catalogue for the Academy or sell the mosaic) then *The door under the
+  flagstones* (seal it with the Rite, or open it: a hoard or eight restless).
+- **World Tree Sapling** (Leisure, Free City wonder, 3×3, 20,000 crowns, no mana). Grows a
+  stage every 30 days from sapling to full-grown (four sprites): leisure radius 6, 12, 18,
+  24; roots hold the Gloam (ward coverage 0.6, no burning) for 4, 8, 14, 20 tiles; +1
+  happiness per stage everywhere; glimmoths gather at stage 2 and up; land value +20.
+  Each growth is a Chronicle milestone.
+
+### 4.33 Minimap (iteration 13)
+
+A draggable panel beside the ticker holds a 256×128 isometric image of the map rebuilt
+every 30 ticks (terrain, Gloam, roads by tier, walls, buildings by zone colour, ley, the
+wyrm's node) with the camera's view box drawn on top every frame. Click or drag on it to
+jump the camera there; scroll on it to zoom; a collapse button hides the image.
 
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
@@ -738,7 +767,7 @@ without an event.
    Warden and Delver roles (dragons on the ground first). ✅
 4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring. ✅
 5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs. ✅
-6. Moth-Loft ✅, Glimhouse ✅, Weather Vane (as Storm-Caller's Peak ✅), Observatory ✅, Portal Arch (magical buildings).
+6. Moth-Loft ✅, Glimhouse ✅, Weather Vane (as Storm-Caller's Peak ✅), Observatory ✅, Portal Arch ✅ (magical buildings).
 7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
 8. Vehicles: floating carts, barges, drake riders, airships.
 
@@ -773,10 +802,10 @@ consistent with `EDA_LORE.md` §9.
 6. **Longwood escapees.** **War-tigers** as a forest predator far worse than hounds
    (Hunters' Lodge or a bound drake needed); exotic creatures of Longwood as rare
    sightings that raise happiness.
-7. **Ruins of Lukuku.** Map generation can seed an ancient ruin cluster in the forest;
+7. ✅ **Ruins of Lukuku.** Map generation can seed an ancient ruin cluster in the forest;
    a **Ruin Delve** camp on it yields relics (artifact price +), relic events (the
    Concord was not the first to fall), and occasionally wakes something.
-8. **World Tree sapling** wonder: a cutting from the World Trees of Longwood, planted at
+8. ✅ **World Tree sapling** wonder: a cutting from the World Trees of Longwood, planted at
    Free City, grows over four seasons into a tree taller than the Lantern of Vell:
    happiness, land value, glimmoths and skyrays gather, and its roots hold the Gloam.
 9. ✅ **Torrent Mill** (Gekiryu): a mill on river tiles that turns falling water into mana
@@ -866,3 +895,8 @@ consistent with `EDA_LORE.md` §9.
   otherwise spires would be obsolete along any road.
 - *Forecasts are derived, not stored:* the Observatory reads the same numbers the sim uses
   (overdraw days, waking rate, calendar), so it can never disagree with what happens.
+- *Portals are graph edges, not special agents:* adding teleport edges to the road A* means
+  every walker gains them for free and the only movement change is a one-line jump when
+  consecutive path tiles are not neighbours.
+- *The minimap is a picture, not a second renderer:* one ImageData rebuilt every three
+  seconds and a rectangle each frame keep it at a fraction of a millisecond.

@@ -55,6 +55,7 @@ function leySources(state: GameState): { x: number; y: number; id: number }[] {
   const out = state.nodes.map((n) => ({ x: n.x, y: n.y, id: -1 }));
   forEachBuilding(state, (b) => {
     if (b.lit && b.state === 'ok' && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'wardlantern' || b.kind === 'mothloft')) out.push({ x: b.x, y: b.y, id: b.id });
+    if (b.kind === 'worldtree' && b.state === 'ok' && b.age >= 60) { out.push({ x: b.x + 1, y: b.y + 1, id: b.id }); out.push({ x: b.x + 1, y: b.y, id: b.id }); }
   });
   return out;
 }

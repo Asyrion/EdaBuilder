@@ -38,6 +38,8 @@ export interface BuildingDef {
   nearWater?: boolean; // a river/lake tile must touch the footprint
   selfLit?: boolean; // lights itself and its neighbours without mana
   goodsRate?: number; // goods produced per day, carted like a Craft works
+  onRuins?: boolean; // footprint must be Ruins tiles
+  maxCount?: number; // at most this many in the city
   leystone?: number; // leystone mined per day
 }
 
@@ -117,6 +119,13 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A Gekiryu mill on the riverbank: falling water turned into 30 mana a day, no Vein needed. Must touch river or lake water and a road.',
     flavor: 'The Veshari claim the design. The Huruhui who built the first one just laughs.',
     w: 1, h: 1, cost: 5200, upkeep: 40, manaUse: 0, manaProduce: 30, unlock: 4, nearWater: true,
+  },
+
+  {
+    key: 'portalarch', name: 'Portal Arch', category: 'ley',
+    desc: 'One of a pair of leystone arches. Carts and folk that pass a lit arch step out of the other, anywhere on the map. Both must be lit; 12 mana each. Only two may stand.',
+    flavor: 'The first carter through came out the far side a moment before he went in, and refused to discuss it.',
+    w: 1, h: 1, cost: 4000, upkeep: 30, manaUse: 12, unlock: 5, needsMana: true, maxCount: 2,
   },
 
   // ---- water ----
@@ -332,6 +341,20 @@ export const BUILDINGS: BuildingDef[] = [
     flavor: 'The vines glow brighter when someone sings to them. Nobody has told the Veshari.',
     w: 2, h: 2, cost: 4800, upkeep: 40, manaUse: 0, unlock: 4, nearHills: true, selfLit: true, goodsRate: 6, landValue: 10,
     service: { type: 'health', radius: 8, strength: 0.4 },
+  },
+
+  {
+    key: 'ruindelve', name: 'Ruin Delve', category: 'service',
+    desc: 'A camp of Grimmen diggers on the Ruins of Lukuku. Brings up a relic a day: artifacts sell for 15% more while a delve works, and the ruins keep their own stories. Disturbs the old dead a little. Must stand on ruin flagstones.',
+    flavor: 'The Concord was not the first to fall here. The diggers are careful about which doors they open.',
+    w: 2, h: 2, cost: 3000, upkeep: 35, manaUse: 0, unlock: 4, onRuins: true,
+  },
+  {
+    key: 'worldtree', name: 'World Tree Sapling', category: 'wonder',
+    desc: 'A cutting from the World Trees of Longwood. Grows over four seasons into a tree taller than the Lantern of Vell: leisure and happiness for a widening ring (6 to 24 tiles), land value, glimmoths at night, and roots that hold the Gloam where its shade falls. No mana.',
+    flavor: 'It grew a hand-span the night it was planted, and the children swear it hums.',
+    w: 3, h: 3, cost: 20000, upkeep: 120, manaUse: 0, unlock: 7, wonder: true, landValue: 20,
+    service: { type: 'leisure', radius: 6, strength: 1.0 },
   },
 
   // ---- special ----

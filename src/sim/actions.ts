@@ -104,7 +104,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode) continue;
+      if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];
         if (b && BUILDING_BY_KEY[b.kind].category === 'zone' && zone === Zone.None) {

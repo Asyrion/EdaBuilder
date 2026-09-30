@@ -107,6 +107,7 @@ class Game {
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
+      get camera() { return game.renderer.camera; },
       select: (b) => this.select(b),
     });
     canvas.addEventListener('mousedown', () => this.audio.init(), { once: true });

@@ -1,4 +1,5 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
+import { treeStage } from '../sim/growth';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
@@ -130,6 +131,7 @@ export class Renderer {
       case Terrain.Forest: return this.atlas.get(`forest_${Math.floor(h2(x, y, 3) * 3)}`);
       case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * 3)}`);
       case Terrain.LeyNode: return this.atlas.get('grass_1');
+      case Terrain.Ruins: return this.atlas.get(`ruins_${Math.floor(h2(x, y, 8) * 3)}`);
     }
     return null;
   }
@@ -238,6 +240,11 @@ export class Renderer {
           if (h2(x, y, 44) < 0.12) cache.props.push({ name: `mushroom_${Math.floor(h2(x, y, 45) * 2)}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
+        } else if (t === Terrain.Ruins && state.bIndex[i] < 0 && !state.road[i]) {
+          const r = h2(x, y, 50);
+          if (r < 0.3) cache.props.push({ name: 'ruin', wx, wy, d: x + y, sway: 0 });
+          else if (r < 0.42) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 51) - 0.5) * 10, wy: wy + 8, d: x + y, sway: 0 });
+          else if (r < 0.5) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 52) * 3)}`, wx: wx + (h2(x, y, 53) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
           if (h2(x, y, 27) < 0.05) cache.props.push({ name: 'bush', wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.LeyNode) {
@@ -664,6 +671,7 @@ export class Renderer {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
     if (def.category === 'zone') return `${b.kind}_l${b.level}_v${b.variant % 4}`;
+    if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     return `b_${b.kind}`;
   }
 
@@ -965,9 +973,9 @@ export class Renderer {
   }
 
   /** Burst effects triggered by the sim. */
-  burst(kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward', x: number, y: number): void {
+  burst(kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal', x: number, y: number): void {
     const [wx, wy] = tileToWorld(x, y);
-    const n = kind === 'surge' ? 60 : 20;
+    const n = kind === 'surge' ? 60 : kind === 'portal' ? 14 : 20;
     for (let k = 0; k < n; k++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 20 + Math.random() * 60;
@@ -978,7 +986,7 @@ export class Renderer {
         vy: Math.sin(a) * sp * 0.5 - 10,
         maxLife: 1 + Math.random(),
         size: kind === 'surge' ? 2 : 1,
-        color: kind === 'surge' ? PAL.ley1 : kind === 'fire' ? PAL.ember : kind === 'restless' ? PAL.restless : kind === 'gloam' ? PAL.gloamEye : PAL.leyGlow,
+        color: kind === 'surge' ? PAL.ley1 : kind === 'fire' ? PAL.ember : kind === 'restless' ? PAL.restless : kind === 'gloam' ? PAL.gloamEye : kind === 'portal' ? PAL.arcane2 : PAL.leyGlow,
         glow: true,
         kind: 'surge',
       });

@@ -12,10 +12,10 @@ import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 export interface Effect {
   x: number;
   y: number;
-  kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward';
+  kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal';
   tick: number;
 }
-const effects: Effect[] = [];
+export const effects: Effect[] = [];
 export function drainEffects(): Effect[] {
   return effects.splice(0, effects.length);
 }

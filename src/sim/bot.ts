@@ -85,7 +85,7 @@ export class Bot {
           const i = idx(x, y);
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
-          if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode) continue;
+          if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
           const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
           if (!adj) continue;
           // craft away from the centre, hearth near
@@ -321,7 +321,7 @@ export class Bot {
             for (let fx = 0; fx < def.w; fx++) {
               const i = idx(px + fx, py + fy);
               const t = s.terrain[i];
-              if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || s.road[i] || s.gloam[i]) {
+              if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins || s.road[i] || s.gloam[i]) {
                 ok = false;
                 break;
               }

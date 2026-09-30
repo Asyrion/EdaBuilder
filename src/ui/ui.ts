@@ -15,11 +15,14 @@ import { marketStockCap } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
+import type { Camera } from '../render/camera';
+import { PAL } from '../render/palette';
+import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
 import { WYRM_LAIR_RADIUS, describeWyrm, wyrmNode, wyrmTribute } from '../sim/wyrm';
 import { forecast } from '../sim/forecast';
-import { HUSH_CRAFT, glimhouseNear } from '../sim/growth';
+import { HUSH_CRAFT, glimhouseNear, treeStage, TREE_LEISURE_RADIUS, TREE_WARD_RADIUS } from '../sim/growth';
 import { seasonOf as seasonOfState } from '../sim/world';
 
 export interface UiHost {
@@ -57,6 +60,7 @@ export interface UiHost {
   setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
+  camera: Camera;
   selected: Building | null;
   select(b: Building | null): void;
   perf: { fps: number; ms: number; drawn: number };
@@ -136,6 +140,7 @@ export class UI {
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
       <div id="demand" class="panel"></div>
+      <div id="minimap" class="panel"><span class="grip" title="Drag to move">⋮⋮</span><button class="min" title="Collapse">–</button><canvas width="264" height="132" title="Click to jump; the box is the current view"></canvas></div>
       <div id="log" class="panel"><span class="grip" title="Drag to move">⋮⋮</span><div class="lines"></div></div>
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
@@ -150,7 +155,7 @@ export class UI {
       <div id="event" class="modal hidden"></div>
       <div id="chronicle" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
@@ -164,6 +169,8 @@ export class UI {
     this.q('#q-bulldoze').onclick = () => this.host.setTool({ kind: 'bulldoze' });
     this.q('#q-undo').onclick = () => this.host.undo();
     this.makeDraggable(this.el.views, 'views');
+    this.makeDraggable(this.el.minimap, 'minimap');
+    this.buildMinimap();
     this.makeDraggable(this.el.log, 'log');
     this.makeDraggable(this.el.info, 'info');
     this.buildTabs();
@@ -350,6 +357,7 @@ export class UI {
     this.refreshTasks();
     this.refreshDemand();
     this.refreshLog();
+    this.refreshMinimap();
     this.refreshChronicle();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
@@ -446,6 +454,7 @@ export class UI {
       else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && b.kind === 'cradle'); if (c) this.host.centerOn(c.x, c.y); }
       else if (f.center === 'wyrm') { const n = wyrmNode(s); if (n) this.host.centerOn(n.x, n.y); }
+      else if (f.center === 'ruins') { for (let i = 0; i < s.terrain.length; i++) if (s.terrain[i] === 8) { this.host.centerOn(i % s.w, (i / s.w) | 0); break; } }
       else if (f.center === 'gloam') {
         // Nearest Gloam tile to the founding stake.
         let best = -1, bd = 1e9;
@@ -600,6 +609,17 @@ export class UI {
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
     if (def.goodsRate) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
     if (b.kind === 'observatory') rows.push(...(b.lit ? forecast(s) : [{ text: 'Unlit: the dome is dark and reads nothing.', kind: 'warn' as const }]).map((f) => `<div class="fc ${f.kind}">✦ ${f.text}</div>`));
+    if (b.kind === 'worldtree') {
+      const st = treeStage(b);
+      rows.push(row('Growth', st >= 3 ? 'full-grown' : `stage ${st + 1} of 4, ${30 - (b.age % 30)} days to the next`));
+      rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
+    }
+    if (b.kind === 'ruindelve') rows.push(row('Relics brought up', `${s.stats.relics}`));
+    if (b.kind === 'portalarch') {
+      const other = s.buildings.filter((o) => o && o.kind === 'portalarch' && o !== b) as Building[];
+      rows.push(row('Paired', other.length ? (other[0].lit && b.lit ? `with the arch at (${other[0].x},${other[0].y}), open` : 'yes, but an arch is unlit') : 'no: raise a second arch'));
+      rows.push(row('Trips through the arches', `${s.stats.portalTrips}`));
+    }
     if (b.kind === 'stormpeak') {
       rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
     }
@@ -663,6 +683,109 @@ export class UI {
     el.querySelector('.close')!.addEventListener('click', () => { this.host.select(null); (this.host as { selectedNode: number }).selectedNode = -1; el.classList.add('hidden'); });
     (el.querySelector('#n-deepen') as HTMLButtonElement).onclick = () => this.host.deepenNode(i);
     this.nodeShown = i;
+  }
+
+  // ---------- minimap ----------
+  private miniImg: ImageData | null = null;
+  private miniTick = -1;
+  private miniCollapsed = false;
+  private miniOff: HTMLCanvasElement | null = null;
+
+  private buildMinimap(): void {
+    const el = this.el.minimap;
+    const c = el.querySelector('canvas') as HTMLCanvasElement;
+    (el.querySelector('.min') as HTMLButtonElement).onclick = () => {
+      this.miniCollapsed = !this.miniCollapsed;
+      c.style.display = this.miniCollapsed ? 'none' : '';
+      (el.querySelector('.min') as HTMLButtonElement).textContent = this.miniCollapsed ? '+' : '–';
+    };
+    const jump = (e: PointerEvent) => {
+      const r = c.getBoundingClientRect();
+      const mx = ((e.clientX - r.left) / r.width) * 256;
+      const my = ((e.clientY - r.top) / r.height) * 128;
+      const cam = this.host.camera;
+      cam.cx = (mx - 128) * 16;
+      cam.cy = my * 16;
+      cam.clamp();
+    };
+    let down = false;
+    c.addEventListener('pointerdown', (e) => { down = true; c.setPointerCapture(e.pointerId); jump(e); e.stopPropagation(); });
+    c.addEventListener('pointermove', (e) => { if (down) jump(e); });
+    c.addEventListener('pointerup', () => { down = false; });
+    c.addEventListener('wheel', (e) => { e.preventDefault(); this.host.camera.setZoom(this.host.camera.zoom + (e.deltaY < 0 ? 1 : -1)); }, { passive: false });
+  }
+
+  /** Rebuild the 256x128 iso image every 30 ticks; draw it with the view box every refresh. */
+  private refreshMinimap(): void {
+    if (this.miniCollapsed) return;
+    const s = this.host.state;
+    const c = this.el.minimap.querySelector('canvas') as HTMLCanvasElement;
+    if (!this.miniImg || s.tick - this.miniTick >= 30 || s.tick < this.miniTick) {
+      this.miniTick = s.tick;
+      const img = this.miniImg ?? new ImageData(256, 128);
+      const d = img.data;
+      d.fill(0);
+      const put = (x: number, y: number, hex: string, a = 255) => {
+        const px = x - y + 128;
+        const py = (x + y) >> 1;
+        if (px < 0 || px >= 256 || py < 0 || py >= 128) return;
+        const i = (py * 256 + px) * 4;
+        d[i] = parseInt(hex.slice(1, 3), 16);
+        d[i + 1] = parseInt(hex.slice(3, 5), 16);
+        d[i + 2] = parseInt(hex.slice(5, 7), 16);
+        d[i + 3] = a;
+      };
+      const terrainCol = (t: number): string => {
+        switch (t) {
+          case Terrain.DeepWater: return PAL.water1;
+          case Terrain.Water: return PAL.water2;
+          case Terrain.Shore: return PAL.sand;
+          case Terrain.Meadow: return PAL.meadow;
+          case Terrain.Forest: return PAL.forestFloor;
+          case Terrain.Hills: return PAL.hillGrass;
+          case Terrain.LeyNode: return PAL.ley1;
+          case Terrain.Ruins: return PAL.stone2;
+          default: return PAL.grass2;
+        }
+      };
+      for (let y = 0; y < s.h; y++)
+        for (let x = 0; x < s.w; x++) {
+          const i = y * s.w + x;
+          let col = s.gloam[i] ? PAL.gloam1 : terrainCol(s.terrain[i]);
+          if (s.road[i]) col = s.road[i] === 3 ? PAL.lanternLight : s.road[i] === 4 ? PAL.glimleaf : PAL.dirt2;
+          if (s.wall[i]) col = PAL.stone3;
+          const bi = s.bIndex[i];
+          if (bi >= 0) {
+            const b = s.buildings[bi];
+            if (b) {
+              const def = BUILDING_BY_KEY[b.kind];
+              col = b.state === 'burning' ? PAL.fire1 : b.state === 'ruin' ? PAL.stone1 : def.zone === Zone.Hearth ? PAL.zoneHearth : def.zone === Zone.Market ? PAL.zoneMarket : def.zone === Zone.Craft ? PAL.zoneCraft : def.zone === Zone.Arcane ? PAL.zoneArcane : def.category === 'ley' ? PAL.ley2 : PAL.whitewash;
+            }
+          }
+          put(x, y, col);
+        }
+      const wn = s.wyrm.node >= 0 ? s.nodes[s.wyrm.node] : null;
+      if (wn && s.wyrm.state !== 'none') put(wn.x, wn.y, s.wyrm.state === 'awake' ? PAL.fire1 : PAL.leyGlow);
+      this.miniImg = img;
+      if (!this.miniOff) { this.miniOff = document.createElement('canvas'); this.miniOff.width = 256; this.miniOff.height = 128; }
+      this.miniOff.getContext('2d')!.putImageData(img, 0, 0);
+    }
+    const ctx = c.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#0b0912';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(this.miniOff!, 0, 0, c.width, c.height);
+    // the view box
+    const cam = this.host.camera;
+    const kx = c.width / 256;
+    const ky = c.height / 128;
+    const vx = (cam.left / 16 + 128) * kx;
+    const vy = (cam.top / 16) * ky;
+    const vw = (cam.nativeW / 16) * kx;
+    const vh = (cam.nativeH / 16) * ky;
+    ctx.strokeStyle = PAL.gold;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(Math.round(vx) + 0.5, Math.round(vy) + 0.5, Math.round(vw), Math.round(vh));
   }
 
   /** Drag a floating panel by its .grip (or its heading); position is remembered per panel. */
@@ -745,8 +868,9 @@ export class UI {
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
             <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge; eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role.</li>
             <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
+            <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
-            <li>Panels: the <b>Info views</b>, <b>Ledger</b> and message ticker can be dragged by their ⋮⋮ grip.</li>
+            <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>

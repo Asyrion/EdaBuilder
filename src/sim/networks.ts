@@ -3,6 +3,8 @@ import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './ca
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
 import { modifierSum } from './edicts';
+import { bumpRoadVersion } from './agents';
+import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
 const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
@@ -233,8 +235,10 @@ export function updateMana(state: GameState): void {
     for (let dy = 0; dy < b.h; dy++) for (let dx = 0; dx < b.w; dx++) lit[idx(b.x + dx, b.y + dy)] = 1;
   });
   // dirty chunks where lit changed (for lantern-way glow rendering)
-  for (let i = 0; i < n; i++)
+  for (let i = 0; i < n; i++) {
     if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine)) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
+    if (lit[i] !== oldLit[i] && state.bIndex[i] >= 0 && state.buildings[state.bIndex[i]]?.kind === 'portalarch') bumpRoadVersion();
+  }
   state.lit = lit;
 }
 

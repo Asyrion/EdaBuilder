@@ -105,7 +105,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -207,6 +207,8 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       const i = idx(tx, ty);
       if (def.onHills) {
         if (state.terrain[i] !== Terrain.Hills) return 'Must be dug into hills';
+      } else if (def.onRuins) {
+        if (state.terrain[i] !== Terrain.Ruins) return 'Must stand on the ruin flagstones';
       } else if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
       if (state.wall[i]) return 'The Warding Wall is in the way';
@@ -215,6 +217,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }
   if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
+  if (def.maxCount && state.buildings.filter((b) => b && b.kind === key).length >= def.maxCount) return `Only ${def.maxCount} may stand`;
   if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
   if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
   if (def.key === 'mothloft' || def.key === 'cradle') {

@@ -19,6 +19,7 @@ export const enum Terrain {
   Forest = 5,
   Hills = 6,
   LeyNode = 7,
+  Ruins = 8, // the Ruins of Lukuku: flagstones and broken columns; only a Ruin Delve may be built here
 }
 
 export const enum Zone {
@@ -316,6 +317,8 @@ export interface GameState {
     houndsTotal: number;
     houndRaids: number;
     wyrmTributes: number;
+    relics: number;
+    portalTrips: number;
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;

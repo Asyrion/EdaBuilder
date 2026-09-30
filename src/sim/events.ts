@@ -4,6 +4,7 @@ import { Terrain, Zone, type DragonLine, type GameState } from './types';
 import { LINE_INFO, addEgg } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
+import { spawnRestless } from './agents';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
@@ -108,6 +109,24 @@ export function chose(s: GameState, id: string, choice: number): boolean {
 }
 
 const CHAINS: EventDef[] = [
+  {
+    id: 'lukuku_first', title: 'The first fall', once: true,
+    text: 'Under the Lukuku flagstones the diggers find a hall older than the Concord: a mosaic of a city with three lanterns, and a script no Academy reads. Whatever fell here fell twice.',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok' && b.age >= 8),
+    choices: [
+      { label: 'Catalogue it for the Academy', desc: 'Educated share +5%; +1,000 crowns from the Crown for the finding.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.05); s.treasury += 1000; return 'Rubbings and relics go north under seal. The Academy sends back a very long letter.'; } },
+      { label: 'Sell the mosaic', desc: '+4,000 crowns; the diggers are ashamed.', apply: (s) => { s.treasury += 4000; s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 10, label: 'Mosaic sold' }); return 'A Belerial collector pays in gold and takes it apart tile by tile.'; } },
+    ],
+  },
+  {
+    id: 'lukuku_door', title: 'The door under the flagstones', once: true,
+    text: 'The diggers have found a sealed door, warm to the touch, with the same script as the mosaic. The foreman says it hums in the same key as the ley. She would rather not open it. The Grimmen would rather not be asked.',
+    when: (s) => (chose(s, 'lukuku_first', 0) || chose(s, 'lukuku_first', 1)) && s.day - s.lastEventDay >= 12 && s.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok'),
+    choices: [
+      { label: 'Seal it with the Rite of Quieting', desc: 'Costs 1,500 crowns; unquieted dead −15; nothing comes out.', apply: (s) => { s.treasury -= 1500; s.unquieted = Math.max(0, s.unquieted - 15); return 'The sextons sing for a night and a day. The hum stops. The foreman sleeps.'; } },
+      { label: 'Open it', desc: 'Half the time a hoard: +8,000 crowns and relics. Half the time the old dead: eight restless rise at the ruins and the unquieted +20.', apply: (s) => { const rng = rngOf(s); const hoard = rng.chance(0.5); commitRng(s, rng); const d = s.buildings.find((b) => b && b.kind === 'ruindelve'); if (hoard) { s.treasury += 8000; s.stats.relics += 20; return 'A vault of lantern-cores and gold under a ceiling of painted stars. The diggers are paid triple and still will not go back.'; } s.unquieted += 20; if (d) for (let k = 0; k < 8; k++) spawnRestless(s, d.x + (k % 3), d.y + Math.floor(k / 3)); pushMessage(s, `The door at the Ruins of Lukuku opens and the old dead walk out at (${d?.x ?? 0},${d?.y ?? 0}).`, 'bad', true); return 'The door opens on stairs going down, and things coming up.'; } },
+    ],
+  },
   {
     id: 'relic_stolen', title: 'The relic is gone', once: true,
     text: 'The Concord lantern-core has vanished from the Academy\'s warded case. A cult of the Undying Court is suspected; their marks are chalked on the door.',
