@@ -216,6 +216,36 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   milestone; effects are read by the systems they touch (unrest, health, quieting rate,
   surge threshold, goods/miasma, market tithe, education drift).
 
+### 4.18 Districts and per-district edicts (iteration 3)
+- A district layer (`district: Uint8Array`, 8 named districts: Hearthside, Stillward,
+  Spirefield, Lanternrow, Greywall, Marketcross, Candlerow, Boneward) painted with a
+  rectangle tool. Districts are free and cover any land tile.
+- Every edict can be set city-wide or per district. Building-level effects (happiness,
+  miasma, market tithe, quieting) read the district of the building; city-level effects
+  (unrest, health, education drift) scale by the share of residents under the edict, and
+  per-district upkeep scales the same way (never below a quarter of the flat cost).
+
+### 4.19 Leystone (iteration 3)
+- **Crystal Mine** (Township, 2×2, must be dug into hills, roads may now cut through hills
+  at 3× cost) yields 8 leystone/day (4 unlit), stored up to 60. Each mine keeps two carts
+  of its own once enchanters exist; they deliver to the Arcane building with the emptiest
+  workshop. Enchanters consume workers × 0.25 leystone/day and sell artifacts for 5 crowns
+  each, a new ledger line. Without leystone an Arcane building is unhappy and shows a
+  no-goods icon; the Goods overlay (`o`) shows shelves, workshops, works and mines.
+
+### 4.20 Event chains (iteration 3)
+- Choices are recorded (`firedEvents` holds `id:choice`). Three one-time follow-ups fire
+  when their parent choice was taken: the relic is stolen (after giving it to the
+  scholars), the guilds return with a lasting pact (after accepting their bargain), and the
+  Grimmen ask for a Boneyard of their own (after taking them in), which actually places one.
+
+### 4.21 Sound and accessibility (iteration 3)
+- The ambient mix now follows the camera: river noise when water is in view, fire crackle
+  near burning buildings, market murmur by day near markets, ley hum near spires, crickets
+  at night. Milestones play a short generative pentatonic phrase seeded by milestone and map.
+- Menu settings: colour-blind overlay ramps (orange→blue instead of red→green) and a UI
+  scale (85–130 %), persisted in localStorage.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -272,7 +302,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 
 ## 8. Verification
 
-- `npm test` runs 32 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 38 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread
@@ -315,5 +345,9 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - *Problem icons wait two days:* a building that just spawned or briefly browned out no
   longer flashes an alarm; only persistent problems earn an icon, and only at 2× zoom or
   closer.
+- *Roads through hills at 3×:* mines must sit in hills, and a hard "no roads on hills" rule
+  made half the hill patches unreachable; a costly cut keeps the terrain meaningful.
+- *Mines get dedicated carts:* random cart assignment across hundreds of works starved
+  the one or two mines in a city; logistics that never happens is not a system.
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.

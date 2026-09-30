@@ -48,8 +48,10 @@ main node.
 6. **Tithe** — taxes are collected daily per zone (Budget button). 10% is what folk
    expect. Upkeep is per building and per road tile. Milestones pay grants.
 7. **Goods** — Craft works fill carts; carts feed Markets by road. Empty shelves and
-   idle stills both hurt, and shortages push the demand bars.
-8. **Edicts and events** — the *Edicts* button holds seven policies with daily upkeep.
+   idle stills both hurt, and shortages push the demand bars. From Township, Crystal
+   Mines dug into hills send leystone to Arcane districts, which sell artifacts.
+8. **Districts, edicts and events** — paint districts from the toolbar; the *Edicts*
+   button holds seven policies with daily upkeep, city-wide or per district.
    Every few weeks an event pauses the game and asks you to choose; consequences last
    for days.
 9. **Seasons** — Thaw, Bloom, Ember and Hush, 30 days each. The Hush brings long nights,
@@ -76,7 +78,7 @@ node; forty restless dead walk the streets.
 | `Z` | zone tool (press again to cycle zone) |
 | `B` / `X` / `Esc` | bulldoze / select / cancel |
 | `Space`, `,` `.` , `Shift`+`1 2 3` | pause, slower/faster, set speed |
-| `1`–`0` `-` `=` `g` `m` | info views · `Tab` view list |
+| `1`–`0` `-` `=` `g` `m` `o` `i` | info views · `Tab` view list |
 | `H` | help · `Shift`+`G` grid · `F5` / `F9` quick save / load |
 
 Saves go to `localStorage` automatically every three days; the Menu can export/import a
@@ -92,7 +94,9 @@ Charter as `.json`.
 - Mana network (spire chains, adjacency spread, brownouts, wild surges), water coverage,
   8 service coverage types, land value, happiness, health, unrest, education, demand.
 - Hazards from the lore: Gloam creep and pockets, restless dead, wild surges, fire.
-- Goods flow by cart, four seasons, seven story events with choices, seven city edicts.
+- Goods flow by cart (potions and leystone), four seasons, ten story events with choices
+  and chains, seven edicts city-wide or per district, eight paintable districts.
+- Menu settings for colour-blind overlay ramps and UI scale; camera-driven ambience.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

@@ -40,6 +40,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     gloam: t.gloam,
     zone: new Uint8Array(n),
     road: new Uint8Array(n),
+    district: new Uint8Array(n),
     bIndex: new Int32Array(n).fill(-1),
     lit: new Uint8Array(n),
     watered: new Uint8Array(n),
@@ -82,6 +83,8 @@ export function createGame(seed: number, cityName?: string): GameState {
     milestone: 0,
     messages: [],
     edicts: {},
+    districtEdicts: {},
+    artifactsSold: 0,
     modifiers: [],
     pendingEvent: null,
     lastEventDay: 0,
@@ -111,7 +114,7 @@ export function createGame(seed: number, cityName?: string): GameState {
 }
 
 export function emptyLedger() {
-  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
+  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
 }
 
 export function seedFromName(name: string): number {
@@ -167,7 +170,9 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       const ty = y + dy;
       if (!inBounds(tx, ty)) return 'Off the map';
       const i = idx(tx, ty);
-      if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
+      if (def.onHills) {
+        if (state.terrain[i] !== Terrain.Hills) return 'Must be dug into hills';
+      } else if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
       if (state.bIndex[i] >= 0) return 'Something is already built here';
       if (state.gloam[i]) return 'The Gloam holds this ground';

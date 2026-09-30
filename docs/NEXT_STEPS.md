@@ -9,6 +9,16 @@
 - Problem icons only after two days of trouble and only at 2× zoom or closer.
 - A "no goods" icon and goods rows in the building inspector; goods stat in the top bar.
 
+## Done in iteration 3
+
+- Districts (8 named, painted) with edicts settable per district; district overlay with labels.
+- Crystal Mines in the hills, leystone carted to Arcane districts, artifacts sold for crowns;
+  roads may cut through hills; Goods overlay.
+- Three one-time event chains that follow earlier choices.
+- Camera-driven ambience (river, fire, market murmur) and a generative milestone melody.
+- Colour-blind overlay ramps and UI scale in the menu; 4-frame walk cycle; wells and
+  spires no longer catch fire.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -36,18 +46,18 @@
 
 ## Prioritized ideas for the next iteration
 
-1. **Districts.** Edicts are city-wide; painting districts and applying edicts per
-   district (CS1 style) is the natural next layer, reusing the coverage-map machinery.
-2. **Goods depth.** Two goods (potions, leystone) with Arcane districts consuming leystone
-   and exporting artifacts for crowns; a trade depot at the map edge.
-3. **Event chains.** Follow-ups to the seven events (the relic is stolen, the guilds return
-   with a counter-offer, the Grimmen build their own Boneyard).
+1. **District statistics and naming.** Per-district population, happiness and income in
+   the district overlay, and player-renamable districts.
+2. **Trade depot.** Export surplus goods and leystone at a road that reaches the map
+   edge, with prices that drift by season; import when short.
+3. **More chains and a calendar of festivals.** Thaw-day, the Hush vigil, a Concord
+   remembrance, each with a small choice.
 4. **Hand-made art pass.** The atlas manifest is ready; the biggest wins are level-3
    townhouses, the temple, and citizen sprites with real walk cycles.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
    simple generative melody for milestones.
-6. **Events with choices.** A pilgrim caravan, a Concord relic found in the hills, a
-   petition from the guilds: modal choices with lore consequences.
+6. **Remappable keys.** The key table is centralised in the help overlay but not yet
+   configurable.
 7. **Terraforming** (drain a marsh, clear forest) and the ability to buy map sectors like
    CS1's tile purchase, with the Gloam retreating as sectors are chartered.
 8. **Accessibility.** Colour-blind-safe overlay ramps, scalable UI, remappable keys.

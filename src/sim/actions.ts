@@ -13,12 +13,12 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   const def = ROAD_BY_TYPE[type];
   const t = state.terrain[i];
   if (t === Terrain.DeepWater) return -1;
-  if (t === Terrain.Hills) return -1;
   if (t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0) return -1;
   if (state.gloam[i]) return -1;
   let cost = def.cost;
   if (t === Terrain.Water) cost *= 4; // bridge
+  if (t === Terrain.Hills) cost *= 3; // cut into rock
   if (t === Terrain.Forest) cost += 5;
   if (state.road[i] === type) return 0;
   if (state.road[i] && state.road[i] > type) return -1; // no downgrade by drawing
@@ -166,4 +166,24 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
 
 export function setTax(state: GameState, zone: keyof GameState['taxRates'], rate: number): void {
   state.taxRates[zone] = Math.max(0, Math.min(30, Math.round(rate)));
+}
+
+/** Paint (or clear with 0) a district over a rectangle. Districts cover any land tile. */
+export function paintDistrict(state: GameState, district: number, x0: number, y0: number, x1: number, y1: number): ActionResult {
+  const ax = Math.min(x0, x1);
+  const bx = Math.max(x0, x1);
+  const ay = Math.min(y0, y1);
+  const by = Math.max(y0, y1);
+  let n = 0;
+  for (let y = ay; y <= by; y++)
+    for (let x = ax; x <= bx; x++) {
+      if (!inBounds(x, y)) continue;
+      const i = idx(x, y);
+      if (isWater(state.terrain[i])) continue;
+      if (state.district[i] !== district) {
+        state.district[i] = district;
+        n++;
+      }
+    }
+  return n > 0 ? { ok: true, cost: 0 } : { ok: false, reason: 'Nothing changed' };
 }

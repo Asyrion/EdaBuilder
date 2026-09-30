@@ -3,7 +3,7 @@ export class Audio {
   ctx: AudioContext | null = null;
   master: GainNode | null = null;
   muted = false;
-  private ambient: { wind: GainNode; hum: GainNode; night: GainNode } | null = null;
+  private ambient: { wind: GainNode; hum: GainNode; night: GainNode; water: GainNode; fire: GainNode; chatter: GainNode } | null = null;
   private started = false;
 
   init(): void {
@@ -73,7 +73,78 @@ export class Audio {
     chirpAmt.gain.value = 0.5;
     chirpLfo.connect(chirpAmt).connect(pulse.gain);
     chirpLfo.start();
-    this.ambient = { wind, hum, night };
+    // river: brown-ish noise with a slow swell
+    const water = ctx.createGain();
+    water.gain.value = 0;
+    const wsrc = ctx.createBufferSource();
+    wsrc.buffer = buf;
+    wsrc.loop = true;
+    wsrc.playbackRate.value = 0.6;
+    const wlp = ctx.createBiquadFilter();
+    wlp.type = 'lowpass';
+    wlp.frequency.value = 900;
+    const wlfo = ctx.createOscillator();
+    wlfo.frequency.value = 0.21;
+    const wlfoG = ctx.createGain();
+    wlfoG.gain.value = 250;
+    wlfo.connect(wlfoG).connect(wlp.frequency);
+    wlfo.start();
+    wsrc.connect(wlp).connect(water).connect(this.master);
+    wsrc.start();
+    // fire crackle: highpassed noise chopped by a fast random-ish square LFO
+    const fire = ctx.createGain();
+    fire.gain.value = 0;
+    const fsrc = ctx.createBufferSource();
+    fsrc.buffer = buf;
+    fsrc.loop = true;
+    const fhp = ctx.createBiquadFilter();
+    fhp.type = 'bandpass';
+    fhp.frequency.value = 2600;
+    fhp.Q.value = 0.7;
+    const chop = ctx.createGain();
+    chop.gain.value = 0.3;
+    const chopLfo = ctx.createOscillator();
+    chopLfo.type = 'square';
+    chopLfo.frequency.value = 13;
+    const chopLfo2 = ctx.createOscillator();
+    chopLfo2.type = 'square';
+    chopLfo2.frequency.value = 3.7;
+    const chopG = ctx.createGain();
+    chopG.gain.value = 0.35;
+    chopLfo.connect(chopG).connect(chop.gain);
+    chopLfo2.connect(chopG);
+    chopLfo.start();
+    chopLfo2.start();
+    fsrc.connect(fhp).connect(chop).connect(fire).connect(this.master);
+    fsrc.start();
+    // market chatter: vowel-ish bandpassed noise murmuring
+    const chatter = ctx.createGain();
+    chatter.gain.value = 0;
+    const csrc = ctx.createBufferSource();
+    csrc.buffer = buf;
+    csrc.loop = true;
+    csrc.playbackRate.value = 0.8;
+    const cbp = ctx.createBiquadFilter();
+    cbp.type = 'bandpass';
+    cbp.frequency.value = 500;
+    cbp.Q.value = 3;
+    const clfo = ctx.createOscillator();
+    clfo.frequency.value = 2.3;
+    const clfoG = ctx.createGain();
+    clfoG.gain.value = 180;
+    clfo.connect(clfoG).connect(cbp.frequency);
+    clfo.start();
+    const murmur = ctx.createGain();
+    murmur.gain.value = 0.5;
+    const mlfo = ctx.createOscillator();
+    mlfo.frequency.value = 0.9;
+    const mlfoG = ctx.createGain();
+    mlfoG.gain.value = 0.4;
+    mlfo.connect(mlfoG).connect(murmur.gain);
+    mlfo.start();
+    csrc.connect(cbp).connect(murmur).connect(chatter).connect(this.master);
+    csrc.start();
+    this.ambient = { wind, hum, night, water, fire, chatter };
   }
 
   setMuted(m: boolean): void {
@@ -81,12 +152,36 @@ export class Audio {
     if (this.master) this.master.gain.value = m ? 0 : 0.5;
   }
 
-  /** Update ambient mix: night 0..1, ley 0..1 (how much ley is near the camera). */
-  ambientMix(night: number, ley: number): void {
+  /**
+   * Update the ambient mix from what the camera sees. All 0..1:
+   * night, ley (spires near the camera), water (water tiles in view), fire (burning buildings in view),
+   * market (market buildings in view, daytime).
+   */
+  ambientMix(night: number, ley: number, water = 0, fire = 0, market = 0): void {
     if (!this.ambient || !this.ctx) return;
     const t = this.ctx.currentTime;
     this.ambient.night.gain.setTargetAtTime(night * 0.12, t, 0.5);
     this.ambient.hum.gain.setTargetAtTime(0.02 + ley * 0.1, t, 0.5);
+    this.ambient.water.gain.setTargetAtTime(water * 0.16, t, 0.8);
+    this.ambient.fire.gain.setTargetAtTime(fire * 0.35, t, 0.3);
+    this.ambient.chatter.gain.setTargetAtTime(market * (1 - night) * 0.09, t, 0.8);
+  }
+
+  /** A short generative phrase from a pentatonic scale; seeded so each milestone has its own tune. */
+  melody(seed: number): void {
+    if (!this.ctx || this.muted) return;
+    const scale = [0, 2, 4, 7, 9, 12, 14, 16];
+    let x = (seed * 2654435761) >>> 0;
+    const rnd = () => { x = (x ^ (x << 13)) >>> 0; x = (x ^ (x >>> 17)) >>> 0; x = (x ^ (x << 5)) >>> 0; return x / 4294967296; };
+    let deg = 2;
+    const n = 7 + Math.floor(rnd() * 4);
+    for (let i = 0; i < n; i++) {
+      deg = Math.max(0, Math.min(scale.length - 1, deg + (rnd() < 0.5 ? -1 : 1) * (1 + (rnd() < 0.25 ? 1 : 0))));
+      if (i === n - 1) deg = 5;
+      const f = 392 * Math.pow(2, scale[deg] / 12);
+      const dur = i === n - 1 ? 0.9 : rnd() < 0.3 ? 0.36 : 0.18;
+      setTimeout(() => { this.tone(f, dur * 1.6, 'triangle', 0.13); this.tone(f / 2, dur * 1.6, 'sine', 0.05); }, i * 190);
+    }
   }
 
   private tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0): void {

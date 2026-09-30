@@ -1,7 +1,7 @@
 /** Mouse/keyboard input → tool state → sim actions. */
-import { buildRoad, bulldoze, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
+import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
-import { MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
+import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding } from '../sim/world';
 import { bumpRoadVersion } from '../sim/agents';
 import type { ViewState } from '../render/renderer';
@@ -13,6 +13,7 @@ export type Tool =
   | { kind: 'road'; type: RoadType }
   | { kind: 'zone'; zone: Zone }
   | { kind: 'build'; key: string }
+  | { kind: 'district'; id: number }
   | { kind: 'bulldoze' };
 
 export interface ToolHost {
@@ -94,6 +95,7 @@ export class Tools {
     switch (this.tool.kind) {
       case 'road':
       case 'zone':
+      case 'district':
         this.dragStart = t;
         break;
       case 'bulldoze':
@@ -151,6 +153,10 @@ export class Tools {
       const r = paintZone(s, this.tool.zone, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('zone');
       else this.host.onAction('error', r.reason);
+    } else if (this.tool.kind === 'district') {
+      const r = paintDistrict(s, this.tool.id, start[0], start[1], end[0], end[1]);
+      if (r.ok) this.host.onAction('zone');
+      else this.host.onAction('error', r.reason);
     }
     this.updatePreview();
   }
@@ -191,6 +197,7 @@ export class Tools {
     v.previewTiles = [];
     v.ghost = null;
     v.previewZone = Zone.None;
+    v.previewDistrict = this.tool.kind === 'district' ? this.tool.id : -1;
     const hover = v.hover;
     if (!hover) return;
     if (this.tool.kind === 'road') {
@@ -212,6 +219,14 @@ export class Tools {
           const i = idx(x, y);
           v.previewTiles.push({ i, ok: !s.road[i] && s.bIndex[i] < 0 && roadTileCost(s, RoadType.Track, i) >= 0 });
         }
+    } else if (this.tool.kind === 'district') {
+      const start = this.dragStart ?? hover;
+      const x0 = Math.min(start[0], hover[0]);
+      const x1 = Math.max(start[0], hover[0]);
+      const y0 = Math.min(start[1], hover[1]);
+      const y1 = Math.max(start[1], hover[1]);
+      for (let y = y0; y <= y1; y++)
+        for (let x = x0; x <= x1; x++) if (inBounds(x, y)) v.previewTiles.push({ i: idx(x, y), ok: true });
     } else if (this.tool.kind === 'build') {
       const def = BUILDING_BY_KEY[this.tool.key];
       const x = hover[0] - Math.floor((def.w - 1) / 2);
@@ -279,6 +294,7 @@ export function toolLabel(t: Tool): string {
     case 'road': return `Road: ${['', 'Dirt Track', 'Cobbled Road', 'Lantern-way'][t.type]}`;
     case 'zone': return `Zone: ${['De-zone', 'Hearth', 'Market', 'Craft', 'Arcane'][t.zone]}`;
     case 'build': return `Build: ${BUILDING_BY_KEY[t.key].name}`;
+    case 'district': return t.id === 0 ? 'District: clear' : `District: ${DISTRICT_NAMES[t.id - 1]}`;
     case 'bulldoze': return 'Bulldoze';
   }
 }

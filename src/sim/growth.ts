@@ -1,6 +1,6 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
-import { edictOn, modifierSum } from './edicts';
+import { edictOn, edictShare, modifierSum } from './edicts';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
@@ -79,7 +79,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   }
   h -= (tax - 10) * 1.6;
   h += modifierSum(state, 'happiness');
-  if (edictOn(state, 'curfew')) h -= 4;
+  if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
@@ -92,12 +92,14 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
     const fill = b.stock / marketStockCap(b);
     if (fill <= 0.05) h -= 14;
     else if (fill > 0.5) h += 5;
-    if (edictOn(state, 'lanternlevy')) h -= 6;
+    if (edictOn(state, 'lanternlevy', b)) h -= 6;
   } else if (def.zone === Zone.Craft) {
     h += 4; // industry tolerates more
     if (b.stock >= craftStockCap(b) * 0.95) h -= 10; // nobody is buying
   } else if (def.zone === Zone.Arcane) {
     h += (cov.school[i] / 255) * 10 - 6;
+    if (b.stock <= 0.5 && b.age > 3) h -= 10; // no leystone to enchant
+    else if (b.stock > 5) h += 4;
   }
   return Math.max(0, Math.min(100, h));
 }
@@ -113,6 +115,7 @@ export function workforceOf(state: GameState): number {
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
 export function dailyBuildings(state: GameState): void {
   const rng = rngOf(state);
+  state.artifactsSold = 0;
   state.goodsProduced = 0;
   state.goodsSold = 0;
   state.goodsShort = 0;
@@ -183,7 +186,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens') ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1);
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1);
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
@@ -192,6 +195,11 @@ export function dailyBuildings(state: GameState): void {
       const want = b.workers * 0.5 + 1;
       if (b.stock <= 0.5) state.goodsShort++;
       b.stock = Math.max(0, b.stock - want);
+    } else if (def.zone === Zone.Arcane) {
+      // enchanters turn leystone into artifacts sold for crowns
+      const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
+      b.stock -= use;
+      state.artifactsSold += use * 5;
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -225,6 +233,10 @@ export function dailyBuildings(state: GameState): void {
     happySum += b.happiness * 2;
     happyW += 2;
   }
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5));
+  });
   state.population = pop;
   state.jobs = jobs;
   state.employed = employed;
@@ -326,15 +338,15 @@ export function updateSocial(state: GameState): void {
   const watchCov = watch / res;
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
-  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (edictOn(state, 'scholars') ? 0.12 : 0.08);
-  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + (edictOn(state, 'draughts') ? 0.12 : 0) + modifierSum(state, 'health')));
+  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
+  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts') + modifierSum(state, 'health')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - (edictOn(state, 'curfew') ? 0.1 : 0) + modifierSum(state, 'unrest')),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
 }

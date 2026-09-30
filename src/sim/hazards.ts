@@ -56,7 +56,7 @@ export function dailyFire(state: GameState): void {
         }
       return;
     }
-    if (b.state !== 'ok' || def.category === 'special') return;
+    if (b.state !== 'ok' || def.category === 'special' || def.category === 'water' || (def.category === 'ley' && b.kind !== 'font') || b.kind === 'garden' || b.kind === 'square') return;
     let p = 0.00025;
     if (def.zone === Zone.Craft) p *= 2.5;
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
@@ -260,7 +260,7 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites') ? 1.5 : 1);
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1);
   });
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);

@@ -55,6 +55,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.pendingEvent = state.pendingEvent ?? null;
   state.lastEventDay = state.lastEventDay ?? 0;
   state.firedEvents = state.firedEvents ?? [];
+  state.districtEdicts = state.districtEdicts ?? {};
+  if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   // rebuild derived layers
   const n = state.w * state.h;
   for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);

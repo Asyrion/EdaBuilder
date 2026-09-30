@@ -33,6 +33,8 @@ export interface BuildingDef {
   tax?: number; // crowns per occupant per day at 10%
   unlock: number; // milestone index
   wonder?: boolean;
+  onHills?: boolean; // footprint must be hills
+  leystone?: number; // leystone mined per day
 }
 
 const Z = (
@@ -77,7 +79,7 @@ export const BUILDINGS: BuildingDef[] = [
     'The sour green fog over the stills is called "the alchemist\'s breath". Nobody lives downwind by choice.',
     3),
   Z('arcane', 'Arcane (enchanters)', Zone.Arcane, [4, 8, 14], 1.6, 4,
-    'Enchanters, scriptoria and spire-wrights. Needs schooling and plenty of mana; clean and rich.',
+    'Enchanters, scriptoria and spire-wrights. Needs schooling, plenty of mana and leystone from a Crystal Mine; sells artifacts for crowns.',
     'Tallowkin sing to the leystone until it remembers the tune.', 0, 4),
 
   // ---- ley ----
@@ -92,6 +94,12 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A ring of spires around a leystone heart. Reaches 9 tiles and stores 120 mana to soak up peaks in demand.',
     flavor: 'The Concord built these by the thousand. Vell builds them one at a time, carefully.',
     w: 2, h: 2, cost: 5000, upkeep: 30, manaUse: 0, manaStorage: 120, unlock: 4,
+  },
+  {
+    key: 'mine', name: 'Crystal Mine', category: 'ley',
+    desc: 'Dug into hills. Grimmen miners cut 8 leystone a day (4 unlit); carts haul it to Arcane districts, which sell the enchanted artifacts for crowns.',
+    flavor: 'The seams sing. The miners learn not to answer.',
+    w: 2, h: 2, cost: 2600, upkeep: 30, manaUse: 2, unlock: 4, onHills: true, leystone: 8,
   },
   {
     key: 'font', name: 'Thrum Font', category: 'ley',
@@ -269,7 +277,7 @@ export interface RoadDef {
 
 export const ROADS: RoadDef[] = [
   { type: RoadType.Track, key: 'track', name: 'Dirt Track', cost: 10, upkeep: 0.3, manaUse: 0, speed: 1.0, capacity: 60, landValue: 0, unlock: 0,
-    desc: 'Cheap and muddy. Slow, low capacity.' },
+    desc: 'Cheap and muddy. Slow, low capacity. Bridges cost 4×, cuts through hills 3×.' },
   { type: RoadType.Cobble, key: 'cobble', name: 'Cobbled Road', cost: 45, upkeep: 0.8, manaUse: 0, speed: 1.4, capacity: 160, landValue: 6, unlock: 1,
     desc: 'Faster and wider. Raises land value.' },
   { type: RoadType.Lantern, key: 'lantern', name: 'Lantern-way', cost: 130, upkeep: 1.5, manaUse: 1, speed: 1.7, capacity: 300, landValue: 14, unlock: 4,
@@ -295,8 +303,8 @@ export const MILESTONES: Milestone[] = [
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square'],
     text: 'A village with a name on the Crown\'s maps. Scholars and a proper Watch follow.' },
-  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font'],
-    text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways and Thrum Fonts may be raised.' },
+  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font', 'mine'],
+    text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },
   { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
   { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy'],

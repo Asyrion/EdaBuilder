@@ -13,6 +13,7 @@ import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
 import { resolveEvent, maybeFireEvent } from './sim/events';
+import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { Bot } from './sim/bot';
 
@@ -21,7 +22,7 @@ const SAVE_KEY = 'wardlight.save.v1';
 class Game {
   state: GameState;
   renderer: Renderer;
-  view: ViewState = { overlay: null, hover: null, previewTiles: [], previewZone: Zone.None, ghost: null, selected: null, showGrid: false };
+  view: ViewState = { overlay: null, hover: null, previewTiles: [], previewZone: Zone.None, previewDistrict: -1, ghost: null, selected: null, showGrid: false };
   tools!: Tools;
   ui!: UI;
   audio = new Audio();
@@ -29,6 +30,7 @@ class Game {
   paused = false;
   selected: Building | null = null;
   muted = false;
+  settings = { colorBlind: false, uiScale: 1 };
   perf = { fps: 60, ms: 0, drawn: 0 };
   private acc = 0;
   private last = 0;
@@ -81,13 +83,16 @@ class Game {
       importJson: (f) => this.importJson(f),
       setMuted: (m) => { this.muted = m; this.audio.setMuted(m); },
       setTax: (z, v) => setTax(this.state, z, v),
-      setEdict: (k, on) => { this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
+      setEdict: (k, on, district) => { if (district) this.state.districtEdicts[`${district}:${k}`] = on; else this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
+      get settings() { return game.settings; },
+      setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
       select: (b) => this.select(b),
     });
     canvas.addEventListener('mousedown', () => this.audio.init(), { once: true });
     window.addEventListener('keydown', () => this.audio.init(), { once: true });
+    this.loadSettings();
     this.ui.showTitle();
     this.ui.refresh();
     this.ui.refreshViews();
@@ -114,6 +119,24 @@ class Game {
     this.running = true;
     this.paused = false;
     this.speed = 1;
+  }
+
+  setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void {
+    (this.settings as any)[key] = value;
+    ramps.colorBlind = this.settings.colorBlind;
+    document.documentElement.style.setProperty('--ui-scale', String(this.settings.uiScale));
+    this.renderer.overlayVersion++;
+    try {
+      localStorage.setItem('wardlight.settings', JSON.stringify(this.settings));
+    } catch { /* ignore */ }
+  }
+
+  loadSettings(): void {
+    try {
+      const raw = localStorage.getItem('wardlight.settings');
+      if (raw) Object.assign(this.settings, JSON.parse(raw));
+    } catch { /* ignore */ }
+    this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
   newGame(seed: number, name: string): void {
@@ -266,7 +289,7 @@ class Game {
           this.renderer.overlayVersion++;
           if (this.state.day % 3 === 0) this.save();
           const lastMsg = this.state.messages[this.state.messages.length - 1];
-          if (lastMsg && lastMsg.tick === this.state.tick && lastMsg.kind === 'milestone' && this.state.day > 0) this.audio.milestone();
+          if (lastMsg && lastMsg.tick === this.state.tick && lastMsg.kind === 'milestone' && this.state.day > 0) this.audio.melody(this.state.milestone * 7 + this.state.seed);
         }
         if (this.state.tick % 50 === 0) this.renderer.overlayVersion++;
       }
@@ -277,8 +300,8 @@ class Game {
       // ambient audio
       const tod = timeOfDay(this.state);
       const night = nightFactor(tod);
-      const lit = Math.min(1, this.state.manaDemand / 80);
-      this.audio.ambientMix(night, lit);
+      const v = this.renderer.inView;
+      this.audio.ambientMix(night, v.ley, v.water, v.fire, v.market);
       if (this.state.gameOver && !this.paused) {
         this.paused = true;
         this.audio.bad();

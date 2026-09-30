@@ -1,5 +1,6 @@
 /** City-wide edicts (policies). Toggled by the player; effects are read by the systems. */
-import type { GameState } from './types';
+import { BUILDING_BY_KEY } from './catalog';
+import { Zone, idx, type Building, type GameState } from './types';
 
 export interface EdictDef {
   key: string;
@@ -57,13 +58,45 @@ export const EDICTS: EdictDef[] = [
 
 export const EDICT_BY_KEY: Record<string, EdictDef> = Object.fromEntries(EDICTS.map((e) => [e.key, e]));
 
-export function edictOn(s: GameState, key: string): boolean {
-  return !!s.edicts[key];
+/** City-wide edict, or the edict of the district a tile/building lies in. */
+export function edictOn(s: GameState, key: string, at?: number | Building): boolean {
+  if (s.edicts[key]) return true;
+  if (at === undefined) return false;
+  const i = typeof at === 'number' ? at : idx(at.x, at.y);
+  const d = s.district[i];
+  return d > 0 && !!s.districtEdicts[`${d}:${key}`];
+}
+
+/** Share of residents living under an edict (1 if city-wide). */
+export function edictShare(s: GameState, key: string): number {
+  if (s.edicts[key]) return 1;
+  let res = 0;
+  let under = 0;
+  for (const b of s.buildings) {
+    if (!b || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || b.state !== 'ok') continue;
+    res += b.residents;
+    if (edictOn(s, key, b)) under += b.residents;
+  }
+  return res > 0 ? under / res : 0;
+}
+
+export function districtsInUse(s: GameState): number[] {
+  const seen = new Set<number>();
+  for (let i = 0; i < s.district.length; i++) if (s.district[i]) seen.add(s.district[i]);
+  return [...seen].sort((a, b) => a - b);
 }
 
 export function edictUpkeep(s: GameState): number {
   let c = 0;
-  for (const e of EDICTS) if (s.edicts[e.key]) c += e.costPerDay(s);
+  for (const e of EDICTS) {
+    if (s.edicts[e.key]) {
+      c += e.costPerDay(s);
+      continue;
+    }
+    // per-district: flat costs are split, per-resident costs follow the residents
+    const share = edictShare(s, e.key);
+    if (share > 0) c += Math.round(e.costPerDay(s) * Math.max(share, 0.25));
+  }
   return c;
 }
 

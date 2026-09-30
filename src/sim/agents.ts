@@ -143,9 +143,13 @@ export function dailyAgents(state: GameState): void {
   const works: Building[] = [];
   const markets: Building[] = [];
   const crafts: Building[] = [];
+  const mines: Building[] = [];
+  const arcanes: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
+    if (def.leystone) mines.push(b);
+    if (def.zone === Zone.Arcane) arcanes.push(b);
     if (def.zone === Zone.Hearth && b.residents > 0) homes.push(b);
     else if (def.zone === Zone.Market) {
       works.push(b);
@@ -157,7 +161,7 @@ export function dailyAgents(state: GameState): void {
     else if (def.category === 'service' || def.category === 'leisure') works.push(b);
   });
   const targetCitizens = Math.min(MAX_AGENTS, Math.round(state.population / 2));
-  const targetCarts = Math.min(200, Math.round(crafts.length * 0.5 + markets.length * 0.3));
+  const targetCarts = Math.min(220, Math.round(crafts.length * 0.5 + markets.length * 0.3) + (arcanes.length ? mines.length * 2 : 0));
   let citizens = 0;
   let carts = 0;
   for (const a of state.agents) {
@@ -179,7 +183,7 @@ export function dailyAgents(state: GameState): void {
     citizens--;
   }
   while (carts > targetCarts) {
-    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart);
+    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && !mines.some((m) => m.id === a.homeId));
     if (i < 0) break;
     state.agents.splice(i, 1);
     carts--;
@@ -212,10 +216,22 @@ export function dailyAgents(state: GameState): void {
       spawned++;
     }
   }
-  if (crafts.length && markets.length) {
+  // every mine keeps two carts of its own once there are enchanters to feed
+  if (arcanes.length) {
+    for (const mine of mines) {
+      const own = state.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === mine.id).length;
+      const rt = roadTileOf(state, mine);
+      for (let k = own; k < 2 && rt >= 0; k++) {
+        state.agents.push({ id: state.nextAgentId++, kind: AgentKind.Cart, x: (rt % MAP_W) + 0.5, y: ((rt / MAP_W) | 0) + 0.5, path: [], pathIdx: 0, speed: 0.8, homeId: mine.id, targetId: -1, timer: rng.int(100), variant: 0, dir: 0, load: 0 });
+        carts++;
+      }
+    }
+  }
+  const cartHomes = crafts;
+  if (cartHomes.length && markets.length) {
     let spawned = 0;
     while (carts < targetCarts && spawned < 30) {
-      const home = rng.pick(crafts);
+      const home = rng.pick(cartHomes);
       const rt = roadTileOf(state, home);
       spawned++;
       if (rt < 0) continue;
@@ -230,7 +246,7 @@ export function dailyAgents(state: GameState): void {
         homeId: home.id,
         targetId: -1,
         timer: rng.int(300),
-        variant: rng.int(3),
+        variant: home.kind === 'mine' ? 0 : 1 + rng.int(2),
         dir: 0,
         load: 0,
       });
@@ -265,7 +281,14 @@ export function spawnRestless(state: GameState, x: number, y: number): boolean {
 }
 
 /** Pick the next trip for an idle agent. */
-function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, pools: { works: Building[]; markets: Building[]; homes: Building[] }): void {
+interface Pools {
+  works: Building[];
+  markets: Building[];
+  homes: Building[];
+  arcanes: Building[];
+}
+
+function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, pools: Pools): void {
   const cur = idx(Math.floor(a.x), Math.floor(a.y));
   if (a.kind === AgentKind.Restless) {
     // wander to a random road tile nearby
@@ -292,15 +315,16 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
   let dest: Building | null = null;
   if (a.kind === AgentKind.Cart) {
     if (a.targetId === -1) {
-      // wait for a load at the works; then deliver to a hungry market (prefer low stock, nearby)
-      if (home.stock < 4 || !pools.markets.length) {
+      // wait for a load; then deliver to the hungriest reachable buyer (markets for goods, enchanters for leystone)
+      const buyers = home.kind === 'mine' ? pools.arcanes : pools.markets;
+      if (home.stock < 4 || !buyers.length) {
         a.timer = 120;
         return;
       }
       let best: Building | null = null;
       let bs = -Infinity;
       for (let k = 0; k < 6; k++) {
-        const m = rng.pick(pools.markets);
+        const m = rng.pick(buyers);
         const score = -m.stock * 2 - Math.abs(m.x - home.x) - Math.abs(m.y - home.y) * 0.5;
         if (score > bs) {
           bs = score;
@@ -344,12 +368,13 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
 /** Called every tick. Moves agents along paths and accumulates traffic. */
 export function tickAgents(state: GameState): void {
   const rng = rngOf(state);
-  let pools: { works: Building[]; markets: Building[]; homes: Building[] } | null = null;
+  let pools: Pools | null = null;
   const getPools = () => {
     if (pools) return pools;
     const works: Building[] = [];
     const markets: Building[] = [];
     const homes: Building[] = [];
+    const arcanes: Building[] = [];
     forEachBuilding(state, (b) => {
       const def = BUILDING_BY_KEY[b.kind];
       if (b.state !== 'ok') return;
@@ -357,10 +382,13 @@ export function tickAgents(state: GameState): void {
       else if (def.zone === Zone.Market) {
         markets.push(b);
         works.push(b);
-      } else if (def.zone === Zone.Craft || def.zone === Zone.Arcane) works.push(b);
-      else if (def.category === 'service' || def.category === 'leisure') works.push(b);
+      } else if (def.zone === Zone.Craft) works.push(b);
+      else if (def.zone === Zone.Arcane) {
+        works.push(b);
+        arcanes.push(b);
+      } else if (def.category === 'service' || def.category === 'leisure' || def.leystone) works.push(b);
     });
-    pools = { works, markets, homes };
+    pools = { works, markets, homes, arcanes };
     return pools;
   };
   const dt = 1 / TICKS_PER_SEC;
@@ -395,7 +423,8 @@ export function tickAgents(state: GameState): void {
         if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
           const m = buildingById(state, a.targetId);
           if (m && m.state === 'ok') {
-            m.stock = Math.min(marketStockCap(m), m.stock + a.load);
+            const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(m);
+            m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
           }
           a.load = 0;
@@ -433,7 +462,7 @@ export function dailyRestless(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Restless) return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew') ? 1.4 : 1);
+    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew', i) ? 1.4 : 1);
     if (rng.chance(Math.min(0.9, p))) {
       cleared++;
       return false;

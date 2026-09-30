@@ -1,7 +1,7 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
 import { Terrain, Zone, type GameState } from './types';
-import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
+import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 
 export interface EventDef {
@@ -9,6 +9,7 @@ export interface EventDef {
   title: string;
   text: string;
   when: (s: GameState) => boolean;
+  once?: boolean; // never repeats
   choices: { label: string; desc: string; apply: (s: GameState) => string }[];
 }
 
@@ -99,6 +100,57 @@ export const EVENTS: EventDef[] = [
   },
 ];
 
+/** True if event `id` was answered with choice `choice` at least `daysAgo` days ago. */
+export function chose(s: GameState, id: string, choice: number): boolean {
+  return s.firedEvents.includes(`${id}:${choice}`);
+}
+
+const CHAINS: EventDef[] = [
+  {
+    id: 'relic_stolen', title: 'The relic is gone', once: true,
+    text: 'The Concord lantern-core has vanished from the Academy\'s warded case. A cult of the Undying Court is suspected; their marks are chalked on the door.',
+    when: (s) => chose(s, 'relic', 1) && s.day - s.lastEventDay >= 15,
+    choices: [
+      { label: 'Send the Watch after them (500 crowns)', desc: 'Likely recovers the relic and its worth: +2,500 crowns.', apply: (s) => { s.treasury -= 500; const rng = rngOf(s); const ok = rng.chance(0.75); commitRng(s, rng); if (ok) { s.treasury += 2500; return 'The Watch corners the cult in a Boneyard at midnight. The relic comes back; three cultists do not.'; } s.modifiers.push({ kind: 'unrest', value: 0.06, until: s.day + 10, label: 'Cult at large' }); return 'The cult slips into the Gloam. The chalk marks keep appearing.'; } },
+      { label: 'Let it go', desc: 'Unrest +6% for 12 days; the cult is emboldened.', apply: (s) => { s.modifiers.push({ kind: 'unrest', value: 0.06, until: s.day + 12, label: 'Cult emboldened' }); return 'Nobody sleeps well for a fortnight.'; } },
+    ],
+  },
+  {
+    id: 'guilds_return', title: 'The guilds return', once: true,
+    text: 'Pleased with the last bargain, the guilds propose a lasting one: a permanent Craft tithe cap of 8% in exchange for funding half of a Guildhall.',
+    when: (s) => chose(s, 'guilds', 0) && s.day - s.lastEventDay >= 20 && s.milestone >= 5,
+    choices: [
+      { label: 'Seal the pact', desc: '+1,500 crowns toward a Guildhall; Craft tithe capped at 8% for 120 days.', apply: (s) => { s.treasury += 1500; s.modifiers.push({ kind: 'craftTax', value: 8, until: s.day + 120, label: 'Guild pact' }); return 'The carters paint "It Moves" on every cart in the valley.'; } },
+      { label: 'Decline', desc: 'No effect.', apply: () => 'The guildmasters bow, tightly.' },
+    ],
+  },
+  {
+    id: 'grimmen_boneyard', title: 'A garden for the grey', once: true,
+    text: 'The Grimmen you took in ask to raise a Boneyard of their own for their carried dead. Their sextons will tend it; they ask only for the ground and the stone.',
+    when: (s) => chose(s, 'refugees', 0) && s.day - s.lastEventDay >= 12,
+    choices: [
+      { label: 'Grant the ground (700 crowns)', desc: 'A Boneyard is raised beside a road near the hearths; unquieted dead −15.', apply: (s) => { const spot = findSpot(s, 'boneyard'); if (!spot) { s.treasury -= 200; s.unquieted = Math.max(0, s.unquieted - 15); return 'No ground could be found; the sextons sing the Rite in the streets instead.'; } s.treasury -= 700; placeBuildingRaw(s, 'boneyard', spot[0], spot[1]); s.unquieted = Math.max(0, s.unquieted - 15); return 'Morrow\'s garden opens at dusk. The Grimmen sing all night, and the ground goes quiet.'; } },
+      { label: 'Refuse', desc: 'Unquieted dead +10; unrest +5% for 10 days.', apply: (s) => { s.unquieted += 10; s.modifiers.push({ kind: 'unrest', value: 0.05, until: s.day + 10, label: 'Grimmen refused' }); return 'They bury their dead beyond the last lantern, without the Rite.'; } },
+    ],
+  },
+];
+
+function findSpot(s: GameState, key: string): [number, number] | null {
+  for (const b of s.buildings) {
+    if (!b || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth) continue;
+    for (let dy = -4; dy <= 4; dy++)
+      for (let dx = -4; dx <= 4; dx++) {
+        const x = b.x + dx;
+        const y = b.y + dy;
+        if (x < 1 || y < 1 || x >= s.w - 2 || y >= s.h - 2) continue;
+        if (!canPlaceBuilding(s, key, x, y)) return [x, y];
+      }
+  }
+  return null;
+}
+
+export const ALL_EVENTS = [...EVENTS, ...CHAINS];
+
 export function maybeFireEvent(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
   if (s.day - s.lastEventDay < 18) return;
@@ -107,14 +159,15 @@ export function maybeFireEvent(s: GameState): void {
     commitRng(s, rng);
     return;
   }
-  const recent = s.firedEvents.slice(-4);
-  const pool = EVENTS.filter((e) => e.when(s) && !recent.includes(e.id));
+  const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
+  const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
+  const pool = ALL_EVENTS.filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
     s.lastEventDay = s.day;
-    s.firedEvents.push(e.id);
-    if (s.firedEvents.length > 20) s.firedEvents.shift();
+    s.firedEvents.push(`${e.id}:?`);
+    if (s.firedEvents.length > 40) s.firedEvents.shift();
   }
   commitRng(s, rng);
 }
@@ -122,10 +175,12 @@ export function maybeFireEvent(s: GameState): void {
 export function resolveEvent(s: GameState, choice: number): void {
   const pe = s.pendingEvent;
   if (!pe) return;
-  const def = EVENTS.find((e) => e.id === pe.id);
+  const def = ALL_EVENTS.find((e) => e.id === pe.id);
   s.pendingEvent = null;
   if (!def) return;
-  const c = def.choices[Math.max(0, Math.min(def.choices.length - 1, choice))];
+  const ci = Math.max(0, Math.min(def.choices.length - 1, choice));
+  const c = def.choices[ci];
+  for (let k = s.firedEvents.length - 1; k >= 0; k--) if (s.firedEvents[k] === `${def.id}:?`) { s.firedEvents[k] = `${def.id}:${ci}`; break; }
   const result = c.apply(s);
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }
