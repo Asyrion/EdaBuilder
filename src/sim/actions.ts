@@ -187,3 +187,44 @@ export function paintDistrict(state: GameState, district: number, x0: number, y0
     }
   return n > 0 ? { ok: true, cost: 0 } : { ok: false, reason: 'Nothing changed' };
 }
+
+/** Snapshot of everything a player action can change, for undo. Agents and time are left alone. */
+export interface Snapshot {
+  road: Uint8Array;
+  zone: Uint8Array;
+  district: Uint8Array;
+  bIndex: Int32Array;
+  buildings: string; // JSON of the buildings array
+  nextBuildingId: number;
+  treasury: number;
+  label: string;
+}
+
+export function takeSnapshot(state: GameState, label: string): Snapshot {
+  return {
+    road: state.road.slice(),
+    zone: state.zone.slice(),
+    district: state.district.slice(),
+    bIndex: state.bIndex.slice(),
+    buildings: JSON.stringify(state.buildings),
+    nextBuildingId: state.nextBuildingId,
+    treasury: state.treasury,
+    label,
+  };
+}
+
+export function restoreSnapshot(state: GameState, snap: Snapshot): void {
+  state.road.set(snap.road);
+  state.zone.set(snap.zone);
+  state.district.set(snap.district);
+  state.bIndex.set(snap.bIndex);
+  state.buildings = JSON.parse(snap.buildings);
+  state.nextBuildingId = snap.nextBuildingId;
+  state.treasury = snap.treasury;
+  state.zoneListDirty = true;
+  const ids = new Set(state.buildings.filter(Boolean).map((b) => b!.id));
+  for (const a of state.agents) {
+    if (a.homeId >= 0 && !ids.has(a.homeId)) a.homeId = -1;
+    if (a.targetId >= 0 && !ids.has(a.targetId)) { a.targetId = -1; a.path = []; a.pathIdx = 0; }
+  }
+}

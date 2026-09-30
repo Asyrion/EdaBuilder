@@ -1,7 +1,8 @@
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
-import { forEachBuilding, markDirty, seasonOf } from './world';
+import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
+import { modifierSum } from './edicts';
 
 const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
@@ -15,6 +16,10 @@ export function manaUseOf(b: Building, hush = false): number {
   return hush && def.category === 'zone' ? base * 1.25 : base;
 }
 
+function manaMult(state: GameState): number {
+  return 1 + modifierSum(state, 'mana');
+}
+
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */
 export function updateMana(state: GameState): void {
   const n = MAP_W * MAP_H;
@@ -22,7 +27,7 @@ export function updateMana(state: GameState): void {
   const oldLit = state.lit;
 
   // 1. supply
-  let supply = state.nodes.length * NODE_MANA;
+  let supply = state.nodes.length * NODE_MANA + nodeMana(state);
   let storageMax = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
@@ -145,9 +150,10 @@ export function updateMana(state: GameState): void {
   for (let i = 0; i < n; i++) if (roadLit[i]) lit[i] = 1;
 
   // 5. demand & brownout
-  const consumers: { s: number; use: number; d: number }[] = [];
+  const consumers: { s: number; use: number; d: number; wasLit: boolean }[] = [];
   let demand = 0;
   const hush = seasonOf(state) === 3;
+  const mult = manaMult(state);
   const f = state.founding;
   for (let s = 0; s < state.buildings.length; s++) {
     const b = state.buildings[s];
@@ -156,12 +162,12 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = manaUseOf(b, hush);
+    const use = manaUseOf(b, hush) * mult;
     if (use > 0) {
       demand += use;
       let dmin = Infinity;
       for (const nd of state.nodes) dmin = Math.min(dmin, Math.hypot(b.x - nd.x, b.y - nd.y));
-      consumers.push({ s, use, d: dmin });
+      consumers.push({ s, use, d: dmin, wasLit: b.lit });
     }
     b.lit = true;
   }
@@ -183,8 +189,8 @@ export function updateMana(state: GameState): void {
   state.manaStorageMax = storageMax;
   let brownout = 0;
   if (demand > effectiveSupply && consumers.length) {
-    // farthest consumers from nodes go dark first
-    consumers.sort((a, b) => b.d - a.d);
+    // buildings already dark stay dark (no boundary blinking); then the farthest from the nodes go first
+    consumers.sort((a, b) => Number(a.wasLit) - Number(b.wasLit) || b.d - a.d);
     let over = demand - effectiveSupply;
     let dark = 0;
     for (const c of consumers) {

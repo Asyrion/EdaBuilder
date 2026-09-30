@@ -9,6 +9,7 @@ export interface Particle {
   size: number;
   color: string;
   glow: boolean;
+  seed: number; // stable per-particle random, used for light budgeting
   kind: 'smoke' | 'spark' | 'firefly' | 'leaf' | 'ember' | 'mote' | 'surge' | 'ward' | 'restless';
 }
 
@@ -16,9 +17,9 @@ export class Particles {
   list: Particle[] = [];
   readonly max = 900;
 
-  emit(p: Omit<Particle, 'life'> & { life?: number }): void {
+  emit(p: Omit<Particle, 'life' | 'seed'> & { life?: number }): void {
     if (this.list.length >= this.max) return;
-    this.list.push({ ...p, life: p.life ?? p.maxLife });
+    this.list.push({ ...p, life: p.life ?? p.maxLife, seed: (Math.random() * 1e6) | 0 });
   }
 
   update(dt: number, wind: number): void {

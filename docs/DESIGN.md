@@ -246,6 +246,25 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Menu settings: colour-blind overlay ramps (orange→blue instead of red→green) and a UI
   scale (85–130 %), persisted in localStorage.
 
+### 4.22 Trade Depot (iteration 4)
+- **Trade Depot** (Village, 2×2). Each day, Craft works at 80 %+ storage sell down to
+  half their storage (up to 8 per depot), and mines with no enchanters sell surplus
+  leystone; exports are banked on the day and shown in the ledger. Prices drift by season:
+  potions 2 / 2 / 2.5 / 3 crowns (Thaw / Bloom / Ember / Hush), leystone 3 / 4 / 3 / 2.5.
+  The **Import Goods** edict lets the depot stock empty markets at twice the export price.
+
+### 4.23 Calendar festivals and the deepened Wellspring (iteration 4)
+- Three calendar events fire on fixed season days, once a year, never in the founding
+  Thaw: Thaw-day (feast or ward labour), the Remembrance of the Hollowing (mid-Ember) and
+  the Hush vigil (mana +15 % for 10 days but the Gloam holds still). Modifiers gained two
+  kinds: `mana` and `gloamHold`.
+- Clicking a ley node opens a node panel. From Burgh a node can be **deepened** twice
+  (8,000 then 14,000 crowns, +45 mana/day each): the lore-honest answer to the mana ceiling.
+- **Undo** (Ctrl+Z, up to 12 steps) restores roads, zones, districts, buildings and crowns
+  from a snapshot taken before each player action; time and agents are left alone.
+- Districts show population, jobs, happiness and tithe in the Edicts panel and can be
+  renamed. Autosave is now daily. The light map drops to quarter resolution at 1× zoom.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -302,7 +321,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 
 ## 8. Verification
 
-- `npm test` runs 38 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 43 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread
@@ -349,5 +368,9 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   made half the hill patches unreachable; a costly cut keeps the terrain meaningful.
 - *Mines get dedicated carts:* random cart assignment across hundreds of works starved
   the one or two mines in a city; logistics that never happens is not a system.
+- *Night flicker fix:* a frame-strided budget for particle lights made every glowing mote
+  strobe; the budget is now a stable per-particle subset, lights flicker gently out of
+  phase instead of in unison, and brownouts keep the same buildings dark between updates.
+  Measured with `scripts/flicker.mjs` (per-frame changed pixels fell from ~5,000 to ~200).
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.

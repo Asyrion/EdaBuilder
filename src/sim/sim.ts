@@ -1,6 +1,6 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
-import { maybeFireEvent } from './events';
+import { maybeFireCalendar, maybeFireEvent } from './events';
 import { seasonOf } from './world';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
@@ -55,6 +55,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
+    maybeFireCalendar(state);
     maybeFireEvent(state);
     dailyChatter(state);
     hooks?.onDay?.(state);

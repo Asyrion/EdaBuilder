@@ -22,7 +22,9 @@ export interface ToolHost {
   canvas: HTMLCanvasElement;
   camera: { screenToTile(sx: number, sy: number): [number, number]; pan(dx: number, dy: number): void; setZoom(z: number, ax?: number, ay?: number): void; zoom: number };
   onAction: (kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'error' | 'click', msg?: string) => void;
+  beforeAction: (label: string) => void; // undo snapshot hook
   onSelect: (b: Building | null) => void;
+  onSelectNode?: (index: number) => void;
   onKey: (key: string, ev: KeyboardEvent) => boolean;
   refreshUI: () => void;
 }
@@ -100,6 +102,7 @@ export class Tools {
         break;
       case 'bulldoze':
         this.bulldozed.clear();
+        this.host.beforeAction('bulldoze');
         this.doBulldoze(t);
         break;
       case 'build':
@@ -108,6 +111,7 @@ export class Tools {
       case 'select': {
         const b = buildingAt(this.host.state, t[0], t[1]);
         this.host.onSelect(b);
+        this.host.onSelectNode?.(this.host.state.nodes.findIndex((n) => n.x === t[0] && n.y === t[1]));
         this.host.onAction('click');
         break;
       }
@@ -144,16 +148,19 @@ export class Tools {
     const s = this.host.state;
     if (this.tool.kind === 'road') {
       const tiles = this.roadTiles(start, end);
+      this.host.beforeAction('road');
       const r = buildRoad(s, this.tool.type, tiles);
       if (r.ok) {
         bumpRoadVersion();
         this.host.onAction('road');
       } else this.host.onAction('error', r.reason);
     } else if (this.tool.kind === 'zone') {
+      this.host.beforeAction('zone');
       const r = paintZone(s, this.tool.zone, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('zone');
       else this.host.onAction('error', r.reason);
     } else if (this.tool.kind === 'district') {
+      this.host.beforeAction('district');
       const r = paintDistrict(s, this.tool.id, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('zone');
       else this.host.onAction('error', r.reason);
@@ -183,6 +190,7 @@ export class Tools {
     const def = BUILDING_BY_KEY[this.tool.key];
     const x = t[0] - Math.floor((def.w - 1) / 2);
     const y = t[1] - Math.floor((def.h - 1) / 2);
+    if (!canPlaceBuilding(this.host.state, this.tool.key, x, y)) this.host.beforeAction('build');
     const r = placeBuilding(this.host.state, this.tool.key, x, y);
     if (r.ok) {
       bumpRoadVersion();

@@ -60,6 +60,7 @@ export class Renderer {
   chunks = new Map<number, ChunkCache>();
   overlayChunks = new Map<number, HTMLCanvasElement>();
   overlayVersion = 0;
+  private lightDiv = 2;
   private overlayBuiltVersion = -1;
   private overlayBuiltId: string | null = null;
   time = 0; // seconds of real time for animation
@@ -279,11 +280,13 @@ export class Renderer {
     const cam = this.camera;
     const nw = cam.nativeW;
     const nh = cam.nativeH;
-    if (this.back.width !== nw || this.back.height !== nh) {
+    const lightDiv = cam.zoom === 1 ? 4 : 2;
+    if (this.back.width !== nw || this.back.height !== nh || this.lightDiv !== lightDiv) {
       this.back.width = nw;
       this.back.height = nh;
-      this.light.width = Math.ceil(nw / 2);
-      this.light.height = Math.ceil(nh / 2);
+      this.lightDiv = lightDiv;
+      this.light.width = Math.ceil(nw / lightDiv);
+      this.light.height = Math.ceil(nh / lightDiv);
     }
     const ctx = this.ctx;
     ctx.imageSmoothingEnabled = false;
@@ -600,7 +603,7 @@ export class Renderer {
       const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
       const sx = Math.round(wx - this.camera.left);
       const sy = Math.round(wy - this.camera.top);
-      const name = DISTRICT_NAMES[d - 1];
+      const name = state.districtNames[d] || DISTRICT_NAMES[d - 1];
       const w = ctx.measureText(name).width + 6;
       ctx.fillStyle = 'rgba(10,8,16,0.75)';
       ctx.fillRect(sx - w / 2, sy - 7, w, 11);
@@ -761,22 +764,28 @@ export class Renderer {
     l.globalCompositeOperation = 'lighter';
     const L = this.camera.left;
     const T = this.camera.top;
-    const flicker = 0.9 + Math.sin(this.time * 9) * 0.05 + Math.sin(this.time * 23) * 0.05;
+    const tf = this.time;
     const zoom1 = this.camera.zoom === 1;
+    const dv = this.lightDiv;
     for (const lt of lights) {
       if (zoom1 && lt.r < 20) continue;
-      const r = Math.max(6, Math.round(lt.r / 2));
-      const spr = lightSprite(r, lt.c, Math.min(1, lt.i * night * flicker));
-      l.drawImage(spr, Math.round((lt.x - L) / 2 - r), Math.round((lt.y - T) / 2 - r));
+      const r = Math.max(4, Math.round(lt.r / dv));
+      // gentle candle flicker, out of phase per light so the scene never pulses as a whole
+      const phase = (lt.x * 0.37 + lt.y * 0.91) % 6.283;
+      const flicker = 0.96 + Math.sin(tf * 5 + phase) * 0.025 + Math.sin(tf * 11 + phase * 2) * 0.015;
+      const spr = lightSprite(r, lt.c, Math.round(Math.min(1, lt.i * night * flicker) * 20) / 20);
+      l.drawImage(spr, Math.round((lt.x - L) / dv - r), Math.round((lt.y - T) / dv - r));
     }
     // particles as light too (glow ones), budgeted
+    // budget: a stable subset of glow particles casts light (never frame-strobed)
     const plist = this.particles.list;
     const stride = Math.max(1, Math.ceil(plist.length / 160));
-    for (let k = this.frame % stride; k < plist.length; k += stride) {
+    for (let k = 0; k < plist.length; k++) {
       const p = plist[k];
-      if (!p.glow) continue;
-      const spr = lightSprite(6, p.color, 0.6 * Math.min(1, p.life / p.maxLife));
-      l.drawImage(spr, Math.round((p.x - L) / 2 - 6), Math.round((p.y - T) / 2 - 6));
+      if (!p.glow || p.seed % stride !== 0) continue;
+      const pr = dv === 2 ? 6 : 3;
+      const spr = lightSprite(pr, p.color, 0.6 * Math.min(1, p.life / p.maxLife));
+      l.drawImage(spr, Math.round((p.x - L) / dv - pr), Math.round((p.y - T) / dv - pr));
     }
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'multiply';

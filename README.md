@@ -55,8 +55,10 @@ main node.
    Every few weeks an event pauses the game and asks you to choose; consequences last
    for days.
 9. **Seasons** — Thaw, Bloom, Ember and Hush, 30 days each. The Hush brings long nights,
-   hungrier hearths and a bolder Gloam.
-10. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+   hungrier hearths and a bolder Gloam. Festivals on fixed days ask for a choice.
+10. **Trade and the Wellspring** — a Trade Depot sells surplus goods at seasonal prices;
+    click a ley node to see its flow and, from Burgh, deepen it for more mana.
+11. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -80,8 +82,9 @@ node; forty restless dead walk the streets.
 | `Space`, `,` `.` , `Shift`+`1 2 3` | pause, slower/faster, set speed |
 | `1`–`0` `-` `=` `g` `m` `o` `i` | info views · `Tab` view list |
 | `H` | help · `Shift`+`G` grid · `F5` / `F9` quick save / load |
+| `Ctrl`+`Z` | undo the last road, zone, district, building or bulldoze |
 
-Saves go to `localStorage` automatically every three days; the Menu can export/import a
+Saves go to `localStorage` automatically every day; the Menu can export/import a
 Charter as `.json`.
 
 ## Features

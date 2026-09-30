@@ -4,7 +4,7 @@ import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
 import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, timeOfDay } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
@@ -36,6 +36,12 @@ export interface UiHost {
   setEdict(key: string, on: boolean, district: number): void;
   settings: { colorBlind: boolean; uiScale: number };
   setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void;
+  selectedNode: number;
+  deepenNode(i: number): void;
+  canDeepenNode(i: number): string | null;
+  renameDistrict(d: number, name: string): void;
+  undo(): boolean;
+  undoLabel: string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
   selected: Building | null;
@@ -105,6 +111,7 @@ export class UI {
         <div class="quick">
           <button id="q-select" title="Select (X)">Select</button>
           <button id="q-bulldoze" title="Bulldoze (B)">Bulldoze</button>
+          <button id="q-undo" title="Undo last action (Ctrl+Z)">Undo</button>
         </div>
         <div class="hint"></div>
       </div>
@@ -133,6 +140,7 @@ export class UI {
     this.q('#btn-menu').onclick = () => this.toggleMenu();
     this.q('#q-select').onclick = () => this.host.setTool({ kind: 'select' });
     this.q('#q-bulldoze').onclick = () => this.host.setTool({ kind: 'bulldoze' });
+    this.q('#q-undo').onclick = () => this.host.undo();
     this.buildTabs();
     this.buildViews();
     this.buildHelp();
@@ -206,6 +214,8 @@ export class UI {
       }
     }
     this.q('#q-select').classList.toggle('active', t.kind === 'select');
+    (this.q('#q-undo') as HTMLButtonElement).disabled = !this.host.undoLabel;
+    this.q('#q-undo').title = this.host.undoLabel ? `Undo ${this.host.undoLabel} (Ctrl+Z)` : 'Nothing to undo';
     this.q('#q-bulldoze').classList.toggle('active', t.kind === 'bulldoze');
   }
 
@@ -303,6 +313,7 @@ export class UI {
     un.textContent = `${Math.round(s.unrest * 100)}%`;
     un.className = `v ${s.unrest > 0.4 ? 'bad' : s.unrest > 0.25 ? 'warn' : ''}`;
     for (let k = 0; k <= 3; k++) this.q(`#sp-${k}`).classList.toggle('active', k === 0 ? h.paused : !h.paused && h.speed === k);
+    (this.q('#q-undo') as HTMLButtonElement).disabled = !this.host.undoLabel;
     this.drawClock();
     this.refreshTasks();
     this.refreshDemand();
@@ -400,6 +411,10 @@ export class UI {
     const b = this.host.selected;
     const el = this.el.info;
     if (!b) {
+      if (this.host.selectedNode >= 0) {
+        this.refreshNodeInfo(this.host.selectedNode);
+        return;
+      }
       el.classList.add('hidden');
       return;
     }
@@ -448,12 +463,41 @@ export class UI {
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
     const dist = s.district[i];
-    if (dist) rows.push(row('District', `<span style="color:${DISTRICT_COLORS[dist - 1]}">${DISTRICT_NAMES[dist - 1]}</span>`));
+    if (dist) rows.push(row('District', `<span style="color:${DISTRICT_COLORS[dist - 1]}">${districtName(s, dist)}</span>`));
     if (def.zone === Zone.Arcane && b.stock <= 0.5 && b.age > 3) problems.push('No leystone: build a Crystal Mine in the hills with a road to this district.');
     rows.push(row('Mana', b.lit ? '<span class="ley">lit</span>' : '<span class="bad">unlit</span>'));
     rows.push(row('Water', b.watered ? '<span class="good">watered</span>' : '<span class="bad">dry</span>'));
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
+  }
+
+  private nodeShown = -1;
+
+  private refreshNodeInfo(i: number): void {
+    const s = this.host.state;
+    const n = s.nodes[i];
+    const el = this.el.info;
+    if (!n) {
+      el.classList.add('hidden');
+      return;
+    }
+    el.classList.remove('hidden');
+    const depth = n.depth ?? 0;
+    const why = this.host.canDeepenNode(i);
+    const founding = n.x === s.founding.x && n.y === s.founding.y;
+    const rows = [
+      row('Flow', `${90 + depth * NODE_DEEPEN_MANA} mana / day`),
+      row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
+      row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
+    ];
+    el.innerHTML = `<button class="close">✕</button><h2>${founding ? 'The Founding Wellspring' : 'Ley Node'}</h2><div class="muted">(${n.x},${n.y}) · a Vein breaking the surface</div>${rows.join('')}
+      <p class="muted">Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.</p>
+      <button id="n-deepen" ${why ? 'disabled' : ''}>Deepen the Wellspring (${depth < NODE_DEEPEN_COST.length ? NODE_DEEPEN_COST[depth] + ' crowns' : 'done'})</button>
+      ${why ? `<div class="muted" style="margin-top:4px">${why}</div>` : ''}
+      <p class="flavor">${founding ? 'The first light of the valley. It hums a half-tone flat when the dead are restless.' : 'Grass grows in spirals here. Children are told not to sleep within a stone\'s throw of it, and do anyway.'}</p>`;
+    el.querySelector('.close')!.addEventListener('click', () => { this.host.select(null); (this.host as { selectedNode: number }).selectedNode = -1; el.classList.add('hidden'); });
+    (el.querySelector('#n-deepen') as HTMLButtonElement).onclick = () => this.host.deepenNode(i);
+    this.nodeShown = i;
   }
 
   toast(html: string, ms = 6000): void {
@@ -484,7 +528,7 @@ export class UI {
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>H</kbd> this help</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
-            <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load</li>
+            <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
           </ul>
         </div>
         <div>
@@ -498,7 +542,8 @@ export class UI {
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
             <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
-            <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam.</li>
+            <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
+            <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -643,6 +688,7 @@ export class UI {
           <tr><td>Craft tithe</td><td class="r good" data-k="taxCraft"></td></tr>
           <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
           <tr><td>Artifacts sold</td><td class="r good" data-k="artifacts"></td></tr>
+          <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -674,6 +720,7 @@ export class UI {
     set('taxCraft', `+${l.taxCraft.toFixed(0)}`);
     set('taxArcane', `+${l.taxArcane.toFixed(0)}`);
     set('artifacts', `+${l.artifacts.toFixed(0)}`);
+    set('trade', `+${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
@@ -706,7 +753,27 @@ export class UI {
     const st = this.host.state;
     const inUse = districtsInUse(st);
     if (this.edictScope && !inUse.includes(this.edictScope)) this.edictScope = 0;
-    const scopeSel = `<select id="e-scope"><option value="0">City-wide</option>${inUse.map((d) => `<option value="${d}" ${d === this.edictScope ? 'selected' : ''}>${DISTRICT_NAMES[d - 1]}</option>`).join('')}</select>`;
+    const scopeSel = `<select id="e-scope"><option value="0">City-wide</option>${inUse.map((d) => `<option value="${d}" ${d === this.edictScope ? 'selected' : ''}>${districtName(st, d)}</option>`).join('')}</select>`;
+    let stats = '';
+    if (this.edictScope) {
+      const d = this.edictScope;
+      let pop = 0, jobs = 0, happy = 0, hw = 0, tiles = 0, bld = 0, income = 0;
+      for (let i = 0; i < st.district.length; i++) if (st.district[i] === d) tiles++;
+      const l = computeLedger(st);
+      void l;
+      for (const b of st.buildings) {
+        if (!b || st.district[idx(b.x, b.y)] !== d) continue;
+        bld++;
+        const def = BUILDING_BY_KEY[b.kind];
+        if (def.category !== 'zone' || b.state !== 'ok') continue;
+        if (def.zone === Zone.Hearth) pop += b.residents; else jobs += b.workers;
+        const w = Math.max(1, def.zone === Zone.Hearth ? b.residents : b.workers);
+        happy += b.happiness * w; hw += w;
+        const occ = def.zone === Zone.Hearth ? b.residents : b.workers;
+        income += occ * (def.tax ?? 0) * (1 + (b.level - 1) * 0.35) * (0.6 + (b.happiness / 100) * 0.6);
+      }
+      stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>`;
+    }
     const rows = EDICTS.map((e) => {
       const locked = st.milestone < e.unlock;
       const on = this.edictScope ? !!st.districtEdicts[`${this.edictScope}:${e.key}`] : !!st.edicts[e.key];
@@ -721,6 +788,7 @@ export class UI {
     this.el.edicts.innerHTML = `<div class="box panel">
       <h2>Edicts of the Warden-Reeve</h2>
       <p class="muted">Edicts take effect immediately and cost their upkeep every day. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
+      ${stats}
       ${rows.join('')}
       ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
       <div style="text-align:right"><button id="e-close">Close</button></div>
@@ -731,6 +799,8 @@ export class UI {
         this.refreshEdicts();
       };
     });
+    const ren = this.el.edicts.querySelector('#e-rename') as HTMLInputElement | null;
+    if (ren) ren.onchange = () => { this.host.renameDistrict(this.edictScope, ren.value); this.refreshEdicts(); };
     (this.el.edicts.querySelector('#e-scope') as HTMLSelectElement).onchange = (ev) => {
       this.edictScope = Number((ev.target as HTMLSelectElement).value);
       this.refreshEdicts();
