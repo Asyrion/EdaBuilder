@@ -7,7 +7,7 @@ export type Focus =
   | { build: string }
   | { panel: 'edicts' | 'wyrms' | 'budget' | 'views' | 'chronicle' }
   | { overlay: string }
-  | { center: 'founding' | 'gloam' | 'node' | 'cradle' };
+  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' };
 
 export interface QuestDef {
   id: string;
@@ -81,6 +81,12 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_role', chapter: 'Wyrmcraft', title: 'Give a drake a role', hint: 'Wyrms panel: warden of a district or delver at a mine.', when: (s) => s.dragons.some((d) => d.stage >= 2), done: (s) => s.dragons.some((d) => d.role !== 'none'), focus: { panel: 'wyrms' }, reward: 1000, priority: 36 },
   { id: 'w_courier', chapter: 'Wyrmcraft', title: 'Fly goods with a wyvern courier', hint: 'Ember, vein, sky and storm lines grow wings.', when: (s) => s.dragons.some((d) => d.stage >= 3), done: (s) => s.stats.courierTrips > 0, focus: { panel: 'wyrms' }, reward: 1500, priority: 37 },
   { id: 'w_ring', chapter: 'Wyrmcraft', title: 'Win a bout in the Wyrm-Ring', hint: 'Build the Ring (Market Town) and name a champion; bouts are on day 15 of each season.', when: (s) => s.dragons.some((d) => d.stage >= 2) && s.milestone >= 5, done: (s) => s.stats.boutsWon > 0, focus: { build: 'ring' }, reward: 2000, priority: 38 },
+  // The Vein-Wyrm
+  { id: 'v_find', chapter: 'The Vein-Wyrm', title: 'Find the Sleeping Wyrm', hint: 'One distant node is ringed with scale, not stone. Click it. Spires there would wake it.', when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },
+  { id: 'v_tribute', chapter: 'The Vein-Wyrm', title: 'Settle a tribute', hint: 'Awake, it asks each season: crowns or goods. Refuse and it burns.', when: (s) => s.wyrm.state === 'awake', done: (s) => s.stats.wyrmTributes > 0, focus: { center: 'wyrm' }, reward: 500, priority: 42 },
+  { id: 'v_court', chapter: 'The Vein-Wyrm', title: 'Raise the Wyrm-Court', hint: 'Leisure tab, Free City. Needs 40 mana and a third of the folk educated for the song.', when: (s) => s.wyrm.state === 'awake' && s.milestone >= 7, done: (s) => has(s, 'wyrmcourt'), focus: { build: 'wyrmcourt' }, reward: 1000, priority: 43 },
+  { id: 'v_bind', chapter: 'The Vein-Wyrm', title: 'Bind the wyrm', hint: 'When the Court is lit the singers offer the binding. A bound wyrm wards 30 tiles and eats 40 goods a day.', when: (s) => has(s, 'wyrmcourt'), done: (s) => s.wyrm.state === 'bound', focus: { center: 'wyrm' }, reward: 3000, priority: 44 },
+  { id: 'v_egg', chapter: 'The Vein-Wyrm', title: 'Keep the guardian fed for a season', hint: 'Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg.', when: (s) => s.wyrm.state === 'bound', done: (s) => s.firedEvents.some((f) => f.startsWith('egg_vein')), focus: { panel: 'wyrms' }, reward: 2000, priority: 45 },
   // The Crown
   { id: 'c_thorp', chapter: 'The Crown', title: 'Become a Thorp (100 folk)', hint: 'Zone, light, water; keep taxes near 10%.', when: (s) => s.milestone === 1, done: (s) => s.milestone >= 2, reward: 0, priority: 60 },
   { id: 'c_village', chapter: 'The Crown', title: 'Become a Village (220 folk)', hint: 'Healers and a Boneyard keep folk alive and quiet.', when: (s) => s.milestone === 2, done: (s) => s.milestone >= 3, reward: 0, priority: 61 },
@@ -105,6 +111,8 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   if (s.agents.filter((a) => a.kind === AgentKind.Restless).length > 5) return { text: 'The restless walk. Watch coverage and wards lay them down.', focus: { overlay: 'watch' } };
   if (s.goodsShort > Math.max(3, zoneBuildings(s, Zone.Market).length * 0.4)) return { text: 'Markets are running dry. Zone Craft works with a road to them, or import through a Trade Depot.', focus: { overlay: 'goods' } };
   if (s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'hound') && !has(s, 'hunterslodge')) return { text: "Gloam-hounds are hunting at the edge. A Hunters' Lodge or a Warding Wall stops them.", focus: { build: 'hunterslodge' } };
+  if (s.wyrm.state === 'bound' && s.wyrm.sulking > 0) return { text: 'The bound wyrm is sulking: its lair no longer wards the Gloam. Feed it 40 goods a day from the markets.', focus: { overlay: 'goods' } };
+  if (s.wyrm.state === 'sleeping' && s.wyrm.waking >= 50) return { text: 'Spires near the Sleeping Wyrm are waking it. Bulldoze them, or prepare a tribute.', focus: { center: 'wyrm' } };
   if (s.unrest > 0.35) return { text: 'Unrest is high. More Watch coverage, lower taxes, or a Night Curfew edict.', focus: { panel: 'edicts' } };
   if (s.happiness < 40) return { text: 'Folk are unhappy. Check the Happiness view (4) for the worst streets.', focus: { overlay: 'happiness' } };
   const gloamNear = zb.some((b) => s.gloamDist[b.y * s.w + b.x] < 6);

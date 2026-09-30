@@ -18,6 +18,7 @@ import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
 import { deepenNode, canDeepenNode } from './sim/world';
 import { setTraining, setRole } from './sim/wyrmcraft';
+import * as wyrm from './sim/wyrm';
 import { Bot } from './sim/bot';
 
 const SAVE_KEY = 'wardlight.save.v1';
@@ -346,7 +347,7 @@ class Game {
       const night = nightFactor(tod);
       const v = this.renderer.inView;
       this.audio.ambientMix(night, v.ley, v.water, v.fire, v.market);
-      const danger = Math.max(v.fire, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0, this.state.agents.some((a) => a.kind === 3 && a.species === 'hound') && night > 0.3 ? 0.7 : 0);
+      const danger = Math.max(v.fire, this.state.wyrm.flyover > 0 && this.state.agents.some((a) => a.kind === 3 && a.species === 'wyrm' && a.load > 0) ? 1 : 0, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0, this.state.agents.some((a) => a.kind === 3 && a.species === 'hound') && night > 0.3 ? 0.7 : 0);
       this.audio.setMood(night, Math.floor(this.state.day / 30) % 4, danger);
       if (this.state.gameOver && !this.paused) {
         this.paused = true;
@@ -383,7 +384,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS, wyrm };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

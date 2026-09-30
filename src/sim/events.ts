@@ -4,6 +4,7 @@ import { Terrain, Zone, type DragonLine, type GameState } from './types';
 import { LINE_INFO, addEgg } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
+import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
   id: string;
@@ -264,7 +265,49 @@ const VISITORS: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR];
+/** The Sleeping Wyrm (DESIGN 4.29). These fire on their own conditions, before the random draw. */
+export const WYRM_EVENTS: EventDef[] = [
+  {
+    id: 'wyrm_tribute', title: 'The wyrm wants its due',
+    text: 'Its head rests on the ridge above the node, eyes like two ley-lamps. A Tallowkin who claims to understand it says the terms are simple: a tribute each season, rising, or it flies.',
+    when: (s) => s.wyrm.state === 'awake' && s.wyrm.tributeDay >= 0 && s.day >= s.wyrm.tributeDay && !s.pendingEvent,
+    choices: [
+      { label: 'Pay in crowns', desc: 'Costs the current tribute; the next will be half again as much.', apply: (s) => payTribute(s, 'crowns') },
+      { label: 'Pay in goods', desc: `${WYRM_TRIBUTE_GOODS} goods taken from the market shelves. Fewer than half and it counts as a refusal.`, apply: (s) => payTribute(s, 'goods') },
+      { label: 'Refuse', desc: 'It flies over the city and burns up to four buildings, then sleeps again; spires near it will wake it once more.', apply: (s) => refuse(s) },
+    ],
+  },
+  {
+    id: 'wyrm_binding', title: 'The song at the Court',
+    text: 'The Wyrm-Court is lit and the singers are ready. Tonight they can walk to the node and sing the binding: a night of song that ends, if the schools have taught them well, with a guardian.',
+    when: (s) => s.wyrm.state === 'awake' && hasCourt(s) && !s.pendingEvent && (s.wyrm.tributeDay < 0 || s.day < s.wyrm.tributeDay) && (s.wyrm.askedBind < 0 || s.day - s.wyrm.askedBind >= 20),
+    choices: [
+      { label: 'Sing the binding', desc: 'Needs a third of the folk educated. Otherwise the singers falter and the wyrm demands tribute at once.', apply: (s) => { if (s.educated >= 0.3) return bind(s); s.wyrm.tributeDay = s.day; s.modifiers.push({ kind: 'happiness', value: -4, until: s.day + 10, label: 'Failed binding' }); return 'The song breaks before dawn. The wyrm laughs, if wyrms laugh, and names its price.'; } },
+      { label: 'Not yet', desc: 'Wait a season; the Court keeps its upkeep.', apply: () => 'The singers practise. The wyrm listens from the ridge.' },
+    ],
+  },
+  {
+    id: 'wyrm_sulks', title: 'The guardian sulks',
+    text: 'The markets have not fed the wyrm for ten days. It lies with its back to the city and the Gloam creeps a little closer each night. Its keeper says it would take leystone, or coin, as an apology.',
+    when: (s) => s.wyrm.state === 'bound' && s.wyrm.sulking >= 2 && s.wyrm.sulking % 10 === 2 && !s.pendingEvent,
+    choices: [
+      { label: 'Send leystone (60)', desc: 'Taken from Arcane workshops; the wyrm is content again at once.', apply: (s) => { let left = 60; forEachBuilding(s, (b) => { if (left > 0 && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.stock > 0) { const t = Math.min(b.stock, left); b.stock -= t; left -= t; } }); if (left > 30) return 'There is not enough leystone in the city. The wyrm sniffs at what came and turns away.'; s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'It eats the leystone like bread and comes back to its post by the node.'; } },
+      { label: 'Pay 3,000 crowns', desc: 'Bought goods from Belerial are carted to it.', apply: (s) => { s.treasury -= 3000; s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'Forty carts of Belerial bread and beer. The wyrm is content, for now.'; } },
+      { label: 'Let it sulk', desc: `No ward from its lair until markets feed it ${WYRM_EATS} goods a day. Forty days of sulking and it dies.`, apply: () => 'It does not look at the city. The lanterns at the edge burn alone.' },
+    ],
+  },
+  {
+    id: 'egg_vein', title: 'A vein egg',
+    text: 'The bound wyrm has been fed and content for a full season. At dawn the keepers find an egg on the warm stone of its node: ley-blue, veined with light, humming the note the spires hum.',
+    when: (s) => s.wyrm.state === 'bound' && s.wyrm.sulking === 0 && s.wyrm.fedDays >= 30 && !s.pendingEvent,
+    choices: [
+      { label: 'Keep the egg', desc: 'Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown for 6,000 crowns.', apply: (s) => { s.wyrm.fedDays = 0; const d = addEgg(s, 'vein'); if (d) return `The vein egg is carried to the cradle under guard. The tamers call it ${d.name}.`; s.treasury += 6000; return 'No cradle had room. The Crown pays 6,000 crowns and sends a warded coach for it.'; } },
+      { label: 'Leave it with the wyrm', desc: 'Happiness +5 for 20 days; the wyrm is grateful.', apply: (s) => { s.wyrm.fedDays = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: 'The wyrm is grateful' }); return 'The wyrm curls around it. Folk come to the edge of the lair to hear the two notes together.'; } },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR, ...WYRM_EVENTS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -279,6 +322,19 @@ export function maybeFireCalendar(s: GameState): void {
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
     s.firedEvents.push(`${tag}:?`);
     s.lastEventDay = s.day;
+    return;
+  }
+}
+
+/** Wyrm events fire on their own terms (no random draw, no 18-day spacing). */
+export function maybeFireWyrm(s: GameState): void {
+  if (s.pendingEvent || s.gameOver || s.wyrm.state === 'none') return;
+  for (const e of WYRM_EVENTS) {
+    if (!e.when(s)) continue;
+    if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.firedEvents.push(`${e.id}:?`);
+    if (s.firedEvents.length > 40) s.firedEvents.shift();
     return;
   }
 }

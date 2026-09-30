@@ -1,4 +1,6 @@
 /** JSON serialization of GameState. Typed arrays are base64-encoded. */
+import { chooseWyrmNode, newWyrm } from './wyrm';
+import type { WyrmState } from './types';
 import { SAVE_VERSION, SERVICE_TYPES, type GameState, type ServiceType } from './types';
 import { markAllDirty } from './world';
 import { recomputeAll } from './sim';
@@ -71,6 +73,9 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
   state.stats.houndsTotal = state.stats.houndsTotal ?? 0;
   state.stats.houndRaids = state.stats.houndRaids ?? 0;
+  state.stats.wyrmTributes = state.stats.wyrmTributes ?? 0;
+  state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
+  if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
   // rebuild derived layers
   const n = state.w * state.h;
   for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);

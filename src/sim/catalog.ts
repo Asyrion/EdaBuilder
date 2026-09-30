@@ -296,6 +296,13 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
 
+  {
+    key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
+    desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day.',
+    flavor: 'The song has no words. The singers say the wyrm supplies them.',
+    w: 3, h: 3, cost: 18000, upkeep: 150, manaUse: 40, needsMana: true, landValue: 12, unlock: 7, wonder: true,
+  },
+
   // ---- special ----
   {
     key: 'stake', name: 'Founding Stake', category: 'special',
@@ -365,8 +372,8 @@ export const MILESTONES: Milestone[] = [
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
   { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
-  { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder'],
-    text: 'The Crown grants you the right to raise a Lantern of Vell.' },
+  { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt'],
+    text: 'The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken.' },
   { name: 'Beacon of Eda', pop: 2200, grant: 25000, unlocks: [],
     text: 'Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley.' },
 ];

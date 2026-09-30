@@ -798,6 +798,125 @@ function drawWyvern(line: number, frame: number): { p: Painter; glow: Painter } 
   return { p, glow };
 }
 
+
+/** The Vein-Wyrm coiled around a ley node. Returns back (behind the stones) and front halves. */
+function drawWyrmCoil(st: 'sleeping' | 'awake' | 'dead'): { back: Painter; front: Painter; glowBack: Painter; glowFront: Painter } {
+  const W = 104;
+  const H = 72;
+  const p = new Painter(W, H);
+  const glow = new Painter(W, H);
+  const cx = 52;
+  const cy = 44; // ring centre (the node's pool)
+  const bone = st === 'dead';
+  const base: Col = bone ? 'bone' : 'stone2';
+  const dark: Col = bone ? 'whitewash2' : 'stone1';
+  const ridge: Col = bone ? 'whitewash' : 'stone3';
+  const rune: Col = bone ? 'ironDark' : 'ley2';
+  // ring body: an ellipse band, thick, with a gap at the front-right where the tail ends
+  const rx = 44;
+  const ry = 22;
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const u = (x - cx) / rx;
+      const v = (y - cy) / ry;
+      const d = Math.sqrt(u * u + v * v);
+      if (d < 0.62 || d > 1.0) continue;
+      const ang = Math.atan2(v, u);
+      if (bone && Math.floor((ang + Math.PI) / 0.28) % 3 === 1) continue; // gaps between ribs
+      if (ang > 0.35 && ang < 0.95) continue; // the gap the tail leaves
+      // shading: top of the band lighter, ridge line along the middle
+      const band = (d - 0.62) / 0.38;
+      let c: Col = base;
+      if (band < 0.22) c = dark;
+      else if (band > 0.8) c = ridge;
+      if (!bone && band > 0.45 && band < 0.58 && Math.floor((ang + Math.PI) * 6) % 2 === 0) c = ridge; // scale ridges
+      if (!bone && band > 0.3 && band < 0.45 && Math.floor((ang + Math.PI) * 4) % 3 === 0) { c = rune; glow.px(x, y, 'ley1', 120); }
+      p.px(x, y, c);
+    }
+  // tail tip at the gap
+  p.line(cx + 38, cy + 10, cx + 46, cy + 4, base);
+  p.px(cx + 47, cy + 3, ridge);
+  if (st === 'sleeping') {
+    // head resting on the ring at the front-left, eye closed
+    p.rect(cx - 40, cy + 6, 16, 8, base);
+    p.rect(cx - 44, cy + 8, 6, 5, base);
+    p.rect(cx - 40, cy + 12, 16, 2, dark);
+    p.line(cx - 34, cy + 9, cx - 31, cy + 9, 'outline'); // closed eye
+    p.px(cx - 29, cy + 5, ridge);
+    p.px(cx - 26, cy + 5, ridge);
+  } else if (st === 'awake') {
+    // neck rising from the back-right, head turned toward the city, eyes lit
+    p.rect(cx + 20, cy - 34, 8, 20, base);
+    p.rect(cx + 20, cy - 34, 2, 20, dark);
+    p.rect(cx + 14, cy - 42, 18, 9, base);
+    p.rect(cx + 10, cy - 39, 5, 5, base);
+    p.px(cx + 16, cy - 40, 'leyGlow');
+    p.px(cx + 20, cy - 40, 'leyGlow');
+    glow.rect(cx + 15, cy - 41, 7, 3, 'leyGlow', 220);
+    for (let k = 0; k < 4; k++) p.px(cx + 22 + k * 3, cy - 44, ridge);
+    p.px(cx + 31, cy - 37, ridge);
+  } else {
+    // skull at the front-left
+    p.rect(cx - 40, cy + 4, 14, 9, 'bone');
+    p.rect(cx - 44, cy + 7, 5, 5, 'bone');
+    p.px(cx - 35, cy + 7, 'outline');
+    p.px(cx - 31, cy + 7, 'outline');
+    p.rect(cx - 39, cy + 12, 12, 1, 'whitewash2');
+  }
+  p.outline('outline');
+  // split into back (above the ring centre) and front halves so the node's stones sit inside the coil
+  const back = new Painter(W, H);
+  const front = new Painter(W, H);
+  const glowBack = new Painter(W, H);
+  const glowFront = new Painter(W, H);
+  for (let y = 0; y < H; y++) {
+    const rowStart = y * W * 4;
+    const rowEnd = rowStart + W * 4;
+    (y < cy ? back : front).data.set(p.data.subarray(rowStart, rowEnd), rowStart);
+    (y < cy ? glowBack : glowFront).data.set(glow.data.subarray(rowStart, rowEnd), rowStart);
+  }
+  return { back, front, glowBack, glowFront };
+}
+
+/** The wyrm in flight: a great grey shape with ley-veined wings. */
+function drawWyrmFly(frame: number): { p: Painter; glow: Painter } {
+  const W = 60;
+  const H = 40;
+  const p = new Painter(W, H);
+  const glow = new Painter(W, H);
+  const wing: Col = 'stone2';
+  if (frame === 0) {
+    p.poly([[10, 24], [24, 24], [4, 4], [0, 12]], wing);
+    p.poly([[36, 24], [50, 24], [56, 4], [60, 12]], wing);
+    glow.poly([[12, 22], [22, 22], [8, 8]], 'ley2', 70);
+    glow.poly([[38, 22], [48, 22], [52, 8]], 'ley2', 70);
+  } else {
+    p.poly([[10, 24], [24, 24], [2, 36], [0, 30]], wing);
+    p.poly([[36, 24], [50, 24], [58, 36], [60, 30]], wing);
+    glow.poly([[12, 26], [22, 26], [6, 32]], 'ley2', 70);
+    glow.poly([[38, 26], [48, 26], [54, 32]], 'ley2', 70);
+  }
+  // veins on the wings
+  for (let k = 0; k < 3; k++) { p.line(16, 24, 6 + k * 4, frame === 0 ? 8 + k * 3 : 32 - k * 3, 'stone1'); p.line(44, 24, 54 - k * 4, frame === 0 ? 8 + k * 3 : 32 - k * 3, 'stone1'); }
+  // body, tail, neck, head
+  p.rect(22, 22, 18, 7, 'stone2');
+  p.rect(22, 28, 18, 2, 'stone1');
+  for (let k = 0; k < 6; k++) p.px(24 + k * 3, 21, 'stone3');
+  p.line(22, 25, 6, 34, 'stone2');
+  p.line(22, 26, 7, 35, 'stone1');
+  p.px(5, 35, 'stone3');
+  p.rect(40, 18, 5, 6, 'stone2');
+  p.rect(44, 14, 10, 6, 'stone2');
+  p.px(52, 16, 'leyGlow');
+  p.px(50, 16, 'leyGlow');
+  glow.rect(49, 15, 5, 3, 'leyGlow', 220);
+  p.px(46, 12, 'stone3');
+  p.px(49, 11, 'stone3');
+  for (let k = 0; k < 4; k++) { p.px(27 + k * 3, 24 + (k % 2), 'ley2'); glow.px(27 + k * 3, 24 + (k % 2), 'ley1', 140); }
+  p.outline('outline');
+  return { p, glow };
+}
+
 function drawRing(): { p: Painter; glow: Painter; ax: number; ay: number } {
   // 3x3 arena: sand oval inside a stone stand
   const W = 96;
@@ -1410,6 +1529,12 @@ export function generateSprites(): SpriteDef[] {
         out.push({ name: `dragon_${line}_${stage}_${f}`, p: d.p, glow: d.glow, ax: Math.floor(d.p.w / 2), ay: d.p.h });
       }
   for (let line = 0; line < 8; line++) for (let f = 0; f < 2; f++) { const w = drawWyvern(line, f); out.push({ name: `wyvern_${line}_${f}`, p: w.p, glow: w.glow, ax: 14, ay: 18 }); }
+  for (const st of ['sleeping', 'awake', 'dead'] as const) {
+    const w = drawWyrmCoil(st);
+    out.push({ name: `wyrm_${st}_back`, p: w.back, glow: w.glowBack, ax: 52, ay: 36 });
+    out.push({ name: `wyrm_${st}_front`, p: w.front, glow: w.glowFront, ax: 52, ay: 36 });
+  }
+  for (let f = 0; f < 2; f++) { const w = drawWyrmFly(f); out.push({ name: `wyrm_fly_${f}`, p: w.p, glow: w.glow, ax: 30, ay: 34 }); }
   push('b_ring', drawRing());
   push('gate_2', drawGate(2));
   push('gate_3', drawGate(3));

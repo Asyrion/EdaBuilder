@@ -4,6 +4,7 @@ import { edictOn, edictShare, modifierSum } from './edicts';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
+import { wyrmGuards } from './wyrm';
 import { delverBonus, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
@@ -84,6 +85,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   }
   h -= (tax - 10) * 1.6;
   h += modifierSum(state, 'happiness');
+  if (wyrmGuards(state)) h += 10;
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {

@@ -5,6 +5,7 @@ import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, ty
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
+import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -51,6 +52,19 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
           acc[idx(x, y)] += str * (1 - (d / r) * 0.6);
         }
     }
+  }
+  if (type === 'ward' && wyrmGuards(state)) {
+    const wn = wyrmNode(state)!;
+    const r = WYRM_LAIR_RADIUS;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        const x = wn.x + dx;
+        const y = wn.y + dy;
+        if (!inBounds(x, y)) continue;
+        const d = Math.hypot(dx, dy);
+        if (d > r) continue;
+        acc[idx(x, y)] += 1 - (d / r) * 0.6;
+      }
   }
   if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
   if (type === 'watch' || type === 'fire') {
