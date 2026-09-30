@@ -174,10 +174,15 @@ grow on to true wyrms. Vell's cities put them to work as couriers over the Gloam
 wardens over the districts, delvers in the leystone seams, and champions in the
 **Wyrm-Ring**, where bouts are fought to first blood and never to death. Their shed
 scale is armour and artifact; ember-drakes breathe *wyrmfire* that alchemists prize above
-moonwort. The five known lines: **ember** (red, from warm stone), **vein** (ley-blue,
-from a wyrm's own clutch), **sky** (white, from skyray nests), **grey** (ash, half
-fossil, out of the Concord vaults; the Gloam cannot touch them) and **bone** (ivory,
-from boneyards; they keep the dead asleep).
+moonwort. The eight known lines: **ember** (red, from warm stone), **vein** (ley-blue, from a
+wyrm's own clutch), **sky** (white, from skyray nests; wyverns only), **grey** (ash,
+half fossil, out of the Concord vaults; the Gloam cannot touch them), **bone** (ivory,
+from boneyards; they keep the dead asleep), **tide** (teal, from marsh-wyrm nests; they
+swim the rivers), **storm** (violet with lightning veins, hatched when a mana-storm
+passes a cradle; they eat weather) and **glim** (tiny and gold, from old Moth-Lofts; a
+flock of them lights a street). Vell's naturalists name three bodies: the **drake**
+(four legs, no wings), the **wyvern** (two legs and wings) and the **wyrm** (a serpent
+the length of a street, which never leaves its lair and never needs to).
 
 ## 7. Glossary
 
