@@ -57,6 +57,15 @@
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second
   job.
 
+## Fantasy roadmap (see DESIGN.md §8)
+
+Iterations 6–11, in order: (6) creature agents with glimmoths, thrumhares and wisps;
+(7) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) the Sleeping Wyrm: waking, tribute,
+flyover, Wyrm-Court binding; (9) magical buildings: Moth-Loft, Glimhouse, Weather Vane,
+Observatory, Portal Arch; (10) Concord Wardens and the Golem Foundry, Drake Mews, skyrays
+and the Ley Beacon; (11) vehicles and the sky layer: floating carts, barges, drake riders,
+airships.
+
 ## Prioritized ideas for the next iteration
 
 1. **Per-district problem summary** in the district overlay (unlit / dry / no goods

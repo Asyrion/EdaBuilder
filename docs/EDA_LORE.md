@@ -134,9 +134,45 @@ The Concord's god the Aurel is no longer worshipped, only remembered. Vell keeps
   ley-lines faintly visible in the streets like veins under skin, and beyond the last
   lantern the grey hush of the Gloam.
 
+## 8. Beasts and Wyrms of the Veins *(proposed)*
+
+Where the ley runs shallow, life bends toward it. Vell's naturalists group the creatures
+of the Long Dusk by how much thrum they carry.
+
+- **Glim-born** (a glim in the blood, otherwise ordinary): **glimmoths**, luminous moths
+  that swarm nodes and spires at night and shed *glim-dust*, prized by alchemists;
+  **thrumhares**, meadow hares that freeze when a spire lights and are said to be lucky;
+  **marsh-wyrms**, long river eels that lair under bridges in Bloom and hate running water
+  called by the Veshari.
+- **Gloam-born** (made by wild magic): **Gloam-hounds**, grey pack-beasts that hunt at the
+  edge of the light and grow bold in the Hush; **wisps**, the small lights over a
+  Boneyard, harmless unless the dead are restless, when they multiply and lead the Watch to
+  them.
+- **Concord-made**: the **Wardens**, stone constructs of the Aurel Concord that sleep in
+  the hills where the Great Conduit once ran. A mine can wake one. Unbound they wander
+  and break things; bound at a Golem Foundry they labour without sleep, but a wild surge
+  sends them mad.
+- **Sky-born**: **skyrays**, manta-shaped drifters that ride the high ley currents and
+  cross the valleys in Bloom and Ember, casting slow shadows. Lured by a beacon they shed
+  *rayscale*, the lightest leystone there is.
+- **Vein-born**: the **Vein-Wyrms**, Eda's dragons. The Veins dreamed them before there
+  were people. They sleep coiled around the deepest nodes, and a wardlight that drinks
+  from a wyrm's node drinks from the wyrm. A woken wyrm wants tribute; a bound wyrm (sung to
+  by a Tallowkin Wyrm-Singer at a Wyrm-Court) becomes the city's guardian and its
+  hungriest citizen. **Drakes** are their small cousins, bred in mews as mounts for the
+  Watch.
+
+The Concord kept wyrms as engines. That, the Grimmen say, is what the Veins were really
+angry about.
+
 ## 7. Glossary
 
 - **Charter** — the royal writ that founds a wardlight; also the game's save.
+- **Glim-dust, rayscale, wyrm-scale** — rare reagents from glimmoths, skyrays and wyrms.
+- **Gloam-hound** — grey pack-beast of the Gloam; hunts at night, bold in the Hush.
+- **Vein-Wyrm** — a dragon of Eda, sleeping around a deep node; see §8.
+- **Warden (Concord)** — a sleeping stone construct in the hills; not to be confused with
+  the Warden-Reeve.
 - **Gloam** — the blighted wilderness; the game's creeping hazard.
 - **Glim** — the trace of thrum in a living (or formerly living) body.
 - **Leystone** — crystal that conducts ley; mined in hills.
