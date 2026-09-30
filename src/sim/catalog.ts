@@ -103,9 +103,9 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- water ----
   {
     key: 'well', name: 'Well', category: 'water',
-    desc: 'Blessed in the name of Vesh. Waters buildings within 7 tiles (9 if dug near water).',
+    desc: 'Blessed in the name of Vesh. Waters buildings within 8 tiles (10 if dug near water).',
     flavor: 'Drop a coin in and the water-mage hears it. Drop two and she answers.',
-    w: 1, h: 1, cost: 300, upkeep: 4, manaUse: 0, waterRadius: 7, waterNearBonus: 2, unlock: 0,
+    w: 1, h: 1, cost: 300, upkeep: 4, manaUse: 0, waterRadius: 8, waterNearBonus: 2, unlock: 0,
   },
   {
     key: 'cistern', name: 'Cistern of Vesh', category: 'water',
