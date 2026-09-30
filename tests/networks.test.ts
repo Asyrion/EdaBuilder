@@ -35,7 +35,7 @@ describe('mana network', () => {
     s.nodes = [s.nodes[0]];
     flatten(s, f.x - 32, f.y - 3, f.x + 32, f.y + 6);
     buildRoad(s, RoadType.Track, roadPath(f.x - 30, f.y + 3, f.x + 30, f.y + 3, false));
-    for (let x = f.x - 29; x <= f.x + 29; x++) placeBuildingRaw(s, 'arcane', x, f.y + 2, 3); // 12 mana each
+    for (let x = f.x - 29; x <= f.x + 29; x++) placeBuildingRaw(s, 'arcane', x, f.y + 2, 3); // 8 mana each
     updateMana(s);
     expect(s.manaDemand).toBeGreaterThan(s.manaSupply);
     expect(s.brownout).toBeGreaterThan(0);

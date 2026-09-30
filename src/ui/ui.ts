@@ -50,6 +50,7 @@ export class UI {
   category = 'roads';
   private el: Record<string, HTMLElement> = {};
   private lastLogLen = -1;
+  private lastLogMsg: unknown = null;
   private lastMilestone = -1;
   private toastTimer = 0;
   private tipIndex = 0;
@@ -99,6 +100,7 @@ export class UI {
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views</h3><div class="list"></div><div class="legend"></div></div>
       <div id="demand" class="panel"></div>
+      <div id="tasks" class="panel hidden"><h3>Charter tasks</h3><div class="list"></div></div>
       <div id="log" class="panel"></div>
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
@@ -109,7 +111,7 @@ export class UI {
       <div id="menu" class="modal hidden"></div>
       <div id="gameover" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
@@ -277,6 +279,7 @@ export class UI {
     un.className = `v ${s.unrest > 0.4 ? 'bad' : s.unrest > 0.25 ? 'warn' : ''}`;
     for (let k = 0; k <= 3; k++) this.q(`#sp-${k}`).classList.toggle('active', k === 0 ? h.paused : !h.paused && h.speed === k);
     this.drawClock();
+    this.refreshTasks();
     this.refreshDemand();
     this.refreshLog();
     this.refreshInfo();
@@ -287,6 +290,34 @@ export class UI {
       this.refreshItems();
     }
     if (s.gameOver) this.showGameOver();
+  }
+
+  private refreshTasks(): void {
+    const s = this.host.state;
+    const el = this.el.tasks;
+    if (s.milestone >= 2) {
+      el.classList.add('hidden');
+      return;
+    }
+    el.classList.remove('hidden');
+    let roads = 0;
+    for (let i = 0; i < s.road.length; i++) if (s.road[i]) roads++;
+    let zones = 0;
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i]) zones++;
+    const has = (k: string) => s.buildings.some((b) => b && b.kind === k);
+    const tasks: [string, boolean][] = [
+      ['Draw a road from the Founding Stake (Roads tab, drag)', roads > 8],
+      ['Zone Hearths beside the road (Zones tab, drag a rectangle)', zones >= 6],
+      ['Zone a few Craft and Market tiles for jobs', s.zone.some((z) => z === Zone.Craft) && s.zone.some((z) => z === Zone.Market)],
+      ['Raise a Ley Spire within 6 tiles of the node (Ley tab)', has('spire')],
+      ['Dig a Well (Water tab)', has('well')],
+      ['Build a Watch Post and a Shrine of Aume (Services tab)', has('watchpost') && has('shrine')],
+      ['Reach 40 folk to become a Hamlet, then build a Boneyard', s.milestone >= 1 && has('boneyard')],
+    ];
+    const first = tasks.findIndex(([, done]) => !done);
+    el.querySelector('.list')!.innerHTML = tasks
+      .map(([t, done], i) => `<div class="${done ? 'done' : i === first ? 'now' : ''}">${done ? '✓' : '○'} ${t}</div>`)
+      .join('');
   }
 
   private drawClock(): void {
@@ -332,8 +363,10 @@ export class UI {
 
   private refreshLog(): void {
     const s = this.host.state;
-    if (s.messages.length === this.lastLogLen && this.el.log.children.length) return;
+    const newest = s.messages[s.messages.length - 1];
+    if (s.messages.length === this.lastLogLen && newest === this.lastLogMsg && this.el.log.children.length) return;
     this.lastLogLen = s.messages.length;
+    this.lastLogMsg = newest;
     const last = s.messages.slice(-7).reverse();
     this.el.log.innerHTML = last.map((m) => `<div class="m ${m.kind}"><span class="d">d${Math.floor(m.tick / 900)}</span>${m.text}</div>`).join('');
   }

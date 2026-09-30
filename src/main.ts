@@ -13,6 +13,7 @@ import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
 import * as actions from './sim/actions';
+import { Bot } from './sim/bot';
 
 const SAVE_KEY = 'wardlight.save.v1';
 
@@ -309,7 +310,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

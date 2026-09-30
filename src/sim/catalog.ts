@@ -89,15 +89,15 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'nexus', name: 'Ley Nexus', category: 'ley',
-    desc: 'A ring of spires around a leystone heart. Reaches 9 tiles and stores 80 mana to soak up peaks in demand.',
+    desc: 'A ring of spires around a leystone heart. Reaches 9 tiles and stores 120 mana to soak up peaks in demand.',
     flavor: 'The Concord built these by the thousand. Vell builds them one at a time, carefully.',
-    w: 2, h: 2, cost: 5000, upkeep: 30, manaUse: 0, manaStorage: 80, unlock: 4,
+    w: 2, h: 2, cost: 5000, upkeep: 30, manaUse: 0, manaStorage: 120, unlock: 4,
   },
   {
     key: 'font', name: 'Thrum Font', category: 'ley',
-    desc: 'A bored well into a deep Vein. Produces 25 mana a day anywhere. Expensive and a little dangerous.',
+    desc: 'A bored well into a deep Vein. Produces 40 mana a day anywhere. Expensive and a little dangerous.',
     flavor: 'The Tallowkin who bore the shaft are paid triple and buried for free.',
-    w: 2, h: 2, cost: 9000, upkeep: 60, manaUse: 0, manaProduce: 25, unlock: 6,
+    w: 2, h: 2, cost: 6500, upkeep: 50, manaUse: 0, manaProduce: 40, unlock: 4,
   },
 
   // ---- water ----
@@ -295,11 +295,11 @@ export const MILESTONES: Milestone[] = [
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square'],
     text: 'A village with a name on the Crown\'s maps. Scholars and a proper Watch follow.' },
-  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus'],
-    text: 'The Tallowkin spire-wrights arrive. Arcane districts and lantern-ways may be laid.' },
+  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font'],
+    text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways and Thrum Fonts may be raised.' },
   { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
-  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'font'],
+  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
   { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder'],
     text: 'The Crown grants you the right to raise a Lantern of Vell.' },
@@ -324,4 +324,4 @@ export function isZoneUnlocked(milestone: number, zone: Zone): boolean {
 
 export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
-export const NODE_MANA = 60;
+export const NODE_MANA = 90;

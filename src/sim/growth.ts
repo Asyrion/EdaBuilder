@@ -31,7 +31,7 @@ export function trySpawnBuildings(state: GameState, attempts = 5): void {
     if (!z || state.bIndex[i] >= 0 || state.gloam[i] || state.road[i]) continue;
     const d = demandFor(state, z);
     if (d <= 0) continue;
-    if (!rng.chance(Math.min(1, d) * 0.7)) continue;
+    if (!rng.chance(Math.min(1, d) * 0.45)) continue;
     const x = i % MAP_W;
     const y = (i / MAP_W) | 0;
     if (!touchesRoad(state, x, y, 1, 1)) continue;
@@ -147,7 +147,7 @@ export function dailyBuildings(state: GameState): void {
       // move-in / move-out
       const d = state.demand.hearth;
       if (b.residents < cap && b.happiness > 35 && d > -0.3) {
-        const gain = 1 + (b.happiness > 60 ? 1 : 0) + (d > 0.5 ? 1 : 0);
+        const gain = 1 + (b.happiness > 65 && d > 0.5 ? 1 : 0);
         b.residents = Math.min(cap, b.residents + gain);
       } else if (b.happiness < 30 && b.residents > 0 && rng.chance(0.5)) {
         b.residents = Math.max(0, b.residents - 1);

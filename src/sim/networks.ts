@@ -11,7 +11,7 @@ const NODE_RADIUS = 3;
 export function manaUseOf(b: Building): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
-  return def.category === 'zone' ? def.manaUse * b.level : def.manaUse;
+  return def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
 }
 
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */

@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+await page.goto('http://localhost:4173/');
+await page.waitForFunction(() => window.__game);
+await page.screenshot({ path: 'shots/title.png' });
+await page.fill('#t-name', 'Ashmere'); await page.fill('#t-seed', '2024');
+await page.click('#t-new');
+await page.waitForTimeout(300);
+await page.screenshot({ path: 'shots/help.png' });
+await page.keyboard.press('h');
+await page.waitForTimeout(300);
+await page.evaluate(() => { const g = window.__game; g.renderer.camera.setZoom(3); });
+await page.waitForTimeout(300);
+await page.screenshot({ path: 'shots/start.png' });
+await browser.close();

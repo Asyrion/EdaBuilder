@@ -1,0 +1,136 @@
+import { describe, expect, it } from 'vitest';
+import { createGame, placeBuildingRaw } from '../src/sim/world';
+import { run, recomputeAll } from '../src/sim/sim';
+import { buildRoad, paintZone, placeBuilding, roadPath } from '../src/sim/actions';
+import { AgentKind, RoadType, TICKS_PER_DAY, Zone, idx } from '../src/sim/types';
+import { dailyDeath, dailyGloam, dailySurge, dailyFire } from '../src/sim/hazards';
+import { updateMana } from '../src/sim/networks';
+import { flatten } from './helpers';
+
+describe('restless dead', () => {
+  it('rise when the dead are not quieted, and the Watch lays them down', () => {
+    const s = createGame(11, 'Grave');
+    const f = s.founding;
+    flatten(s, f.x - 12, f.y - 4, f.x + 12, f.y + 12);
+    buildRoad(s, RoadType.Track, roadPath(f.x - 10, f.y + 3, f.x + 10, f.y + 3, false));
+    for (let x = f.x - 9; x <= f.x + 9; x++) {
+      const b = placeBuildingRaw(s, 'hearth', x, f.y + 4, 3);
+      b.residents = 14;
+    }
+    s.population = 19 * 14;
+    recomputeAll(s);
+    // no deathcare at all: simulate deaths directly
+    s.unquieted = 45;
+    dailyDeath(s);
+    const restless = s.agents.filter((a) => a.kind === AgentKind.Restless).length;
+    expect(restless).toBeGreaterThanOrEqual(2);
+    expect(s.stats.restlessTotal).toBe(restless);
+    // strong watch coverage everywhere -> they get cleared over a few days
+    s.coverage.watch.fill(255);
+    for (let d = 0; d < 12; d++) dailyDeath(s);
+    expect(s.agents.filter((a) => a.kind === AgentKind.Restless).length).toBeLessThan(restless);
+  });
+  it('ends the game in the Long Night at 40 restless', () => {
+    const s = createGame(12, 'Night');
+    const f = s.founding;
+    flatten(s, f.x - 12, f.y - 4, f.x + 12, f.y + 12);
+    buildRoad(s, RoadType.Track, roadPath(f.x - 10, f.y + 3, f.x + 10, f.y + 3, false));
+    const b = placeBuildingRaw(s, 'hearth', f.x, f.y + 4, 1);
+    b.residents = 4;
+    s.unquieted = 20 * 45;
+    dailyDeath(s);
+    expect(s.gameOver).toMatch(/Long Night/);
+  });
+});
+
+describe('gloam', () => {
+  it('creeps over unwarded land and is burned back by a lit ward lantern', () => {
+    const s = createGame(13, 'Grey');
+    const before = s.stats.gloamTiles || s.gloam.reduce((a, b) => a + b, 0);
+    s.day = 40;
+    for (let d = 0; d < 8; d++) {
+      s.day++;
+      dailyGloam(s);
+    }
+    const after = s.gloam.reduce((a, b) => a + b, 0);
+    expect(after).toBeGreaterThan(before);
+    // put a lit ward lantern on a gloam pocket
+    let gi = -1;
+    for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { gi = i; break; }
+    const gx = gi % s.w;
+    const gy = (gi / s.w) | 0;
+    const b = placeBuildingRaw(s, 'wardlantern', Math.min(s.w - 2, gx + 1), Math.min(s.h - 2, gy + 1));
+    b.lit = true;
+    dailyGloam(s);
+    let near = 0;
+    for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) {
+      const x = b.x + dx, y = b.y + dy;
+      if (x >= 0 && y >= 0 && x < s.w && y < s.h && dx * dx + dy * dy <= 36) near += s.gloam[idx(x, y)];
+    }
+    expect(near).toBe(0);
+  });
+  it('loses the game when gloam reaches the founding node', () => {
+    const s = createGame(14, 'Lost');
+    const f = s.founding;
+    s.gloam[idx(f.x + 2, f.y)] = 1;
+    dailyGloam(s);
+    expect(s.gameOver).toMatch(/light goes out/);
+  });
+});
+
+describe('wild surge', () => {
+  it('warps buildings after five days of heavy overdraw, then grants a grace period', () => {
+    const s = createGame(15, 'Surge');
+    const f = s.founding;
+    flatten(s, f.x - 32, f.y - 4, f.x + 32, f.y + 8);
+    s.nodes = [s.nodes[0]];
+    buildRoad(s, RoadType.Track, roadPath(f.x - 30, f.y + 3, f.x + 30, f.y + 3, false));
+    for (let x = f.x - 29; x <= f.x + 29; x++) placeBuildingRaw(s, 'arcane', x, f.y + 2, 3);
+    updateMana(s);
+    expect(s.manaDemand).toBeGreaterThan(s.manaSupply * 1.25);
+    for (let d = 0; d < 4; d++) dailySurge(s);
+    expect(s.stats.surgesTotal).toBe(0);
+    dailySurge(s);
+    expect(s.stats.surgesTotal).toBe(1);
+    expect(s.buildings.filter((b) => b && b.state === 'ruin').length).toBeGreaterThanOrEqual(2);
+    expect(s.overdrawDays).toBeLessThan(0);
+  });
+});
+
+describe('fire', () => {
+  it('spreads without a brigade and is put out with full coverage', () => {
+    const s = createGame(16, 'Burn');
+    const f = s.founding;
+    flatten(s, f.x - 12, f.y - 4, f.x + 12, f.y + 12);
+    buildRoad(s, RoadType.Track, roadPath(f.x - 10, f.y + 3, f.x + 10, f.y + 3, false));
+    const houses = [];
+    for (let x = f.x - 9; x <= f.x + 9; x++) houses.push(placeBuildingRaw(s, 'hearth', x, f.y + 4, 1));
+    houses[9].state = 'burning';
+    s.coverage.fire.fill(0);
+    for (let d = 0; d < 6; d++) dailyFire(s);
+    const damaged = houses.filter((h) => h.state !== 'ok').length;
+    expect(damaged).toBeGreaterThan(1);
+    // with coverage, a fresh fire is put out within a few days almost surely
+    const s2 = createGame(16, 'Safe');
+    flatten(s2, f.x - 12, f.y - 4, f.x + 12, f.y + 12);
+    const h = placeBuildingRaw(s2, 'hearth', f.x, f.y + 4, 1);
+    h.state = 'burning';
+    s2.coverage.fire.fill(255);
+    for (let d = 0; d < 3 && h.state === 'burning'; d++) dailyFire(s2);
+    expect(h.state).not.toBe('ruin');
+  });
+});
+
+describe('a full bot-run town', () => {
+  it('reaches Township within 60 days and never produces NaN', async () => {
+    const { Bot } = await import('../src/sim/bot');
+    const s = createGame(21, 'Bot');
+    const bot = new Bot(s);
+    run(s, TICKS_PER_DAY * 60, { onDay: () => bot.step() });
+    expect(s.milestone).toBeGreaterThanOrEqual(4);
+    expect(s.gameOver).toBeNull();
+    for (const k of ['treasury', 'happiness', 'health', 'unrest', 'educated', 'manaDemand', 'unquieted'] as const) expect(Number.isFinite(s[k])).toBe(true);
+    for (const b of s.buildings) if (b) { expect(Number.isFinite(b.progress)).toBe(true); expect(b.residents).toBeGreaterThanOrEqual(0); }
+    for (const a of s.agents) { expect(Number.isFinite(a.x)).toBe(true); expect(Number.isFinite(a.y)).toBe(true); }
+  }, 60000);
+});

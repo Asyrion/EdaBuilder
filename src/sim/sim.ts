@@ -30,7 +30,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   state.tick++;
   const t = state.tick;
   tickAgents(state);
-  if (t % 10 === 0) trySpawnBuildings(state, 5);
+  if (t % 10 === 0) trySpawnBuildings(state, 3);
   const slice = t % 50;
   if (slice === 5) updateMana(state);
   else if (slice === 15) updateWater(state);

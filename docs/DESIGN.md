@@ -80,8 +80,10 @@ non-obvious call carries a one-line rationale. Lore lives in `EDA_LORE.md`.
 - Zone painting is a rectangle drag. Zone tiles must touch a road (4-neighbour) to
   grow. 1×1 zoned buildings. *Rationale:* 1×1 keeps growth readable and the sprite
   set small; service buildings are the ones that get big footprints.
-- Each sim second a few random zone tiles are checked: if that zone's demand > 0
-  and the tile is road-adjacent and not gloamed, a level-1 building spawns.
+- Each sim second 3 random zone tiles are checked: if that zone's demand > 0 (spawn
+  chance 0.45×demand), the tile is road-adjacent and not gloamed, a level-1 building
+  spawns. Tuned so a competent player reaches Burgh around game day 50 (25 minutes at
+  3×) and Free City near day 100.
 - Levelling: a building levels up (max 3) when its land value + service score
   exceeds a threshold for long enough; levels down / is abandoned if happiness stays
   very low, or if it has no mana or water for a long while.
@@ -96,22 +98,22 @@ non-obvious call carries a one-line rationale. Lore lives in `EDA_LORE.md`.
 - Values in [-1, 1], shown as bars.
 
 ### 4.5 Mana (ley) network
-- Each ley node yields 60 mana/day. A **Ley Spire** within 6 tiles of a node or
+- Each ley node yields 90 mana/day. A **Ley Spire** within 6 tiles of a node or
   another lit spire is lit and lights every tile within radius 5. Buildings adjacent
   to lit buildings are also lit (adjacency spread through building tiles only).
-- Consumers: houses 1/level, market 2/level, craft 3/level, arcane 4/level,
-  cisterns 8, wards 6, lantern-ways 1. Cost scaling by level keeps upgrades
-  meaningful.
+- Consumers (per day): hearth 1, market 2, craft 3, arcane 4 at level 1, ×1.5 at
+  level 2 and ×2 at level 3; cisterns 8, wards 6, lantern-ways 1 per tile.
 - If demand > supply: **brownout** — a proportion of buildings are unlit each day
   (deterministic ordering by distance from nodes so the far edge fails first). If
   demand > 1.25× supply for 3 days: **wild surge** — random lit buildings are
   *warped* (become ruins) and the surge produces a burst of particles. This is the
   "power outage with teeth".
-- A **Ley Nexus** (unlock) adds a small storage buffer that soaks up peaks.
+- A **Ley Nexus** (Township) stores 120 mana to soak up peaks; a **Thrum Font**
+  (Township, 6,500 crowns) adds 40 mana/day anywhere.
 
 ### 4.6 Water
-- Wells: radius 6 (radius 8 within 3 tiles of water). Cisterns: radius 12, need
-  mana. Coverage is by Euclidean distance. Unwatered buildings have -health and
+- Wells: radius 8 (10 within 3 tiles of water). Cisterns: radius 12, need mana.
+  The Founding Stake waters 5 tiles so the first houses are never dry. Coverage is by Euclidean distance. Unwatered buildings have -health and
   stop levelling.
 
 ### 4.7 Services & coverage
@@ -158,9 +160,10 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 2–3× speed reaches Burgh around minute 40.
 
 ### 4.12 Hazards (all deterministic from state + seeded RNG)
-- **Gloam creep:** every 5 days each gloam tile tries to spread to an adjacent
-  non-water tile if that tile's ward coverage is 0 and it is not itself within 2
-  tiles of a lit building. Gloamed zone tiles lose their building. Gloam within 6
+- **Gloam creep:** every 4 days each gloam tile tries to spread to an adjacent
+  non-water tile (p ≈ 0.05–0.15, rising slowly with the day count) if that tile has
+  no ward coverage and no building within 2 tiles. Every 12 days a **pocket** of Gloam
+  opens somewhere unlit, unbuilt and unwarded. Gloamed zone tiles lose their building. Gloam within 6
   tiles lowers happiness ("the whispering"). Ward Lanterns clear gloam in radius.
   **Fail: The Gloam takes the founding node** (any gloam tile within 2 tiles of the
   central node): "The light goes out."
@@ -170,9 +173,10 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   clears it. > 40 restless: "the Long Night" unrest spiral, effectively a fail
   state if the player does nothing (abandonment cascade).
 - **Wild surge:** see mana.
-- **Fire:** small daily chance per building (Craft ×3, lit level 1 timber ×2);
-  spreads to neighbours after 1 day; fire coverage extinguishes with probability
-  proportional to coverage; burned buildings become ruins.
+- **Fire:** 0.025 % daily chance per building (Craft ×2.5, level 1 ×1.4, Thrum Font
+  ×6, halved under full brigade coverage); spreads to touching buildings; brigade
+  coverage extinguishes with p = 0.35 + 0.6×coverage per day; after 2 days a
+  burning building becomes a ruin, cleared automatically after 12 days.
 - **Abandonment cascade / unrest** as a soft fail: pop falls, income falls.
 
 ### 4.13 Agents (citizens, carts, restless)
@@ -238,7 +242,20 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - **M5 Life** — agents, traffic, day/night, lighting, particles, audio. ✅
 - **M6 Polish** — onboarding, balancing, hazards tuning, bug sweep, docs. ✅
 
-## 8. Decision log
+## 8. Verification
+
+- `npm test` runs 25 vitest cases: terrain determinism, road/zone/building rules, spire
+  chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
+  round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
+  and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread
+  and extinguishing, and a 60-day bot-played town with NaN checks.
+- `scripts/balance.ts` plays 150+ days with the scripted bot and prints population, jobs,
+  treasury, mana, demand, hazards and milestone days.
+- `scripts/perf.mjs` builds a ~500-building city in-page and measures frame times per zoom;
+  `scripts/playtest.mjs` drives the real UI with mouse/keyboard; `scripts/shot.mjs`,
+  `start.mjs`, `atlas.mjs` produce screenshots for art review.
+
+## 9. Decision log
 
 - *Game name "Wardlight":* a wardlight is what the lore calls a chartered city; the
   name states the fantasy (hold the light against the dark) in one word.
@@ -256,3 +273,14 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   for civic buildings so they read as landmarks.
 - *Procedural sprites behind a manifest:* honours "all art original" while leaving a
   clean seam for hand-made pixel art.
+- *Ley node yield raised 60→90 and Thrum Font moved to Township:* the first balance runs
+  hit a hard mana wall at ~450 buildings with a surge every three days; mana should be a
+  budget, not a ceiling.
+- *Unlit buildings never abandon, dry ones do slowly:* the "no power" case in CS1 is an
+  icon and stalled growth, not a death spiral; keeping that makes the early game forgiving
+  while water stays a real need.
+- *Fire rate cut to a quarter:* 97 fires in 150 days drowned the log in alarms.
+- *Onboarding as a checklist, not a tutorial:* seven auto-completing "Charter tasks" in the
+  first two milestones teach the loop without blocking play.
+- *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
+  bot runs in tests, in the headless script and in the browser perf harness.

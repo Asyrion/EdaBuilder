@@ -55,7 +55,7 @@ export function dailyFire(state: GameState): void {
       return;
     }
     if (b.state !== 'ok' || def.category === 'special') return;
-    let p = 0.0007;
+    let p = 0.00025;
     if (def.zone === Zone.Craft) p *= 2.5;
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
     if (def.key === 'font') p *= 6;
@@ -78,10 +78,11 @@ export function dailyFire(state: GameState): void {
 export function dailySurge(state: GameState): void {
   if (state.manaDemand > state.manaSupply * 1.25 && state.manaDemand > 20) {
     state.overdrawDays++;
-    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge is coming unless you build spires elsewhere or cut consumers.', 'warn');
-  } else state.overdrawDays = Math.max(0, state.overdrawDays - 1);
-  if (state.overdrawDays >= 3) {
-    state.overdrawDays = 0;
+    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn');
+    else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
+  } else state.overdrawDays = Math.max(-4, state.overdrawDays - 1);
+  if (state.overdrawDays >= 5) {
+    state.overdrawDays = -4;
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {
@@ -148,7 +149,7 @@ export function dailyGloam(state: GameState): void {
   // 2. creep
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0) {
-    const p = Math.min(0.75, 0.28 + state.day * 0.003);
+    const p = Math.min(0.6, 0.22 + state.day * 0.002);
     const gloam = state.gloam;
     const newTiles: number[] = [];
     for (let y = 0; y < MAP_H; y++)

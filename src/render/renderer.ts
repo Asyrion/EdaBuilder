@@ -30,10 +30,20 @@ export interface ViewState {
 const CHUNK_W = CHUNK * TILE_W;
 const CHUNK_H = CHUNK * TILE_H + TILE_H;
 
+interface Prop {
+  name: string;
+  wx: number;
+  wy: number;
+  d: number;
+  sway: number; // 0..1 sway weight
+}
+
 interface ChunkCache {
   canvas: HTMLCanvasElement;
   hasWater: boolean;
   waterFrame: number;
+  props: Prop[];
+  lights: { x: number; y: number; r: number; c: string; i: number }[]; // static lights (ley nodes)
 }
 
 export class Renderer {
@@ -54,7 +64,7 @@ export class Renderer {
   time = 0; // seconds of real time for animation
   frame = 0;
   wind = 0.5;
-  stats = { drawn: 0, ms: 0 };
+  stats = { drawn: 0, ms: 0, ground: 0, objects: 0, sort: 0, particles: 0, lighting: 0, blit: 0 };
 
   constructor(screen: HTMLCanvasElement, atlas: SpriteAtlas) {
     this.screen = screen;
@@ -136,9 +146,11 @@ export class Renderer {
       const canvas = document.createElement('canvas');
       canvas.width = CHUNK_W;
       canvas.height = CHUNK_H;
-      cache = { canvas, hasWater: false, waterFrame: -1 };
+      cache = { canvas, hasWater: false, waterFrame: -1, props: [], lights: [] };
       this.chunks.set(ci, cache);
     }
+    cache.props = [];
+    cache.lights = [];
     const ctx = cache.canvas.getContext('2d')!;
     ctx.clearRect(0, 0, CHUNK_W, CHUNK_H);
     const [ox, oy] = this.chunkOrigin(cx, cy);
@@ -178,6 +190,34 @@ export class Renderer {
           const key = z === Zone.Hearth ? 'hearth' : z === Zone.Market ? 'market' : z === Zone.Craft ? 'craft' : 'arcane';
           s = this.atlas.get(`zone_${key}`);
           if (s) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
+        }
+      }
+    // props (trees, rocks, bushes, dead trees) are cached per chunk and drawn per frame
+    for (let ty = 0; ty < CHUNK; ty++)
+      for (let tx = 0; tx < CHUNK; tx++) {
+        const x = cx * CHUNK + tx;
+        const y = cy * CHUNK + ty;
+        const i = idx(x, y);
+        if (state.bIndex[i] >= 0 || state.road[i]) continue;
+        const t = state.terrain[i];
+        const [wx, wy] = tileToWorld(x, y);
+        if (state.gloam[i]) {
+          if (h2(x, y, 11) < 0.25) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
+          continue;
+        }
+        if (t === Terrain.Forest) {
+          const n = 1 + (h2(x, y, 20) < 0.5 ? 1 : 0);
+          for (let k = 0; k < n; k++) {
+            const v = Math.floor(h2(x, y, 21 + k) * 4);
+            const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
+            cache.props.push({ name: h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
+          }
+        } else if (t === Terrain.Hills) {
+          if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
+        } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
+          if (h2(x, y, 27) < 0.05) cache.props.push({ name: 'bush', wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
+        } else if (t === Terrain.LeyNode) {
+          cache.lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
         }
       }
     cache.hasWater = hasWater;
@@ -276,6 +316,7 @@ export class Renderer {
       const [ox, oy] = this.chunkOrigin(ci % CHUNKS_X, (ci / CHUNKS_X) | 0);
       ctx.drawImage(c.canvas, Math.round(ox - left), Math.round(oy - top));
     }
+    const tGround = performance.now();
     // visible tile bounds (generous)
     const tl = cam.screenToTile(0, 0);
     const tr = cam.screenToTile(cam.viewW, 0);
@@ -318,46 +359,21 @@ export class Renderer {
     const lights: { x: number; y: number; r: number; c: string; i: number }[] = [];
     const glows: { s: SpriteRect; x: number; y: number; a: number }[] = [];
     const sway = Math.sin(this.time * 1.3) * 1;
-    for (let y = minY; y <= maxY; y++)
-      for (let x = minX; x <= maxX; x++) {
-        const i = idx(x, y);
-        if (state.bIndex[i] >= 0 || state.road[i]) continue;
-        const t = state.terrain[i];
-        const [wx, wy] = tileToWorld(x, y);
-        if (state.gloam[i]) {
-          if (h2(x, y, 11) < 0.25) {
-            const s = this.atlas.get('deadtree');
-            items.push({ d: x + y, y: wy, fn: () => this.draw(s, wx + (h2(x, y, 12) - 0.5) * 14, wy + 8 + (h2(x, y, 13) - 0.5) * 6) });
-          }
-          continue;
-        }
-        if (t === Terrain.Forest) {
-          const n = 1 + (h2(x, y, 20) < 0.5 ? 1 : 0);
-          for (let k = 0; k < n; k++) {
-            const v = Math.floor(h2(x, y, 21 + k) * 4);
-            const s = this.atlas.get(h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`);
-            const px = wx + (h2(x, y, 22 + k) - 0.5) * 16;
-            const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
-            const sw = cam.zoom > 1 ? Math.round(sway * h2(x, y, 40 + k)) : 0;
-            items.push({ d: x + y + (py - wy) / 16, y: py, fn: () => this.draw(s, px + sw, py) });
-          }
-        } else if (t === Terrain.Hills) {
-          if (h2(x, y, 24) < 0.35) {
-            const s = this.atlas.get(`rock_${Math.floor(h2(x, y, 25) * 3)}`);
-            items.push({ d: x + y, y: wy, fn: () => this.draw(s, wx + (h2(x, y, 26) - 0.5) * 12, wy + 10) });
-          }
-        } else if (t === Terrain.Grass || t === Terrain.Meadow) {
-          if (h2(x, y, 27) < 0.05 && !state.zone[i]) {
-            const s = this.atlas.get('bush');
-            items.push({ d: x + y, y: wy, fn: () => this.draw(s, wx + (h2(x, y, 28) - 0.5) * 12, wy + 10) });
-          }
-        } else if (t === Terrain.LeyNode) {
-          lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
-          const s = this.atlas.get('leynode');
-          if (s) glows.push({ s, x: wx, y: wy, a: 0.5 + 0.3 * Math.sin(this.time * 2 + x) });
-          if (Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 10, y: wy + 8, vx: (Math.random() - 0.5) * 4, vy: -8 - Math.random() * 8, maxLife: 2, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
-        }
+    const useSway = cam.zoom > 1;
+    for (const ci of visible) {
+      const c = this.chunks.get(ci)!;
+      for (const p of c.props) {
+        const s = this.atlas.get(p.name);
+        const sw = useSway && p.sway ? Math.round(sway * p.sway) : 0;
+        items.push({ d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy) });
       }
+      for (const l of c.lights) {
+        lights.push(l);
+        const s = this.atlas.get('leynode');
+        if (s) glows.push({ s, x: l.x, y: l.y - 8, a: 0.5 + 0.3 * Math.sin(this.time * 2 + l.x) });
+        if (Math.random() < 0.15) this.particles.emit({ x: l.x + (Math.random() - 0.5) * 10, y: l.y, vx: (Math.random() - 0.5) * 4, vy: -8 - Math.random() * 8, maxLife: 2, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
+      }
+    }
     // buildings
     const flameFrame = Math.floor(this.time * 8) % 3;
     for (const b of state.buildings) {
@@ -397,7 +413,7 @@ export class Renderer {
       } else if (b.lit && b.state === 'ok') {
         const ley = b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || b.kind === 'lantern' || def.zone === Zone.Arcane;
         if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : b.kind === 'spire' ? 34 : 46, c: PAL.ley1, i: 0.8 });
-        else if (def.category === 'zone' || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
+        else if ((def.category === 'zone' && (cam.zoom > 1 || (b.x + b.y) % 3 === 0)) || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
         if (s && s.glow) glows.push({ s, x: wx, y: wy, a: 0.9 });
         // spire sparkles
         if ((b.kind === 'spire' || b.kind === 'nexus') && Math.random() < 0.08) this.particles.emit({ x: cx + (Math.random() - 0.5) * 6, y: cy - 20 - Math.random() * 10, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 1.5, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
@@ -437,8 +453,11 @@ export class Renderer {
       const s = this.atlas.get(def.category === 'zone' ? `${g.key}_l1_v0` : `b_${g.key}`);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
+    const tSort = performance.now();
     items.sort((p, q) => p.d - q.d || p.y - q.y);
+    const tObjects = performance.now();
     for (const it of items) it.fn();
+    const tParticles = performance.now();
 
     // particles
     this.particles.update(dt, this.wind);
@@ -477,8 +496,10 @@ export class Renderer {
     }
 
     // lighting
+    const tLight = performance.now();
     if (night > 0.01) this.applyLighting(tod, night, lights, glows);
     else this.applyDayTint(tod);
+    const tBlit = performance.now();
 
     // icons (always on top, bobbing)
     const bobY = Math.round(Math.sin(this.time * 4) * 1.5);
@@ -503,10 +524,15 @@ export class Renderer {
     // blit to screen
     const sctx = this.sctx;
     sctx.imageSmoothingEnabled = false;
-    sctx.fillStyle = '#0b0912';
-    sctx.fillRect(0, 0, this.screen.width, this.screen.height);
     sctx.drawImage(this.back, 0, 0, nw, nh, 0, 0, nw * cam.zoom, nh * cam.zoom);
-    this.stats.ms = performance.now() - t0;
+    const tEnd = performance.now();
+    this.stats.ms = tEnd - t0;
+    this.stats.ground = tGround - t0;
+    this.stats.sort = tObjects - tSort;
+    this.stats.objects = tParticles - tObjects;
+    this.stats.particles = tLight - tParticles;
+    this.stats.lighting = tBlit - tLight;
+    this.stats.blit = tEnd - tBlit;
   }
 
   private spriteNameFor(b: Building): string {
@@ -677,13 +703,18 @@ export class Renderer {
     const L = this.camera.left;
     const T = this.camera.top;
     const flicker = 0.9 + Math.sin(this.time * 9) * 0.05 + Math.sin(this.time * 23) * 0.05;
+    const zoom1 = this.camera.zoom === 1;
     for (const lt of lights) {
+      if (zoom1 && lt.r < 20) continue;
       const r = Math.max(6, Math.round(lt.r / 2));
       const spr = lightSprite(r, lt.c, Math.min(1, lt.i * night * flicker));
       l.drawImage(spr, Math.round((lt.x - L) / 2 - r), Math.round((lt.y - T) / 2 - r));
     }
-    // particles as light too (glow ones)
-    for (const p of this.particles.list) {
+    // particles as light too (glow ones), budgeted
+    const plist = this.particles.list;
+    const stride = Math.max(1, Math.ceil(plist.length / 160));
+    for (let k = this.frame % stride; k < plist.length; k += stride) {
+      const p = plist[k];
       if (!p.glow) continue;
       const spr = lightSprite(6, p.color, 0.6 * Math.min(1, p.life / p.maxLife));
       l.drawImage(spr, Math.round((p.x - L) / 2 - 6), Math.round((p.y - T) / 2 - 6));
