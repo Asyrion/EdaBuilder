@@ -3,6 +3,9 @@ export class Audio {
   ctx: AudioContext | null = null;
   master: GainNode | null = null;
   muted = false;
+  musicOn = true;
+  private music: { gain: GainNode; drone: GainNode; droneFilter: BiquadFilterNode; droneOscs: OscillatorNode[]; nextBar: number; bar: number; timer: number; seed: number; deg: number } | null = null;
+  private mood = { night: 0, season: 0, danger: 0 };
   private ambient: { wind: GainNode; hum: GainNode; night: GainNode; water: GainNode; fire: GainNode; chatter: GainNode } | null = null;
   private started = false;
 
@@ -145,11 +148,154 @@ export class Audio {
     csrc.connect(cbp).connect(murmur).connect(chatter).connect(this.master);
     csrc.start();
     this.ambient = { wind, hum, night, water, fire, chatter };
+    this.startMusic();
   }
 
   setMuted(m: boolean): void {
     this.muted = m;
     if (this.master) this.master.gain.value = m ? 0 : 0.5;
+  }
+
+  setMusic(on: boolean): void {
+    this.musicOn = on;
+    if (this.music && this.ctx) this.music.gain.gain.setTargetAtTime(on ? 0.18 : 0, this.ctx.currentTime, 0.5);
+  }
+
+  /** World state the music follows: night 0..1, season 0..3, danger 0..1. */
+  setMood(night: number, season: number, danger: number): void {
+    this.mood = { night, season, danger };
+  }
+
+  // ---------- generative soundtrack ----------
+  private static MODES: Record<string, number[]> = {
+    day: [0, 2, 4, 7, 9, 11, 12, 14, 16, 19], // major pentatonic with a lydian 4th flavour via 11
+    night: [0, 2, 3, 5, 7, 9, 10, 12, 14, 15, 17], // dorian
+    hush: [0, 3, 5, 7, 8, 10, 12, 15, 17], // aeolian
+  };
+  private static CHORDS = [[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]]; // I vi IV V (relative to root)
+
+  private startMusic(): void {
+    if (!this.ctx || !this.master || this.music) return;
+    const ctx = this.ctx;
+    const gain = ctx.createGain();
+    gain.gain.value = this.musicOn ? 0.18 : 0;
+    gain.connect(this.master);
+    // drone pad: two detuned triangles + sub sine through a slow low-pass
+    const droneFilter = ctx.createBiquadFilter();
+    droneFilter.type = 'lowpass';
+    droneFilter.frequency.value = 500;
+    droneFilter.Q.value = 0.7;
+    const drone = ctx.createGain();
+    drone.gain.value = 0.12;
+    droneFilter.connect(drone).connect(gain);
+    const droneOscs: OscillatorNode[] = [];
+    for (const [type, f, g] of [['triangle', 110, 0.5], ['triangle', 110.7, 0.5], ['sine', 55, 0.8]] as [OscillatorType, number, number][]) {
+      const o = ctx.createOscillator();
+      o.type = type;
+      o.frequency.value = f;
+      const og = ctx.createGain();
+      og.gain.value = g;
+      o.connect(og).connect(droneFilter);
+      o.start();
+      droneOscs.push(o);
+    }
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.05;
+    const lfoG = ctx.createGain();
+    lfoG.gain.value = 220;
+    lfo.connect(lfoG).connect(droneFilter.frequency);
+    lfo.start();
+    this.music = { gain, drone, droneFilter, droneOscs, nextBar: ctx.currentTime + 0.3, bar: 0, timer: 0, seed: 12345, deg: 4 };
+    this.music.timer = window.setInterval(() => this.scheduleMusic(), 300);
+  }
+
+  private mrand(): number {
+    const m = this.music!;
+    m.seed = (m.seed * 1664525 + 1013904223) >>> 0;
+    return m.seed / 4294967296;
+  }
+
+  private pluck(freq: number, t: number, dur: number, vol: number, bell = false): void {
+    if (!this.ctx || !this.music) return;
+    const ctx = this.ctx;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(this.music.gain);
+    o.start(t);
+    o.stop(t + dur + 0.05);
+    if (bell) {
+      const o2 = ctx.createOscillator();
+      o2.type = 'sine';
+      o2.frequency.value = freq * 3;
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0.0001, t);
+      g2.gain.exponentialRampToValueAtTime(vol * 0.25, t + 0.01);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.6);
+      o2.connect(g2).connect(this.music.gain);
+      o2.start(t);
+      o2.stop(t + dur);
+    }
+  }
+
+  /** Writes one bar ahead when the look-ahead window reaches the next bar. */
+  private scheduleMusic(): void {
+    const m = this.music;
+    if (!m || !this.ctx || this.muted || !this.musicOn) return;
+    const ctx = this.ctx;
+    const beat = 60 / 58;
+    const barLen = beat * 4;
+    while (m.nextBar < ctx.currentTime + 0.6) {
+      const t0 = m.nextBar;
+      const { night, season, danger } = this.mood;
+      const modeName = season === 3 ? 'hush' : night > 0.5 ? 'night' : 'day';
+      const mode = Audio.MODES[modeName];
+      const root = 220 * (season === 3 ? 0.8909 : 1); // Hush a whole tone lower
+      const chord = Audio.CHORDS[m.bar % 4];
+      // drone follows the chord root, filter opens by day
+      const droneRoot = root / 2 * Math.pow(2, chord[0] / 12);
+      m.droneOscs[0].frequency.setTargetAtTime(droneRoot, t0, 0.8);
+      m.droneOscs[1].frequency.setTargetAtTime(droneRoot * 1.006, t0, 0.8);
+      m.droneOscs[2].frequency.setTargetAtTime(droneRoot / 2, t0, 0.8);
+      m.droneFilter.frequency.setTargetAtTime(danger > 0.5 ? 220 : 380 + (1 - night) * 500, t0, 1);
+      // bass on the downbeat
+      this.pluck(root / 2 * Math.pow(2, chord[0] / 12), t0, beat * 2.5, danger > 0.5 ? 0.05 : 0.08);
+      if (danger > 0.5) {
+        // slow low pulse, no melody
+        this.pluck(root / 4 * Math.pow(2, chord[0] / 12), t0 + beat * 2, beat, 0.07);
+      } else {
+        // melody: a random walk over the mode, with rests; sparser at night and in the Hush
+        const density = modeName === 'hush' ? 0.35 : modeName === 'night' ? 0.5 : 0.7;
+        for (let step = 0; step < 8; step++) {
+          if (this.mrand() > density) continue;
+          const r = this.mrand();
+          m.deg = Math.max(0, Math.min(mode.length - 1, m.deg + (r < 0.4 ? -1 : r < 0.8 ? 1 : r < 0.9 ? -2 : 2)));
+          const semis = mode[m.deg] + (step === 0 ? chord[2] - chord[2] : 0);
+          const freq = root * Math.pow(2, semis / 12);
+          const t = t0 + step * (beat / 2);
+          const long = this.mrand() < 0.3;
+          this.pluck(freq, t, long ? beat * 1.6 : beat * 0.9, modeName === 'day' ? 0.07 : 0.055, modeName !== 'day');
+          // Bloom: a high echo a bar later at half volume
+          if (season === 1 && this.mrand() < 0.35) this.pluck(freq * 2, t + beat, beat * 0.6, 0.025, true);
+        }
+        // chord tone shimmer on beat 3 by day
+        if (modeName === 'day' && this.mrand() < 0.6) this.pluck(root * Math.pow(2, chord[1] / 12) * 2, t0 + beat * 2, beat * 1.2, 0.03);
+      }
+      m.nextBar += barLen;
+      m.bar++;
+    }
+  }
+
+  /** Duck the music briefly under an alarm. */
+  duck(): void {
+    if (!this.music || !this.ctx || !this.musicOn) return;
+    const t = this.ctx.currentTime;
+    this.music.gain.gain.setTargetAtTime(0.08, t, 0.05);
+    this.music.gain.gain.setTargetAtTime(0.18, t + 2, 0.8);
   }
 
   /**
@@ -226,10 +372,12 @@ export class Audio {
     notes.forEach((n, i) => setTimeout(() => this.tone(n, 0.5, 'triangle', 0.14), i * 130));
   }
   bad(): void {
+    this.duck();
     this.tone(196, 0.5, 'sawtooth', 0.1, -60);
     setTimeout(() => this.tone(147, 0.7, 'sawtooth', 0.1, -40), 200);
   }
   surge(): void {
+    this.duck();
     this.noiseBurst(0.8, 0.5, 3000);
     this.tone(70, 0.9, 'sawtooth', 0.2, 900);
   }

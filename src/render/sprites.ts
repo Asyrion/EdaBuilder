@@ -761,6 +761,115 @@ function drawDrake(line: number, stage: number, frame: number): { p: Painter; gl
   return { p, glow };
 }
 
+/** Two-legged winged wyvern (stage 3), two wing frames. */
+function drawWyvern(line: number, frame: number): { p: Painter; glow: Painter } {
+  const c = DRAGON_LINES[line % DRAGON_LINES.length];
+  const p = new Painter(28, 20);
+  const glow = new Painter(28, 20);
+  const wingCol: Col = line === 4 ? 'stone3' : line === 7 ? 'runeViolet' : c.base;
+  // wings: up (frame 0) or down (frame 1)
+  if (frame === 0) {
+    p.poly([[4, 12], [10, 12], [2, 3], [0, 6]], wingCol);
+    p.poly([[18, 12], [24, 12], [26, 3], [28, 6]], wingCol);
+  } else {
+    p.poly([[4, 12], [10, 12], [1, 17], [0, 14]], wingCol);
+    p.poly([[18, 12], [24, 12], [27, 17], [28, 14]], wingCol);
+  }
+  // body and tail
+  p.rect(9, 11, 10, 4, c.base);
+  p.rect(9, 14, 10, 1, c.belly);
+  p.line(9, 12, 3, 16, c.base);
+  p.px(2, 17, c.accent);
+  // neck + head
+  p.rect(18, 9, 3, 3, c.base);
+  p.rect(20, 7, 5, 3, c.base);
+  p.px(24, 8, c.belly);
+  p.px(23, 7, c.eye);
+  glow.px(23, 7, c.eye);
+  p.px(21, 6, c.accent);
+  p.px(22, 5, c.accent);
+  // legs
+  p.rect(12, 15, 1, 3, c.base);
+  p.rect(16, 15, 1, 3, c.base);
+  if (line === 0) glow.rect(21, 7, 5, 3, 'ember', 150);
+  if (line === 3) glow.rect(9, 11, 10, 4, 'ley1', 120);
+  if (line === 7) { p.px(14, 12, 'flower3'); glow.rect(4, 3, 20, 12, 'runeViolet', 60); }
+  p.outline('outline');
+  return { p, glow };
+}
+
+function drawRing(): { p: Painter; glow: Painter; ax: number; ay: number } {
+  // 3x3 arena: sand oval inside a stone stand
+  const W = 96;
+  const p = new Painter(W + 2, 66);
+  const glow = new Painter(W + 2, 66);
+  const cx = 49;
+  const T: [number, number] = [cx, 18];
+  const R: [number, number] = [97, 42];
+  const B: [number, number] = [cx, 66];
+  const L: [number, number] = [1, 42];
+  p.poly([T, R, B, L], 'stone2');
+  // stands: outer band darker, raised
+  p.poly([[cx, 12], [97, 36], [97, 42], [cx, 18]], 'stone1');
+  p.poly([[1, 36], [cx, 12], [cx, 18], [1, 42]], 'stone3');
+  for (let y = 18; y < 66; y++) for (let x = 1; x < 97; x++) if (p.get(x, y) && ((x + y) % 6 === 0)) p.px(x, y, 'stone1');
+  // sand oval
+  for (let y = -12; y <= 12; y++) for (let x = -30; x <= 30; x++) if ((x * x) / 900 + (y * y) / 144 <= 1) p.px(cx + x, 42 + y, (x + y) % 5 === 0 ? 'sand2' : 'sand');
+  // banners at the corners
+  for (const [x, y] of [[8, 34], [90, 34], [cx, 8]] as [number, number][]) {
+    p.rect(x, y - 12, 1, 12, 'wood1');
+    p.rect(x + 1, y - 11, 4, 5, y === 8 ? 'gold' : 'banner');
+  }
+  // lamps
+  for (const [x, y] of [[20, 52], [78, 52]] as [number, number][]) { p.rect(x, y - 8, 1, 8, 'ironDark'); p.px(x, y - 9, 'lampWarm'); glow.px(x, y - 9, 'lampWarm'); }
+  p.outline('outline');
+  return { p, glow, ax: cx, ay: 18 };
+}
+
+function drawGate(style: 2 | 3): { p: Painter; glow: Painter; ax: number; ay: number } {
+  // an arch over one tile; Belregi blue-runed pale stone, Uzulim dark volcanic with crimson symbols
+  const p = new Painter(34, 40);
+  const glow = new Painter(34, 40);
+  const stone: Col = style === 2 ? 'stone3' : 'ironDark';
+  const stoneD: Col = style === 2 ? 'stone2' : 'outline';
+  const rune: Col = style === 2 ? 'ley1' : 'fire2';
+  // two pillars at the left and right tile corners, an arch between
+  p.rect(2, 14, 4, 22, stone);
+  p.rect(2, 14, 1, 22, stoneD);
+  p.rect(28, 14, 4, 22, stone);
+  p.rect(28, 14, 1, 22, stoneD);
+  for (let x = 4; x <= 30; x++) {
+    const y = 14 - Math.round(Math.sin(((x - 4) / 26) * Math.PI) * 9);
+    p.rect(x, y, 1, 4, stone);
+    p.px(x, y, stoneD);
+  }
+  // runes / symbols
+  for (let k = 0; k < 5; k++) {
+    const x = 6 + k * 5;
+    const y = 12 - Math.round(Math.sin(((x - 4) / 26) * Math.PI) * 9) + 2;
+    p.px(x, y, rune);
+    glow.px(x, y, rune, 220);
+    p.px(3, 18 + k * 3, rune);
+    p.px(30, 18 + k * 3, rune);
+    glow.px(3, 18 + k * 3, rune, 200);
+    glow.px(30, 18 + k * 3, rune, 200);
+  }
+  if (style === 3) {
+    // hooded statue heads on the pillars
+    p.rect(1, 10, 6, 4, 'ironDark');
+    p.rect(27, 10, 6, 4, 'ironDark');
+    p.px(3, 12, 'fire2');
+    p.px(30, 12, 'fire2');
+    glow.px(3, 12, 'fire2');
+    glow.px(30, 12, 'fire2');
+  } else {
+    p.px(17, 3, 'gold');
+    p.px(17, 2, 'gold');
+  }
+  p.outline('outline');
+  return { p, glow, ax: 17, ay: 20 };
+}
+
 function rock(variant: number): Painter {
   const p = new Painter(14, 10);
   const pts: [number, number][] = variant === 0 ? [[2, 8], [1, 4], [5, 1], [10, 2], [13, 6], [11, 9]] : variant === 1 ? [[1, 7], [3, 2], [8, 1], [12, 4], [10, 9], [4, 9]] : [[3, 9], [2, 5], [6, 3], [9, 4], [11, 8]];
@@ -946,6 +1055,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
   cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
+  stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -964,6 +1074,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   square: { w: 2, h: 2, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 20 },
   guildhall: { w: 2, h: 2, height: 18, roofH: 8, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 3, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true },
   depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24, lanternPost: true, banner: true },
+  ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
 };
 
@@ -1280,6 +1391,7 @@ export function generateSprites(): SpriteDef[] {
     else if (key === 'square') push('b_square', drawSquare());
     else if (key === 'boneyard') push('b_boneyard', drawBoneyard());
     else if (key === 'wardlantern') push('b_wardlantern', drawWardLantern());
+    else if (key === 'ring') continue;
     else push(`b_${key}`, drawBuilding(spec));
   }
   // agents
@@ -1297,6 +1409,10 @@ export function generateSprites(): SpriteDef[] {
         const d = drawDrake(line, stage, f);
         out.push({ name: `dragon_${line}_${stage}_${f}`, p: d.p, glow: d.glow, ax: Math.floor(d.p.w / 2), ay: d.p.h });
       }
+  for (let line = 0; line < 8; line++) for (let f = 0; f < 2; f++) { const w = drawWyvern(line, f); out.push({ name: `wyvern_${line}_${f}`, p: w.p, glow: w.glow, ax: 14, ay: 18 }); }
+  push('b_ring', drawRing());
+  push('gate_2', drawGate(2));
+  push('gate_3', drawGate(3));
   // creatures
   for (let f = 0; f < 2; f++) {
     const p = new Painter(6, 5);

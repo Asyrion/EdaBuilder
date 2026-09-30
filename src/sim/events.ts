@@ -230,7 +230,41 @@ const EGGS: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...CALENDAR];
+/** Visitors from the wider Eda (lore drop). */
+const VISITORS: EventDef[] = [
+  {
+    id: 'stormcaller', title: 'A storm caller of the Huruhui', once: true,
+    text: 'A traveller with white hair and glowing sigils on their arms asks for a hilltop to work from. They say the valleys beyond the Pass of Buluiain taught them to call rain, and that your Craft district smells like it needs some.',
+    when: (s) => s.milestone >= 4 && s.population > 300,
+    choices: [
+      { label: 'Give them the hills', desc: 'Rain over the whole city for 10 days (fires out, miasma washed, herbs thriving); educated share +2%. The Storm-Caller\'s Peak becomes buildable at Township.', apply: (s) => { s.modifiers.push({ kind: 'rain', value: 1, until: s.day + 10, label: 'Huruhui rain' }); s.educated = Math.min(0.95, s.educated + 0.02); let n = 0; for (const b of s.buildings) if (b && b.state === 'burning') { b.state = 'ok'; b.stateDays = 0; n++; } return `They climb at dusk. By midnight it is raining on every roof in the valley and ${n} fire${n === 1 ? ' is' : 's are'} out. The Academy takes notes.`; } },
+      { label: 'Send them on to Vell-on-Sable', desc: 'No effect.', apply: () => 'They bow, and the wind picks up as they leave, which may be coincidence.' },
+    ],
+  },
+  {
+    id: 'caravan', title: 'A caravan from the Plains of Belerial',
+    text: 'Dust on the Gloam road: riders on tall two-legged striders, banners the colour of the yellow plains, wagons behind. They halt at the Trade Depot and unroll their goods.',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
+    choices: [
+      { label: 'Trade', desc: 'Sell surplus goods from full works at 1.5x the season price.', apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; return `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.`; } },
+      { label: 'Buy striders (2,000 crowns)', desc: 'Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days.', apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
+      { label: 'Send them on', desc: 'No effect.', apply: () => 'They water the striders and ride for the next wardlight before noon.' },
+    ],
+  },
+  {
+    id: 'merchant', title: 'The Wandering Merchant of Belerial',
+    text: 'A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay > 30,
+    choices: [
+      { label: 'The white egg (4,000 crowns)', desc: 'A sky egg: a wyvern-only line, the fastest courier. Needs a free cradle.', apply: (s) => { if (s.treasury < 4000) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, 'sky'); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= 4000; return `The egg is white as the plains at noon. The tamers name it ${d.name}.`; } },
+      { label: 'Longwood seeds (1,200 crowns)', desc: 'Goods production +20% for 30 days.', apply: (s) => { if (s.treasury < 1200) return 'Not enough crowns.'; s.treasury -= 1200; s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
+      { label: 'Ulum salts (600 crowns)', desc: 'Unquieted dead −30; health +10 for 15 days.', apply: (s) => { if (s.treasury < 600) return 'Not enough crowns.'; s.treasury -= 600; s.unquieted = Math.max(0, s.unquieted - 30); s.modifiers.push({ kind: 'health', value: 0.1, until: s.day + 15, label: 'Ulum salts' }); return 'Salt on every lip in the boneyard, and a cleaner cough in the low streets.'; } },
+      { label: 'Only talk', desc: 'No effect; the merchant remembers you.', apply: () => 'You trade stories: the Gates, the storm caller, a fox that was a man. The merchant leaves at dawn.' },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -259,7 +293,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS, ...EGGS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };

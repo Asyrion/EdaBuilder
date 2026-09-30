@@ -81,7 +81,7 @@ export function dailySurge(state: GameState): void {
   const threshold = edictOn(state, 'wardens') ? 1.5 : 1.25;
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20) {
     state.overdrawDays++;
-    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn');
+    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn', true);
     else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
   } else state.overdrawDays = Math.max(-4, state.overdrawDays - 1);
   if (state.overdrawDays >= 5) {
@@ -143,6 +143,7 @@ export function dailyGloam(state: GameState): void {
         const i = idx(x, y);
         if (state.gloam[i]) {
           state.gloam[i] = 0;
+          state.stats.gloamBurned++;
           markDirty(state, x, y);
           changed = true;
           if (rng.chance(0.15)) effects.push({ x, y, kind: 'ward', tick: state.tick });
@@ -198,7 +199,7 @@ export function dailyGloam(state: GameState): void {
         changed = true;
         const dirx = x < state.founding.x ? 'west' : 'east';
         const diry = y < state.founding.y ? 'north' : 'south';
-        pushMessage(state, `A pocket of Gloam opens in the ${diry}-${dirx}. Grey grass, whispering. A Ward Lantern would burn it back.`, 'warn');
+        pushMessage(state, `A pocket of Gloam opens in the ${diry}-${dirx}. Grey grass, whispering. A Ward Lantern would burn it back.`, 'warn', true, { x, y });
         effects.push({ x, y, kind: 'gloam', tick: state.tick });
         break;
       }

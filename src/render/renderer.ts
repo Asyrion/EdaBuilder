@@ -190,7 +190,7 @@ export class Renderer {
             }
             ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
           }
-        } else if (state.wall[i]) {
+        } else if (state.wall[i] === 1) {
           let m = 0;
           if (y > 0 && state.wall[idx(x, y - 1)]) m |= 1;
           if (x < MAP_W - 1 && state.wall[idx(x + 1, y)]) m |= 2;
@@ -211,6 +211,11 @@ export class Renderer {
         const x = cx * CHUNK + tx;
         const y = cy * CHUNK + ty;
         const i = idx(x, y);
+        if (state.wall[i] >= 2) {
+          const [gx, gy] = tileToWorld(x, y);
+          cache.props.push({ name: `gate_${state.wall[i]}`, wx: gx, wy: gy + 8, d: x + y + 0.5, sway: 0 });
+          continue;
+        }
         if (state.bIndex[i] >= 0 || state.road[i]) continue;
         const t = state.terrain[i];
         const [wx, wy] = tileToWorld(x, y);
@@ -376,6 +381,7 @@ export class Renderer {
 
     // objects: props, buildings, agents
     const items: { d: number; y: number; fn: () => void }[] = [];
+    const sky: { s: SpriteRect | null; x: number; y: number; alt: number; line: number }[] = [];
     const icons: { x: number; y: number; name: string }[] = [];
     const lights: { x: number; y: number; r: number; c: string; i: number }[] = [];
     const glows: { s: SpriteRect; x: number; y: number; a: number }[] = [];
@@ -480,6 +486,20 @@ export class Renderer {
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+        } else if (sp === 'wyvern') {
+          const alt = a.alt ?? 0;
+          const s = this.atlas.get(`wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
+          // ground shadow, in the depth-sorted pass
+          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
+            const ctx2 = this.ctx;
+            ctx2.fillStyle = `rgba(10,8,16,${0.35 - alt / 160})`;
+            ctx2.beginPath();
+            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 10, 4, 0, 0, Math.PI * 2);
+            ctx2.fill();
+          } });
+          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
+          if (a.variant === 0 && Math.random() < 0.1) this.particles.emit({ x: wx, y: wy + 4 - alt, vx: (Math.random() - 0.5) * 4, vy: 2, maxLife: 0.8, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
+          if (a.variant === 4 && Math.random() < 0.2) this.particles.emit({ x: wx - 8, y: wy + 6 - alt, vx: -20, vy: 0, maxLife: 0.6, size: 1, color: PAL.flower3, glow: false, kind: 'mote' });
         } else if (sp === 'drake') {
           const d = state.dragons.find((x) => x.id === a.dragonId);
           const stage = d && d.stage >= 2 ? 2 : 1;
@@ -547,7 +567,7 @@ export class Renderer {
       for (let y = minY; y <= maxY; y++)
         for (let x = minX; x <= maxX; x++) {
           const i = idx(x, y);
-          if (!state.wall[i]) continue;
+          if (state.wall[i] !== 1) continue;
           const [wx, wy] = tileToWorld(x, y);
           const s = this.atlas.get(`wall_${(y > 0 && state.wall[idx(x, y - 1)] ? 1 : 0) | (x < MAP_W - 1 && state.wall[idx(x + 1, y)] ? 2 : 0) | (y < MAP_H - 1 && state.wall[idx(x, y + 1)] ? 4 : 0) | (x > 0 && state.wall[idx(x - 1, y)] ? 8 : 0)}`);
           if (s) glows.push({ s, x: wx, y: wy, a: 0.6 });
@@ -588,6 +608,11 @@ export class Renderer {
     if (night > 0.05) this.drawLeyLines(state, night);
     const tBlit = performance.now();
 
+    // sky layer: flying things above the lit scene
+    for (const f of sky) {
+      this.draw(f.s, f.x, f.y);
+      if (f.s && f.s.glow && night > 0.05) { ctx.globalCompositeOperation = 'lighter'; this.drawGlow(f.s, f.x, f.y, 0.9 * night); ctx.globalCompositeOperation = 'source-over'; }
+    }
     // icons (always on top, bobbing)
     const bobY = Math.round(Math.sin(this.time * 4) * 1.5);
     for (const ic of icons) this.draw(this.atlas.get(ic.name), ic.x, ic.y + bobY);

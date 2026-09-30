@@ -134,6 +134,7 @@ export function dailyBuildings(state: GameState): void {
   const jobBuildings: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
+    if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
       b.age++;
       return;
@@ -195,7 +196,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods'));
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
@@ -353,9 +354,11 @@ export function updateSocial(state: GameState): void {
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
+  let uzulim = 0;
+  for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest') + uzulim * 0.02),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
 }

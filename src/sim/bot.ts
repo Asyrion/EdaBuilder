@@ -31,7 +31,10 @@ export class Bot {
     const s = this.s;
     if (s.gameOver) return;
     if (s.pendingEvent) resolveEvent(s, 0);
-    for (const d of s.dragons) if (d.stage >= 2 && d.role === 'none') { const mine = s.buildings.find((b) => b && b.kind === 'mine'); if (mine) setRole(s, d.id, 'delver', mine.id); }
+    for (const d of s.dragons) {
+      if (d.stage >= 3 && d.role !== 'courier') setRole(s, d.id, 'courier');
+      else if (d.stage === 2 && d.role === 'none') { const mine = s.buildings.find((b) => b && b.kind === 'mine'); if (mine) setRole(s, d.id, 'delver', mine.id); else if (s.buildings.some((b) => b && b.kind === 'ring')) setRole(s, d.id, 'champion'); }
+    }
     this.ensureGrid();
     this.zoneByDemand();
     this.keepWatered();
@@ -241,6 +244,7 @@ export class Bot {
     want('guildhall', 1);
     want('depot', 1);
     want('cradle', 1);
+    want('ring', 1);
     want('tamerslodge', this.countKind('cradle'));
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     // deepen the founding Wellspring when mana runs short

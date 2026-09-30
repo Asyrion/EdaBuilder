@@ -4,6 +4,7 @@ import { edictOn } from './edicts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
+import { modifierSum } from './edicts';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -30,6 +31,28 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
+  // gates of the Pass of Buluiain: Belregi (faith, ward) and Uzulim (ward, watch)
+  if (type === 'faith' || type === 'ward' || type === 'watch') {
+    for (let i = 0; i < n; i++) {
+      const g = state.wall[i];
+      if (g < 2) continue;
+      const gx = i % MAP_W;
+      const gy = (i / MAP_W) | 0;
+      const r = g === 2 ? 8 : 10;
+      const str = g === 2 ? (type === 'faith' ? 0.3 : type === 'ward' ? 0.2 : 0) : type === 'ward' ? 0.4 : type === 'watch' ? 0.3 : 0;
+      if (str <= 0) continue;
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          const x = gx + dx;
+          const y = gy + dy;
+          if (!inBounds(x, y)) continue;
+          const d = Math.hypot(dx, dy);
+          if (d > r) continue;
+          acc[idx(x, y)] += str * (1 - (d / r) * 0.6);
+        }
+    }
+  }
+  if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
   if (type === 'watch' || type === 'fire') {
     const wd = wardenDistricts(state);
     if (wd.size) for (let i = 0; i < n; i++) if (state.district[i] && wd.has(state.district[i])) acc[i] += 0.5;
@@ -64,7 +87,8 @@ export function updateMiasma(state: GameState): void {
         acc[idx(x, y)] += amt * (1 - d / (r + 1));
       }
   });
-  for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12));
+  const rain = modifierSum(state, 'rain') > 0 ? 0.3 : 1;
+  for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12 * rain));
 }
 
 export function updateLandValue(state: GameState): void {

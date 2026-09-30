@@ -55,6 +55,24 @@
 - Lore drop reconciled as canon (`EDA_LORE.md` §9) with eleven inspired features listed
   in `DESIGN.md` §11.
 
+## Done in iteration 9 (Wyrmcraft II, the Pass, the Peak, music)
+
+- Wyverns: ember, vein, sky and storm lines grow wings at stage 3; a sky layer with
+  altitude and shadows; the Courier role flies goods to empty markets; the Wyrm-Ring with
+  seasonal bouts and the Champion role.
+- Belregi and Uzulim gates in the Warding Wall (roads pass, ground warded, Uzulim unrest);
+  Storm-Caller's Peak with Call Rain; Belerial caravans, the Storm-Caller and the
+  Wandering Merchant as visitor events.
+- Generative ambient music (day, night and Hush modes, danger pulse), a Music toggle.
+
+## Done in iteration 10 (quests, hints, the Chronicle)
+
+- The Charter's Ledger: 46 data-driven quests in twelve chapters, three shown at a time,
+  each with a hint, a reward and a *Show me* focus; checked daily; progress in the panel.
+- The Advisor: one line naming the worst current problem, with its own *Show me*.
+- The Chronicle (`C`): a saved log of real in-world events only, filtered by kind, with a
+  jump-to-place button per entry.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -79,22 +97,31 @@
 
 ## Fantasy roadmap (see DESIGN.md §8)
 
+Milestone placement: **iteration 10, "Quests, hints and the Chronicle"** (DESIGN.md §4.27)
+went right after Wyrmcraft II and the first lore-drop features (iteration 9) and before the
+Sleeping Wyrm, so every existing mechanic has a guided path before more are added. Done.
+
 Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhares and wisps;
 (7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8, done) Wyrmcraft I: egg events, Wyrm-Cradle,
-Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9) Wyrmcraft II: sky
-layer, wyvern couriers, the Wyrm-Ring; (10) the Sleeping Wyrm: waking, tribute, flyover,
-Wyrm-Court binding; (11) magical buildings: Glimhouse, Weather Vane, Observatory, Portal
-Arch; (12) Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon;
-(13) vehicles: floating carts, barges, drake riders, airships.
+Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9, done) Wyrmcraft II:
+sky layer, wyvern couriers, the Wyrm-Ring, gates, the Peak, visitors; (10, done) quests,
+hints and the Chronicle; (11) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
+binding; (12) magical buildings: Glimhouse, Weather Vane, Observatory, Portal Arch; (13)
+Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (14)
+vehicles: floating carts, barges, drake riders, airships.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
-Wall gates (Belregi/Uzulim), Storm-Caller's Peak, Hanging Gardens and Glowvine Lanes,
-Belerial caravans and the Wandering Merchant, Fen-Nex visitors, war-tigers, the Ruins of
-Lukuku, the World Tree sapling, the Torrent Mill, swamp and atoll maps, cameo events.
+Done: wall gates (Belregi/Uzulim), Storm-Caller's Peak, Belerial caravans and the
+Wandering Merchant. Next: Hanging Gardens and Glowvine Lanes, Fen-Nex visitors,
+war-tigers, the Ruins of Lukuku, the World Tree sapling, the Torrent Mill, swamp and atoll
+maps, cameo events.
 
 ## Prioritized ideas for the next iteration
 
+0. **Quest counters for the planned-but-unbacked goals** (survive a brownout, rename a
+   district, keep the Hush vigil, hold a Thaw feast, glimmoths seen, a wisp ring) and a
+   completed-quests page in the Ledger.
 1. **Per-district problem summary** in the district overlay (unlit / dry / no goods
    counts) to replace per-building icon clutter in dense districts.
 2. **Scenario charters.** Pre-built maps with a goal and a twist (a valley with one node,

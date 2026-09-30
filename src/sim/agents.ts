@@ -427,6 +427,7 @@ export function tickAgents(state: GameState): void {
             const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(m);
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
+            state.stats.goodsDelivered += a.load;
           }
           a.load = 0;
         }
@@ -471,6 +472,7 @@ export function dailyRestless(state: GameState): number {
     return true;
   });
   commitRng(state, rng);
+  state.stats.restlessLaid += cleared;
   return cleared;
 }
 

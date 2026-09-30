@@ -9,7 +9,11 @@ import { marketStockCap } from './agents';
 
 export const STAGE_NAMES = ['egg', 'hatchling', 'drake', 'wyvern', 'wyrm'];
 export const STAGE_DAYS = [30, 20, 40, 60, 120];
-export const MAX_STAGE_NOW = 2; // drake, until the sky layer
+export const MAX_STAGE_NOW = 3; // wyvern for winged lines; wyrm stage waits
+export const WINGED: DragonLine[] = ['ember', 'vein', 'sky', 'storm'];
+export function maxStage(line: DragonLine): number {
+  return WINGED.includes(line) ? 3 : 2;
+}
 export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: string }> = {
   ember: { name: 'Ember', scale: 6, desc: 'brick red, breathes wyrmfire; a delver warms the seams' },
   bone: { name: 'Bone', scale: 8, desc: 'ivory over black; the restless lie down near it' },
@@ -73,6 +77,8 @@ export function setRole(state: GameState, id: number, role: DragonRole, target =
   const d = state.dragons.find((x) => x.id === id);
   if (!d) return 'No such dragon';
   if (d.stage < 2) return 'Only a drake or older can take a role';
+  if (role === 'courier' && d.stage < 3) return 'Only a wyvern can fly goods';
+  if (role === 'champion' && !state.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok')) return 'Build a Wyrm-Ring first';
   if (role === 'delver') {
     const mine = state.buildings.find((b) => b && b.id === target && b.kind === 'mine');
     if (!mine) return 'Pick a Crystal Mine';
@@ -135,7 +141,7 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     // living dragons eat: 6 goods a day as hatchling, 10 as drake
-    const fedNow = feed(state, cradle, d.stage === 1 ? 6 : 10);
+    const fedNow = feed(state, cradle, d.stage === 1 ? 6 : d.stage === 2 ? 10 : 14);
     if (fedNow) {
       d.hungry = 0;
       d.mood = Math.min(100, d.mood + (d.training === 'gentle' ? 6 : 3));
@@ -166,15 +172,16 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     // growth
-    if (trained && fedNow && d.stage < MAX_STAGE_NOW) {
+    if (trained && fedNow && d.stage < Math.min(MAX_STAGE_NOW, maxStage(d.line))) {
       d.days += speed * (d.mood > 50 ? 1 : 0.5);
       if (d.days >= STAGE_DAYS[d.stage]) {
         d.stage = (d.stage + 1) as Dragon['stage'];
         d.days = 0;
         state.materials.scale += LINE_INFO[d.line].scale;
-        pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. Give it a role in the Wyrms panel.`, 'milestone');
+        if (d.stage === 3 && d.role === 'delver') { d.role = 'none'; d.roleTarget = -1; }
+        pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. ${d.stage === 3 ? 'It can fly goods as a courier.' : 'Give it a role in the Wyrms panel.'}`, 'milestone');
       }
-    } else if (d.stage >= MAX_STAGE_NOW) d.days += 1;
+    } else if (d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line))) d.days += 1;
     // materials from grown dragons
     if (d.stage >= 2 && d.line === 'ember' && state.day % 30 === 0) {
       state.materials.wyrmfire += 1;
@@ -185,7 +192,7 @@ export function dailyDragons(state: GameState): void {
   if (gone.length) {
     const ids = new Set(gone.map((g) => g.id));
     state.dragons = state.dragons.filter((d) => !ids.has(d.id));
-    state.agents = state.agents.filter((a) => !(a.kind === AgentKind.Creature && a.species === 'drake' && a.dragonId !== undefined && ids.has(a.dragonId)));
+    state.agents = state.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId !== undefined && ids.has(a.dragonId)));
   }
   // consume materials in use
   if (state.materials.wyrmfire > 0) state.materials.wyrmfire = Math.max(0, state.materials.wyrmfire - 0.05);
@@ -236,3 +243,68 @@ export function districtTiles(state: GameState, d: number): number[] {
 }
 
 export { idx };
+
+/** Seasonal bout at the Wyrm-Ring on day 15 of each season. */
+export function seasonalBout(state: GameState): void {
+  if (state.day % 30 !== 15 || state.day < 30) return;
+  const ring = state.buildings.find((b) => b && b.kind === 'ring' && b.state === 'ok');
+  if (!ring) return;
+  const champ = state.dragons.filter((d) => d.role === 'champion' && d.stage >= 2).sort((a, b) => b.stage - a.stage)[0];
+  if (!champ) {
+    pushMessage(state, 'The Wyrm-Ring stands empty this season: name a champion in the Wyrms panel.', 'info');
+    return;
+  }
+  const rng = rngOf(state);
+  const season = Math.floor(state.day / 30) % 4;
+  const lineBonus = champ.line === 'ember' && champ.stage >= 3 ? 10 : champ.line === 'grey' ? 6 : 0;
+  const ours = champ.stage * 20 + champ.mood / 2 + (champ.training === 'hard' ? 10 : champ.training === 'gentle' ? 5 : 0) + lineBonus + rng.next() * 40;
+  const theirs = 40 + season * 5 + Math.floor(state.day / 120) * 8 + rng.next() * 40;
+  const challenger = rng.pick(['a Gloam-grey drake with one eye', 'a marsh-wyrm of the Ulum', 'a Belerial rider\'s strider-drake', 'an ember wyvern from the Mahjula', 'a bone drake nobody will claim']);
+  if (ours >= theirs) {
+    const purse = 1500 * champ.stage;
+    state.treasury += purse;
+    state.stats.boutsWon++;
+    state.modifiers.push({ kind: 'happiness', value: 8, until: state.day + 10, label: 'Ring victory' });
+    champ.mood = Math.min(100, champ.mood + 10);
+    pushMessage(state, `THE RING: ${champ.name} beats ${challenger} to first blood. Purse ${purse} crowns; the square sings all night.`, 'milestone');
+  } else {
+    state.stats.boutsLost++;
+    if (champ.stage > 1) { champ.stage = (champ.stage - 1) as Dragon['stage']; champ.days = 0; }
+    champ.mood = Math.max(10, champ.mood - 20);
+    state.modifiers.push({ kind: 'unrest', value: 0.05, until: state.day + 10, label: 'Ring defeat' });
+    pushMessage(state, `THE RING: ${challenger} humbles ${champ.name}, which limps back a ${STAGE_NAMES[champ.stage]}. The crowd is quiet.`, 'bad');
+  }
+  commitRng(state, rng);
+}
+
+/** Courier pick: the fullest Craft works (or a stocked mine when enchanters wait) and the emptiest buyer. */
+export function courierJob(state: GameState): { from: Building; to: Building; amount: number } | null {
+  let from: Building | null = null;
+  let best = 9;
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (b.state !== 'ok') return;
+    if ((def.zone === Zone.Craft || def.leystone) && b.stock > best) {
+      best = b.stock;
+      from = b;
+    }
+  });
+  if (!from) return null;
+  const f = from as Building;
+  const leystone = !!BUILDING_BY_KEY[f.kind].leystone;
+  let to: Building | null = null;
+  let low = Infinity;
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (b.state !== 'ok') return;
+    if (leystone ? def.zone !== Zone.Arcane : def.zone !== Zone.Market) return;
+    const cap = 20 * b.level;
+    const ratio = b.stock / cap;
+    if (ratio < low && ratio < 0.8) {
+      low = ratio;
+      to = b;
+    }
+  });
+  if (!to) return null;
+  return { from: f, to: to as Building, amount: Math.min(30, f.stock) };
+}

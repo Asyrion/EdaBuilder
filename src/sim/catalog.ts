@@ -263,6 +263,21 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'leisure', radius: 5, strength: 0.3 },
   },
 
+  {
+    key: 'ring', name: 'Wyrm-Ring', category: 'leisure',
+    desc: 'An arena of sand and stands. Once a season a champion dragon fights a wild challenger to first blood: purses, pilgrims and pride, or a humbled dragon. Land value and happiness within 10.',
+    flavor: 'Vell forbids a bout to the death. The Grimmen sextons would refuse to quiet the sand.',
+    w: 3, h: 3, cost: 6000, upkeep: 40, manaUse: 4, unlock: 5,
+    service: { type: 'leisure', radius: 10, strength: 1.0 }, landValue: 12,
+  },
+  {
+    key: 'stormpeak', name: "Storm-Caller's Peak", category: 'service',
+    desc: 'A stair to a hilltop where a Huruhui-trained storm caller works. From its panel, call rain over the district: fires out, miasma washed away for three days, glimherb thriving. Three-day cooldown. Must be built into hills.',
+    flavor: 'They climbed for three nights and came down with white hair and the rain behind them.',
+    w: 1, h: 1, cost: 2800, upkeep: 30, manaUse: 6, unlock: 4, onHills: true, needsMana: true,
+    service: { type: 'leisure', radius: 6, strength: 0.4 },
+  },
+
   // ---- trade ----
   {
     key: 'depot', name: 'Trade Depot', category: 'leisure',
@@ -379,3 +394,7 @@ export const WALL_COST = 60;
 export const WALL_UPKEEP = 0.4;
 export const WALL_MANA = 0.5;
 export const WALL_UNLOCK = 2; // Thorp
+
+export const GATE_COST = { 2: 450, 3: 650 } as Record<number, number>;
+export const GATE_NAMES = { 2: 'Belregi Gate', 3: 'Uzulim Gate' } as Record<number, string>;
+export const GATE_UNLOCK = 3; // Village

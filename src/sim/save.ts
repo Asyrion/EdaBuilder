@@ -48,7 +48,12 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   }
   state.version = SAVE_VERSION;
   // forward-compat defaults for fields added after v3
-  for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; }
+  for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; b.cooldown = b.cooldown ?? 0; }
+  state.stats.boutsWon = state.stats.boutsWon ?? 0;
+  state.chronicle = state.chronicle ?? [];
+  state.questsDone = state.questsDone ?? [];
+  for (const k of ['goodsDelivered', 'houndsKilled', 'gloamBurned', 'restlessLaid', 'caravanGoods', 'courierTrips'] as const) (state.stats as any)[k] = (state.stats as any)[k] ?? 0;
+  state.stats.boutsLost = state.stats.boutsLost ?? 0;
   for (const a of state.agents) a.load = a.load ?? 0;
   state.edicts = state.edicts ?? {};
   state.modifiers = state.modifiers ?? [];

@@ -15,7 +15,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # production build in dist/
 npm run preview    # serve the production build
-npm test           # vitest: terrain, actions, networks, sim, hazards, save/load
+npm test           # vitest: terrain, actions, networks, sim, hazards, creatures, wyrmcraft, quests, save/load
 npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 ```
@@ -58,7 +58,12 @@ main node.
    hungrier hearths and a bolder Gloam. Festivals on fixed days ask for a choice.
 10. **Trade and the Wellspring** — a Trade Depot sells surplus goods at seasonal prices;
     click a ley node to see its flow and, from Burgh, deepen it for more mana.
-11. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+11. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+    tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
+    panel or moves the camera; the *Advisor* line above it names the worst current
+    problem. The *Chronicle* button (`C`) is the city's history: only things that really
+    happened in the world, each with a ⌖ to go there.
+12. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -81,7 +86,7 @@ node; forty restless dead walk the streets.
 | `B` / `X` / `Esc` | bulldoze / select / cancel |
 | `Space`, `,` `.` , `Shift`+`1 2 3` | pause, slower/faster, set speed |
 | `1`–`0` `-` `=` `g` `m` `o` `i` | info views · `Tab` view list |
-| `H` | help · `Shift`+`G` grid · `F5` / `F9` quick save / load |
+| `H` | help · `C` Chronicle · `Shift`+`G` grid · `F5` / `F9` quick save / load |
 | `Ctrl`+`Z` | undo the last road, zone, district, building or bulldoze |
 
 Saves go to `localStorage` automatically every day; the Menu can export/import a
@@ -105,8 +110,13 @@ Charter as `.json`.
   hunt at the edge of the light, bolder in the Hush: raise a Hunters' Lodge or draw a
   Warding Wall (Services tab) that hounds and the Gloam cannot cross.
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge; dragon eggs arrive
-  through events; hatch and train them into drakes, set them as district wardens or mine
-  delvers, and collect scale and wyrmfire in the Wyrms panel.
+  through events; hatch and train them into drakes and wyverns, set them as district
+  wardens, mine delvers, flying couriers or champions of the Wyrm-Ring, and collect scale
+  and wyrmfire in the Wyrms panel.
+- Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
+  caravans and the Wandering Merchant.
+- The Charter's Ledger (46 guided quests with hints and *Show me*), the Advisor line, and
+  the Chronicle of real in-world events with jump-to-place.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles
@@ -114,7 +124,8 @@ Charter as `.json`.
 - Sprites are generated at startup into an atlas with a manifest. Drop
   `public/art/atlas.png` + `atlas.json` (same manifest format) to replace them with
   hand-made art without code changes.
-- Procedural WebAudio effects and a wind / ley-hum / cricket ambience.
+- Procedural WebAudio effects, a wind / ley-hum / cricket ambience and generative
+  ambient music that follows day, night, season and danger (Menu to toggle).
 
 ## Docs
 
@@ -132,7 +143,7 @@ src/render    palette, painter, sprites (procedural art), atlas, iso, camera, re
               overlays, particles, lights
 src/ui        style.css, tools (input), ui (DOM panels)
 src/audio     procedural WebAudio
-src/data      flavor text and tips
+src/data      flavor text, tips and the quest list
 tests         vitest suites
 scripts       headless balance run, Playwright screenshot/perf/playtest harnesses
 ```

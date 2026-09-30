@@ -312,6 +312,78 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Wyrms panel: cradles and slots, materials, each dragon's mood, hunger, growth, training
   and role selection.
 
+### 4.27 Quests, hints and the Chronicle (iteration 10, done)
+
+**Why here:** the game has grown from four systems to twenty; the "Charter tasks" list
+only covered the first ten minutes. This milestone sits right after Wyrmcraft II and the
+first lore-drop features and before the Sleeping Wyrm, so every mechanic that exists gets
+a guided path before more are added.
+
+**Quests ("the Charter's Ledger").** A data-driven list (`src/data/quests.ts`, 46 quests)
+of small goals, each with: id, chapter, title, one-line hint, a `when` condition that makes
+it *available*, a `done` condition, an optional *focus* (a tool to select, a building to
+pick from the toolbar, a panel to open, an info view to switch on, or a place to centre
+the camera) and a reward in crowns. `checkQuests` runs once a day over the whole list, so
+a goal reached before it was shown still completes and pays; the reward is paid once and
+the completion is written to the Chronicle. At most three quests are shown, chosen by
+priority from the available set, in the left panel with a progress count (done/total), a
+collapse button, and a *Show me* button per quest that carries out its focus. Chapters:
+
+| Chapter | Quests (done condition) |
+|---|---|
+| Founding | draw a road · zone hearths · zone craft and market · raise a spire · dig a well · watch post and shrine · reach Hamlet |
+| Light and water | light every building · water every building · build a Cistern |
+| Mana | build a Nexus · raise a Thrum Font (when demand passes 80 % of flow) · deepen the Wellspring |
+| The dead | build a Boneyard · lay a restless to rest · build an Ossuary |
+| The grey edge | raise a Ward Lantern · burn back 50 Gloam tiles · draw 20 tiles of Warding Wall · kill 10 hounds · raise a gate of the Pass |
+| Goods | first cart delivery · no market short · build a Trade Depot · sell 200 goods to caravans |
+| The arcane | educate a third of the folk · first Arcane building · dig a Crystal Mine · first artifact sold |
+| Districts | paint a district · set a district edict |
+| Seasons | survive a Hush |
+| Beasts | build a Moth-Loft |
+| Wyrmcraft | raise a cradle and lodge · accept an egg · hatch it · give a drake a role · fly a courier · win a bout |
+| The Crown | each milestone from Thorp to Beacon of Eda |
+
+New stat counters back the quests: goods delivered, hounds killed, Gloam tiles burned,
+restless laid, caravan goods sold, courier trips. Quests planned but not yet backed by a
+counter (survive a brownout, rename a district, the Hush vigil, the Thaw feast, glimmoths
+seen, a wisp ring) are the first additions for a later pass.
+
+**Hints ("the Advisor").** Above the quests, one contextual line derived from the city's
+worst current problem, in this order: mana overdrawn, treasury in debt, a quarter of
+buildings unlit, a quarter dry, unquieted dead without a Boneyard, more than five restless,
+markets short, hounds without a Lodge, unrest above 35 %, happiness below 40, Gloam within
+6 tiles of a building without a Ward Lantern. Each has a *Show me* action. Never more than
+one line, and nothing at all while the town has fewer than four zoned buildings.
+
+**The Chronicle.** A separate log, `state.chronicle: { day, kind, text, x?, y? }[]`,
+kept to the last 200 entries and saved. Only real in-world events go in: milestones,
+season changes, fires and ruins, surges and their warnings, Gloam pockets, hound raids,
+the restless rising, dragon hatchings, stages, bouts and departures, caravans and the
+merchant, events fired and the choice made, quest completions. Citizen chatter, tips and
+advisor lines stay in the bottom-right ticker. `pushMessage` gained a `world` flag and an
+optional place; `milestone` and `bad` messages chronicle automatically and a "(x,y)" in
+the text is picked up as the place. UI: the *Chronicle* button (or `C`) opens a modal
+filtered by All / Milestones / Good tidings / Ill tidings, newest first, each entry with a
+day stamp and a ⌖ button that closes the modal and centres the camera on the place.
+
+### 4.28 Ambient music (iteration 9)
+- **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
+  into WebAudio a bar ahead, so the music never stutters with the frame rate.
+- **Structure:** ~58 BPM, 4/4, a four-bar chord cycle in a mode that follows the world:
+  day is Lydian-tinged major pentatonic (bright, hopeful), dusk and night are Dorian
+  (soft, wistful), the Hush is Aeolian with sparser notes and a lower drone, Bloom adds a
+  high counter-melody. Danger (a fire in view, hounds near, a surge warning, unrest over
+  40 %) drops the melody to the drone only and adds a slow low pulse.
+- **Voices:** a drone pad (two detuned triangles and a sine an octave below, through a
+  slowly moving low-pass), a plucked lead (sine with a fast attack and 1.2 s decay, like a
+  harp), soft bells at night (sine with a 5th overtone), a bass note on the downbeat.
+  Melody notes are chosen by a seeded random walk over the current mode's pentatonic,
+  with rests, so phrases repeat loosely but never exactly.
+- **Mix:** music sits under the ambience and effects (0.18 of master), ducks to 0.08 for
+  two seconds after alarms, and has its own toggle in the menu (persisted). Milestone
+  phrases (4.21) play over it in the same key.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -706,3 +778,9 @@ consistent with `EDA_LORE.md` §9.
   boss fight; this keeps the CS1 feel of planning under pressure.
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.
+- *Quests are checked, not tracked:* every quest is a pure predicate over the state, checked
+  daily over the whole list rather than only the three shown, so nothing a player does out
+  of order is lost and the list needs no per-quest progress fields in the save.
+- *The Chronicle is world-only:* the ticker mixes chatter, tips and refusals with events; the
+  Chronicle takes only what happened in the world, flagged at the call site, so it reads as
+  a history of the city rather than a console log.

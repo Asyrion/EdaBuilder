@@ -15,7 +15,7 @@ import { bumpRoadVersion } from './sim/agents';
 import { resolveEvent, maybeFireEvent, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
-import { takeSnapshot, restoreSnapshot, type Snapshot } from './sim/actions';
+import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
 import { deepenNode, canDeepenNode } from './sim/world';
 import { setTraining, setRole } from './sim/wyrmcraft';
 import { Bot } from './sim/bot';
@@ -89,6 +89,8 @@ class Game {
       exportJson: () => this.exportJson(),
       importJson: (f) => this.importJson(f),
       setMuted: (m) => { this.muted = m; this.audio.setMuted(m); },
+      get musicOn() { return game.audio.musicOn; },
+      setMusic: (on) => { this.audio.setMusic(on); try { localStorage.setItem('wardlight.music', on ? '1' : '0'); } catch { /* ignore */ } },
       setTax: (z, v) => setTax(this.state, z, v),
       setEdict: (k, on, district) => { if (district) this.state.districtEdicts[`${district}:${k}`] = on; else this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
       get settings() { return game.settings; },
@@ -98,6 +100,7 @@ class Game {
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
       setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
+      callRain: (id) => { const r = callRain(this.state, id); if (r.ok) { recomputeAll(this.state); this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
       setRole: (id, role, target) => { const why = setRole(this.state, id, role, target); if (!why) { recomputeAll(this.state); this.audio.spire(); } return why; },
       get undoLabel() { return game.undoStack.length ? game.undoStack[game.undoStack.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
@@ -108,6 +111,7 @@ class Game {
     canvas.addEventListener('mousedown', () => this.audio.init(), { once: true });
     window.addEventListener('keydown', () => this.audio.init(), { once: true });
     this.loadSettings();
+    try { if (localStorage.getItem('wardlight.music') === '0') this.audio.musicOn = false; } catch { /* ignore */ }
     this.ui.showTitle();
     this.ui.refresh();
     this.ui.refreshViews();
@@ -259,6 +263,7 @@ class Game {
       case ',': this.speed = Math.max(1, this.speed - 1); this.paused = false; this.ui.refresh(); return true;
       case '.': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
       case 'h': case '?': this.ui.toggleHelp(); return true;
+      case 'c': if (!e.ctrlKey && !e.metaKey) { this.ui.toggleChronicle(); return true; } return false;
       case 'tab': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
       case 'g': if (e.shiftKey) { this.view.showGrid = !this.view.showGrid; return true; } return false;
       case 'f5': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
@@ -341,6 +346,8 @@ class Game {
       const night = nightFactor(tod);
       const v = this.renderer.inView;
       this.audio.ambientMix(night, v.ley, v.water, v.fire, v.market);
+      const danger = Math.max(v.fire, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0, this.state.agents.some((a) => a.kind === 3 && a.species === 'hound') && night > 0.3 ? 0.7 : 0);
+      this.audio.setMood(night, Math.floor(this.state.day / 30) % 4, danger);
       if (this.state.gameOver && !this.paused) {
         this.paused = true;
         this.audio.bad();

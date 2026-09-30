@@ -118,9 +118,28 @@ h3 { font-size: 13px; color: var(--gold); }
 #perf { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-size: 11px; color: var(--muted); padding: 2px 8px; }
 
 #tasks { position: absolute; left: 8px; top: 320px; width: 268px; padding: 8px 10px; font-size: 12px; }
-#tasks .list div { padding: 2px 0; color: var(--muted); }
-#tasks .list div.done { color: var(--good); text-decoration: line-through; opacity: 0.7; }
-#tasks .list div.now { color: var(--text); font-weight: 600; }
+#tasks h3 { display: flex; align-items: center; gap: 6px; }
+#tasks h3 .prog { font-weight: normal; font-size: 11px; }
+#tasks h3 .min { margin-left: auto; padding: 0 6px; line-height: 1.2; }
+#tasks .advice { margin: 2px 0 6px; padding: 5px 7px; border: 1px solid rgba(233,194,91,0.35); border-radius: 3px; background: rgba(233,194,91,0.06); color: var(--text); line-height: 1.35; }
+#tasks .advice .lbl { color: var(--gold); font-weight: 600; margin-right: 4px; }
+#tasks .q { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); }
+#tasks .q:last-child { border-bottom: 0; }
+#tasks .q .t { color: var(--text); }
+#tasks .q.now .t { font-weight: 600; }
+#tasks .q .ch { color: var(--ley); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 3px; }
+#tasks .q .rw { color: var(--gold); font-size: 11px; }
+#tasks .q .h { line-height: 1.35; margin-top: 1px; }
+#tasks button.show { font-size: 11px; padding: 0 6px; margin-left: 4px; line-height: 1.5; }
+
+#chronicle .box { width: 620px; }
+#chronicle .filters { display: flex; gap: 6px; margin: 6px 0 10px; }
+#chronicle .entries { max-height: 56vh; overflow: auto; font-size: 12px; }
+#chronicle .e { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+#chronicle .e .d { color: var(--muted); flex: 0 0 58px; }
+#chronicle .e .tx { flex: 1; }
+#chronicle .e.good .tx { color: var(--good); } #chronicle .e.bad .tx { color: var(--bad); } #chronicle .e.warn .tx { color: var(--warn); } #chronicle .e.milestone .tx { color: var(--gold); }
+#chronicle .e .jump { padding: 0 6px; font-size: 12px; }
 
 #edicts .box { width: 600px; }
 #edicts .edict { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }

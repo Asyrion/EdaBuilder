@@ -1,5 +1,5 @@
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
-import { BUILDINGS, BUILDING_BY_KEY, MILESTONES, ROADS, ROAD_BY_TYPE, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
+import { BUILDINGS, BUILDING_BY_KEY, MILESTONES, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
@@ -8,13 +8,15 @@ import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
-import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity } from '../sim/wyrmcraft';
+import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, maxStage } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
+import { activeQuests, questProgress } from '../sim/quests';
+import { advise, type Focus } from '../data/quests';
 
 export interface UiHost {
   state: GameState;
@@ -34,6 +36,8 @@ export interface UiHost {
   exportJson(): void;
   importJson(file: File): void;
   setMuted(m: boolean): void;
+  musicOn: boolean;
+  setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
   settings: { colorBlind: boolean; uiScale: number };
@@ -45,6 +49,7 @@ export interface UiHost {
   undo(): boolean;
   undoLabel: string | null;
   setTraining(id: number, t: Training): void;
+  callRain(buildingId: number): void;
   setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
@@ -106,6 +111,7 @@ export class UI {
         <button id="btn-budget" title="Tithe & budget">Budget</button>
         <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
         <button id="btn-wyrms" title="Dragons, eggs and materials">Wyrms</button>
+        <button id="btn-chronicle" title="Chronicle: what has happened in the world (C)">Chronicle</button>
         <button id="btn-views" title="Info views (Tab)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -123,7 +129,7 @@ export class UI {
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views</h3><div class="list"></div><div class="legend"></div></div>
       <div id="demand" class="panel"></div>
-      <div id="tasks" class="panel hidden"><h3>Charter tasks</h3><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="list"></div></div>
       <div id="log" class="panel"></div>
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
@@ -136,12 +142,15 @@ export class UI {
       <div id="edicts" class="modal hidden"></div>
       <div id="wyrms" class="modal hidden"></div>
       <div id="event" class="modal hidden"></div>
+      <div id="chronicle" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-wyrms').onclick = () => this.toggleWyrms();
+    this.q('#btn-chronicle').onclick = () => this.toggleChronicle();
+    (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; };
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
@@ -217,6 +226,9 @@ export class UI {
       const cat = CATEGORIES.find((c) => c.id === this.category)!;
       if (this.category === 'service') {
         const locked = s.milestone < WALL_UNLOCK;
+        const glocked = s.milestone < GATE_UNLOCK;
+        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles.<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
+        add('Uzulim Gate', `${GATE_COST[3]}c`, glocked, t.kind === 'gate' && t.style === 3, () => this.host.setTool({ kind: 'gate', style: 3 }), () => `<div class="t">Uzulim Gate</div>A dark volcanic arch with crimson symbols and hooded statues; roads pass through it. Ward +0.4 and watch +0.3 within 10 tiles; unrest +2% per gate.<br><span class="flavor">The statues' eyes follow anyone who approaches.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
         add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${MILESTONES[WALL_UNLOCK].name}</span>` : ''}`);
       }
       for (const d of BUILDINGS.filter(cat.filter)) {
@@ -329,6 +341,7 @@ export class UI {
     this.refreshTasks();
     this.refreshDemand();
     this.refreshLog();
+    this.refreshChronicle();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
@@ -339,32 +352,129 @@ export class UI {
     if (s.gameOver) this.showGameOver();
   }
 
+  private tasksCollapsed = false;
+  private lastQuestKey = '';
+
   private refreshTasks(): void {
     const s = this.host.state;
     const el = this.el.tasks;
-    if (s.milestone >= 2) {
-      el.classList.add('hidden');
+    // Re-evaluate at most every 20 ticks, or when a quest completes.
+    const key = `${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}`;
+    if (key === this.lastQuestKey) return;
+    this.lastQuestKey = key;
+    el.classList.remove('hidden');
+    const prog = questProgress(s);
+    el.querySelector('.prog')!.textContent = `${prog.done}/${prog.total}`;
+    (el.querySelector('.min') as HTMLButtonElement).textContent = this.tasksCollapsed ? '+' : '–';
+    const list = el.querySelector('.list') as HTMLElement;
+    const adv = el.querySelector('.advice') as HTMLElement;
+    if (this.tasksCollapsed) {
+      list.innerHTML = '';
+      adv.classList.add('hidden');
       return;
     }
-    el.classList.remove('hidden');
-    let roads = 0;
-    for (let i = 0; i < s.road.length; i++) if (s.road[i]) roads++;
-    let zones = 0;
-    for (let i = 0; i < s.zone.length; i++) if (s.zone[i]) zones++;
-    const has = (k: string) => s.buildings.some((b) => b && b.kind === k);
-    const tasks: [string, boolean][] = [
-      ['Draw a road from the Founding Stake (Roads tab, drag)', roads > 8],
-      ['Zone Hearths beside the road (Zones tab, drag a rectangle)', zones >= 6],
-      ['Zone a few Craft and Market tiles for jobs', s.zone.some((z) => z === Zone.Craft) && s.zone.some((z) => z === Zone.Market)],
-      ['Raise a Ley Spire within 6 tiles of the node (Ley tab)', has('spire')],
-      ['Dig a Well (Water tab)', has('well')],
-      ['Build a Watch Post and a Shrine of Aume (Services tab)', has('watchpost') && has('shrine')],
-      ['Reach 40 folk to become a Hamlet, then build a Boneyard', s.milestone >= 1 && has('boneyard')],
-    ];
-    const first = tasks.findIndex(([, done]) => !done);
-    el.querySelector('.list')!.innerHTML = tasks
-      .map(([t, done], i) => `<div class="${done ? 'done' : i === first ? 'now' : ''}">${done ? '✓' : '○'} ${t}</div>`)
-      .join('');
+    const quests = activeQuests(s, 3);
+    list.innerHTML = quests.length
+      ? quests.map((q, i) => `<div class="q ${i === 0 ? 'now' : ''}"><div class="t"><span class="ch">${q.chapter}</span> ${q.title}${q.reward ? ` <span class="rw">+${q.reward}</span>` : ''}</div><div class="h">${q.hint}${q.focus ? ` <button class="show" data-q="${q.id}">Show me</button>` : ''}</div></div>`).join('')
+      : '<div class="flavor">The Ledger is complete. Vell remembers your name.</div>';
+    list.querySelectorAll('button.show').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => {
+        const q = quests.find((x) => x.id === (b as HTMLElement).dataset.q);
+        if (q?.focus) this.focus(q.focus);
+      };
+    });
+    const a = advise(s);
+    adv.classList.toggle('hidden', !a);
+    if (a) {
+      adv.innerHTML = `<span class="lbl">Advisor</span> ${a.text}${a.focus ? ' <button class="show">Show me</button>' : ''}`;
+      const b = adv.querySelector('button.show') as HTMLButtonElement | null;
+      if (b && a.focus) b.onclick = () => this.focus(a.focus!);
+    }
+  }
+
+  /** Carry out a quest or advisor focus: pick a tool, open a panel, switch a view or move the camera. */
+  focus(f: Focus): void {
+    const s = this.host.state;
+    if ('tool' in f) {
+      const t = f.tool;
+      const tool: Tool =
+        t === 'road' ? { kind: 'road', type: RoadType.Track }
+        : t === 'zoneHearth' ? { kind: 'zone', zone: Zone.Hearth }
+        : t === 'zoneMarket' ? { kind: 'zone', zone: Zone.Market }
+        : t === 'zoneCraft' ? { kind: 'zone', zone: Zone.Craft }
+        : t === 'zoneArcane' ? { kind: 'zone', zone: Zone.Arcane }
+        : t === 'wall' ? { kind: 'wall' }
+        : t === 'gateBelregi' ? { kind: 'gate', style: 2 }
+        : { kind: 'district', id: 1 };
+      this.category = tool.kind === 'road' ? 'roads' : tool.kind === 'zone' ? 'zones' : tool.kind === 'district' ? 'districts' : 'service';
+      this.refreshItems();
+      this.host.setTool(tool);
+      if (t === 'road' || t === 'zoneHearth') this.host.centerOn(s.founding.x, s.founding.y);
+    } else if ('build' in f) {
+      const def = BUILDING_BY_KEY[f.build];
+      if (!def) return;
+      const cat = CATEGORIES.find((c) => c.filter(def));
+      if (cat) this.category = cat.id;
+      this.refreshItems();
+      if (isBuildingUnlocked(s.milestone, f.build)) this.host.setTool({ kind: 'build', key: f.build });
+      else this.toast(`<p>${def.name} unlocks at ${MILESTONES[def.unlock].name}.</p>`, 2500);
+    } else if ('panel' in f) {
+      if (f.panel === 'edicts') this.toggleEdicts(true);
+      else if (f.panel === 'wyrms') this.toggleWyrms(true);
+      else if (f.panel === 'budget') this.toggleBudget(true);
+      else if (f.panel === 'chronicle') this.toggleChronicle(true);
+      else this.el.views.classList.remove('hidden');
+    } else if ('overlay' in f) {
+      const id = f.overlay === 'watch' ? 'ward' : f.overlay;
+      this.host.setOverlay(id);
+      this.el.views.classList.remove('hidden');
+    } else if ('center' in f) {
+      if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
+      else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
+      else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && b.kind === 'cradle'); if (c) this.host.centerOn(c.x, c.y); }
+      else if (f.center === 'gloam') {
+        // Nearest Gloam tile to the founding stake.
+        let best = -1, bd = 1e9;
+        for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { const x = i % s.w, y = (i / s.w) | 0; const d = Math.abs(x - s.founding.x) + Math.abs(y - s.founding.y); if (d < bd) { bd = d; best = i; } }
+        if (best >= 0) this.host.centerOn(best % s.w, (best / s.w) | 0);
+      }
+    }
+  }
+
+  // ---------- chronicle ----------
+  private chronicleFilter: 'all' | 'good' | 'bad' | 'milestone' = 'all';
+  private lastChronicleLen = -1;
+
+  toggleChronicle(show?: boolean): void {
+    const el = this.el.chronicle;
+    const sh = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !sh);
+    if (sh) { this.lastChronicleLen = -1; this.refreshChronicle(); }
+  }
+
+  refreshChronicle(): void {
+    const el = this.el.chronicle;
+    if (el.classList.contains('hidden')) return;
+    const s = this.host.state;
+    if (s.chronicle.length === this.lastChronicleLen) return;
+    this.lastChronicleLen = s.chronicle.length;
+    const f = this.chronicleFilter;
+    const entries = s.chronicle.filter((e) => f === 'all' || (f === 'bad' ? e.kind === 'bad' || e.kind === 'warn' : e.kind === f)).slice(-120).reverse();
+    const filters: [typeof f, string][] = [['all', 'All'], ['milestone', 'Milestones'], ['good', 'Good tidings'], ['bad', 'Ill tidings']];
+    el.innerHTML = `<div class="box panel">
+      <h2>The Chronicle of ${s.cityName}</h2>
+      <p class="muted">What has happened in the world, day by day. Only real events are written here; the Ledger's advice is not.</p>
+      <div class="filters">${filters.map(([k, n]) => `<button data-f="${k}" class="${k === f ? 'active' : ''}">${n}</button>`).join('')}</div>
+      <div class="entries">${entries.length ? entries.map((e) => `<div class="e ${e.kind}"><span class="d">Day ${e.day}</span><span class="tx">${e.text}</span>${e.x !== undefined ? `<button class="jump" data-x="${e.x}" data-y="${e.y}" title="Go there">⌖</button>` : ''}</div>`).join('') : '<p class="flavor">Nothing yet. The Stake is new and the Chronicle is blank.</p>'}</div>
+      <div style="text-align:right"><button id="ch-close">Close</button></div>
+    </div>`;
+    el.querySelectorAll('button[data-f]').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => { this.chronicleFilter = (b as HTMLElement).dataset.f as typeof f; this.lastChronicleLen = -1; this.refreshChronicle(); };
+    });
+    el.querySelectorAll('button.jump').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => { const d = (b as HTMLElement).dataset; this.host.centerOn(Number(d.x), Number(d.y)); this.toggleChronicle(false); };
+    });
+    el.querySelector('#ch-close')!.addEventListener('click', () => this.toggleChronicle(false));
   }
 
   private drawClock(): void {
@@ -473,6 +583,9 @@ export class UI {
     }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    if (b.kind === 'stormpeak') {
+      rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
+    }
     if (b.kind === 'cradle') {
       const inside = dragonsIn(s, b.id);
       rows.push(row('Eggs and young', `${inside.length} / ${cradleCapacity(b)}`));
@@ -486,6 +599,14 @@ export class UI {
     rows.push(row('Water', b.watered ? '<span class="good">watered</span>' : '<span class="bad">dry</span>'));
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
+    if (b.kind === 'stormpeak') {
+      const btn = document.createElement('button');
+      btn.textContent = b.cooldown > 0 ? `Call rain (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Call rain over the district (300 crowns)';
+      btn.disabled = b.cooldown > 0;
+      btn.style.width = '100%';
+      btn.onclick = () => this.host.callRain(b.id);
+      el.appendChild(btn);
+    }
   }
 
   private nodeShown = -1;
@@ -542,7 +663,7 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>H</kbd> this help</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
@@ -558,6 +679,7 @@ export class UI {
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
             <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
+            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
@@ -680,6 +802,7 @@ export class UI {
         <button id="m-export">Export Charter as .json</button>
         <button id="m-import">Import Charter from .json</button>
         <button id="m-mute">Sound: on</button>
+        <button id="m-music">Music: on</button>
         <button id="m-cb">Colour-blind overlay ramps: off</button>
         <button id="m-scale">UI scale: 100%</button>
         <button id="m-title">Back to title (autosaves)</button>
@@ -706,6 +829,9 @@ export class UI {
       this.host.setMuted(!this.host.muted);
       (m.querySelector('#m-mute') as HTMLButtonElement).textContent = `Sound: ${this.host.muted ? 'off' : 'on'}`;
     };
+    const mu = m.querySelector('#m-music') as HTMLButtonElement;
+    mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`;
+    mu.onclick = () => { this.host.setMusic(!this.host.musicOn); mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`; };
     const cb = m.querySelector('#m-cb') as HTMLButtonElement;
     const sc = m.querySelector('#m-scale') as HTMLButtonElement;
     const syncA11y = () => {
@@ -819,12 +945,13 @@ export class UI {
     const rows = st.dragons.map((d) => {
       const stageMax = STAGE_DAYS[d.stage];
       const pct = d.stage >= MAX_STAGE_NOW ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
+      const hasRing = st.buildings.some((b) => b && b.kind === 'ring');
       const roleSel = d.stage >= 2
-        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
+        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
         <div><b>${d.name}</b> <span class="muted">the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
-        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= MAX_STAGE_NOW ? 'Grown as far as the cradle allows (wyverns come with the sky).' : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
+        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
     });
@@ -832,7 +959,7 @@ export class UI {
     this.el.wyrms.innerHTML = `<div class="box panel">
       <h2>Wyrmcraft</h2>
       <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
-      <p class="muted">Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
+      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
       ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}
       <div style="text-align:right"><button id="w-close">Close</button></div>
     </div>`;

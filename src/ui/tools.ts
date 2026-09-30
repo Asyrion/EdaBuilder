@@ -1,5 +1,5 @@
 /** Mouse/keyboard input → tool state → sim actions. */
-import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
+import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding } from '../sim/world';
@@ -15,6 +15,7 @@ export type Tool =
   | { kind: 'build'; key: string }
   | { kind: 'district'; id: number }
   | { kind: 'wall' }
+  | { kind: 'gate'; style: 2 | 3 }
   | { kind: 'bulldoze' };
 
 export interface ToolHost {
@@ -110,6 +111,12 @@ export class Tools {
       case 'build':
         this.doBuild(t);
         break;
+      case 'gate': {
+        this.host.beforeAction('gate');
+        const r = placeGate(this.host.state, this.tool.style, t[0], t[1]);
+        if (r.ok) { bumpRoadVersion(); this.host.onAction('place'); } else this.host.onAction('error', r.reason);
+        break;
+      }
       case 'select': {
         const b = buildingAt(this.host.state, t[0], t[1]);
         this.host.onSelect(b);
@@ -259,6 +266,8 @@ export class Tools {
       this.previewReason = why;
     } else if (this.tool.kind === 'bulldoze') {
       if (inBounds(hover[0], hover[1])) v.previewTiles = [{ i: idx(hover[0], hover[1]), ok: false }];
+    } else if (this.tool.kind === 'gate') {
+      if (inBounds(hover[0], hover[1])) { const i = idx(hover[0], hover[1]); const near = s.wall[i] === 1 || [i - 1, i + 1, i - MAP_W, i + MAP_W].some((j) => j >= 0 && j < s.wall.length && s.wall[j] === 1); v.previewTiles = [{ i, ok: near && s.bIndex[i] < 0 }]; }
     }
   }
   previewCost = 0;
@@ -318,6 +327,7 @@ export function toolLabel(t: Tool): string {
     case 'build': return `Build: ${BUILDING_BY_KEY[t.key].name}`;
     case 'district': return t.id === 0 ? 'District: clear' : `District: ${DISTRICT_NAMES[t.id - 1]}`;
     case 'wall': return 'Warding Wall';
+    case 'gate': return t.style === 2 ? 'Belregi Gate' : 'Uzulim Gate';
     case 'bulldoze': return 'Bulldoze';
   }
 }
