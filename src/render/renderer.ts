@@ -190,6 +190,14 @@ export class Renderer {
             }
             ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
           }
+        } else if (state.wall[i]) {
+          let m = 0;
+          if (y > 0 && state.wall[idx(x, y - 1)]) m |= 1;
+          if (x < MAP_W - 1 && state.wall[idx(x + 1, y)]) m |= 2;
+          if (y < MAP_H - 1 && state.wall[idx(x, y + 1)]) m |= 4;
+          if (x > 0 && state.wall[idx(x - 1, y)]) m |= 8;
+          s = this.atlas.get(`wall_${m}`);
+          if (s) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
         } else if (state.zone[i] && state.bIndex[i] < 0) {
           const z = state.zone[i];
           const key = z === Zone.Hearth ? 'hearth' : z === Zone.Market ? 'market' : z === Zone.Craft ? 'craft' : 'arcane';
@@ -472,6 +480,11 @@ export class Renderer {
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+        } else if (sp === 'hound') {
+          const s = this.atlas.get(`hound_${a.timer > 0 ? 0 : Math.floor(this.time * 8 + a.id) % 2}`);
+          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+          if (s) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
+          if (Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 6, vx: (Math.random() - 0.5) * 3, vy: -3, maxLife: 2, size: 1, color: PAL.gloam3, glow: false, kind: 'mote' });
         } else if (sp === 'wisp') {
           const s = this.atlas.get(`wisp_${Math.floor(this.time * 3 + a.id) % 2}`);
           const bob = Math.sin(this.time * 2 + a.id) * 3 - 10;
@@ -520,6 +533,18 @@ export class Renderer {
     }
     ctx.globalAlpha = 1;
 
+    // warding wall inlays glow
+    if (night > 0.05) {
+      for (let y = minY; y <= maxY; y++)
+        for (let x = minX; x <= maxX; x++) {
+          const i = idx(x, y);
+          if (!state.wall[i]) continue;
+          const [wx, wy] = tileToWorld(x, y);
+          const s = this.atlas.get(`wall_${(y > 0 && state.wall[idx(x, y - 1)] ? 1 : 0) | (x < MAP_W - 1 && state.wall[idx(x + 1, y)] ? 2 : 0) | (y < MAP_H - 1 && state.wall[idx(x, y + 1)] ? 4 : 0) | (x > 0 && state.wall[idx(x - 1, y)] ? 8 : 0)}`);
+          if (s) glows.push({ s, x: wx, y: wy, a: 0.6 });
+          if ((x + y) % 3 === 0) lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.ley1, i: 0.3 });
+        }
+    }
     // lantern-way road lights
     if (night > 0.05) {
       for (let y = minY; y <= maxY; y++)

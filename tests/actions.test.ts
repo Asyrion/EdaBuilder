@@ -81,3 +81,20 @@ describe('zones and buildings', () => {
     expect(s.road[idx(f.x - 4, f.y + 3)]).toBe(0);
   });
 });
+
+describe('road autotile redraw', () => {
+  it('dirties the neighbouring chunk when a later road joins an existing one across a chunk edge', async () => {
+    const { CHUNK, CHUNKS_X } = await import('../src/sim/world');
+    const s = fresh();
+    const f = s.founding;
+    // a horizontal road, then a vertical road joining it from below, chosen so the join crosses a chunk boundary
+    const cx = Math.floor(f.x / CHUNK) * CHUNK; // x on a chunk edge
+    buildRoad(s, RoadType.Track, roadPath(cx - 4, f.y + 3, cx + 4, f.y + 3, false));
+    s.dirtyChunks!.clear();
+    buildRoad(s, RoadType.Track, roadPath(cx - 1, f.y + 4, cx - 1, f.y + 8, true)); // ends adjacent to the tile at (cx-1, f.y+3)
+    const chunkOf = (x: number, y: number) => Math.floor(y / CHUNK) * CHUNKS_X + Math.floor(x / CHUNK);
+    // the existing road tile above the join must be redrawn, and so must the tile at the boundary x=cx
+    expect(s.dirtyChunks!.has(chunkOf(cx - 1, f.y + 3))).toBe(true);
+    expect(s.dirtyChunks!.has(chunkOf(cx, f.y + 4))).toBe(true);
+  });
+});

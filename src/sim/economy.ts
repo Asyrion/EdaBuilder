@@ -1,5 +1,5 @@
 /** Daily tithe: taxes and upkeep. */
-import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE } from './catalog';
+import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
@@ -42,7 +42,10 @@ export function computeLedger(state: GameState) {
       l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1);
     }
   });
-  for (let i = 0; i < state.road.length; i++) if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
+  for (let i = 0; i < state.road.length; i++) {
+    if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
+    if (state.wall[i]) l.upkeepRoads += WALL_UPKEEP;
+  }
   l.upkeepEdicts = edictUpkeep(state);
   l.artifacts = state.artifactsSold;
   l.trade = state.tradeIncomeToday;

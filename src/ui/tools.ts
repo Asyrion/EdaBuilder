@@ -1,5 +1,5 @@
 /** Mouse/keyboard input → tool state → sim actions. */
-import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
+import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding } from '../sim/world';
@@ -14,6 +14,7 @@ export type Tool =
   | { kind: 'zone'; zone: Zone }
   | { kind: 'build'; key: string }
   | { kind: 'district'; id: number }
+  | { kind: 'wall' }
   | { kind: 'bulldoze' };
 
 export interface ToolHost {
@@ -98,6 +99,7 @@ export class Tools {
       case 'road':
       case 'zone':
       case 'district':
+      case 'wall':
         this.dragStart = t;
         break;
       case 'bulldoze':
@@ -164,6 +166,12 @@ export class Tools {
       const r = paintDistrict(s, this.tool.id, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('zone');
       else this.host.onAction('error', r.reason);
+    } else if (this.tool.kind === 'wall') {
+      const tiles = this.roadTiles(start, end);
+      this.host.beforeAction('wall');
+      const r = buildWall(s, tiles);
+      if (r.ok) this.host.onAction('place');
+      else this.host.onAction('error', r.reason);
     }
     this.updatePreview();
   }
@@ -227,6 +235,12 @@ export class Tools {
           const i = idx(x, y);
           v.previewTiles.push({ i, ok: !s.road[i] && s.bIndex[i] < 0 && roadTileCost(s, RoadType.Track, i) >= 0 });
         }
+    } else if (this.tool.kind === 'wall') {
+      const start = this.dragStart ?? hover;
+      const tiles = this.roadTiles(start, hover);
+      const pv = previewWall(s, tiles);
+      v.previewTiles = tiles.map((i, k) => ({ i, ok: pv.valid[k] }));
+      this.previewCost = pv.cost;
     } else if (this.tool.kind === 'district') {
       const start = this.dragStart ?? hover;
       const x0 = Math.min(start[0], hover[0]);
@@ -303,6 +317,7 @@ export function toolLabel(t: Tool): string {
     case 'zone': return `Zone: ${['De-zone', 'Hearth', 'Market', 'Craft', 'Arcane'][t.zone]}`;
     case 'build': return `Build: ${BUILDING_BY_KEY[t.key].name}`;
     case 'district': return t.id === 0 ? 'District: clear' : `District: ${DISTRICT_NAMES[t.id - 1]}`;
+    case 'wall': return 'Warding Wall';
     case 'bulldoze': return 'Bulldoze';
   }
 }

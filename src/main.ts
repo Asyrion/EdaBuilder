@@ -359,7 +359,7 @@ class Game {
       if (this.running) {
         this.ui.refresh();
         this.ui.refreshBudget();
-        if (this.tools.tool.kind === 'road' && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
+        if ((this.tools.tool.kind === 'road' || this.tools.tool.kind === 'wall') && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
         else if (this.tools.tool.kind === 'build' && this.tools.previewReason) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — <span class="warn">${this.tools.previewReason}</span>`);
         else if (this.tools.tool.kind === 'build') this.updateHint();
       }
@@ -372,7 +372,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

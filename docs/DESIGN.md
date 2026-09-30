@@ -277,6 +277,22 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   8 unquieted dead: the visible early warning that the dead are stirring.
 - **Moth-Loft** (Thorp, needs a node or spire within 6): Craft goods +20 % within 8 tiles.
 
+### 4.25 Gloam-hounds, the Hunters' Lodge and the Warding Wall (iteration 7)
+- **Gloam-hounds** spawn at night (from day 6) in packs of 3–5 on Gloam tiles within 22
+  of a building that lies within 14 tiles of the Gloam; more packs with population and
+  2.2× as often in the Hush. They stalk the nearest unlit, unwarded building, frighten
+  buildings within 3 tiles (happiness −5) and, rarely, tear a level-1 building to ruin.
+  Lit tiles, ward coverage and strong Watch coverage scare them back to their spawn tile;
+  they slink into the grey at dawn.
+- **Hunters' Lodge** (Thorp, 2×2): each day kills hounds within 12 tiles (80 %); strong
+  Watch coverage clears some too. Small leisure bonus.
+- **Warding Wall** (Thorp): a line tool like roads, 60 crowns/tile (120 in hills), 0.4
+  upkeep and 0.5 mana per tile. Gloam creep never crosses a wall tile; hounds cannot enter
+  one and slide along it. Walls draw as autotiled stone with leystone inlays that glow.
+- **Bug fix:** roads (and walls) placed later left a visual gap at the join because the
+  existing neighbour's autotile lived in a chunk that was never marked dirty; changes now
+  dirty the four neighbours as well (`markDirtyAround`).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -566,7 +582,7 @@ without an event.
 
 ## 9. Verification
 
-- `npm test` runs 48 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 54 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread

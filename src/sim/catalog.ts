@@ -233,6 +233,13 @@ export const BUILDINGS: BuildingDef[] = [
 
   // ---- beasts ----
   {
+    key: 'hunterslodge', name: "Hunters' Lodge", category: 'service',
+    desc: 'Grimmen hunters with hound-spears and salt. Kills Gloam-hounds within 12 tiles each night; venison and hides raise happiness a little nearby.',
+    flavor: 'The lodge door has forty-one notches. The forty-second hound got away.',
+    w: 2, h: 2, cost: 1300, upkeep: 24, manaUse: 1, unlock: 2,
+    service: { type: 'leisure', radius: 8, strength: 0.4 },
+  },
+  {
     key: 'mothloft', name: 'Moth-Loft', category: 'leisure',
     desc: 'A lattice tower that glimmoths roost in. Where moths swarm at night it gathers glim-dust: Craft goods +20% within 8 tiles. Needs a ley node or lit spire within 6.',
     flavor: 'The dust is sifted at dawn by children with candle-eyes, who can see it.',
@@ -351,3 +358,8 @@ export function isZoneUnlocked(milestone: number, zone: Zone): boolean {
 export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
+
+export const WALL_COST = 60;
+export const WALL_UPKEEP = 0.4;
+export const WALL_MANA = 0.5;
+export const WALL_UNLOCK = 2; // Thorp

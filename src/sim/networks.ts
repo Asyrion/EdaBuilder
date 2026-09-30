@@ -1,5 +1,5 @@
 /** Mana (ley) and water networks. */
-import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS } from './catalog';
+import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
 import { modifierSum } from './edicts';
@@ -174,6 +174,7 @@ export function updateMana(state: GameState): void {
   let roadDemand = 0;
   for (let i = 0; i < n; i++) if (roadLit[i]) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
   demand += roadDemand;
+  for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   void f;
 
   // storage buffers a deficit

@@ -90,7 +90,7 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound';
 
 export interface Agent {
   id: number;
@@ -175,6 +175,7 @@ export interface GameState {
   zone: Uint8Array;
   road: Uint8Array;
   district: Uint8Array; // 0 none, 1..MAX_DISTRICTS
+  wall: Uint8Array; // Warding Wall tiles (0/1)
   bIndex: Int32Array; // building index or -1
   lit: Uint8Array; // tile lit by mana (0/1)
   watered: Uint8Array;
@@ -241,6 +242,8 @@ export interface GameState {
     firesTotal: number;
     surgesTotal: number;
     restlessTotal: number;
+    houndsTotal: number;
+    houndRaids: number;
     gloamTiles: number;
     peakPopulation: number;
   };
