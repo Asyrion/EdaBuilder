@@ -100,6 +100,8 @@ Charter as `.json`.
 - Goods flow by cart (potions and leystone), four seasons, ten story events with choices
   and chains, seven edicts city-wide or per district, eight paintable districts.
 - Menu settings for colour-blind overlay ramps and UI scale; camera-driven ambience.
+- Creatures: glimmoths swarm the ley at night, thrumhares graze the meadows, wisps rise
+  over boneyards when the dead are restless; a Moth-Loft harvests glim-dust.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

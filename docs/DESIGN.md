@@ -265,6 +265,18 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Districts show population, jobs, happiness and tithe in the Edicts panel and can be
   renamed. Autosave is now daily. The light map drops to quarter resolution at 1× zoom.
 
+### 4.24 Creatures, first wave (iteration 6)
+- Creature agents share the agent structure (`kind: Creature`, `species`, an anchor) and
+  ignore roads. Populations are managed every 50 ticks against per-species caps; movement
+  runs every tick with per-species behaviour.
+- **Glimmoths**: two per ley source (nodes, lit spires, nexus, wards, lofts) at night,
+  fluttering on wobbly orbits with glow and sparks; gone by day.
+- **Thrumhares**: one per 25 free meadow tiles by day, hopping between meadow and grass
+  tiles with pauses; gone at night.
+- **Wisps**: one per deathcare building, one per restless (which they follow), plus one per
+  8 unquieted dead: the visible early warning that the dead are stirring.
+- **Moth-Loft** (Thorp, needs a node or spire within 6): Craft goods +20 % within 8 tiles.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -439,7 +451,7 @@ people, sleeping coiled around the deepest nodes. Rules:
 
 ## 9. Verification
 
-- `npm test` runs 43 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 48 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread

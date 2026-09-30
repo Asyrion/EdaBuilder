@@ -459,8 +459,28 @@ export class Renderer {
     const walkFrame = Math.floor(this.time * 8) % 4;
     for (const a of state.agents) {
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
-      if (a.timer > 0 && a.kind !== AgentKind.Restless) continue; // resting inside a building
+      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature) continue; // resting inside a building
       const [wx, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
+      if (a.kind === AgentKind.Creature) {
+        const sp = a.species;
+        if (sp === 'glimmoth') {
+          const s = this.atlas.get(`glimmoth_${Math.floor(this.time * 10 + a.id) % 2}`);
+          const bob = Math.sin(this.time * 4 + a.id) * 2 - 14;
+          items.push({ d: a.x + a.y + 0.6, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob) });
+          if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.9 });
+          if (night > 0.2 && Math.random() < 0.03) this.particles.emit({ x: wx, y: wy + 8 + bob, vx: (Math.random() - 0.5) * 3, vy: 2, maxLife: 1.5, size: 1, color: PAL.glimleaf, glow: true, kind: 'spark' });
+        } else if (sp === 'thrumhare') {
+          const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
+          items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+        } else if (sp === 'wisp') {
+          const s = this.atlas.get(`wisp_${Math.floor(this.time * 3 + a.id) % 2}`);
+          const bob = Math.sin(this.time * 2 + a.id) * 3 - 10;
+          items.push({ d: a.x + a.y + 0.5, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob, 0.85) });
+          if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });
+          lights.push({ x: wx, y: wy + bob, r: 14, c: PAL.restless, i: 0.4 });
+        }
+        continue;
+      }
       let name: string;
       if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
       else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;

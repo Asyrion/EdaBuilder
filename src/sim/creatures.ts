@@ -1,0 +1,245 @@
+/**
+ * Creatures: free-moving fauna that reuse the agent structure. Glimmoths swarm lit ley at
+ * night, thrumhares graze meadows by day, wisps drift over boneyards and the restless.
+ * They are ambient life with small mechanical hooks (glim-dust for Moth-Lofts, wisps as
+ * the early warning for restless dead).
+ */
+import { BUILDING_BY_KEY } from './catalog';
+import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
+import { commitRng, forEachBuilding, rngOf, timeOfDay } from './world';
+
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40 };
+
+export function creatureCount(state: GameState, species?: Species): number {
+  let n = 0;
+  for (const a of state.agents) if (a.kind === AgentKind.Creature && (!species || a.species === species)) n++;
+  return n;
+}
+
+export function isNight(state: GameState): boolean {
+  const t = timeOfDay(state);
+  return t < 0.24 || t > 0.78;
+}
+
+function spawn(state: GameState, species: Species, x: number, y: number, anchorId = -1): Agent {
+  const rng = rngOf(state);
+  const a: Agent = {
+    id: state.nextAgentId++,
+    kind: AgentKind.Creature,
+    x: x + 0.5,
+    y: y + 0.5,
+    path: [],
+    pathIdx: 0,
+    speed: species === 'thrumhare' ? 1.6 : species === 'glimmoth' ? 1.2 : 0.4,
+    homeId: -1,
+    targetId: -1,
+    timer: 0,
+    variant: rng.int(3),
+    dir: 0,
+    load: 0,
+    species,
+    anchorId,
+    ax: x + 0.5,
+    ay: y + 0.5,
+  };
+  commitRng(state, rng);
+  state.agents.push(a);
+  return a;
+}
+
+/** Sources glimmoths swarm: ley nodes and lit spires/nexus/wards. */
+function leySources(state: GameState): { x: number; y: number; id: number }[] {
+  const out = state.nodes.map((n) => ({ x: n.x, y: n.y, id: -1 }));
+  forEachBuilding(state, (b) => {
+    if (b.lit && b.state === 'ok' && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'wardlantern' || b.kind === 'mothloft')) out.push({ x: b.x, y: b.y, id: b.id });
+  });
+  return out;
+}
+
+/** Runs every 50 ticks: manage populations. */
+export function updateCreatures(state: GameState): void {
+  const rng = rngOf(state);
+  const night = isNight(state);
+  // ---- glimmoths: 2 per ley source at night, gone by day
+  const moths = creatureCount(state, 'glimmoth');
+  if (night) {
+    const sources = leySources(state);
+    const want = Math.min(CAP.glimmoth, sources.length * 2);
+    if (moths < want) {
+      for (let k = moths; k < want && k - moths < 12; k++) {
+        const s = rng.pick(sources);
+        commitRng(state, rng);
+        spawn(state, 'glimmoth', s.x, s.y, s.id);
+        rng.state = state.rngState;
+      }
+    }
+  }
+  // ---- thrumhares: meadow grazers by day
+  const hares = creatureCount(state, 'thrumhare');
+  if (!night) {
+    let meadow = 0;
+    for (let i = 0; i < state.terrain.length; i++) if (state.terrain[i] === Terrain.Meadow && state.bIndex[i] < 0 && !state.gloam[i]) meadow++;
+    const want = Math.min(CAP.thrumhare, Math.floor(meadow / 25));
+    if (hares < want) {
+      for (let tries = 0; tries < 30 && creatureCount(state, 'thrumhare') < want; tries++) {
+        const i = rng.int(state.terrain.length);
+        if (state.terrain[i] !== Terrain.Meadow || state.bIndex[i] >= 0 || state.gloam[i]) continue;
+        commitRng(state, rng);
+        spawn(state, 'thrumhare', i % MAP_W, (i / MAP_W) | 0);
+        rng.state = state.rngState;
+      }
+    }
+  }
+  // ---- wisps: one per boneyard/ossuary, one per restless, more when the dead are unquieted
+  const wisps = creatureCount(state, 'wisp');
+  const yards: Building[] = [];
+  forEachBuilding(state, (b) => {
+    if (BUILDING_BY_KEY[b.kind].service?.type === 'death' && b.state === 'ok') yards.push(b);
+  });
+  const restless = state.agents.filter((a) => a.kind === AgentKind.Restless);
+  const want = Math.min(CAP.wisp, yards.length + restless.length + Math.floor(state.unquieted / 8));
+  if (wisps < want) {
+    for (let k = wisps; k < want && k - wisps < 6; k++) {
+      let x: number;
+      let y: number;
+      let anchor = -1;
+      if (restless.length && rng.chance(0.5)) {
+        const r = rng.pick(restless);
+        x = Math.floor(r.x);
+        y = Math.floor(r.y);
+        anchor = r.id;
+      } else if (yards.length) {
+        const b = rng.pick(yards);
+        x = b.x + rng.int(b.w);
+        y = b.y + rng.int(b.h);
+        anchor = b.id;
+      } else {
+        const f = state.founding;
+        x = f.x + rng.int(9) - 4;
+        y = f.y + rng.int(9) - 4;
+      }
+      if (!inBounds(x, y)) continue;
+      commitRng(state, rng);
+      spawn(state, 'wisp', x, y, anchor);
+      rng.state = state.rngState;
+    }
+  }
+  // ---- despawn: moths by day, hares at night, surplus wisps
+  const keepWisps = want;
+  let wispSeen = 0;
+  state.agents = state.agents.filter((a) => {
+    if (a.kind !== AgentKind.Creature) return true;
+    if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
+    if (a.species === 'thrumhare' && night) return rng.chance(0.6);
+    if (a.species === 'wisp') {
+      wispSeen++;
+      if (wispSeen > keepWisps) return false;
+    }
+    return true;
+  });
+  commitRng(state, rng);
+}
+
+/** Every tick: movement behaviours. Creatures ignore roads. */
+export function tickCreatures(state: GameState): void {
+  const rng = rngOf(state);
+  const dt = 1 / TICKS_PER_SEC;
+  const t = state.tick * dt;
+  for (const a of state.agents) {
+    if (a.kind !== AgentKind.Creature) continue;
+    const ax = a.ax ?? a.x;
+    const ay = a.ay ?? a.y;
+    switch (a.species) {
+      case 'glimmoth': {
+        // flutter on a wobbly orbit around the source
+        const ph = a.id * 0.7;
+        const r = 1.2 + 0.6 * Math.sin(t * 0.9 + ph);
+        const tx = ax + Math.cos(t * 1.7 + ph) * r;
+        const ty = ay + Math.sin(t * 2.3 + ph) * r * 0.6;
+        a.x += (tx - a.x) * 0.15 + (rng.next() - 0.5) * 0.05;
+        a.y += (ty - a.y) * 0.15 + (rng.next() - 0.5) * 0.05;
+        break;
+      }
+      case 'thrumhare': {
+        if (a.timer > 0) {
+          a.timer--;
+          // flee any non-creature agent within 2 tiles
+          break;
+        }
+        if (a.path.length === 0) {
+          // pick a nearby meadow/grass tile to hop to
+          for (let k = 0; k < 5; k++) {
+            const nx = Math.floor(ax) + rng.int(7) - 3;
+            const ny = Math.floor(ay) + rng.int(7) - 3;
+            if (!inBounds(nx, ny)) continue;
+            const i = idx(nx, ny);
+            const tt = state.terrain[i];
+            if ((tt === Terrain.Meadow || tt === Terrain.Grass) && state.bIndex[i] < 0 && !state.road[i] && !state.gloam[i]) {
+              a.path = [i];
+              a.pathIdx = 0;
+              break;
+            }
+          }
+          if (a.path.length === 0) a.timer = 30;
+          break;
+        }
+        const ti = a.path[0];
+        const tx = (ti % MAP_W) + 0.5;
+        const ty = ((ti / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const d = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        if (d <= sp) {
+          a.x = tx;
+          a.y = ty;
+          a.path = [];
+          a.timer = 20 + rng.int(60);
+        } else {
+          a.x += (dx / d) * sp;
+          a.y += (dy / d) * sp;
+          a.dir = dx > 0 ? 0 : 2;
+        }
+        break;
+      }
+      case 'wisp': {
+        // drift around the anchor; follow restless if anchored to one
+        let cx = ax;
+        let cy = ay;
+        if (a.anchorId !== undefined && a.anchorId >= 0) {
+          const r = state.agents.find((o) => o.id === a.anchorId && o.kind === AgentKind.Restless);
+          if (r) {
+            cx = r.x;
+            cy = r.y;
+          }
+        }
+        const ph = a.id * 1.3;
+        const tx = cx + Math.cos(t * 0.5 + ph) * 1.5;
+        const ty = cy + Math.sin(t * 0.7 + ph) * 0.9;
+        a.x += (tx - a.x) * 0.04;
+        a.y += (ty - a.y) * 0.04;
+        break;
+      }
+    }
+    // keep on the map and off deep water
+    if (a.x < 0.5) a.x = 0.5;
+    if (a.y < 0.5) a.y = 0.5;
+    if (a.x > MAP_W - 0.5) a.x = MAP_W - 0.5;
+    if (a.y > MAP_H - 0.5) a.y = MAP_H - 0.5;
+  }
+  commitRng(state, rng);
+}
+
+/** Moth-Loft bonus for a craft building: +20% if a lit loft with moths is within 8 tiles. */
+export function mothBonus(state: GameState, b: Building): number {
+  let bonus = 0;
+  forEachBuilding(state, (o) => {
+    if (o.kind !== 'mothloft' || !o.lit || o.state !== 'ok') return;
+    if (Math.hypot(o.x - b.x, o.y - b.y) <= 8) bonus = 0.2;
+  });
+  return bonus;
+}
+
+export function isCreatureWater(state: GameState, x: number, y: number): boolean {
+  return inBounds(Math.floor(x), Math.floor(y)) && isWater(state.terrain[idx(Math.floor(x), Math.floor(y))]);
+}

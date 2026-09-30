@@ -2,6 +2,7 @@
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
 import { maybeFireCalendar, maybeFireEvent } from './events';
 import { seasonOf } from './world';
+import { tickCreatures, updateCreatures } from './creatures';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -32,7 +33,9 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   state.tick++;
   const t = state.tick;
   tickAgents(state);
+  tickCreatures(state);
   if (t % 10 === 0) trySpawnBuildings(state, 3);
+  if (t % 50 === 20) updateCreatures(state);
   const slice = t % 50;
   if (slice === 5) updateMana(state);
   else if (slice === 15) updateWater(state);

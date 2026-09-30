@@ -847,6 +847,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   nexus: { w: 2, h: 2, height: 6, roofH: 4, wall: 'stone', roof: 'flat', crystal: true, leyLamps: true, seed: 3, orbit: true, runeBand: true },
   font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4, runeBand: true, orbit: true },
   mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true, lanternPost: true },
+  mothloft: { w: 1, h: 1, height: 16, roofH: 5, wall: 'timber', roof: 'cone', windows: 2, windowRows: 3, seed: 25, runeBand: true, orbit: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1188,6 +1189,41 @@ export function generateSprites(): SpriteDef[] {
   for (let f = 0; f < 2; f++) {
     const r = restlessSprite(0, f);
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });
+  }
+  // creatures
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(6, 5);
+    const glow = new Painter(6, 5);
+    // glimmoth: two wings, open/closed
+    if (f === 0) { p.rect(0, 1, 2, 3, 'glimleaf'); p.rect(4, 1, 2, 3, 'glimleaf'); } else { p.rect(1, 2, 1, 2, 'glimleaf'); p.rect(4, 2, 1, 2, 'glimleaf'); }
+    p.rect(2, 1, 2, 3, 'leyGlow');
+    p.px(2, 0, 'outline'); p.px(3, 0, 'outline');
+    glow.rect(0, 0, 6, 5, 'glimleaf', 150);
+    out.push({ name: `glimmoth_${f}`, p, glow, ax: 3, ay: 4 });
+  }
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(7, 6);
+    p.rect(1, 2, 5, 3, 'sand');
+    p.rect(1, 3, 5, 1, 'sand2');
+    p.rect(5, 1, 1, 2, 'sand');
+    p.px(6, 2, 'sand');
+    p.px(6, 1, 'outline');
+    if (f === 0) { p.px(1, 0, 'sand'); p.px(2, 1, 'sand'); } else { p.px(2, 0, 'sand'); p.px(2, 1, 'sand'); }
+    p.px(0, 4, 'flower3');
+    p.outline('outline');
+    out.push({ name: `thrumhare_${f}`, p, ax: 3, ay: 6 });
+  }
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(5, 8);
+    const glow = new Painter(5, 8);
+    const top = f;
+    p.circle(2, top + 2, 2, 'restless', 200);
+    p.px(2, top + 1, 'glassGlow');
+    p.px(2, top + 5, 'restless', 120);
+    p.px(2, top + 6, 'restless', 60);
+    glow.rect(0, top, 5, 7, 'restless', 140);
+    glow.px(2, top + 1, 'glassGlow');
+    out.push({ name: `wisp_${f}`, p, glow, ax: 2, ay: 7 });
   }
   // icons
   for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });

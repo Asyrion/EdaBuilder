@@ -169,7 +169,7 @@ export function dailyAgents(state: GameState): void {
     else if (a.kind === AgentKind.Cart) carts++;
   }
   // remove agents whose home vanished
-  state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.homeId >= 0);
+  state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.kind === AgentKind.Creature || a.homeId >= 0);
   citizens = 0;
   carts = 0;
   for (const a of state.agents) {
@@ -393,6 +393,7 @@ export function tickAgents(state: GameState): void {
   };
   const dt = 1 / TICKS_PER_SEC;
   for (const a of state.agents) {
+    if (a.kind === AgentKind.Creature) continue;
     if (a.timer > 0) {
       a.timer--;
       continue;

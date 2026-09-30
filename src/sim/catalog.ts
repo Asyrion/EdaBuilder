@@ -231,6 +231,15 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'leisure', radius: 10, strength: 0.8 }, landValue: 12, unlock: 5,
   },
 
+  // ---- beasts ----
+  {
+    key: 'mothloft', name: 'Moth-Loft', category: 'leisure',
+    desc: 'A lattice tower that glimmoths roost in. Where moths swarm at night it gathers glim-dust: Craft goods +20% within 8 tiles. Needs a ley node or lit spire within 6.',
+    flavor: 'The dust is sifted at dawn by children with candle-eyes, who can see it.',
+    w: 1, h: 1, cost: 900, upkeep: 12, manaUse: 2, unlock: 2, needsMana: true,
+    service: { type: 'leisure', radius: 4, strength: 0.2 },
+  },
+
   // ---- trade ----
   {
     key: 'depot', name: 'Trade Depot', category: 'leisure',
@@ -308,7 +317,7 @@ export const MILESTONES: Milestone[] = [
     text: 'The Charter is nailed to the door. Light it, hold it, and make it pay.' },
   { name: 'Hamlet', pop: 40, grant: 2000, unlocks: ['cobble', 'boneyard', 'healer', 'garden'],
     text: 'Forty souls under your light. The Crown sends cobbles, a sexton and a healer.' },
-  { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern'],
+  { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern', 'mothloft'],
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot'],
     text: 'A village with a name on the Crown\'s maps. Scholars, a proper Watch and the carters\' guild follow.' },
