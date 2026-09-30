@@ -35,6 +35,12 @@
 - Night bloom pass, ground rune rings, glowing Tallowkin eyes, cart lanterns.
 - Richer UI panel styling and an animated title sigil.
 
+## Done in iteration 6 (creatures, first wave)
+
+- Creature agents: glimmoths at night around ley, thrumhares on meadows by day, wisps over
+  boneyards that multiply with the unquieted dead and follow the restless.
+- Moth-Loft building harvesting glim-dust for nearby Craft works.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -59,12 +65,13 @@
 
 ## Fantasy roadmap (see DESIGN.md §8)
 
-Iterations 6–11, in order: (6) creature agents with glimmoths, thrumhares and wisps;
-(7) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) the Sleeping Wyrm: waking, tribute,
-flyover, Wyrm-Court binding; (9) magical buildings: Moth-Loft, Glimhouse, Weather Vane,
-Observatory, Portal Arch; (10) Concord Wardens and the Golem Foundry, Drake Mews, skyrays
-and the Ley Beacon; (11) vehicles and the sky layer: floating carts, barges, drake riders,
-airships.
+Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhares and wisps;
+(7) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) Wyrmcraft I: egg events, Wyrm-Cradle,
+Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9) Wyrmcraft II: sky
+layer, wyvern couriers, the Wyrm-Ring; (10) the Sleeping Wyrm: waking, tribute, flyover,
+Wyrm-Court binding; (11) magical buildings: Glimhouse, Weather Vane, Observatory, Portal
+Arch; (12) Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon;
+(13) vehicles: floating carts, barges, drake riders, airships.
 
 ## Prioritized ideas for the next iteration
 

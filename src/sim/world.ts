@@ -182,6 +182,11 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }
   if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
+  if (def.key === 'mothloft') {
+    let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
+    if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
+    if (!near) return 'Needs a ley node or spire within 6 tiles';
+  }
   return null;
 }
 

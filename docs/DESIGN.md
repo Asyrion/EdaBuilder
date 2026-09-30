@@ -265,6 +265,18 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Districts show population, jobs, happiness and tithe in the Edicts panel and can be
   renamed. Autosave is now daily. The light map drops to quarter resolution at 1× zoom.
 
+### 4.24 Creatures, first wave (iteration 6)
+- Creature agents share the agent structure (`kind: Creature`, `species`, an anchor) and
+  ignore roads. Populations are managed every 50 ticks against per-species caps; movement
+  runs every tick with per-species behaviour.
+- **Glimmoths**: two per ley source (nodes, lit spires, nexus, wards, lofts) at night,
+  fluttering on wobbly orbits with glow and sparks; gone by day.
+- **Thrumhares**: one per 25 free meadow tiles by day, hopping between meadow and grass
+  tiles with pauses; gone at night.
+- **Wisps**: one per deathcare building, one per restless (which they follow), plus one per
+  8 unquieted dead: the visible early warning that the dead are stirring.
+- **Moth-Loft** (Thorp, needs a node or spire within 6): Craft goods +20 % within 8 tiles.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -428,18 +440,95 @@ people, sleeping coiled around the deepest nodes. Rules:
   ends the game ("the valley belongs to the wyrm"); a hound pack that empties three
   districts in one Hush triggers the Long Night early.
 
-### 8.6 Delivery order
+### 8.6 Wyrmcraft: eggs, hatchery, tamers and the arena
 
-1. Creature agents + glimmoths, thrumhares, wisps (ambient, cheap, visible at once).
+The Wyrm-Court (8.2) binds one wild adult. Wyrmcraft is the player-driven line: raise
+dragons from eggs, choose what each one becomes, and build an economy and a spectacle
+around them.
+
+**Eggs come from events, never from a shop.** Several event types can pay in eggs, so a
+player who keeps the city interesting keeps finding them:
+
+| Event | Condition | Egg |
+|---|---|---|
+| *A seam of warm stone* | a Crystal Mine has run 20 days | **ember egg** (Ember-drake line) |
+| *The wyrm's tribute* | a bound wyrm fed and content for a season | **vein egg** (Ley-wyrm line, rare) |
+| *A skyray nest* | a Ley Beacon lured a school | **sky egg** (Sky-wyvern line) |
+| *The Concord vault* | Concord Wardens bound at a Golem Foundry | **grey egg**, half fossil (Gloam-drake line, immune to the Gloam) |
+| *A hatchling in the boneyard* | wisps ≥ 10 and an Ossuary | **bone egg** (Quiet-wyrm line, deathcare) |
+| *The Crown's gift* | Beacon of Eda milestone | any egg, player's choice |
+| *Poachers at the gate* | a hatchery exists | a stolen egg offered for crowns, or refuse and gain unrest |
+
+Each event is a choice: keep the egg (needs a free cradle), sell it to the Crown (crowns
+and a Crown favour), or give it to the Academy (educated share, and a future event).
+
+**Wyrm-Cradle (hatchery)** — Township, 2×2, must be within 6 of a ley node or lit nexus,
+holds 2 eggs (4 when upgraded to a **Great Cradle** at Burgh). An egg needs warmth
+(8 mana/day) and 30 days; a hatchling needs a **Wyrm-Tamer** (a job at a **Tamer's
+Lodge**, below) and food (10 goods/day, rising with size). Growth stages and the days they
+take: **egg** (30) → **hatchling** (20, lives in the cradle) → **drake** (40, dog-sized)
+→ **wyvern** (60, horse-sized, flies) → **wyrm** (only vein and grey lines, 120, the
+size of a Guildhall). Unfed or unlit cradles regress a stage; a dragon that regresses
+twice leaves for the Gloam (a hazard event later).
+
+**Roles** are chosen at the drake stage and change what the dragon does each day:
+
+| Role | Needs | Effect |
+|---|---|---|
+| **Courier** | wyvern | flies goods between any two markets or to the Trade Depot: 30 goods a trip, no roads, no congestion; a wyvern courier is the first flying vehicle in the game |
+| **Warden** | drake or wyvern | patrols a district: Watch coverage +0.5 there, hounds flee, fires in the district are smothered by wingbeats (fire coverage +0.5) |
+| **Delver** | drake, ember line | works a Crystal Mine: +6 leystone/day; ember drakes also warm a Glimhouse |
+| **Ward-beast** | grey line | lairs at the city edge: Gloam creep stops within 12 tiles and the whispering ends there |
+| **Quiet-wyrm** | bone line | lairs at an Ossuary: quieting +30/day, no restless rise within 15 tiles |
+| **Champion** | any wyvern or wyrm | fights in the Wyrm-Ring (below) |
+
+**Materials.** Dragons shed as they grow and the cradle collects: **scale** (every stage
+change, 5–20 depending on line), **wyrmfire** (ember line, monthly, a Craft reagent:
+alembics +30 % for a season), **eggshell** (once per hatching, a rare artifact reagent),
+and, on a dragon's death, **wyrm-bone** (the best deathcare material, see 8.2). Scale
+makes *scale-mail* for the Watch (unrest −5 % city-wide while stocked) and the
+**Marvels** artifacts (8.5). Lines have colours: ember red, vein ley-blue, sky white,
+grey ash, bone ivory; wyverns and wyrms show their line in the sky layer.
+
+**Tamer's Lodge** — Thorp, 2×2. Trains Wyrm-Tamers (a job; Tallowkin fill it fastest)
+and sets **taming edicts** per dragon: *gentle* (slower growth, happier dragon, no
+mishaps), *hard* (faster growth, mishaps: a scorched roof, a fled hatchling), *wild*
+(the dragon may leave, but if it stays it is a full wyrm sooner). An untrained dragon
+is a fire risk in radius 4.
+
+**Wyrm-Ring (arena)** — Market Town, 3×3. Once a season a bout is held: the player's
+champion against a wild challenger drawn by line and stage (or, with two champions, a
+tournament). Outcome is a weighted roll on stage, line, tamer edict and the champion's
+*mood* (fed, gentle-trained, recently flown). Win: a purse (crowns scaling with the
+challenger), happiness +8 for 10 days, pilgrims arrive (population). Lose: the champion
+regresses a stage, unrest +5 %. The Ring is also a **leisure** building (land value and
+happiness in radius 10) and draws carts of goods on bout day. The Ring never kills a
+dragon; Vell forbids it, and the Grimmen sextons would refuse to quiet the ground.
+
+**Flying trade (the future).** A wyvern courier is a first vehicle. At Beacon of Eda the
+**Sky-Dock** (8.3) can send a wyvern instead of an airship: faster, no mana, but the
+trade event may return a *rival wardlight's* egg offer or a challenge for the Ring.
+
+**Failure and drama.** A starved wyrm-stage dragon leaves and returns wild after a season
+(tribute like 8.2). A cradle in a district that the Gloam reaches is a hazard event ("the
+eggs go grey"). Two dragons of the same line at wyrm stage may **nest**: a vein egg
+without an event.
+
+### 8.7 Delivery order
+
+1. Creature agents + glimmoths, thrumhares, wisps (ambient, cheap, visible at once). ✅
 2. Gloam-hounds + Hunters' Lodge + Warding Wall (the Hush gets a real threat).
-3. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding.
-4. Moth-Loft, Glimhouse, Weather Vane, Observatory, Portal Arch (magical buildings).
-5. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon.
-6. Vehicles: floating carts, barges, drake riders, airships and the sky layer.
+3. Wyrmcraft I: egg events, Wyrm-Cradle, Tamer's Lodge, growth stages, materials,
+   Warden and Delver roles (dragons on the ground first).
+4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring.
+5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs.
+6. Moth-Loft ✅, Glimhouse, Weather Vane, Observatory, Portal Arch (magical buildings).
+7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
+8. Vehicles: floating carts, barges, drake riders, airships.
 
 ## 9. Verification
 
-- `npm test` runs 43 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 48 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread

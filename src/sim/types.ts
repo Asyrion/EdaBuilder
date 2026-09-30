@@ -87,7 +87,10 @@ export const enum AgentKind {
   Citizen = 0,
   Cart = 1,
   Restless = 2,
+  Creature = 3,
 }
+
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp';
 
 export interface Agent {
   id: number;
@@ -103,6 +106,10 @@ export interface Agent {
   variant: number;
   dir: number; // 0..3 facing for sprites
   load: number; // goods carried (carts)
+  species?: Species; // creatures only
+  anchorId?: number; // building id (or -1) a creature is tied to
+  ax?: number; // anchor tile for free-moving creatures
+  ay?: number;
 }
 
 export interface TaxRates {
