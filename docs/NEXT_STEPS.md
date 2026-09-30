@@ -28,6 +28,13 @@
 - District statistics and renaming; daily autosave; quarter-resolution light map at 1×.
 - Night flicker fixed (strobing particle lights, unison flicker, brownout boundary blinking).
 
+## Done in iteration 5 (art pass)
+
+- Fantasy building features across all zones and civic buildings; new wall and roof
+  materials; standing-stone ley nodes; glimwood, mushrooms and Gloam trees; spire rings.
+- Night bloom pass, ground rune rings, glowing Tallowkin eyes, cart lanterns.
+- Richer UI panel styling and an animated title sigil.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -58,8 +65,9 @@
    a Gloam-locked island, a city inherited mid-collapse) selectable from the title screen.
 3. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
    the treasury, once the first is a Beacon.
-4. **Hand-made art pass.** The atlas manifest is ready; the biggest wins are level-3
-   townhouses, the temple, and citizen sprites with real walk cycles.
+4. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
+   replacements through the atlas manifest would still lift the temple, the Lantern of Vell
+   and citizen sprites most.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
    simple generative melody for milestones.
 6. **Remappable keys.** The key table is centralised in the help overlay but not yet

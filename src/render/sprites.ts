@@ -116,8 +116,8 @@ function roadTile(type: 'track' | 'cobble' | 'lantern', mask: number): Painter {
 }
 
 // ---------- buildings ----------
-export type Wall = 'sod' | 'timber' | 'stone' | 'whitewash' | 'arcane' | 'bone' | 'darkstone';
-export type Roof = 'thatch' | 'shingle' | 'slate' | 'tile' | 'arcane' | 'flat' | 'cone' | 'dome' | 'green' | 'awning' | 'none';
+export type Wall = 'sod' | 'timber' | 'stone' | 'whitewash' | 'arcane' | 'bone' | 'darkstone' | 'plaster' | 'bluewash';
+export type Roof = 'thatch' | 'shingle' | 'slate' | 'tile' | 'arcane' | 'flat' | 'cone' | 'dome' | 'green' | 'awning' | 'moss' | 'copper' | 'none';
 
 export interface BuildingSpec {
   w: number;
@@ -139,6 +139,17 @@ export interface BuildingSpec {
   seed?: number;
   leyLamps?: boolean;
   gloomy?: boolean;
+  overhang?: boolean; // upper floor juts out (crooked fantasy townhouse)
+  runeBand?: boolean; // glowing rune band around the walls
+  alembic?: boolean; // copper alembic with green glass on the roof
+  bottles?: boolean; // potion bottles displayed along the front
+  lanternPost?: boolean; // a hanging lantern by the door
+  orbit?: boolean; // small crystals orbiting a central crystal
+  standingStones?: boolean;
+  wisps?: boolean; // little green-blue wisps
+  bellTower?: boolean;
+  ridgeOrnament?: boolean; // carved beast heads on the roof ridge
+  glassDome?: boolean;
 }
 
 const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
@@ -149,6 +160,8 @@ const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
   arcane: { l: 'arcane2', r: 'arcane1', t: 'arcane3', d: 'arcane2' },
   bone: { l: 'whitewash2', r: 'bone', t: 'bone', d: 'stone1' },
   darkstone: { l: 'outline', r: 'stone1', t: 'stone2', d: 'shadow' },
+  plaster: { l: 'plaster2', r: 'plaster', t: 'plaster', d: 'wood1' },
+  bluewash: { l: 'bluewash2', r: 'bluewash', t: 'bluewash', d: 'wood1' },
 };
 const ROOFS: Record<string, { a: Col; b: Col }> = {
   thatch: { a: 'thatch1', b: 'thatch2' },
@@ -161,6 +174,8 @@ const ROOFS: Record<string, { a: Col; b: Col }> = {
   dome: { a: 'ley2', b: 'ley3' },
   green: { a: 'green1', b: 'green2' },
   awning: { a: 'cloth2', b: 'whitewash' },
+  moss: { a: 'mossRoof', b: 'mossRoof2' },
+  copper: { a: 'copperRoof', b: 'copperRoof2' },
   none: { a: 'stone2', b: 'stone1' },
 };
 
@@ -188,6 +203,23 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
   // walls
   p.poly([L, B, up(B, H), up(L, H)], wc.l);
   p.poly([B, R, up(R, H), up(B, H)], wc.r);
+  if (spec.overhang && H >= 12) {
+    // upper floor juts out by 2px on both visible faces, with a dark underside line
+    const oh = Math.floor(H * 0.5);
+    p.poly([[L[0] - 2, L[1] - oh + 1], [B[0], B[1] - oh + 2], [B[0], B[1] - H], [L[0] - 2, L[1] - H]], wc.l);
+    p.poly([[B[0], B[1] - oh + 2], [R[0] + 2, R[1] - oh + 1], [R[0] + 2, R[1] - H], [B[0], B[1] - H]], wc.r);
+    p.line(L[0] - 2, L[1] - oh + 1, B[0], B[1] - oh + 2, 'outline');
+    p.line(B[0], B[1] - oh + 2, R[0] + 2, R[1] - oh + 1, 'outline');
+    // carved timber braces under the overhang
+    for (let k = 1; k <= 2; k++) {
+      const fx = Math.round(L[0] + ((B[0] - L[0]) * k) / 3);
+      const fy = Math.round(L[1] + ((B[1] - L[1]) * k) / 3) - oh + 2;
+      p.line(fx, fy, fx + 2, fy + 3, 'wood1');
+      const gx = Math.round(B[0] + ((R[0] - B[0]) * k) / 3);
+      const gy = Math.round(B[1] + ((R[1] - B[1]) * k) / 3) - oh + 2;
+      p.line(gx, gy, gx - 2, gy + 3, 'wood1');
+    }
+  }
   // wall texture
   const texWall = (x0: number, y0: number, x1: number, y1: number, right: boolean) => {
     // ground line from (x0,y0) to (x1,y1); walk pixels
@@ -203,8 +235,9 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
           if (i % 6 === 0) p.px(x, y, 'wood1', 120);
         } else if (spec.wall === 'stone' || spec.wall === 'darkstone' || spec.wall === 'bone') {
           if (d % 3 === 0 || (i + (d % 6 >= 3 ? 2 : 0)) % 5 === 0) p.px(x, y, right ? 'stone1' : 'outline', spec.wall === 'bone' ? 60 : 90);
-        } else if (spec.wall === 'whitewash') {
+        } else if (spec.wall === 'whitewash' || spec.wall === 'plaster' || spec.wall === 'bluewash') {
           if (d % 6 === 0 || i % 7 === 0) p.px(x, y, 'wood1', 200);
+          if (spec.wall !== 'whitewash' && (i + d) % 7 === 3 && d % 6 !== 0) p.px(x, y, 'wood1', 90);
         } else if (spec.wall === 'sod') {
           if (r < 0.15) p.px(x, y, 'sod2', right ? 120 : 200);
         } else if (spec.wall === 'arcane') {
@@ -345,8 +378,12 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
           } else if (spec.roof === 'slate' || spec.roof === 'arcane') {
             if ((x + y) % 5 === 0) p.px(x, y, dark, 140);
             if (spec.roof === 'arcane' && h2(x, y, s) < 0.04) { p.px(x, y, 'ley1'); glow.px(x, y, 'ley1', 160); }
-          } else if (spec.roof === 'green') {
+          } else if (spec.roof === 'green' || spec.roof === 'moss') {
             if (h2(x, y, s) < 0.2) p.px(x, y, light);
+            if (spec.roof === 'moss' && h2(x, y, s + 5) < 0.05) p.px(x, y, 'flower1');
+          } else if (spec.roof === 'copper') {
+            if (y % 3 === 0) p.px(x, y, dark, 120);
+            if (h2(x, y, s) < 0.06) p.px(x, y, 'copper');
           } else if (spec.roof === 'awning') {
             if (Math.floor((x - y * 0.5) / 3) % 2 === 0) p.px(x, y, seed % 2 ? 'cloth3' : 'cloth2');
             else p.px(x, y, 'whitewash');
@@ -414,6 +451,118 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
       glow.px(x, y - 6, 'ley1');
     }
   }
+  if (spec.runeBand) {
+    // a band of glowing runes a third of the way up both faces
+    const band = Math.floor(H * 0.35);
+    const runeAt = (x: number, gy: number, k: number) => {
+      const y = Math.floor(gy) - band;
+      const c: Col = k % 3 === 0 ? 'rune' : 'runeViolet';
+      p.px(x, y, c);
+      p.px(x, y - 1, c);
+      if (k % 2) p.px(x + 1, y - 1, c);
+      glow.px(x, y, c, 200);
+      glow.px(x, y - 1, c, 200);
+    };
+    const lenL = B[0] - L[0];
+    for (let x = L[0] + 3, k = 0; x < B[0] - 2; x += 4, k++) runeAt(x, L[1] + ((B[1] - L[1]) * (x - L[0])) / lenL, k);
+    const lenR = R[0] - B[0];
+    for (let x = B[0] + 3, k = 1; x < R[0] - 2; x += 4, k++) runeAt(x, B[1] + ((R[1] - B[1]) * (x - B[0])) / lenR, k);
+  }
+  if (spec.bottles) {
+    // potion bottles on a shelf along the right face
+    const len = R[0] - B[0];
+    const cols: Col[] = ['glass', 'crystalPink', 'ley1', 'flower1', 'runeViolet'];
+    for (let k = 0; k < 4; k++) {
+      const x = Math.round(B[0] + (len * (0.45 + k * 0.12)));
+      const gy = Math.floor(B[1] + ((R[1] - B[1]) * (x - B[0])) / len);
+      const c = cols[(k + seed) % cols.length];
+      p.rect(x, gy - 4, 1, 2, c);
+      p.px(x, gy - 5, 'outline');
+      glow.px(x, gy - 4, c, 140);
+    }
+    p.line(B[0] + Math.round(len * 0.42), Math.floor(B[1] + ((R[1] - B[1]) * 0.42)) - 2, B[0] + Math.round(len * 0.9), Math.floor(B[1] + ((R[1] - B[1]) * 0.9)) - 2, 'wood1');
+  }
+  if (spec.lanternPost) {
+    const x = R[0] - 3;
+    const y = R[1] - 1;
+    p.rect(x, y - 9, 1, 9, 'ironDark');
+    p.px(x + 1, y - 9, 'ironDark');
+    p.rect(x + 1, y - 8, 2, 3, 'lampWarm');
+    p.px(x + 1, y - 8, 'windowLit');
+    glow.rect(x, y - 9, 4, 5, 'lampWarm', 230);
+  }
+  if (spec.alembic) {
+    // copper still with a green glass bulb on the roof
+    const cx = ox + Math.round(W * 0.62);
+    const cy = Math.round(base + FH / 2 - RH) + 2;
+    p.rect(cx - 2, cy - 6, 4, 6, 'copper');
+    p.rect(cx - 2, cy - 6, 1, 6, 'copper2');
+    p.circle(cx, cy - 9, 3, 'glass');
+    p.px(cx - 1, cy - 10, 'glassGlow');
+    p.line(cx + 3, cy - 8, cx + 6, cy - 4, 'copper');
+    glow.circle(cx, cy - 9, 3, 'glass', 200);
+    for (let k = 0; k < 3; k++) {
+      p.px(cx + 1 + k, cy - 13 - k * 2, 'verdigris');
+    }
+  }
+  if (spec.orbit) {
+    const cx = ox + Math.round(W / 2);
+    const cy = Math.round(base + FH / 2 - RH) - 9;
+    for (let k = 0; k < 3; k++) {
+      const a = (k / 3) * Math.PI * 2 + seed;
+      const x = Math.round(cx + Math.cos(a) * 7);
+      const y = Math.round(cy + Math.sin(a) * 3);
+      const c: Col = k === 0 ? 'crystalPink' : k === 1 ? 'ley1' : 'runeViolet';
+      p.px(x, y, c);
+      p.px(x, y - 1, c);
+      glow.rect(x - 1, y - 2, 3, 4, c, 180);
+    }
+  }
+  if (spec.bellTower) {
+    const cx = ox + Math.round(W * 0.28);
+    const top = Math.round(base + FH / 2 - RH) - 14;
+    p.rect(cx - 2, top + 4, 5, 12, 'stone2');
+    p.rect(cx - 2, top + 4, 1, 12, 'stone1');
+    p.rect(cx - 1, top + 6, 3, 3, 'windowDark');
+    p.px(cx, top + 7, 'gold');
+    p.poly([[cx - 3, top + 4], [cx, top], [cx + 3, top + 4]], 'slate2');
+    p.px(cx, top - 1, 'gold');
+  }
+  if (spec.ridgeOrnament && spec.roof !== 'flat' && spec.roof !== 'none' && spec.roof !== 'dome' && spec.roof !== 'cone') {
+    const r1x = ox + h * 8 + 1;
+    const r1y = base + FH / 4 - RH + h * 4 - 1;
+    const r2x = ox + W - w * 8 - 1;
+    const r2y = base + FH / 4 - RH + h * 4 + w * 4 - 1;
+    for (const [x, y] of [[r1x, r1y], [r2x, r2y]] as [number, number][]) {
+      p.px(x, y - 1, 'gold');
+      p.px(x, y - 2, 'gold');
+      p.px(x + 1, y - 3, 'gold');
+      p.px(x - 1, y - 3, 'gold');
+    }
+  }
+  if (spec.wisps) {
+    for (let k = 0; k < 3; k++) {
+      const x = ox + 4 + Math.floor(h2(k, seed, 3) * (W - 8));
+      const y = base + H + Math.floor(h2(seed, k, 4) * FH * 0.6);
+      p.px(x, y, 'restless');
+      p.px(x, y - 1, 'glassGlow');
+      glow.rect(x - 1, y - 2, 3, 4, 'restless', 200);
+    }
+  }
+  if (spec.glassDome) {
+    const cx = ox + Math.round(W / 2);
+    const cy = Math.round(base + FH / 2 - RH) + 1;
+    const r = Math.max(5, Math.round(W / 6));
+    for (let y = -r; y <= 0; y++)
+      for (let x = -r * 1.4; x <= r * 1.4; x++) {
+        if ((x * x) / (r * r * 1.96) + (y * y) / (r * r) > 1) continue;
+        const shade = x * 0.5 - y;
+        p.px(cx + x, cy + y, shade > r * 0.6 ? 'glassGlow' : 'glass', 235);
+        if ((Math.round(x) + y) % 4 === 0) p.px(cx + x, cy + y, 'copper2', 160);
+        glow.px(cx + x, cy + y, 'glass', 120);
+      }
+    p.px(cx, cy - r - 1, 'copper');
+  }
   p.outline('outline');
   return { p, glow, ax: ox + h * 16, ay: base + H };
 }
@@ -460,6 +609,63 @@ function tree(variant: number, autumn = false): Painter {
   return p;
 }
 
+function glimwood(variant: number): { p: Painter; glow: Painter } {
+  // a pale, slender tree whose leaf tips glow faintly with thrum
+  const p = new Painter(16, 26);
+  const glow = new Painter(16, 26);
+  p.rect(7, 16, 2, 9, 'whitewash2');
+  p.px(7, 20, 'stone2');
+  const layers = [[16, 6], [11, 5], [6, 3]];
+  for (const [cy, r] of layers)
+    for (let y = -r; y <= r; y++)
+      for (let x = -r - 1; x <= r + 1; x++) {
+        if ((x * x) / ((r + 1) * (r + 1)) + (y * y) / (r * r) > 1) continue;
+        const edge = (x * x) / ((r + 1) * (r + 1)) + (y * y) / (r * r) > 0.7;
+        const shade = x - y > r * 0.6 ? 2 : x - y < -r * 0.6 ? 0 : 1;
+        const c: Col = edge && h2(x + cy, y, variant) < 0.5 ? 'glimleaf' : (['leaf1', 'leaf2', 'leaf3'] as Col[])[shade];
+        if (h2(x + cy, y, variant + 9) < 0.92) p.px(8 + x, cy + y, c);
+        if (c === 'glimleaf') glow.px(8 + x, cy + y, 'glimleaf', 150);
+      }
+  p.outline('outline');
+  return { p, glow };
+}
+
+function gloamTree(variant: number): { p: Painter; glow: Painter } {
+  // twisted, leafless, with a single violet eye
+  const p = new Painter(16, 22);
+  const glow = new Painter(16, 22);
+  p.rect(7, 8, 2, 14, 'gloam1');
+  p.px(6, 14, 'gloam1');
+  p.px(9, 11, 'gloam1');
+  p.line(7, 9, 3, 4, 'gloam1');
+  p.line(8, 8, 12, 2, 'gloam1');
+  p.line(3, 4, 1, 5, 'gloam1');
+  p.line(12, 2, 14, 4, 'gloam1');
+  p.line(8, 12, 12, 9, 'gloam1');
+  p.line(7, 11, 4, 9, 'gloam1');
+  if (variant % 2 === 0) {
+    p.px(8, 6, 'gloamEye');
+    glow.px(8, 6, 'gloamEye');
+  }
+  p.outline('outline');
+  return { p, glow };
+}
+
+function mushrooms(variant: number): { p: Painter; glow: Painter } {
+  const p = new Painter(10, 8);
+  const glow = new Painter(10, 8);
+  for (let k = 0; k < 3; k++) {
+    const x = 1 + k * 3 + (variant % 2);
+    const hgt = 2 + ((k + variant) % 2);
+    p.rect(x, 8 - hgt, 1, hgt, 'whitewash');
+    p.rect(x - 1, 7 - hgt, 3, 1, 'mushroom');
+    p.px(x, 6 - hgt, 'mushroom');
+    glow.rect(x - 1, 6 - hgt, 3, 2, 'mushroom', 160);
+  }
+  p.outline('outline');
+  return { p, glow };
+}
+
 function rock(variant: number): Painter {
   const p = new Painter(14, 10);
   const pts: [number, number][] = variant === 0 ? [[2, 8], [1, 4], [5, 1], [10, 2], [13, 6], [11, 9]] : variant === 1 ? [[1, 7], [3, 2], [8, 1], [12, 4], [10, 9], [4, 9]] : [[3, 9], [2, 5], [6, 3], [9, 4], [11, 8]];
@@ -470,8 +676,9 @@ function rock(variant: number): Painter {
   return p;
 }
 
-function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean): Painter {
+function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean): { p: Painter; glow: Painter } {
   const p = new Painter(8, 12);
+  const glow = new Painter(8, 12);
   const cloth: Col[] = ['cloth1', 'cloth2', 'cloth3', 'cloth4', 'cloth5', 'wood2'];
   const c = cloth[variant % cloth.length];
   const skin: Col = grimmen ? 'skinGrey' : 'skin';
@@ -483,6 +690,14 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   if (tallow) {
     p.px(3, top, 'windowLit');
     p.px(4, top, 'windowLit');
+    glow.px(3, top, 'windowLit');
+    glow.px(4, top, 'windowLit');
+  }
+  // hooded cloak on some folk
+  if (variant % 3 === 0) {
+    p.rect(2, top - 1, 4, 1, c);
+    p.px(2, top, c);
+    p.px(5, top, c);
   }
   // body
   p.rect(2, top + 2, 4, 4, c);
@@ -496,7 +711,7 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   // a small pack or basket on one side gives the sprite a facing
   p.px(6, top + 3, variant % 2 ? 'wood1' : 'cloth5');
   p.outline('outline');
-  return p;
+  return { p, glow };
 }
 
 function cart(variant: number): Painter {
@@ -517,6 +732,9 @@ function cart(variant: number): Painter {
   // wheels
   p.circle(9, 9, 1, 'outline');
   p.circle(14, 9, 1, 'outline');
+  // a lantern on a pole
+  p.rect(16, 1, 1, 4, 'ironDark');
+  p.px(16, 0, 'lampWarm');
   p.outline('outline');
   return p;
 }
@@ -594,60 +812,60 @@ function zoneSpecs(zone: string, level: number, variant: number): BuildingSpec {
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
-      const walls: Wall[] = ['sod', 'sod', 'timber', 'sod'];
-      const roofs: Roof[] = ['thatch', 'thatch', 'thatch', 'shingle'];
-      return { w: 1, h: 1, height: 7 + (variant % 2), roofH: 6 + (variant === 3 ? 1 : 0), wall: walls[variant], roof: roofs[variant], windows: 1, door: true, chimney: variant % 2 === 0, glowWindows: true, seed };
+      const walls: Wall[] = ['sod', 'sod', 'plaster', 'sod'];
+      const roofs: Roof[] = ['thatch', 'moss', 'thatch', 'shingle'];
+      return { w: 1, h: 1, height: 7 + (variant % 2), roofH: 6 + (variant === 3 ? 1 : 0), wall: walls[variant], roof: roofs[variant], windows: 1, door: true, chimney: variant % 2 === 0, glowWindows: true, seed, lanternPost: variant === 1 };
     }
     if (level === 2) {
-      const walls: Wall[] = ['timber', 'timber', 'whitewash', 'timber'];
-      const roofs: Roof[] = ['shingle', 'thatch', 'tile', 'shingle'];
-      return { w: 1, h: 1, height: 11 + (variant % 2), roofH: 7, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, hip: variant === 3 };
+      const walls: Wall[] = ['timber', 'plaster', 'whitewash', 'bluewash'];
+      const roofs: Roof[] = ['shingle', 'moss', 'tile', 'slate'];
+      return { w: 1, h: 1, height: 12 + (variant % 2), roofH: 7, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, hip: variant === 3, overhang: true, lanternPost: variant % 2 === 0 };
     }
-    const walls: Wall[] = ['stone', 'whitewash', 'stone', 'whitewash'];
-    const roofs: Roof[] = ['slate', 'tile', 'tile', 'slate'];
-    return { w: 1, h: 1, height: 16 + (variant % 2) * 2, roofH: 8, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 3, door: true, chimney: true, glowWindows: true, seed, hip: variant >= 2 };
+    const walls: Wall[] = ['stone', 'plaster', 'bluewash', 'whitewash'];
+    const roofs: Roof[] = ['slate', 'tile', 'copper', 'slate'];
+    return { w: 1, h: 1, height: 18 + (variant % 2) * 2, roofH: 9, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 3, door: true, chimney: true, glowWindows: true, seed, hip: variant >= 2, overhang: true, lanternPost: true, ridgeOrnament: variant % 2 === 1, leyLamps: variant === 0 };
   }
   if (zone === 'market') {
-    if (level === 1) return { w: 1, h: 1, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 0, door: true, sign: true, glowWindows: true, seed };
-    if (level === 2) return { w: 1, h: 1, height: 11, roofH: 6, wall: variant % 2 ? 'whitewash' : 'timber', roof: variant % 2 ? 'tile' : 'awning', windows: 2, windowRows: 2, door: true, sign: true, glowWindows: true, seed };
-    return { w: 1, h: 1, height: 17, roofH: 7, wall: variant % 2 ? 'whitewash' : 'stone', roof: variant % 2 ? 'tile' : 'slate', windows: 3, windowRows: 3, door: true, sign: true, banner: variant % 2 === 0, glowWindows: true, seed, hip: true };
+    if (level === 1) return { w: 1, h: 1, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 0, door: true, sign: true, glowWindows: true, seed, bottles: true };
+    if (level === 2) return { w: 1, h: 1, height: 11, roofH: 6, wall: variant % 2 ? 'plaster' : 'timber', roof: variant % 2 ? 'tile' : 'awning', windows: 2, windowRows: 2, door: true, sign: true, glowWindows: true, seed, bottles: true, lanternPost: true, overhang: variant % 2 === 1 };
+    return { w: 1, h: 1, height: 18, roofH: 7, wall: variant % 2 ? 'plaster' : 'stone', roof: variant % 2 ? 'copper' : 'slate', windows: 3, windowRows: 3, door: true, sign: true, banner: variant % 2 === 0, glowWindows: true, seed, hip: true, bottles: true, lanternPost: true, bellTower: variant % 2 === 0, ridgeOrnament: true };
   }
   if (zone === 'craft') {
-    if (level === 1) return { w: 1, h: 1, height: 7, roofH: 4, wall: 'timber', roof: variant % 2 ? 'thatch' : 'shingle', windows: 1, door: true, chimney: true, glowWindows: true, seed };
-    if (level === 2) return { w: 1, h: 1, height: 10, roofH: 6, wall: variant % 2 ? 'stone' : 'darkstone', roof: 'shingle', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed };
-    return { w: 1, h: 1, height: 14, roofH: 7, wall: 'darkstone', roof: variant % 2 ? 'slate' : 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, spire: variant % 2 === 0 };
+    if (level === 1) return { w: 1, h: 1, height: 7, roofH: 4, wall: 'timber', roof: variant % 2 ? 'thatch' : 'shingle', windows: 1, door: true, chimney: true, glowWindows: true, seed, alembic: variant % 2 === 0 };
+    if (level === 2) return { w: 1, h: 1, height: 10, roofH: 6, wall: variant % 2 ? 'stone' : 'darkstone', roof: 'shingle', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed, alembic: true };
+    return { w: 1, h: 1, height: 14, roofH: 7, wall: 'darkstone', roof: variant % 2 ? 'slate' : 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, glassDome: variant % 2 === 0, alembic: variant % 2 === 1, runeBand: variant % 2 === 1 };
   }
   // arcane
-  if (level === 1) return { w: 1, h: 1, height: 10, roofH: 7, wall: 'arcane', roof: 'arcane', windows: 1, windowRows: 1, door: true, glowWindows: true, seed, hip: variant % 2 === 1 };
-  if (level === 2) return { w: 1, h: 1, height: 15, roofH: 8, wall: variant % 2 ? 'stone' : 'arcane', roof: 'arcane', windows: 2, windowRows: 2, door: true, glowWindows: true, seed, spire: true };
-  return { w: 1, h: 1, height: 20, roofH: 10, wall: variant % 2 ? 'arcane' : 'stone', roof: 'cone', windows: 2, windowRows: 3, door: true, glowWindows: true, seed, crystal: true };
+  if (level === 1) return { w: 1, h: 1, height: 11, roofH: 7, wall: 'arcane', roof: 'arcane', windows: 1, windowRows: 1, door: true, glowWindows: true, seed, hip: variant % 2 === 1, runeBand: true };
+  if (level === 2) return { w: 1, h: 1, height: 16, roofH: 8, wall: variant % 2 ? 'stone' : 'arcane', roof: 'arcane', windows: 2, windowRows: 2, door: true, glowWindows: true, seed, spire: true, runeBand: true, overhang: variant % 2 === 0 };
+  return { w: 1, h: 1, height: 22, roofH: 11, wall: variant % 2 ? 'arcane' : 'stone', roof: 'cone', windows: 2, windowRows: 3, door: true, glowWindows: true, seed, crystal: true, orbit: true, runeBand: true };
 }
 
 const SERVICE_SPECS: Record<string, BuildingSpec> = {
-  stake: { w: 2, h: 2, height: 14, roofH: 8, wall: 'timber', roof: 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, banner: true, glowWindows: true, leyLamps: true, seed: 1 },
+  stake: { w: 2, h: 2, height: 14, roofH: 8, wall: 'timber', roof: 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, banner: true, glowWindows: true, leyLamps: true, seed: 1, overhang: true, ridgeOrnament: true, lanternPost: true },
   spire: { w: 1, h: 1, height: 3, roofH: 2, wall: 'stone', roof: 'flat', seed: 2 }, // special-drawn below
-  nexus: { w: 2, h: 2, height: 6, roofH: 4, wall: 'stone', roof: 'flat', crystal: true, leyLamps: true, seed: 3 },
-  font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4 },
-  mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true },
+  nexus: { w: 2, h: 2, height: 6, roofH: 4, wall: 'stone', roof: 'flat', crystal: true, leyLamps: true, seed: 3, orbit: true, runeBand: true },
+  font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4, runeBand: true, orbit: true },
+  mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true, lanternPost: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
-  cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6 },
-  watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true },
-  watchhouse: { w: 2, h: 2, height: 16, roofH: 6, wall: 'stone', roof: 'flat', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 8 },
-  healer: { w: 1, h: 1, height: 12, roofH: 7, wall: 'whitewash', roof: 'green', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 9 },
-  hospice: { w: 2, h: 2, height: 16, roofH: 8, wall: 'whitewash', roof: 'green', windows: 3, windowRows: 3, door: true, chimney: true, glowWindows: true, seed: 10, hip: true },
-  veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true },
-  shrine: { w: 1, h: 1, height: 8, roofH: 8, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12 },
-  temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13 },
-  academy: { w: 2, h: 2, height: 18, roofH: 8, wall: 'stone', roof: 'slate', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true },
-  grandacademy: { w: 3, h: 3, height: 26, roofH: 10, wall: 'stone', roof: 'arcane', windows: 4, windowRows: 4, door: true, glowWindows: true, seed: 15, crystal: true, hip: true },
+  cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
+  watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
+  watchhouse: { w: 2, h: 2, height: 16, roofH: 6, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 8, lanternPost: true, bellTower: true },
+  healer: { w: 1, h: 1, height: 12, roofH: 7, wall: 'plaster', roof: 'green', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 9, bottles: true, lanternPost: true },
+  hospice: { w: 2, h: 2, height: 16, roofH: 8, wall: 'whitewash', roof: 'green', windows: 3, windowRows: 3, door: true, chimney: true, glowWindows: true, seed: 10, hip: true, bottles: true, glassDome: true, lanternPost: true },
+  veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true, runeBand: true, bellTower: true },
+  shrine: { w: 1, h: 1, height: 8, roofH: 8, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
+  temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true },
+  academy: { w: 2, h: 2, height: 18, roofH: 8, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
+  grandacademy: { w: 3, h: 3, height: 26, roofH: 10, wall: 'stone', roof: 'arcane', windows: 4, windowRows: 4, door: true, glowWindows: true, seed: 15, crystal: true, hip: true, orbit: true, runeBand: true, bellTower: true },
   boneyard: { w: 2, h: 2, height: 5, roofH: 5, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 16 },
-  ossuary: { w: 2, h: 2, height: 14, roofH: 9, wall: 'bone', roof: 'slate', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 17, spire: true },
+  ossuary: { w: 2, h: 2, height: 14, roofH: 9, wall: 'bone', roof: 'slate', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 17, spire: true, wisps: true, runeBand: true },
   wardlantern: { w: 1, h: 1, height: 14, roofH: 3, wall: 'stone', roof: 'flat', seed: 18, crystal: true },
   garden: { w: 1, h: 1, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 19 },
   square: { w: 2, h: 2, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 20 },
-  guildhall: { w: 2, h: 2, height: 18, roofH: 8, wall: 'timber', roof: 'tile', windows: 3, windowRows: 3, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true },
-  depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24 },
-  lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true },
+  guildhall: { w: 2, h: 2, height: 18, roofH: 8, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 3, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true },
+  depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24, lanternPost: true, banner: true },
+  lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
 };
 
 function drawSpire(): { p: Painter; glow: Painter; ax: number; ay: number } {
@@ -667,6 +885,19 @@ function drawSpire(): { p: Painter; glow: Painter; ax: number; ay: number } {
   p.px(17, 2, 'ley1');
   glow.rect(16, 1, 3, 4, 'ley1', 230);
   glow.rect(16, 6, 3, 26, 'ley1', 70);
+  // a floating ring of leystone shards around the shaft
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * Math.PI * 2;
+    const x = Math.round(17 + Math.cos(a) * 7);
+    const y = Math.round(16 + Math.sin(a) * 3);
+    p.px(x, y, k % 2 ? 'leyStone' : 'ley1');
+    glow.px(x, y, 'ley1', 160);
+  }
+  // rune ring on the plinth
+  for (const [x, y] of [[12, 32], [17, 30], [22, 32], [17, 35]] as [number, number][]) {
+    p.px(x, y, 'rune');
+    glow.px(x, y, 'rune', 200);
+  }
   p.outline('outline');
   return { p, glow, ax: 17, ay: 24 };
 }
@@ -817,25 +1048,40 @@ export function generateSprites(): SpriteDef[] {
   out.push(...groundVariants('forest', ['forestFloor', 'leaf1', 'forestFloor'], ['leaf2', 'trunk'], 0.1, 3, 3));
   out.push(...groundVariants('hills', ['rock1', 'rock2', 'hillGrass'], ['rock3', 'rock2'], 0.18, 4, 3));
   out.push(...groundVariants('shore', ['sand', 'sand2', 'sand'], ['sand2', 'grass3'], 0.1, 5, 2));
-  out.push(...groundVariants('gloam', ['gloam1', 'gloam2', 'gloamGrass'], ['gloam3', 'outline'], 0.14, 6, 3));
+  out.push(...groundVariants('gloam', ['gloam1', 'gloam2', 'gloamGrass', 'deepPurple'], ['gloam3', 'outline', 'bone'], 0.14, 6, 3));
   out.push(...waterFrames('water', 'water2', 'water3', 'waterHi', 4, 7));
   out.push(...waterFrames('deep', 'water1', 'water2', 'water3', 4, 8));
-  // ley node tile + glow
+  // ley node: a glowing pool of thrum ringed by standing stones
   {
-    const p = diamond((u, v, px, py) => {
+    const p = new Painter(34, 30);
+    const glow = new Painter(34, 30);
+    const tile = diamond((u, v, px, py) => {
       const d = Math.hypot(u - 0.5, v - 0.5);
-      if (d < 0.12) return 'leyGlow';
-      if (d < 0.22) return 'ley1';
-      if (d < 0.3) return 'ley2';
+      const ang = Math.atan2(v - 0.5, u - 0.5);
+      if (d < 0.1) return 'leyGlow';
+      if (d < 0.2) return 'ley1';
+      if (d < 0.27) return 'ley2';
+      // spiral grass
+      const spiral = Math.sin(ang * 3 + d * 30);
+      if (spiral > 0.7) return 'glimleaf';
       const r = h2(px, py, 9);
-      if (r < 0.2) return 'ley3';
+      if (r < 0.15) return 'meadow2';
       return 'grass2';
     });
-    const glow = diamond((u, v) => {
-      const d = Math.hypot(u - 0.5, v - 0.5);
-      return d < 0.32 ? 'ley1' : null;
-    });
-    out.push({ name: 'leynode', p, glow, ax: 16, ay: 0 });
+    p.blit(tile, 1, 14);
+    const gtile = diamond((u, v) => (Math.hypot(u - 0.5, v - 0.5) < 0.3 ? 'ley1' : null));
+    glow.blit(gtile, 1, 14);
+    // standing stones around the pool (drawn tallest at the back)
+    const stones: [number, number, number][] = [[17, 14, 7], [7, 19, 5], [27, 19, 5], [11, 25, 4], [23, 25, 4]];
+    for (const [x, y, hgt] of stones) {
+      p.rect(x - 1, y - hgt, 3, hgt, 'stone2');
+      p.rect(x - 1, y - hgt, 1, hgt, 'stone1');
+      p.px(x, y - hgt - 1, 'stone3');
+      p.px(x, y - Math.floor(hgt / 2), 'rune');
+      glow.px(x, y - Math.floor(hgt / 2), 'rune', 220);
+    }
+    p.outline('outline');
+    out.push({ name: 'leynode', p, glow, ax: 17, ay: 14 });
   }
   // roads
   for (const t of ['track', 'cobble', 'lantern'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
@@ -867,6 +1113,9 @@ export function generateSprites(): SpriteDef[] {
   // props
   for (let i = 0; i < 4; i++) out.push({ name: `tree_${i}`, p: tree(i), ax: 8, ay: 24 });
   out.push({ name: 'tree_autumn', p: tree(1, true), ax: 8, ay: 24 });
+  for (let i = 0; i < 2; i++) { const g = glimwood(i); out.push({ name: `glimwood_${i}`, p: g.p, glow: g.glow, ax: 8, ay: 26 }); }
+  for (let i = 0; i < 2; i++) { const g = gloamTree(i); out.push({ name: `gloamtree_${i}`, p: g.p, glow: g.glow, ax: 8, ay: 22 }); }
+  for (let i = 0; i < 2; i++) { const g = mushrooms(i); out.push({ name: `mushroom_${i}`, p: g.p, glow: g.glow, ax: 5, ay: 8 }); }
   for (let i = 0; i < 3; i++) out.push({ name: `rock_${i}`, p: rock(i), ax: 7, ay: 10 });
   {
     const p = new Painter(10, 8);
@@ -934,7 +1183,7 @@ export function generateSprites(): SpriteDef[] {
   }
   // agents
   for (let v = 0; v < 6; v++)
-    for (let f = 0; f < 4; f++) out.push({ name: `cit_${v}_${f}`, p: citizen(v, f, v === 4, v === 5), ax: 4, ay: 12 });
+    for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) out.push({ name: `cart_${v}`, p: cart(v), ax: 9, ay: 11 });
   for (let f = 0; f < 2; f++) {
     const r = restlessSprite(0, f);

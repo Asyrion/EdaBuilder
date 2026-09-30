@@ -283,6 +283,16 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   ley-lines at night, particles (chimney smoke, sparks on spires, fireflies at
   night, leaves in forests, embers on fire, grey motes over gloam), animated water
   sparkle, gentle tree sway.
+- **Fantasy pass (iteration 5):** the generator gained overhanging upper floors with carved
+  braces, hanging lantern posts, glowing rune bands, potion-bottle shelves, copper alembics
+  with green glass, glass domes, orbiting crystals, bell towers, gold ridge ornaments and
+  wisps; walls in plaster and blue-wash, roofs in moss and verdigris copper. Ley nodes are
+  standing-stone circles around a glowing pool with spiral grass; forests near nodes grow
+  pale glimwood with glowing leaf tips and mushrooms; the Gloam grows twisted trees with a
+  violet eye. Spires carry a floating ring of shards. At night the emissive layer is drawn
+  twice, once soft at quarter resolution (bloom) and once crisp, rune rings pulse on the
+  ground under lit spires and wards, and Tallowkin eyes glow. UI panels got gold corner
+  marks and a serif title with a code-drawn animated sigil.
 - **Readability first:** roads and zones have flat, high-contrast colours; overlays
   desaturate the scene and tint tiles; hovered tiles and drag rectangles are always
   outlined.
@@ -372,5 +382,9 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   strobe; the budget is now a stable per-particle subset, lights flicker gently out of
   phase instead of in unison, and brownouts keep the same buildings dark between updates.
   Measured with `scripts/flicker.mjs` (per-frame changed pixels fell from ~5,000 to ~200).
+- *Art pass stays procedural:* the brief asks for original art; rather than a hand-drawn set,
+  the generator was pushed toward the fantasy silhouette (overhangs, lanterns, alembics,
+  rune bands, copper roofs) so every building type reads as Eda rather than as a generic
+  village box. The manifest seam for hand-made art is unchanged.
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.

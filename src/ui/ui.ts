@@ -572,6 +572,7 @@ export class UI {
   private buildTitle(): void {
     const names = CITY_NAMES.map((n) => `<button data-name="${n}">${n}</button>`).join('');
     this.el.title.innerHTML = `<div class="box panel">
+      <canvas id="sigil" width="96" height="64"></canvas>
       <h1>WARDLIGHT</h1>
       <div class="muted" style="margin-bottom:10px">a city of Eda</div>
       <p class="lore">Three hundred years after the Hollowing, the world of Eda is islands of light in a grey sea. The Ashen Crown of Vell has surveyed a young ley node in a river valley at the edge of the Gloam, and granted you a Charter: <i>light it, hold it, and make it pay.</i> Draw roads, zone hearths and markets, raise spires to carry the ley, and keep the dead quiet. Grow a camp into a Beacon of Eda.</p>
@@ -605,9 +606,52 @@ export class UI {
     };
   }
 
+  private sigilTimer = 0;
+
   showTitle(): void {
     (this.el.title.querySelector('#t-continue') as HTMLButtonElement).disabled = !this.host.hasSave();
     this.el.title.classList.remove('hidden');
+    this.animateSigil();
+  }
+
+  /** The Charter sigil: a lantern-core over a ley node, drawn in code from the palette. */
+  private animateSigil(): void {
+    const c = this.el.title.querySelector('#sigil') as HTMLCanvasElement | null;
+    if (!c) return;
+    const ctx = c.getContext('2d')!;
+    const draw = (t: number) => {
+      if (this.el.title.classList.contains('hidden')) return;
+      ctx.clearRect(0, 0, 96, 64);
+      ctx.imageSmoothingEnabled = false;
+      // ground diamond
+      ctx.fillStyle = '#2aa6d8';
+      ctx.beginPath(); ctx.moveTo(48, 40); ctx.lineTo(80, 56); ctx.lineTo(48, 64); ctx.lineTo(16, 56); ctx.fill();
+      ctx.fillStyle = '#4fe3ff';
+      ctx.beginPath(); ctx.moveTo(48, 46); ctx.lineTo(68, 56); ctx.lineTo(48, 62); ctx.lineTo(28, 56); ctx.fill();
+      // standing stones
+      ctx.fillStyle = '#8a8894';
+      for (const [x, y, h] of [[24, 54, 10], [72, 54, 10], [36, 60, 6], [60, 60, 6]] as number[][]) { ctx.fillRect(x - 2, y - h, 4, h); ctx.fillStyle = '#ffd98a'; ctx.fillRect(x - 1, y - h / 2, 2, 2); ctx.fillStyle = '#8a8894'; }
+      // spire
+      ctx.fillStyle = '#7fd6ea';
+      ctx.beginPath(); ctx.moveTo(48, 6); ctx.lineTo(54, 46); ctx.lineTo(48, 52); ctx.lineTo(42, 46); ctx.fill();
+      ctx.fillStyle = '#b7f7ff'; ctx.fillRect(47, 8, 2, 40);
+      // floating ring
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2 + t / 900;
+        ctx.fillStyle = k % 2 ? '#4fe3ff' : '#ffd98a';
+        ctx.fillRect(Math.round(48 + Math.cos(a) * 16) - 1, Math.round(30 + Math.sin(a) * 6) - 1, 3, 3);
+      }
+      // glow
+      const g = ctx.createRadialGradient(48, 8, 0, 48, 8, 22);
+      g.addColorStop(0, `rgba(183,247,255,${0.5 + 0.2 * Math.sin(t / 300)})`);
+      g.addColorStop(1, 'rgba(183,247,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 96, 40);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(47, 4, 2, 4);
+      this.sigilTimer = requestAnimationFrame(draw);
+    };
+    cancelAnimationFrame(this.sigilTimer);
+    this.sigilTimer = requestAnimationFrame(draw);
   }
 
   private buildMenu(): void {
