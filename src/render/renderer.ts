@@ -480,6 +480,15 @@ export class Renderer {
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+        } else if (sp === 'drake') {
+          const d = state.dragons.find((x) => x.id === a.dragonId);
+          const stage = d && d.stage >= 2 ? 2 : 1;
+          const s = this.atlas.get(`dragon_${a.variant}_${stage}_${a.path.length ? Math.floor(this.time * 6 + a.id) % 2 : 0}`);
+          items.push({ d: a.x + a.y, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+          if (s && s.glow) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
+          if (a.variant === 0 && Math.random() < 0.08) this.particles.emit({ x: wx + 6, y: wy + 2, vx: (Math.random() - 0.5) * 4, vy: -8, maxLife: 1, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
+          if (a.variant === 2) lights.push({ x: wx, y: wy + 4, r: 22, c: PAL.lampWarm, i: 0.6 });
+          if (a.variant === 1 && Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 2, vx: 0, vy: -4, maxLife: 1.5, size: 1, color: PAL.restless, glow: true, kind: 'restless' });
         } else if (sp === 'hound') {
           const s = this.atlas.get(`hound_${a.timer > 0 ? 0 : Math.floor(this.time * 8 + a.id) % 2}`);
           items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });

@@ -247,6 +247,22 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'leisure', radius: 4, strength: 0.2 },
   },
 
+  // ---- wyrmcraft ----
+  {
+    key: 'cradle', name: 'Wyrm-Cradle', category: 'service',
+    desc: 'A stone nest warmed by the ley. Holds two dragon eggs; hatchlings and drakes live here until given a role. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Needs a ley node or spire within 6 to be raised at all.',
+    flavor: 'The stones are laid in the spiral the grass makes around a node. Nobody taught the masons that; the eggs did.',
+    w: 2, h: 2, cost: 3500, upkeep: 30, manaUse: 8, unlock: 4, needsMana: true,
+    service: { type: 'leisure', radius: 5, strength: 0.3 },
+  },
+  {
+    key: 'tamerslodge', name: "Tamer's Lodge", category: 'service',
+    desc: 'Where Wyrm-Tamers, mostly candle-eyed Tallowkin, train hatchlings. A cradle within 10 tiles can raise its hatchlings; set each dragon\'s training in the Wyrms panel.',
+    flavor: 'Rule one on the lodge wall: never lie to a dragon. Rule two: never let it see you count the scales.',
+    w: 2, h: 2, cost: 1800, upkeep: 22, manaUse: 2, unlock: 4,
+    service: { type: 'leisure', radius: 5, strength: 0.3 },
+  },
+
   // ---- trade ----
   {
     key: 'depot', name: 'Trade Depot', category: 'leisure',
@@ -328,7 +344,7 @@ export const MILESTONES: Milestone[] = [
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot'],
     text: 'A village with a name on the Crown\'s maps. Scholars, a proper Watch and the carters\' guild follow.' },
-  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font', 'mine'],
+  { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font', 'mine', 'cradle', 'tamerslodge'],
     text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },
   { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },

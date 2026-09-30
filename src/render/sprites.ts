@@ -704,6 +704,63 @@ function mushrooms(variant: number): { p: Painter; glow: Painter } {
   return { p, glow };
 }
 
+const DRAGON_LINES: { base: Col; belly: Col; accent: Col; eye: Col }[] = [
+  { base: 'tile2', belly: 'ember', accent: 'outline', eye: 'fire1' }, // ember
+  { base: 'bone', belly: 'ironDark', accent: 'whitewash2', eye: 'restless' }, // bone
+  { base: 'gold', belly: 'flower1', accent: 'copper', eye: 'windowLit' }, // glim
+  { base: 'ley2', belly: 'leyGlow', accent: 'leyStone', eye: 'ley1' }, // vein
+  { base: 'whitewash', belly: 'stone3', accent: 'stone2', eye: 'ley1' }, // sky
+  { base: 'stone1', belly: 'stone2', accent: 'gloam2', eye: 'gloamEye' }, // grey
+  { base: 'verdigris', belly: 'glass', accent: 'water1', eye: 'waterHi' }, // tide
+  { base: 'deepPurple', belly: 'runeViolet', accent: 'flower3', eye: 'flower3' }, // storm
+];
+
+/** Four-legged, wingless drake (stage 2) or a hatchling (stage 1, smaller). */
+function drawDrake(line: number, stage: number, frame: number): { p: Painter; glow: Painter } {
+  const c = DRAGON_LINES[line % DRAGON_LINES.length];
+  const small = stage < 2;
+  const W = small ? 12 : 20;
+  const H = small ? 9 : 13;
+  const p = new Painter(W, H);
+  const glow = new Painter(W, H);
+  const y0 = small ? 3 : 4;
+  // body
+  p.rect(3, y0, W - 8, small ? 3 : 4, c.base);
+  p.rect(3, y0 + (small ? 2 : 3), W - 8, 1, c.belly);
+  // neck + head
+  p.rect(W - 5, y0 - 1, 2, 2, c.base);
+  p.rect(W - 4, y0 - 2, 4, 2, c.base);
+  p.px(W - 1, y0 - 1, c.belly);
+  p.px(W - 2, y0 - 2, c.eye);
+  glow.px(W - 2, y0 - 2, c.eye);
+  // horns / crest (drakes only)
+  if (!small) {
+    p.px(W - 4, y0 - 3, c.accent);
+    p.px(W - 3, y0 - 4, c.accent);
+    for (let k = 4; k < W - 6; k += 3) p.px(k, y0 - 1, c.accent);
+  }
+  // tail
+  p.px(2, y0 + 1, c.base);
+  p.px(1, y0, c.base);
+  p.px(0, y0 - 1, c.accent);
+  // legs, alternating
+  const legY = y0 + (small ? 3 : 4);
+  const legH = small ? 2 : 3;
+  if (frame === 0) {
+    p.rect(4, legY, 1, legH, c.base);
+    p.rect(W - 7, legY, 1, legH, c.base);
+  } else {
+    p.rect(5, legY, 1, legH, c.base);
+    p.rect(W - 8, legY, 1, legH - 1, c.base);
+  }
+  // line signature glow
+  if (line === 0) { p.px(W - 1, y0 - 1, 'fire1'); glow.rect(W - 2, y0 - 2, 3, 3, 'ember', 160); }
+  if (line === 2) glow.rect(2, y0 - 1, W - 4, H - y0, 'lampWarm', 120);
+  if (line === 1) glow.rect(3, y0, W - 8, 3, 'restless', 70);
+  p.outline('outline');
+  return { p, glow };
+}
+
 function rock(variant: number): Painter {
   const p = new Painter(14, 10);
   const pts: [number, number][] = variant === 0 ? [[2, 8], [1, 4], [5, 1], [10, 2], [13, 6], [11, 9]] : variant === 1 ? [[1, 7], [3, 2], [8, 1], [12, 4], [10, 9], [4, 9]] : [[3, 9], [2, 5], [6, 3], [9, 4], [11, 8]];
@@ -887,6 +944,8 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true, lanternPost: true },
   mothloft: { w: 1, h: 1, height: 16, roofH: 5, wall: 'timber', roof: 'cone', windows: 2, windowRows: 3, seed: 25, runeBand: true, orbit: true },
   hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
+  cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
+  tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1231,6 +1290,13 @@ export function generateSprites(): SpriteDef[] {
     const r = restlessSprite(0, f);
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });
   }
+  // dragons: 8 lines x hatchling/drake x 2 frames
+  for (let line = 0; line < 8; line++)
+    for (const stage of [1, 2])
+      for (let f = 0; f < 2; f++) {
+        const d = drawDrake(line, stage, f);
+        out.push({ name: `dragon_${line}_${stage}_${f}`, p: d.p, glow: d.glow, ax: Math.floor(d.p.w / 2), ay: d.p.h });
+      }
   // creatures
   for (let f = 0; f < 2; f++) {
     const p = new Painter(6, 5);

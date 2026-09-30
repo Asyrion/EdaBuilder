@@ -8,6 +8,8 @@ import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
+import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity } from '../sim/wyrmcraft';
+import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
@@ -42,6 +44,8 @@ export interface UiHost {
   renameDistrict(d: number, name: string): void;
   undo(): boolean;
   undoLabel: string | null;
+  setTraining(id: number, t: Training): void;
+  setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
   selected: Building | null;
@@ -101,6 +105,7 @@ export class UI {
         </div>
         <button id="btn-budget" title="Tithe & budget">Budget</button>
         <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
+        <button id="btn-wyrms" title="Dragons, eggs and materials">Wyrms</button>
         <button id="btn-views" title="Info views (Tab)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -129,12 +134,14 @@ export class UI {
       <div id="menu" class="modal hidden"></div>
       <div id="gameover" class="modal hidden"></div>
       <div id="edicts" class="modal hidden"></div>
+      <div id="wyrms" class="modal hidden"></div>
       <div id="event" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
+    this.q('#btn-wyrms').onclick = () => this.toggleWyrms();
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
@@ -466,6 +473,12 @@ export class UI {
     }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    if (b.kind === 'cradle') {
+      const inside = dragonsIn(s, b.id);
+      rows.push(row('Eggs and young', `${inside.length} / ${cradleCapacity(b)}`));
+      for (const d of inside) rows.push(row(d.name, `${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}, mood ${Math.round(d.mood)}`));
+      if (!b.lit) problems.push('Unlit: the eggs are going cold. A spire within 6 tiles keeps the cradle warm.');
+    }
     const dist = s.district[i];
     if (dist) rows.push(row('District', `<span style="color:${DISTRICT_COLORS[dist - 1]}">${districtName(s, dist)}</span>`));
     if (def.zone === Zone.Arcane && b.stock <= 0.5 && b.age > 3) problems.push('No leystone: build a Crystal Mine in the hills with a road to this district.');
@@ -548,6 +561,7 @@ export class UI {
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
+            <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge; eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -786,6 +800,55 @@ export class UI {
         (inp.nextElementSibling as HTMLOutputElement).textContent = `${st.taxRates[z]}%`;
       }
     });
+  }
+
+  toggleWyrms(show?: boolean): void {
+    const el = this.el.wyrms;
+    const sh = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !sh);
+    if (sh) this.refreshWyrms();
+  }
+
+  refreshWyrms(): void {
+    const st = this.host.state;
+    if (this.el.wyrms.classList.contains('hidden')) return;
+    const cradles = st.buildings.filter((b) => b && b.kind === 'cradle') as NonNullable<typeof st.buildings[number]>[];
+    const slots = cradles.reduce((n, c) => n + cradleCapacity(c), 0);
+    const mines = st.buildings.filter((b) => b && b.kind === 'mine') as NonNullable<typeof st.buildings[number]>[];
+    const districts = districtsInUse(st);
+    const rows = st.dragons.map((d) => {
+      const stageMax = STAGE_DAYS[d.stage];
+      const pct = d.stage >= MAX_STAGE_NOW ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
+      const roleSel = d.stage >= 2
+        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
+        : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
+      return `<div class="dragon">
+        <div><b>${d.name}</b> <span class="muted">the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
+        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= MAX_STAGE_NOW ? 'Grown as far as the cradle allows (wyverns come with the sky).' : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
+        <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
+      </div>`;
+    });
+    const m = st.materials;
+    this.el.wyrms.innerHTML = `<div class="box panel">
+      <h2>Wyrmcraft</h2>
+      <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
+      <p class="muted">Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
+      ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}
+      <div style="text-align:right"><button id="w-close">Close</button></div>
+    </div>`;
+    this.el.wyrms.querySelectorAll('select[data-train]').forEach((sel) => {
+      (sel as HTMLSelectElement).onchange = () => this.host.setTraining(Number((sel as HTMLElement).dataset.train), (sel as HTMLSelectElement).value as Training);
+    });
+    this.el.wyrms.querySelectorAll('select[data-role]').forEach((sel) => {
+      (sel as HTMLSelectElement).onchange = () => {
+        const v = (sel as HTMLSelectElement).value;
+        const [role, target] = v.split(':');
+        const why = this.host.setRole(Number((sel as HTMLElement).dataset.role), role as DragonRole, Number(target ?? -1));
+        if (why) this.toast(`<p class="bad">${why}</p>`, 2000);
+        this.refreshWyrms();
+      };
+    });
+    this.el.wyrms.querySelector('#w-close')!.addEventListener('click', () => this.toggleWyrms(false));
   }
 
   toggleEdicts(show?: boolean): void {

@@ -12,11 +12,12 @@ import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
-import { resolveEvent, maybeFireEvent } from './sim/events';
+import { resolveEvent, maybeFireEvent, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, type Snapshot } from './sim/actions';
 import { deepenNode, canDeepenNode } from './sim/world';
+import { setTraining, setRole } from './sim/wyrmcraft';
 import { Bot } from './sim/bot';
 
 const SAVE_KEY = 'wardlight.save.v1';
@@ -96,6 +97,8 @@ class Game {
       canDeepenNode: (i) => canDeepenNode(this.state, i),
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
+      setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
+      setRole: (id, role, target) => { const why = setRole(this.state, id, role, target); if (!why) { recomputeAll(this.state); this.audio.spire(); } return why; },
       get undoLabel() { return game.undoStack.length ? game.undoStack[game.undoStack.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
@@ -359,6 +362,7 @@ class Game {
       if (this.running) {
         this.ui.refresh();
         this.ui.refreshBudget();
+        if (!document.getElementById('wyrms')!.classList.contains('hidden') && this.state.tick % 300 === 0) this.ui.refreshWyrms();
         if ((this.tools.tool.kind === 'road' || this.tools.tool.kind === 'wall') && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
         else if (this.tools.tool.kind === 'build' && this.tools.previewReason) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — <span class="warn">${this.tools.previewReason}</span>`);
         else if (this.tools.tool.kind === 'build') this.updateHint();
@@ -372,7 +376,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

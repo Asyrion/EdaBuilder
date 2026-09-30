@@ -4,6 +4,7 @@ import { edictOn, edictShare, modifierSum } from './edicts';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
+import { delverBonus, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
@@ -133,7 +134,10 @@ export function dailyBuildings(state: GameState): void {
   const jobBuildings: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.category !== 'zone') return;
+    if (def.category !== 'zone') {
+      b.age++;
+      return;
+    }
     b.age++;
     b.stateDays++;
     if (b.state === 'burning') return;
@@ -191,7 +195,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1) * (1 + mothBonus(state, b));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state));
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
@@ -240,7 +244,7 @@ export function dailyBuildings(state: GameState): void {
   }
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5));
+    if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
   });
   state.population = pop;
   state.jobs = jobs;

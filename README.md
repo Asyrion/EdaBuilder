@@ -104,6 +104,9 @@ Charter as `.json`.
   over boneyards when the dead are restless; a Moth-Loft harvests glim-dust. Gloam-hounds
   hunt at the edge of the light, bolder in the Hush: raise a Hunters' Lodge or draw a
   Warding Wall (Services tab) that hounds and the Gloam cannot cross.
+- Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge; dragon eggs arrive
+  through events; hatch and train them into drakes, set them as district wardens or mine
+  delvers, and collect scale and wyrmfire in the Wyrms panel.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

@@ -47,6 +47,14 @@
   Wall line tool with glowing autotiles that blocks hounds and gloam creep.
 - Fixed: road/wall joins placed later showed a gap (neighbour chunk not redrawn).
 
+## Done in iteration 8 (Wyrmcraft I)
+
+- Wyrm-Cradle and Tamer's Lodge; five egg events including the Crown's first gift;
+  egg → hatchling → drake with training and mood; scale, eggshell and wyrmfire; Warden
+  and Delver roles; drake sprites for all eight lines; the Wyrms panel.
+- Lore drop reconciled as canon (`EDA_LORE.md` §9) with eleven inspired features listed
+  in `DESIGN.md` §11.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -72,12 +80,18 @@
 ## Fantasy roadmap (see DESIGN.md §8)
 
 Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhares and wisps;
-(7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) Wyrmcraft I: egg events, Wyrm-Cradle,
+(7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8, done) Wyrmcraft I: egg events, Wyrm-Cradle,
 Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9) Wyrmcraft II: sky
 layer, wyvern couriers, the Wyrm-Ring; (10) the Sleeping Wyrm: waking, tribute, flyover,
 Wyrm-Court binding; (11) magical buildings: Glimhouse, Weather Vane, Observatory, Portal
 Arch; (12) Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon;
 (13) vehicles: floating carts, barges, drake riders, airships.
+
+## Lore-drop follow-ups (see DESIGN.md §11)
+
+Wall gates (Belregi/Uzulim), Storm-Caller's Peak, Hanging Gardens and Glowvine Lanes,
+Belerial caravans and the Wandering Merchant, Fen-Nex visitors, war-tigers, the Ruins of
+Lukuku, the World Tree sapling, the Torrent Mill, swamp and atoll maps, cameo events.
 
 ## Prioritized ideas for the next iteration
 
