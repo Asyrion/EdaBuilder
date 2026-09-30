@@ -447,7 +447,7 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>G</kbd> grid · <kbd>H</kbd> this help</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>H</kbd> this help</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load</li>
@@ -579,37 +579,66 @@ export class UI {
     if (s) this.refreshBudget();
   }
 
+  private budgetBuilt = false;
+
   refreshBudget(): void {
     if (this.el.budget.classList.contains('hidden')) return;
     const st = this.host.state;
     const l = computeLedger(st);
-    const tax = (key: keyof GameState['taxRates'], label: string) => `<div class="tax"><label>${label}</label><input type="range" min="0" max="30" value="${st.taxRates[key]}" data-zone="${key}"><output>${st.taxRates[key]}%</output></div>`;
-    this.el.budget.innerHTML = `<div class="box panel">
-      <h2>Tithe &amp; Budget</h2>
-      <table>
-        <tr><td>Hearth tithe</td><td class="r good">+${l.taxHearth.toFixed(0)}</td></tr>
-        <tr><td>Market tithe</td><td class="r good">+${l.taxMarket.toFixed(0)}</td></tr>
-        <tr><td>Craft tithe</td><td class="r good">+${l.taxCraft.toFixed(0)}</td></tr>
-        <tr><td>Arcane tithe</td><td class="r good">+${l.taxArcane.toFixed(0)}</td></tr>
-        <tr><td>Road upkeep</td><td class="r bad">−${l.upkeepRoads.toFixed(0)}</td></tr>
-        <tr><td>Building upkeep</td><td class="r bad">−${l.upkeepBuildings.toFixed(0)}</td></tr>
-        <tr><td><b>Net per day</b></td><td class="r ${l.net >= 0 ? 'good' : 'bad'}"><b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b></td></tr>
-        <tr><td>Treasury</td><td class="r gold">${Math.round(st.treasury)}</td></tr>
-      </table>
-      <h3 style="margin-top:10px">Tax rates (10% is what folk expect)</h3>
-      ${tax('hearth', 'Hearth')}${tax('market', 'Market')}${tax('craft', 'Craft')}${tax('arcane', 'Arcane')}
-      <p class="muted">Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}.</p>
-      <p class="muted">Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}</p>
-      <div style="text-align:right"><button id="b-close">Close</button></div>
-    </div>`;
+    if (!this.budgetBuilt) {
+      const tax = (key: keyof GameState['taxRates'], label: string) => `<div class="tax"><label>${label}</label><input type="range" min="0" max="30" value="${st.taxRates[key]}" data-zone="${key}"><output>${st.taxRates[key]}%</output></div>`;
+      this.el.budget.innerHTML = `<div class="box panel">
+        <h2>Tithe &amp; Budget</h2>
+        <table>
+          <tr><td>Hearth tithe</td><td class="r good" data-k="taxHearth"></td></tr>
+          <tr><td>Market tithe</td><td class="r good" data-k="taxMarket"></td></tr>
+          <tr><td>Craft tithe</td><td class="r good" data-k="taxCraft"></td></tr>
+          <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
+          <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
+          <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
+          <tr><td><b>Net per day</b></td><td class="r" data-k="net"></td></tr>
+          <tr><td>Treasury</td><td class="r gold" data-k="treasury"></td></tr>
+        </table>
+        <h3 style="margin-top:10px">Tax rates (10% is what folk expect)</h3>
+        ${tax('hearth', 'Hearth')}${tax('market', 'Market')}${tax('craft', 'Craft')}${tax('arcane', 'Arcane')}
+        <p class="muted" data-k="social"></p>
+        <p class="muted" data-k="history"></p>
+        <div style="text-align:right"><button id="b-close">Close</button></div>
+      </div>`;
+      this.el.budget.querySelectorAll('input[type=range]').forEach((inp) => {
+        (inp as HTMLInputElement).oninput = () => {
+          const z = (inp as HTMLInputElement).dataset.zone as keyof GameState['taxRates'];
+          this.host.setTax(z, Number((inp as HTMLInputElement).value));
+          (inp.nextElementSibling as HTMLOutputElement).textContent = `${(inp as HTMLInputElement).value}%`;
+        };
+      });
+      this.el.budget.querySelector('#b-close')!.addEventListener('click', () => this.toggleBudget(false));
+      this.budgetBuilt = true;
+    }
+    const set = (k: string, v: string) => {
+      const el = this.el.budget.querySelector(`[data-k="${k}"]`) as HTMLElement | null;
+      if (el) el.textContent = v;
+    };
+    set('taxHearth', `+${l.taxHearth.toFixed(0)}`);
+    set('taxMarket', `+${l.taxMarket.toFixed(0)}`);
+    set('taxCraft', `+${l.taxCraft.toFixed(0)}`);
+    set('taxArcane', `+${l.taxArcane.toFixed(0)}`);
+    set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
+    set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
+    const net = this.el.budget.querySelector('[data-k="net"]') as HTMLElement;
+    net.innerHTML = `<b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b>`;
+    net.className = `r ${l.net >= 0 ? 'good' : 'bad'}`;
+    set('treasury', `${Math.round(st.treasury)}`);
+    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}.`);
+    set('history', `Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}`);
+    // sync sliders if taxes changed elsewhere (load)
     this.el.budget.querySelectorAll('input[type=range]').forEach((inp) => {
-      (inp as HTMLInputElement).oninput = () => {
-        const z = (inp as HTMLInputElement).dataset.zone as keyof GameState['taxRates'];
-        this.host.setTax(z, Number((inp as HTMLInputElement).value));
-        (inp.nextElementSibling as HTMLOutputElement).textContent = `${(inp as HTMLInputElement).value}%`;
-      };
+      const z = (inp as HTMLInputElement).dataset.zone as keyof GameState['taxRates'];
+      if (document.activeElement !== inp && Number((inp as HTMLInputElement).value) !== st.taxRates[z]) {
+        (inp as HTMLInputElement).value = String(st.taxRates[z]);
+        (inp.nextElementSibling as HTMLOutputElement).textContent = `${st.taxRates[z]}%`;
+      }
     });
-    this.el.budget.querySelector('#b-close')!.addEventListener('click', () => this.toggleBudget(false));
   }
 
   showGameOver(): void {

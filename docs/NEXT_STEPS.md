@@ -17,6 +17,10 @@
 - **Cross-chunk depth**: props are cached per ground chunk and depth-sorted per frame, but a
   very tall tree directly behind a tall building on a chunk boundary can overlap by a pixel
   or two.
+- **Mana is the late-game ceiling.** 4–6 nodes give 360–540 mana/day, which carries roughly
+  450–600 buildings before Thrum Fonts (40 mana, 6,500 crowns) are needed. This is
+  intentional, but a second tier of node upgrades ("deepen the Wellspring") would give
+  players a clearer path past 3,000 folk.
 - **No undo** for roads and bulldozing; misclicks cost crowns.
 - **Autosave** writes every three game days; a crash between saves loses up to three days.
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second

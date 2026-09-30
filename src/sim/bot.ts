@@ -97,14 +97,17 @@ export class Bot {
   /** Place wells (or cisterns) near unwatered zone buildings. */
   private keepWatered(): void {
     const s = this.s;
-    let dry: { x: number; y: number } | null = null;
+    const dry: { x: number; y: number }[] = [];
     forEachBuilding(s, (b) => {
-      if (!dry && !b.watered && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') dry = { x: b.x, y: b.y };
+      if (!b.watered && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') dry.push({ x: b.x, y: b.y });
     });
-    if (!dry) return;
-    const d = dry as { x: number; y: number };
-    const key = s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well';
-    if (!this.placeNear(key, d.x, d.y, 4)) this.placeNear('well', d.x, d.y, 6);
+    if (!dry.length) return;
+    let placed = 0;
+    for (let k = 0; k < dry.length && placed < 3; k += Math.max(1, Math.floor(dry.length / 6))) {
+      const d = dry[k];
+      const key = s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well';
+      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear('well', d.x, d.y, 6, true)) placed++;
+    }
   }
 
   /** Place spires near unlit buildings, chained to the lit network. */
@@ -158,7 +161,7 @@ export class Bot {
       const uy = (d.y - n.y) / nd;
       const tx = Math.round(n.x + ux * (n.link - 0.5));
       const ty = Math.round(n.y + uy * (n.link - 0.5));
-      this.placeNear('spire', tx, ty, 2);
+      this.placeNear('spire', tx, ty, 2, true);
     }
   }
 
@@ -215,7 +218,9 @@ export class Bot {
         spots.push({ x: b.x, y: b.y, d: dmin });
       });
       spots.sort((a, b) => b.d - a.d);
-      for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4)) return;
+      const clear = key === 'font' || key === 'nexus';
+      for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
+      if (this.radius < 40) this.radius += 5; // no room: grow the town
     };
     want('watchpost', 1 + Math.floor(buildings / 60));
     want('shrine', 1 + Math.floor(buildings / 80));
@@ -239,7 +244,7 @@ export class Bot {
   }
 
   /** Try to place a building near (x,y) within a search radius. */
-  private placeNear(key: string, x: number, y: number, r: number): boolean {
+  private placeNear(key: string, x: number, y: number, r: number, allowClear = false): boolean {
     const s = this.s;
     const def = BUILDING_BY_KEY[key];
     if (s.treasury < def.cost) return false;
@@ -254,21 +259,37 @@ export class Bot {
         if (!best || d < best.d) best = { x: px, y: py, d };
       }
     if (!best) {
-      // dense city: sacrifice a level-1 zoned building next to a road
-      if (def.w === 1 && def.h === 1) {
-        for (let dy = -r; dy <= r; dy++)
-          for (let dx = -r; dx <= r; dx++) {
-            const px = x + dx;
-            const py = y + dy;
-            if (!inBounds(px, py)) continue;
-            const bi = s.bIndex[idx(px, py)];
-            const b = bi >= 0 ? s.buildings[bi] : null;
-            if (b && b.w === 1 && b.level === 1 && BUILDING_BY_KEY[b.kind].category === 'zone') {
-              bulldoze(s, px, py);
-              return placeBuilding(s, key, px, py).ok;
+      if (!allowClear) return false;
+      // dense city: sacrifice zoned buildings to clear a w×h footprint beside a road
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          const px = x + dx;
+          const py = y + dy;
+          if (!inBounds(px, py) || !inBounds(px + def.w, py + def.h)) continue;
+          let ok = true;
+          const victims: [number, number][] = [];
+          for (let fy = 0; fy < def.h && ok; fy++)
+            for (let fx = 0; fx < def.w; fx++) {
+              const i = idx(px + fx, py + fy);
+              const t = s.terrain[i];
+              if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || s.road[i] || s.gloam[i]) {
+                ok = false;
+                break;
+              }
+              const bi = s.bIndex[i];
+              if (bi >= 0) {
+                const b = s.buildings[bi];
+                if (!b || b.w !== 1 || BUILDING_BY_KEY[b.kind].category !== 'zone') {
+                  ok = false;
+                  break;
+                }
+                victims.push([px + fx, py + fy]);
+              }
             }
-          }
-      }
+          if (!ok) continue;
+          for (const [vx, vy] of victims) bulldoze(s, vx, vy);
+          if (placeBuilding(s, key, px, py).ok) return true;
+        }
       return false;
     }
     return placeBuilding(s, key, (best as { x: number }).x, (best as { y: number }).y).ok;

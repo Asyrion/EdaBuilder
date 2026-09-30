@@ -347,9 +347,6 @@ export class Renderer {
     // grid
     if (view.showGrid) this.drawGrid(minX, maxX, minY, maxY);
 
-    // ley lines (night)
-    if (night > 0.05) this.drawLeyLines(state, night);
-
     // preview tiles (under objects)
     this.drawPreviews(state, view);
 
@@ -499,6 +496,8 @@ export class Renderer {
     const tLight = performance.now();
     if (night > 0.01) this.applyLighting(tod, night, lights, glows);
     else this.applyDayTint(tod);
+    // ley lines shimmer above the lit scene at night
+    if (night > 0.05) this.drawLeyLines(state, night);
     const tBlit = performance.now();
 
     // icons (always on top, bobbing)
@@ -636,9 +635,9 @@ export class Renderer {
     }
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    ctx.strokeStyle = `rgba(79,227,255,${0.28 * night})`;
+    ctx.strokeStyle = `rgba(79,227,255,${0.55 * night})`;
     ctx.lineWidth = 1;
-    ctx.setLineDash([3, 5]);
+    ctx.setLineDash([4, 6]);
     ctx.lineDashOffset = -this.time * 12;
     ctx.beginPath();
     for (const s of spires) {
