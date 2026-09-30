@@ -2,6 +2,7 @@
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type GameState, type WyrmState } from './types';
 import { forEachBuilding, markDirtyAround, pushMessage } from './world';
+import { edictOn } from './edicts';
 
 export const WYRM_MIN_DIST = 40; // node must be this far from the founding node
 export const WYRM_LAIR_RADIUS = 30;
@@ -34,7 +35,7 @@ export function wyrmNode(s: GameState): { x: number; y: number } | null {
 }
 
 export function wyrmTribute(s: GameState): number {
-  return Math.round(WYRM_TRIBUTE_BASE * (1 + s.wyrm.tributes * 0.5));
+  return Math.round(WYRM_TRIBUTE_BASE * (1 + s.wyrm.tributes * 0.5) * (edictOn(s, 'wyrmpeace') ? 0.5 : 1));
 }
 
 /** True while the bound wyrm guards the city (bound, not sulking). */
@@ -247,7 +248,7 @@ export function lairWard(s: GameState, x: number, y: number): number {
   const n = wyrmNode(s)!;
   const d = Math.hypot(n.x - x, n.y - y);
   if (d > WYRM_LAIR_RADIUS) return 0;
-  return 1 - (d / WYRM_LAIR_RADIUS) * 0.6;
+  return (1 - (d / WYRM_LAIR_RADIUS) * 0.6) * (edictOn(s, 'wyrmpeace') ? 0.5 : 1);
 }
 
 export function describeWyrm(s: GameState): string {

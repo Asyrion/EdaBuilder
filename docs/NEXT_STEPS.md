@@ -99,6 +99,15 @@
 - A draggable isometric minimap with click-to-jump, scroll-to-zoom and the view box.
 - Four new Ledger quests.
 
+## Done in iteration 14 (beasts of the Concord and the sky)
+
+- Concord Wardens woken by mines, bound at the Golem Foundry into housing-free labour
+  that drinks mana and breaks loose in a surge; skyray schools in Bloom and Ember, lured
+  by the Ley Beacon for happiness, rayscale and a sky egg; the Drake Mews doubling Watch
+  House reach; three taming edicts; the grey and sky egg events.
+- Ledger hygiene: finished quests vanish at once, checks every 50 ticks, one ticker line
+  per batch of completions.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -133,9 +142,10 @@ Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9, done) Wyrm
 sky layer, wyvern couriers, the Wyrm-Ring, gates, the Peak, visitors; (10, done) quests,
 hints and the Chronicle; (11, done) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
 binding; (12, done) magical buildings I: Glimhouse, Torrent Mill, Observatory, Hanging Gardens,
-Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, minimap; (14)
+Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, minimap; (14, done)
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15)
-vehicles: floating carts, barges, drake riders, airships.
+vehicles: floating carts, barges, drake riders, airships; (16) Fen-Nex visitors,
+war-tigers, cameos; (17) Font of Quieting, Quay and barges, Sky-Dock and airships.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 

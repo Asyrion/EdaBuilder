@@ -5,10 +5,11 @@ import { pushMessage } from './world';
 
 export function activeQuests(s: GameState, max = 3): QuestDef[] {
   const done = new Set(s.questsDone);
-  return QUESTS.filter((q) => !done.has(q.id) && q.when(s)).sort((a, b) => a.priority - b.priority).slice(0, max);
+  // A quest whose goal is already met is hidden at once; the next check pays it.
+  return QUESTS.filter((q) => !done.has(q.id) && q.when(s) && !q.done(s)).sort((a, b) => a.priority - b.priority).slice(0, max);
 }
 
-/** Daily: complete quests whose condition holds (active or not, so nothing is missed). */
+/** Every 50 ticks: complete quests whose condition holds (active or not, so nothing is missed). One ticker line per batch. */
 export function checkQuests(s: GameState): QuestDef[] {
   const done = new Set(s.questsDone);
   const completed: QuestDef[] = [];
@@ -19,8 +20,12 @@ export function checkQuests(s: GameState): QuestDef[] {
       s.questsDone.push(q.id);
       if (q.reward > 0) s.treasury += q.reward;
       completed.push(q);
-      pushMessage(s, `Charter task done: ${q.title}${q.reward ? ` (+${q.reward} crowns)` : ''}.`, 'good', true);
     }
+  }
+  if (completed.length) {
+    const reward = completed.reduce((n, q) => n + q.reward, 0);
+    const names = completed.map((q) => q.title).join('; ');
+    pushMessage(s, `Charter ${completed.length === 1 ? 'task' : 'tasks'} done: ${names}${reward ? ` (+${reward} crowns)` : ''}.`, 'good', true);
   }
   return completed;
 }

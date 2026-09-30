@@ -67,7 +67,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.tradeIncomeToday = state.tradeIncomeToday ?? 0;
   state.dragons = state.dragons ?? [];
   state.nextDragonId = state.nextDragonId ?? 1;
-  state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0 };
+  state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0 };
+  state.materials.rayscale = state.materials.rayscale ?? 0;
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
@@ -77,6 +78,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal'] as const) state.stats[k] = state.stats[k] ?? 0;
   if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
   // rebuild derived layers
   const n = state.w * state.h;

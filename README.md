@@ -73,12 +73,18 @@ main node.
     Delve** there brings up relics (artifacts sell for more) and opens old doors. At Free
     City plant the **World Tree Sapling**: four seasons later its shade reaches 24 tiles and
     the Gloam will not cross it. The **minimap** (bottom right) jumps the camera where you click.
-14. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+14. **Beasts of the Concord and the sky** — mining wakes **Concord Wardens** in the hills;
+    a **Golem Foundry** (Burgh) binds them into twelve hands of labour each, no housing,
+    ten mana a day; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
+    a lit **Ley Beacon** keeps a school for the season (happiness, rayscale for the
+    enchanters). A **Drake Mews** doubles Watch House reach. Three taming edicts trade
+    one beast for another.
+15. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-15. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+16. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -139,6 +145,9 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- Beasts of the Concord and the sky: Concord Wardens woken by mining and bound at the
+  Golem Foundry into tireless labour, skyray schools kept by a Ley Beacon, the Drake
+  Mews, and three taming edicts.
 - Longwood and Lukuku: a pair of Portal Arches carts step through, the Ruins of Lukuku
   with a Ruin Delve and its relic chain, and the World Tree Sapling wonder that grows over
   four seasons.

@@ -8,6 +8,7 @@ import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
 import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
+import { surgeMaddensGolems } from './beasts';
 
 export interface Effect {
   x: number;
@@ -62,6 +63,7 @@ export function dailyFire(state: GameState): void {
     if (def.zone === Zone.Craft) p *= 2.5;
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
     if (def.key === 'font') p *= 6;
+    if (def.key === 'drakemews' && state.happiness < 40) p *= 12; // spooked drakes
     p *= 1 - fireCov * 0.5;
     if (rng.chance(p)) toIgnite.push(b);
   });
@@ -107,6 +109,7 @@ export function dailySurge(state: GameState): void {
       effects.push({ x: b.x, y: b.y, kind: 'surge', tick: state.tick });
     }
     state.stats.surgesTotal++;
+    surgeMaddensGolems(state);
     pushMessage(state, `WILD SURGE! Overdrawn ley lashes out: ${n} building(s) warped into ruin. The Concord made the same mistake.`, 'bad');
     commitRng(state, rng);
   }

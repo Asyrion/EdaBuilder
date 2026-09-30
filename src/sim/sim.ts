@@ -6,6 +6,7 @@ import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
 import { dailyDragons, seasonalBout } from './wyrmcraft';
 import { checkQuests } from './quests';
 import { dailyWyrm } from './wyrm';
+import { dailyBeasts } from './beasts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -39,6 +40,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   tickCreatures(state);
   if (t % 10 === 0) trySpawnBuildings(state, 3);
   if (t % 50 === 20) updateCreatures(state);
+  if (t % 50 === 30) checkQuests(state);
   const slice = t % 50;
   if (slice === 5) updateMana(state);
   else if (slice === 15) updateWater(state);
@@ -62,8 +64,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyDragons(state);
     seasonalBout(state);
     dailyWyrm(state);
+    dailyBeasts(state);
     checkMilestones(state);
-    checkQuests(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     maybeFireWyrm(state);

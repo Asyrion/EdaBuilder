@@ -13,6 +13,24 @@ export interface EdictDef {
 
 export const EDICTS: EdictDef[] = [
   {
+    key: 'beastmasters', name: "Beastmasters' Charter",
+    desc: 'Drakes and golems are fed from the city purse: cradles and foundries draw 40% less mana, but the tamers\' scraps draw hounds: packs come 50% more often. 40 crowns/day.',
+    flavor: 'Everything that eats can be tamed. Everything that is tamed still eats.',
+    costPerDay: () => 40, unlock: 4,
+  },
+  {
+    key: 'bounty', name: "Hunters' Bounty",
+    desc: 'A crown a pelt. Hunters\' Lodges clear hounds twice as far, the Watch kills them more often, and thrumhares vanish from the meadows (they are pelts too).',
+    flavor: 'The lodge door ran out of room for notches in a season.',
+    costPerDay: (s) => 20 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 15, unlock: 2,
+  },
+  {
+    key: 'wyrmpeace', name: 'Wyrm-Peace',
+    desc: 'A standing offering at the wyrm\'s node: tribute is halved, and so is the ward of a bound wyrm\'s lair. 80 crowns/day.',
+    flavor: 'Half a hoard buys half a guardian. The wyrm can count.',
+    costPerDay: () => 80, unlock: 5,
+  },
+  {
     key: 'curfew', name: 'Night Curfew',
     desc: 'The Watch clears the streets after dark. Unrest −10, restless cleared faster; happiness −4.',
     flavor: '"Halt. Are you living? Then go home."',

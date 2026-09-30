@@ -4,6 +4,8 @@ import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } 
 import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
 import { modifierSum } from './edicts';
 import { bumpRoadVersion } from './agents';
+import { foundryMana } from './beasts';
+import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
 const SPIRE_LINK = 6;
@@ -11,10 +13,12 @@ const SPIRE_RADIUS = 5;
 const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
 
+let beastmastersOn = false;
 export function manaUseOf(b: Building, hush = false): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
   const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
+  if (b.kind === 'cradle' && beastmastersOn) return base * 0.6;
   return hush && def.category === 'zone' ? base * 1.25 : base;
 }
 
@@ -24,6 +28,7 @@ function manaMult(state: GameState): number {
 
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */
 export function updateMana(state: GameState): void {
+  beastmastersOn = edictOn(state, 'beastmasters');
   const n = MAP_W * MAP_H;
   const lit = new Uint8Array(n);
   const oldLit = state.lit;
@@ -193,6 +198,7 @@ export function updateMana(state: GameState): void {
   let roadDemand = 0;
   for (let i = 0; i < n; i++) if (roadLit[i]) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
   demand += roadDemand;
+  demand += foundryMana(state);
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   void f;
 
