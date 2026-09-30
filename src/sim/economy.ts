@@ -2,13 +2,17 @@
 import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE } from './catalog';
 import { Zone, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
+import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
 
 export function taxOf(state: GameState, zone: Zone): number {
   switch (zone) {
     case Zone.Hearth: return state.taxRates.hearth;
     case Zone.Market: return state.taxRates.market;
-    case Zone.Craft: return state.taxRates.craft;
+    case Zone.Craft: {
+      const cap = modifierSum(state, 'craftTax');
+      return cap > 0 ? Math.min(state.taxRates.craft, cap) : state.taxRates.craft;
+    }
     case Zone.Arcane: return state.taxRates.arcane;
     default: return 0;
   }
@@ -16,8 +20,8 @@ export function taxOf(state: GameState, zone: Zone): number {
 
 /** Projected ledger for the current day (used for the UI and for the actual daily collection). */
 export function computeLedger(state: GameState) {
-  const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, grants: 0, net: 0 };
-  const unrestMod = 1 - state.unrest * 0.5;
+  const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
+  const unrestMod = (1 - state.unrest * 0.5) * (1 + modifierSum(state, 'tithe'));
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return;
@@ -30,7 +34,7 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: l.taxMarket += t; break;
+        case Zone.Market: l.taxMarket += t * (edictOn(state, 'lanternlevy') ? 1.2 : 1); break;
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }
@@ -39,7 +43,8 @@ export function computeLedger(state: GameState) {
     }
   });
   for (let i = 0; i < state.road.length; i++) if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
-  l.net = l.taxHearth + l.taxMarket + l.taxCraft + l.taxArcane - l.upkeepRoads - l.upkeepBuildings;
+  l.upkeepEdicts = edictUpkeep(state);
+  l.net = l.taxHearth + l.taxMarket + l.taxCraft + l.taxArcane - l.upkeepRoads - l.upkeepBuildings - l.upkeepEdicts;
   return l;
 }
 

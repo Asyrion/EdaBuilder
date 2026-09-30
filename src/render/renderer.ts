@@ -393,10 +393,11 @@ export class Renderer {
         }
       } });
       // icons
-      if (def.category === 'zone' && b.state === 'ok') {
-        if (!b.lit) icons.push({ x: wx, y: wy - 10, name: 'icon_nomana' });
-        else if (!b.watered) icons.push({ x: wx, y: wy - 10, name: 'icon_nowater' });
-        else if (b.happiness < 25) icons.push({ x: wx, y: wy - 10, name: 'icon_unhappy' });
+      if (def.category === 'zone' && b.state === 'ok' && cam.zoom >= 2) {
+        if (!b.lit && b.problemDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_nomana' });
+        else if (!b.watered && b.problemDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_nowater' });
+        else if (b.happiness < 25 && b.unhappyDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_unhappy' });
+        else if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) icons.push({ x: wx, y: wy - 10, name: 'icon_nogoods' });
       }
       if (abandoned) icons.push({ x: wx, y: wy - 10, name: 'icon_abandoned' });
       if (burning) icons.push({ x: wx, y: wy - 14, name: 'icon_fire' });

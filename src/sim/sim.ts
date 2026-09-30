@@ -1,5 +1,7 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
-import { SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
+import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
+import { maybeFireEvent } from './events';
+import { seasonOf } from './world';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -26,7 +28,7 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  if (state.gameOver) return;
+  if (state.gameOver || state.pendingEvent) return;
   state.tick++;
   const t = state.tick;
   tickAgents(state);
@@ -51,9 +53,25 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyDeath(state);
     dailyGloam(state);
     checkMilestones(state);
+    state.modifiers = state.modifiers.filter((m) => m.until > state.day);
+    if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
+    maybeFireEvent(state);
     dailyChatter(state);
     hooks?.onDay?.(state);
   }
+}
+
+const SEASON_TEXT = [
+  'The Thaw. Ice cracks on the river and the herb yards are dug over. A new year for the wardlight.',
+  'Bloom. Glimherb spirals up around the node; the stills run sweet and folk are merry.',
+  'Ember. Harvest carts on every road. The trees along the Gloam turn the colour of old fire.',
+  'The Hush. Long nights, cold hearths that drink more mana, and the Gloam creeping closer under the dark.',
+];
+
+function seasonMessage(state: GameState): void {
+  const season = seasonOf(state);
+  if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${SEASON_TEXT[season]}`, season === 3 ? 'warn' : 'milestone');
+  if (state.dirtyChunks) for (let i = 0; i < 256; i++) state.dirtyChunks.add(i);
 }
 
 function dailyChatter(state: GameState): void {

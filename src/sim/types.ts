@@ -4,7 +4,9 @@ export const MAP_W = 128;
 export const MAP_H = 128;
 export const TICKS_PER_SEC = 10;
 export const TICKS_PER_DAY = 900; // 90 s of game time at 1x
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
+export const DAYS_PER_SEASON = 30;
+export const SEASON_NAMES = ['Thaw', 'Bloom', 'Ember', 'Hush'] as const;
 
 export const enum Terrain {
   DeepWater = 0,
@@ -75,6 +77,8 @@ export interface Building {
   age: number; // days
   unhappyDays: number;
   dryDays: number;
+  stock: number; // goods held (craft: produced, market: delivered)
+  problemDays: number; // consecutive days unlit/dry (drives problem icons)
 }
 
 export const enum AgentKind {
@@ -96,6 +100,7 @@ export interface Agent {
   timer: number; // ticks until next decision
   variant: number;
   dir: number; // 0..3 facing for sprites
+  load: number; // goods carried (carts)
 }
 
 export interface TaxRates {
@@ -125,8 +130,23 @@ export interface DayLedger {
   taxArcane: number;
   upkeepRoads: number;
   upkeepBuildings: number;
+  upkeepEdicts: number;
   grants: number;
   net: number;
+}
+
+export interface Modifier {
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax';
+  value: number;
+  until: number; // day
+  label: string;
+}
+
+export interface PendingEvent {
+  id: string;
+  title: string;
+  text: string;
+  choices: { label: string; desc: string }[];
 }
 
 export interface GameState {
@@ -191,6 +211,14 @@ export interface GameState {
   demand: Demand;
   milestone: number;
   messages: Message[];
+  edicts: Record<string, boolean>;
+  modifiers: Modifier[];
+  pendingEvent: PendingEvent | null;
+  lastEventDay: number;
+  firedEvents: string[];
+  goodsProduced: number; // per day, for UI
+  goodsSold: number;
+  goodsShort: number; // markets that ran dry today
   gameOver: string | null;
   stats: {
     firesTotal: number;

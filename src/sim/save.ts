@@ -47,6 +47,14 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
     } else (state as any)[k] = v;
   }
   state.version = SAVE_VERSION;
+  // forward-compat defaults for fields added after v3
+  for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; }
+  for (const a of state.agents) a.load = a.load ?? 0;
+  state.edicts = state.edicts ?? {};
+  state.modifiers = state.modifiers ?? [];
+  state.pendingEvent = state.pendingEvent ?? null;
+  state.lastEventDay = state.lastEventDay ?? 0;
+  state.firedEvents = state.firedEvents ?? [];
   // rebuild derived layers
   const n = state.w * state.h;
   for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);

@@ -33,11 +33,14 @@ h3 { font-size: 13px; color: var(--gold); }
 .flavor { color: #b8a8d8; font-style: italic; }
 .bad { color: var(--bad); } .good { color: var(--good); } .warn { color: var(--warn); } .ley { color: var(--ley); } .gold { color: var(--gold); }
 
-#topbar { position: absolute; top: 0; left: 0; right: 0; height: 40px; display: flex; align-items: center; gap: 14px; padding: 0 12px; border-radius: 0; border-top: none; }
-#topbar .stat { display: flex; flex-direction: column; line-height: 1.05; min-width: 70px; }
+#topbar { position: absolute; top: 0; left: 0; right: 0; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-radius: 0; border-top: none; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
+#topbar .stat { display: flex; flex-direction: column; line-height: 1.05; min-width: 56px; flex-shrink: 0; }
 #topbar .stat .v { font-size: 14px; font-weight: 600; }
 #topbar .stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-#topbar .city { min-width: 180px; }
+#topbar .city { min-width: 150px; }
+#topbar .speed { display: flex; gap: 3px; flex-shrink: 0; }
+#topbar > button { flex-shrink: 0; padding: 3px 6px; }
+@media (max-width: 1500px) { #topbar .stat.opt { display: none; } }
 #topbar .city .v { color: var(--gold); }
 #topbar .spacer { flex: 1; }
 #topbar .speed button { min-width: 30px; padding: 3px 6px; }
@@ -112,3 +115,11 @@ h3 { font-size: 13px; color: var(--gold); }
 #tasks .list div { padding: 2px 0; color: var(--muted); }
 #tasks .list div.done { color: var(--good); text-decoration: line-through; opacity: 0.7; }
 #tasks .list div.now { color: var(--text); font-weight: 600; }
+
+#edicts .box { width: 600px; }
+#edicts .edict { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
+#edicts .edict.locked { opacity: 0.55; }
+#edicts .edict label { cursor: pointer; }
+#event .box { width: 560px; }
+#event .choices { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+#event .choices button { text-align: left; padding: 8px 10px; line-height: 1.35; }

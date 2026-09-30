@@ -1,5 +1,8 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
+import { edictOn, modifierSum } from './edicts';
+import { marketStockCap } from './agents';
+import { seasonOf } from './world';
 import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
@@ -75,20 +78,32 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
   h -= (tax - 10) * 1.6;
+  h += modifierSum(state, 'happiness');
+  if (edictOn(state, 'curfew')) h -= 4;
+  if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
     h -= unemployment * 20;
     h += (state.health - 0.5) * 15;
   } else if (def.zone === Zone.Market) {
-    // markets like customers and leisure
+    // markets like customers, leisure and full shelves
     h += (cov.leisure[i] / 255) * 6;
     if (state.population < 20) h -= 8;
+    const fill = b.stock / marketStockCap(b);
+    if (fill <= 0.05) h -= 14;
+    else if (fill > 0.5) h += 5;
+    if (edictOn(state, 'lanternlevy')) h -= 6;
   } else if (def.zone === Zone.Craft) {
     h += 4; // industry tolerates more
+    if (b.stock >= craftStockCap(b) * 0.95) h -= 10; // nobody is buying
   } else if (def.zone === Zone.Arcane) {
     h += (cov.school[i] / 255) * 10 - 6;
   }
   return Math.max(0, Math.min(100, h));
+}
+
+export function craftStockCap(b: Building): number {
+  return 30 * b.level;
 }
 
 export function workforceOf(state: GameState): number {
@@ -98,6 +113,9 @@ export function workforceOf(state: GameState): number {
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
 export function dailyBuildings(state: GameState): void {
   const rng = rngOf(state);
+  state.goodsProduced = 0;
+  state.goodsSold = 0;
+  state.goodsShort = 0;
   let pop = 0;
   let jobs = 0;
   let happySum = 0;
@@ -133,6 +151,8 @@ export function dailyBuildings(state: GameState): void {
     else b.unhappyDays = Math.max(0, b.unhappyDays - 1);
     if (!b.watered) b.dryDays += b.lit ? 1 : 1.5;
     else b.dryDays = Math.max(0, b.dryDays - 1);
+    if (!b.lit || !b.watered) b.problemDays++;
+    else b.problemDays = 0;
     if (b.unhappyDays > 8 || b.dryDays > 14) {
       b.state = 'abandoned';
       b.stateDays = 0;
@@ -160,6 +180,18 @@ export function dailyBuildings(state: GameState): void {
     } else {
       jobBuildings.push(b);
       jobs += cap;
+    }
+    // goods: craft produces, markets sell
+    if (def.zone === Zone.Craft) {
+      let rate = 0.7 * (edictOn(state, 'herbgardens') ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1);
+      if (!b.lit) rate *= 0.5;
+      const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
+      b.stock += Math.max(0, made);
+      state.goodsProduced += Math.max(0, made);
+    } else if (def.zone === Zone.Market) {
+      const want = b.workers * 0.5 + 1;
+      if (b.stock <= 0.5) state.goodsShort++;
+      b.stock = Math.max(0, b.stock - want);
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -235,11 +267,22 @@ export function updateDemand(state: GameState): void {
   let market = pop < 12 ? -0.2 : Math.max(-1, Math.min(1, (marketWant - marketJobs) / Math.max(10, marketWant))) * 0.9;
   market -= (state.taxRates.market - 10) * 0.04;
   market += unemployment * 0.3;
+  // unsold goods at the works call for more markets; empty shelves call for more works
+  let craftFull = 0;
+  let craftN = 0;
+  forEachBuilding(state, (b) => {
+    if (BUILDING_BY_KEY[b.kind].zone === Zone.Craft && b.state === 'ok') {
+      craftN++;
+      if (b.stock >= craftStockCap(b) * 0.9) craftFull++;
+    }
+  });
+  if (craftN > 0) market += (craftFull / craftN) * 0.4;
   // Craft: wants ~1 craft job per 3 residents; suppressed if plenty of jobs.
   const craftWant = pop / 3.2;
   let craft = pop < 6 ? 0.4 : Math.max(-1, Math.min(1, (craftWant - craftJobs) / Math.max(10, craftWant))) * 0.9;
   craft += unemployment * 0.5;
   craft -= (state.taxRates.craft - 10) * 0.04;
+  if (marketJobs > 0 && state.goodsShort > 0) craft += Math.min(0.4, state.goodsShort / Math.max(4, marketJobs / 4));
   // Arcane: needs education; wants ~1 arcane job per 6 residents once educated.
   let arcane = -0.2;
   if (isZoneUnlocked(state.milestone, Zone.Arcane)) {
@@ -283,15 +326,15 @@ export function updateSocial(state: GameState): void {
   const watchCov = watch / res;
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
-  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * 0.08;
-  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5));
+  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (edictOn(state, 'scholars') ? 0.12 : 0.08);
+  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + (edictOn(state, 'draughts') ? 0.12 : 0) + modifierSum(state, 'health')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0)),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - (edictOn(state, 'curfew') ? 0.1 : 0) + modifierSum(state, 'unrest')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
 }

@@ -188,6 +188,34 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Restless: spawn from hazards, wander randomly, removed by watch/ward.
 - Spatial index: agents bucketed per road tile for traffic counting.
 
+### 4.14 Goods flow (iteration 2)
+- Craft works produce goods each day: workers × 0.7 (×1.25 under the Herb Garden edict,
+  ×1.15 in Bloom, ×0.5 unlit), stored up to 30 × level. Carts wait at a works until at
+  least 4 goods are ready, load up to 12, and drive to a market chosen by low stock and
+  distance. Markets hold 20 × level and sell workers × 0.5 + 1 per day.
+- Empty shelves: market happiness −14 and a "no goods" icon; a works at 95 % storage:
+  craft happiness −10. Full works push Market demand up; dry markets push Craft demand up.
+  Deliveries take real road time, so congestion and layout matter.
+
+### 4.15 Seasons (iteration 2)
+- Four seasons of 30 days (a year is 120 days, ~1 hour at 3×): Thaw, Bloom (happiness +2,
+  goods +15 %, gloam creeps at 0.7×), Ember, Hush (daylight 36 % of the cycle instead of
+  50 %, hearths draw 25 % more mana, deaths ×1.2, gloam creeps at 1.6×). Season changes
+  post a message and re-render the map.
+
+### 4.16 Events with choices (iteration 2)
+- Every 18+ days, with 12 % daily chance, one event whose condition holds and that has not
+  fired in the last four fires: pilgrims, a Concord relic, the guilds' petition, a miasma
+  cough, a candle-eyed child, Grimmen refugees, the Crown's collector. The simulation
+  pauses until the player chooses. Choices apply immediate effects or timed modifiers
+  (happiness, unrest, deaths, health, tithe, craft-tax cap) that expire on their own.
+
+### 4.17 Edicts (iteration 2)
+- City-wide policies with daily upkeep: Night Curfew, Free Healing Draughts, Rite Subsidy,
+  Spire Wardens, Herb Garden Edict, Lantern Levy, Scholars' Stipend. Unlocked by
+  milestone; effects are read by the systems they touch (unrest, health, quieting rate,
+  surge threshold, goods/miasma, market tithe, education drift).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -244,7 +272,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 
 ## 8. Verification
 
-- `npm test` runs 25 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 32 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread
@@ -282,5 +310,10 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - *Fire rate cut to a quarter:* 97 fires in 150 days drowned the log in alarms.
 - *Onboarding as a checklist, not a tutorial:* seven auto-completing "Charter tasks" in the
   first two milestones teach the loop without blocking play.
+- *Events pause the game:* CS1 does not, but a choice with lore consequences deserves the
+  player's attention, and a paused modal is the honest way to ask for it.
+- *Problem icons wait two days:* a building that just spawned or briefly browned out no
+  longer flashes an alarm; only persistent problems earn an icon, and only at 2× zoom or
+  closer.
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.

@@ -12,6 +12,7 @@ import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
+import { resolveEvent, maybeFireEvent } from './sim/events';
 import * as actions from './sim/actions';
 import { Bot } from './sim/bot';
 
@@ -80,6 +81,8 @@ class Game {
       importJson: (f) => this.importJson(f),
       setMuted: (m) => { this.muted = m; this.audio.setMuted(m); },
       setTax: (z, v) => setTax(this.state, z, v),
+      setEdict: (k, on) => { this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
+      resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
       select: (b) => this.select(b),
     });
@@ -310,7 +313,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

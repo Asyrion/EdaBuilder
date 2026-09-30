@@ -7,6 +7,7 @@ import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath } from './actio
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, forEachBuilding } from './world';
+import { resolveEvent } from './events';
 
 export interface BotOptions {
   aggressive?: boolean; // zone more than demand asks
@@ -28,6 +29,7 @@ export class Bot {
   step(): void {
     const s = this.s;
     if (s.gameOver) return;
+    if (s.pendingEvent) resolveEvent(s, 0);
     this.ensureGrid();
     this.zoneByDemand();
     this.keepWatered();

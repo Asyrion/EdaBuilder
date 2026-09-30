@@ -47,7 +47,14 @@ main node.
    Gloam), Garden and Market Square (land value).
 6. **Tithe** — taxes are collected daily per zone (Budget button). 10% is what folk
    expect. Upkeep is per building and per road tile. Milestones pay grants.
-7. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+7. **Goods** — Craft works fill carts; carts feed Markets by road. Empty shelves and
+   idle stills both hurt, and shortages push the demand bars.
+8. **Edicts and events** — the *Edicts* button holds seven policies with daily upkeep.
+   Every few weeks an event pauses the game and asks you to choose; consequences last
+   for days.
+9. **Seasons** — Thaw, Bloom, Ember and Hush, 30 days each. The Hush brings long nights,
+   hungrier hearths and a bolder Gloam.
+10. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -85,6 +92,7 @@ Charter as `.json`.
 - Mana network (spire chains, adjacency spread, brownouts, wild surges), water coverage,
   8 service coverage types, land value, happiness, health, unrest, education, demand.
 - Hazards from the lore: Gloam creep and pockets, restless dead, wild surges, fire.
+- Goods flow by cart, four seasons, seven story events with choices, seven city edicts.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

@@ -7,6 +7,10 @@ import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types
 import { CITY_NAMES, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
+import { EDICTS } from '../sim/edicts';
+import { marketStockCap } from '../sim/agents';
+import { craftStockCap } from '../sim/growth';
+import { SEASON_NAMES, DAYS_PER_SEASON } from '../sim/types';
 import type { Tool } from './tools';
 
 export interface UiHost {
@@ -28,6 +32,8 @@ export interface UiHost {
   importJson(file: File): void;
   setMuted(m: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
+  setEdict(key: string, on: boolean): void;
+  resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
   selected: Building | null;
   select(b: Building | null): void;
@@ -43,7 +49,6 @@ const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolea
   { id: 'leisure', name: 'Leisure', filter: (d) => d.category === 'leisure' || d.category === 'wonder' },
 ];
 
-const SEASONS = ['Thaw', 'Bloom', 'Ember', 'Hush'];
 
 export class UI {
   root: HTMLElement;
@@ -72,10 +77,11 @@ export class UI {
         <div class="stat"><span class="v" id="tb-date"></span><span class="l">day</span></div>
         <div class="stat"><span class="v gold" id="tb-gold"></span><span class="l" id="tb-net">tithe/day</span></div>
         <div class="stat"><span class="v" id="tb-pop"></span><span class="l">folk</span></div>
-        <div class="stat"><span class="v" id="tb-jobs"></span><span class="l">jobs</span></div>
+        <div class="stat opt"><span class="v" id="tb-jobs"></span><span class="l">jobs</span></div>
         <div class="stat"><span class="v ley" id="tb-mana"></span><span class="l">mana use / flow</span></div>
         <div class="stat"><span class="v" id="tb-happy"></span><span class="l">happiness</span></div>
         <div class="stat"><span class="v" id="tb-unrest"></span><span class="l">unrest</span></div>
+        <div class="stat opt"><span class="v" id="tb-goods"></span><span class="l">goods sold / short</span></div>
         <div class="spacer"></div>
         <div class="speed">
           <button id="sp-0" title="Pause (Space)">❚❚</button>
@@ -84,6 +90,7 @@ export class UI {
           <button id="sp-3">3×</button>
         </div>
         <button id="btn-budget" title="Tithe & budget">Budget</button>
+        <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
         <button id="btn-views" title="Info views (Tab)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -110,10 +117,13 @@ export class UI {
       <div id="budget" class="modal hidden"></div>
       <div id="menu" class="modal hidden"></div>
       <div id="gameover" class="modal hidden"></div>
+      <div id="edicts" class="modal hidden"></div>
+      <div id="event" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
+    this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
@@ -255,9 +265,9 @@ export class UI {
     const h = this.host;
     this.q('#tb-name').textContent = s.cityName;
     this.q('#tb-title').textContent = MILESTONES[s.milestone].name;
-    const season = SEASONS[Math.floor(s.day / 90) % 4];
-    const year = 1 + Math.floor(s.day / 360);
-    this.q('#tb-date').textContent = `${(s.day % 90) + 1} ${season}, Y${year}`;
+    const season = SEASON_NAMES[Math.floor(s.day / DAYS_PER_SEASON) % 4];
+    const year = 1 + Math.floor(s.day / (DAYS_PER_SEASON * 4));
+    this.q('#tb-date').textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}`;
     const l = computeLedger(s);
     const gold = this.q('#tb-gold');
     gold.textContent = `${Math.round(s.treasury).toLocaleString()} c`;
@@ -274,6 +284,11 @@ export class UI {
     const hp = this.q('#tb-happy');
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
     hp.className = `v ${s.happiness > 55 ? 'good' : s.happiness < 35 ? 'bad' : ''}`;
+    const gd = this.q('#tb-goods');
+    gd.textContent = `${Math.round(s.goodsSold)} / ${s.goodsShort}`;
+    gd.className = `v ${s.goodsShort > 3 ? 'warn' : ''}`;
+    gd.title = 'Goods delivered by cart to markets today / markets with empty shelves';
+    this.refreshEvent();
     const un = this.q('#tb-unrest');
     un.textContent = `${Math.round(s.unrest * 100)}%`;
     un.className = `v ${s.unrest > 0.4 ? 'bad' : s.unrest > 0.25 ? 'warn' : ''}`;
@@ -398,12 +413,16 @@ export class UI {
       rows.push(row('Happiness', `${Math.round(hp)}`));
       rows.push(row('Land value', `${s.landValue[i]}`));
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
+      if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
+      if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
       if (!b.lit) problems.push('No mana: build a Ley Spire within 5 tiles or next to a lit building.');
       if (!b.watered) problems.push('No water: build a Well or Cistern nearby.');
       if (s.miasma[i] > 60) problems.push('Choking on miasma from nearby Craft works.');
       if (s.gloamDist[i] < 6) problems.push('The Gloam whispers nearby. Raise a Ward Lantern.');
       if (cov.death[i] < 30 && def.zone === Zone.Hearth) problems.push('No Boneyard covers this home; its dead will not rest.');
       if (s.trafficSmooth[i] > 170) problems.push('Traffic jam outside.');
+      if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) problems.push('Empty shelves: no carts are bringing goods. Zone Craft works with a road to this market.');
+      if (def.zone === Zone.Craft && b.stock >= craftStockCap(b) * 0.95) problems.push('Nobody is buying: goods pile up. Zone Markets reachable by road.');
       if (b.state === 'abandoned') problems.push('Abandoned. Fix the problems and folk will return, or bulldoze it.');
       if (b.state === 'burning') problems.push('ON FIRE! Veshari Hall coverage puts it out.');
       if (b.state === 'ruin') problems.push('A ruin. It will be cleared in a few days, or bulldoze it for free.');
@@ -462,6 +481,9 @@ export class UI {
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
+            <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
+            <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
+            <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -596,6 +618,7 @@ export class UI {
           <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
+          <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
           <tr><td><b>Net per day</b></td><td class="r" data-k="net"></td></tr>
           <tr><td>Treasury</td><td class="r gold" data-k="treasury"></td></tr>
         </table>
@@ -625,6 +648,7 @@ export class UI {
     set('taxArcane', `+${l.taxArcane.toFixed(0)}`);
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
+    set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
     const net = this.el.budget.querySelector('[data-k="net"]') as HTMLElement;
     net.innerHTML = `<b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b>`;
     net.className = `r ${l.net >= 0 ? 'good' : 'bad'}`;
@@ -639,6 +663,62 @@ export class UI {
         (inp.nextElementSibling as HTMLOutputElement).textContent = `${st.taxRates[z]}%`;
       }
     });
+  }
+
+  toggleEdicts(show?: boolean): void {
+    const el = this.el.edicts;
+    const s = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !s);
+    if (s) this.refreshEdicts();
+  }
+
+  refreshEdicts(): void {
+    const st = this.host.state;
+    const rows = EDICTS.map((e) => {
+      const locked = st.milestone < e.unlock;
+      const on = !!st.edicts[e.key];
+      return `<div class="edict ${locked ? 'locked' : ''}">
+        <label><input type="checkbox" data-key="${e.key}" ${on ? 'checked' : ''} ${locked ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day)</span></label>
+        <div class="muted">${e.desc}${locked ? ` <span class="warn">Unlocks at ${MILESTONES[e.unlock].name}.</span>` : ''}</div>
+        <div class="flavor">${e.flavor}</div>
+      </div>`;
+    });
+    const mods = st.modifiers.filter((m) => m.until > st.day).map((m) => `<li>${m.label} (${m.until - st.day} days left)</li>`).join('');
+    this.el.edicts.innerHTML = `<div class="box panel">
+      <h2>Edicts of the Warden-Reeve</h2>
+      <p class="muted">Edicts take effect immediately and cost their upkeep every day.</p>
+      ${rows.join('')}
+      ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
+      <div style="text-align:right"><button id="e-close">Close</button></div>
+    </div>`;
+    this.el.edicts.querySelectorAll('input[type=checkbox]').forEach((inp) => {
+      (inp as HTMLInputElement).onchange = () => {
+        this.host.setEdict((inp as HTMLInputElement).dataset.key!, (inp as HTMLInputElement).checked);
+        this.refreshEdicts();
+      };
+    });
+    this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
+  }
+
+  private eventShownId: string | null = null;
+
+  refreshEvent(): void {
+    const pe = this.host.state.pendingEvent;
+    const el = this.el.event;
+    if (!pe) {
+      el.classList.add('hidden');
+      this.eventShownId = null;
+      return;
+    }
+    if (this.eventShownId === pe.id && !el.classList.contains('hidden')) return;
+    this.eventShownId = pe.id;
+    el.innerHTML = `<div class="box panel" style="border-color:var(--gold)">
+      <h2>${pe.title}</h2>
+      <p>${pe.text}</p>
+      <div class="choices">${pe.choices.map((c, i) => `<button data-i="${i}"><b>${c.label}</b><br><span class="muted">${c.desc}</span></button>`).join('')}</div>
+    </div>`;
+    el.classList.remove('hidden');
+    el.querySelectorAll('button').forEach((b) => (b.onclick = () => this.host.resolveEvent(Number((b as HTMLElement).dataset.i))));
   }
 
   showGameOver(): void {

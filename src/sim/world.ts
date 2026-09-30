@@ -2,6 +2,7 @@ import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
+  DAYS_PER_SEASON,
   MAP_H,
   MAP_W,
   RoadType,
@@ -80,6 +81,14 @@ export function createGame(seed: number, cityName?: string): GameState {
     demand: { hearth: 0.5, market: 0.1, craft: 0.3, arcane: 0 },
     milestone: 0,
     messages: [],
+    edicts: {},
+    modifiers: [],
+    pendingEvent: null,
+    lastEventDay: 0,
+    firedEvents: [],
+    goodsProduced: 0,
+    goodsSold: 0,
+    goodsShort: 0,
     gameOver: null,
     stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
@@ -102,7 +111,7 @@ export function createGame(seed: number, cityName?: string): GameState {
 }
 
 export function emptyLedger() {
-  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, grants: 0, net: 0 };
+  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
 }
 
 export function seedFromName(name: string): number {
@@ -204,6 +213,8 @@ export function placeBuildingRaw(state: GameState, key: string, x: number, y: nu
     age: 0,
     unhappyDays: 0,
     dryDays: 0,
+    stock: 0,
+    problemDays: 0,
   };
   commitRng(state, rng);
   let slot = state.buildings.indexOf(null);
@@ -264,8 +275,19 @@ export function refreshZoneList(state: GameState): number[] {
   return state.zoneList;
 }
 
+export function seasonOf(state: GameState): number {
+  return Math.floor(state.day / DAYS_PER_SEASON) % 4;
+}
+
 export function timeOfDay(state: GameState): number {
-  // 0..1, 0 = midnight. Start the game at dawn-ish.
+  // 0..1, 0 = midnight. Start the game at dawn-ish. The Hush stretches the night.
   const TICKS_PER_DAY = 900;
-  return (((state.tick + TICKS_PER_DAY * 0.3) % TICKS_PER_DAY) / TICKS_PER_DAY);
+  const t = ((state.tick + TICKS_PER_DAY * 0.3) % TICKS_PER_DAY) / TICKS_PER_DAY;
+  const season = seasonOf(state);
+  const dayShare = season === 3 ? 0.36 : season === 1 ? 0.6 : 0.5; // fraction of the day that is light
+  // remap so that daylight (0.25..0.75 in the ramp) covers dayShare of the cycle
+  const half = dayShare / 2;
+  if (t >= 0.5 - half && t <= 0.5 + half) return 0.25 + ((t - (0.5 - half)) / dayShare) * 0.5;
+  if (t < 0.5 - half) return (t / (0.5 - half)) * 0.25;
+  return 0.75 + ((t - (0.5 + half)) / (0.5 - half)) * 0.25;
 }
