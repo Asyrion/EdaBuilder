@@ -1,0 +1,79 @@
+/** Daily tithe: taxes and upkeep. */
+import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE } from './catalog';
+import { Zone, type GameState } from './types';
+import { forEachBuilding, pushMessage } from './world';
+import { capacityOf } from './growth';
+
+export function taxOf(state: GameState, zone: Zone): number {
+  switch (zone) {
+    case Zone.Hearth: return state.taxRates.hearth;
+    case Zone.Market: return state.taxRates.market;
+    case Zone.Craft: return state.taxRates.craft;
+    case Zone.Arcane: return state.taxRates.arcane;
+    default: return 0;
+  }
+}
+
+/** Projected ledger for the current day (used for the UI and for the actual daily collection). */
+export function computeLedger(state: GameState) {
+  const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, upkeepRoads: 0, upkeepBuildings: 0, grants: 0, net: 0 };
+  const unrestMod = 1 - state.unrest * 0.5;
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (b.state === 'ruin') return;
+    if (def.category === 'zone') {
+      if (b.state !== 'ok') return;
+      const occupants = def.zone === Zone.Hearth ? b.residents : b.workers;
+      const rate = taxOf(state, def.zone!) / 10;
+      const levelMult = 1 + (b.level - 1) * 0.35;
+      const happyMod = 0.6 + (b.happiness / 100) * 0.6;
+      const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
+      switch (def.zone) {
+        case Zone.Hearth: l.taxHearth += t; break;
+        case Zone.Market: l.taxMarket += t; break;
+        case Zone.Craft: l.taxCraft += t; break;
+        case Zone.Arcane: l.taxArcane += t; break;
+      }
+    } else {
+      l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1);
+    }
+  });
+  for (let i = 0; i < state.road.length; i++) if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
+  l.net = l.taxHearth + l.taxMarket + l.taxCraft + l.taxArcane - l.upkeepRoads - l.upkeepBuildings;
+  return l;
+}
+
+export function dailyEconomy(state: GameState): void {
+  const l = computeLedger(state);
+  state.treasury += l.net;
+  state.ledger = l;
+  state.ledgerHistory.push(Math.round(l.net));
+  if (state.ledgerHistory.length > 30) state.ledgerHistory.shift();
+  if (state.treasury < -8000) {
+    state.bankruptDays++;
+    if (state.bankruptDays === 1) pushMessage(state, 'The treasury is deep in debt. The Crown gives you five days to recover before the Charter is revoked.', 'bad');
+    else if (state.bankruptDays < 5) pushMessage(state, `Debt warning: ${5 - state.bankruptDays} day(s) until the Crown revokes your Charter.`, 'bad');
+    if (state.bankruptDays >= 5 && !state.gameOver) {
+      state.gameOver = 'The Crown revokes your Charter. A new Warden-Reeve will be sent, with a smaller purse.';
+      pushMessage(state, state.gameOver, 'bad');
+    }
+  } else state.bankruptDays = 0;
+}
+
+export function checkMilestones(state: GameState): void {
+  while (state.milestone + 1 < MILESTONES.length && state.population >= MILESTONES[state.milestone + 1].pop) {
+    state.milestone++;
+    const m = MILESTONES[state.milestone];
+    state.treasury += m.grant;
+    state.ledger.grants += m.grant;
+    pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${m.grant} crowns)`, 'milestone');
+  }
+}
+
+export function totalCapacity(state: GameState, zone: Zone): number {
+  let c = 0;
+  forEachBuilding(state, (b) => {
+    if (BUILDING_BY_KEY[b.kind].zone === zone) c += capacityOf(b);
+  });
+  return c;
+}
