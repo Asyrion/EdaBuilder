@@ -283,6 +283,16 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   ley-lines at night, particles (chimney smoke, sparks on spires, fireflies at
   night, leaves in forests, embers on fire, grey motes over gloam), animated water
   sparkle, gentle tree sway.
+- **Fantasy pass (iteration 5):** the generator gained overhanging upper floors with carved
+  braces, hanging lantern posts, glowing rune bands, potion-bottle shelves, copper alembics
+  with green glass, glass domes, orbiting crystals, bell towers, gold ridge ornaments and
+  wisps; walls in plaster and blue-wash, roofs in moss and verdigris copper. Ley nodes are
+  standing-stone circles around a glowing pool with spiral grass; forests near nodes grow
+  pale glimwood with glowing leaf tips and mushrooms; the Gloam grows twisted trees with a
+  violet eye. Spires carry a floating ring of shards. At night the emissive layer is drawn
+  twice, once soft at quarter resolution (bloom) and once crisp, rune rings pulse on the
+  ground under lit spires and wards, and Tallowkin eyes glow. UI panels got gold corner
+  marks and a serif title with a code-drawn animated sigil.
 - **Readability first:** roads and zones have flat, high-contrast colours; overlays
   desaturate the scene and tint tiles; hovered tiles and drag rectangles are always
   outlined.
@@ -319,7 +329,115 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - **M5 Life** — agents, traffic, day/night, lighting, particles, audio. ✅
 - **M6 Polish** — onboarding, balancing, hazards tuning, bug sweep, docs. ✅
 
-## 8. Verification
+## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
+
+Everything below grows out of the magic rules in `EDA_LORE.md` §5 and is *proposed*
+(lore in `EDA_LORE.md` §8). The aim is that the city feels inhabited by a living fantasy
+world, not decorated with one: every creature is a system with a cost, a use and a
+counter, and every magical building changes how the player plans.
+
+### 8.1 Creatures (fauna, wild and tamed)
+
+| Creature | Where / when | Behaviour | Player answer |
+|---|---|---|---|
+| **Glimmoths** | swarm ley nodes and lit spires at night, all seasons | harmless; luminous ambient life; shed *glim-dust* | a **Moth-Loft** near a node harvests dust: Craft goods +20 % in radius |
+| **Thrumhares** | meadows by day | ambient; flee agents; a Garden makes them stay | none needed; hunters take a few for a small happiness bump |
+| **Marsh-wyrms** | rivers and lakes; Bloom | eel-like; one may lair under a bridge: carts on it slow to a crawl | Veshari Hall coverage drives it off; a **Quay** keeps them away for good |
+| **Gloam-hounds** | out of the Gloam at night; packs grow in the Hush | fast; harass outlying buildings (happiness, occasional damage); flee light | Ward Lanterns and Watch coverage; a **Hunters' Lodge** hunts them in radius |
+| **Wisps** | over Boneyards and the restless | benign lights; multiply when unquieted dead rise; guide the Watch to restless | deathcare; too many wisps is the early warning |
+| **Concord Wardens** | sleeping stone constructs in hills; woken by mining | wake and wander; hostile until *bound*; immune to fire and the Gloam | a **Golem Foundry** binds them: labour that needs no housing but drinks mana; a surge sends them mad |
+| **Skyrays** | manta-like drifters on high ley currents; migrate across the map in Bloom and Ember | cast moving shadows; shed *rayscale* if lured | a **Ley Beacon** lures a school for a season: rare good for artifacts, happiness for the whole city |
+| **Drakes** | dog-sized ley lizards; bred, not wild | mounts for the Watch; fire-breathing when frightened | a **Drake Mews**: mounted patrols double Watch reach; a spooked mews is a fire risk |
+
+Creature agents reuse the agent system (kind, path, speed, timer) with a `species` field,
+a per-species behaviour (wander, flock, flee light, lair), and a spatial bucket for
+cheap neighbour checks. Wild populations are per-map counters seeded by terrain (meadow
+tiles → hares, water → wyrms, gloam tiles → hounds) and season.
+
+### 8.2 Dragons
+
+Eda's dragons are **Vein-Wyrms**: creatures the Veins dreamed up before there were
+people, sleeping coiled around the deepest nodes. Rules:
+
+- Some maps generate one **Sleeping Wyrm** on a distant node (its scales visible as a
+  ring of ridged stone; the node hums louder). Drawing mana from that node fills a
+  **waking meter**; deepening it wakes the wyrm at once.
+- **Awake and unbound**, the wyrm demands **tribute** every season (crowns, goods or
+  leystone, rising each time). Refuse and it flies over the city: a fire hazard along its
+  path, then it sleeps again for a season. Tribute events use the event system.
+- **Binding** needs the **Wyrm-Court** wonder (Free City) and a Tallowkin *Wyrm-Singer*
+  raised at the Grand Academy. A bound wyrm becomes the city's guardian: its lair burns
+  back the Gloam in a 30-tile radius, Gloam-hounds never approach, happiness +10, and once
+  a season it circles the city (a flyover with shadow, wind particles and a scream that
+  scatters glimmoths). It eats: 40 goods a day from markets, and it grows *demanding*
+  (tribute of leystone) if unfed for ten days, sulking (no ward effect) until fed.
+- A wyrm may also **die** (age, or a player who starves it and refuses it): its bones
+  become a **Wyrm-Bone Ossuary** site with the best deathcare in the game.
+- Later: **hatchlings** raised at the Court become drakes of a higher order that can carry
+  a rider across the map (see vehicles).
+
+### 8.3 Magical buildings (new catalog entries, by unlock)
+
+| Building | Unlock | Effect | Cost of use |
+|---|---|---|---|
+| **Moth-Loft** | Thorp | glim-dust: Craft goods +20 % within 8 | needs a node within 6; 2 mana |
+| **Hunters' Lodge** | Thorp | clears hounds and wyrms in 12; venison: happiness +2 in 8 | upkeep |
+| **Glimhouse** | Village | glasshouse: Craft works nearby ignore the Hush penalty | 4 mana |
+| **Quay** | Village | river barges: markets on the same water body share stock | ships as vehicle |
+| **Weather Vane of Vesh** | Township | call rain on a district for a day: fires out, miasma washed | 30 mana, 3-day cooldown |
+| **Portal Arch** (pair) | Market Town | carts entering one arch leave the other: logistics across the map | 12 mana each, both lit |
+| **Astral Observatory** | Market Town | forecasts surges, hounds and festivals five days ahead; reveals hidden nodes | 6 mana |
+| **Golem Foundry** | Burgh | binds Concord Wardens: 12 jobs' worth of labour per golem, no housing | 10 mana per golem; surge risk |
+| **Ley Beacon** | Burgh | lures skyrays for a season; rayscale | 25 mana while lit |
+| **Drake Mews** | Burgh | mounted Watch: watch radius ×2 from Watch Houses | fire risk if unhappy |
+| **Warding Wall** | Village | wall tiles the Gloam cannot cross; hounds path around | cost per tile, 0.5 mana/tile |
+| **Font of Quieting** | Free City | city-wide deathcare +50 %; wisps become allies | 15 mana |
+| **Wyrm-Court** | Free City (wonder) | binds the wyrm (see 8.2) | 40 mana, feeds the wyrm |
+| **Sky-Dock** | Beacon of Eda | airships (see 8.4): trade with other wardlights | 30 mana |
+
+### 8.4 Vehicles (future)
+
+- **Floating carts** (Arcane districts at level 3 produce them): hover lanes above the road;
+  they ignore congestion and count 0 for traffic but draw 1 mana each while moving.
+- **River barges** (Quay): a barge per quay carries 40 goods along water tiles between
+  quays; water becomes a road network with its own pathfinding layer.
+- **Drake riders** (Drake Mews): fast Watch agents that fly straight to the restless and
+  to fires; visible in the sky layer with shadows.
+- **Golem haulers** (Golem Foundry): slow, tireless carts that carry 30 and are not
+  scared by hounds.
+- **Airships** (Sky-Dock): the late-game trade route; a ship leaves each season with the
+  city's surplus and returns with crowns, rare goods and a story event.
+- Rendering: a **sky layer** drawn after lighting with drop shadows on the ground; agent
+  `altitude` for sorting and for lights.
+
+### 8.5 Mechanics that tie it together
+
+- **Rare goods:** glim-dust, rayscale and wyrm-scale sit beside potions and leystone;
+  artifacts made with rare goods sell for 3× and unlock the *Marvels* row of the catalog.
+- **Migrations and seasons:** skyrays in Bloom and Ember, hounds in the Hush, wyrms in
+  Bloom, glimmoths every night. The Observatory turns these into forecasts.
+- **Mana-storms:** after a wild surge a roaming pocket of wild magic drifts across the map
+  for a few days (buildings in it level up or down at random, agents take detours); wards
+  dissolve it.
+- **Taming edicts:** Beastmasters' Charter (drakes and golems cost less mana, hounds more
+  frequent), Hunters' Bounty (hounds cleared faster, hares vanish), Wyrm-Peace (tribute
+  halved, wyrm ward halved).
+- **Sky layer and shadows** for every flying thing, so the map reads at a glance which
+  creatures are above the city.
+- **Failure states gain teeth:** an unbound, starved wyrm that razes the Founding Stake
+  ends the game ("the valley belongs to the wyrm"); a hound pack that empties three
+  districts in one Hush triggers the Long Night early.
+
+### 8.6 Delivery order
+
+1. Creature agents + glimmoths, thrumhares, wisps (ambient, cheap, visible at once).
+2. Gloam-hounds + Hunters' Lodge + Warding Wall (the Hush gets a real threat).
+3. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding.
+4. Moth-Loft, Glimhouse, Weather Vane, Observatory, Portal Arch (magical buildings).
+5. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon.
+6. Vehicles: floating carts, barges, drake riders, airships and the sky layer.
+
+## 9. Verification
 
 - `npm test` runs 43 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
@@ -332,7 +450,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   `scripts/playtest.mjs` drives the real UI with mouse/keyboard; `scripts/shot.mjs`,
   `start.mjs`, `atlas.mjs` produce screenshots for art review.
 
-## 9. Decision log
+## 10. Decision log
 
 - *Game name "Wardlight":* a wardlight is what the lore calls a chartered city; the
   name states the fantasy (hold the light against the dark) in one word.
@@ -372,5 +490,12 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   strobe; the budget is now a stable per-particle subset, lights flicker gently out of
   phase instead of in unison, and brownouts keep the same buildings dark between updates.
   Measured with `scripts/flicker.mjs` (per-frame changed pixels fell from ~5,000 to ~200).
+- *Art pass stays procedural:* the brief asks for original art; rather than a hand-drawn set,
+  the generator was pushed toward the fantasy silhouette (overhangs, lanterns, alembics,
+  rune bands, copper roofs) so every building type reads as Eda rather than as a generic
+  village box. The manifest seam for hand-made art is unchanged.
+- *Creatures are systems, not decoration:* every creature in the roadmap has a cost, a
+  use and a counter, and dragons are a strategic choice (tribute, binding or war), not a
+  boss fight; this keeps the CS1 feel of planning under pressure.
 - *Bot player in `src/sim`:* balance claims are only worth what can be replayed; the same
   bot runs in tests, in the headless script and in the browser perf harness.

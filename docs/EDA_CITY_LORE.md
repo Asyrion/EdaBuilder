@@ -37,6 +37,11 @@ material; where the given material is silent it invents.
 - The Gloam creeps over unwarded land; Ward Lanterns hold it back.
 - Alchemy and enchanting as the two magical industries.
 
+### Creatures and wyrms *(proposed)*
+- Glim-born, Gloam-born, Concord-made, sky-born and Vein-born creatures as listed in
+  `EDA_LORE.md` §8; Vein-Wyrms as Eda's dragons; drakes as their bred cousins; rare
+  reagents (glim-dust, rayscale, wyrm-scale). Design mechanics in `DESIGN.md` §8.
+
 ### Relationship to *Ossuary* *(proposed, deliberately loose)*
 Wardlight treats alchemy as Vell's premier trade and names its advanced deathcare
 building the **Ossuary**. It makes no claims about *Ossuary*'s plot, characters or

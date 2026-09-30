@@ -28,6 +28,13 @@
 - District statistics and renaming; daily autosave; quarter-resolution light map at 1×.
 - Night flicker fixed (strobing particle lights, unison flicker, brownout boundary blinking).
 
+## Done in iteration 5 (art pass)
+
+- Fantasy building features across all zones and civic buildings; new wall and roof
+  materials; standing-stone ley nodes; glimwood, mushrooms and Gloam trees; spire rings.
+- Night bloom pass, ground rune rings, glowing Tallowkin eyes, cart lanterns.
+- Richer UI panel styling and an animated title sigil.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -50,6 +57,15 @@
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second
   job.
 
+## Fantasy roadmap (see DESIGN.md §8)
+
+Iterations 6–11, in order: (6) creature agents with glimmoths, thrumhares and wisps;
+(7) Gloam-hounds, Hunters' Lodge, Warding Wall; (8) the Sleeping Wyrm: waking, tribute,
+flyover, Wyrm-Court binding; (9) magical buildings: Moth-Loft, Glimhouse, Weather Vane,
+Observatory, Portal Arch; (10) Concord Wardens and the Golem Foundry, Drake Mews, skyrays
+and the Ley Beacon; (11) vehicles and the sky layer: floating carts, barges, drake riders,
+airships.
+
 ## Prioritized ideas for the next iteration
 
 1. **Per-district problem summary** in the district overlay (unlit / dry / no goods
@@ -58,8 +74,9 @@
    a Gloam-locked island, a city inherited mid-collapse) selectable from the title screen.
 3. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
    the treasury, once the first is a Beacon.
-4. **Hand-made art pass.** The atlas manifest is ready; the biggest wins are level-3
-   townhouses, the temple, and citizen sprites with real walk cycles.
+4. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
+   replacements through the atlas manifest would still lift the temple, the Lantern of Vell
+   and citizen sprites most.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
    simple generative melody for milestones.
 6. **Remappable keys.** The key table is centralised in the help overlay but not yet

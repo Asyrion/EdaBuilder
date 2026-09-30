@@ -61,6 +61,7 @@ export class Renderer {
   overlayChunks = new Map<number, HTMLCanvasElement>();
   overlayVersion = 0;
   private lightDiv = 2;
+  private bloom: HTMLCanvasElement | null = null;
   private overlayBuiltVersion = -1;
   private overlayBuiltId: string | null = null;
   time = 0; // seconds of real time for animation
@@ -128,7 +129,7 @@ export class Renderer {
       case Terrain.Meadow: return this.atlas.get(`meadow_${Math.floor(h2(x, y, 2) * 3)}`);
       case Terrain.Forest: return this.atlas.get(`forest_${Math.floor(h2(x, y, 3) * 3)}`);
       case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * 3)}`);
-      case Terrain.LeyNode: return this.atlas.get('leynode');
+      case Terrain.LeyNode: return this.atlas.get('grass_1');
     }
     return null;
   }
@@ -206,22 +207,29 @@ export class Renderer {
         const t = state.terrain[i];
         const [wx, wy] = tileToWorld(x, y);
         if (state.gloam[i]) {
-          if (h2(x, y, 11) < 0.25) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
+          const r = h2(x, y, 11);
+          if (r < 0.22) cache.props.push({ name: `gloamtree_${Math.floor(h2(x, y, 14) * 2)}`, wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
+          else if (r < 0.3) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
           continue;
         }
         if (t === Terrain.Forest) {
           const n = 1 + (h2(x, y, 20) < 0.5 ? 1 : 0);
+          let nearNode = false;
+          for (const nd of state.nodes) if (Math.hypot(nd.x - x, nd.y - y) < 9) nearNode = true;
           for (let k = 0; k < n; k++) {
             const v = Math.floor(h2(x, y, 21 + k) * 4);
             const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
-            cache.props.push({ name: h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
+            const glim = nearNode && h2(x, y, 33 + k) < 0.6;
+            cache.props.push({ name: glim ? `glimwood_${v % 2}` : h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
           }
+          if (h2(x, y, 44) < 0.12) cache.props.push({ name: `mushroom_${Math.floor(h2(x, y, 45) * 2)}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
           if (h2(x, y, 27) < 0.05) cache.props.push({ name: 'bush', wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.LeyNode) {
           cache.lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
+          cache.props.push({ name: 'leynode', wx, wy, d: x + y + 0.4, sway: 0 });
         }
       }
     cache.hasWater = hasWater;
@@ -350,6 +358,8 @@ export class Renderer {
       }
     }
 
+    // rune rings under lit spires and wards
+    if (night > 0.15) this.drawRuneRings(state, night, minX, maxX, minY, maxY);
     // grid
     if (view.showGrid) this.drawGrid(minX, maxX, minY, maxY);
 
@@ -369,11 +379,10 @@ export class Renderer {
         const s = this.atlas.get(p.name);
         const sw = useSway && p.sway ? Math.round(sway * p.sway) : 0;
         items.push({ d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy) });
+        if (s && s.glow && night > 0.05) glows.push({ s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 });
       }
       for (const l of c.lights) {
         lights.push(l);
-        const s = this.atlas.get('leynode');
-        if (s) glows.push({ s, x: l.x, y: l.y - 8, a: 0.5 + 0.3 * Math.sin(this.time * 2 + l.x) });
         if (Math.random() < 0.15) this.particles.emit({ x: l.x + (Math.random() - 0.5) * 10, y: l.y, vx: (Math.random() - 0.5) * 4, vy: -8 - Math.random() * 8, maxLife: 2, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
       }
     }
@@ -581,6 +590,42 @@ export class Renderer {
     ctx.lineTo(lx - L + 0.5, ly - T + 0.5);
     ctx.closePath();
     ctx.stroke();
+  }
+
+  private drawRuneRings(state: GameState, night: number, minX: number, maxX: number, minY: number, maxY: number): void {
+    const ctx = this.ctx;
+    const L = this.camera.left;
+    const T = this.camera.top;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineWidth = 1;
+    const pulse = 0.5 + 0.5 * Math.sin(this.time * 1.5);
+    for (const b of state.buildings) {
+      if (!b || !b.lit || b.state !== 'ok') continue;
+      if (b.kind !== 'spire' && b.kind !== 'nexus' && b.kind !== 'wardlantern' && b.kind !== 'font' && b.kind !== 'lantern') continue;
+      if (b.x + b.w < minX || b.x > maxX || b.y + b.h < minY || b.y > maxY) continue;
+      const cx = b.x + b.w / 2;
+      const cy = b.y + b.h / 2;
+      const r = b.kind === 'spire' ? 1.6 : b.kind === 'wardlantern' ? 2.2 : 2.6;
+      ctx.strokeStyle = `rgba(79,227,255,${(0.18 + 0.12 * pulse) * night})`;
+      ctx.beginPath();
+      for (let k = 0; k <= 24; k++) {
+        const a = (k / 24) * Math.PI * 2;
+        const [wx, wy] = tileToWorld(cx + Math.cos(a) * r - 0.5, cy + Math.sin(a) * r - 0.5);
+        if (k === 0) ctx.moveTo(wx - L, wy - T + 8);
+        else ctx.lineTo(wx - L, wy - T + 8);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      // glyph dots on the ring
+      ctx.fillStyle = `rgba(255,217,138,${(0.5 + 0.4 * pulse) * night})`;
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2 + this.time * 0.3;
+        const [wx, wy] = tileToWorld(cx + Math.cos(a) * r - 0.5, cy + Math.sin(a) * r - 0.5);
+        ctx.fillRect(Math.round(wx - L), Math.round(wy - T + 8), 1, 1);
+      }
+    }
+    ctx.restore();
   }
 
   private drawDistrictLabels(state: GameState, minX: number, maxX: number, minY: number, maxY: number): void {
@@ -792,8 +837,37 @@ export class Renderer {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(this.light, 0, 0, this.light.width, this.light.height, 0, 0, this.back.width, this.back.height);
     ctx.imageSmoothingEnabled = false;
-    // emissive glow
+    // emissive glow, drawn twice: once soft (bloom) and once crisp
+    if (!this.bloom) {
+      this.bloom = document.createElement('canvas');
+    }
+    const bw = Math.ceil(this.back.width / 4);
+    const bh = Math.ceil(this.back.height / 4);
+    if (this.bloom.width !== bw || this.bloom.height !== bh) {
+      this.bloom.width = bw;
+      this.bloom.height = bh;
+    }
+    const bctx = this.bloom.getContext('2d')!;
+    bctx.globalCompositeOperation = 'source-over';
+    bctx.clearRect(0, 0, bw, bh);
+    bctx.imageSmoothingEnabled = true;
+    bctx.globalCompositeOperation = 'lighter';
+    for (const g of glows) {
+      const gs = g.s;
+      if (!gs.glow) continue;
+      const x = (g.x - gs.ax - L) / 4;
+      const y = (g.y - gs.ay - T) / 4;
+      if (x + gs.w / 4 < 0 || y + gs.h / 4 < 0 || x > bw || y > bh) continue;
+      bctx.globalAlpha = Math.min(1, g.a * night) * 0.9;
+      bctx.drawImage(this.atlas.image, gs.glow.x, gs.glow.y, gs.w, gs.h, x, y, gs.w / 4, gs.h / 4);
+    }
+    bctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'lighter';
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = 0.55;
+    ctx.drawImage(this.bloom, 0, 0, bw, bh, -2, -2, this.back.width + 4, this.back.height + 4);
+    ctx.globalAlpha = 1;
+    ctx.imageSmoothingEnabled = false;
     for (const g of glows) this.drawGlow(g.s, g.x, g.y, Math.min(1, g.a * night));
     ctx.globalCompositeOperation = 'source-over';
   }
