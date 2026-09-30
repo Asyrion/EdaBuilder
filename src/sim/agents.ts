@@ -158,7 +158,10 @@ export function dailyAgents(state: GameState): void {
       works.push(b);
       crafts.push(b);
     } else if (def.zone === Zone.Arcane) works.push(b);
-    else if (def.category === 'service' || def.category === 'leisure') works.push(b);
+    else if (def.category === 'service' || def.category === 'leisure') {
+      works.push(b);
+      if (def.goodsRate) crafts.push(b);
+    }
   });
   const targetCitizens = Math.min(MAX_AGENTS, Math.round(state.population / 2));
   const targetCarts = Math.min(220, Math.round(crafts.length * 0.5 + markets.length * 0.3) + (arcanes.length ? mines.length * 2 : 0));

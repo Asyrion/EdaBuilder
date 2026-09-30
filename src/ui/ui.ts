@@ -18,6 +18,9 @@ import type { Tool } from './tools';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
 import { WYRM_LAIR_RADIUS, describeWyrm, wyrmNode, wyrmTribute } from '../sim/wyrm';
+import { forecast } from '../sim/forecast';
+import { HUSH_CRAFT, glimhouseNear } from '../sim/growth';
+import { seasonOf as seasonOfState } from '../sim/world';
 
 export interface UiHost {
   state: GameState;
@@ -128,7 +131,7 @@ export class UI {
         </div>
         <div class="hint"></div>
       </div>
-      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
       </div>
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
@@ -206,7 +209,7 @@ export class UI {
     const t = this.host.tool;
     if (this.category === 'roads') {
       for (const r of ROADS) {
-        const locked = !isRoadUnlocked(s.milestone, r.type);
+        const locked = !isRoadUnlocked(s.milestone, r.type) || (!!r.requires && !s.buildings.some((b) => b && b.kind === r.requires && b.state === 'ok'));
         add(r.name, `${r.cost}c/tile`, locked, t.kind === 'road' && t.type === r.type, () => this.host.setTool({ kind: 'road', type: r.type }), () => `<div class="t">${r.name}</div>${r.desc}<br><span class="muted">Cost ${r.cost}/tile · upkeep ${r.upkeep}/day${r.manaUse ? ` · ${r.manaUse} mana/tile` : ''}${locked ? `<br>Unlocks at ${MILESTONES[r.unlock].name}` : ''}</span>`);
       }
     } else if (this.category === 'zones') {
@@ -389,6 +392,10 @@ export class UI {
         if (q?.focus) this.focus(q.focus);
       };
     });
+    const fc = el.querySelector('.forecast') as HTMLElement;
+    const lines = forecast(s);
+    fc.classList.toggle('hidden', !lines.length);
+    if (lines.length) fc.innerHTML = `<span class="lbl">Forecast</span>${lines.map((f) => `<div class="${f.kind}">✦ ${f.text}</div>`).join('')}`;
     const a = advise(s);
     adv.classList.toggle('hidden', !a);
     if (a) {
@@ -568,6 +575,7 @@ export class UI {
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
+      if (def.zone === Zone.Craft && seasonOfState(s) === 3) rows.push(row('The Hush', glimhouseNear(s, b) ? 'warmed by a Glimhouse' : `output ×${HUSH_CRAFT}`));
       if (!b.lit) problems.push('No mana: build a Ley Spire within 5 tiles or next to a lit building.');
       if (!b.watered) problems.push('No water: build a Well or Cistern nearby.');
       if (s.miasma[i] > 60) problems.push('Choking on miasma from nearby Craft works.');
@@ -590,6 +598,8 @@ export class UI {
     }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    if (def.goodsRate) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
+    if (b.kind === 'observatory') rows.push(...(b.lit ? forecast(s) : [{ text: 'Unlit: the dome is dark and reads nothing.', kind: 'warn' as const }]).map((f) => `<div class="fc ${f.kind}">✦ ${f.text}</div>`));
     if (b.kind === 'stormpeak') {
       rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
     }
@@ -734,6 +744,7 @@ export class UI {
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
             <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge; eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role.</li>
+            <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
             <li>Panels: the <b>Info views</b>, <b>Ledger</b> and message ticker can be dragged by their ⋮⋮ grip.</li>
           </ol>

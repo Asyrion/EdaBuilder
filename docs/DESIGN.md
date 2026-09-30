@@ -418,6 +418,26 @@ never overlap: the Ledger shrinks and scrolls under a tall toolbar. The Info vie
 building info and message ticker are draggable by their heading or ⋮⋮ grip, clamped to
 the window, with positions remembered per panel in localStorage.
 
+### 4.31 Magical buildings I: Huruhui and Gekiryu craft (iteration 12)
+
+Four buildings from §8.3 and §11, each a number on an existing system:
+
+| Building | Unlock | Rule |
+|---|---|---|
+| **Torrent Mill** (Ley tab) | Township | 1×1, must touch river or lake water and a road; +30 mana a day with no Vein. 5,200 crowns, 40 upkeep. Water spray particles at 2× zoom or closer. |
+| **Glimhouse** (Services) | Village | 2×2, 4 mana. Craft works within 8 tiles ignore the new **Hush penalty** (Craft output ×0.8 in the Hush) and make +10 % all year. The building inspector shows "warmed by a Glimhouse" in the Hush. |
+| **Astral Observatory** (Services) | Market Town | 2×2, 6 mana. While lit, a **Forecast** block in the Ledger (and its own panel) lists the next five days: season change, surge countdown or brownout edge, hound nights, festivals, Ring bouts, the wyrm waking or asking tribute, an unfed guardian. Pure function `forecast(state)` in `src/sim/forecast.ts`. |
+| **Hanging Gardens** (Services) | Township | 2×2, must touch hills and a road; no mana. Makes 6 goods a day that carts collect like a Craft works (gardens are cart homes), health coverage radius 8, land value +10, and it is **self-lit**: a light source of radius 2 that lights its neighbours by adjacency without a spire. Unlocks the Glowvine Lane. |
+
+**Glowvine Lane** (Roads, 220 crowns a tile, 2.5 upkeep, no mana, cobble speed, land
+value +12). Requires a Hanging Gardens to exist; a tile is lit only within 12 tiles of a
+living Hanging Gardens, and lit tiles light adjacent buildings like a lantern-way. The
+price is deliberately above the lantern-way's, since the light is free of mana forever.
+Green vine-light at night; the road manifest gains `road_glowvine_0..15`.
+
+Not yet built from §8.3: the Portal Arch pair, Golem Foundry, Ley Beacon, Drake Mews,
+Font of Quieting, Sky-Dock and Quay.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -718,7 +738,7 @@ without an event.
    Warden and Delver roles (dragons on the ground first). ✅
 4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring. ✅
 5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs. ✅
-6. Moth-Loft ✅, Glimhouse, Weather Vane, Observatory, Portal Arch (magical buildings).
+6. Moth-Loft ✅, Glimhouse ✅, Weather Vane (as Storm-Caller's Peak ✅), Observatory ✅, Portal Arch (magical buildings).
 7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
 8. Vehicles: floating carts, barges, drake riders, airships.
 
@@ -737,7 +757,7 @@ consistent with `EDA_LORE.md` §9.
    or, in the Hush, holds a storm off the wards. Replaces the planned Weather Vane of
    Vesh. Event: *a storm caller of the Huruhui, marked with glowing sigils, asks for a
    peak to work from*; declining sends them on to Vell-on-Sable.
-3. **Hanging Gardens** (Huruhui garden-craft): a cliff-side vertical garden building
+3. ✅ **Hanging Gardens** (Huruhui garden-craft): a cliff-side vertical garden building
    that needs hills on one side; produces goods and health without farmland and lights
    itself with bioluminescent vines (a **Glowvine Lane** road tier lit by plants, no
    mana). Unlocked by the storm caller's visit or by an Academy exchange event.
@@ -759,7 +779,7 @@ consistent with `EDA_LORE.md` §9.
 8. **World Tree sapling** wonder: a cutting from the World Trees of Longwood, planted at
    Free City, grows over four seasons into a tree taller than the Lantern of Vell:
    happiness, land value, glimmoths and skyrays gather, and its roots hold the Gloam.
-9. **Torrent Mill** (Gekiryu): a mill on river tiles that turns falling water into mana
+9. ✅ **Torrent Mill** (Gekiryu): a mill on river tiles that turns falling water into mana
    (a Huruhui renewable), with an animated torrent; the Veshari claim the design.
 10. **Swamp biome and atoll maps.** Marsh terrain (buildable after a Drainage edict,
     marsh-wyrm home) and island maps for scenario charters (Patagoi Atoll).
@@ -841,3 +861,8 @@ consistent with `EDA_LORE.md` §9.
 - *Panels never overlap by construction:* the left column is a flex stack rather than two
   absolute boxes, and only the panels that float free are draggable; positions are stored
   per panel so a player's layout survives reloads.
+- *Free light must cost crowns:* the Glowvine Lane lights without mana, so it is priced
+  well above the lantern-way and leashed to a living Hanging Gardens within 12 tiles;
+  otherwise spires would be obsolete along any road.
+- *Forecasts are derived, not stored:* the Observatory reads the same numbers the sim uses
+  (overdraw days, waking rate, calendar), so it can never disagree with what happens.

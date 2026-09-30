@@ -63,12 +63,17 @@ main node.
     wyrmfire. A **Wyrm-Court** (Free City) binds it as the city's guardian: a 30-tile
     ward, no hounds, +10 happiness, 40 goods a day to eat, and a vein egg each content
     season. Starve it and it sulks, then dies; its bones quiet the dead.
-12. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+12. **Huruhui and Gekiryu craft** — a **Torrent Mill** on the riverbank makes mana from
+    falling water; **Hanging Gardens** against hills make goods, health and light with no
+    mana and unlock the **Glowvine Lane**; a **Glimhouse** keeps Craft works warm through
+    the Hush (works otherwise make 20% less); the **Astral Observatory** forecasts the
+    week ahead in the Ledger.
+13. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-13. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+14. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -124,6 +129,9 @@ Charter as `.json`.
   the Chronicle of real in-world events with jump-to-place.
 - The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
   or is bound at the Wyrm-Court as the city's guardian.
+- Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
+  the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
+  (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info and the ticker drag.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,

@@ -64,6 +64,23 @@ export function updateMana(state: GameState): void {
   }
   for (let k = 0; k < spires.length; k++) if (!spireLit[k]) spires[k].lit = false;
 
+  // 2b. self-lit buildings (Hanging Gardens) and living glowvine lanes are sources that need no Vein
+  const gardens: { x: number; y: number }[] = [];
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (def.selfLit && b.state === 'ok') {
+      gardens.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 });
+      sources.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, r: 2 });
+    }
+  });
+  if (gardens.length) {
+    for (let i = 0; i < n; i++) {
+      if (state.road[i] !== RoadType.Glowvine) continue;
+      const x = i % MAP_W;
+      const y = (i / MAP_W) | 0;
+      if (gardens.some((g) => Math.hypot(g.x - x, g.y - y) <= 12)) lit[i] = 1;
+    }
+  }
   // 3. lit tiles from sources
   for (const s of sources) {
     const r = s.r;
@@ -217,7 +234,7 @@ export function updateMana(state: GameState): void {
   });
   // dirty chunks where lit changed (for lantern-way glow rendering)
   for (let i = 0; i < n; i++)
-    if (lit[i] !== oldLit[i] && state.road[i] === RoadType.Lantern) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
+    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine)) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
   state.lit = lit;
 }
 

@@ -34,6 +34,7 @@ export const enum RoadType {
   Track = 1,
   Cobble = 2,
   Lantern = 3,
+  Glowvine = 4,
 }
 
 export type ServiceType =

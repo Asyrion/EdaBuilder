@@ -131,6 +131,9 @@ h3 { font-size: 13px; color: var(--gold); }
 #tasks h3 .prog { font-weight: normal; font-size: 11px; }
 #tasks h3 .min { margin-left: auto; padding: 0 6px; line-height: 1.2; }
 #tasks .advice { margin: 2px 0 6px; padding: 5px 7px; border: 1px solid rgba(233,194,91,0.35); border-radius: 3px; background: rgba(233,194,91,0.06); color: var(--text); line-height: 1.35; }
+#tasks .forecast { margin: 2px 0 6px; padding: 5px 7px; border: 1px solid rgba(79,227,255,0.3); border-radius: 3px; background: rgba(79,227,255,0.05); line-height: 1.35; }
+#tasks .forecast .lbl, #info .fc { color: var(--ley); font-weight: 600; }
+#tasks .forecast .warn, #info .fc.warn { color: var(--warn); font-weight: normal; } #tasks .forecast .bad, #info .fc.bad { color: var(--bad); font-weight: normal; } #tasks .forecast .good, #info .fc.good { color: var(--good); font-weight: normal; } #tasks .forecast .info, #info .fc.info { color: var(--text); font-weight: normal; }
 #tasks .advice .lbl { color: var(--gold); font-weight: 600; margin-right: 4px; }
 #tasks .q { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); }
 #tasks .q:last-child { border-bottom: 0; }

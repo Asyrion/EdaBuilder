@@ -34,6 +34,10 @@ export interface BuildingDef {
   unlock: number; // milestone index
   wonder?: boolean;
   onHills?: boolean; // footprint must be hills
+  nearHills?: boolean; // a hills tile must touch the footprint
+  nearWater?: boolean; // a river/lake tile must touch the footprint
+  selfLit?: boolean; // lights itself and its neighbours without mana
+  goodsRate?: number; // goods produced per day, carted like a Craft works
   leystone?: number; // leystone mined per day
 }
 
@@ -106,6 +110,13 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A bored well into a deep Vein. Produces 40 mana a day anywhere. Expensive and a little dangerous.',
     flavor: 'The Tallowkin who bore the shaft are paid triple and buried for free.',
     w: 2, h: 2, cost: 6500, upkeep: 50, manaUse: 0, manaProduce: 40, unlock: 4,
+  },
+
+  {
+    key: 'torrentmill', name: 'Torrent Mill', category: 'ley',
+    desc: 'A Gekiryu mill on the riverbank: falling water turned into 30 mana a day, no Vein needed. Must touch river or lake water and a road.',
+    flavor: 'The Veshari claim the design. The Huruhui who built the first one just laughs.',
+    w: 1, h: 1, cost: 5200, upkeep: 40, manaUse: 0, manaProduce: 30, unlock: 4, nearWater: true,
   },
 
   // ---- water ----
@@ -303,6 +314,26 @@ export const BUILDINGS: BuildingDef[] = [
     w: 3, h: 3, cost: 18000, upkeep: 150, manaUse: 40, needsMana: true, landValue: 12, unlock: 7, wonder: true,
   },
 
+  {
+    key: 'glimhouse', name: 'Glimhouse', category: 'service',
+    desc: 'A glasshouse of ley-glass where glimherb grows all winter. Craft works within 8 tiles ignore the Hush and make 10% more all year. Needs mana.',
+    flavor: 'Warm as Bloom inside, even when the frost is on the spires.',
+    w: 2, h: 2, cost: 2600, upkeep: 25, manaUse: 4, unlock: 3, needsMana: true, landValue: 6,
+  },
+  {
+    key: 'observatory', name: 'Astral Observatory', category: 'service',
+    desc: 'A brass dome that reads the ley in the stars. Forecasts surges, hound nights, festivals, the wyrm and the seasons five days ahead in the Ledger. Needs mana.',
+    flavor: 'The astronomers argue about everything except the forecast.',
+    w: 2, h: 2, cost: 7000, upkeep: 60, manaUse: 6, unlock: 5, needsMana: true, landValue: 8,
+  },
+  {
+    key: 'hanginggardens', name: 'Hanging Gardens', category: 'service',
+    desc: 'Huruhui garden-craft: terraces of glowvine and fruit up a hillside. Makes 6 goods a day for the carts, health within 8, and lights itself and its neighbours with no mana. Must touch hills and a road; unlocks the Glowvine Lane.',
+    flavor: 'The vines glow brighter when someone sings to them. Nobody has told the Veshari.',
+    w: 2, h: 2, cost: 4800, upkeep: 40, manaUse: 0, unlock: 4, nearHills: true, selfLit: true, goodsRate: 6, landValue: 10,
+    service: { type: 'health', radius: 8, strength: 0.4 },
+  },
+
   // ---- special ----
   {
     key: 'stake', name: 'Founding Stake', category: 'special',
@@ -336,6 +367,7 @@ export interface RoadDef {
   landValue: number;
   unlock: number;
   desc: string;
+  requires?: string; // building key that must exist
 }
 
 export const ROADS: RoadDef[] = [
@@ -345,6 +377,8 @@ export const ROADS: RoadDef[] = [
     desc: 'Faster and wider. Raises land value.' },
   { type: RoadType.Lantern, key: 'lantern', name: 'Lantern-way', cost: 130, upkeep: 1.5, manaUse: 1, speed: 1.7, capacity: 300, landValue: 14, unlock: 4,
     desc: 'Lit by lantern-cores; carries and lights everything along it. Costs 1 mana a tile.' },
+  { type: RoadType.Glowvine, key: 'glowvine', name: 'Glowvine Lane', cost: 220, upkeep: 2.5, manaUse: 0, speed: 1.4, capacity: 200, landValue: 12, unlock: 4, requires: 'hanginggardens',
+    desc: 'A cobbled lane under bioluminescent vines from the Hanging Gardens. Lights itself and everything along it with no mana, but the vines only live within 12 tiles of a Hanging Gardens.' },
 ];
 
 export const ROAD_BY_TYPE: Record<number, RoadDef> = Object.fromEntries(ROADS.map((r) => [r.type, r]));
