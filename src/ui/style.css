@@ -1,4 +1,5 @@
 :root {
+  --ui-scale: 1;
   --bg: #1a1420;
   --bg2: #241c2e;
   --panel: rgba(26, 20, 32, 0.92);
@@ -15,7 +16,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0912; color: var(--text); }
 canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
-#ui { position: fixed; inset: 0; pointer-events: none; font-size: 13px; }
+#ui { position: fixed; inset: 0; pointer-events: none; font-size: 13px; zoom: var(--ui-scale); }
 #ui > * { pointer-events: auto; }
 .panel { background: var(--panel); border: 1px solid var(--border); box-shadow: 0 0 0 1px #0b0912, 0 4px 18px rgba(0,0,0,0.5); border-radius: 3px; }
 button { font: inherit; color: var(--text); background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; cursor: pointer; }

@@ -1,9 +1,14 @@
 /** Info-view overlays: per-tile colour functions. */
 import { BUILDING_BY_KEY } from '../sim/catalog';
-import { type GameState, type ServiceType } from '../sim/types';
+import { DISTRICT_NAMES, type GameState, type ServiceType } from '../sim/types';
 import { computeBuildingHappiness } from '../sim/growth';
 
-export type OverlayId = 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma';
+export type OverlayId = 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
+
+export const DISTRICT_COLORS = ['#ff8a5c', '#5ee36f', '#5aa8ff', '#ffd166', '#c58cff', '#4fe3ff', '#ff6fa8', '#b9c46a'];
+
+/** Colour-blind-safe ramps (blue → white → orange) can replace red/yellow/green. */
+export const ramps = { colorBlind: false };
 
 export interface OverlayDef {
   id: OverlayId;
@@ -15,11 +20,25 @@ export interface OverlayDef {
 }
 
 function ramp(v: number): string {
-  // 0..1 -> red..yellow..green
   v = Math.max(0, Math.min(1, v));
+  if (ramps.colorBlind) {
+    // orange (bad) -> pale -> blue (good)
+    const t = v;
+    const r = Math.round(230 - t * 180);
+    const g = Math.round(120 + t * 60);
+    const b = Math.round(40 + t * 215);
+    return `rgba(${r},${g},${b},0.6)`;
+  }
+  // 0..1 -> red..yellow..green
   const r = v < 0.5 ? 255 : Math.round(255 * (1 - (v - 0.5) * 2));
   const g = v < 0.5 ? Math.round(255 * v * 2) : 255;
   return `rgba(${r},${g},60,0.55)`;
+}
+
+function rampLegend(): [string, string][] {
+  return ramps.colorBlind
+    ? [['rgba(230,120,40,0.6)', 'low'], ['rgba(140,150,150,0.6)', 'middling'], ['rgba(50,180,255,0.6)', 'high']]
+    : [['rgba(255,60,60,0.55)', 'low'], ['rgba(255,255,60,0.55)', 'middling'], ['rgba(60,255,60,0.55)', 'high']];
 }
 
 function coverageOverlay(id: OverlayId, name: string, key: string, type: ServiceType, desc: string): OverlayDef {
@@ -62,12 +81,12 @@ export const OVERLAY_LIST: OverlayDef[] = [
   },
   {
     id: 'landvalue', name: 'Land value', key: '3', desc: 'Roads, water, parks, shrines and services raise it; miasma, gloam and traffic lower it.',
-    legend: [['rgba(255,60,60,0.55)', 'low'], ['rgba(255,255,60,0.55)', 'middling'], ['rgba(60,255,60,0.55)', 'high']],
+    get legend() { return rampLegend(); },
     tile: (s, i) => (s.road[i] ? null : ramp(s.landValue[i] / 80)),
   },
   {
     id: 'happiness', name: 'Happiness', key: '4', desc: 'How content each building is. Below 15 for long, folk leave.',
-    legend: [['rgba(255,60,60,0.55)', 'miserable'], ['rgba(255,255,60,0.55)', 'content'], ['rgba(60,255,60,0.55)', 'joyful']],
+    get legend() { return rampLegend(); },
     tile: (s, i) => {
       const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
       if (!b || BUILDING_BY_KEY[b.kind].category !== 'zone') return null;
@@ -77,7 +96,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
   },
   {
     id: 'traffic', name: 'Traffic', key: '5', desc: 'Road congestion relative to capacity. Red roads slow carts and annoy neighbours.',
-    legend: [['rgba(60,255,60,0.55)', 'free'], ['rgba(255,255,60,0.55)', 'busy'], ['rgba(255,60,60,0.55)', 'jammed']],
+    get legend() { return rampLegend().slice().reverse() as [string, string][]; },
     tile: (s, i) => (s.road[i] ? ramp(1 - s.trafficSmooth[i] / 255) : null),
   },
   coverageOverlay('watch', 'Watch', '6', 'watch', 'Watch coverage lowers unrest and lays the restless to rest.'),
@@ -97,6 +116,25 @@ export const OVERLAY_LIST: OverlayDef[] = [
       if (s.gloamDist[i] < 7) return `rgba(120,100,160,${0.5 - s.gloamDist[i] * 0.06})`;
       return null;
     },
+  },
+  {
+    id: 'goods', name: 'Goods', key: 'o', desc: 'Market shelves and enchanter leystone: full to empty. Works and mines show how much awaits carts.',
+    get legend() { return rampLegend(); },
+    tile: (s, i) => {
+      const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
+      if (!b || b.state !== 'ok') return null;
+      const def = BUILDING_BY_KEY[b.kind];
+      if (def.zone === 2) return ramp(b.stock / (20 * b.level));
+      if (def.zone === 4) return ramp(b.stock / (20 * b.level));
+      if (def.zone === 3) return ramp(1 - b.stock / (30 * b.level));
+      if (def.leystone) return ramp(1 - b.stock / 60);
+      return null;
+    },
+  },
+  {
+    id: 'district', name: 'Districts', key: 'i', desc: 'Painted districts. Edicts can be applied per district from the Edicts panel.',
+    legend: DISTRICT_COLORS.map((c, k) => [c + 'aa', DISTRICT_NAMES[k]] as [string, string]),
+    tile: (s, i) => (s.district[i] ? DISTRICT_COLORS[s.district[i] - 1] + '66' : null),
   },
   {
     id: 'miasma', name: 'Miasma', key: 'm', desc: 'Alchemical fog from Craft districts. Lowers health and land value.',

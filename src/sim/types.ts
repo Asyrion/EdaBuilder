@@ -4,7 +4,9 @@ export const MAP_W = 128;
 export const MAP_H = 128;
 export const TICKS_PER_SEC = 10;
 export const TICKS_PER_DAY = 900; // 90 s of game time at 1x
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
+export const MAX_DISTRICTS = 8;
+export const DISTRICT_NAMES = ['Hearthside', 'Stillward', 'Spirefield', 'Lanternrow', 'Greywall', 'Marketcross', 'Candlerow', 'Boneward'];
 export const DAYS_PER_SEASON = 30;
 export const SEASON_NAMES = ['Thaw', 'Bloom', 'Ember', 'Hush'] as const;
 
@@ -128,6 +130,7 @@ export interface DayLedger {
   taxMarket: number;
   taxCraft: number;
   taxArcane: number;
+  artifacts: number;
   upkeepRoads: number;
   upkeepBuildings: number;
   upkeepEdicts: number;
@@ -163,6 +166,7 @@ export interface GameState {
   gloam: Uint8Array; // 0 none, 1 gloam
   zone: Uint8Array;
   road: Uint8Array;
+  district: Uint8Array; // 0 none, 1..MAX_DISTRICTS
   bIndex: Int32Array; // building index or -1
   lit: Uint8Array; // tile lit by mana (0/1)
   watered: Uint8Array;
@@ -212,6 +216,8 @@ export interface GameState {
   milestone: number;
   messages: Message[];
   edicts: Record<string, boolean>;
+  districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
+  artifactsSold: number; // crowns from artifacts today
   modifiers: Modifier[];
   pendingEvent: PendingEvent | null;
   lastEventDay: number;

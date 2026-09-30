@@ -220,7 +220,7 @@ export class Bot {
         spots.push({ x: b.x, y: b.y, d: dmin });
       });
       spots.sort((a, b) => b.d - a.d);
-      const clear = key === 'font' || key === 'nexus';
+      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari';
       for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
       if (this.radius < 40) this.radius += 5; // no room: grow the town
     };
@@ -238,11 +238,43 @@ export class Bot {
     want('hospice', Math.floor(buildings / 250));
     want('guildhall', 1);
     want('nexus', Math.floor(buildings / 220));
+    if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && s.treasury > 4500) this.buildMine();
     want('temple', 1);
     want('grandacademy', 1);
     want('font', s.manaDemand > s.manaSupply * 0.85 ? 1 + this.countKind('font') : 0);
     if (s.milestone >= 7 && s.treasury > 30000) want('lantern', 1);
     void MILESTONES;
+  }
+
+  /** Find hills near the town, connect them by road and dig a mine. */
+  private buildMine(): void {
+    const s = this.s;
+    let best: [number, number] | null = null;
+    let bd = Infinity;
+    for (let y = 2; y < MAP_H - 3; y++)
+      for (let x = 2; x < MAP_W - 3; x++) {
+        let hills = true;
+        for (let dy = 0; dy < 2 && hills; dy++) for (let dx = 0; dx < 2; dx++) if (s.terrain[idx(x + dx, y + dy)] !== Terrain.Hills || s.bIndex[idx(x + dx, y + dy)] >= 0) hills = false;
+        if (!hills) continue;
+        const d = Math.hypot(x - this.cx, y - this.cy);
+        if (d < bd) {
+          bd = d;
+          best = [x, y];
+        }
+      }
+    if (!best || bd > 45) return;
+    // road from the town edge toward the tile just below the mine
+    const [mx, my] = best;
+    const tx = mx - 1; // left of the footprint, touching it
+    const ty = my + 1;
+    // start on a grid street inside the town
+    let sx = Math.max(this.cx - this.radius, Math.min(this.cx + this.radius, tx));
+    let sy = Math.max(this.cy - this.radius, Math.min(this.cy + this.radius, ty));
+    sx = this.cx + Math.round((sx - this.cx) / 5) * 5;
+    sy = this.cy + Math.round((sy - this.cy) / 5) * 5;
+    const verticalFirst = !(sx >= mx && sx <= mx + 1);
+    const r = buildRoad(s, RoadType.Track, roadPath(sx, sy, tx, ty, verticalFirst));
+    if (r.ok || s.road[idx(tx, ty)]) placeBuilding(s, 'mine', mx, my);
   }
 
   /** Try to place a building near (x,y) within a search radius. */

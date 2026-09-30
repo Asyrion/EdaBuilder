@@ -486,14 +486,15 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   }
   // body
   p.rect(2, top + 2, 4, 4, c);
-  // legs (2 frames)
-  if (frame === 0) {
-    p.rect(2, top + 6, 1, 3, 'outline');
-    p.rect(5, top + 6, 1, 3, 'outline');
-  } else {
-    p.rect(3, top + 6, 1, 3, 'outline');
-    p.rect(4, top + 6, 1, 2, 'outline');
+  // legs (4-frame walk cycle)
+  switch (frame % 4) {
+    case 0: p.rect(2, top + 6, 1, 3, 'outline'); p.rect(5, top + 6, 1, 3, 'outline'); break;
+    case 1: p.rect(3, top + 6, 1, 3, 'outline'); p.rect(4, top + 6, 1, 2, 'outline'); break;
+    case 2: p.rect(3, top + 6, 1, 3, 'outline'); p.rect(4, top + 6, 1, 3, 'outline'); break;
+    default: p.rect(2, top + 6, 1, 2, 'outline'); p.rect(4, top + 6, 1, 3, 'outline');
   }
+  // a small pack or basket on one side gives the sprite a facing
+  p.px(6, top + 3, variant % 2 ? 'wood1' : 'cloth5');
   p.outline('outline');
   return p;
 }
@@ -627,6 +628,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   spire: { w: 1, h: 1, height: 3, roofH: 2, wall: 'stone', roof: 'flat', seed: 2 }, // special-drawn below
   nexus: { w: 2, h: 2, height: 6, roofH: 4, wall: 'stone', roof: 'flat', crystal: true, leyLamps: true, seed: 3 },
   font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4 },
+  mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6 },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true },
@@ -931,7 +933,7 @@ export function generateSprites(): SpriteDef[] {
   }
   // agents
   for (let v = 0; v < 6; v++)
-    for (let f = 0; f < 2; f++) out.push({ name: `cit_${v}_${f}`, p: citizen(v, f, v === 4, v === 5), ax: 4, ay: 12 });
+    for (let f = 0; f < 4; f++) out.push({ name: `cit_${v}_${f}`, p: citizen(v, f, v === 4, v === 5), ax: 4, ay: 12 });
   for (let v = 0; v < 3; v++) out.push({ name: `cart_${v}`, p: cart(v), ax: 9, ay: 11 });
   for (let f = 0; f < 2; f++) {
     const r = restlessSprite(0, f);

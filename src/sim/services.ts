@@ -47,7 +47,7 @@ export function updateMiasma(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.miasma || b.state !== 'ok') return;
-    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens') ? 1.3 : 1);
+    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1);
     const r = 4;
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {

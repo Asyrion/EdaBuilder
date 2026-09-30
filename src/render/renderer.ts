@@ -1,6 +1,6 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from '../sim/catalog';
-import { AgentKind, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
+import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
@@ -10,7 +10,7 @@ import { PAL, ambientFor, nightFactor } from './palette';
 import { Particles } from './particles';
 import { TILE_H, TILE_W } from './sprites';
 import { h2 } from './painter';
-import { OVERLAYS, type OverlayId } from './overlays';
+import { DISTRICT_COLORS, OVERLAYS, type OverlayId } from './overlays';
 
 export interface PreviewTile {
   i: number;
@@ -22,6 +22,7 @@ export interface ViewState {
   hover: [number, number] | null;
   previewTiles: PreviewTile[]; // road/zone/bulldoze preview
   previewZone: Zone;
+  previewDistrict: number; // -1 none, 0 clear, 1..8 paint
   ghost: { key: string; x: number; y: number; ok: boolean; radius: number } | null;
   selected: Building | null;
   showGrid: boolean;
@@ -65,6 +66,8 @@ export class Renderer {
   frame = 0;
   wind = 0.5;
   stats = { drawn: 0, ms: 0, ground: 0, objects: 0, sort: 0, particles: 0, lighting: 0, blit: 0 };
+  /** What the camera currently sees, for the ambient audio mix (0..1). */
+  inView = { water: 0, fire: 0, market: 0, ley: 0 };
 
   constructor(screen: HTMLCanvasElement, atlas: SpriteAtlas) {
     this.screen = screen;
@@ -373,6 +376,15 @@ export class Renderer {
     }
     // buildings
     const flameFrame = Math.floor(this.time * 8) % 3;
+    let fireSeen = 0;
+    let marketSeen = 0;
+    let leySeen = 0;
+    let waterSeen = 0;
+    for (const ci of visible) {
+      const c = this.chunks.get(ci)!;
+      if (c.hasWater) waterSeen++;
+      leySeen += c.lights.length;
+    }
     for (const b of state.buildings) {
       if (!b) continue;
       if (b.x + b.w - 1 < minX || b.x > maxX || b.y + b.h - 1 < minY || b.y > maxY) continue;
@@ -383,6 +395,9 @@ export class Renderer {
       const d = b.x + b.w - 1 + b.y + b.h - 1 + 0.5;
       const abandoned = b.state === 'abandoned';
       const burning = b.state === 'burning';
+      if (burning) fireSeen++;
+      if (def.zone === Zone.Market && b.state === 'ok') marketSeen++;
+      if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'lantern')) leySeen++;
       items.push({ d, y: wy, fn: () => {
         this.draw(s, wx, wy, abandoned ? 0.55 : 1);
         if (burning) {
@@ -424,8 +439,12 @@ export class Renderer {
       }
       if (b.kind === 'wardlantern' && b.lit) lights.push({ x: cx, y: cy - 20, r: 60, c: PAL.ley1, i: 0.6 });
     }
+    this.inView.fire = Math.min(1, fireSeen / 3);
+    this.inView.market = Math.min(1, marketSeen / 12);
+    this.inView.ley = Math.min(1, leySeen / 6);
+    this.inView.water = Math.min(1, waterSeen / Math.max(6, visible.length * 0.5));
     // agents
-    const walkFrame = Math.floor(this.time * 6) % 2;
+    const walkFrame = Math.floor(this.time * 8) % 4;
     for (const a of state.agents) {
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
       if (a.timer > 0 && a.kind !== AgentKind.Restless) continue; // resting inside a building
@@ -493,6 +512,8 @@ export class Renderer {
       ctx.globalAlpha = 1;
     }
 
+    // district labels
+    if (view.overlay === 'district') this.drawDistrictLabels(state, minX, maxX, minY, maxY);
     // lighting
     const tLight = performance.now();
     if (night > 0.01) this.applyLighting(tod, night, lights, glows);
@@ -559,6 +580,36 @@ export class Renderer {
     ctx.stroke();
   }
 
+  private drawDistrictLabels(state: GameState, minX: number, maxX: number, minY: number, maxY: number): void {
+    const sums = new Map<number, { x: number; y: number; n: number }>();
+    for (let y = minY; y <= maxY; y++)
+      for (let x = minX; x <= maxX; x++) {
+        const d = state.district[idx(x, y)];
+        if (!d) continue;
+        let e = sums.get(d);
+        if (!e) sums.set(d, (e = { x: 0, y: 0, n: 0 }));
+        e.x += x;
+        e.y += y;
+        e.n++;
+      }
+    const ctx = this.ctx;
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    for (const [d, e] of sums) {
+      if (e.n < 4) continue;
+      const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
+      const sx = Math.round(wx - this.camera.left);
+      const sy = Math.round(wy - this.camera.top);
+      const name = DISTRICT_NAMES[d - 1];
+      const w = ctx.measureText(name).width + 6;
+      ctx.fillStyle = 'rgba(10,8,16,0.75)';
+      ctx.fillRect(sx - w / 2, sy - 7, w, 11);
+      ctx.fillStyle = DISTRICT_COLORS[d - 1];
+      ctx.fillText(name, sx, sy + 2);
+    }
+    ctx.textAlign = 'left';
+  }
+
   private drawGrid(minX: number, maxX: number, minY: number, maxY: number): void {
     const ctx = this.ctx;
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -590,7 +641,15 @@ export class Renderer {
       const x = p.i % MAP_W;
       const y = (p.i / MAP_W) | 0;
       const [wx, wy] = tileToWorld(x, y);
-      if (zoneName && p.ok) this.draw(this.atlas.get(`zone_${zoneName}`), wx, wy, 0.9);
+      if (view.previewDistrict >= 0) {
+        ctx.fillStyle = view.previewDistrict === 0 ? 'rgba(255,255,255,0.25)' : DISTRICT_COLORS[view.previewDistrict - 1] + '88';
+        ctx.beginPath();
+        ctx.moveTo(wx - L, wy - T);
+        ctx.lineTo(wx - L + 16, wy - T + 8);
+        ctx.lineTo(wx - L, wy - T + 16);
+        ctx.lineTo(wx - L - 16, wy - T + 8);
+        ctx.fill();
+      } else if (zoneName && p.ok) this.draw(this.atlas.get(`zone_${zoneName}`), wx, wy, 0.9);
       else this.draw(this.atlas.get(p.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
     }
     if (view.ghost) {

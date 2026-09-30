@@ -7,10 +7,11 @@ import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types
 import { CITY_NAMES, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
-import { EDICTS } from '../sim/edicts';
+import { EDICTS, districtsInUse } from '../sim/edicts';
+import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
-import { SEASON_NAMES, DAYS_PER_SEASON } from '../sim/types';
+import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
 
 export interface UiHost {
@@ -32,7 +33,9 @@ export interface UiHost {
   importJson(file: File): void;
   setMuted(m: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
-  setEdict(key: string, on: boolean): void;
+  setEdict(key: string, on: boolean, district: number): void;
+  settings: { colorBlind: boolean; uiScale: number };
+  setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
   selected: Building | null;
@@ -47,6 +50,7 @@ const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolea
   { id: 'water', name: 'Water', filter: (d) => d.category === 'water' },
   { id: 'service', name: 'Services', filter: (d) => d.category === 'service' },
   { id: 'leisure', name: 'Leisure', filter: (d) => d.category === 'leisure' || d.category === 'wonder' },
+  { id: 'districts', name: 'Districts', filter: () => false },
 ];
 
 
@@ -188,6 +192,12 @@ export class UI {
         add(name, 'free', locked, t.kind === 'zone' && t.zone === z, () => this.host.setTool({ kind: 'zone', zone: z }), () => `<div class="t">${def.name}</div>${def.desc}<br><span class="flavor">${def.flavor}</span>${locked ? `<br><span class="muted">Unlocks at ${MILESTONES[def.unlock].name}</span>` : ''}`);
       }
       add('De-zone', '', false, t.kind === 'zone' && t.zone === Zone.None, () => this.host.setTool({ kind: 'zone', zone: Zone.None }), () => `<div class="t">De-zone</div>Removes zoning (and any zoned building) from the area.`);
+    } else if (this.category === 'districts') {
+      for (let d = 1; d <= MAX_DISTRICTS; d++) {
+        const name = DISTRICT_NAMES[d - 1];
+        add(`<span style="color:${DISTRICT_COLORS[d - 1]}">■</span> ${name}`, '', false, t.kind === 'district' && t.id === d, () => this.host.setTool({ kind: 'district', id: d }), () => `<div class="t">${name}</div>Drag to paint this district. Edicts can then be applied to it alone from the Edicts panel. Press <b>i</b> for the district view.`);
+      }
+      add('Clear district', '', false, t.kind === 'district' && t.id === 0, () => this.host.setTool({ kind: 'district', id: 0 }), () => `<div class="t">Clear</div>Removes district paint from the area.`);
     } else {
       const cat = CATEGORIES.find((c) => c.id === this.category)!;
       for (const d of BUILDINGS.filter(cat.filter)) {
@@ -435,6 +445,11 @@ export class UI {
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
       if (b.kind === 'spire' && !b.lit) problems.push('Not linked: a spire must be within 6 tiles of a ley node or a lit spire.');
     }
+    if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
+    if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    const dist = s.district[i];
+    if (dist) rows.push(row('District', `<span style="color:${DISTRICT_COLORS[dist - 1]}">${DISTRICT_NAMES[dist - 1]}</span>`));
+    if (def.zone === Zone.Arcane && b.stock <= 0.5 && b.age > 3) problems.push('No leystone: build a Crystal Mine in the hills with a road to this district.');
     rows.push(row('Mana', b.lit ? '<span class="ley">lit</span>' : '<span class="bad">unlit</span>'));
     rows.push(row('Water', b.watered ? '<span class="good">watered</span>' : '<span class="bad">dry</span>'));
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
@@ -558,6 +573,8 @@ export class UI {
         <button id="m-export">Export Charter as .json</button>
         <button id="m-import">Import Charter from .json</button>
         <button id="m-mute">Sound: on</button>
+        <button id="m-cb">Colour-blind overlay ramps: off</button>
+        <button id="m-scale">UI scale: 100%</button>
         <button id="m-title">Back to title (autosaves)</button>
         <button id="m-close">Close</button>
       </div>
@@ -582,6 +599,15 @@ export class UI {
       this.host.setMuted(!this.host.muted);
       (m.querySelector('#m-mute') as HTMLButtonElement).textContent = `Sound: ${this.host.muted ? 'off' : 'on'}`;
     };
+    const cb = m.querySelector('#m-cb') as HTMLButtonElement;
+    const sc = m.querySelector('#m-scale') as HTMLButtonElement;
+    const syncA11y = () => {
+      cb.textContent = `Colour-blind overlay ramps: ${this.host.settings.colorBlind ? 'on' : 'off'}`;
+      sc.textContent = `UI scale: ${Math.round(this.host.settings.uiScale * 100)}%`;
+    };
+    cb.onclick = () => { this.host.setSetting('colorBlind', !this.host.settings.colorBlind); syncA11y(); this.refreshViews(); };
+    sc.onclick = () => { const steps = [0.85, 1, 1.15, 1.3]; const i = steps.indexOf(this.host.settings.uiScale); this.host.setSetting('uiScale', steps[(i + 1) % steps.length]); syncA11y(); };
+    syncA11y();
     (m.querySelector('#m-title') as HTMLButtonElement).onclick = () => {
       this.host.save();
       this.toggleMenu(false);
@@ -616,6 +642,7 @@ export class UI {
           <tr><td>Market tithe</td><td class="r good" data-k="taxMarket"></td></tr>
           <tr><td>Craft tithe</td><td class="r good" data-k="taxCraft"></td></tr>
           <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
+          <tr><td>Artifacts sold</td><td class="r good" data-k="artifacts"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -646,6 +673,7 @@ export class UI {
     set('taxMarket', `+${l.taxMarket.toFixed(0)}`);
     set('taxCraft', `+${l.taxCraft.toFixed(0)}`);
     set('taxArcane', `+${l.taxArcane.toFixed(0)}`);
+    set('artifacts', `+${l.artifacts.toFixed(0)}`);
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
@@ -672,13 +700,19 @@ export class UI {
     if (s) this.refreshEdicts();
   }
 
+  edictScope = 0; // 0 = city, else district id
+
   refreshEdicts(): void {
     const st = this.host.state;
+    const inUse = districtsInUse(st);
+    if (this.edictScope && !inUse.includes(this.edictScope)) this.edictScope = 0;
+    const scopeSel = `<select id="e-scope"><option value="0">City-wide</option>${inUse.map((d) => `<option value="${d}" ${d === this.edictScope ? 'selected' : ''}>${DISTRICT_NAMES[d - 1]}</option>`).join('')}</select>`;
     const rows = EDICTS.map((e) => {
       const locked = st.milestone < e.unlock;
-      const on = !!st.edicts[e.key];
+      const on = this.edictScope ? !!st.districtEdicts[`${this.edictScope}:${e.key}`] : !!st.edicts[e.key];
+      const cityOn = this.edictScope ? !!st.edicts[e.key] : false;
       return `<div class="edict ${locked ? 'locked' : ''}">
-        <label><input type="checkbox" data-key="${e.key}" ${on ? 'checked' : ''} ${locked ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day)</span></label>
+        <label><input type="checkbox" data-key="${e.key}" ${on || cityOn ? 'checked' : ''} ${locked || cityOn ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day${this.edictScope ? ', scaled to the district' : ''})</span>${cityOn ? ' <span class="muted">city-wide</span>' : ''}</label>
         <div class="muted">${e.desc}${locked ? ` <span class="warn">Unlocks at ${MILESTONES[e.unlock].name}.</span>` : ''}</div>
         <div class="flavor">${e.flavor}</div>
       </div>`;
@@ -686,17 +720,21 @@ export class UI {
     const mods = st.modifiers.filter((m) => m.until > st.day).map((m) => `<li>${m.label} (${m.until - st.day} days left)</li>`).join('');
     this.el.edicts.innerHTML = `<div class="box panel">
       <h2>Edicts of the Warden-Reeve</h2>
-      <p class="muted">Edicts take effect immediately and cost their upkeep every day.</p>
+      <p class="muted">Edicts take effect immediately and cost their upkeep every day. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
       ${rows.join('')}
       ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
       <div style="text-align:right"><button id="e-close">Close</button></div>
     </div>`;
     this.el.edicts.querySelectorAll('input[type=checkbox]').forEach((inp) => {
       (inp as HTMLInputElement).onchange = () => {
-        this.host.setEdict((inp as HTMLInputElement).dataset.key!, (inp as HTMLInputElement).checked);
+        this.host.setEdict((inp as HTMLInputElement).dataset.key!, (inp as HTMLInputElement).checked, this.edictScope);
         this.refreshEdicts();
       };
     });
+    (this.el.edicts.querySelector('#e-scope') as HTMLSelectElement).onchange = (ev) => {
+      this.edictScope = Number((ev.target as HTMLSelectElement).value);
+      this.refreshEdicts();
+    };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
   }
 
