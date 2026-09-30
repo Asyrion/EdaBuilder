@@ -367,6 +367,57 @@ the text is picked up as the place. UI: the *Chronicle* button (or `C`) opens a 
 filtered by All / Milestones / Good tidings / Ill tidings, newest first, each entry with a
 day stamp and a ⌖ button that closes the modal and centres the camera on the place.
 
+### 4.29 The Sleeping Wyrm (iteration 11)
+
+**Placement.** One ley node per map, the farthest from the founding node and at least 40
+tiles away, is the wyrm's. Maps whose nodes all lie closer have no wyrm. The node is drawn
+inside a coil of ridged grey scale (two sprites, behind and in front of the standing
+stones) with runes that glow at night; a raised head when awake, a skull and ribs when
+dead. `state.wyrm` holds node, state (`sleeping | awake | bound | dead | none`), the
+waking meter, tribute count and due day, unfed and sulking days, fed-days, refusals and
+the current flyover.
+
+**Waking.** Each lit Ley Spire within 6 tiles of the node adds 3 waking points a day
+(capped at 6 a day); without spires the meter fades half a point a day. Warnings post to
+the Chronicle at 50 and 80. At 100 the wyrm wakes. Deepening the wyrm's node wakes it at
+once (the node panel's button says so). Giving up that node is a legitimate strategy.
+
+**Awake.** The tribute event fires the day it wakes and on the first day of each season
+after that: pay in crowns (1,500, half again as much each time), pay in goods (150 taken
+from the market shelves; fewer than half counts as a refusal), or refuse. Refused, the
+wyrm flies to the city (sky layer, altitude 48, a district-sized shadow, embers), circles
+for 26 seconds and sets up to four buildings under it alight with wyrmfire, then flies
+home and sleeps again with the meter at 50, so the same spires wake it again in about
+a fortnight.
+
+**Binding.** The **Wyrm-Court** wonder (Free City, 18,000 crowns, 40 mana, 150 upkeep)
+offers the binding event while the wyrm is awake and no tribute is due; the song needs a
+third of the folk educated or it fails, costing a happiness dip and an immediate tribute
+demand. Bound, the wyrm is the city's guardian:
+- its lair wards 30 tiles around the node (ward coverage, and it burns back up to 40 Gloam
+  tiles a day from the inside out);
+- hounds never spawn or stay within the lair;
+- every building gets +10 happiness;
+- once a season it circles the city, scattering glimmoths, and burns nothing;
+- it eats 40 goods a day from the markets, largest shelves first. Ten days without three
+  quarters of that and it **sulks**: no ward, no happiness, and a sulking event every ten
+  days offering leystone (60 from Arcane stock) or 3,000 crowns as an apology. Forty days
+  of sulking and it **dies**; its bones quiet 80 dead a day city-wide;
+- fed and content for a full season it lays a **vein egg** (Vein line, 6,000 crowns if no
+  cradle has room).
+
+**UI.** The node panel names the node "The Sleeping Wyrm" with a waking meter and a
+description of its state; the Wyrms panel has a Vein-Wyrm row with *Show me*; five
+Ledger quests (find, tribute, Court, bind, feed a season) and two Advisor lines (spires
+waking it, guardian sulking); a hostile flyover drives the music's danger pulse.
+
+### 4.30 Panel layout (iteration 11)
+
+The toolbar and the Ledger sit in one left column (`#left`, a flex column) so they can
+never overlap: the Ledger shrinks and scrolls under a tall toolbar. The Info views,
+building info and message ticker are draggable by their heading or ⋮⋮ grip, clamped to
+the window, with positions remembered per panel in localStorage.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -662,11 +713,11 @@ without an event.
 ### 8.7 Delivery order
 
 1. Creature agents + glimmoths, thrumhares, wisps (ambient, cheap, visible at once). ✅
-2. Gloam-hounds + Hunters' Lodge + Warding Wall (the Hush gets a real threat).
+2. Gloam-hounds + Hunters' Lodge + Warding Wall (the Hush gets a real threat). ✅
 3. Wyrmcraft I: egg events, Wyrm-Cradle, Tamer's Lodge, growth stages, materials,
-   Warden and Delver roles (dragons on the ground first).
-4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring.
-5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs.
+   Warden and Delver roles (dragons on the ground first). ✅
+4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring. ✅
+5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs. ✅
 6. Moth-Loft ✅, Glimhouse, Weather Vane, Observatory, Portal Arch (magical buildings).
 7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
 8. Vehicles: floating carts, barges, drake riders, airships.
@@ -784,3 +835,9 @@ consistent with `EDA_LORE.md` §9.
 - *The Chronicle is world-only:* the ticker mixes chatter, tips and refusals with events; the
   Chronicle takes only what happened in the world, flagged at the call site, so it reads as
   a history of the city rather than a console log.
+- *The wyrm is a choice, not a boss:* every branch (leave it asleep, pay, refuse, bind) is
+  a valid way to play, and every effect is a number on an existing system (ward coverage,
+  happiness, market stock, deathcare) rather than a new one, so it stays a city builder.
+- *Panels never overlap by construction:* the left column is a flex stack rather than two
+  absolute boxes, and only the panels that float free are draggable; positions are stored
+  per panel so a player's layout survives reloads.

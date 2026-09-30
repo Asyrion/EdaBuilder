@@ -1,3 +1,4 @@
+import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -93,6 +94,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     dragons: [],
     nextDragonId: 1,
     materials: { scale: 0, wyrmfire: 0, eggshell: 0 },
+    wyrm: newWyrm(chooseWyrmNode(t.nodes, t.founding)),
     artifactsSold: 0,
     tradeIncomeToday: 0,
     modifiers: [],
@@ -103,7 +105,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -370,5 +372,6 @@ export function deepenNode(state: GameState, ni: number): string | null {
   state.treasury -= NODE_DEEPEN_COST[depth];
   n.depth = depth + 1;
   pushMessage(state, `The Wellspring at (${n.x},${n.y}) is deepened. Tallowkin bore-singers coax ${NODE_DEEPEN_MANA} more mana a day from the Vein.`, 'milestone');
+  onNodeDeepened(state, ni);
   return null;
 }

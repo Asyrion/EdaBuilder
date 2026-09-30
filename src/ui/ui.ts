@@ -17,6 +17,7 @@ import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '..
 import type { Tool } from './tools';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
+import { WYRM_LAIR_RADIUS, describeWyrm, wyrmNode, wyrmTribute } from '../sim/wyrm';
 
 export interface UiHost {
   state: GameState;
@@ -116,6 +117,7 @@ export class UI {
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
       </div>
+      <div id="left">
       <div id="toolbar" class="panel">
         <div class="tabs"></div>
         <div class="items"></div>
@@ -126,11 +128,12 @@ export class UI {
         </div>
         <div class="hint"></div>
       </div>
-      <div id="tooltip" class="panel hidden"></div>
-      <div id="views" class="panel hidden"><h3>Info views</h3><div class="list"></div><div class="legend"></div></div>
-      <div id="demand" class="panel"></div>
       <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="list"></div></div>
-      <div id="log" class="panel"></div>
+      </div>
+      <div id="tooltip" class="panel hidden"></div>
+      <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
+      <div id="demand" class="panel"></div>
+      <div id="log" class="panel"><span class="grip" title="Drag to move">⋮⋮</span><div class="lines"></div></div>
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
       <div id="toast" class="panel hidden"></div>
@@ -157,6 +160,9 @@ export class UI {
     this.q('#q-select').onclick = () => this.host.setTool({ kind: 'select' });
     this.q('#q-bulldoze').onclick = () => this.host.setTool({ kind: 'bulldoze' });
     this.q('#q-undo').onclick = () => this.host.undo();
+    this.makeDraggable(this.el.views, 'views');
+    this.makeDraggable(this.el.log, 'log');
+    this.makeDraggable(this.el.info, 'info');
     this.buildTabs();
     this.buildViews();
     this.buildHelp();
@@ -432,6 +438,7 @@ export class UI {
       if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
       else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && b.kind === 'cradle'); if (c) this.host.centerOn(c.x, c.y); }
+      else if (f.center === 'wyrm') { const n = wyrmNode(s); if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'gloam') {
         // Nearest Gloam tile to the founding stake.
         let best = -1, bd = 1e9;
@@ -521,11 +528,11 @@ export class UI {
   private refreshLog(): void {
     const s = this.host.state;
     const newest = s.messages[s.messages.length - 1];
-    if (s.messages.length === this.lastLogLen && newest === this.lastLogMsg && this.el.log.children.length) return;
+    if (s.messages.length === this.lastLogLen && newest === this.lastLogMsg && this.el.log.querySelector('.lines')!.children.length) return;
     this.lastLogLen = s.messages.length;
     this.lastLogMsg = newest;
     const last = s.messages.slice(-7).reverse();
-    this.el.log.innerHTML = last.map((m) => `<div class="m ${m.kind}"><span class="d">d${Math.floor(m.tick / 900)}</span>${m.text}</div>`).join('');
+    (this.el.log.querySelector('.lines') as HTMLElement).innerHTML = last.map((m) => `<div class="m ${m.kind}"><span class="d">d${Math.floor(m.tick / 900)}</span>${m.text}</div>`).join('');
   }
 
   private refreshInfo(): void {
@@ -623,19 +630,62 @@ export class UI {
     const depth = n.depth ?? 0;
     const why = this.host.canDeepenNode(i);
     const founding = n.x === s.founding.x && n.y === s.founding.y;
+    const isWyrm = i === s.wyrm.node && s.wyrm.state !== 'none';
     const rows = [
       row('Flow', `${90 + depth * NODE_DEEPEN_MANA} mana / day`),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
-    el.innerHTML = `<button class="close">✕</button><h2>${founding ? 'The Founding Wellspring' : 'Ley Node'}</h2><div class="muted">(${n.x},${n.y}) · a Vein breaking the surface</div>${rows.join('')}
-      <p class="muted">Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.</p>
-      <button id="n-deepen" ${why ? 'disabled' : ''}>Deepen the Wellspring (${depth < NODE_DEEPEN_COST.length ? NODE_DEEPEN_COST[depth] + ' crowns' : 'done'})</button>
+    if (isWyrm) {
+      const w = s.wyrm;
+      rows.push(row('The wyrm', w.state === 'sleeping' ? (w.waking > 0 ? 'stirring' : 'asleep') : w.state));
+      if (w.state === 'sleeping') rows.push(`<div class="meter" title="Waking"><div style="width:${Math.round(w.waking)}%"></div></div>`);
+      if (w.state === 'awake') rows.push(row('Tribute', `${wyrmTribute(s)} crowns / season`));
+      if (w.state === 'bound') rows.push(row('Fed', w.sulking > 0 ? `<span class="bad">sulking ${w.sulking}d</span>` : `${w.fedDays} days running`));
+    }
+    const title = isWyrm ? (s.wyrm.state === 'sleeping' ? 'The Sleeping Wyrm' : s.wyrm.state === 'dead' ? "The Wyrm's Bones" : 'The Vein-Wyrm') : founding ? 'The Founding Wellspring' : 'Ley Node';
+    el.innerHTML = `<button class="close">✕</button><h2>${title}</h2><div class="muted">(${n.x},${n.y}) · ${isWyrm ? 'a Vein with a wyrm coiled on it' : 'a Vein breaking the surface'}</div>${rows.join('')}
+      ${isWyrm ? `<p class="${s.wyrm.state === 'sleeping' && s.wyrm.waking > 0 ? 'warn' : 'muted'}">${describeWyrm(s)}</p>` : ''}
+      <p class="muted">${isWyrm && s.wyrm.state === 'sleeping' ? `Spires within 6 tiles drink from the wyrm and wake it (about ${Math.round(100 / 3)} days per spire). Deepening this node wakes it at once. Awake, it wants tribute each season, or it burns; a Wyrm-Court (Free City) can bind it as the city's guardian: wards ${WYRM_LAIR_RADIUS} tiles, no hounds, happiness +10, eats 40 goods a day.` : `Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.`}</p>
+      <button id="n-deepen" ${why ? 'disabled' : ''}>${isWyrm && s.wyrm.state === 'sleeping' ? 'Deepen and wake the wyrm' : 'Deepen the Wellspring'} (${depth < NODE_DEEPEN_COST.length ? NODE_DEEPEN_COST[depth] + ' crowns' : 'done'})</button>
       ${why ? `<div class="muted" style="margin-top:4px">${why}</div>` : ''}
-      <p class="flavor">${founding ? 'The first light of the valley. It hums a half-tone flat when the dead are restless.' : 'Grass grows in spirals here. Children are told not to sleep within a stone\'s throw of it, and do anyway.'}</p>`;
+      <p class="flavor">${isWyrm ? 'The stones here are not stones. Put your hand on one and it is warm, and it breathes.' : founding ? 'The first light of the valley. It hums a half-tone flat when the dead are restless.' : 'Grass grows in spirals here. Children are told not to sleep within a stone\'s throw of it, and do anyway.'}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => { this.host.select(null); (this.host as { selectedNode: number }).selectedNode = -1; el.classList.add('hidden'); });
     (el.querySelector('#n-deepen') as HTMLButtonElement).onclick = () => this.host.deepenNode(i);
     this.nodeShown = i;
+  }
+
+  /** Drag a floating panel by its .grip (or its heading); position is remembered per panel. */
+  private makeDraggable(el: HTMLElement, key: string): void {
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(`wardlight.panel.${key}`) || 'null'); } catch { return null; } })() as { l: number; t: number } | null;
+    const apply = (l: number, t: number) => {
+      const w = el.offsetWidth || 200;
+      const h = el.offsetHeight || 100;
+      l = Math.max(0, Math.min(window.innerWidth - w, l));
+      t = Math.max(40, Math.min(window.innerHeight - Math.min(h, 60), t));
+      el.style.left = `${l}px`;
+      el.style.top = `${t}px`;
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    };
+    if (saved) apply(saved.l, saved.t);
+    el.addEventListener('pointerdown', (e) => {
+      const target = e.target as HTMLElement;
+      const handle = target.closest('.grip, h3, h2');
+      if (!handle || !el.contains(handle) || target.closest('button:not(.grip)')) return;
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      const ox = e.clientX - r.left;
+      const oy = e.clientY - r.top;
+      const move = (ev: PointerEvent) => apply(ev.clientX - ox, ev.clientY - oy);
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        try { localStorage.setItem(`wardlight.panel.${key}`, JSON.stringify({ l: parseFloat(el.style.left), t: parseFloat(el.style.top) })); } catch { /* ignore */ }
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
   }
 
   toast(html: string, ms = 6000): void {
@@ -684,6 +734,8 @@ export class UI {
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
             <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge; eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role.</li>
+            <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
+            <li>Panels: the <b>Info views</b>, <b>Ledger</b> and message ticker can be dragged by their ⋮⋮ grip.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -960,6 +1012,7 @@ export class UI {
       <h2>Wyrmcraft</h2>
       <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
       <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
+      ${st.wyrm.state !== 'none' ? `<div class="wyrmrow"><b>The Vein-Wyrm</b> <span class="muted">at (${wyrmNode(st)!.x},${wyrmNode(st)!.y})</span><div class="${st.wyrm.state === 'bound' && st.wyrm.sulking === 0 ? 'good' : st.wyrm.state === 'awake' || st.wyrm.sulking > 0 ? 'warn' : 'muted'}">${describeWyrm(st)}</div><button id="w-goto">Show me</button></div>` : ''}
       ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}
       <div style="text-align:right"><button id="w-close">Close</button></div>
     </div>`;
@@ -976,6 +1029,8 @@ export class UI {
       };
     });
     this.el.wyrms.querySelector('#w-close')!.addEventListener('click', () => this.toggleWyrms(false));
+    const gt = this.el.wyrms.querySelector('#w-goto') as HTMLButtonElement | null;
+    if (gt) gt.onclick = () => { const n = wyrmNode(st); if (n) this.host.centerOn(n.x, n.y); this.toggleWyrms(false); };
   }
 
   toggleEdicts(show?: boolean): void {

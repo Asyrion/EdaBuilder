@@ -243,6 +243,13 @@ export class Renderer {
         } else if (t === Terrain.LeyNode) {
           cache.lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
           cache.props.push({ name: 'leynode', wx, wy, d: x + y + 0.4, sway: 0 });
+          const wn = state.wyrm && state.wyrm.node >= 0 ? state.nodes[state.wyrm.node] : null;
+          if (wn && wn.x === x && wn.y === y && state.wyrm.state !== 'none' && !(state.wyrm.flyover > 0)) {
+            const st = state.wyrm.state === 'bound' ? 'awake' : state.wyrm.state;
+            cache.props.push({ name: `wyrm_${st}_back`, wx, wy, d: x + y + 0.3, sway: 0 });
+            cache.props.push({ name: `wyrm_${st}_front`, wx, wy, d: x + y + 0.9, sway: 0 });
+            if (st !== 'dead') cache.lights.push({ x: wx, y: wy + 8, r: 90, c: PAL.ley2, i: 0.5 });
+          }
         }
       }
     cache.hasWater = hasWater;
@@ -393,7 +400,7 @@ export class Renderer {
         const s = this.atlas.get(p.name);
         const sw = useSway && p.sway ? Math.round(sway * p.sway) : 0;
         items.push({ d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy) });
-        if (s && s.glow && night > 0.05) glows.push({ s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 });
+        if (s && s.glow && night > 0.05) glows.push({ s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' || p.name.startsWith('wyrm_') ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 });
       }
       for (const l of c.lights) {
         lights.push(l);
@@ -486,17 +493,19 @@ export class Renderer {
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-        } else if (sp === 'wyvern') {
+        } else if (sp === 'wyvern' || sp === 'wyrm') {
           const alt = a.alt ?? 0;
-          const s = this.atlas.get(`wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
+          const big = sp === 'wyrm';
+          const s = this.atlas.get(big ? `wyrm_fly_${Math.floor(this.time * 4 + a.id) % 2}` : `wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
           // ground shadow, in the depth-sorted pass
           items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
             const ctx2 = this.ctx;
-            ctx2.fillStyle = `rgba(10,8,16,${0.35 - alt / 160})`;
+            ctx2.fillStyle = `rgba(10,8,16,${(big ? 0.45 : 0.35) - alt / 160})`;
             ctx2.beginPath();
-            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 10, 4, 0, 0, Math.PI * 2);
+            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), big ? 26 : 10, big ? 10 : 4, 0, 0, Math.PI * 2);
             ctx2.fill();
           } });
+          if (big && a.load > 0 && Math.random() < 0.3) this.particles.emit({ x: wx + (Math.random() - 0.5) * 20, y: wy + 6 - alt, vx: (Math.random() - 0.5) * 6, vy: 6, maxLife: 0.9, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
           sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
           if (a.variant === 0 && Math.random() < 0.1) this.particles.emit({ x: wx, y: wy + 4 - alt, vx: (Math.random() - 0.5) * 4, vy: 2, maxLife: 0.8, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
           if (a.variant === 4 && Math.random() < 0.2) this.particles.emit({ x: wx - 8, y: wy + 6 - alt, vx: -20, vy: 0, maxLife: 0.6, size: 1, color: PAL.flower3, glow: false, kind: 'mote' });

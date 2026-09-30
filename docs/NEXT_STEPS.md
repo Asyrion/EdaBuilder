@@ -73,6 +73,16 @@
 - The Chronicle (`C`): a saved log of real in-world events only, filtered by kind, with a
   jump-to-place button per entry.
 
+## Done in iteration 11 (the Sleeping Wyrm, panel layout)
+
+- The Sleeping Wyrm on the farthest node: waking meter from nearby spires or deepening,
+  seasonal tribute in crowns or goods, hostile flyovers with wyrmfire, the Wyrm-Court
+  wonder and the binding song, a bound guardian (30-tile ward, no hounds, +10 happiness,
+  eats 40 goods a day), sulking, death and bones, vein eggs. Coil, awake, bones and flight
+  sprites; node panel, Wyrms panel row, five quests, two Advisor lines.
+- Toolbar and Ledger stacked in one column so they cannot overlap; Info views, building
+  info and the ticker are draggable with remembered positions.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -105,7 +115,7 @@ Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhare
 (7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8, done) Wyrmcraft I: egg events, Wyrm-Cradle,
 Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9, done) Wyrmcraft II:
 sky layer, wyvern couriers, the Wyrm-Ring, gates, the Peak, visitors; (10, done) quests,
-hints and the Chronicle; (11) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
+hints and the Chronicle; (11, done) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
 binding; (12) magical buildings: Glimhouse, Weather Vane, Observatory, Portal Arch; (13)
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (14)
 vehicles: floating carts, barges, drake riders, airships.

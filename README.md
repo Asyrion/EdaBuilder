@@ -58,12 +58,17 @@ main node.
    hungrier hearths and a bolder Gloam. Festivals on fixed days ask for a choice.
 10. **Trade and the Wellspring** — a Trade Depot sells surplus goods at seasonal prices;
     click a ley node to see its flow and, from Burgh, deepen it for more mana.
-11. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
+11. **The Sleeping Wyrm** — one distant node is ringed with scale. Spires there wake it;
+    awake it wants tribute each season (crowns or goods) or it flies over the city with
+    wyrmfire. A **Wyrm-Court** (Free City) binds it as the city's guardian: a 30-tile
+    ward, no hounds, +10 happiness, 40 goods a day to eat, and a vein egg each content
+    season. Starve it and it sulks, then dies; its bones quiet the dead.
+12. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera; the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-12. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+13. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
    land value, happiness, traffic, each service, wards & gloam, miasma.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
@@ -115,8 +120,11 @@ Charter as `.json`.
   and wyrmfire in the Wyrms panel.
 - Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
   caravans and the Wandering Merchant.
-- The Charter's Ledger (46 guided quests with hints and *Show me*), the Advisor line, and
+- The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
+- The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
+  or is bound at the Wyrm-Court as the city's guardian.
+- Panels never overlap: the toolbar and Ledger stack; views, info and the ticker drag.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles

@@ -91,7 +91,7 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm';
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
@@ -112,6 +112,23 @@ export interface Dragon {
   training: Training;
   agentId: number; // creature agent when out of the cradle, else -1
   born: number; // day
+}
+
+export interface WyrmState {
+  node: number; // index into nodes, -1 none
+  state: 'none' | 'sleeping' | 'awake' | 'bound' | 'dead';
+  waking: number; // 0..100 while sleeping
+  tributes: number; // times a tribute was demanded and settled (raises the price)
+  tributeDay: number; // next day a tribute is due while awake, -1 none
+  unfed: number; // days without 40 goods while bound
+  sulking: number; // days sulking (0 = content)
+  fedDays: number; // consecutive fed days while bound (vein egg at a season)
+  refused: number;
+  flyover: number; // tick the current flyover started, 0 none
+  fires: number; // buildings set alight in the current flyover
+  bound: number; // day bound, -1
+  died: number; // day died, -1
+  askedBind: number; // day the binding was last offered, -1
 }
 
 export interface Materials {
@@ -272,6 +289,7 @@ export interface GameState {
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
+  wyrm: WyrmState;
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
   modifiers: Modifier[];
@@ -296,6 +314,8 @@ export interface GameState {
     restlessTotal: number;
     houndsTotal: number;
     houndRaids: number;
+    wyrmTributes: number;
+    wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;
   };

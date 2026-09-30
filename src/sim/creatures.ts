@@ -4,11 +4,13 @@
  * They are ambient life with small mechanical hooks (glim-dust for Moth-Lofts, wisps as
  * the early warning for restless dead).
  */
+import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
+import { igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
@@ -133,7 +135,7 @@ export function updateCreatures(state: GameState): void {
     if (hounds < packs && rng.chance(hush ? 0.35 : 0.15)) {
       // spawn a pack on a gloam tile within 22 tiles of a random building
       const spots: number[] = [];
-      const blds = state.buildings.filter((b) => b && b.state === 'ok' && state.gloamDist[idx(b.x, b.y)] <= 14) as Building[];
+      const blds = state.buildings.filter((b) => b && b.state === 'ok' && state.gloamDist[idx(b.x, b.y)] <= 14 && !(wyrmGuards(state) && inLair(state, b.x, b.y))) as Building[];
       if (blds.length) {
         const b = rng.pick(blds);
         for (let dy = -22; dy <= 22; dy++)
@@ -183,6 +185,8 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
+    if (a.species === 'hound' && wyrmGuards(state) && inLair(state, a.x, a.y)) return false; // nothing hunts under the wyrm's eye
+    if (a.species === 'wyrm') return state.wyrm.flyover > 0;
     if (a.species === 'drake' || a.species === 'wyvern') return state.dragons.some((d) => d.id === a.dragonId && d.stage >= 1);
     if (a.species === 'wisp') {
       wispSeen++;
@@ -385,6 +389,57 @@ export function tickCreatures(state: GameState): void {
           a.x += (dx / dist) * sp;
           a.y += (dy / dist) * sp;
           a.dir = dx > 0 ? 0 : 2;
+        }
+        break;
+      }
+      case 'wyrm': {
+        // phase 1: out to the city; 2: circle it (timer); 3: home to the node
+        const hostile = a.load > 0;
+        const alt = a.alt ?? 0;
+        const f = state.founding;
+        if (a.phase === 1 && a.path.length === 0) a.path = [idx(f.x, f.y)];
+        if (a.phase === 2) {
+          if (a.timer <= 0) { a.phase = 3; a.path = [idx(Math.floor(ax), Math.floor(ay))]; }
+          else {
+            a.timer--;
+            if (a.path.length === 0) {
+              const nx = f.x + rng.int(41) - 20;
+              const ny = f.y + rng.int(41) - 20;
+              if (inBounds(nx, ny)) a.path = [idx(nx, ny)];
+            }
+          }
+        }
+        if (a.path.length === 0) break;
+        const ti = a.path[0];
+        const tx = (ti % MAP_W) + 0.5;
+        const ty = ((ti / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        a.alt = a.phase === 3 && dist < 6 ? Math.max(0, alt - 3) : Math.min(48, alt + 3);
+        if (dist <= sp) {
+          a.x = tx;
+          a.y = ty;
+          a.path = [];
+          if (a.phase === 1) { a.phase = 2; a.timer = hostile ? 260 : 200; }
+          else if (a.phase === 3) {
+            state.agents = state.agents.filter((o) => o !== a);
+            endFlyover(state, hostile);
+          }
+        } else {
+          a.x += (dx / dist) * sp;
+          a.y += (dy / dist) * sp;
+          a.dir = dx > 0 ? 0 : 2;
+        }
+        if (a.phase === 2) {
+          // hostile: set the roofs beneath it alight; bound: scatter the moths
+          if (hostile && state.wyrm.fires < WYRM_FLYOVER_FIRES && state.tick % 12 === 0) {
+            const bi = state.bIndex[idx(Math.floor(a.x), Math.floor(a.y))];
+            const b = bi >= 0 ? state.buildings[bi] : null;
+            if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category !== 'special' && rng.chance(0.5) && igniteBuilding(state, b, 'Wyrmfire at')) state.wyrm.fires++;
+          }
+          if (!hostile && state.tick % 10 === 0) state.agents = state.agents.filter((o) => !(o.kind === AgentKind.Creature && o.species === 'glimmoth' && Math.abs(o.x - a.x) < 6 && Math.abs(o.y - a.y) < 6));
         }
         break;
       }

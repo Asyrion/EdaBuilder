@@ -51,7 +51,9 @@ h3 { font-size: 13px; color: var(--gold); }
 #topbar .speed button { min-width: 30px; padding: 3px 6px; }
 #clock { width: 34px; height: 34px; }
 
-#toolbar { position: absolute; left: 8px; top: 50px; width: 268px; padding: 8px; }
+#left { position: absolute; left: 8px; top: 50px; bottom: 132px; width: 286px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+#left > * { pointer-events: auto; }
+#toolbar { position: relative; width: 268px; padding: 8px; flex: 0 0 auto; }
 #toolbar .tabs { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
 #toolbar .tabs button { padding: 3px 6px; font-size: 12px; }
 #toolbar .items { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
@@ -65,7 +67,10 @@ h3 { font-size: 13px; color: var(--gold); }
 #tooltip { position: absolute; max-width: 300px; padding: 8px 10px; font-size: 12px; z-index: 20; }
 #tooltip .t { color: var(--gold); font-weight: 600; margin-bottom: 3px; }
 
-#views { position: absolute; right: 8px; top: 50px; width: 190px; padding: 8px; }
+#views { position: absolute; right: 8px; top: 50px; width: 190px; padding: 8px; max-height: calc(100vh - 260px); overflow: auto; }
+.grip { cursor: move; color: var(--muted); font-size: 11px; letter-spacing: -2px; user-select: none; padding: 0 4px; }
+#log .grip { position: absolute; right: 6px; top: 4px; }
+#views h3, #info h2 { cursor: move; }
 #views button { display: block; width: 100%; text-align: left; margin-bottom: 3px; font-size: 12px; padding: 3px 6px; }
 #views button kbd { float: right; color: var(--muted); font-family: inherit; }
 #views .legend { margin-top: 6px; font-size: 11px; }
@@ -82,7 +87,11 @@ h3 { font-size: 13px; color: var(--gold); }
 #log .m.good { color: var(--good); } #log .m.bad { color: var(--bad); } #log .m.warn { color: var(--warn); } #log .m.milestone { color: var(--gold); }
 #log .m .d { color: var(--muted); margin-right: 5px; }
 
-#info { position: absolute; left: 286px; top: 50px; width: 280px; padding: 10px; }
+#info { position: absolute; left: 302px; top: 50px; width: 280px; padding: 10px; }
+#info .meter { height: 6px; background: #0b0912; border: 1px solid var(--border); margin: 3px 0; }
+#info .meter div { height: 100%; background: linear-gradient(90deg, var(--ley), #ff6a4a); }
+#wyrms .wyrmrow { padding: 6px 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px; }
+#wyrms .wyrmrow button { margin-top: 4px; font-size: 11px; }
 #info .row { display: flex; justify-content: space-between; padding: 1px 0; }
 #info .close { float: right; }
 #info .problems div { color: var(--warn); }
@@ -117,7 +126,7 @@ h3 { font-size: 13px; color: var(--gold); }
 
 #perf { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-size: 11px; color: var(--muted); padding: 2px 8px; }
 
-#tasks { position: absolute; left: 8px; top: 320px; width: 268px; padding: 8px 10px; font-size: 12px; }
+#tasks { position: relative; width: 268px; padding: 8px 10px; font-size: 12px; flex: 0 1 auto; min-height: 0; overflow: auto; }
 #tasks h3 { display: flex; align-items: center; gap: 6px; }
 #tasks h3 .prog { font-weight: normal; font-size: 11px; }
 #tasks h3 .min { margin-left: auto; padding: 0 6px; line-height: 1.2; }

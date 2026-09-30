@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage({ viewport: { width: 1200, height: 700 } });
+const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+await page.goto('http://localhost:4173/');
+await page.waitForFunction(() => window.__game);
+await page.evaluate(() => { window.__game.newGame(21, 'S'); document.getElementById('help').classList.add('hidden'); document.getElementById('title').classList.add('hidden'); });
+console.log(await page.evaluate(() => { const W = window.__wardlight; return ['wyrm_fly_0','wyrm_sleeping_back','wyrm_awake_front'].map((n) => `${n}:${W.atlas.get(n) ? 'ok' : 'MISSING'}`).join(' '); }));
+await page.evaluate(() => { const g = window.__game, s = g.state, W = window.__wardlight; s.wyrm.state = 'awake'; W.wyrm.startFlyover(s, true); const a = s.agents.find((x) => x.species === 'wyrm'); for (let i = 0; i < 200; i++) W.tick(s); g.paused = true; g.renderer.camera.centerOnTile(Math.floor(a.x), Math.floor(a.y)); g.renderer.camera.setZoom(2); });
+await page.waitForTimeout(300);
+console.log(await page.evaluate(() => { const a = window.__game.state.agents.find((x) => x.species === 'wyrm'); return a ? `${a.x.toFixed(1)},${a.y.toFixed(1)} alt${a.alt} ph${a.phase} timer${a.timer} kind${a.kind}` : 'gone'; }));
+await page.screenshot({ path: 'shots/dbg_fly.png' });
+console.log('errors', errors);
+await browser.close();

@@ -7,6 +7,7 @@ import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
 import { seasonOf } from './world';
+import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 
 export interface Effect {
   x: number;
@@ -64,17 +65,21 @@ export function dailyFire(state: GameState): void {
     p *= 1 - fireCov * 0.5;
     if (rng.chance(p)) toIgnite.push(b);
   });
-  for (const b of toIgnite) {
-    if (b.state !== 'ok') continue;
-    b.state = 'burning';
-    b.stateDays = 0;
-    markDirty(state, b.x, b.y);
-    state.stats.firesTotal++;
-    effects.push({ x: b.x, y: b.y, kind: 'fire', tick: state.tick });
-    const cov = state.coverage.fire[idx(b.x, b.y)];
-    pushMessage(state, `Fire at ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Veshari Hall covers it.' : ''}`, 'bad');
-  }
+  for (const b of toIgnite) igniteBuilding(state, b);
   commitRng(state, rng);
+}
+
+/** Set a building alight (fire hazard, wyrm flyover). */
+export function igniteBuilding(state: GameState, b: Building, why = ''): boolean {
+  if (b.state !== 'ok') return false;
+  b.state = 'burning';
+  b.stateDays = 0;
+  markDirty(state, b.x, b.y);
+  state.stats.firesTotal++;
+  effects.push({ x: b.x, y: b.y, kind: 'fire', tick: state.tick });
+  const cov = state.coverage.fire[idx(b.x, b.y)];
+  pushMessage(state, `${why || 'Fire at'} ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Veshari Hall covers it.' : ''}`, 'bad');
+  return true;
 }
 
 export function dailySurge(state: GameState): void {
@@ -150,6 +155,29 @@ export function dailyGloam(state: GameState): void {
         }
       }
   });
+  // 1b. the bound wyrm's lair burns the Gloam back for 30 tiles (a few tiles a day, from the inside out)
+  if (wyrmGuards(state)) {
+    const wn = wyrmNode(state)!;
+    const r = WYRM_LAIR_RADIUS;
+    let budget = 40;
+    for (let rr = 1; rr <= r && budget > 0; rr++)
+      for (let dy = -rr; dy <= rr && budget > 0; dy++)
+        for (let dx = -rr; dx <= rr && budget > 0; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rr || dx * dx + dy * dy > r * r) continue;
+          const x = wn.x + dx;
+          const y = wn.y + dy;
+          if (!inBounds(x, y)) continue;
+          const i = idx(x, y);
+          if (state.gloam[i]) {
+            state.gloam[i] = 0;
+            state.stats.gloamBurned++;
+            markDirty(state, x, y);
+            changed = true;
+            budget--;
+            if (rng.chance(0.2)) effects.push({ x, y, kind: 'ward', tick: state.tick });
+          }
+        }
+  }
   // 2. creep
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
@@ -263,6 +291,7 @@ export function dailyDeath(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1);
   });
+  quietCap += wyrmBoneQuiet(state);
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);
   pool -= quieted;
