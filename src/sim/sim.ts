@@ -4,6 +4,7 @@ import { maybeFireCalendar, maybeFireEvent } from './events';
 import { seasonOf } from './world';
 import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
 import { dailyDragons, seasonalBout } from './wyrmcraft';
+import { checkQuests } from './quests';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -60,6 +61,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyDragons(state);
     seasonalBout(state);
     checkMilestones(state);
+    checkQuests(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     maybeFireCalendar(state);
@@ -78,7 +80,7 @@ const SEASON_TEXT = [
 
 function seasonMessage(state: GameState): void {
   const season = seasonOf(state);
-  if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${SEASON_TEXT[season]}`, season === 3 ? 'warn' : 'milestone');
+  if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${SEASON_TEXT[season]}`, season === 3 ? 'warn' : 'milestone', true);
   if (state.dirtyChunks) for (let i = 0; i < 256; i++) state.dirtyChunks.add(i);
 }
 

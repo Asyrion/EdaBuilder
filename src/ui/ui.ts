@@ -15,6 +15,8 @@ import { marketStockCap } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
+import { activeQuests, questProgress } from '../sim/quests';
+import { advise, type Focus } from '../data/quests';
 
 export interface UiHost {
   state: GameState;
@@ -109,6 +111,7 @@ export class UI {
         <button id="btn-budget" title="Tithe & budget">Budget</button>
         <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
         <button id="btn-wyrms" title="Dragons, eggs and materials">Wyrms</button>
+        <button id="btn-chronicle" title="Chronicle: what has happened in the world (C)">Chronicle</button>
         <button id="btn-views" title="Info views (Tab)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -126,7 +129,7 @@ export class UI {
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views</h3><div class="list"></div><div class="legend"></div></div>
       <div id="demand" class="panel"></div>
-      <div id="tasks" class="panel hidden"><h3>Charter tasks</h3><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="list"></div></div>
       <div id="log" class="panel"></div>
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
@@ -139,12 +142,15 @@ export class UI {
       <div id="edicts" class="modal hidden"></div>
       <div id="wyrms" class="modal hidden"></div>
       <div id="event" class="modal hidden"></div>
+      <div id="chronicle" class="modal hidden"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-wyrms').onclick = () => this.toggleWyrms();
+    this.q('#btn-chronicle').onclick = () => this.toggleChronicle();
+    (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; };
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
@@ -335,6 +341,7 @@ export class UI {
     this.refreshTasks();
     this.refreshDemand();
     this.refreshLog();
+    this.refreshChronicle();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
@@ -345,32 +352,129 @@ export class UI {
     if (s.gameOver) this.showGameOver();
   }
 
+  private tasksCollapsed = false;
+  private lastQuestKey = '';
+
   private refreshTasks(): void {
     const s = this.host.state;
     const el = this.el.tasks;
-    if (s.milestone >= 2) {
-      el.classList.add('hidden');
+    // Re-evaluate at most every 20 ticks, or when a quest completes.
+    const key = `${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}`;
+    if (key === this.lastQuestKey) return;
+    this.lastQuestKey = key;
+    el.classList.remove('hidden');
+    const prog = questProgress(s);
+    el.querySelector('.prog')!.textContent = `${prog.done}/${prog.total}`;
+    (el.querySelector('.min') as HTMLButtonElement).textContent = this.tasksCollapsed ? '+' : '–';
+    const list = el.querySelector('.list') as HTMLElement;
+    const adv = el.querySelector('.advice') as HTMLElement;
+    if (this.tasksCollapsed) {
+      list.innerHTML = '';
+      adv.classList.add('hidden');
       return;
     }
-    el.classList.remove('hidden');
-    let roads = 0;
-    for (let i = 0; i < s.road.length; i++) if (s.road[i]) roads++;
-    let zones = 0;
-    for (let i = 0; i < s.zone.length; i++) if (s.zone[i]) zones++;
-    const has = (k: string) => s.buildings.some((b) => b && b.kind === k);
-    const tasks: [string, boolean][] = [
-      ['Draw a road from the Founding Stake (Roads tab, drag)', roads > 8],
-      ['Zone Hearths beside the road (Zones tab, drag a rectangle)', zones >= 6],
-      ['Zone a few Craft and Market tiles for jobs', s.zone.some((z) => z === Zone.Craft) && s.zone.some((z) => z === Zone.Market)],
-      ['Raise a Ley Spire within 6 tiles of the node (Ley tab)', has('spire')],
-      ['Dig a Well (Water tab)', has('well')],
-      ['Build a Watch Post and a Shrine of Aume (Services tab)', has('watchpost') && has('shrine')],
-      ['Reach 40 folk to become a Hamlet, then build a Boneyard', s.milestone >= 1 && has('boneyard')],
-    ];
-    const first = tasks.findIndex(([, done]) => !done);
-    el.querySelector('.list')!.innerHTML = tasks
-      .map(([t, done], i) => `<div class="${done ? 'done' : i === first ? 'now' : ''}">${done ? '✓' : '○'} ${t}</div>`)
-      .join('');
+    const quests = activeQuests(s, 3);
+    list.innerHTML = quests.length
+      ? quests.map((q, i) => `<div class="q ${i === 0 ? 'now' : ''}"><div class="t"><span class="ch">${q.chapter}</span> ${q.title}${q.reward ? ` <span class="rw">+${q.reward}</span>` : ''}</div><div class="h">${q.hint}${q.focus ? ` <button class="show" data-q="${q.id}">Show me</button>` : ''}</div></div>`).join('')
+      : '<div class="flavor">The Ledger is complete. Vell remembers your name.</div>';
+    list.querySelectorAll('button.show').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => {
+        const q = quests.find((x) => x.id === (b as HTMLElement).dataset.q);
+        if (q?.focus) this.focus(q.focus);
+      };
+    });
+    const a = advise(s);
+    adv.classList.toggle('hidden', !a);
+    if (a) {
+      adv.innerHTML = `<span class="lbl">Advisor</span> ${a.text}${a.focus ? ' <button class="show">Show me</button>' : ''}`;
+      const b = adv.querySelector('button.show') as HTMLButtonElement | null;
+      if (b && a.focus) b.onclick = () => this.focus(a.focus!);
+    }
+  }
+
+  /** Carry out a quest or advisor focus: pick a tool, open a panel, switch a view or move the camera. */
+  focus(f: Focus): void {
+    const s = this.host.state;
+    if ('tool' in f) {
+      const t = f.tool;
+      const tool: Tool =
+        t === 'road' ? { kind: 'road', type: RoadType.Track }
+        : t === 'zoneHearth' ? { kind: 'zone', zone: Zone.Hearth }
+        : t === 'zoneMarket' ? { kind: 'zone', zone: Zone.Market }
+        : t === 'zoneCraft' ? { kind: 'zone', zone: Zone.Craft }
+        : t === 'zoneArcane' ? { kind: 'zone', zone: Zone.Arcane }
+        : t === 'wall' ? { kind: 'wall' }
+        : t === 'gateBelregi' ? { kind: 'gate', style: 2 }
+        : { kind: 'district', id: 1 };
+      this.category = tool.kind === 'road' ? 'roads' : tool.kind === 'zone' ? 'zones' : tool.kind === 'district' ? 'districts' : 'service';
+      this.refreshItems();
+      this.host.setTool(tool);
+      if (t === 'road' || t === 'zoneHearth') this.host.centerOn(s.founding.x, s.founding.y);
+    } else if ('build' in f) {
+      const def = BUILDING_BY_KEY[f.build];
+      if (!def) return;
+      const cat = CATEGORIES.find((c) => c.filter(def));
+      if (cat) this.category = cat.id;
+      this.refreshItems();
+      if (isBuildingUnlocked(s.milestone, f.build)) this.host.setTool({ kind: 'build', key: f.build });
+      else this.toast(`<p>${def.name} unlocks at ${MILESTONES[def.unlock].name}.</p>`, 2500);
+    } else if ('panel' in f) {
+      if (f.panel === 'edicts') this.toggleEdicts(true);
+      else if (f.panel === 'wyrms') this.toggleWyrms(true);
+      else if (f.panel === 'budget') this.toggleBudget(true);
+      else if (f.panel === 'chronicle') this.toggleChronicle(true);
+      else this.el.views.classList.remove('hidden');
+    } else if ('overlay' in f) {
+      const id = f.overlay === 'watch' ? 'ward' : f.overlay;
+      this.host.setOverlay(id);
+      this.el.views.classList.remove('hidden');
+    } else if ('center' in f) {
+      if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
+      else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
+      else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && b.kind === 'cradle'); if (c) this.host.centerOn(c.x, c.y); }
+      else if (f.center === 'gloam') {
+        // Nearest Gloam tile to the founding stake.
+        let best = -1, bd = 1e9;
+        for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { const x = i % s.w, y = (i / s.w) | 0; const d = Math.abs(x - s.founding.x) + Math.abs(y - s.founding.y); if (d < bd) { bd = d; best = i; } }
+        if (best >= 0) this.host.centerOn(best % s.w, (best / s.w) | 0);
+      }
+    }
+  }
+
+  // ---------- chronicle ----------
+  private chronicleFilter: 'all' | 'good' | 'bad' | 'milestone' = 'all';
+  private lastChronicleLen = -1;
+
+  toggleChronicle(show?: boolean): void {
+    const el = this.el.chronicle;
+    const sh = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !sh);
+    if (sh) { this.lastChronicleLen = -1; this.refreshChronicle(); }
+  }
+
+  refreshChronicle(): void {
+    const el = this.el.chronicle;
+    if (el.classList.contains('hidden')) return;
+    const s = this.host.state;
+    if (s.chronicle.length === this.lastChronicleLen) return;
+    this.lastChronicleLen = s.chronicle.length;
+    const f = this.chronicleFilter;
+    const entries = s.chronicle.filter((e) => f === 'all' || (f === 'bad' ? e.kind === 'bad' || e.kind === 'warn' : e.kind === f)).slice(-120).reverse();
+    const filters: [typeof f, string][] = [['all', 'All'], ['milestone', 'Milestones'], ['good', 'Good tidings'], ['bad', 'Ill tidings']];
+    el.innerHTML = `<div class="box panel">
+      <h2>The Chronicle of ${s.cityName}</h2>
+      <p class="muted">What has happened in the world, day by day. Only real events are written here; the Ledger's advice is not.</p>
+      <div class="filters">${filters.map(([k, n]) => `<button data-f="${k}" class="${k === f ? 'active' : ''}">${n}</button>`).join('')}</div>
+      <div class="entries">${entries.length ? entries.map((e) => `<div class="e ${e.kind}"><span class="d">Day ${e.day}</span><span class="tx">${e.text}</span>${e.x !== undefined ? `<button class="jump" data-x="${e.x}" data-y="${e.y}" title="Go there">⌖</button>` : ''}</div>`).join('') : '<p class="flavor">Nothing yet. The Stake is new and the Chronicle is blank.</p>'}</div>
+      <div style="text-align:right"><button id="ch-close">Close</button></div>
+    </div>`;
+    el.querySelectorAll('button[data-f]').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => { this.chronicleFilter = (b as HTMLElement).dataset.f as typeof f; this.lastChronicleLen = -1; this.refreshChronicle(); };
+    });
+    el.querySelectorAll('button.jump').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => { const d = (b as HTMLElement).dataset; this.host.centerOn(Number(d.x), Number(d.y)); this.toggleChronicle(false); };
+    });
+    el.querySelector('#ch-close')!.addEventListener('click', () => this.toggleChronicle(false));
   }
 
   private drawClock(): void {
@@ -559,7 +663,7 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>H</kbd> this help</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
@@ -575,6 +679,7 @@ export class UI {
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
             <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
+            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>

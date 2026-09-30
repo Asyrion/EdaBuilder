@@ -157,6 +157,14 @@ export interface Demand {
   arcane: number;
 }
 
+export interface ChronicleEntry {
+  day: number;
+  kind: Message['kind'];
+  text: string;
+  x?: number;
+  y?: number;
+}
+
 export interface Message {
   tick: number;
   text: string;
@@ -255,6 +263,8 @@ export interface GameState {
   demand: Demand;
   milestone: number;
   messages: Message[];
+  chronicle: ChronicleEntry[];
+  questsDone: string[];
   edicts: Record<string, boolean>;
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
@@ -273,6 +283,12 @@ export interface GameState {
   goodsShort: number; // markets that ran dry today
   gameOver: string | null;
   stats: {
+    goodsDelivered: number;
+    houndsKilled: number;
+    gloamBurned: number;
+    restlessLaid: number;
+    caravanGoods: number;
+    courierTrips: number;
     boutsWon: number;
     boutsLost: number;
     firesTotal: number;

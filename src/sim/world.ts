@@ -84,6 +84,8 @@ export function createGame(seed: number, cityName?: string): GameState {
     demand: { hearth: 0.5, market: 0.1, craft: 0.3, arcane: 0 },
     milestone: 0,
     messages: [],
+    chronicle: [],
+    questsDone: [],
     edicts: {},
     districtEdicts: {},
     districtNames: {},
@@ -101,7 +103,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -138,9 +140,23 @@ export function commitRng(state: GameState, r: Rng): void {
   state.rngState = r.state;
 }
 
-export function pushMessage(state: GameState, text: string, kind: Message['kind'] = 'info'): void {
+/**
+ * Ticker message. Milestone and bad messages, or any message flagged `world`, are real
+ * in-world events and also go to the Chronicle; chatter and tips never do.
+ */
+export function pushMessage(state: GameState, text: string, kind: Message['kind'] = 'info', world = false, at?: { x: number; y: number }): void {
   state.messages.push({ tick: state.tick, text, kind });
   if (state.messages.length > 60) state.messages.splice(0, state.messages.length - 60);
+  if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
+}
+
+export function pushChronicle(state: GameState, text: string, kind: Message['kind'], at?: { x: number; y: number }): void {
+  if (!state.chronicle) state.chronicle = [];
+  const m = text.match(/\((\d+),(\d+)\)/);
+  const x = at?.x ?? (m ? Number(m[1]) : undefined);
+  const y = at?.y ?? (m ? Number(m[2]) : undefined);
+  state.chronicle.push({ day: state.day, kind, text, x, y });
+  if (state.chronicle.length > 200) state.chronicle.splice(0, state.chronicle.length - 200);
 }
 
 export const CHUNK = 8;

@@ -449,6 +449,8 @@ export function tickCreatures(state: GameState): void {
             if (to) {
               to.stock = Math.min(20 * to.level, to.stock + a.load);
               state.goodsSold += a.load;
+              state.stats.goodsDelivered += a.load;
+              state.stats.courierTrips++;
             }
             a.load = 0;
             a.phase = 0;
@@ -519,6 +521,7 @@ export function dailyHunt(state: GameState): number {
     return true;
   });
   commitRng(state, rng);
+  state.stats.houndsKilled += killed;
   if (killed > 0 && lodges.length && rng.chance(0.5)) pushMessage(state, `The hunters bring back ${killed} hound pelt${killed > 1 ? 's' : ''}. Another notch on the lodge door.`, 'good');
   return killed;
 }

@@ -263,6 +263,7 @@ class Game {
       case ',': this.speed = Math.max(1, this.speed - 1); this.paused = false; this.ui.refresh(); return true;
       case '.': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
       case 'h': case '?': this.ui.toggleHelp(); return true;
+      case 'c': if (!e.ctrlKey && !e.metaKey) { this.ui.toggleChronicle(); return true; } return false;
       case 'tab': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
       case 'g': if (e.shiftKey) { this.view.showGrid = !this.view.showGrid; return true; } return false;
       case 'f5': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
