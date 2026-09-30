@@ -58,6 +58,9 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.districtEdicts = state.districtEdicts ?? {};
   state.districtNames = state.districtNames ?? {};
   state.tradeIncomeToday = state.tradeIncomeToday ?? 0;
+  state.dragons = state.dragons ?? [];
+  state.nextDragonId = state.nextDragonId ?? 1;
+  state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0 };
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);

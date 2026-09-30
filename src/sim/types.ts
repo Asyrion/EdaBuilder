@@ -90,7 +90,34 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake';
+
+export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
+export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
+export type DragonRole = 'none' | 'warden' | 'delver';
+export type Training = 'gentle' | 'hard' | 'wild';
+
+export interface Dragon {
+  id: number;
+  name: string;
+  line: DragonLine;
+  stage: DragonStage;
+  days: number; // days in the current stage
+  cradleId: number; // building id
+  role: DragonRole;
+  roleTarget: number; // district id (warden) or mine building id (delver)
+  mood: number; // 0..100
+  hungry: number; // consecutive unfed days
+  training: Training;
+  agentId: number; // creature agent when out of the cradle, else -1
+  born: number; // day
+}
+
+export interface Materials {
+  scale: number;
+  wyrmfire: number;
+  eggshell: number;
+}
 
 export interface Agent {
   id: number;
@@ -107,6 +134,7 @@ export interface Agent {
   dir: number; // 0..3 facing for sprites
   load: number; // goods carried (carts)
   species?: Species; // creatures only
+  dragonId?: number; // drake agents
   anchorId?: number; // building id (or -1) a creature is tied to
   ax?: number; // anchor tile for free-moving creatures
   ay?: number;
@@ -228,6 +256,9 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number }; // today
+  dragons: Dragon[];
+  nextDragonId: number;
+  materials: Materials;
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
   modifiers: Modifier[];

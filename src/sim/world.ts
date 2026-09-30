@@ -88,6 +88,9 @@ export function createGame(seed: number, cityName?: string): GameState {
     districtEdicts: {},
     districtNames: {},
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
+    dragons: [],
+    nextDragonId: 1,
+    materials: { scale: 0, wyrmfire: 0, eggshell: 0 },
     artifactsSold: 0,
     tradeIncomeToday: 0,
     modifiers: [],
@@ -193,10 +196,10 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }
   if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
-  if (def.key === 'mothloft') {
+  if (def.key === 'mothloft' || def.key === 'cradle') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
-    if (!near) return 'Needs a ley node or spire within 6 tiles';
+    if (!near) return def.key === 'cradle' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
   }
   return null;
 }

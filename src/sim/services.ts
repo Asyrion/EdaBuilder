@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { edictOn } from './edicts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
+import { wardenDistricts } from './wyrmcraft';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -29,6 +30,10 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
+  if (type === 'watch' || type === 'fire') {
+    const wd = wardenDistricts(state);
+    if (wd.size) for (let i = 0; i < n; i++) if (state.district[i] && wd.has(state.district[i])) acc[i] += 0.5;
+  }
   const out = state.coverage[type];
   for (let i = 0; i < n; i++) out[i] = Math.min(255, Math.round(Math.min(1, acc[i]) * 255));
 }

@@ -8,7 +8,8 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20 };
+import { districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -158,6 +159,18 @@ export function updateCreatures(state: GameState): void {
       }
     }
   }
+  // ---- drakes: one visible agent per hatchling/drake, near its cradle or at its post
+  for (const d of state.dragons) {
+    if (d.stage < 1) continue;
+    const has = state.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'drake' && a.dragonId === d.id);
+    if (has) continue;
+    const c = state.buildings.find((b) => b && b.id === d.cradleId);
+    if (!c) continue;
+    const a = spawn(state, 'drake', c.x, c.y + c.h);
+    a.dragonId = d.id;
+    a.variant = lineIndex(d.line);
+    a.speed = d.stage >= 2 ? 1.1 : 0.7;
+  }
   // ---- despawn: moths by day, hares at night, surplus wisps
   const keepWisps = want;
   let wispSeen = 0;
@@ -166,6 +179,7 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
+    if (a.species === 'drake') return state.dragons.some((d) => d.id === a.dragonId && d.stage >= 1);
     if (a.species === 'wisp') {
       wispSeen++;
       if (wispSeen > keepWisps) return false;
@@ -312,6 +326,61 @@ export function tickCreatures(state: GameState): void {
               pushMessage(state, `Gloam-hounds tore through the ${BUILDING_BY_KEY[b.kind].name.split(' ')[0].toLowerCase()} at (${b.x},${b.y}).`, 'bad');
             }
           }
+        }
+        break;
+      }
+      case 'drake': {
+        const d = state.dragons.find((x) => x.id === a.dragonId);
+        if (!d) break;
+        if (a.timer > 0) {
+          a.timer--;
+          break;
+        }
+        // home: the cradle; posts: a district (warden) or a mine (delver)
+        let hx = ax;
+        let hy = ay;
+        if (d.role === 'delver') {
+          const m = state.buildings.find((b) => b && b.id === d.roleTarget);
+          if (m) {
+            hx = m.x + m.w + 0.5;
+            hy = m.y + 0.5;
+          }
+        }
+        if (a.path.length === 0) {
+          if (d.role === 'warden' && d.roleTarget > 0) {
+            const tiles = districtTiles(state, d.roleTarget);
+            if (tiles.length) {
+              let pick = -1;
+              for (let k = 0; k < 8 && pick < 0; k++) {
+                const i = tiles[rng.int(tiles.length)];
+                if (state.bIndex[i] < 0 && !isWater(state.terrain[i]) && !state.wall[i]) pick = i;
+              }
+              if (pick >= 0) a.path = [pick];
+            }
+          } else {
+            const nx = Math.floor(hx) + rng.int(5) - 2;
+            const ny = Math.floor(hy) + rng.int(5) - 2;
+            if (inBounds(nx, ny) && state.bIndex[idx(nx, ny)] < 0 && !isWater(state.terrain[idx(nx, ny)])) a.path = [idx(nx, ny)];
+          }
+          if (a.path.length === 0) a.timer = 30;
+          break;
+        }
+        const ti = a.path[0];
+        const tx = (ti % MAP_W) + 0.5;
+        const ty = ((ti / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        if (dist <= sp) {
+          a.x = tx;
+          a.y = ty;
+          a.path = [];
+          a.timer = 40 + rng.int(80);
+        } else {
+          a.x += (dx / dist) * sp;
+          a.y += (dy / dist) * sp;
+          a.dir = dx > 0 ? 0 : 2;
         }
         break;
       }

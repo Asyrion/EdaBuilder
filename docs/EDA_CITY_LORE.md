@@ -9,7 +9,29 @@ This file separates what the repository already established about Eda from what
 - It is medieval, high fantasy with a dark-fantasy undertone.
 - Magic is central: arcane power, magical artifacts, potions and alchemy.
 - A sister game, **Ossuary**, is set in Eda and focuses on potions and alchemy.
-- Nothing else. The repository contained only a one-line README.
+- **Lore drop (docs/Places, Characters, Civilizations_Countries_Cultures, Creatures_Animals),
+  treated as canon from the moment it landed:**
+  - **The Huruhui**, a flower-attired civilization of misty giant valleys: cliffside homes of
+    stone, wood and bioluminescent plants; vertically stacked enchanted gardens and
+    aquaponics; clans and communal councils; biomancy and magically harnessed renewable
+    energy; valleys honoured as living entities.
+  - **Boketto the Storm Caller**, born under a star convergence, who ended the Great Drought
+    with a three-night ritual and bears glowing storm sigils.
+  - **The Pass of Buluiain** with its two gates: **Belregi** (Belregi Stone, blue-glowing
+    runes, protective wards, the Belregi Guardians and their High Warden, the Heart of
+    Belregi) and **Uzulim** (dark volcanic stone, crimson symbols, obelisk wards that sap
+    the will, hooded statue guardians, the secretive Uzulim Wardens and the Shadow Sentinel,
+    the legend of Kaelith, a vault of wild artifacts).
+  - **Longwood**, an ancient narrow sequoia forest dividing two strips of the Mahjula desert
+    (working name), full of ruins of a lost civilization (**Lukuku**), home of the Huruhui,
+    the **World Trees**, the **Cloud Forest Wizard**, **war-tigers** and exotic creatures.
+  - **The Plains of Belerial**, endless yellow plains with **nomadic rider cultures** on
+    bipedal riding creatures, and the **Wandering Merchant of Belerial**.
+  - **Patagoi Atoll**, the **Swamps of Ulum**, **Gekiryu** (a village of endless torrents
+    of water), **Dr. Jelly's House**.
+  - **Fen-Nex** (fox-man) shapeshifters; characters **Asyrion**, a male fire-mage assassin
+    / chaos wizard, and **Esakki Raja Arumugam** (WIP).
+  - The vault root is the *Azrion Mother Node*.
 
 ## Proposed (invented for Wardlight) — all of the following
 
@@ -19,7 +41,12 @@ material; where the given material is silent it invents.
 ### World structure *(proposed)*
 - Ley ("thrum") runs in Veins under the earth and surfaces at **ley nodes**.
 - The continent **Orrin**; the kingdom **the Ashen Crown of Vell**; its capital
-  **Vell-on-Sable**.
+  **Vell-on-Sable**. *Reconciliation with the lore drop:* Vell lies in the river country
+  north-east of the Plains of Belerial; the Huruhui valleys lie beyond the Pass of
+  Buluiain to the west; Longwood and the Mahjula strips lie south. The Gloam is Vell's
+  local name for the wild lands the Huruhui guard against at Uzulim; the Huruhui and
+  the Belerial riders were far enough from the Great Conduit that the Hollowing reached
+  them as storms and drought rather than as a shattered lattice. See `EDA_LORE.md` §9.
 - The **Aurel Concord** magocracy, its **Great Conduit**, and its fall in the
   **Hollowing** three centuries ago.
 - The present age, the **Long Dusk**; the blighted wilds called the **Gloam**.

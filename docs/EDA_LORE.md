@@ -184,6 +184,40 @@ flock of them lights a street). Vell's naturalists name three bodies: the **drak
 (four legs, no wings), the **wyvern** (two legs and wings) and the **wyrm** (a serpent
 the length of a street, which never leaves its lair and never needs to).
 
+## 9. Beyond Vell: the wider Eda *(canon from the lore drop, placed)*
+
+Vell is one country of Eda, and a young one. The lore drop in `docs/` describes lands
+Wardlight's Warden-Reeve only hears of from carters and pilgrims; this section places
+them without changing them.
+
+- **West, beyond the Pass of Buluiain:** the misty giant valleys of the **Huruhui**, who
+  build into the cliffs with stone, wood and bioluminescent plants and feed themselves
+  from vertical enchanted gardens. Their **storm callers** command weather; the greatest,
+  **Boketto**, ended the Great Drought. Two gates close the pass: **Belregi**, of blue
+  runed Belregi Stone, guarded by the Belregi Guardians; and **Uzulim**, of dark volcanic
+  stone with crimson symbols, kept by the secret Uzulim Wardens against the wild lands
+  beyond. Vellish scholars believe the "wild lands beyond Uzulim" and the Gloam are the
+  same wound seen from two sides.
+- **South-west:** the **Plains of Belerial**, endless and yellow, crossed by nomadic
+  riders on bipedal striders and by the **Wandering Merchant of Belerial**, whose caravan
+  sometimes reaches a wardlight's Trade Depot with goods no cart in Vell could carry.
+- **South:** **Longwood**, a long narrow forest of trees taller than spires, divided
+  between two strips of the Mahjula desert; the ruins of **Lukuku**, a civilization lost
+  before the Concord; the **World Trees**; the **Cloud Forest Wizard**; **war-tigers**;
+  and the **Fen-Nex**, fox-folk who change shape and are said to trade honestly exactly
+  half the time.
+- **Far south and east:** the **Swamps of Ulum** and the **Patagoi Atoll**; **Gekiryu**,
+  a village built in endless torrents of water, whose water-mages the Veshari claim as
+  cousins.
+- Names Vell knows and does not understand: **Dr. Jelly**, whose house is spoken of by
+  alchemists in the way one speaks of weather; **Asyrion**, a chaos wizard and fire
+  mage of whom the Watch keeps a description and no drawing.
+
+How this touches the wardlight: Huruhui garden-craft and storm-calling are things Vell
+can *learn* (buildings and visitors), Belerial caravans and Fen-Nex traders are things
+that *arrive* (events), and Longwood's creatures are things that *escape* into the
+Gloam roads (creatures). See `DESIGN.md` §11.
+
 ## 7. Glossary
 
 - **Charter** — the royal writ that founds a wardlight; also the game's save.

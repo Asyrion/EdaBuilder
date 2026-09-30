@@ -8,6 +8,7 @@ import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, deepenNode, forEachBuilding } from './world';
 import { resolveEvent } from './events';
+import { setRole } from './wyrmcraft';
 
 export interface BotOptions {
   aggressive?: boolean; // zone more than demand asks
@@ -30,6 +31,7 @@ export class Bot {
     const s = this.s;
     if (s.gameOver) return;
     if (s.pendingEvent) resolveEvent(s, 0);
+    for (const d of s.dragons) if (d.stage >= 2 && d.role === 'none') { const mine = s.buildings.find((b) => b && b.kind === 'mine'); if (mine) setRole(s, d.id, 'delver', mine.id); }
     this.ensureGrid();
     this.zoneByDemand();
     this.keepWatered();
@@ -220,7 +222,7 @@ export class Bot {
         spots.push({ x: b.x, y: b.y, d: dmin });
       });
       spots.sort((a, b) => b.d - a.d);
-      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari';
+      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'tamerslodge';
       for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
       if (this.radius < 40) this.radius += 5; // no room: grow the town
     };
@@ -238,6 +240,8 @@ export class Bot {
     want('hospice', Math.floor(buildings / 250));
     want('guildhall', 1);
     want('depot', 1);
+    want('cradle', 1);
+    want('tamerslodge', this.countKind('cradle'));
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     // deepen the founding Wellspring when mana runs short
     if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {

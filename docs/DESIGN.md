@@ -293,6 +293,25 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   existing neighbour's autotile lived in a chunk that was never marked dirty; changes now
   dirty the four neighbours as well (`markDirtyAround`).
 
+### 4.26 Wyrmcraft I (iteration 8)
+- **Wyrm-Cradle** (Township, 2×2, needs a node or spire within 6 to raise, must be lit to
+  warm; 8 mana/day) holds two eggs. **Tamer's Lodge** (Township, 2×2) within 10 tiles of a
+  cradle lets hatchlings grow. Eggs arrive only through events: the Crown's gift on the
+  first cradle, a warm seam in a mine that has run 20 days, a quiet boneyard with an
+  Ossuary and six wisps, an old Moth-Loft, poachers at the gate.
+- Growth: egg 30 warm days → hatchling → drake (20 days, fed 6 goods/day from the nearest
+  stocked market, trained). Training: gentle ×0.8, hard ×1.3 (2 %/day the cradle catches
+  fire), wild ×1.6 (1 %/day the dragon leaves). Unfed dragons lose mood and leave at 0.
+  Wyvern and wyrm stages wait for the sky layer.
+- Materials: eggshell per hatching, scale per stage (line-dependent), wyrmfire monthly from
+  ember drakes (Craft +15 % while stocked, decays 0.05/day).
+- Roles (drakes): **Warden** of a district (watch and fire coverage +0.5 across it, the
+  drake patrols the district) and **Delver** at a Crystal Mine (+6 leystone/day for ember,
+  +4 otherwise). Drakes are creature agents drawn per line (8 lines × hatchling/drake × 2
+  frames) with line-specific glow and particles.
+- Wyrms panel: cradles and slots, materials, each dragon's mood, hunger, growth, training
+  and role selection.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -580,9 +599,54 @@ without an event.
 7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
 8. Vehicles: floating carts, barges, drake riders, airships.
 
+## 11. Lore-drop inspirations (from docs/Places, Characters, Civilizations, Creatures)
+
+Content and mechanics the canon drop suggests, in the order worth building. Each is
+consistent with `EDA_LORE.md` §9.
+
+1. **Wall Gates, Belregi and Uzulim style.** A gate tile in the Warding Wall lets a road
+   pass. Two styles, both from the Pass of Buluiain: a **Belregi Gate** (blue runes: ward
+   coverage +0.3 within 8, pilgrims arrive, happiness +2 nearby) and an **Uzulim Gate**
+   (crimson obelisks: hounds and the restless never pass within 10, unrest +3 % in its
+   district). A **Great Gate** wonder later, with a Heart of Belregi event chain.
+2. **Storm-Caller's Peak** (on hills, Township): a Huruhui-trained storm caller calls
+   rain on a district (fires out, miasma washed, herb yields +), disperses a mana-storm,
+   or, in the Hush, holds a storm off the wards. Replaces the planned Weather Vane of
+   Vesh. Event: *a storm caller of the Huruhui, marked with glowing sigils, asks for a
+   peak to work from*; declining sends them on to Vell-on-Sable.
+3. **Hanging Gardens** (Huruhui garden-craft): a cliff-side vertical garden building
+   that needs hills on one side; produces goods and health without farmland and lights
+   itself with bioluminescent vines (a **Glowvine Lane** road tier lit by plants, no
+   mana). Unlocked by the storm caller's visit or by an Academy exchange event.
+4. **Belerial caravans.** Every season a caravan of riders on bipedal **striders** may
+   reach the Trade Depot (needs a road to the map edge): sells rare goods, buys surplus
+   at good prices, offers strider mounts (Watch reach +, later couriers) and, rarely, an
+   egg. The **Wandering Merchant of Belerial** is a named recurring visitor with a
+   memory of past deals.
+5. **Fen-Nex visitors.** Fox-folk shapeshifters arrive as a trickster event chain:
+   honest trades and swindles at fifty-fifty, a Fen-Nex district that pays no tithe but
+   doubles market stock, and a **fen-drake**: a cat-dragon line hatched only from a
+   Fen-Nex gift.
+6. **Longwood escapees.** **War-tigers** as a forest predator far worse than hounds
+   (Hunters' Lodge or a bound drake needed); exotic creatures of Longwood as rare
+   sightings that raise happiness.
+7. **Ruins of Lukuku.** Map generation can seed an ancient ruin cluster in the forest;
+   a **Ruin Delve** camp on it yields relics (artifact price +), relic events (the
+   Concord was not the first to fall), and occasionally wakes something.
+8. **World Tree sapling** wonder: a cutting from the World Trees of Longwood, planted at
+   Free City, grows over four seasons into a tree taller than the Lantern of Vell:
+   happiness, land value, glimmoths and skyrays gather, and its roots hold the Gloam.
+9. **Torrent Mill** (Gekiryu): a mill on river tiles that turns falling water into mana
+   (a Huruhui renewable), with an animated torrent; the Veshari claim the design.
+10. **Swamp biome and atoll maps.** Marsh terrain (buildable after a Drainage edict,
+    marsh-wyrm home) and island maps for scenario charters (Patagoi Atoll).
+11. **Cameos as events.** Dr. Jelly (an eccentric alchemist selling one strange potion:
+    a random large effect), the Cloud Forest Wizard (offers a glimwood grove), and a
+    guarded cameo of Asyrion (a description only, never a sprite, unless asked).
+
 ## 9. Verification
 
-- `npm test` runs 54 vitest cases: terrain determinism, road/zone/building rules, spire
+- `npm test` runs 59 vitest cases: terrain determinism, road/zone/building rules, spire
   chains and brownouts, water coverage, a 60-day growth run, determinism, save/load
   round-trip plus continued identical simulation, bankruptcy, pathfinding, restless dead
   and the Long Night, gloam creep/wards/founding-node loss, wild surge timing, fire spread
@@ -593,7 +657,7 @@ without an event.
   `scripts/playtest.mjs` drives the real UI with mouse/keyboard; `scripts/shot.mjs`,
   `start.mjs`, `atlas.mjs` produce screenshots for art review.
 
-## 10. Decision log
+## 12. Decision log
 
 - *Game name "Wardlight":* a wardlight is what the lore calls a chartered city; the
   name states the fantasy (hold the light against the dark) in one word.

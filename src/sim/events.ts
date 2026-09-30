@@ -1,6 +1,7 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Terrain, Zone, type GameState } from './types';
+import { Terrain, Zone, type DragonLine, type GameState } from './types';
+import { LINE_INFO, addEgg } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 
@@ -180,7 +181,56 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...CALENDAR];
+/** Egg events: the only way to get dragons. */
+function eggChoices(line: DragonLine, sell: number): EventDef['choices'] {
+  return [
+    { label: 'Keep the egg', desc: 'Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown.', apply: (s) => { const d = addEgg(s, line); if (d) return `The ${LINE_INFO[line].name.toLowerCase()} egg is laid in the cradle, warm and humming. The tamers already call it ${d.name}.`; s.treasury += sell; return `No cradle had room. The Crown's assessor pays ${sell} crowns and rides off very carefully.`; } },
+    { label: `Sell it to the Crown (+${sell} crowns)`, desc: 'Crowns now.', apply: (s) => { s.treasury += sell; return `${sell} crowns, and a receipt with the royal wyrm-seal.`; } },
+    { label: 'Give it to the Academy', desc: 'Educated share +5% (needs an Academy), else happiness +3 for 10 days.', apply: (s) => { if (s.buildings.some((b) => b && (b.kind === 'academy' || b.kind === 'grandacademy'))) { s.educated = Math.min(0.95, s.educated + 0.05); return 'The scholars draw it from every angle and argue about the spiral.'; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 10, label: 'Egg on display' }); return 'Without an Academy it sits in the Founding Stake, and half the valley comes to look.'; } },
+  ];
+}
+
+const EGGS: EventDef[] = [
+  {
+    id: 'egg_first', title: "The Crown's gift", once: true,
+    text: 'A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg "so that the valley may learn what it is to keep a dragon".',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'cradle' && b.state === 'ok') && s.dragons.length === 0,
+    choices: [
+      { label: 'Accept the egg', desc: 'An ember egg goes into your cradle.', apply: (s) => { const d = addEgg(s, 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
+      { label: 'Decline politely', desc: '+800 crowns from the Crown for your modesty; no egg.', apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
+    ],
+  },
+  {
+    id: 'egg_seam', title: 'A seam of warm stone',
+    text: 'Grimmen miners break into a seam that is warm to the touch, and in a hollow of red stone lies an egg the size of a bucket, ticking softly.',
+    when: (s) => s.milestone >= 4 && s.buildings.some((b) => b && b.kind === 'mine' && b.age >= 20) && s.dragons.length < 6,
+    choices: eggChoices('ember', 1500),
+  },
+  {
+    id: 'egg_bone', title: 'A hatchling in the boneyard',
+    text: 'The wisps over the Ossuary have gathered in a ring all week. At its centre the sexton finds an ivory egg half-buried in the quiet ground.',
+    when: (s) => s.milestone >= 4 && s.buildings.some((b) => b && b.kind === 'ossuary') && s.agents.filter((a) => a.species === 'wisp').length >= 6 && s.dragons.length < 6,
+    choices: eggChoices('bone', 1800),
+  },
+  {
+    id: 'egg_glim', title: 'Something in the loft',
+    text: 'The moth-keepers report a nest of glim-dust in the top of the loft, and in it a golden egg no bigger than a fist, warm as a lamp.',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'mothloft' && b.age >= 40) && s.dragons.length < 6,
+    choices: eggChoices('glim', 900),
+  },
+  {
+    id: 'egg_poachers', title: 'Poachers at the gate',
+    text: 'Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.',
+    when: (s) => s.buildings.some((b) => b && b.kind === 'cradle') && s.treasury > 3000 && s.dragons.length < 6,
+    choices: [
+      { label: 'Buy the egg (2,500 crowns)', desc: 'An ember, bone or glim egg, if a cradle has room.', apply: (s) => { const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim'] as DragonLine[]); commitRng(s, rng); s.treasury -= 2500; const d = addEgg(s, line); return d ? `A ${LINE_INFO[line].name.toLowerCase()} egg, still warm. The poachers are gone before the crowns are counted.` : 'No cradle had room; the egg is sold on to the Crown at a loss. The poachers laugh.'; } },
+      { label: 'Arrest them', desc: 'Unrest −3% for 10 days; 40% chance the egg is recovered anyway.', apply: (s) => { s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'Poachers jailed' }); const rng = rngOf(s); const luck = rng.chance(0.4); commitRng(s, rng); if (luck) { const d = addEgg(s, 'ember'); if (d) return 'The Watch takes the carters and the egg. It goes to the cradle.'; } return 'The Watch takes the carters. The egg is not in the cart.'; } },
+      { label: 'Send them away', desc: 'Nothing changes.', apply: () => 'They leave by the Gloam road, moss dripping.' },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...CALENDAR];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -209,7 +259,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
