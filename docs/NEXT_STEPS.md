@@ -1,5 +1,14 @@
 # Next steps
 
+## Done in iteration 2
+
+- Goods flow by cart from Craft works to Markets, with shortages and gluts feeding demand.
+- Seasons (30 days each) with a long-night Hush that stresses mana and lets the Gloam grow.
+- Seven story events with choices and timed modifiers; the game pauses to ask.
+- Seven city edicts with daily upkeep.
+- Problem icons only after two days of trouble and only at 2× zoom or closer.
+- A "no goods" icon and goods rows in the building inspector; goods stat in the top bar.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -7,9 +16,8 @@
   and light pass dominate in software). On a GPU-backed browser this is well under the
   16 ms budget, but 1× zoom on a very large city should be re-measured on real hardware
   and, if needed, the light map dropped to quarter resolution at 1×.
-- **Problem icons can get noisy** in a dense, under-served city (each dry/unlit building
-  shows one). CS1 does the same, but a per-district summary or icon fading with zoom would
-  read better.
+- **Problem icons** now wait two days and hide at 1× zoom, but a dense unlit district still
+  shows one per building; a per-district summary would read better.
 - **The bot player is a test tool**, not a demo: it zones aggressively and sometimes leaves
   water gaps that a human would fix in seconds.
 - **Agents walk on the tile grid**, so citizens occasionally cut a corner visually where a
@@ -28,14 +36,12 @@
 
 ## Prioritized ideas for the next iteration
 
-1. **Goods flow.** Craft districts produce potions/leystone that markets must receive by
-   cart; unmet supply lowers market happiness. Turns carts from decoration into logistics
-   and makes traffic matter more.
-2. **Districts and policies** (CS1's best late-game layer): curfews, tithe exemptions,
-   "no stills near the well", Grimmen sextons, Tallowkin spire-wrights. Cheap to add on top
-   of the coverage maps.
-3. **Seasons.** The lore already has Thaw/Bloom/Ember/Hush; make the Hush matter: longer
-   nights, gloam creeps faster, mana demand for warmth rises.
+1. **Districts.** Edicts are city-wide; painting districts and applying edicts per
+   district (CS1 style) is the natural next layer, reusing the coverage-map machinery.
+2. **Goods depth.** Two goods (potions, leystone) with Arcane districts consuming leystone
+   and exporting artifacts for crowns; a trade depot at the map edge.
+3. **Event chains.** Follow-ups to the seven events (the relic is stolen, the guilds return
+   with a counter-offer, the Grimmen build their own Boneyard).
 4. **Hand-made art pass.** The atlas manifest is ready; the biggest wins are level-3
    townhouses, the temple, and citizen sprites with real walk cycles.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a

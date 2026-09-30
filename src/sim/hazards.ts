@@ -5,6 +5,8 @@ import { commitRng, forEachBuilding, markDirty, pushMessage, removeBuilding, rng
 import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { manaUseOf } from './networks';
+import { edictOn, modifierSum } from './edicts';
+import { seasonOf } from './world';
 
 export interface Effect {
   x: number;
@@ -76,7 +78,8 @@ export function dailyFire(state: GameState): void {
 }
 
 export function dailySurge(state: GameState): void {
-  if (state.manaDemand > state.manaSupply * 1.25 && state.manaDemand > 20) {
+  const threshold = edictOn(state, 'wardens') ? 1.5 : 1.25;
+  if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20) {
     state.overdrawDays++;
     if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn');
     else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
@@ -149,7 +152,7 @@ export function dailyGloam(state: GameState): void {
   // 2. creep
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0) {
-    const p = Math.min(0.6, 0.22 + state.day * 0.002);
+    const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1);
     const gloam = state.gloam;
     const newTiles: number[] = [];
     for (let y = 0; y < MAP_H; y++)
@@ -236,7 +239,7 @@ export function dailyGloam(state: GameState): void {
 export function dailyDeath(state: GameState): void {
   const rng = rngOf(state);
   // deaths
-  const rate = 0.0035 * (1.7 - state.health);
+  const rate = 0.0035 * (1.7 - state.health) * (1 + modifierSum(state, 'deaths')) * (seasonOf(state) === 3 ? 1.2 : 1);
   const expected = state.population * rate;
   let deaths = Math.floor(expected);
   if (rng.chance(expected - deaths)) deaths++;
@@ -257,7 +260,7 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += def.service.quietRate ?? 0;
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites') ? 1.5 : 1);
   });
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);

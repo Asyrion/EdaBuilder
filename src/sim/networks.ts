@@ -1,17 +1,18 @@
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
-import { forEachBuilding, markDirty } from './world';
+import { forEachBuilding, markDirty, seasonOf } from './world';
 
 const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
 const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
 
-export function manaUseOf(b: Building): number {
+export function manaUseOf(b: Building, hush = false): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
-  return def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
+  const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
+  return hush && def.category === 'zone' ? base * 1.25 : base;
 }
 
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */
@@ -146,6 +147,7 @@ export function updateMana(state: GameState): void {
   // 5. demand & brownout
   const consumers: { s: number; use: number; d: number }[] = [];
   let demand = 0;
+  const hush = seasonOf(state) === 3;
   const f = state.founding;
   for (let s = 0; s < state.buildings.length; s++) {
     const b = state.buildings[s];
@@ -154,7 +156,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = manaUseOf(b);
+    const use = manaUseOf(b, hush);
     if (use > 0) {
       demand += use;
       let dmin = Infinity;

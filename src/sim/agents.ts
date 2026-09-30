@@ -2,6 +2,7 @@
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
+import { edictOn } from './edicts';
 
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
@@ -112,6 +113,10 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 }
 
 /** A road tile adjacent to the building footprint, or -1. */
+export function marketStockCap(b: Building): number {
+  return 20 * b.level;
+}
+
 export function roadTileOf(state: GameState, b: Building): number {
   for (let dy = -1; dy <= b.h; dy++)
     for (let dx = -1; dx <= b.w; dx++) {
@@ -201,6 +206,7 @@ export function dailyAgents(state: GameState): void {
         timer: rng.int(200),
         variant: rng.int(6),
         dir: 0,
+        load: 0,
       });
       citizens++;
       spawned++;
@@ -226,6 +232,7 @@ export function dailyAgents(state: GameState): void {
         timer: rng.int(300),
         variant: rng.int(3),
         dir: 0,
+        load: 0,
       });
       carts++;
     }
@@ -250,6 +257,7 @@ export function spawnRestless(state: GameState, x: number, y: number): boolean {
     timer: 0,
     variant: rng.int(3),
     dir: 0,
+    load: 0,
   });
   commitRng(state, rng);
   state.stats.restlessTotal++;
@@ -283,8 +291,25 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
   }
   let dest: Building | null = null;
   if (a.kind === AgentKind.Cart) {
-    if (a.targetId === -1 && pools.markets.length) dest = rng.pick(pools.markets);
-    else dest = home;
+    if (a.targetId === -1) {
+      // wait for a load at the works; then deliver to a hungry market (prefer low stock, nearby)
+      if (home.stock < 4 || !pools.markets.length) {
+        a.timer = 120;
+        return;
+      }
+      let best: Building | null = null;
+      let bs = -Infinity;
+      for (let k = 0; k < 6; k++) {
+        const m = rng.pick(pools.markets);
+        const score = -m.stock * 2 - Math.abs(m.x - home.x) - Math.abs(m.y - home.y) * 0.5;
+        if (score > bs) {
+          bs = score;
+          best = m;
+        }
+      }
+      dest = best;
+      a.load = Math.min(12, home.stock);
+    } else dest = home;
   } else {
     const atHome = a.targetId === -1 || a.targetId === home.id;
     if (atHome) {
@@ -310,7 +335,10 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
   a.path = p;
   a.pathIdx = 0;
   a.targetId = dest === home ? home.id : dest.id;
-  if (a.kind === AgentKind.Cart && dest === home) a.targetId = -1;
+  if (a.kind === AgentKind.Cart) {
+    if (dest === home) a.targetId = -1;
+    else home.stock -= a.load; // goods leave the works
+  }
 }
 
 /** Called every tick. Moves agents along paths and accumulates traffic. */
@@ -364,8 +392,13 @@ export function tickAgents(state: GameState): void {
       if (a.pathIdx >= a.path.length) {
         // arrived
         a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : 150 + rng.int(450);
-        if (a.kind === AgentKind.Cart && a.targetId !== -1) {
-          // delivered; next trip goes home
+        if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
+          const m = buildingById(state, a.targetId);
+          if (m && m.state === 'ok') {
+            m.stock = Math.min(marketStockCap(m), m.stock + a.load);
+            state.goodsSold += a.load;
+          }
+          a.load = 0;
         }
       }
     } else {
@@ -400,7 +433,7 @@ export function dailyRestless(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Restless) return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    const p = (state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2;
+    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew') ? 1.4 : 1);
     if (rng.chance(Math.min(0.9, p))) {
       cleared++;
       return false;

@@ -1,5 +1,6 @@
 /** Service coverage, miasma, land value. */
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
+import { edictOn } from './edicts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 
@@ -46,7 +47,7 @@ export function updateMiasma(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.miasma || b.state !== 'ok') return;
-    const amt = def.miasma * b.level;
+    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens') ? 1.3 : 1);
     const r = 4;
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {

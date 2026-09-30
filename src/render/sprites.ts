@@ -571,6 +571,11 @@ function icon(kind: string): Painter {
       p.line(1, 2, 8, 8, 'fire2');
       p.line(8, 2, 1, 8, 'fire2');
       break;
+    case 'nogoods':
+      p.rect(1, 3, 7, 5, 'wood2');
+      p.rect(2, 4, 5, 3, 'outline');
+      p.line(0, 8, 8, 0, 'fire2');
+      break;
     case 'nojobs':
       p.rect(1, 3, 7, 5, 'wood2');
       p.rect(3, 1, 3, 2, 'wood1');
@@ -933,7 +938,7 @@ export function generateSprites(): SpriteDef[] {
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });
   }
   // icons
-  for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });
+  for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });
   // flame sprite frames
   for (let f = 0; f < 3; f++) {
     const p = new Painter(10, 14);
