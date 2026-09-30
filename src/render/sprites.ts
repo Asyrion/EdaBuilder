@@ -66,11 +66,12 @@ function waterFrames(name: string, base: Col, mid: Col, hi: Col, frames: number,
   return out;
 }
 
-function roadTile(type: 'track' | 'cobble' | 'lantern', mask: number): Painter {
+function roadTile(type: 'track' | 'cobble' | 'lantern' | 'glowvine', mask: number): Painter {
   const cols: Record<string, [Col, Col, Col]> = {
     track: ['dirt1', 'dirt2', 'dirt3'],
     cobble: ['cobble1', 'cobble2', 'cobble3'],
     lantern: ['lantern1', 'lantern2', 'cobble3'],
+    glowvine: ['cobble1', 'cobble2', 'glimleaf'],
   };
   const [c1, c2, c3] = cols[type];
   const half = type === 'track' ? 0.26 : 0.3;
@@ -95,6 +96,20 @@ function roadTile(type: 'track' | 'cobble' | 'lantern', mask: number): Painter {
     if (type === 'track') {
       if (r < 0.12) return c3;
       if (r < 0.25 || edge) return c2;
+      return c1;
+    }
+    if (type === 'glowvine') {
+      // cobbles with a vine running down each side and glowing berries
+      const cx = (px + (py & 2 ? 2 : 0)) % 4;
+      const cy = py % 2;
+      const edgeBand = (e || w) && Math.abs(v - 0.5) > half - 0.09 || (n || s) && Math.abs(u - 0.5) > half - 0.09 || mask === 0;
+      if (edgeBand) {
+        if (r < 0.2) return 'leyGlow';
+        if (r < 0.7) return 'glimleaf';
+        return 'leaf2';
+      }
+      if (cx === 0 || cy === 0) return c2;
+      if (r < 0.08) return c3;
       return c1;
     }
     if (type === 'cobble') {
@@ -188,6 +203,8 @@ export interface BuildingSpec {
   bellTower?: boolean;
   ridgeOrnament?: boolean; // carved beast heads on the roof ridge
   glassDome?: boolean;
+  waterWheel?: boolean; // a mill wheel on the left face
+  vines?: boolean; // glowing vines down the walls
 }
 
 const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
@@ -519,6 +536,28 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
       glow.px(x, gy - 4, c, 140);
     }
     p.line(B[0] + Math.round(len * 0.42), Math.floor(B[1] + ((R[1] - B[1]) * 0.42)) - 2, B[0] + Math.round(len * 0.9), Math.floor(B[1] + ((R[1] - B[1]) * 0.9)) - 2, 'wood1');
+  }
+  if (spec.waterWheel) {
+    const cx = L[0] + 7;
+    const cy = L[1] - 2;
+    p.circle(cx, cy, 6, 'wood2');
+    p.circle(cx, cy, 5, 'wood1');
+    p.circle(cx, cy, 3, 'wood3');
+    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; p.line(cx, cy, Math.round(cx + Math.cos(a) * 5), Math.round(cy + Math.sin(a) * 5), 'wood2'); }
+    p.circle(cx, cy, 1, 'ironDark');
+    for (let k = 0; k < 6; k++) p.px(cx - 6 + k, cy + 6, 'waterHi');
+  }
+  if (spec.vines) {
+    for (let k = 0; k < 7; k++) {
+      const x = ox + 3 + Math.floor(h2(k, seed, 5) * (W - 6));
+      const top = base + Math.floor(h2(seed, k, 6) * 4);
+      const len = 6 + Math.floor(h2(k, seed + 1, 7) * (H + 6));
+      for (let y = top; y < top + len; y++) if (p.get(x, y)) p.px(x, y, (y + k) % 3 === 0 ? 'glimleaf' : 'leaf2');
+      const gy = top + len - 1;
+      p.px(x, gy, 'leyGlow');
+      glow.px(x, gy, 'glimleaf', 200);
+      if (k % 2 === 0) { p.px(x + 1, gy - 3, 'flower1'); glow.px(x + 1, gy - 3, 'lampWarm', 160); }
+    }
   }
   if (spec.lanternPost) {
     const x = R[0] - 3;
@@ -1175,6 +1214,10 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
+  torrentmill: { w: 1, h: 1, height: 12, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
+  glimhouse: { w: 2, h: 2, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 3, windowRows: 1, glowWindows: true, seed: 31, glassDome: true, runeBand: true },
+  observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
+  hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1413,7 +1456,7 @@ export function generateSprites(): SpriteDef[] {
     out.push({ name: 'leynode', p, glow, ax: 17, ay: 14 });
   }
   // roads
-  for (const t of ['track', 'cobble', 'lantern'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
+  for (const t of ['track', 'cobble', 'lantern', 'glowvine'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
   // warding wall autotiles
   for (let m = 0; m < 16; m++) { const wt = wallTile(m); out.push({ name: `wall_${m}`, p: wt.p, glow: wt.glow, ax: 16, ay: 2 }); }
   // zone overlays

@@ -175,7 +175,7 @@ export class Renderer {
         if (s) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
         const r = state.road[i];
         if (r) {
-          const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : 'lantern';
+          const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : r === RoadType.Glowvine ? 'glowvine' : 'lantern';
           s = this.atlas.get(`road_${key}_${this.roadMask(state, x, y)}`);
           if (s) {
             if (isWater(t)) {
@@ -465,6 +465,7 @@ export class Renderer {
         if ((b.kind === 'spire' || b.kind === 'nexus') && Math.random() < 0.08) this.particles.emit({ x: cx + (Math.random() - 0.5) * 6, y: cy - 20 - Math.random() * 10, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 1.5, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
         if (b.kind === 'wardlantern' && Math.random() < 0.1) this.particles.emit({ x: cx + (Math.random() - 0.5) * 20, y: cy - 8 - Math.random() * 16, vx: (Math.random() - 0.5) * 8, vy: -3, maxLife: 2, size: 1, color: PAL.ley1, glow: true, kind: 'ward' });
         // chimney smoke
+        if (b.kind === 'torrentmill' && cam.zoom >= 2 && Math.random() < 0.5) this.particles.emit({ x: wx - 8 + (Math.random() - 0.5) * 6, y: wy + 6, vx: (Math.random() - 0.5) * 10, vy: -10 - Math.random() * 12, maxLife: 0.5, size: 1, color: PAL.waterHi, glow: false, kind: 'mote' });
         if (def.category === 'zone' && (def.zone === Zone.Hearth || def.zone === Zone.Craft) && (b.level >= 2 || b.variant % 2 === 0) && Math.random() < 0.035 && cam.zoom >= 2) {
           const craft = def.zone === Zone.Craft;
           this.particles.emit({ x: wx - 4 + (Math.random() - 0.5) * 4, y: wy - (4 + b.level * 4), vx: 0, vy: -4, maxLife: 2.5 + Math.random(), size: craft ? 2 : 1, color: craft ? '#8fa08a' : PAL.smoke, glow: false, kind: 'smoke' });
@@ -591,6 +592,9 @@ export class Renderer {
           if (state.road[i] === RoadType.Lantern && state.lit[i] && (x + y) % 2 === 0) {
             const [wx, wy] = tileToWorld(x, y);
             lights.push({ x: wx, y: wy + 8, r: 22, c: PAL.lanternLight, i: 0.6 });
+          } else if (state.road[i] === RoadType.Glowvine && state.lit[i]) {
+            const [wx, wy] = tileToWorld(x, y);
+            lights.push({ x: wx, y: wy + 8, r: 18, c: PAL.glimleaf, i: 0.45 + 0.1 * Math.sin(this.time * 1.5 + x * 0.7 + y) });
           }
         }
     }

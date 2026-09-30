@@ -215,12 +215,26 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }
   if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
+  if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
+  if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
   if (def.key === 'mothloft' || def.key === 'cradle') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
     if (!near) return def.key === 'cradle' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
   }
   return null;
+}
+
+export function touchesTerrain(state: GameState, x: number, y: number, w: number, h: number, test: (t: number) => boolean): boolean {
+  for (let dy = -1; dy <= h; dy++)
+    for (let dx = -1; dx <= w; dx++) {
+      const edge = dx === -1 || dy === -1 || dx === w || dy === h;
+      if (!edge) continue;
+      const tx = x + dx;
+      const ty = y + dy;
+      if (inBounds(tx, ty) && test(state.terrain[idx(tx, ty)])) return true;
+    }
+  return false;
 }
 
 export function touchesRoad(state: GameState, x: number, y: number, w: number, h: number): boolean {

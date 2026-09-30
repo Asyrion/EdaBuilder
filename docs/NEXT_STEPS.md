@@ -83,6 +83,13 @@
 - Toolbar and Ledger stacked in one column so they cannot overlap; Info views, building
   info and the ticker are draggable with remembered positions.
 
+## Done in iteration 12 (magical buildings I)
+
+- Torrent Mill (river mana), Glimhouse (lifts a new Hush penalty on Craft), Astral
+  Observatory (five-day Forecast block in the Ledger), Hanging Gardens (goods, health,
+  self-lit, against hills) and the Glowvine Lane road tier lit by vines with no mana.
+- Five new Ledger quests; the building inspector shows the Hush state of Craft works.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -116,16 +123,17 @@ Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhare
 Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9, done) Wyrmcraft II:
 sky layer, wyvern couriers, the Wyrm-Ring, gates, the Peak, visitors; (10, done) quests,
 hints and the Chronicle; (11, done) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
-binding; (12) magical buildings: Glimhouse, Weather Vane, Observatory, Portal Arch; (13)
-Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (14)
+binding; (12, done) magical buildings I: Glimhouse, Torrent Mill, Observatory, Hanging Gardens,
+Glowvine Lane; (13) Portal Arch, World Tree sapling, Ruins of Lukuku; (14)
+Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15)
 vehicles: floating carts, barges, drake riders, airships.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
 Done: wall gates (Belregi/Uzulim), Storm-Caller's Peak, Belerial caravans and the
-Wandering Merchant. Next: Hanging Gardens and Glowvine Lanes, Fen-Nex visitors,
-war-tigers, the Ruins of Lukuku, the World Tree sapling, the Torrent Mill, swamp and atoll
-maps, cameo events.
+Wandering Merchant, Hanging Gardens and Glowvine Lanes, the Torrent Mill. Next: Fen-Nex
+visitors, war-tigers, the Ruins of Lukuku, the World Tree sapling, swamp and atoll maps,
+cameo events.
 
 ## Prioritized ideas for the next iteration
 

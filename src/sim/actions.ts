@@ -71,6 +71,8 @@ export function previewRoad(state: GameState, type: RoadType, tiles: number[]): 
 
 export function buildRoad(state: GameState, type: RoadType, tiles: number[]): ActionResult {
   if (!isRoadUnlocked(state.milestone, type)) return { ok: false, reason: 'Not yet unlocked' };
+  const req = ROAD_BY_TYPE[type].requires;
+  if (req && !state.buildings.some((b) => b && b.kind === req && b.state === 'ok')) return { ok: false, reason: `Needs a ${BUILDING_BY_KEY[req].name}` };
   const { cost } = previewRoad(state, type, tiles);
   if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
   let built = 0;

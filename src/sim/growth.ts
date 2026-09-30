@@ -5,6 +5,19 @@ import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
+
+/** Craft output multiplier in the Hush (a lit Glimhouse within 8 lifts it). */
+export const HUSH_CRAFT = 0.8;
+
+export function glimhouseNear(state: GameState, b: Building): boolean {
+  return state.buildings.some((g) => g && g.kind === 'glimhouse' && g.state === 'ok' && g.lit && Math.abs(g.x - b.x) <= 8 && Math.abs(g.y - b.y) <= 8);
+}
+
+/** Buildings whose goods carts collect: Craft works and any producer with a goodsRate (Hanging Gardens). */
+export function isGoodsSource(b: Building): boolean {
+  const def = BUILDING_BY_KEY[b.kind];
+  return def.zone === Zone.Craft || !!def.goodsRate;
+}
 import { delverBonus, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
@@ -139,6 +152,11 @@ export function dailyBuildings(state: GameState): void {
     if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
       b.age++;
+      if (def.goodsRate && b.state === 'ok') {
+        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5));
+        b.stock += Math.max(0, made);
+        state.goodsProduced += Math.max(0, made);
+      }
       return;
     }
     b.age++;
@@ -198,7 +216,8 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods'));
+      const glim = glimhouseNear(state, b);
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0));
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
