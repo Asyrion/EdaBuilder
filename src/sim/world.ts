@@ -101,7 +101,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -192,6 +192,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       } else if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
       if (state.wall[i]) return 'The Warding Wall is in the way';
+      if (def.onHills === false) { /* no-op */ }
       if (state.bIndex[i] >= 0) return 'Something is already built here';
       if (state.gloam[i]) return 'The Gloam holds this ground';
     }
@@ -241,6 +242,7 @@ export function placeBuildingRaw(state: GameState, key: string, x: number, y: nu
     age: 0,
     unhappyDays: 0,
     dryDays: 0,
+    cooldown: 0,
     stock: 0,
     problemDays: 0,
   };

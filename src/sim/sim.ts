@@ -3,7 +3,7 @@ import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameS
 import { maybeFireCalendar, maybeFireEvent } from './events';
 import { seasonOf } from './world';
 import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
-import { dailyDragons } from './wyrmcraft';
+import { dailyDragons, seasonalBout } from './wyrmcraft';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -58,6 +58,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyGloam(state);
     dailyHunt(state);
     dailyDragons(state);
+    seasonalBout(state);
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);

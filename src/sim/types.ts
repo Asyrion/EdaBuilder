@@ -79,6 +79,7 @@ export interface Building {
   age: number; // days
   unhappyDays: number;
   dryDays: number;
+  cooldown: number; // days until an ability can be used again
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
 }
@@ -90,11 +91,11 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern';
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
-export type DragonRole = 'none' | 'warden' | 'delver';
+export type DragonRole = 'none' | 'warden' | 'delver' | 'courier' | 'champion';
 export type Training = 'gentle' | 'hard' | 'wild';
 
 export interface Dragon {
@@ -134,7 +135,9 @@ export interface Agent {
   dir: number; // 0..3 facing for sprites
   load: number; // goods carried (carts)
   species?: Species; // creatures only
-  dragonId?: number; // drake agents
+  dragonId?: number; // drake/wyvern agents
+  alt?: number; // altitude in px for flying agents
+  phase?: number; // courier trip phase: 0 idle, 1 to source, 2 to destination
   anchorId?: number; // building id (or -1) a creature is tied to
   ax?: number; // anchor tile for free-moving creatures
   ay?: number;
@@ -175,7 +178,7 @@ export interface DayLedger {
 }
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods';
   value: number;
   until: number; // day
   label: string;
@@ -203,7 +206,7 @@ export interface GameState {
   zone: Uint8Array;
   road: Uint8Array;
   district: Uint8Array; // 0 none, 1..MAX_DISTRICTS
-  wall: Uint8Array; // Warding Wall tiles (0/1)
+  wall: Uint8Array; // Warding Wall tiles: 0 none, 1 wall, 2 Belregi gate, 3 Uzulim gate
   bIndex: Int32Array; // building index or -1
   lit: Uint8Array; // tile lit by mana (0/1)
   watered: Uint8Array;
@@ -270,6 +273,8 @@ export interface GameState {
   goodsShort: number; // markets that ran dry today
   gameOver: string | null;
   stats: {
+    boutsWon: number;
+    boutsLost: number;
     firesTotal: number;
     surgesTotal: number;
     restlessTotal: number;

@@ -1,5 +1,5 @@
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
-import { BUILDINGS, BUILDING_BY_KEY, MILESTONES, ROADS, ROAD_BY_TYPE, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
+import { BUILDINGS, BUILDING_BY_KEY, MILESTONES, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
@@ -8,7 +8,7 @@ import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
-import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity } from '../sim/wyrmcraft';
+import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, maxStage } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap } from '../sim/agents';
@@ -34,6 +34,8 @@ export interface UiHost {
   exportJson(): void;
   importJson(file: File): void;
   setMuted(m: boolean): void;
+  musicOn: boolean;
+  setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
   settings: { colorBlind: boolean; uiScale: number };
@@ -45,6 +47,7 @@ export interface UiHost {
   undo(): boolean;
   undoLabel: string | null;
   setTraining(id: number, t: Training): void;
+  callRain(buildingId: number): void;
   setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
@@ -217,6 +220,9 @@ export class UI {
       const cat = CATEGORIES.find((c) => c.id === this.category)!;
       if (this.category === 'service') {
         const locked = s.milestone < WALL_UNLOCK;
+        const glocked = s.milestone < GATE_UNLOCK;
+        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles.<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
+        add('Uzulim Gate', `${GATE_COST[3]}c`, glocked, t.kind === 'gate' && t.style === 3, () => this.host.setTool({ kind: 'gate', style: 3 }), () => `<div class="t">Uzulim Gate</div>A dark volcanic arch with crimson symbols and hooded statues; roads pass through it. Ward +0.4 and watch +0.3 within 10 tiles; unrest +2% per gate.<br><span class="flavor">The statues' eyes follow anyone who approaches.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
         add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${MILESTONES[WALL_UNLOCK].name}</span>` : ''}`);
       }
       for (const d of BUILDINGS.filter(cat.filter)) {
@@ -473,6 +479,9 @@ export class UI {
     }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    if (b.kind === 'stormpeak') {
+      rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
+    }
     if (b.kind === 'cradle') {
       const inside = dragonsIn(s, b.id);
       rows.push(row('Eggs and young', `${inside.length} / ${cradleCapacity(b)}`));
@@ -486,6 +495,14 @@ export class UI {
     rows.push(row('Water', b.watered ? '<span class="good">watered</span>' : '<span class="bad">dry</span>'));
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
+    if (b.kind === 'stormpeak') {
+      const btn = document.createElement('button');
+      btn.textContent = b.cooldown > 0 ? `Call rain (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Call rain over the district (300 crowns)';
+      btn.disabled = b.cooldown > 0;
+      btn.style.width = '100%';
+      btn.onclick = () => this.host.callRain(b.id);
+      el.appendChild(btn);
+    }
   }
 
   private nodeShown = -1;
@@ -680,6 +697,7 @@ export class UI {
         <button id="m-export">Export Charter as .json</button>
         <button id="m-import">Import Charter from .json</button>
         <button id="m-mute">Sound: on</button>
+        <button id="m-music">Music: on</button>
         <button id="m-cb">Colour-blind overlay ramps: off</button>
         <button id="m-scale">UI scale: 100%</button>
         <button id="m-title">Back to title (autosaves)</button>
@@ -706,6 +724,9 @@ export class UI {
       this.host.setMuted(!this.host.muted);
       (m.querySelector('#m-mute') as HTMLButtonElement).textContent = `Sound: ${this.host.muted ? 'off' : 'on'}`;
     };
+    const mu = m.querySelector('#m-music') as HTMLButtonElement;
+    mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`;
+    mu.onclick = () => { this.host.setMusic(!this.host.musicOn); mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`; };
     const cb = m.querySelector('#m-cb') as HTMLButtonElement;
     const sc = m.querySelector('#m-scale') as HTMLButtonElement;
     const syncA11y = () => {
@@ -819,12 +840,13 @@ export class UI {
     const rows = st.dragons.map((d) => {
       const stageMax = STAGE_DAYS[d.stage];
       const pct = d.stage >= MAX_STAGE_NOW ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
+      const hasRing = st.buildings.some((b) => b && b.kind === 'ring');
       const roleSel = d.stage >= 2
-        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
+        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
         <div><b>${d.name}</b> <span class="muted">the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
-        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= MAX_STAGE_NOW ? 'Grown as far as the cradle allows (wyverns come with the sky).' : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
+        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
     });
@@ -832,7 +854,7 @@ export class UI {
     this.el.wyrms.innerHTML = `<div class="box panel">
       <h2>Wyrmcraft</h2>
       <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
-      <p class="muted">Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
+      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)}</p>
       ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}
       <div style="text-align:right"><button id="w-close">Close</button></div>
     </div>`;

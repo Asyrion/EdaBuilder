@@ -312,6 +312,67 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
 - Wyrms panel: cradles and slots, materials, each dragon's mood, hunger, growth, training
   and role selection.
 
+### 4.27 Quests, hints and the Chronicle (iteration 10, planned)
+
+**Why here:** the game has grown from four systems to twenty; the "Charter tasks" list
+only covers the first ten minutes. This milestone sits right after Wyrmcraft II and the
+first lore-drop features and before the Sleeping Wyrm, so every mechanic that exists gets
+a guided path before more are added.
+
+**Quests ("the Charter's Ledger").** A data-driven list (`src/data/quests.ts`) of small
+goals, each with: id, chapter, title, one-line hint, a `when` condition that makes it
+*available*, a `done` condition, an optional *focus* (a tool to select, a panel to open,
+a building to centre on) and a reward (crowns or a lore line). At most three quests are
+active at once, chosen by priority from the available set, shown in the left panel that
+today holds the Charter tasks. Chapters and their quests:
+
+| Chapter | Quests (done condition) |
+|---|---|
+| Founding | draw a road · zone hearths · zone craft and market · raise a spire · dig a well · watch post and shrine · reach Hamlet |
+| Light and water | light every building (no unlit for a day) · water every building · build a Cistern · survive a brownout without a surge |
+| The dead | build a Boneyard before the first restless · lay a restless to rest · build an Ossuary |
+| The grey edge | raise a Ward Lantern · burn back 50 Gloam tiles · draw 20 tiles of Warding Wall · kill 10 hounds (Hunters' Lodge) · raise a Belregi or Uzulim gate |
+| Goods | first cart delivery · no market short for 5 days · build a Trade Depot · sell 200 goods to caravans |
+| Mana | reach 300 mana demand · build a Nexus · raise a Thrum Font · deepen the Wellspring |
+| Schooling and the arcane | educated 30 % · first Arcane building · dig a Crystal Mine · first artifact sold |
+| Districts | paint a district · set a district edict · rename a district |
+| Seasons | survive a Hush · keep the Hush vigil · hold a Thaw feast |
+| Beasts | see glimmoths at a node · build a Moth-Loft · glimpse a wisp ring |
+| Wyrmcraft | raise a cradle · accept an egg · hatch it · give a drake a role · fly a courier · name a champion and win a bout |
+| The Crown | each milestone from Thorp to Beacon of Eda |
+
+**Hints ("the Advisor").** Under the quests, one contextual line derived from the city's
+worst current problem (unlit count, dry count, empty shelves, unquieted dead, hounds seen,
+gloam within 8 of a building, mana overdraw, treasury falling for 5 days), with a
+"show me" action that selects the tool or opens the panel. Never more than one line.
+
+**The Chronicle.** A separate log, `state.chronicle: { day, kind, text, x?, y? }[]`,
+kept to the last 200 entries and saved. Only real in-world events go in: milestones,
+season changes, events fired and the choice made, fires, surges, Gloam pockets and
+losses, hound raids, restless rising, dragon births, stages, bouts and departures,
+caravans and the merchant, node deepening, wonders, bankruptcy warnings, quest
+completions. Citizen chatter, tips and advisor lines stay in the bottom-right ticker.
+UI: a *Chronicle* button opens a scrollable panel filtered by kind, each entry with a
+day stamp and a "jump" link when it has a location. Implementation: `pushMessage` gains
+a `world` flag; `milestone` and `bad` messages chronicle automatically.
+
+### 4.28 Ambient music (iteration 9)
+- **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
+  into WebAudio a bar ahead, so the music never stutters with the frame rate.
+- **Structure:** ~58 BPM, 4/4, a four-bar chord cycle in a mode that follows the world:
+  day is Lydian-tinged major pentatonic (bright, hopeful), dusk and night are Dorian
+  (soft, wistful), the Hush is Aeolian with sparser notes and a lower drone, Bloom adds a
+  high counter-melody. Danger (a fire in view, hounds near, a surge warning, unrest over
+  40 %) drops the melody to the drone only and adds a slow low pulse.
+- **Voices:** a drone pad (two detuned triangles and a sine an octave below, through a
+  slowly moving low-pass), a plucked lead (sine with a fast attack and 1.2 s decay, like a
+  harp), soft bells at night (sine with a 5th overtone), a bass note on the downbeat.
+  Melody notes are chosen by a seeded random walk over the current mode's pentatonic,
+  with rests, so phrases repeat loosely but never exactly.
+- **Mix:** music sits under the ambience and effects (0.18 of master), ducks to 0.08 for
+  two seconds after alarms, and has its own toggle in the menu (persisted). Milestone
+  phrases (4.21) play over it in the same key.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is

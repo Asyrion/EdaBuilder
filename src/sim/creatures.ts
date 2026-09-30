@@ -8,8 +8,8 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20 };
-import { districtTiles, lineIndex } from './wyrmcraft';
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20 };
+import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -162,14 +162,18 @@ export function updateCreatures(state: GameState): void {
   // ---- drakes: one visible agent per hatchling/drake, near its cradle or at its post
   for (const d of state.dragons) {
     if (d.stage < 1) continue;
-    const has = state.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'drake' && a.dragonId === d.id);
-    if (has) continue;
+    const want: Species = d.stage >= 3 ? 'wyvern' : 'drake';
+    const existing = state.agents.find((a) => a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId === d.id);
+    if (existing && existing.species === want) continue;
+    if (existing) state.agents = state.agents.filter((a) => a !== existing);
     const c = state.buildings.find((b) => b && b.id === d.cradleId);
     if (!c) continue;
-    const a = spawn(state, 'drake', c.x, c.y + c.h);
+    const a = spawn(state, want, c.x, c.y + c.h);
     a.dragonId = d.id;
     a.variant = lineIndex(d.line);
-    a.speed = d.stage >= 2 ? 1.1 : 0.7;
+    a.speed = want === 'wyvern' ? 4.5 : d.stage >= 2 ? 1.1 : 0.7;
+    a.alt = 0;
+    a.phase = 0;
   }
   // ---- despawn: moths by day, hares at night, surplus wisps
   const keepWisps = want;
@@ -179,7 +183,7 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
-    if (a.species === 'drake') return state.dragons.some((d) => d.id === a.dragonId && d.stage >= 1);
+    if (a.species === 'drake' || a.species === 'wyvern') return state.dragons.some((d) => d.id === a.dragonId && d.stage >= 1);
     if (a.species === 'wisp') {
       wispSeen++;
       if (wispSeen > keepWisps) return false;
@@ -377,6 +381,79 @@ export function tickCreatures(state: GameState): void {
           a.y = ty;
           a.path = [];
           a.timer = 40 + rng.int(80);
+        } else {
+          a.x += (dx / dist) * sp;
+          a.y += (dy / dist) * sp;
+          a.dir = dx > 0 ? 0 : 2;
+        }
+        break;
+      }
+      case 'wyvern': {
+        const d = state.dragons.find((x) => x.id === a.dragonId);
+        if (!d) break;
+        const alt = a.alt ?? 0;
+        if (a.timer > 0) {
+          a.timer--;
+          a.alt = Math.max(0, alt - 2);
+          break;
+        }
+        if (a.path.length === 0) {
+          // choose where to fly
+          if (d.role === 'courier' && a.phase !== 2) {
+            const job = courierJob(state);
+            if (job) {
+              a.homeId = job.from.id;
+              a.targetId = job.to.id;
+              a.load = 0;
+              a.phase = 1;
+              a.path = [idx(job.from.x, job.from.y)];
+            } else {
+              a.timer = 100;
+              break;
+            }
+          } else if (a.phase === 2) {
+            const to = state.buildings.find((b) => b && b.id === a.targetId);
+            if (to) a.path = [idx(to.x, to.y)];
+            else { a.phase = 0; a.load = 0; a.timer = 50; break; }
+          } else {
+            // circle the cradle
+            const nx = Math.floor(ax) + rng.int(9) - 4;
+            const ny = Math.floor(ay) + rng.int(9) - 4;
+            if (inBounds(nx, ny)) a.path = [idx(nx, ny)];
+            else a.timer = 30;
+            break;
+          }
+        }
+        const ti = a.path[0];
+        const tx = (ti % MAP_W) + 0.5;
+        const ty = ((ti / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        a.alt = dist > 3 ? Math.min(36, alt + 3) : Math.max(0, alt - 3);
+        if (dist <= sp) {
+          a.x = tx;
+          a.y = ty;
+          a.path = [];
+          if (a.phase === 1) {
+            const from = state.buildings.find((b) => b && b.id === a.homeId);
+            if (from) {
+              a.load = Math.min(30, from.stock);
+              from.stock -= a.load;
+            }
+            a.phase = 2;
+            a.timer = 20;
+          } else if (a.phase === 2) {
+            const to = state.buildings.find((b) => b && b.id === a.targetId);
+            if (to) {
+              to.stock = Math.min(20 * to.level, to.stock + a.load);
+              state.goodsSold += a.load;
+            }
+            a.load = 0;
+            a.phase = 0;
+            a.timer = 60;
+          } else a.timer = 60 + rng.int(120);
         } else {
           a.x += (dx / dist) * sp;
           a.y += (dy / dist) * sp;

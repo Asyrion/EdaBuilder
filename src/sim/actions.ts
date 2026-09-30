@@ -1,5 +1,5 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
-import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
+import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 
@@ -16,7 +16,7 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0) return -1;
   if (state.gloam[i]) return -1;
-  if (state.wall[i]) return -1;
+  if (state.wall[i] === 1) return -1; // roads pass through gates, not walls
   let cost = def.cost;
   if (t === Terrain.Water) cost *= 4; // bridge
   if (t === Terrain.Hills) cost *= 3; // cut into rock
@@ -161,6 +161,11 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     markDirtyAround(state, x, y);
     return { ok: true, cost: 0 };
   }
+  if (state.road[i] && state.wall[i] >= 2) {
+    state.wall[i] = 0;
+    markDirtyAround(state, x, y);
+    return { ok: true, cost: 0 };
+  }
   if (state.zone[i]) {
     state.zone[i] = Zone.None;
     state.zoneListDirty = true;
@@ -281,4 +286,48 @@ export function wallCount(state: GameState): number {
   let n = 0;
   for (let i = 0; i < state.wall.length; i++) n += state.wall[i];
   return n;
+}
+
+/** A gate in the Warding Wall: placed on a wall tile or an empty/road tile beside a wall. Roads pass through gates. */
+export function placeGate(state: GameState, style: 2 | 3, x: number, y: number): ActionResult {
+  if (state.milestone < GATE_UNLOCK) return { ok: false, reason: 'Not yet unlocked' };
+  if (!inBounds(x, y)) return { ok: false, reason: 'Off the map' };
+  const i = idx(x, y);
+  const t = state.terrain[i];
+  if (isWater(t) || t === Terrain.LeyNode || state.bIndex[i] >= 0 || state.gloam[i]) return { ok: false, reason: 'Cannot build here' };
+  const nearWall = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < state.wall.length && state.wall[j] === 1);
+  if (state.wall[i] !== 1 && !nearWall) return { ok: false, reason: 'A gate must stand in or beside the Warding Wall' };
+  const cost = GATE_COST[style];
+  if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
+  state.treasury -= cost;
+  state.wall[i] = style;
+  state.zone[i] = Zone.None;
+  state.zoneListDirty = true;
+  markDirtyAround(state, x, y);
+  return { ok: true, cost };
+}
+
+/** Storm-Caller's Peak: call rain over everything within 14 tiles. */
+export function callRain(state: GameState, buildingId: number): ActionResult {
+  const b = state.buildings.find((o) => o && o.id === buildingId);
+  if (!b || b.kind !== 'stormpeak') return { ok: false, reason: 'No peak' };
+  if (b.state !== 'ok') return { ok: false, reason: 'The peak is not in order' };
+  if (!b.lit) return { ok: false, reason: 'The storm caller needs mana to work' };
+  if (b.cooldown > 0) return { ok: false, reason: `The sky is spent: ${b.cooldown} day(s) until the next call` };
+  if (state.treasury < 300) return { ok: false, reason: 'Not enough crowns (300)' };
+  state.treasury -= 300;
+  b.cooldown = 3;
+  let doused = 0;
+  for (const o of state.buildings) {
+    if (!o || o.state !== 'burning') continue;
+    if (Math.hypot(o.x - b.x, o.y - b.y) <= 14) {
+      o.state = 'ok';
+      o.stateDays = 0;
+      doused++;
+      markDirty(state, o.x, o.y);
+    }
+  }
+  state.modifiers.push({ kind: 'rain', value: 1, until: state.day + 3, label: 'Called rain' });
+  pushMessage(state, `The storm caller climbs the peak. Rain comes down in sheets: ${doused} fire${doused === 1 ? '' : 's'} out, the miasma washed into the gutters, the glimherb drinking.`, 'good');
+  return { ok: true, cost: 300 };
 }

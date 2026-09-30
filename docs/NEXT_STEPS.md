@@ -79,6 +79,10 @@
 
 ## Fantasy roadmap (see DESIGN.md §8)
 
+Milestone placement: **iteration 10, "Quests, hints and the Chronicle"** (DESIGN.md §4.27)
+goes right after Wyrmcraft II and the first lore-drop features (iteration 9) and before the
+Sleeping Wyrm, so every existing mechanic gets a guided path before more are added.
+
 Iterations 6–13, in order: (6, done) creature agents with glimmoths, thrumhares and wisps;
 (7, done) Gloam-hounds, Hunters' Lodge, Warding Wall; (8, done) Wyrmcraft I: egg events, Wyrm-Cradle,
 Tamer's Lodge, growth stages, materials, Warden and Delver roles; (9) Wyrmcraft II: sky
