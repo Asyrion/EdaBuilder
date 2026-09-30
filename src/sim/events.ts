@@ -239,6 +239,18 @@ const EGGS: EventDef[] = [
     choices: eggChoices('glim', 900),
   },
   {
+    id: 'egg_sky', title: 'A skyray nest', once: true,
+    text: 'The rays circling the Beacon have left something on its roof: an egg like a pale stone, veined silver, cold to the touch and lighter than it should be.',
+    when: (s) => s.agents.some((a) => a.kind === 3 && a.species === 'skyray' && a.phase === 1) && s.dragons.length < 6,
+    choices: eggChoices('sky', 3000),
+  },
+  {
+    id: 'egg_grey', title: 'The Concord vault', once: true,
+    text: 'The bound wardens have led the foundry-masters to a door in the hill they were built to guard. Inside, in a nest of grey ash, lies an egg half turned to stone. It is warm.',
+    when: (s) => s.stats.golemsBound >= 3 && s.dragons.length < 6,
+    choices: eggChoices('grey', 3500),
+  },
+  {
     id: 'egg_poachers', title: 'Poachers at the gate',
     text: 'Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.',
     when: (s) => s.buildings.some((b) => b && b.kind === 'cradle') && s.treasury > 3000 && s.dragons.length < 6,

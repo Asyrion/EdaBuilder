@@ -5,12 +5,14 @@
  * the early warning for restless dead).
  */
 import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
+import { beacon } from './beasts';
+import { edictOn } from './edicts';
 import { igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 
 export function creatureCount(state: GameState, species?: Species): number {
@@ -133,7 +135,7 @@ export function updateCreatures(state: GameState): void {
   if (night && state.stats.gloamTiles > 0 && state.day >= 6) {
     const hush = seasonOf(state) === 3;
     const packs = Math.min(CAP.hound, Math.floor((state.population / 250 + 1) * (hush ? 2.2 : 1) * 3));
-    if (hounds < packs && rng.chance(hush ? 0.35 : 0.15)) {
+    if (hounds < packs && rng.chance((hush ? 0.35 : 0.15) * (edictOn(state, 'beastmasters') ? 1.5 : 1))) {
       // spawn a pack on a gloam tile within 22 tiles of a random building
       const spots: number[] = [];
       const blds = state.buildings.filter((b) => b && b.state === 'ok' && state.gloamDist[idx(b.x, b.y)] <= 14 && !(wyrmGuards(state) && inLair(state, b.x, b.y))) as Building[];
@@ -185,6 +187,9 @@ export function updateCreatures(state: GameState): void {
     if (a.kind !== AgentKind.Creature) return true;
     if (a.species === 'glimmoth' && !night) return rng.chance(0.6);
     if (a.species === 'thrumhare' && night) return rng.chance(0.6);
+    if (a.species === 'thrumhare' && edictOn(state, 'bounty')) return false; // pelts
+    if (a.species === 'golem') return true;
+    if (a.species === 'skyray') return a.timer >= 0;
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
     if (a.species === 'hound' && wyrmGuards(state) && inLair(state, a.x, a.y)) return false; // nothing hunts under the wyrm's eye
     if (a.species === 'wyrm') return state.wyrm.flyover > 0;
@@ -216,6 +221,67 @@ export function tickCreatures(state: GameState): void {
         const ty = ay + Math.sin(t * 2.3 + ph) * r * 0.6;
         a.x += (tx - a.x) * 0.15 + (rng.next() - 0.5) * 0.05;
         a.y += (ty - a.y) * 0.15 + (rng.next() - 0.5) * 0.05;
+        break;
+      }
+      case 'golem': {
+        // wild: a slow, unstoppable walk toward the city, then aimless; bound: paces by the foundry
+        if (a.timer > 0) { a.timer--; break; }
+        if (a.path.length === 0) {
+          const bound = a.load > 0;
+          const cx = bound ? ax : a.x;
+          const cy = bound ? ay : a.y;
+          const range = bound ? 3 : 7;
+          for (let k = 0; k < 6; k++) {
+            const nx = Math.floor(cx + (rng.next() - 0.5) * range * 2);
+            const ny = Math.floor(cy + (rng.next() - 0.5) * range * 2);
+            if (!inBounds(nx, ny) || isWater(state.terrain[idx(nx, ny)]) || state.bIndex[idx(nx, ny)] >= 0) continue;
+            a.path = [idx(nx, ny)];
+            break;
+          }
+          if (a.path.length === 0) { a.timer = 40; break; }
+          if (!bound && rng.chance(0.3)) { const f = state.founding; const nx = Math.floor(a.x + Math.sign(f.x - a.x) * 4); const ny = Math.floor(a.y + Math.sign(f.y - a.y) * 4); if (inBounds(nx, ny) && !isWater(state.terrain[idx(nx, ny)])) a.path = [idx(nx, ny)]; }
+        }
+        const tx = (a.path[0] % MAP_W) + 0.5;
+        const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        if (dist <= sp) { a.x = tx; a.y = ty; a.path = []; a.timer = 30 + rng.int(60); }
+        else { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+        break;
+      }
+      case 'skyray': {
+        // phase 0: cross the map high up; a lit Ley Beacon within 30 tiles lures the school (phase 1) to circle it
+        const bc = beacon(state);
+        const season = seasonOf(state);
+        if (a.phase === 1) {
+          if (!bc || (season !== 1 && season !== 2)) { a.phase = 0; a.path = [idx(a.x < MAP_W / 2 ? 2 : MAP_W - 3, Math.max(2, Math.min(MAP_H - 3, Math.floor(a.y))))]; break; }
+          const ph = a.id * 1.3;
+          const r = 6 + (a.variant % 3) * 1.5;
+          const tx = bc.x + 0.5 + Math.cos(t * 0.35 + ph) * r * 1.4;
+          const ty = bc.y + 0.5 + Math.sin(t * 0.35 + ph) * r * 0.8;
+          a.x += (tx - a.x) * 0.04;
+          a.y += (ty - a.y) * 0.04;
+          a.dir = tx > a.x ? 0 : 2;
+          a.alt = 50 + Math.sin(t * 0.8 + ph) * 6;
+          break;
+        }
+        if (bc && Math.hypot(bc.x - a.x, bc.y - a.y) <= 30) {
+          a.phase = 1;
+          if (a.variant === 0) pushMessage(state, `The skyrays turn on the Ley Beacon's song at (${bc.x},${bc.y}) and begin to circle. They will stay the season.`, 'good', true, { x: bc.x, y: bc.y });
+          break;
+        }
+        if (a.path.length === 0) { a.timer = -1; break; }
+        const tx = (a.path[0] % MAP_W) + 0.5;
+        const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+        const dx = tx - a.x;
+        const dy = ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        const sp = a.speed * dt;
+        a.alt = 60 + Math.sin(t * 0.7 + a.id) * 5;
+        if (dist <= sp) { a.path = []; a.timer = -1; }
+        else { a.x += (dx / dist) * sp + Math.sin(t * 0.5 + a.id) * 0.01; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
         break;
       }
       case 'thrumhare': {
@@ -571,9 +637,10 @@ export function dailyHunt(state: GameState): number {
   let killed = 0;
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Creature || a.species !== 'hound') return true;
-    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= 12 && rng.chance(0.8)) { killed++; return false; }
+    const bounty = edictOn(state, 'bounty');
+    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= (bounty ? 24 : 12) && rng.chance(0.8)) { killed++; return false; }
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    if (state.coverage.watch[i] > 120 && rng.chance(0.3)) { killed++; return false; }
+    if (state.coverage.watch[i] > 120 && rng.chance(bounty ? 0.6 : 0.3)) { killed++; return false; }
     return true;
   });
   commitRng(state, rng);

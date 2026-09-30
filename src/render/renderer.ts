@@ -531,6 +531,22 @@ export class Renderer {
           items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
           if (s) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
           if (Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 6, vx: (Math.random() - 0.5) * 3, vy: -3, maxLife: 2, size: 1, color: PAL.gloam3, glow: false, kind: 'mote' });
+        } else if (sp === 'golem') {
+          const s = this.atlas.get(`golem_${a.path.length ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
+          items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
+          if (s && s.glow && a.load > 0) glows.push({ s, x: wx, y: wy + 8, a: 0.8 });
+          if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
+        } else if (sp === 'skyray') {
+          const alt = a.alt ?? 0;
+          const s = this.atlas.get(`skyray_${Math.floor(this.time * 1.5 + a.id) % 2}`);
+          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
+            const ctx2 = this.ctx;
+            ctx2.fillStyle = 'rgba(10,8,16,0.22)';
+            ctx2.beginPath();
+            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 16, 6, 0, 0, Math.PI * 2);
+            ctx2.fill();
+          } });
+          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: 4 });
         } else if (sp === 'wisp') {
           const s = this.atlas.get(`wisp_${Math.floor(this.time * 3 + a.id) % 2}`);
           const bob = Math.sin(this.time * 2 + a.id) * 3 - 10;

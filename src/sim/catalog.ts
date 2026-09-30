@@ -357,6 +357,25 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'leisure', radius: 6, strength: 1.0 },
   },
 
+  {
+    key: 'golemfoundry', name: 'Golem Foundry', category: 'service',
+    desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden labours for 12 hands with no housing and drinks 10 mana a day here. A wild surge sets them loose again.',
+    flavor: 'The Concord built them to guard a city that is gone. They do not seem to mind the change of employer.',
+    w: 2, h: 2, cost: 9000, upkeep: 80, manaUse: 8, unlock: 6, needsMana: true,
+  },
+  {
+    key: 'leybeacon', name: 'Ley Beacon', category: 'ley',
+    desc: 'A tall lantern that sings on the high ley. A school of skyrays crossing the valley in Bloom or Ember will circle it for the season instead of passing: happiness +3 for the whole city, and rayscale for the enchanters (artifacts +10%). 25 mana while lit.',
+    flavor: 'Fishermen of the sky. The rays do not know they are being fished.',
+    w: 1, h: 1, cost: 6000, upkeep: 45, manaUse: 25, unlock: 6, needsMana: true,
+  },
+  {
+    key: 'drakemews', name: 'Drake Mews', category: 'service',
+    desc: 'Stables for Watch drakes. Every Watch House patrols twice as far while the mews is lit. If the city is unhappy the drakes spook, and a mews fire is not a small fire.',
+    flavor: 'Dog-sized, ley-blue, fond of shoes.',
+    w: 2, h: 2, cost: 5500, upkeep: 60, manaUse: 6, unlock: 6, needsMana: true,
+  },
+
   // ---- special ----
   {
     key: 'stake', name: 'Founding Stake', category: 'special',
@@ -427,7 +446,7 @@ export const MILESTONES: Milestone[] = [
     text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },
   { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
-  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy'],
+  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'golemfoundry', 'leybeacon', 'drakemews'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
   { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt'],
     text: 'The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken.' },

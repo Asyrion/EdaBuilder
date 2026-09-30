@@ -93,7 +93,7 @@ export const enum AgentKind {
   Creature = 3,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm';
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray';
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
@@ -137,6 +137,7 @@ export interface Materials {
   scale: number;
   wyrmfire: number;
   eggshell: number;
+  rayscale: number;
 }
 
 export interface Agent {
@@ -319,6 +320,10 @@ export interface GameState {
     wyrmTributes: number;
     relics: number;
     portalTrips: number;
+    golemsWoken: number;
+    golemsBound: number;
+    skyraySchools: number;
+    rayscaleTotal: number;
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;

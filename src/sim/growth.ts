@@ -5,6 +5,7 @@ import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
+import { GOLEM_LABOUR, boundGolems, raysLured } from './beasts';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -100,6 +101,8 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
       if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 8;
     } else if (a.kind === 3 && a.species === 'hound') {
       if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) h -= 5;
+    } else if (a.kind === 3 && a.species === 'golem' && a.load === 0) {
+      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 10;
     }
   }
   let tax = 10;
@@ -114,6 +117,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (wyrmGuards(state)) h += 10;
   const tree = worldTree(state);
   if (tree) h += treeStage(tree);
+  if (raysLured(state)) h += 3;
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
@@ -144,7 +148,7 @@ export function craftStockCap(b: Building): number {
 }
 
 export function workforceOf(state: GameState): number {
-  return Math.round(state.population * 0.62);
+  return Math.round(state.population * 0.62) + boundGolems(state) * GOLEM_LABOUR;
 }
 
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
@@ -254,7 +258,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1);
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1);
     }
     // levelling
     const i = idx(b.x, b.y);

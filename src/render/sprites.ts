@@ -1258,6 +1258,9 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   glimhouse: { w: 2, h: 2, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 3, windowRows: 1, glowWindows: true, seed: 31, glassDome: true, runeBand: true },
   observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
   hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
+  golemfoundry: { w: 2, h: 2, height: 14, roofH: 6, wall: 'darkstone', roof: 'copper', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 37, runeBand: true, alembic: true },
+  leybeacon: { w: 1, h: 1, height: 24, roofH: 5, wall: 'stone', roof: 'cone', windows: 1, windowRows: 3, seed: 38, spire: true, crystal: true, runeBand: true },
+  drakemews: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 2, windowRows: 1, door: true, banner: true, glowWindows: true, seed: 39, lanternPost: true, ridgeOrnament: true },
   portalarch: { w: 1, h: 1, height: 16, roofH: 2, wall: 'arcane', roof: 'flat', windows: 0, seed: 35, runeBand: true, orbit: true, leyLamps: true },
   ruindelve: { w: 2, h: 2, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 1, windowRows: 1, door: true, seed: 36, lanternPost: true, standingStones: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
@@ -1676,6 +1679,41 @@ export function generateSprites(): SpriteDef[] {
     glow.rect(2, 2, 10, 4, 'gloam3', 60);
     p.outline('outline');
     out.push({ name: `hound_${f}`, p, glow, ax: 6, ay: 8 });
+  }
+  // Concord Warden: a squat stone giant with a rune-lit chest
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(16, 22);
+    const glow = new Painter(16, 22);
+    p.rect(4, 4, 8, 10, 'stone2');
+    p.rect(4, 4, 2, 10, 'stone1');
+    p.rect(10, 4, 2, 10, 'stone3');
+    p.rect(5, 1, 6, 4, 'stone2');
+    p.px(6, 2, 'leyGlow');
+    p.px(9, 2, 'leyGlow');
+    glow.px(6, 2, 'leyGlow');
+    glow.px(9, 2, 'leyGlow');
+    p.rect(7, 7, 2, 3, 'rune');
+    glow.rect(7, 7, 2, 3, 'rune', 200);
+    p.rect(1, 5, 3, 8, 'stone1');
+    p.rect(12, 5, 3, 8, 'stone3');
+    if (f === 0) { p.rect(5, 14, 3, 7, 'stone1'); p.rect(9, 14, 3, 6, 'stone2'); } else { p.rect(5, 14, 3, 6, 'stone1'); p.rect(9, 14, 3, 7, 'stone2'); }
+    p.outline('outline');
+    out.push({ name: `golem_${f}`, p, glow, ax: 8, ay: 21 });
+  }
+  // skyray: a pale manta with a long tail, two wing frames
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(30, 16);
+    const glow = new Painter(30, 16);
+    const lift = f === 0 ? 0 : 3;
+    p.poly([[15, 8], [1, 4 + lift], [1, 7 + lift], [15, 12]], 'whitewash');
+    p.poly([[15, 8], [29, 4 + lift], [29, 7 + lift], [15, 12]], 'whitewash');
+    p.rect(12, 6, 6, 6, 'whitewash2');
+    p.line(15, 11, 9, 15, 'stone3');
+    for (let k = 0; k < 4; k++) { p.px(6 + k * 5, 8 + (k % 2), 'ley2'); glow.px(6 + k * 5, 8 + (k % 2), 'ley1', 120); }
+    p.px(14, 7, 'outline');
+    p.px(16, 7, 'outline');
+    p.outline('outline');
+    out.push({ name: `skyray_${f}`, p, glow, ax: 15, ay: 10 });
   }
   // icons
   for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });

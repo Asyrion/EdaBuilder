@@ -435,8 +435,7 @@ living Hanging Gardens, and lit tiles light adjacent buildings like a lantern-wa
 price is deliberately above the lantern-way's, since the light is free of mana forever.
 Green vine-light at night; the road manifest gains `road_glowvine_0..15`.
 
-Not yet built from §8.3: the Golem Foundry, Ley Beacon, Drake Mews,
-Font of Quieting, Sky-Dock and Quay.
+Not yet built from §8.3: the Font of Quieting, Sky-Dock and Quay.
 
 ### 4.32 Longwood and Lukuku: Portal Arches, the World Tree, the Ruins (iteration 13)
 
@@ -466,6 +465,37 @@ A draggable panel beside the ticker holds a 256×128 isometric image of the map 
 every 30 ticks (terrain, Gloam, roads by tier, walls, buildings by zone colour, ley, the
 wyrm's node) with the camera's view box drawn on top every frame. Click or drag on it to
 jump the camera there; scroll on it to zoom; a collapse button hides the image.
+
+### 4.34 Beasts of the Concord and the sky (iteration 14)
+
+- **Concord Wardens** (species `golem`). Each working Crystal Mine has a 3 % chance a day
+  to wake one on a hills tile within 6 (cap 12). Wild wardens walk slowly, drift toward
+  the city, never despawn, and frighten every building within 4 tiles (−10 happiness);
+  fire, hounds and hunters ignore them. A lit **Golem Foundry** (Services, Burgh, 8 mana)
+  binds any wild warden within 12 tiles: a bound warden paces by the foundry, adds 12
+  hands to the workforce with no housing, and costs the foundry 10 mana a day. A wild
+  surge breaks every binding. Three bound wardens open the *Concord vault* event: a grey
+  egg.
+- **Skyrays** (species `skyray`, sky layer at altitude 60). In Bloom and Ember a school of
+  five may enter at one map edge and cross to the opposite one, casting manta shadows. A
+  lit **Ley Beacon** (Ley tab, Burgh, 25 mana) within 30 tiles turns the school: the rays
+  circle it for the rest of the season (phase 1), the whole city gets +3 happiness,
+  **rayscale** accrues (Materials) and artifacts sell for 10 % more while any is left, and
+  a *skyray nest* event can offer a sky egg. When the beacon goes dark or the season ends
+  they fly off the map.
+- **Drake Mews** (Services, Burgh, 6 mana): every Watch House patrols twice as far while
+  the mews is lit; below 40 city happiness the mews' own fire chance is ×12.
+- **Taming edicts**: *Beastmasters' Charter* (cradles and foundries draw 40 % less mana,
+  hound packs 50 % more often, 40 c/day), *Hunters' Bounty* (lodges clear hounds within
+  24, the Watch kills them twice as often, thrumhares vanish; 20 c/day plus 15 per lodge),
+  *Wyrm-Peace* (tribute and the bound wyrm's lair ward halved, 80 c/day).
+
+### 4.35 Ledger hygiene (iteration 14)
+
+Quests are checked every 50 ticks instead of daily, a quest whose goal is already met is
+hidden from the panel at once (the next check pays it), and several completions in one
+check post a single ticker line, so the panel and the ticker stop filling with finished
+tasks.
 
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
@@ -768,7 +798,7 @@ without an event.
 4. Wyrmcraft II: the sky layer, wyvern Couriers (first flying vehicle), the Wyrm-Ring. ✅
 5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs. ✅
 6. Moth-Loft ✅, Glimhouse ✅, Weather Vane (as Storm-Caller's Peak ✅), Observatory ✅, Portal Arch ✅ (magical buildings).
-7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs.
+7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs. ✅
 8. Vehicles: floating carts, barges, drake riders, airships.
 
 ## 11. Lore-drop inspirations (from docs/Places, Characters, Civilizations, Creatures)
@@ -900,3 +930,7 @@ consistent with `EDA_LORE.md` §9.
   consecutive path tiles are not neighbours.
 - *The minimap is a picture, not a second renderer:* one ImageData rebuilt every three
   seconds and a rectangle each frame keep it at a fraction of a millisecond.
+- *Golems are labour, not sprites:* a bound warden is twelve hands in `workforceOf`, which
+  every job and production formula already reads, so no building code changed.
+- *Quest checks are cheap enough to run often:* sixty predicates every five seconds cost
+  less than one path search; the daily cadence was the reason finished quests lingered.

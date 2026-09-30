@@ -7,6 +7,7 @@ import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
+import { mewsActive } from './beasts';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -19,7 +20,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
-    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : def.service.radius;
+    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -80,7 +81,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         if (!inBounds(x, y)) continue;
         const d = Math.hypot(dx, dy);
         if (d > r) continue;
-        acc[idx(x, y)] += 1 - (d / r) * 0.6;
+        acc[idx(x, y)] += (1 - (d / r) * 0.6) * (edictOn(state, 'wyrmpeace') ? 0.5 : 1);
       }
   }
   if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
