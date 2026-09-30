@@ -1118,6 +1118,33 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
 
 function cart(variant: number): Painter {
   const p = new Painter(18, 12);
+  if (variant === 3) {
+    // floating cart: no mule, a leystone keel and a violet load
+    p.rect(5, 4, 11, 4, 'cartWood');
+    p.rect(5, 4, 11, 1, 'wood1');
+    p.rect(7, 2, 6, 2, 'arcane2');
+    p.px(8, 1, 'arcane1');
+    p.px(11, 1, 'arcane1');
+    p.rect(6, 8, 9, 1, 'ley2');
+    p.px(6, 9, 'ley1');
+    p.px(14, 9, 'ley1');
+    p.rect(16, 1, 1, 4, 'ironDark');
+    p.px(16, 0, 'ley1');
+    p.outline('outline');
+    return p;
+  }
+  if (variant === 4) {
+    // barge: a flat hull, a cargo hump and a stern lantern
+    p.poly([[0, 7], [17, 7], [15, 11], [2, 11]], 'wood2');
+    p.rect(1, 6, 16, 1, 'wood1');
+    p.rect(5, 3, 8, 3, 'cloth5');
+    p.rect(5, 3, 8, 1, 'wood3');
+    p.rect(16, 2, 1, 4, 'ironDark');
+    p.px(16, 1, 'lampWarm');
+    p.px(1, 5, 'wood3');
+    p.outline('outline');
+    return p;
+  }
   // mule
   p.rect(1, 5, 5, 3, 'wood1');
   p.rect(0, 4, 2, 2, 'wood1');
@@ -1261,6 +1288,8 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   golemfoundry: { w: 2, h: 2, height: 14, roofH: 6, wall: 'darkstone', roof: 'copper', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 37, runeBand: true, alembic: true },
   leybeacon: { w: 1, h: 1, height: 24, roofH: 5, wall: 'stone', roof: 'cone', windows: 1, windowRows: 3, seed: 38, spire: true, crystal: true, runeBand: true },
   drakemews: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 2, windowRows: 1, door: true, banner: true, glowWindows: true, seed: 39, lanternPost: true, ridgeOrnament: true },
+  quay: { w: 1, h: 1, height: 4, roofH: 3, wall: 'stone', roof: 'none', windows: 0, seed: 40, lanternPost: true },
+  skydock: { w: 2, h: 2, height: 30, roofH: 4, wall: 'stone', roof: 'flat', windows: 2, windowRows: 4, door: true, glowWindows: true, seed: 41, runeBand: true, leyLamps: true, spire: true, banner: true },
   portalarch: { w: 1, h: 1, height: 16, roofH: 2, wall: 'arcane', roof: 'flat', windows: 0, seed: 35, runeBand: true, orbit: true, leyLamps: true },
   ruindelve: { w: 2, h: 2, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 1, windowRows: 1, door: true, seed: 36, lanternPost: true, standingStones: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
@@ -1605,7 +1634,50 @@ export function generateSprites(): SpriteDef[] {
   // agents
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
-  for (let v = 0; v < 3; v++) out.push({ name: `cart_${v}`, p: cart(v), ax: 9, ay: 11 });
+  for (let v = 0; v < 5; v++) {
+    const p = cart(v);
+    if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
+    else out.push({ name: `cart_${v}`, p, ax: 9, ay: 11 });
+  }
+  // drake rider: a Watch drake with a rider, two wing frames
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(20, 14);
+    const glow = new Painter(20, 14);
+    const lift = f === 0 ? -4 : 3;
+    p.poly([[9, 8], [2, 4 + lift], [1, 7 + lift], [9, 10]], 'ley2');
+    p.poly([[11, 8], [18, 4 + lift], [19, 7 + lift], [11, 10]], 'ley2');
+    p.rect(6, 7, 8, 3, 'ley2');
+    p.rect(13, 5, 4, 3, 'ley2');
+    p.px(16, 6, 'ley1');
+    p.line(6, 9, 2, 12, 'leyStone');
+    p.rect(9, 4, 2, 3, 'banner'); // rider
+    p.px(10, 3, 'whitewash');
+    p.px(11, 4, 'lampWarm');
+    glow.px(11, 4, 'lampWarm', 200);
+    glow.px(16, 6, 'ley1', 160);
+    p.outline('outline');
+    out.push({ name: `rider_${f}`, p, glow, ax: 10, ay: 12 });
+  }
+  // airship: a ley-lamp envelope over a wooden gondola
+  for (let f = 0; f < 2; f++) {
+    const p = new Painter(44, 26);
+    const glow = new Painter(44, 26);
+    for (let y = 0; y <= 14; y++) for (let x = 2; x <= 41; x++) { const u = (x - 21.5) / 20; const v = (y - 7) / 7; if (u * u + v * v <= 1) p.px(x, y, (x + y) % 7 === 0 ? 'cloth5' : y < 4 ? 'whitewash' : 'whitewash2'); }
+    p.rect(12, 8, 20, 1, 'wood3');
+    for (let k = 0; k < 4; k++) p.line(14 + k * 5, 14, 15 + k * 4, 18, 'ironDark');
+    p.rect(13, 18, 18, 5, 'wood2');
+    p.rect(13, 18, 18, 1, 'wood1');
+    p.rect(15, 20, 2, 1, 'windowLit');
+    p.rect(20, 20, 2, 1, 'windowLit');
+    p.rect(25, 20, 2, 1, 'windowLit');
+    glow.rect(15, 20, 12, 1, 'lampWarm', 120);
+    p.rect(31, 19, 3, 3, 'ironDark');
+    if (f === 0) { p.px(35, 19, 'stone3'); p.px(35, 22, 'stone3'); } else { p.px(36, 20, 'stone3'); p.px(34, 21, 'stone3'); }
+    p.px(6, 7, 'ley1');
+    glow.px(6, 7, 'ley1', 200);
+    p.outline('outline');
+    out.push({ name: `airship_${f}`, p, glow, ax: 22, ay: 24 });
+  }
   for (let f = 0; f < 2; f++) {
     const r = restlessSprite(0, f);
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });

@@ -299,6 +299,16 @@ const VISITORS: EventDef[] = [
 /** The Sleeping Wyrm (DESIGN 4.29). These fire on their own conditions, before the random draw. */
 export const WYRM_EVENTS: EventDef[] = [
   {
+    id: 'airship_tale', title: "The captain's story",
+    text: 'The airship captain will not take her fee until she has told it: a wardlight three lanterns east whose spires sing in a different key, a market that trades in dreams, a wyrm that asked after yours by name. She has brought something back.',
+    when: (s) => s.airship.tale > 0 && !s.pendingEvent,
+    choices: [
+      { label: 'Rayscale and glim-dust', desc: 'Rayscale +4 (artifacts +10% while it lasts); Craft goods +10% for 15 days.', apply: (s) => { s.airship.tale = 0; s.materials.rayscale += 4; s.modifiers.push({ kind: 'goods', value: 0.1, until: s.day + 15, label: 'Foreign reagents' }); return 'Crates of pale scale and a jar of dust that hums. The alchemists close the shutters for a week.'; } },
+      { label: 'Passengers', desc: 'Up to 30 folk from the other wardlight move into empty hearths.', apply: (s) => { s.airship.tale = 0; return `${addResidents(s, 30)} folk step off the gondola with everything they own and a letter of introduction.`; } },
+      { label: 'The story itself', desc: 'Happiness +5 for 20 days.', apply: (s) => { s.airship.tale = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: "The captain's story" }); return 'She tells it on the square at dusk. Nobody goes home until the spires dim.'; } },
+    ],
+  },
+  {
     id: 'wyrm_tribute', title: 'The wyrm wants its due',
     text: 'Its head rests on the ridge above the node, eyes like two ley-lamps. A Tallowkin who claims to understand it says the terms are simple: a tribute each season, rising, or it flies.',
     when: (s) => s.wyrm.state === 'awake' && s.wyrm.tributeDay >= 0 && s.day >= s.wyrm.tributeDay && !s.pendingEvent,

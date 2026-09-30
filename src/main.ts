@@ -16,7 +16,7 @@ import { resolveEvent, maybeFireEvent, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
-import { deepenNode, canDeepenNode } from './sim/world';
+import { deepenNode, canDeepenNode, placeBuildingRaw } from './sim/world';
 import { setTraining, setRole } from './sim/wyrmcraft';
 import * as wyrm from './sim/wyrm';
 import { Bot } from './sim/bot';
@@ -385,7 +385,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS, wyrm };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

@@ -435,7 +435,7 @@ living Hanging Gardens, and lit tiles light adjacent buildings like a lantern-wa
 price is deliberately above the lantern-way's, since the light is free of mana forever.
 Green vine-light at night; the road manifest gains `road_glowvine_0..15`.
 
-Not yet built from §8.3: the Font of Quieting, Sky-Dock and Quay.
+Not yet built from §8.3: the Font of Quieting.
 
 ### 4.32 Longwood and Lukuku: Portal Arches, the World Tree, the Ruins (iteration 13)
 
@@ -496,6 +496,30 @@ Quests are checked every 50 ticks instead of daily, a quest whose goal is alread
 hidden from the panel at once (the next check pays it), and several completions in one
 check post a single ticker line, so the panel and the ticker stop filling with finished
 tasks.
+
+### 4.36 Vehicles (iteration 15)
+
+- **Floating carts** (cart variant 3). Each level-3 Arcane workshop entitles the city to
+  two hovering carts, spawned in place of mule carts by the daily cart quota. They ignore
+  congestion, add nothing to traffic, glow at night, and each draws 1 mana while it has a
+  path (`floatingMana`, added to demand).
+- **Quay and barges** (Services, Village, 1×1, must touch water and a road). Every day
+  each quay with works within 8 tiles holding more than 8 goods sends one barge (cart
+  variant 4, at most one out per quay) along a water A* path to the quay whose nearby
+  markets have the most empty shelf space, carrying up to 40 goods; on arrival it fills
+  the emptiest markets and is removed. Bridges pass overhead. Barges never count toward
+  the road-cart quota or traffic.
+- **Drake riders** (species `rider`). A lit Drake Mews keeps two riders (cap 4). A rider
+  flies (sky layer, altitude 24) to the nearest restless or burning building within 40
+  tiles: a restless is laid to rest at once; a fire is doused six times in ten. Then it
+  flies home and rests. `riderRescues` counts both.
+- **Sky-Dock and the airship** (Leisure, Beacon of Eda wonder, 2×2, 30 mana). On day 3 of
+  each season a lit dock loads up to 200 surplus goods (stock above 10 at every goods
+  source) and the airship (species `airship`, altitude 70, gondola lights and smoke) flies
+  to the map edge; ten days later it returns to the dock and pays goods × season price ×
+  1.6. Half the time the captain brings *The captain's story*: rayscale and a goods
+  modifier, thirty passengers, or happiness.
+- Golem haulers from §8.4 are folded into the foundry's labour and not built separately.
 
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
@@ -799,7 +823,7 @@ without an event.
 5. Sleeping Wyrm, waking, tribute, flyover; Wyrm-Court binding; vein eggs. ✅
 6. Moth-Loft ✅, Glimhouse ✅, Weather Vane (as Storm-Caller's Peak ✅), Observatory ✅, Portal Arch ✅ (magical buildings).
 7. Concord Wardens + Golem Foundry; Drake Mews; Skyrays + Ley Beacon; grey and sky eggs. ✅
-8. Vehicles: floating carts, barges, drake riders, airships.
+8. Vehicles: floating carts, barges, drake riders, airships. ✅
 
 ## 11. Lore-drop inspirations (from docs/Places, Characters, Civilizations, Creatures)
 
@@ -934,3 +958,6 @@ consistent with `EDA_LORE.md` §9.
   every job and production formula already reads, so no building code changed.
 - *Quest checks are cheap enough to run often:* sixty predicates every five seconds cost
   less than one path search; the daily cadence was the reason finished quests lingered.
+- *Vehicles reuse the cart:* floating carts and barges are cart variants with two flags in
+  the movement step, so every delivery, counter and inspector row already applies to them;
+  only barges needed their own (water) path search.

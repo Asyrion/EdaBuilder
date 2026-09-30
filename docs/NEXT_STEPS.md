@@ -108,6 +108,13 @@
 - Ledger hygiene: finished quests vanish at once, checks every 50 ticks, one ticker line
   per batch of completions.
 
+## Done in iteration 15 (vehicles)
+
+- Floating carts from level-3 Arcane workshops (no congestion, 1 mana while moving),
+  Quays with barges carrying goods along the water between them, drake riders from a lit
+  Drake Mews that lay the restless down and douse fires, and the Sky-Dock whose airship
+  sells the season's surplus beyond the Gloam and brings back a story.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -143,9 +150,9 @@ sky layer, wyvern couriers, the Wyrm-Ring, gates, the Peak, visitors; (10, done)
 hints and the Chronicle; (11, done) the Sleeping Wyrm: waking, tribute, flyover, Wyrm-Court
 binding; (12, done) magical buildings I: Glimhouse, Torrent Mill, Observatory, Hanging Gardens,
 Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, minimap; (14, done)
-Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15)
+Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
 vehicles: floating carts, barges, drake riders, airships; (16) Fen-Nex visitors,
-war-tigers, cameos; (17) Font of Quieting, Quay and barges, Sky-Dock and airships.
+war-tigers, cameos; (17) Font of Quieting, mana-storms, rare-goods Marvels.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
