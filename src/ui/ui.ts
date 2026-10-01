@@ -9,7 +9,8 @@ import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
-import { builderTarget, buildersAt } from '../sim/construction';
+import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
+import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
@@ -82,6 +83,7 @@ export interface UiHost {
   selected: Building | null;
   select(b: Building | null): void;
   perf: { fps: number; ms: number; drawn: number };
+  dev(id: string, arg: string): string;
 }
 
 const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolean }[] = [
@@ -174,8 +176,9 @@ export class UI {
       <div id="wyrms" class="modal hidden"></div>
       <div id="event" class="modal hidden"></div>
       <div id="chronicle" class="modal hidden"></div>
+      <div id="dev" class="modal hidden" role="dialog" aria-label="Dev tools"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap', 'dev']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
@@ -451,11 +454,11 @@ export class UI {
     const score = el.querySelector('.score') as HTMLElement;
     if (s.challenge) {
       const done = s.challengeDay >= 0;
-      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${MILESTONES[s.milestone].name}`;
+      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}${s.stats.devUses ? ' (dev tools used)' : ''}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${MILESTONES[s.milestone].name}`;
       score.classList.remove('hidden');
       score.innerHTML = `<span class="lbl">${done ? 'Result' : 'Challenge'}</span> ${text}${done ? ' <button class="show" id="q-copy">Copy result</button>' : ''}`;
       const cp = score.querySelector('#q-copy') as HTMLButtonElement | null;
-      if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge}: Market Town on day ${s.challengeDay} in ${s.cityName}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
+      if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge}: Market Town on day ${s.challengeDay} in ${s.cityName}${s.stats.devUses ? ' (dev tools used)' : ''}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
     } else score.classList.add('hidden');
     fc.classList.toggle('hidden', !lines.length);
     if (lines.length) fc.innerHTML = `<span class="lbl">Forecast</span>${lines.map((f) => `<div class="${f.kind}">✦ ${f.text}</div>`).join('')}`;
@@ -1118,6 +1121,7 @@ export class UI {
         <button id="m-cb">Colour-blind overlay ramps: off</button>
         <button id="m-scale">UI scale: 100%</button>
         <button id="m-keys">Key bindings…</button>
+        <button id="m-dev">Dev tools… <kbd>&#96;</kbd></button>
         <button id="m-title">Back to title (autosaves)</button>
         <button id="m-close">Close</button>
       </div>
@@ -1147,6 +1151,7 @@ export class UI {
     mu.onclick = () => { this.host.setMusic(!this.host.musicOn); mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`; };
     const cb = m.querySelector('#m-cb') as HTMLButtonElement;
     (m.querySelector('#m-keys') as HTMLButtonElement).onclick = () => this.showKeys();
+    (m.querySelector('#m-dev') as HTMLButtonElement).onclick = () => { this.toggleMenu(false); this.toggleDev(true); };
     const sc = m.querySelector('#m-scale') as HTMLButtonElement;
     const syncA11y = () => {
       cb.textContent = `Colour-blind overlay ramps: ${this.host.settings.colorBlind ? 'on' : 'off'}`;
@@ -1422,6 +1427,32 @@ export class UI {
     return `<h3 style="margin-top:8px">The guild council</h3>
       <p class="muted">${council ? `The four guilds sit at the Guildhall. Every ${COUNCIL_SPACING} days the least pleased of them petitions for an edict. ${st.stats.councils} petition${st.stats.councils === 1 ? '' : 's'} heard.` : 'No lit Guildhall: the guilds have no seat and no voice. Build one (Leisure tab) to hear petitions and earn their boons.'}</p>
       ${demand}${rows}`;
+  }
+
+  /** Dev tools: grouped commands with a live status line. */
+  toggleDev(show?: boolean): void {
+    const el = this.el.dev;
+    const sh = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !sh);
+    if (sh) this.renderDev('');
+  }
+
+  private renderDev(last: string): void {
+    const s = this.host.state;
+    const el = this.el.dev;
+    const stand = GUILD_IDS.map((g) => `${GUILDS[g].name.replace('The ', '').split(' ')[0]} ${Math.round(s.guilds.standing[g])}`).join(' · ');
+    const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · ${s.dragons.length} dragons · ${stand} · relics ${s.relics.complete.length}/4 · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
+    const groups = DEV_GROUPS.map((g) => `<h3>${g}</h3><div class="devgrid">${DEV_COMMANDS.filter((c) => c.group === g).map((c) => `<div class="devcmd"><button data-id="${c.id}" title="${c.desc}">${c.name}</button>${c.arg ? `<select data-arg="${c.id}">${c.arg.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>` : ''}</div>`).join('')}</div>`).join('');
+    el.innerHTML = `<div class="box panel" style="width:760px">
+      <h2>Dev tools <span class="muted" style="font-size:12px">for playtesting; every use is counted and marks the daily result</span></h2>
+      <p class="muted devstatus">${status}</p>
+      ${last ? `<p class="good">${last}</p>` : ''}
+      ${groups}
+      <div class="row"><button id="dev-dump">Copy state summary</button><button id="dev-close">Close</button></div>
+    </div>`;
+    el.querySelectorAll('button[data-id]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const id = (b as HTMLElement).dataset.id!; const sel = el.querySelector(`select[data-arg="${id}"]`) as HTMLSelectElement | null; const out = this.host.dev(id, sel ? sel.value : ''); this.renderDev(`${(b as HTMLElement).textContent}: ${out}`); }; });
+    (el.querySelector('#dev-dump') as HTMLButtonElement).onclick = () => { const line = `${s.cityName} seed ${s.seed} day ${s.day}: ${status}`; try { void navigator.clipboard.writeText(line); this.toast('<p>Summary copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
+    (el.querySelector('#dev-close') as HTMLButtonElement).onclick = () => this.toggleDev(false);
   }
 
   private eventShownId: string | null = null;

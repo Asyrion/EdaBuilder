@@ -5,7 +5,8 @@ import { createScenario } from './sim/scenario';
 import { canFoundDaughter, foundDaughter } from './sim/charter';
 import { SOUND_CUES, type SoundCue } from './sim/hazards';
 import { buySector } from './sim/sectors';
-import { tileToWorld } from './render/iso';
+import { tileToWorld, worldToTile } from './render/iso';
+import { runDev } from './sim/dev';
 import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
@@ -122,6 +123,7 @@ class Game {
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
+      dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = runDev(this.state, id, arg, { x: Math.floor(u), y: Math.floor(v) }); recomputeAll(this.state); this.paused = true; this.ui.refresh(); return out; },
       get camera() { return game.renderer.camera; },
       select: (b) => this.select(b),
     });
@@ -280,6 +282,7 @@ class Game {
     if ((e.ctrlKey || e.metaKey) && k === 'z') { this.undo(); return true; }
     if (e.shiftKey && k === 'g') { this.view.showGrid = !this.view.showGrid; return true; }
     if (k === '?') { this.ui.toggleHelp(); return true; }
+    if (k === '`') { this.ui.toggleDev(); return true; }
     const action = e.ctrlKey || e.metaKey ? null : keyFor(this.settings.keys, k);
     switch (action) {
       case 'pause': this.paused = !this.paused; this.ui.refresh(); return true;

@@ -180,6 +180,8 @@ Charter as `.json`.
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
+- Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
+  result).
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
 - Crossed eggs from attuned cradles (two auras in one dragon) and trueblood eggs from two

@@ -29,6 +29,7 @@ export function isNight(state: GameState): boolean {
   return t < 0.24 || t > 0.78;
 }
 
+export { spawn as spawnCreature };
 function spawn(state: GameState, species: Species, x: number, y: number, anchorId = -1): Agent {
   const rng = rngOf(state);
   const a: Agent = {

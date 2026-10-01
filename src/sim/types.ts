@@ -375,6 +375,7 @@ export interface GameState {
     crossEggs: number;
     guildHalls: number;
     truebloods: number;
+    devUses: number; // dev tools used in this charter (marks the daily result)
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

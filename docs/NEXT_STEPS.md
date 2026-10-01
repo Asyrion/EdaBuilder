@@ -203,6 +203,12 @@
 - Guild rivalries: favoured guilds drag their rivals down and granted petitions sting them.
 - Two quests, tests.
 
+## Done in iteration 28
+
+- Dev tools panel (backtick or Menu): thirty commands for playtesting across purse, time,
+  hazards, wyrms, guilds and relics, events and map, with a live status line; uses are
+  counted, chronicled and mark the daily result.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
