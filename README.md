@@ -194,8 +194,9 @@ Charter as `.json`.
 - Sprites are generated at startup into an atlas with a manifest. Drop
   `public/art/atlas.png` + `atlas.json` (same manifest format) to replace them with
   hand-made art without code changes.
-- Procedural WebAudio effects, a wind / ley-hum / cricket ambience and generative
-  ambient music that follows day, night, season and danger (Menu to toggle).
+- Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (hounds
+  howl, the wyrm roars, barges ring, skyrays sing) panned by where they happen, and
+  generative ambient music that follows day, night, season and danger (Menu to toggle).
 
 ## Docs
 

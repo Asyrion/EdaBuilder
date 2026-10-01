@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY } from './catalog';
 import { edictOn } from './edicts';
 import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf, seasonOf } from './world';
+import { effects } from './hazards';
 
 export const GOLEM_LABOUR = 12; // jobs' worth of work per bound golem
 export const GOLEM_MANA = 10; // mana a day per bound golem at the foundry
@@ -61,6 +62,7 @@ export function dailyBeasts(s: GameState): void {
         if (!inBounds(x, y) || s.terrain[idx(x, y)] !== Terrain.Hills || s.bIndex[idx(x, y)] >= 0) continue;
         spawnGolem(s, x, y);
         s.stats.golemsWoken++;
+        effects.push({ x, y, kind: 'stomp', tick: s.tick });
         pushMessage(s, `The miners at (${b.x},${b.y}) have woken a Concord Warden: a stone giant climbs out of the hill and starts walking. Nothing burns it and the Gloam parts for it. A Golem Foundry (Burgh) can bind it.`, 'warn', true, { x, y });
         break;
       }

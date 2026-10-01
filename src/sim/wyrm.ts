@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type GameState, type WyrmState } from './types';
 import { forEachBuilding, markDirtyAround, pushMessage } from './world';
 import { edictOn } from './edicts';
+import { effects } from './hazards';
 
 export const WYRM_MIN_DIST = 40; // node must be this far from the founding node
 export const WYRM_LAIR_RADIUS = 30;
@@ -147,6 +148,7 @@ export function startFlyover(s: GameState, hostile: boolean): void {
   });
   s.wyrm.flyover = Math.max(1, s.tick);
   s.wyrm.fires = 0;
+  effects.push({ x: n.x, y: n.y, kind: 'roar', tick: s.tick });
   redraw(s);
   s.stats.wyrmFlyovers++;
   pushMessage(s, hostile ? `The wyrm takes wing over ${s.cityName}. Its shadow is the size of a district.` : `The bound wyrm circles ${s.cityName} once, as it does each season. Glimmoths scatter like sparks.`, hostile ? 'bad' : 'info', true, { x: n.x, y: n.y });

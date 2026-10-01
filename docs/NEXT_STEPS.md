@@ -147,6 +147,11 @@
   and ticker; the daily challenge shows progress and a copyable result; aria labels and
   roles on the panels.
 
+## Done in iteration 21 (sound pass)
+
+- Positional sound cues (howl, roar, growl, horn, bell, song, storm, stomp, rain) panned
+  and attenuated by the camera, and in-view emitters for mills, storms, golems and skyrays.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -200,8 +205,6 @@ cameo events.
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
    and citizen sprites most.
-5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
-   simple generative melody for milestones.
 7. **Map sectors.** Buy map sectors like CS1's tile purchase, with the Gloam retreating
    as sectors are chartered (terraforming itself is done).
 8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,

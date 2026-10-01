@@ -2,6 +2,7 @@
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf } from './world';
+import { effects } from './hazards';
 
 export const STORM_DAYS = 4;
 export const STORM_RADIUS = 5;
@@ -32,6 +33,7 @@ export function marketDistrict(s: GameState): number {
 // ---------- mana-storms ----------
 export function startStorm(s: GameState, x: number, y: number): void {
   s.storms.push({ x, y, until: s.day + STORM_DAYS, vx: 0, vy: 0 });
+  effects.push({ x, y, kind: 'storm', tick: s.tick });
   pushMessage(s, `A mana-storm coils out of the surge at (${x},${y}): a pocket of wild ley that will drift for ${STORM_DAYS} days, warping what it touches. Wards dissolve it.`, 'warn', true, { x, y });
 }
 
@@ -108,6 +110,7 @@ export function maybeSpawnTiger(s: GameState, night: boolean): void {
     };
     s.agents.push(a);
     s.stats.tigersTotal++;
+    effects.push({ x, y, kind: 'growl', tick: s.tick });
     pushMessage(s, `A war-tiger of Longwood is loose in the forest at (${x},${y}): striped, silent, and twice a hound. Hunters' Lodges, Watch Houses and warden drakes are the only answer.`, 'bad', true, { x, y });
   }
   commitRng(s, rng);
