@@ -856,6 +856,28 @@ reached it on day 95); seed 43 stalls at Burgh on both; seed 44 Free City day 58
 Beacon day 87 vs 98. No systematic shift; the rule in 14.1 is now read as the mean over three
 seeds.
 
+### 4.64 Walker kinds, second set: scholars, tamers, pilgrims (iteration 33)
+
+One framework addition: errands. `errandTarget(s, a, anchor, away)` returns the away tile
+while `a.phase` is 0 and the anchor's road tile while it is 1; the job's `onArrive` flips the
+phase. `keepLoad` jobs keep `a.load` over the day (a carrier); a carrier dismissed mid-errand
+puts its piece back.
+
+- **Scholar** (Academy 1, Grand Academy 2, lit only; prop `book`): errand to the nearest Ruin
+  Delve within 60 tiles; at the delve it takes one uncatalogued piece (`a.load = 1`), at home
+  it names it (`catalogue`, `stats.scholarTrips`). While any scholar is fielded `dailyRelics`
+  no longer catalogues by itself, so pieces are named by a walk. With no delve the scholar
+  patrols the school streets. Quest `w_scholar`.
+- **Tamer** (Tamer's Lodge 1; prop `leash`): errand to the nearest cradle within ten tiles
+  that holds dragons and was not visited today; at the cradle `visited = day`, every dragon
+  there +2 mood, and `dailyDragons` grows them ×1.1 that day; three visits a day,
+  `stats.tamerVisits`. Quest `w_tamer`.
+- **Pilgrim** (shrine 1, temple 2; prop `staff`): errand to another house of the Vigils or
+  the Founding Stake within 30 tiles; paints `faith` +0.04 (cap 0.15) on its road and prays on
+  arrival (`stats.pilgrimPrayers`). Quest `w_pilgrim`.
+
+This completes M10: seven walker kinds, one per service, all data in `WALKER_JOBS`.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -925,7 +947,7 @@ seeds.
   relics, halls, rivalries (iterations 23–29, §13). ✅ (phase 6 in progress)
 - **M9 Construction and dev tools** — sites, builders, the dev panel (iterations 26, 28). ✅
 - **M10 Walkers** — more NPC kinds that embody the systems: watchmen, sextons, healers,
-  wardens, scholars, tamers and pilgrims on the roads, each doing a visible job (§14.1).
+  wardens, scholars, tamers and pilgrims on the roads, each doing a visible job (§14.1). ✅
 - **M11 Peoples** — playable factions with their own buildings, progression and rules,
   one as proof of concept (the Grimmen of the Underhill), the rest designed (§14.2).
 
@@ -1429,7 +1451,7 @@ chase the hound, the sexton walk the dead home. The plan keeps static coverage f
   arches). Walkers are rebuilt from their buildings daily like carts, so saves stay small.
   Dev tools: "spawn walker here". Tests: a job's hooks fire, counts follow the buildings,
   removed buildings dismiss their walkers.
-- **Kinds (iterations 32–33), one per existing system, each with a small real effect** (32 ✅ sextons, healers, wardens as 4.63):
+- **Kinds (iterations 32–33), one per existing system, each with a small real effect** (✅ all seven: 4.63 sextons, healers, wardens; 4.64 scholars, tamers, pilgrims):
   watchmen from Watch Houses (kill a hound on contact, lay a restless, +0.1 watch on the
   tiles they pass for a day); sextons from Boneyards and Ossuaries (walk restless back to
   the boneyard: a laid restless instead of a killed one, unquieted −1 per trip); healers
@@ -1626,3 +1648,6 @@ picks it beside the scenario; the bot plays any of them.
   will want its own; both are built as data so the second of each is cheap.
 - *Walkers are a bonus layer, never the coverage itself (iteration 31):* static radii stay
   the balance baseline; walkers paint on top and their effects are capped per day.
+- *A walk replaces a timer where it can (iteration 33):* relic pieces are named when a
+  scholar carries them home, not by a daily counter, because the walk is the thing the player
+  sees; the counter stays only as the fallback for an Academy with no scholar.

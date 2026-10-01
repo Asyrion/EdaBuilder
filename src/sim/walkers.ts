@@ -4,6 +4,7 @@ import { findPath, roadTileOf } from './agents';
 import { effects } from './hazards';
 import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent, type Building, type GameState, type ServiceType } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
+import { catalogue } from './relics';
 
 export interface WalkerJob {
   id: string;
@@ -20,6 +21,7 @@ export interface WalkerJob {
   meets?: AgentKind[]; // kinds tested for contact every MEET_EVERY ticks
   onMeet?: (s: GameState, a: Agent, o: Agent) => boolean; // true: the other agent is removed
   cap: number; // effect uses per walker per day (a.load)
+  keepLoad?: boolean; // a carrier: the day does not reset a.load (the scholar's relic piece)
 }
 
 export const MEET_EVERY = 5;
@@ -96,7 +98,78 @@ export function wardenNear(s: GameState, b: Building, r = 5): boolean {
   return s.agents.some((a) => a.kind === AgentKind.Walker && a.job === 'warden' && Math.abs(a.x - (b.x + 0.5)) <= r && Math.abs(a.y - (b.y + 0.5)) <= r);
 }
 
+/** There and back: the away tile while `a.phase` is 0, the anchor's road tile while it is 1. `onArrive` flips the phase. */
+export function errandTarget(s: GameState, a: Agent, anchor: Building, away: () => number): number | null {
+  if (a.phase === 1) { const rt = roadTileOf(s, anchor); return rt >= 0 ? rt : null; }
+  const to = away();
+  return to >= 0 ? to : null;
+}
+
+function atHome(s: GameState, a: Agent, i: number): boolean {
+  return buildingsAt(s, i).some((b) => b.id === a.anchorId);
+}
+
 export const WALKER_JOBS: Record<string, WalkerJob> = {
+  scholar: {
+    id: 'scholar', name: 'scholar', plural: 'scholars', prop: 'book', keepLoad: true,
+    desc: 'Walks from its Academy to the Ruin Delve and carries one uncatalogued relic piece home to be named; while a scholar is fielded, pieces are catalogued by their walk and not by the book. With no delve it walks the school streets.',
+    from: ['academy', 'grandacademy'],
+    count: (_s, b) => (b.lit ? (b.kind === 'grandacademy' ? 2 : 1) : 0),
+    radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 14,
+    cap: 99,
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['ruindelve'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 60)),
+    onArrive: (s, a, i) => {
+      const here = buildingsAt(s, i);
+      if (a.phase !== 1 && here.some((b) => b.kind === 'ruindelve')) {
+        if (a.load === 0 && s.relics.uncatalogued > 0) { s.relics.uncatalogued--; a.load = 1; logLine(a, 'Took a piece of something old from the diggers.'); }
+        else logLine(a, 'Found nothing new at the delve.');
+        a.phase = 1;
+        return;
+      }
+      if (a.phase === 1 && atHome(s, a, i)) {
+        if (a.load > 0) { a.load = 0; catalogue(s); s.stats.scholarTrips++; logLine(a, 'Named the piece in the Academy\'s book.'); }
+        a.phase = 0;
+      }
+    },
+  },
+  tamer: {
+    id: 'tamer', name: 'tamer', plural: 'tamers', prop: 'leash',
+    desc: "Walks from its Tamer's Lodge to each cradle within ten tiles that holds dragons: every dragon there is calmer (+2 mood) and grows a tenth faster that day, three visits a day.",
+    from: ['tamerslodge'],
+    count: () => 1,
+    radius: () => 10,
+    cap: 3,
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => (a.load >= 3 ? -1 : nearestRoadOf(s, a, ['cradle'], (b) => Math.hypot(b.x - anchor.x, b.y - anchor.y) <= 10 && (b.visited ?? -1) < s.day && s.dragons.some((d) => d.cradleId === b.id)))),
+    onArrive: (s, a, i) => {
+      if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
+      const c = buildingsAt(s, i).find((b) => b.kind === 'cradle');
+      if (c && a.load < 3 && (c.visited ?? -1) < s.day) {
+        c.visited = s.day;
+        a.load += 1;
+        let n = 0;
+        for (const d of s.dragons) if (d.cradleId === c.id) { d.mood = Math.min(100, d.mood + 2); n++; }
+        s.stats.tamerVisits++;
+        logLine(a, `Worked the ${n} dragon${n === 1 ? '' : 's'} in the cradle at (${c.x},${c.y}).`);
+      }
+      a.phase = 1;
+    },
+  },
+  pilgrim: {
+    id: 'pilgrim', name: 'pilgrim', plural: 'pilgrims', prop: 'staff',
+    desc: 'Walks from its shrine or temple to another house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
+    from: ['shrine', 'temple'],
+    count: (_s, b) => (b.kind === 'temple' ? 2 : 1),
+    radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
+    cap: 99,
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),
+    onTile: (s, _a, i) => paintBonus(s, 'faith', i, 0.04, 0.15),
+    onArrive: (s, a, i) => {
+      if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
+      const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'stake');
+      if (h) { s.stats.pilgrimPrayers++; logLine(a, `Prayed at the ${BUILDING_BY_KEY[h.kind].name} at (${h.x},${h.y}).`); }
+      a.phase = 1;
+    },
+  },
   sexton: {
     id: 'sexton', name: 'sexton', plural: 'sextons', prop: 'spoon',
     desc: 'Walks the lanes around its Boneyard or Ossuary with a spoon of salt: the streets it walks count as tended by deathcare, and it lays the restless it meets and quiets one of the dead for each, three a day.',
@@ -224,12 +297,12 @@ export function dailyWalkers(s: GameState): void {
     if (a.kind !== AgentKind.Walker) { keep.push(a); continue; }
     const job = jobOf(a);
     const b = a.anchorId !== undefined ? alive.get(a.anchorId) : undefined;
-    if (!job || !b || !job.from.includes(b.kind)) continue;
+    if (!job || !b || !job.from.includes(b.kind)) { if (job?.keepLoad && a.load > 0) s.relics.uncatalogued += a.load; continue; }
     const key = `${job.id}:${b.id}`;
     const have = perAnchor.get(key) ?? 0;
-    if (have >= job.count(s, b)) continue;
+    if (have >= job.count(s, b)) { if (job.keepLoad && a.load > 0) s.relics.uncatalogued += a.load; continue; }
     perAnchor.set(key, have + 1);
-    a.load = 0;
+    if (!job.keepLoad) a.load = 0;
     a.log = [];
     keep.push(a);
   }

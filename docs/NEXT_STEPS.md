@@ -242,6 +242,13 @@
   the surge off what it stands beside. Target and arrival hooks in the framework; three
   quests; three prop sprites.
 
+## Done in iteration 33
+
+- Scholars, tamers and pilgrims as walker jobs with an errand helper: the scholar carries
+  relic pieces home to be named, the tamer calms and quickens the cradles it visits, the
+  pilgrim paints faith on the road between the houses of the Vigils. Three quests, three prop
+  sprites. M10 complete.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -292,8 +299,10 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M10 Walkers, last kinds** (DESIGN §14.1): scholars (Academy to the delve), tamers
-   (lodge to the cradles) and pilgrims (shrines to the temple) in iteration 33; then M11.
+0. **M11 Peoples, scaffold** (DESIGN §14.2): a `FactionDef` table with the Vellish default
+   and no rule change, `GameState.faction`, the title-screen picker beside the scenario, the
+   catalog's `faction`/`replaces` fields, and the `rules` block the Grimmen will need
+   (iteration 34). Then the Grimmen of the Underhill (35–37).
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.
