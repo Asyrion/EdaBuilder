@@ -50,6 +50,44 @@ export class Tools {
       host.camera.setZoom(host.camera.zoom + (e.deltaY < 0 ? 1 : -1), e.clientX, e.clientY);
     }, { passive: false });
     c.addEventListener('contextmenu', (e) => e.preventDefault());
+    // touch: one finger uses the tool, two fingers pan and pinch-zoom
+    let pinchDist = 0;
+    let twoFinger = false;
+    const fake = (t: Touch, button: number): MouseEvent => ({ clientX: t.clientX, clientY: t.clientY, button, shiftKey: false, preventDefault: () => undefined } as unknown as MouseEvent);
+    c.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        twoFinger = true;
+        if (this.dragButton === 0) this.mouseUp(fake(e.touches[0], 0));
+        this.panLast = [(e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2];
+        this.dragButton = 2;
+        pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      } else if (e.touches.length === 1 && !twoFinger) {
+        this.lastMouse = [e.touches[0].clientX, e.touches[0].clientY];
+        this.mouseDown(fake(e.touches[0], 0));
+      }
+    }, { passive: false });
+    c.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2 && twoFinger) {
+        const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        if (this.panLast) host.camera.pan(cx - this.panLast[0], cy - this.panLast[1]);
+        this.panLast = [cx, cy];
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        if (pinchDist > 0 && d > pinchDist * 1.3) { host.camera.setZoom(host.camera.zoom + 1, cx, cy); pinchDist = d; }
+        else if (pinchDist > 0 && d < pinchDist / 1.3) { host.camera.setZoom(host.camera.zoom - 1, cx, cy); pinchDist = d; }
+      } else if (e.touches.length === 1 && !twoFinger) this.mouseMove(fake(e.touches[0], 0));
+    }, { passive: false });
+    const touchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 0) {
+        if (twoFinger) { twoFinger = false; this.panLast = null; this.dragButton = -1; }
+        else this.mouseUp(fake(e.changedTouches[0], 0));
+      }
+    };
+    c.addEventListener('touchend', touchEnd, { passive: false });
+    c.addEventListener('touchcancel', touchEnd, { passive: false });
     window.addEventListener('keydown', (e) => this.keyDown(e));
     window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
     window.addEventListener('blur', () => this.keys.clear());

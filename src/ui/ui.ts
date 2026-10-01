@@ -18,6 +18,7 @@ import type { Tool } from './tools';
 import type { Camera } from '../render/camera';
 import type { Scenario } from '../sim/types';
 import { SCENARIOS } from '../sim/scenario';
+import { daughterPopulation, TWIN_POP } from '../sim/charter';
 import { QUESTS } from '../data/quests';
 import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
@@ -55,7 +56,9 @@ export interface UiHost {
   setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void;
   selectedNode: number;
   deepenNode(i: number): void;
+  foundDaughter(i: number, name: string): string | null;
   canDeepenNode(i: number): string | null;
+  canFoundDaughter(i: number): string | null;
   renameDistrict(d: number, name: string): void;
   undo(): boolean;
   undoLabel: string | null;
@@ -695,15 +698,21 @@ export class UI {
       if (w.state === 'awake') rows.push(row('Tribute', `${wyrmTribute(s)} crowns / season`));
       if (w.state === 'bound') rows.push(row('Fed', w.sulking > 0 ? `<span class="bad">sulking ${w.sulking}d</span>` : `${w.fedDays} days running`));
     }
-    const title = isWyrm ? (s.wyrm.state === 'sleeping' ? 'The Sleeping Wyrm' : s.wyrm.state === 'dead' ? "The Wyrm's Bones" : 'The Vein-Wyrm') : founding ? 'The Founding Wellspring' : 'Ley Node';
+    const canDaughterWhy = this.host.canFoundDaughter(i);
+    const canDaughter = canDaughterWhy === null ? true : canDaughterWhy;
+    const title = isWyrm ? (s.wyrm.state === 'sleeping' ? 'The Sleeping Wyrm' : s.wyrm.state === 'dead' ? "The Wyrm's Bones" : 'The Vein-Wyrm') : founding ? 'The Founding Wellspring' : s.daughter && s.daughter.node === i ? `${s.daughter.name}'s Wellspring` : 'Ley Node';
     el.innerHTML = `<button class="close">✕</button><h2>${title}</h2><div class="muted">(${n.x},${n.y}) · ${isWyrm ? 'a Vein with a wyrm coiled on it' : 'a Vein breaking the surface'}</div>${rows.join('')}
       ${isWyrm ? `<p class="${s.wyrm.state === 'sleeping' && s.wyrm.waking > 0 ? 'warn' : 'muted'}">${describeWyrm(s)}</p>` : ''}
       <p class="muted">${isWyrm && s.wyrm.state === 'sleeping' ? `Spires within 6 tiles drink from the wyrm and wake it (about ${Math.round(100 / 3)} days per spire). Deepening this node wakes it at once. Awake, it wants tribute each season, or it burns; a Wyrm-Court (Free City) can bind it as the city's guardian: wards ${WYRM_LAIR_RADIUS} tiles, no hounds, happiness +10, eats 40 goods a day.` : `Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.`}</p>
       <button id="n-deepen" ${why ? 'disabled' : ''}>${isWyrm && s.wyrm.state === 'sleeping' ? 'Deepen and wake the wyrm' : 'Deepen the Wellspring'} (${depth < NODE_DEEPEN_COST.length ? NODE_DEEPEN_COST[depth] + ' crowns' : 'done'})</button>
       ${why ? `<div class="muted" style="margin-top:4px">${why}</div>` : ''}
+      ${!founding && !isWyrm && s.milestone >= 8 && !s.daughter ? `<div class="drow" style="margin-top:8px"><input id="n-dname" type="text" value="${CITY_NAMES[(i * 3) % CITY_NAMES.length]}" maxlength="18" style="width:120px"> <button id="n-daughter" ${canDaughter === true ? '' : 'disabled'}>Found a daughter wardlight</button>${canDaughter === true ? '' : `<div class="muted">${canDaughter}</div>`}</div>` : ''}
+      ${s.daughter && s.daughter.node === i ? `<div class="good">${s.daughter.name}, daughter wardlight: ${daughterPopulation(s)} folk within 30 tiles${s.daughter.twin >= 0 ? ' · Twin Beacon' : ` (${TWIN_POP} for the Twin Beacon)`}</div>` : ''}
       <p class="flavor">${isWyrm ? 'The stones here are not stones. Put your hand on one and it is warm, and it breathes.' : founding ? 'The first light of the valley. It hums a half-tone flat when the dead are restless.' : 'Grass grows in spirals here. Children are told not to sleep within a stone\'s throw of it, and do anyway.'}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => { this.host.select(null); (this.host as { selectedNode: number }).selectedNode = -1; el.classList.add('hidden'); });
     (el.querySelector('#n-deepen') as HTMLButtonElement).onclick = () => this.host.deepenNode(i);
+    const db = el.querySelector('#n-daughter') as HTMLButtonElement | null;
+    if (db) db.onclick = () => { const nm = (el.querySelector('#n-dname') as HTMLInputElement).value.trim() || 'Newlight'; const why = this.host.foundDaughter(i, nm); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); else this.toast(`<h2>${nm} is founded</h2><p>A daughter wardlight of ${s.cityName}. Grow it to 500 folk for the Twin Beacons.</p>`, 7000); this.nodeShown = -1; this.refresh(); };
     this.nodeShown = i;
   }
 

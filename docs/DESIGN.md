@@ -569,6 +569,22 @@ A **Done** button on the Ledger lists every completed quest by chapter.
 district's zoned-building problems: unlit, dry and empty-shelved counts, in red, only
 when there are any.
 
+### 4.39 The daughter charter and touch controls (iteration 18)
+
+**The daughter charter** is the endgame. At Beacon of Eda the panel of any ley node that
+is not the founding node, not the wyrm's, and at least 30 tiles from the Stake offers
+*Found a daughter wardlight* with a name. Founding places a second Founding Stake on a
+free 2×2 beside the node (forest cleared), a three-tile track along its south edge, a
+13×13 district named after it (the next free district slot), pays a 15,000-crown grant and
+writes the Chronicle. Both wardlights share one treasury, one Charter and one milestone
+ladder; the daughter's population is the folk living within 30 tiles of its stake. At 500
+folk the **Twin Beacons** fire once: 10,000 crowns and a Chronicle milestone. Two Ledger
+quests carry it. `state.daughter` holds node, stake position, name, day and the twin day.
+
+**Touch controls.** One finger uses the current tool exactly like the left mouse button
+(synthesised mouse events); two fingers pan by their midpoint and pinch-zoom one step per
+30 % change in spread; the canvas has `touch-action: none`.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -1017,3 +1033,5 @@ consistent with `EDA_LORE.md` §9.
 - *Scenarios are generation options plus a quest:* two terrain flags, one mana constant
   and a scripted collapse give three charters without a second code path; the goal is a
   normal quest with priority 0, so the Ledger and the Chronicle already handle it.
+- *The daughter is a second stake, not a second state:* one treasury and one milestone
+  ladder keep every system unchanged; the daughter is a place on the map plus a radius.

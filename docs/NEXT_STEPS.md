@@ -129,6 +129,12 @@
 - Counters for the six unbacked quests and a Done page in the Ledger.
 - Per-district unlit / dry / empty counts under the district labels.
 
+## Done in iteration 18 (the daughter charter, touch)
+
+- The daughter charter at Beacon of Eda: a second stake and district on a far node, a
+  grant, and the Twin Beacons at 500 folk; two quests.
+- Touch controls: one finger for tools, two fingers to pan, pinch to zoom.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -136,8 +142,8 @@
   and light pass dominate in software). On a GPU-backed browser this is well under the
   16 ms budget, but 1× zoom on a very large city should be re-measured on real hardware
   and, if needed, the light map dropped to quarter resolution at 1×.
-- **Problem icons** now wait two days and hide at 1× zoom, but a dense unlit district still
-  shows one per building; a per-district summary would read better.
+- **Problem icons** wait two days and hide at 1× zoom; the Districts view now carries a
+  per-district unlit / dry / empty summary under each label.
 - **The bot player is a test tool**, not a demo: it zones aggressively and sometimes leaves
   water gaps that a human would fix in seconds.
 - **Agents walk on the tile grid**, so citizens occasionally cut a corner visually where a
@@ -145,8 +151,9 @@
 - **Cross-chunk depth**: props are cached per ground chunk and depth-sorted per frame, but a
   very tall tree directly behind a tall building on a chunk boundary can overlap by a pixel
   or two.
-- **Mana** is still the late-game budget: 4–6 nodes, deepened twice, plus Thrum Fonts carry
-  roughly 3,000–4,000 folk. Past that the intended answer is a second charter, not more spires.
+- **Mana** is still the late-game budget: 4–6 nodes, deepened twice, plus Thrum Fonts and
+  Torrent Mills carry roughly 3,000–4,000 folk. Past that the answer is the daughter
+  charter on another node.
 - **Undo** covers player actions only; a building the Gloam or a fire removed is not undoable.
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second
   job.
@@ -178,9 +185,7 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
-   the treasury, once the first is a Beacon.
-4. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
+1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
    and citizen sprites most.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
@@ -190,6 +195,6 @@ cameo events.
 7. **Terraforming** (drain a marsh, clear forest) and the ability to buy map sectors like
    CS1's tile purchase, with the Gloam retreating as sectors are chartered.
 8. **Accessibility.** Colour-blind-safe overlay ramps, scalable UI, remappable keys.
-9. **Mobile/touch** controls (pinch zoom, two-finger pan).
+9. **Mobile layout.** Touch gestures work; the panels still assume a desktop width.
 10. **Replays and challenge seeds.** The sim is deterministic; a command log would allow
     replays and daily-seed challenges.
