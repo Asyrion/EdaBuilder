@@ -1,6 +1,7 @@
 /** Service coverage, miasma, land value. */
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { edictOn } from './edicts';
+import { quarterAt, quarterOf } from './districts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
@@ -119,6 +120,8 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
   }
   const wb = state.walkerBonus?.[type];
   if (wb) for (let i = 0; i < n; i++) acc[i] += wb[i];
+  // the quarters: a temple quarter's faith counts half again, a scholars' quarter's schooling a quarter more
+  if (type === 'faith' || type === 'school') for (let i = 0; i < n; i++) { const q = state.district[i] ? state.districtQuarters[state.district[i]] : undefined; if (type === 'faith' && q === 'temple') acc[i] *= 1.5; else if (type === 'school' && q === 'scholars') acc[i] *= 1.25; }
   const out = state.coverage[type];
   for (let i = 0; i < n; i++) out[i] = Math.min(255, Math.round(Math.min(1, acc[i]) * 255));
 }
@@ -137,7 +140,7 @@ export function updateMiasma(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.miasma || b.state !== 'ok') return;
-    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1);
+    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1) * (quarterOf(state, b) === 'craft' ? 1.3 : 1);
     const r = 4;
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
@@ -196,6 +199,8 @@ export function updateLandValue(state: GameState): void {
       if (wd <= 5) v += (5 - wd) * 2.5 * fr.waterLandValue;
       else if (wd > 8) v -= fr.dryPenalty;
       if (flood && wd <= 1) v -= 10;
+      const q = quarterAt(state, i);
+      if (q === 'hearth') v += 6; else if (q === 'market') v -= 4;
       v += (cov.leisure[i] / 255) * 16;
       v += (cov.faith[i] / 255) * 10;
       v += (cov.watch[i] / 255) * 6;

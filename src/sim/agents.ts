@@ -1,5 +1,6 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
 import { effects } from './hazards';
+import { marketQuarterAt } from './districts';
 import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
 import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
@@ -150,7 +151,7 @@ export function setFenNex(d: number, grid: Uint8Array): void {
   fenGrid = grid;
 }
 export function marketStockCap(b: Building): number {
-  return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1);
+  return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1) * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
 }
 
 export function roadTileOf(state: GameState, b: Building): number {

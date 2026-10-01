@@ -5,7 +5,8 @@ import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuar
  * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
  */
 import { buySector, canBuySector, sectorCost } from './sectors';
-import { TERRAFORM, buildRoad, bulldoze, paintZone, placeBuilding, roadPath, terraform } from './actions';
+import { TERRAFORM, buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, roadPath, terraform } from './actions';
+import { setQuarter } from './districts';
 import { EDICT_BY_KEY } from './edicts';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
@@ -19,6 +20,7 @@ export interface BotOptions {
 
 export class Bot {
   radius = 8; // half-size of the developed square around the stake
+  private districted = false;
   private lastExpand = -99;
   constructor(private s: GameState, private opts: BotOptions = {}) {}
 
@@ -39,6 +41,7 @@ export class Bot {
       else if (d.stage === 2 && d.role === 'none') { const mine = s.buildings.find((b) => b && b.kind === 'mine'); if (mine) setRole(s, d.id, 'delver', mine.id); else if (s.buildings.some((b) => b && b.kind === 'ring')) setRole(s, d.id, 'champion'); }
     }
     this.ensureGrid();
+    this.charterDistricts();
     this.zoneByDemand();
     this.keepWatered();
     this.quarry();
@@ -207,6 +210,16 @@ export class Bot {
       const ty = Math.round(n.y + uy * (n.link - 0.5));
       this.placeNear('spire', tx, ty, 2, true);
     }
+  }
+
+  /** At the Village: the inner square (hearths and markets; the bot keeps works 8 out) becomes a Hearth quarter.
+   *  The ring beyond it is mixed, and a Craft quarter there cost the bot's hearths more than its works gained. */
+  private charterDistricts(): void {
+    const s = this.s;
+    if (this.districted || s.milestone < 3) return;
+    this.districted = true;
+    paintDistrict(s, 1, this.cx - 7, this.cy - 7, this.cx + 7, this.cy + 7);
+    setQuarter(s, 1, 'hearth');
   }
 
   /** Hill zone tiles with nothing built yet: the room a hill people has left for its halls. */

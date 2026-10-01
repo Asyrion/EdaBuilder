@@ -331,6 +331,15 @@
   on one global frame, stacked on one pixel; agents now stand still without a path, walk at
   their own pace and keep a lane of their own.
 
+## Done in iteration 42 (districts that do something)
+
+- Districts carry a charter (Hearth, Craft, Market, Scholars' or Temple quarter) with a gift
+  and a price each, chosen in the Edicts panel; painting one switches the district view on,
+  toasts what is inside and offers the charter; districts open at the Hamlet; the Ledger's
+  Districts chapter is five quests; the bot charters its hearth square (a Craft quarter over
+  its mixed ring cost it a third of its folk, so the price is real).
+- From the playtests: a selected building shows its reach as a ring.
+
 ## Known issues
 
 - **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day

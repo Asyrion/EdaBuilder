@@ -216,7 +216,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   milestone; effects are read by the systems they touch (unrest, health, quieting rate,
   surge threshold, goods/miasma, market tithe, education drift).
 
-### 4.18 Districts and per-district edicts (iteration 3)
+### 4.18 Districts and per-district edicts (iteration 3; rebuilt with charters in 4.73)
 - A district layer (`district: Uint8Array`, 8 named districts: Hearthside, Stillward,
   Spirefield, Lanternrow, Greywall, Marketcross, Candlerow, Boneward) painted with a
   rectangle tool. Districts are free and cover any land tile.
@@ -1270,6 +1270,49 @@ brightens what the gate demands and a town of a thousand has corners the Wick-To
 not reach; the lamplighter and the bot's late light are part 2. Vellish, Grimmen and Veshari
 seed 42 are bit-identical to main.
 
+### 4.73 Districts that do something: charters, the unlock, the painting moment (iteration 42)
+
+From a playtest: the Districts tab was open from the first minute, nothing explained it, and
+painting a district changed nothing the player could see. Districts (4.18) were a layer whose
+only direct use was the *scope* of an edict, plus a few indirect readers (the Fen-Nex quarter,
+a warden drake's beat, the Weather Vane, the feast). So a district is now something the player
+decides, with an effect the same day, and it explains itself.
+
+**Charters** (`src/sim/districts.ts`, the `QUARTERS` table; `GameState.districtQuarters`,
+saved). A district carries none or one of five, and every effect is one read at a hook the
+systems already had, as a people's rules are:
+
+| charter | gift | price |
+|---|---|---|
+| Hearth quarter | land value +6; hearths +3 happiness | craft works ×0.8 |
+| Craft quarter | craft works ×1.2 | hearths −4 happiness; miasma ×1.3 |
+| Market quarter | markets hold ×1.5 and pay ×1.1 tithe | land value −4 |
+| Scholars' quarter | arcane works ×1.2; school coverage ×1.25 | upkeep ×1.1 |
+| Temple quarter | faith coverage ×1.5; hearths +2 happiness | markets pay no tithe |
+
+`quarterAt(s, i)` resolves a tile in one lookup; `marketStockCap` reads a per-tick snapshot
+like the Fen-Nex district. A district with no charter is what it was: a scope for edicts.
+
+**The painting moment.** Painting switches the district view on and toasts "Hearthside: 7
+buildings, 1 of them works. No charter yet…" with a button that opens the Edicts panel on that
+district, where a **Charter** row (five buttons and None, each with its gift and price) sits
+above the edicts and the stats line. The Districts tab's items carry the charter in their
+label and a tooltip that says what a district is for; the district view's label shows it too.
+**The unlock:** districts open at the Hamlet (`DISTRICT_UNLOCK`), the Hamlet's text says so,
+and the Districts chapter of the Ledger is five quests: paint, charter, see it pay
+(`stats.quarterDays`), an edict, a name. A `quarter` dev command charters the district under
+the camera. **The bot** paints its hearth square at the Village and charters it a Hearth
+quarter, so the balance runs carry the mechanic (below). It first chartered the mixed ring
+beyond as a Craft quarter and lost a third of its folk by day 150: a charter's price lands on
+whatever is inside, and a ring of works, markets and hearths pays all of it.
+
+**Also from the playtests: a selected building shows its reach.** `influenceRadius(s, def, b)`
+(a service's radius, a well's water, a spire's light with the people's reach, a Wick-Tower's
+four, a Nexus or wonder's nine) draws the same ring the build ghost draws, in amber, around
+the selected building.
+
+**Balance (150 days):** the table follows in the closing commit of this iteration.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2123,3 +2166,10 @@ picks it beside the scenario; the bot plays any of them.
   not relay" is one `if`, not a second network.
 - *What is stated is what is drawn (iteration 41):* an agent with no path stands still, and
   a crowd walks out of step; the playtester saw the sprite lie before the numbers did.
+- *A layer the player paints must answer the same day (iteration 42):* districts had been a
+  scope for edicts since iteration 3, and a playtester painted one and saw nothing. A charter
+  with a gift and a price, chosen at the moment of painting, is the answer; a mechanic that
+  only matters through another panel is a mechanic that does not exist.
+- *A charter is a people's rule for a neighbourhood (iteration 42):* the five charters read
+  at the same hooks the peoples' rules read, one line each, so the two systems cannot drift
+  apart and a sixth charter is a row.

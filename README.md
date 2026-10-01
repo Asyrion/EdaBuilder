@@ -201,6 +201,9 @@ Charter as `.json`.
   the Grimmen's stone-sextons and the Veshari's bargemen walk the roads from their buildings and do their jobs where
   they go; the streets they walk
   count as covered.
+- Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
+  Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
+  still be set per district. A selected building shows its reach.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
   result).
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the

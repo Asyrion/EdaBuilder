@@ -5,6 +5,7 @@ import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
+import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
@@ -101,6 +102,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (b.lit) h += 6;
   else h -= 9;
   if ((b.tended ?? -1) >= state.day) h += 4;
+  if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') h += 3; else if (q === 'craft') h -= 4; else if (q === 'temple') h += 2; }
   if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && flooding(state)) h -= 10; // the Sable in flood
   if (b.watered) h += 6;
   else h -= 11;
@@ -275,6 +277,7 @@ export function dailyBuildings(state: GameState): void {
       const asp = aspectAt(state, b.x, b.y);
       let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (marvelNear(state, 'wyrmforge', b) ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
+      { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
       state.goodsProduced += Math.max(0, made);
@@ -284,7 +287,7 @@ export function dailyBuildings(state: GameState): void {
       b.stock = Math.max(0, b.stock - want);
     } else if (def.zone === Zone.Arcane) {
       // enchanters turn leystone into artifacts sold for crowns
-      const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
+      const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3) * (quarterOf(state, b) === 'scholars' ? 1.2 : 1));
       b.stock -= use;
       state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 + 0.05 * state.relics.complete.length : 1);
     }

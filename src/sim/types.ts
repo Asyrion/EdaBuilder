@@ -1,3 +1,4 @@
+import type { QuarterId } from './districts';
 import type { GuildState } from './guilds';
 import type { FactionId } from '../data/factions';
 import type { RelicState } from './relics';
@@ -305,6 +306,7 @@ export interface GameState {
   edicts: Record<string, boolean>;
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
+  districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
   trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number }; // today
   dragons: Dragon[];
   nextDragonId: number;
@@ -402,6 +404,7 @@ export interface GameState {
     floodDays: number; // days of the current Hush the Sable has been in flood (weave.ts)
     floodsWeathered: number; // Hushes a water people came through with the river in flood
     bargemanRounds: number; // flooded homes bailed by bargemen
+    quarterDays: number; // days with at least one chartered district
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

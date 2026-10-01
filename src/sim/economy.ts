@@ -1,6 +1,7 @@
 import { factionOf, milestonesOf } from '../data/factions';
 /** Daily tithe: taxes and upkeep. */
 import { inFenNex } from './lore';
+import { quarterOf } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
@@ -36,12 +37,12 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: if (!inFenNex(state, b)) l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1); break;
+        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1); break; }
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }
     } else {
-      l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1);
+      l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1) * (quarterOf(state, b) === 'scholars' ? 1.1 : 1);
     }
   });
   for (let i = 0; i < state.road.length; i++) {
