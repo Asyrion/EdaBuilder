@@ -322,6 +322,11 @@
 
 ## Known issues
 
+- **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day
+  82 instead of 55 and ends 220 folk smaller; the bot only answers the flood with bargemen
+  and with the Weir at Vesh's Court. A cheaper flood-work (a bank wall, a sluice) or a bot
+  that keeps hearths off the first bank row would close the gap.
+
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
   800-agent city renders in ~10 ms at 2–3× zoom but ~28 ms at 1× (the full-resolution blit
   and light pass dominate in software). On a GPU-backed browser this is well under the

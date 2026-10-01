@@ -1193,7 +1193,20 @@ them (`tended`, the healer's +4, so a flood costs 6 rather than 10), six a day.
 **The bot** lays a landing beside works that have no mooring within a barge's reach (the
 finding of 4.70), and raises the Weir at Vesh's Court through its own water-side search.
 
-**Balance (150 days):** the three-seed table follows in the closing commit of this iteration.
+**Balance (150 days).** Iteration 39's numbers in brackets.
+
+| Veshari | Harbour | Haven | Weirhold (1,000) | folk d150 | barges d150 |
+|---|---|---|---|---|---|
+| seed 42 | 15 (42) | 44 (43) | 54 (53) | 1,898 (1,913) | 268 (0) |
+| seed 43 | 14 (12) | 25 (21) | 59 (53) | 1,380 (1,190) | 171 (114) |
+| seed 44 | 22 (24) | 31 (31) | **82** (55) | 1,207 (1,426) | 215 (171) |
+
+Every seed sails now (the landing beside the works), and Vellish and Grimmen seed 42 are
+bit-identical to main. The flood has a price: seed 44, whose town sits lowest on the bank,
+reaches the Weirhold 27 days later than before and ends 220 folk smaller; the plan asked
+for day 60 on all three and seed 44 misses it. That is the people's hazard doing what it
+should, not a bug, and the answer is the Weir (which the bot raises only at Vesh's Court)
+or a cheaper flood-work for part 3; it is recorded in NEXT_STEPS.
 
 ## 5. Art direction
 
