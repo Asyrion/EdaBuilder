@@ -3,6 +3,8 @@ import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
 import { canFoundDaughter, foundDaughter } from './sim/charter';
+import { SOUND_CUES, type SoundCue } from './sim/hazards';
+import { tileToWorld } from './render/iso';
 import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
@@ -302,6 +304,17 @@ class Game {
     return false;
   }
 
+  /** Stereo pan (-1..1) and volume (0..1) for a tile relative to the camera view; off-screen cues fade with distance. */
+  private panFor(x: number, y: number): [number, number] {
+    const cam = this.renderer.camera;
+    const [wx, wy] = tileToWorld(x, y);
+    const u = (wx - cam.left) / cam.nativeW - 0.5;
+    const vv = (wy - cam.top) / cam.nativeH - 0.5;
+    const pan = Math.max(-1, Math.min(1, u * 2));
+    const out = Math.max(0, Math.abs(u) - 0.5) + Math.max(0, Math.abs(vv) - 0.5);
+    return [pan, 1 / (1 + out * 2.5)];
+  }
+
   private updateHint(): void {
     const t = this.tools.tool;
     let hint = `<b>${toolLabel(t)}</b> — `;
@@ -336,6 +349,7 @@ class Game {
         if (this.acc > step * 4) this.acc = 0; // avoid spiral of death
         // sim-triggered effects
         for (const e of drainEffects()) {
+          if (SOUND_CUES.includes(e.kind as SoundCue)) { const [pan, vol] = this.panFor(e.x, e.y); this.audio.cue(e.kind as SoundCue, pan, vol); continue; }
           this.renderer.burst(e.kind, e.x, e.y);
           if (e.kind === 'surge') this.audio.surge();
           else if (e.kind === 'fire' || e.kind === 'restless') this.audio.bad();
@@ -359,7 +373,8 @@ class Game {
       const tod = timeOfDay(this.state);
       const night = nightFactor(tod);
       const v = this.renderer.inView;
-      this.audio.ambientMix(night, v.ley, v.water, v.fire, v.market);
+      this.audio.ambientMix(night, v.ley, Math.min(1, v.water + v.mills * 0.8), v.fire, v.market, v.storm, v.golems);
+      if (v.rays > 0) this.audio.raysInView(v.rays);
       const danger = Math.max(v.fire, this.state.wyrm.flyover > 0 && this.state.agents.some((a) => a.kind === 3 && a.species === 'wyrm' && a.load > 0) ? 1 : 0, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0, this.state.agents.some((a) => a.kind === 3 && a.species === 'hound') && night > 0.3 ? 0.7 : 0);
       this.audio.setMood(night, Math.floor(this.state.day / 30) % 4, danger);
       if (this.state.gameOver && !this.paused) {

@@ -4,6 +4,7 @@ import { isGoodsSource } from './growth';
 import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
+import { effects } from './hazards';
 
 export const FLOAT_VARIANT = 3; // cart variant: hovers, ignores congestion, 1 mana while moving
 export const BARGE_VARIANT = 4; // cart variant: travels water between quays
@@ -136,6 +137,7 @@ export function dailyBarges(s: GameState): void {
     };
     s.agents.push(a);
     s.stats.bargeTrips++;
+    effects.push({ x: from.x, y: from.y, kind: 'bell', tick: s.tick });
     if (rng.chance(0.15)) pushMessage(s, `A barge casts off from the quay at (${from.x},${from.y}) with ${Math.round(total)} goods for the markets at (${best.x},${best.y}).`, 'info');
   }
   commitRng(s, rng);
@@ -198,6 +200,7 @@ export function dailyAirship(s: GameState): void {
     air.voyages++;
     s.stats.airshipVoyages++;
     spawnAirship(s, dock, true);
+    effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
     pushMessage(s, `The airship casts off from the Sky-Dock with ${Math.round(goods)} goods for the wardlights beyond the Gloam. Ten days there and back.`, 'info', true, { x: dock.x, y: dock.y });
   } else if (air.status === 'away' && s.day - air.since >= AIRSHIP_DAYS - 1 && !s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'airship')) {
     spawnAirship(s, dock, false);
@@ -222,6 +225,7 @@ export function airshipArrives(s: GameState): void {
   const crowns = Math.round(air.goods * s.trade.priceGoods * 1.6);
   s.treasury += crowns;
   s.stats.airshipCrowns += crowns;
+  if (dock) effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
   air.status = 'docked';
   const rng = rngOf(s);
   const tale = rng.chance(0.5);

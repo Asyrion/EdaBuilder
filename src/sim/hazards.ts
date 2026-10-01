@@ -11,10 +11,15 @@ import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
 import { fontOfQuieting, startStorm } from './lore';
 
+export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
+/** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
+export type SoundCue = 'howl' | 'roar' | 'growl' | 'horn' | 'bell' | 'song' | 'storm' | 'stomp' | 'rain';
+export const SOUND_CUES: SoundCue[] = ['howl', 'roar', 'growl', 'horn', 'bell', 'song', 'storm', 'stomp', 'rain'];
+
 export interface Effect {
   x: number;
   y: number;
-  kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal';
+  kind: EffectKind;
   tick: number;
 }
 export const effects: Effect[] = [];

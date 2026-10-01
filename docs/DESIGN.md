@@ -614,6 +614,21 @@ quests carry it. `state.daughter` holds node, stake position, name, day and the 
 - **Accessibility**: every titled button gets an `aria-label`, the toolbar a toolbar role,
   modals a dialog role, the ticker `aria-live="polite"`, the minimap a label.
 
+### 4.42 Sound pass: positional cues (iteration 21)
+
+The sim raises **sound cues** through the same effect channel as fire and surge bursts
+(`SoundCue`: howl, roar, growl, horn, bell, song, storm, stomp, rain), each with a tile.
+The game loop converts the tile to a stereo pan from its position across the camera view
+and a volume that falls off with distance outside the view, so a hound pack howling to
+the north-east of the screen is heard to the right and quietly. Sites: hound packs
+spawning (howl), the wyrm taking wing (roar), a war-tiger coming out of the forest
+(growl), the airship leaving and returning (horn), a barge casting off (bell), skyrays
+turning on a Beacon (song), a mana-storm forming (storm), a Concord Warden waking (stomp),
+Call Rain (rain). Each voice is a few oscillators and filtered noise through a
+`StereoPannerNode`. Ambience gains three positional emitters: Torrent Mills in view add to
+the water bed, a mana-storm in view crackles, walking golems in view thud at one-second
+intervals, and skyrays in view sing every twelve seconds, panned at random.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -1066,3 +1081,5 @@ consistent with `EDA_LORE.md` §9.
   ladder keep every system unchanged; the daughter is a place on the map plus a radius.
 - *The daily seed is a hash, not a lookup:* no server, no list, the date alone fixes the
   valley, so the challenge works offline and in any time zone that agrees on UTC.
+- *Sound cues ride the effect channel:* the sim stays silent and deterministic; it names a
+  place and a kind, and the presentation layer decides pan, volume and voice.

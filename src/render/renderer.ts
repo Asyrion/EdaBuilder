@@ -1,5 +1,6 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
 import { treeStage } from '../sim/growth';
+import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
@@ -70,7 +71,7 @@ export class Renderer {
   wind = 0.5;
   stats = { drawn: 0, ms: 0, ground: 0, objects: 0, sort: 0, particles: 0, lighting: 0, blit: 0 };
   /** What the camera currently sees, for the ambient audio mix (0..1). */
-  inView = { water: 0, fire: 0, market: 0, ley: 0 };
+  inView = { water: 0, fire: 0, market: 0, ley: 0, mills: 0, rays: 0, storm: 0, golems: 0 };
 
   constructor(screen: HTMLCanvasElement, atlas: SpriteAtlas) {
     this.screen = screen;
@@ -417,6 +418,9 @@ export class Renderer {
     // buildings
     const flameFrame = Math.floor(this.time * 8) % 3;
     let fireSeen = 0;
+    let millSeen = 0;
+    let raySeen = 0;
+    let golemSeen = 0;
     let marketSeen = 0;
     let leySeen = 0;
     let waterSeen = 0;
@@ -438,6 +442,7 @@ export class Renderer {
       if (burning) fireSeen++;
       if (def.zone === Zone.Market && b.state === 'ok') marketSeen++;
       if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'lantern')) leySeen++;
+      if (b.kind === 'torrentmill' && b.state === 'ok') millSeen++;
       items.push({ d, y: wy, fn: () => {
         this.draw(s, wx, wy, abandoned ? 0.55 : 1);
         if (burning) {
@@ -481,6 +486,10 @@ export class Renderer {
       if (b.kind === 'wardlantern' && b.lit) lights.push({ x: cx, y: cy - 20, r: 60, c: PAL.ley1, i: 0.6 });
     }
     this.inView.fire = Math.min(1, fireSeen / 3);
+    this.inView.mills = Math.min(1, millSeen / 2);
+    this.inView.rays = Math.min(1, raySeen / 3);
+    this.inView.golems = Math.min(1, golemSeen / 2);
+    this.inView.storm = state.storms.some((st) => st.x >= minX - 6 && st.x <= maxX + 6 && st.y >= minY - 6 && st.y <= maxY + 6) ? 1 : 0;
     this.inView.market = Math.min(1, marketSeen / 12);
     this.inView.ley = Math.min(1, leySeen / 6);
     this.inView.water = Math.min(1, waterSeen / Math.max(6, visible.length * 0.5));
@@ -488,6 +497,8 @@ export class Renderer {
     const walkFrame = Math.floor(this.time * 8) % 4;
     for (const a of state.agents) {
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
+      if (a.kind === AgentKind.Creature && a.species === 'skyray') raySeen++;
+      if (a.kind === AgentKind.Creature && a.species === 'golem' && a.path.length) golemSeen++;
       if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature) continue; // resting inside a building
       const [wx, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
       if (a.kind === AgentKind.Creature) {
@@ -1051,7 +1062,8 @@ export class Renderer {
   }
 
   /** Burst effects triggered by the sim. */
-  burst(kind: 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal', x: number, y: number): void {
+  burst(kind: EffectKind, x: number, y: number): void {
+    if (SOUND_CUES.includes(kind as SoundCue)) return;
     const [wx, wy] = tileToWorld(x, y);
     const n = kind === 'surge' ? 60 : kind === 'portal' ? 14 : 20;
     for (let k = 0; k < n; k++) {

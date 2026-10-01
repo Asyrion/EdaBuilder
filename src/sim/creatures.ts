@@ -9,7 +9,7 @@ import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { maybeSpawnTiger } from './lore';
 import { edictOn } from './edicts';
-import { igniteBuilding } from './hazards';
+import { effects, igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
@@ -164,6 +164,7 @@ export function updateCreatures(state: GameState): void {
         for (let k = 0; k < n; k++) spawn(state, 'hound', i % MAP_W, (i / MAP_W) | 0);
         rng.state = state.rngState;
         state.stats.houndsTotal += n;
+        effects.push({ x: i % MAP_W, y: (i / MAP_W) | 0, kind: 'howl', tick: state.tick });
         if (rng.chance(0.6)) pushMessage(state, `Gloam-hounds howl at the ${((i / MAP_W) | 0) < state.founding.y ? 'north' : 'south'}ern edge. ${hush ? 'The Hush makes them bold.' : ''} Ward Lanterns and the Watch drive them off; a Hunters' Lodge ends them.`, 'warn');
       }
     }
@@ -295,6 +296,7 @@ export function tickCreatures(state: GameState): void {
         }
         if (bc && Math.hypot(bc.x - a.x, bc.y - a.y) <= 30) {
           a.phase = 1;
+          if (a.variant === 0) effects.push({ x: bc.x, y: bc.y, kind: 'song', tick: state.tick });
           if (a.variant === 0) pushMessage(state, `The skyrays turn on the Ley Beacon's song at (${bc.x},${bc.y}) and begin to circle. They will stay the season.`, 'good', true, { x: bc.x, y: bc.y });
           break;
         }
