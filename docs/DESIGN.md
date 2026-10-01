@@ -876,7 +876,9 @@ puts its piece back.
   the Founding Stake within 30 tiles; paints `faith` +0.04 (cap 0.15) on its road and prays on
   arrival (`stats.pilgrimPrayers`). Quest `w_pilgrim`.
 
-This completes M10: seven walker kinds, one per service, all data in `WALKER_JOBS`.
+This completes M10: seven walker kinds, one per service, all data in `WALKER_JOBS`. Balance
+over seeds 42–44 against main: Free City days 66 / stalls / 50 vs 60 / stalls / 58 (mean 58 vs
+59), Beacon days 97 / – / 91 vs 95 / – / 98; within the rule.
 
 ## 5. Art direction
 
