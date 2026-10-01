@@ -635,7 +635,7 @@ export const MILESTONES: Milestone[] = [
   { name: 'Founding Stake', pop: 0, grant: 0, unlocks: ['track', 'hearth', 'market', 'craft', 'well', 'spire', 'watchpost', 'shrine'],
     text: 'The Charter is nailed to the door. Light it, hold it, and make it pay.' },
   { name: 'Hamlet', pop: 40, grant: 2000, unlocks: ['cobble', 'boneyard', 'healer', 'garden'],
-    text: 'Forty souls under your light. The Crown sends cobbles, a sexton and a healer.' },
+    text: 'Forty souls under your light. The Crown sends cobbles, a sexton and a healer, and grants you districts: paint one and charter it.' },
   { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern', 'mothloft'],
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot'],

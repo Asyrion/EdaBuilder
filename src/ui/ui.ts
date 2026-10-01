@@ -16,6 +16,7 @@ import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
+import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId } from '../sim/districts';
 import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, isCradle, stageCap } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
@@ -64,6 +65,7 @@ export interface UiHost {
   setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
+  setQuarter(district: number, q: QuarterId | null): void;
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> };
   setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void;
   selectedNode: number;
@@ -273,9 +275,11 @@ export class UI {
         add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${this.ms()[d.unlock].name}</span>` : ''}`);
       }
     } else if (this.category === 'districts') {
+      const dLocked = s.milestone < DISTRICT_UNLOCK;
       for (let d = 1; d <= MAX_DISTRICTS; d++) {
-        const name = DISTRICT_NAMES[d - 1];
-        add(`<span style="color:${DISTRICT_COLORS[d - 1]}">■</span> ${name}`, '', false, t.kind === 'district' && t.id === d, () => this.host.setTool({ kind: 'district', id: d }), () => `<div class="t">${name}</div>Drag to paint this district. Edicts can then be applied to it alone from the Edicts panel. Press <b>i</b> for the district view.`);
+        const name = districtName(s, d);
+        const q = s.districtQuarters[d];
+        add(`<span style="color:${DISTRICT_COLORS[d - 1]}">■</span> ${name}${q ? ` <span class="muted">· ${QUARTER_BY_ID[q].name}</span>` : ''}`, '', dLocked, t.kind === 'district' && t.id === d, () => this.host.setTool({ kind: 'district', id: d }), () => `<div class="t">${name}${q ? ` · ${QUARTER_BY_ID[q].name}` : ''}</div>Drag a rectangle to paint this district over part of the city, then give it a <b>charter</b> in the Edicts panel (<b>E</b>): a Hearth, Craft, Market, Scholars' or Temple quarter, each with a gift and a price for the buildings inside it. Edicts can also be set for one district alone. Press <b>i</b> for the district view.${q ? `<br><span class="muted">${QUARTER_BY_ID[q].effect} ${QUARTER_BY_ID[q].cost}</span>` : ''}${dLocked ? `<br><span class="muted">Unlocks at ${this.ms()[DISTRICT_UNLOCK].name}</span>` : ''}`);
       }
       add('Clear district', '', false, t.kind === 'district' && t.id === 0, () => this.host.setTool({ kind: 'district', id: 0 }), () => `<div class="t">Clear</div>Removes district paint from the area.`);
     } else {
@@ -1382,7 +1386,9 @@ export class UI {
         const occ = def.zone === Zone.Hearth ? b.residents : b.workers;
         income += occ * (def.tax ?? 0) * (1 + (b.level - 1) * 0.35) * (0.6 + (b.happiness / 100) * 0.6);
       }
-      stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>`;
+      const cur = st.districtQuarters[d];
+      const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}" title="${q.effect} ${q.cost}">${q.name}</button>`).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" title="No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost}</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : '<div class="muted">A charter gives every building in the district a gift and a price. Pick one.</div>'}</div>`;
+      stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>${quarters}`;
     }
     const rows = edictsFor(st).map((e) => {
       const locked = st.milestone < e.unlock;
@@ -1417,6 +1423,7 @@ export class UI {
       this.refreshEdicts();
     };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
+    this.el.edicts.querySelectorAll('button[data-quarter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { this.host.setQuarter(this.edictScope, ((b as HTMLElement).dataset.quarter || null) as QuarterId | null); this.refreshEdicts(); this.refresh(); }; });
     this.el.edicts.querySelectorAll('button[data-charter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.charterGuilds((b as HTMLElement).dataset.charter as GuildId); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); }; });
   }
 

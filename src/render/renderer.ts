@@ -1,12 +1,13 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
 import { treeStage } from '../sim/growth';
 import { factionOf } from '../data/factions';
+import { QUARTER_BY_ID } from '../sim/districts';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
-import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
+import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius } from '../sim/world';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -879,7 +880,8 @@ export class Renderer {
       const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
       const sx = Math.round(wx - this.camera.left);
       const sy = Math.round(wy - this.camera.top);
-      const name = state.districtNames[d] || DISTRICT_NAMES[d - 1];
+      const q = state.districtQuarters[d];
+      const name = (state.districtNames[d] || DISTRICT_NAMES[d - 1]) + (q ? ` · ${QUARTER_BY_ID[q].name}` : '');
       const w = ctx.measureText(name).width + 6;
       ctx.fillStyle = 'rgba(10,8,16,0.75)';
       ctx.fillRect(sx - w / 2, sy - 7, w, 11);
@@ -949,27 +951,33 @@ export class Renderer {
           const [wx, wy] = tileToWorld(g.x + dx, g.y + dy);
           this.draw(this.atlas.get(g.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
         }
-      if (g.radius > 0) {
-        // radius ring
-        const cx = g.x + (def.w - 1) / 2;
-        const cy = g.y + (def.h - 1) / 2;
-        ctx.fillStyle = 'rgba(120,220,255,0.12)';
-        ctx.strokeStyle = 'rgba(120,220,255,0.5)';
-        ctx.beginPath();
-        const steps = 48;
-        for (let k = 0; k <= steps; k++) {
-          const a = (k / steps) * Math.PI * 2;
-          const tx = cx + 0.5 + Math.cos(a) * g.radius;
-          const ty = cy + 0.5 + Math.sin(a) * g.radius;
-          const [wx, wy] = tileToWorld(tx, ty);
-          if (k === 0) ctx.moveTo(wx - L, wy - T);
-          else ctx.lineTo(wx - L, wy - T);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
+      if (g.radius > 0) this.ring(g.x + (def.w - 1) / 2, g.y + (def.h - 1) / 2, g.radius, 'rgba(120,220,255,0.12)', 'rgba(120,220,255,0.5)');
+    } else if (view.selected) {
+      // the selected building shows what it reaches: its service, its water or its light
+      const b = view.selected;
+      const r = influenceRadius(state, BUILDING_BY_KEY[b.kind], b);
+      if (r > 0) this.ring(b.x + (b.w - 1) / 2, b.y + (b.h - 1) / 2, r, 'rgba(255,220,120,0.08)', 'rgba(255,220,120,0.55)');
     }
+  }
+
+  /** A tile-radius ring around a centre, in world space. */
+  private ring(cx: number, cy: number, r: number, fill: string, stroke: string): void {
+    const ctx = this.ctx;
+    const L = this.camera.left;
+    const T = this.camera.top;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = stroke;
+    ctx.beginPath();
+    const steps = 48;
+    for (let k = 0; k <= steps; k++) {
+      const a = (k / steps) * Math.PI * 2;
+      const [wx, wy] = tileToWorld(cx + 0.5 + Math.cos(a) * r, cy + 0.5 + Math.sin(a) * r);
+      if (k === 0) ctx.moveTo(wx - L, wy - T);
+      else ctx.lineTo(wx - L, wy - T);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   }
 
   private drawLeyLines(state: GameState, night: number): void {

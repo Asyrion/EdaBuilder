@@ -2,6 +2,7 @@
 import { ALL_EVENTS, descOf } from './events';
 import { milestonesOf } from '../data/factions';
 import { ASPECTS } from './weave';
+import { QUARTERS, QUARTER_BY_ID, setQuarter, type QuarterId } from './districts';
 import { LINE_INFO, addEgg, STAGE_NAMES, stageCap } from './wyrmcraft';
 import { GUILDS, GUILD_IDS, dailyGuilds, type GuildId } from './guilds';
 import { RELIC_SETS, grantRelicSet } from './relics';
@@ -16,7 +17,7 @@ import { checkMilestones } from './economy';
 import { run } from './sim';
 import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Building, type DragonLine, type GameState } from './types';
 import { BUILDING_BY_KEY } from './catalog';
-import { forEachBuilding, markAllDirty, markDirty, pushChronicle, pushMessage } from './world';
+import { forEachBuilding, markAllDirty, markDirty, pushChronicle, pushMessage, districtName } from './world';
 import { Zone } from './types';
 
 export interface DevArg { kind: 'select'; options: [string, string][] }
@@ -83,6 +84,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   // events & map
   { id: 'event', group: 'Events & map', name: 'Fire an event', desc: 'Any event or festival by name.', arg: { kind: 'select', options: eventOptions() }, run: (s, id) => { const e = ALL_EVENTS.find((x) => x.id === id); if (!e) return 'Unknown event.'; s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) }; s.firedEvents.push(`${e.id}:?`); return `${e.title}.`; } },
   { id: 'charter', group: 'Events & map', name: 'Charter the whole map', desc: 'Every sector bought.', run: (s) => { s.sectors.fill(1); markAllDirty(s); return 'Sixteen sectors.'; } },
+  { id: 'quarter', group: 'Events & map', name: 'Charter the district here', desc: 'Gives the district under the camera centre the chosen charter (paint one first).', arg: { kind: 'select', options: QUARTERS.map((q) => [q.id, q.name]) }, run: (s, q, at) => { const d = s.district[idx(at.x, at.y)]; if (!d) return 'No district here.'; setQuarter(s, d, q as QuarterId); return `${districtName(s, d)} is a ${QUARTER_BY_ID[q as QuarterId].name}.`; } },
   { id: 'flatten', group: 'Events & map', name: 'Flatten here', desc: 'Grass in a 21×21 at the camera centre (water and nodes kept).', run: (s, _a, at) => { let n = 0; for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = at.x + dx; const y = at.y + dy; if (!inBounds(x, y)) continue; const i = idx(x, y); const t = s.terrain[i]; if (t === Terrain.Forest || t === Terrain.Hills || t === Terrain.Meadow) { s.terrain[i] = Terrain.Grass; n++; markDirty(s, x, y); } } return `${n} tiles flattened.`; } },
 ];
 

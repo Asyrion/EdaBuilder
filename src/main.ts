@@ -1,8 +1,9 @@
 import type { FactionId } from './data/factions';
 import { costOf } from './data/factions';
+import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
-import { createGame, timeOfDay } from './sim/world';
+import { createGame, districtName, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
 import { canFoundDaughter, foundDaughter } from './sim/charter';
 import { SOUND_CUES, type SoundCue } from './sim/hazards';
@@ -117,6 +118,7 @@ class Game {
       canDeepenNode: (i) => canDeepenNode(this.state, i),
       canFoundDaughter: (i) => canFoundDaughter(this.state, i),
       foundDaughter: (i, name) => { const why = foundDaughter(this.state, i, name); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
+      setQuarter: (d, q) => { setQuarter(this.state, d, q); recomputeAll(this.state); this.renderer.overlayVersion++; this.audio.click(); },
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
       setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
@@ -257,8 +259,22 @@ class Game {
     this.ui.refresh();
   }
 
-  private onAction(kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'terrain' | 'error' | 'click', msg?: string): void {
+  private onAction(kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'terrain' | 'error' | 'click' | 'district', msg?: string): void {
     switch (kind) {
+      case 'district': {
+        this.audio.zone();
+        const d = Number(msg);
+        if (!d) break;
+        this.view.overlay = 'district';
+        this.renderer.overlayVersion++;
+        const bs = districtBuildings(this.state, d);
+        const works = bs.filter((b) => BUILDING_BY_KEY[b.kind].zone === Zone.Craft).length;
+        const q = this.state.districtQuarters[d];
+        this.ui.toast(`<p><b>${districtName(this.state, d)}</b>: ${bs.length} building${bs.length === 1 ? '' : 's'}${works ? `, ${works} of them works` : ''}. ${q ? `Charter: ${QUARTER_BY_ID[q].name}.` : 'No charter yet: choose one in the Edicts panel to give the district a gift and a price.'}</p><p><button id="t-charter">Open the Edicts panel</button></p>`, 9000);
+        const btn = document.getElementById('t-charter');
+        if (btn) btn.onclick = () => { this.ui.edictScope = d; this.ui.toggleEdicts(true); };
+        break;
+      }
       case 'road': this.audio.road(); break;
       case 'zone': this.audio.zone(); break;
       case 'place': {

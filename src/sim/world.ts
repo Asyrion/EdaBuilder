@@ -7,7 +7,7 @@ import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
 import { assignAspects, aspectAt } from './weave';
 import { Rng, hashString } from '../core/rng';
-import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
+import { BUILDING_BY_KEY, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
   DAYS_PER_SEASON,
@@ -97,6 +97,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     edicts: {},
     districtEdicts: {},
     districtNames: {},
+    districtQuarters: {},
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     dragons: [],
     nextDragonId: 1,
@@ -124,7 +125,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -388,6 +389,16 @@ export function timeOfDay(state: GameState): number {
   if (t >= 0.5 - half && t <= 0.5 + half) return 0.25 + ((t - (0.5 - half)) / dayShare) * 0.5;
   if (t < 0.5 - half) return (t / (0.5 - half)) * 0.25;
   return 0.75 + ((t - (0.5 + half)) / (0.5 - half)) * 0.25;
+}
+
+/** The radius a building reaches: its service, its water, or its light (spires read the people's reach). */
+export function influenceRadius(state: GameState, def: BuildingDef, b?: Building): number {
+  if (def.service) return def.service.radius;
+  if (def.waterRadius) return b ? waterRadiusOf(state, b) : def.waterRadius;
+  if (def.key === 'spire') return 5 + factionOf(state).rules.spireReach;
+  if (def.key === 'wicktower') return 4;
+  if (def.key === 'nexus' || WONDER_HALLS.includes(def.key)) return 9;
+  return 0;
 }
 
 export function districtName(state: GameState, d: number): string {

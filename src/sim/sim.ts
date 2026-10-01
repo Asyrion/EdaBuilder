@@ -20,6 +20,7 @@ import { dailyConstruction, tickConstruction } from './construction';
 import { dailyWalkers, tickWalkers } from './walkers';
 import { wardenDistricts } from './wyrmcraft';
 import { setFenNex } from './agents';
+import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -47,6 +48,7 @@ export function recomputeAll(state: GameState): void {
 
 export function tick(state: GameState, hooks?: SimHooks): void {
   setFenNex(state.fenNex, state.district);
+  setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver || state.pendingEvent) return;
   state.tick++;
   const t = state.tick;
@@ -96,7 +98,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
-    if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
+    if (Object.values(state.districtQuarters).some(Boolean)) state.stats.quarterDays++;
+  if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     maybeFireWyrm(state);
     maybeFireCalendar(state);
     maybeFireEvent(state);

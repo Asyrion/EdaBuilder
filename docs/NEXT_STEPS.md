@@ -331,7 +331,22 @@
   on one global frame, stacked on one pixel; agents now stand still without a path, walk at
   their own pace and keep a lane of their own.
 
+## Done in iteration 42 (districts that do something)
+
+- Districts carry a charter (Hearth, Craft, Market, Scholars' or Temple quarter) with a gift
+  and a price each, chosen in the Edicts panel; painting one switches the district view on,
+  toasts what is inside and offers the charter; districts open at the Hamlet; the Ledger's
+  Districts chapter is five quests; the bot charters its hearth square (a Craft quarter over
+  its mixed ring cost it a third of its folk, so the price is real).
+- From the playtests: a selected building shows its reach as a ring.
+
 ## Known issues
+
+- **The bot and its Hearth quarter.** With the bot chartering its hearth square, Free City
+  comes earlier on every Vellish seed, but seed 42 ends day 150 with 2,072 folk and no
+  Beacon where main had 3,094 and a Beacon on day 92, while seed 43 gains a third. The
+  charter is a plain gain for the hearths it covers, so this is the rng path diverging; worth
+  a look with the bot's late game (does the brightened square outgrow its mana?).
 
 - **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day
   82 instead of 55 and ends 220 folk smaller; the bot only answers the flood with bargemen
