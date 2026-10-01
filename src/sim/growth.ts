@@ -191,6 +191,7 @@ export function dailyBuildings(state: GameState): void {
       }
       if (b.kind === 'ruindelve' && b.state === 'ok') {
         state.stats.relics++;
+        state.relicStock++;
         state.unquieted += 0.5;
       }
       return;
@@ -432,6 +433,10 @@ export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: nu
 }
 
 /** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. */
+export const RELIC_PRICE = 60;
+export const RELIC_KEEP = 10;
+export const RELICS_PER_DAY = 2;
+
 export function dailyTrade(state: GameState): void {
   const t = state.trade;
   const season = seasonOf(state);
@@ -464,6 +469,15 @@ export function dailyTrade(state: GameState): void {
       crowns += sell * t.priceLeystone;
     }
   });
+  // loose relics: the Crown buys up to two a day at the depot, leaving ten for the Academy
+  t.relicsSold = 0;
+  if (state.relicStock > RELIC_KEEP) {
+    const n = Math.min(RELICS_PER_DAY, state.relicStock - RELIC_KEEP);
+    state.relicStock -= n;
+    t.relicsSold = n;
+    state.stats.relicsSold += n;
+    crowns += n * RELIC_PRICE;
+  }
   if (edictOn(state, 'imports')) {
     forEachBuilding(state, (b) => {
       if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;

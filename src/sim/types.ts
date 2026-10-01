@@ -299,7 +299,7 @@ export interface GameState {
   edicts: Record<string, boolean>;
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number }; // today
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number }; // today
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
@@ -307,6 +307,7 @@ export interface GameState {
   fenNex: number; // district granted to the Fen-Nex, 0 none
   guilds: GuildState; // the council at the Guildhall (guilds.ts)
   relics: RelicState; // relic sets from the delve (relics.ts)
+  relicStock: number; // loose relics the delve has brought up and not yet sold
   scenario: Scenario;
   gloamPressure: number; // 0..1, recomputed daily (see weave.ts)
   lastBadDay: number; // storyteller: day of the last ill tiding
@@ -376,6 +377,9 @@ export interface GameState {
     guildHalls: number;
     truebloods: number;
     devUses: number; // dev tools used in this charter (marks the daily result)
+    greatWyrms: number;
+    relicsSold: number; // loose relics sold to the Crown
+    guildWars: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

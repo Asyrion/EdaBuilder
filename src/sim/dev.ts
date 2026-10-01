@@ -2,7 +2,7 @@
 import { ALL_EVENTS } from './events';
 import { MILESTONES } from './catalog';
 import { ASPECTS } from './weave';
-import { LINE_INFO, addEgg, STAGE_NAMES, maxStage, MAX_STAGE_NOW } from './wyrmcraft';
+import { LINE_INFO, addEgg, STAGE_NAMES, stageCap } from './wyrmcraft';
 import { GUILDS, GUILD_IDS, dailyGuilds, type GuildId } from './guilds';
 import { RELIC_SETS, grantRelicSet } from './relics';
 import { construction, dailyConstruction, sites, tickConstruction } from './construction';
@@ -69,7 +69,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
   // wyrms
   { id: 'egg', group: 'Wyrms', name: 'Lay an egg', desc: 'Of the chosen line, in a free cradle.', arg: { kind: 'select', options: ASPECTS.concat(['fen' as DragonLine]).map((l) => [l, LINE_INFO[l].name]) }, run: (s, line) => { const d = addEgg(s, line as DragonLine); return d ? `${d.name} laid.` : 'No free cradle.'; } },
-  { id: 'grow', group: 'Wyrms', name: 'Grow every dragon a stage', desc: 'Eggs hatch, hatchlings become drakes, drakes wyverns where the line allows.', run: (s) => { let n = 0; for (const d of s.dragons) { const cap = Math.min(MAX_STAGE_NOW, maxStage(d.line)); if (d.stage < cap) { d.stage = (d.stage + 1) as typeof d.stage; d.days = 0; n++; } } return `${n} grew; ${s.dragons.map((d) => `${d.name} ${STAGE_NAMES[d.stage]}`).join(', ') || 'no dragons'}.`; } },
+  { id: 'grow', group: 'Wyrms', name: 'Grow every dragon a stage', desc: 'Eggs hatch, hatchlings become drakes, drakes wyverns where the line allows.', run: (s) => { let n = 0; for (const d of s.dragons) { const cap = stageCap(d); if (d.stage < cap) { d.stage = (d.stage + 1) as typeof d.stage; d.days = 0; n++; } } return `${n} grew; ${s.dragons.map((d) => `${d.name} ${STAGE_NAMES[d.stage]}`).join(', ') || 'no dragons'}.`; } },
   { id: 'content', group: 'Wyrms', name: 'Dragons content', desc: 'Mood 100 and fed.', run: (s) => { for (const d of s.dragons) { d.mood = 100; d.hungry = 0; } return `${s.dragons.length} dragons purr.`; } },
   { id: 'wake', group: 'Wyrms', name: 'Wake the Vein-Wyrm', desc: 'If one sleeps on the map.', run: (s) => { if (s.wyrm.state === 'sleeping') { wake(s, 'the dev bell'); return 'It wakes.'; } return `The wyrm is ${s.wyrm.state}.`; } },
   { id: 'flyover', group: 'Wyrms', name: 'Wyrm flyover', desc: 'A hostile pass over the city.', run: (s) => { if (s.wyrm.state === 'awake' || s.wyrm.state === 'bound') { startFlyover(s, true); return 'Wings over the valley.'; } return `The wyrm is ${s.wyrm.state}.`; } },

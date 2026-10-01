@@ -209,6 +209,15 @@
   hazards, wyrms, guilds and relics, events and map, with a live status line; uses are
   counted, chronicled and mark the daily result.
 
+## Done in iteration 29
+
+- The great wyrm: a trueblood grows to the wyrm stage with auras half again as wide, a
+  pressure drop and double scale, eating 20 goods a day.
+- Relic trade: loose relics sell at the depot and to the Crown's assessor in person; the
+  Ledger names them.
+- The brawl: two striking rivals fight on the square once per 60 days with four outcomes.
+- Two quests, tests.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -259,8 +268,8 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Deep dive, phase 5** (DESIGN §13.11): a wyrm stage for truebloods, relic trade with
-   the Crown, and a guild war event when two rivals strike at once.
+0. **Deep dive, phase 6** (DESIGN §13.12): a tale for the great wyrm, relic auctions between
+   the Crown and the caravans, and a guild charter that ends a rivalry for a price.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

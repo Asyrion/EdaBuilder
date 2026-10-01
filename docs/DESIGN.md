@@ -764,6 +764,26 @@ summary. `runDev` counts every use in `stats.devUses`, writes one Chronicle line
 time, and the daily-challenge result is marked "(dev tools used)". The game pauses after
 each command so the effect can be inspected.
 
+### 4.56 The great wyrm
+
+`stageCap(d)` is 4 for a trueblood, else the line's cap. Stage 4: `WYRM_EATS_GOODS` 20,
+auras ×1.5 in `dragonAuras`, pressure −0.1 each (cap 0.2) in `computeGloamPressure`, scale
+×2 on the growth, `stats.greatWyrms`. The Wyrms panel says a trueblood wyvern may become a
+great wyrm. Quest `k_wyrm`.
+
+### 4.57 Relic trade
+
+`relicStock` counts loose relics from the delve. `dailyTrade` sells `RELICS_PER_DAY` (2) at
+`RELIC_PRICE` (60) while the stock exceeds `RELIC_KEEP` (10); `trade.relicsSold` and
+`stats.relicsSold`; the Gloam road note in the Ledger names relics sold and loose relics.
+Event `assessor` (pool, when relicStock ≥ 12 and a delve stands). Quest `k_assessor`.
+
+### 4.58 The brawl
+
+`dailyGuilds`: when a rival pair are both ≤ 25 and `WAR_SPACING` (60) days have passed
+since `guilds.lastWar`, `guildwar_<guild>` fires (`WAR_EVENTS`, in `COUNCIL_EVENTS`).
+`stats.guildWars`.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1266,10 +1286,27 @@ favoured guild (70+) drags its rival −0.4 a day, and a granted petition stings
 at once. The council block names each guild's rival. Pleasing everyone is now a balancing
 act rather than a checklist.
 
-### 13.11 Later phases
+### 13.11 Phase 5: the great wyrm, the assessor and the brawl (iteration 29)
 
-Dragon roles for truebloods (a wyrm stage), relic trade with the Crown, and a guild war
-event when two rivals strike at once.
+**The great wyrm (4.56).** A trueblood may grow past the wyvern stage to the wyrm stage
+(120 days as a wyvern): its auras reach half again as far, the Gloam pressure drops by
+0.1 for each (cap 0.2), it sheds double scale on the growth and eats 20 goods a day. The
+fourth generation of the aspect chain is a guardian the city raised itself, alongside the
+bound Vein-Wyrm.
+
+**Relic trade with the Crown (4.57).** Loose relics are now a stock: the depot sells up to
+two a day at 60 crowns once the camp holds more than ten, and the Crown's assessor calls
+when twelve or more wait, paying 90 each in person, or 1,500 per uncatalogued set piece
+(which leaves the sets), or nothing and +2% educated. The sextons mind relics leaving.
+
+**The brawl (4.58).** When two rivals are both on strike, once per 60 days they brawl on
+the square: side with either (+20 / −10), call the Watch for 300 crowns (both +5, a
+happiness dip), or let them fight (a building by the Guildhall burns, happiness −6).
+
+### 13.12 Later phases
+
+A tale for the great wyrm (it answers the Vein-Wyrm's flyover), relic auctions between the
+Crown and the Belerial caravans, and a guild charter that ends a rivalry for a price.
 
 ## 9. Verification
 
@@ -1401,3 +1438,5 @@ event when two rivals strike at once.
   so late-game depth is still something to put on the map (iteration 27).
 - *Dev tools are honest:* they live in the shipped build behind a key, every use is counted
   and marks the daily result, so playtesting is cheap and scores stay meaningful.
+- *The late game answers the early game:* the great wyrm pays off the aspects, the assessor
+  pays off the delve, and the brawl pays off neglected guilds (iteration 29).

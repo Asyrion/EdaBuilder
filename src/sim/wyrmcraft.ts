@@ -15,6 +15,11 @@ export const WINGED: DragonLine[] = ['ember', 'vein', 'sky', 'storm'];
 export function maxStage(line: DragonLine): number {
   return WINGED.includes(line) ? 3 : 2;
 }
+/** The stage a dragon can reach: its line's, or the wyrm stage for a trueblood. */
+export function stageCap(d: Dragon): number {
+  return d.trueblood ? 4 : Math.min(MAX_STAGE_NOW, maxStage(d.line));
+}
+export const WYRM_EATS_GOODS = 20;
 export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: string }> = {
   ember: { name: 'Ember', scale: 6, desc: 'brick red, breathes wyrmfire; a delver warms the seams' },
   bone: { name: 'Bone', scale: 8, desc: 'ivory over black; the restless lie down near it' },
@@ -145,7 +150,7 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     // living dragons eat: 6 goods a day as hatchling, 10 as drake
-    const fedNow = feed(state, cradle, d.stage === 1 ? 6 : d.stage === 2 ? 10 : 14);
+    const fedNow = feed(state, cradle, d.stage === 1 ? 6 : d.stage === 2 ? 10 : d.stage >= 4 ? WYRM_EATS_GOODS : 14);
     if (fedNow) {
       d.hungry = 0;
       d.mood = Math.min(100, d.mood + (d.training === 'gentle' ? 6 : 3) + (attuned ? 2 : 0));
@@ -176,16 +181,17 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     // growth
-    if (trained && fedNow && d.stage < Math.min(MAX_STAGE_NOW, maxStage(d.line))) {
+    if (trained && fedNow && d.stage < stageCap(d)) {
       d.days += speed * (d.mood > 50 ? 1 : 0.5);
       if (d.days >= STAGE_DAYS[d.stage]) {
         d.stage = (d.stage + 1) as Dragon['stage'];
         d.days = 0;
-        state.materials.scale += (LINE_INFO[d.line].scale + (d.second ? LINE_INFO[d.second].scale / 2 : 0)) * (d.trueblood ? 1.5 : 1);
+        state.materials.scale += (LINE_INFO[d.line].scale + (d.second ? LINE_INFO[d.second].scale / 2 : 0)) * (d.trueblood ? 1.5 : 1) * (d.stage >= 4 ? 2 : 1);
+        if (d.stage >= 4) { state.stats.greatWyrms++; pushMessage(state, `${d.name} is a great wyrm: its shadow crosses the whole quarter, its auras reach half again as far, and the Gloam shrinks from it. It eats ${WYRM_EATS_GOODS} goods a day.`, 'milestone', true, { x: cradle.x, y: cradle.y }); continue; }
         if (d.stage === 3 && d.role === 'delver') { d.role = 'none'; d.roleTarget = -1; }
         pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. ${d.stage === 3 ? 'It can fly goods as a courier.' : 'Give it a role in the Wyrms panel.'}`, 'milestone');
       }
-    } else if (d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line))) d.days += 1;
+    } else if (d.stage >= stageCap(d)) d.days += 1;
     // materials from grown dragons
     if (d.stage >= 2 && (d.line === 'ember' || d.second === 'ember') && state.day % 30 === 0) {
       state.materials.wyrmfire += 1;
