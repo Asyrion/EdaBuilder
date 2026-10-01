@@ -23,7 +23,7 @@ export interface QuestDef {
   priority: number; // lower first
 }
 
-const has = (s: GameState, kind: string, n = 1) => s.buildings.filter((b) => b && b.kind === kind && b.state !== 'ruin').length >= n;
+const has = (s: GameState, kind: string, n = 1) => s.buildings.filter((b) => b && b.kind === kind && b.state !== 'ruin' && b.state !== 'building').length >= n;
 const zoned = (s: GameState, z: Zone, n: number) => { let c = 0; for (let i = 0; i < s.zone.length; i++) if (s.zone[i] === z) c++; return c >= n; };
 const roads = (s: GameState) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i]) c++; return c; };
 const walls = (s: GameState) => { let c = 0; for (let i = 0; i < s.wall.length; i++) if (s.wall[i] === 1) c++; return c; };

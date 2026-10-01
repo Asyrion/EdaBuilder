@@ -1,5 +1,6 @@
 import { initGuilds } from './guilds';
 import { initRelics } from './relics';
+import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
@@ -276,7 +277,7 @@ export function touchesRoad(state: GameState, x: number, y: number, w: number, h
   return false;
 }
 
-export function placeBuildingRaw(state: GameState, key: string, x: number, y: number, level = 1): Building {
+export function placeBuildingRaw(state: GameState, key: string, x: number, y: number, level = 1, construct = false): Building {
   const def = BUILDING_BY_KEY[key];
   const rng = rngOf(state);
   const b: Building = {
@@ -293,9 +294,11 @@ export function placeBuildingRaw(state: GameState, key: string, x: number, y: nu
     happiness: 60,
     lit: false,
     watered: false,
-    state: 'ok',
+    state: construct && !construction.instant ? 'building' : 'ok',
     stateDays: 0,
     progress: 0,
+    work: construct && !construction.instant ? buildTicks(def) : 0,
+    workTotal: construct && !construction.instant ? buildTicks(def) : 0,
     age: 0,
     unhappyDays: 0,
     dryDays: 0,

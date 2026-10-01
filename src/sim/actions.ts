@@ -141,7 +141,7 @@ export function placeBuilding(state: GameState, key: string, x: number, y: numbe
   state.treasury -= def.cost;
   for (let dy = 0; dy < def.h; dy++)
     for (let dx = 0; dx < def.w; dx++) state.zone[idx(x + dx, y + dy)] = Zone.None;
-  placeBuildingRaw(state, key, x, y);
+  placeBuildingRaw(state, key, x, y, 1, true);
   state.zoneListDirty = true;
   if (def.wonder) pushMessage(state, `${def.name} rises over ${state.cityName}. ${def.flavor}`, 'milestone');
   return { ok: true, cost: def.cost };

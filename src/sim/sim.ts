@@ -15,6 +15,7 @@ import { dailyGuilds } from './guilds';
 import { dailyTwinRoad } from './trade';
 import { dailyBreeding } from './breeding';
 import { dailyRelics } from './relics';
+import { dailyConstruction, tickConstruction } from './construction';
 import { wardenDistricts } from './wyrmcraft';
 import { setFenNex } from './agents';
 import { updateMana, updateWater } from './networks';
@@ -49,6 +50,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   const t = state.tick;
   tickAgents(state);
   tickCreatures(state);
+  tickConstruction(state);
   if (t % 10 === 0) trySpawnBuildings(state, 3);
   if (t % 50 === 20) updateCreatures(state);
   if (t % 50 === 30) checkQuests(state);
@@ -84,6 +86,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyTwinRoad(state);
     dailyWeave(state);
     dailyGuilds(state);
+    dailyConstruction(state);
     dailyBreeding(state);
     dailyRelics(state);
     state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;

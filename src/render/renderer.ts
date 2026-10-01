@@ -99,6 +99,17 @@ export class Renderer {
   }
 
   // ---------- sprites ----------
+  /** The bottom `frac` of a sprite, for buildings rising out of their foundations. */
+  private drawRising(s: SpriteRect | null, wx: number, wy: number, frac: number): void {
+    if (!s) return;
+    const rows = Math.max(1, Math.round(s.h * Math.max(0, Math.min(1, frac))));
+    const x = Math.round(wx - s.ax - this.camera.left);
+    const y = Math.round(wy - s.ay - this.camera.top) + (s.h - rows);
+    if (x + s.w < 0 || y + rows < 0 || x > this.back.width || y > this.back.height) return;
+    this.ctx.drawImage(this.atlas.image, s.x, s.y + (s.h - rows), s.w, rows, x, y, s.w, rows);
+    this.stats.drawn++;
+  }
+
   private draw(s: SpriteRect | null, wx: number, wy: number, alpha = 1): void {
     if (!s) return;
     const ctx = this.ctx;
@@ -452,11 +463,27 @@ export class Renderer {
       const d = b.x + b.w - 1 + b.y + b.h - 1 + 0.5;
       const abandoned = b.state === 'abandoned';
       const burning = b.state === 'burning';
+      const rising = b.state === 'building';
+      const frac = rising && b.workTotal > 0 ? 1 - b.work / b.workTotal : 1;
       if (burning) fireSeen++;
       if (def.zone === Zone.Market && b.state === 'ok') marketSeen++;
       if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'lantern')) leySeen++;
       if (b.kind === 'torrentmill' && b.state === 'ok') millSeen++;
       items.push({ d, y: wy, fn: () => {
+        if (rising) {
+          this.draw(s, wx, wy, 0.22);
+          this.drawRising(s, wx, wy, frac);
+          if (cam.zoom >= 2 && s) {
+            const ctx2 = this.ctx;
+            const bx = Math.round(wx - 8 - this.camera.left);
+            const by = Math.round(wy - s.ay - 6 - this.camera.top);
+            ctx2.fillStyle = 'rgba(10,8,16,0.7)';
+            ctx2.fillRect(bx, by, 18, 4);
+            ctx2.fillStyle = '#e0c060';
+            ctx2.fillRect(bx + 1, by + 1, Math.round(16 * frac), 2);
+          }
+          return;
+        }
         this.draw(s, wx, wy, abandoned ? 0.55 : 1);
         if (burning) {
           const f = this.atlas.get(`flame_${(flameFrame + b.id) % 3}`);
@@ -598,7 +625,10 @@ export class Renderer {
         continue;
       }
       let name: string;
-      if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
+      if (a.kind === AgentKind.Builder) {
+        name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : walkFrame % 2}`;
+        if (a.phase === 2 && cam.zoom >= 2 && Math.random() < 0.08) this.particles.emit({ x: wx + 4, y: wy + 2, vx: (Math.random() - 0.5) * 12, vy: -8 - Math.random() * 6, maxLife: 0.4, size: 1, color: PAL.lampWarm, glow: true, kind: 'spark' });
+      } else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
       else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);
