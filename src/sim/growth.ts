@@ -1,6 +1,7 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
-import { edictOn, edictShare, modifierSum } from './edicts';
+import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
+import { guildEffect } from './guilds';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
@@ -116,7 +117,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
   h -= (tax - 10) * 1.6;
-  h += modifierSum(state, 'happiness');
+  h += modifierSumAt(state, 'happiness', state.district[i]);
   if (wyrmGuards(state)) h += 10;
   const tree = worldTree(state);
   if (tree) h += treeStage(tree);
@@ -250,7 +251,7 @@ export function dailyBuildings(state: GameState): void {
     if (def.zone === Zone.Craft) {
       const glim = glimhouseNear(state, b) || marvelNear(state, 'wyrmforge', b);
       const asp = aspectAt(state, b.x, b.y);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (marvelNear(state, 'wyrmforge', b) ? 0.25 : 0));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (marvelNear(state, 'wyrmforge', b) ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
@@ -432,7 +433,7 @@ export function dailyTrade(state: GameState): void {
   const t = state.trade;
   const season = seasonOf(state);
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
-  t.priceGoods = [2, 2, 2.5, 3][season];
+  t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
   t.priceLeystone = [3, 4, 3, 2.5][season];
   t.exported = 0;
   t.imported = 0;
@@ -441,18 +442,20 @@ export function dailyTrade(state: GameState): void {
   if (!depots.length) return;
   const hasBuyers = state.buildings.some((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok');
   let crowns = 0;
+  const carters = guildEffect(state, 'carters');
+  const perDepot = 8 * (carters > 0 ? 1.5 : carters < 0 ? 0.5 : 1);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
     if (def.zone === Zone.Craft && b.stock >= craftStockCap(b) * 0.8) {
-      const sell = Math.min(b.stock - craftStockCap(b) * 0.5, 8 * depots.length);
+      const sell = Math.min(b.stock - craftStockCap(b) * 0.5, perDepot * depots.length);
       if (sell > 0) {
         b.stock -= sell;
         t.exported += sell;
         crowns += sell * t.priceGoods;
       }
     } else if (def.leystone && !hasBuyers && b.stock >= 30) {
-      const sell = Math.min(b.stock - 10, 8 * depots.length);
+      const sell = Math.min(b.stock - 10, perDepot * depots.length);
       b.stock -= sell;
       t.exported += sell;
       crowns += sell * t.priceLeystone;

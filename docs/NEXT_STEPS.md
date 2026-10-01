@@ -165,6 +165,18 @@
   pressure from the dead, faith and the beasts; the river freezing in the Hush and
   flooding in the Thaw; a storyteller pacing events. See DESIGN.md §13.
 
+## Done in iteration 24
+
+- The guild council at the Guildhall: four guilds with standings, daily drivers, petitions
+  every 20 days tied to edicts, boons at 70 and strikes at 25 (exports, goods, stores,
+  deathcare). Council block in the Edicts panel; standings in the Guildhall's info panel.
+- Festival depth: the Thaw feast eats market shelves and pays happiness by district
+  (district-scoped modifiers); the Remembrance reads through the Ossuary; the Hush vigil
+  draws stored mana; the Lantern Fair raises export prices.
+- Trade routes in the Ledger (Gloam road, barges, airship, arches) and the Twin Road to the
+  daughter wardlight with a Crown toll.
+- The Weave info view (W) painting aspects and dragon auras. Four quests.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -215,10 +227,8 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Deep dive, phase 2** (DESIGN §13.8): festival depth, guild politics at the
-   Guildhall, trade routes between depot, quays and the daughter, and a *Weave* info view
-   painting aspects and auras. Then phase 3: cross-line breeding at attuned cradles and
-   relic sets from the delve.
+0. **Deep dive, phase 3** (DESIGN §13.9): cross-line breeding at attuned cradles, relic
+   sets from the delve, and a hall per guild so a pleased guild builds something.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

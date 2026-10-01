@@ -175,6 +175,11 @@ Charter as `.json`.
   calm); cradles attune to matching eggs; grown dragons radiate their line's aura; rare
   goods build the Marvels tab or sell to caravans; the Gloam presses harder as the dead go
   unquieted and eases under faith; the river freezes in the Hush.
+- The guild council: a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
+  who petition for edicts every 20 days and pay boons or strike; festivals spend the city
+  (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
+  Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
+  Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the

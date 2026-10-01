@@ -246,7 +246,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'guildhall', name: 'Guildhall', category: 'leisure',
-    desc: "The alchemists' and carters' guilds. Trade bonus and land value within 10 tiles.",
+    desc: 'Seats the guild council: carters, alchemists, spire-wrights and sextons. Every 20 days the least pleased guild petitions for an edict; a pleased guild pays a boon, a striking one costs. Land value within 10 tiles.',
     flavor: 'The guild seal is a cart wheel over a mortar. The motto: "It Moves."',
     w: 2, h: 2, cost: 3000, upkeep: 40, manaUse: 3,
     service: { type: 'leisure', radius: 10, strength: 0.8 }, landValue: 12, unlock: 5,
@@ -302,7 +302,7 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- trade ----
   {
     key: 'depot', name: 'Trade Depot', category: 'leisure',
-    desc: 'Carters\' yard for the Gloam road. Works with full storage and mines with no buyers send their surplus here to be sold; prices drift with the season. With the Import edict it also buys goods for empty markets.',
+    desc: 'Carters\' yard for the Gloam road. Works with full storage and mines with no buyers send their surplus here to be sold; prices drift with the season. With the Import edict it also buys goods for empty markets. Within 12 tiles of a daughter wardlight\'s stake it opens the Twin Road.',
     flavor: 'Every cart that leaves is counted twice: once by the guild, once by the Crown.',
     w: 2, h: 2, cost: 2200, upkeep: 25, manaUse: 1, unlock: 3,
     service: { type: 'leisure', radius: 5, strength: 0.3 },

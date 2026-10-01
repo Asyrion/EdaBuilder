@@ -127,6 +127,13 @@ export function edictUpkeep(s: GameState): number {
 /** Sum of active temporary modifiers of a kind. */
 export function modifierSum(s: GameState, kind: string): number {
   let v = 0;
-  for (const m of s.modifiers) if (m.kind === kind && m.until > s.day) v += m.value;
+  for (const m of s.modifiers) if (m.kind === kind && m.until > s.day && m.district === undefined) v += m.value;
+  return v;
+}
+
+/** City-wide modifiers plus those scoped to one district. */
+export function modifierSumAt(s: GameState, kind: string, district: number): number {
+  let v = 0;
+  for (const m of s.modifiers) if (m.kind === kind && m.until > s.day && (m.district === undefined || m.district === district)) v += m.value;
   return v;
 }

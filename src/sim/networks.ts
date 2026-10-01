@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './ca
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
+import { guildEffect } from './guilds';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
@@ -210,6 +211,7 @@ export function updateMana(state: GameState): void {
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   void f;
 
+  storageMax *= 1 + 0.2 * guildEffect(state, 'spirewrights');
   // storage buffers a deficit
   let effectiveSupply = supply;
   if (demand > supply) {

@@ -6,6 +6,8 @@ import { manaUseOf } from '../sim/networks';
 import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
+import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, STRIKE_AT, guildDrivers, guildEffect, guildMood, hasCouncil } from '../sim/guilds';
+import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
 import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, maxStage } from '../sim/wyrmcraft';
@@ -670,6 +672,8 @@ export class UI {
       rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
     }
     if (b.kind === 'ruindelve') rows.push(row('Relics brought up', `${s.stats.relics}`));
+    if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); }
+    if (b.kind === 'depot') { const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note); }
     if (b.kind === 'golemfoundry') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit foundry.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }
@@ -969,6 +973,7 @@ export class UI {
             <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills; a <b>Golem Foundry</b> (Burgh) binds them into tireless labour that drinks mana. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
             <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura; rare goods build the <b>Marvels</b> tab; the Gloam's pressure rises with the dead and falls with faith.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
+            <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
           </ol>
           <h3>Ways to lose</h3>
@@ -1184,6 +1189,7 @@ export class UI {
         ${tax('hearth', 'Hearth')}${tax('market', 'Market')}${tax('craft', 'Craft')}${tax('arcane', 'Arcane')}
         <p class="muted" data-k="social"></p>
         <p class="muted" data-k="history"></p>
+        <div class="routes" data-k="routes"></div>
         <div style="text-align:right"><button id="b-close">Close</button></div>
       </div>`;
       this.el.budget.querySelectorAll('input[type=range]').forEach((inp) => {
@@ -1215,6 +1221,10 @@ export class UI {
     set('treasury', `${Math.round(st.treasury)}`);
     set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}.`);
     set('history', `Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}`);
+    const routes = tradeRoutes(st);
+    const rEl = this.el.budget.querySelector('[data-k="routes"]') as HTMLElement;
+    rEl.innerHTML = routes.length ? `<h3 style="margin-top:10px">Trade routes</h3>${routes.map((r) => `<div class="route ${r.open ? '' : 'muted'}"><span class="${r.open ? 'good' : 'warn'}">${r.open ? '●' : '○'}</span> <b>${r.name}</b> <span class="muted">${r.note}</span> <button class="show" data-x="${r.at.x}" data-y="${r.at.y}">Show</button></div>`).join('')}` : '<p class="muted">No trade routes yet: a Trade Depot opens the Gloam road; two quays, two lit arches, a Sky-Dock or a daughter wardlight open more.</p>';
+    rEl.querySelectorAll('button[data-x]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { this.host.centerOn(Number((b as HTMLElement).dataset.x), Number((b as HTMLElement).dataset.y)); this.toggleBudget(false); }; });
     // sync sliders if taxes changed elsewhere (load)
     this.el.budget.querySelectorAll('input[type=range]').forEach((inp) => {
       const z = (inp as HTMLInputElement).dataset.zone as keyof GameState['taxRates'];
@@ -1362,6 +1372,7 @@ export class UI {
       <p class="muted">Edicts take effect immediately and cost their upkeep every day. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
       ${stats}
       ${rows.join('')}
+      ${this.councilHtml(st)}
       ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
       <div style="text-align:right"><button id="e-close">Close</button></div>
     </div>`;
@@ -1378,6 +1389,25 @@ export class UI {
       this.refreshEdicts();
     };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
+  }
+
+  /** The guild council block: standings, moods, today's drivers and the open petition. */
+  private councilHtml(st: GameState): string {
+    const council = hasCouncil(st);
+    const g = st.guilds;
+    const rows = GUILD_IDS.map((id) => {
+      const d = GUILDS[id];
+      const v = Math.round(g.standing[id]);
+      const eff = guildEffect(st, id);
+      const drivers = council ? guildDrivers(st, id).map((x) => `${x.value > 0 ? '+' : ''}${x.value.toFixed(1)} ${x.text}`).join(', ') : '';
+      return `<div class="guild"><div><b>${d.name}</b> <span class="${eff > 0 ? 'good' : eff < 0 ? 'bad' : 'muted'}">${guildMood(v)}</span> <span class="muted">(${v})</span><div class="bar"><span style="width:${v}%"></span></div></div>
+        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}.${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
+    }).join('');
+    const dm = g.demand;
+    const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICTS.find((e) => e.key === GUILDS[dm.guild].edict)?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';
+    return `<h3 style="margin-top:8px">The guild council</h3>
+      <p class="muted">${council ? `The four guilds sit at the Guildhall. Every ${COUNCIL_SPACING} days the least pleased of them petitions for an edict. ${st.stats.councils} petition${st.stats.councils === 1 ? '' : 's'} heard.` : 'No lit Guildhall: the guilds have no seat and no voice. Build one (Leisure tab) to hear petitions and earn their boons.'}</p>
+      ${demand}${rows}`;
   }
 
   private eventShownId: string | null = null;
