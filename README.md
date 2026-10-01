@@ -182,8 +182,9 @@ Charter as `.json`.
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
-- Crossed eggs from attuned cradles (two auras in one dragon), relic sets catalogued by the
-  Academy from the Ruin Delve, and guild halls that pleased guilds raise for themselves.
+- Crossed eggs from attuned cradles (two auras in one dragon) and trueblood eggs from two
+  crossed parents; relic sets catalogued by the Academy from the Ruin Delve, each unlocking
+  a building; guild halls that pleased guilds raise for themselves, and guild rivalries.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the

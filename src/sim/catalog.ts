@@ -41,6 +41,7 @@ export interface BuildingDef {
   onRuins?: boolean; // footprint must be Ruins tiles
   maxCount?: number; // at most this many in the city
   materials?: { scale?: number; wyrmfire?: number; eggshell?: number; rayscale?: number; glimdust?: number }; // rare goods consumed to build
+  relic?: string; // needs this relic set entire (relics.ts)
   leystone?: number; // leystone mined per day
 }
 
@@ -434,6 +435,34 @@ export const BUILDINGS: BuildingDef[] = [
 
   // ---- special ----
   {
+    key: 'corelantern', name: 'Lantern of the Cores', category: 'marvel',
+    desc: 'The three Lantern-Cores of Vell set in one housing. Wards 12 tiles, lights itself and its neighbours with no mana, and holds 30 mana. Needs the Lantern-Cores relic set entire.',
+    flavor: 'The Concord lit a hundred of these. This one was found in three pieces under a floor.',
+    w: 2, h: 2, cost: 4000, upkeep: 30, manaUse: 0, unlock: 4, selfLit: true, manaStorage: 30, relic: 'lanterncores', maxCount: 2,
+    service: { type: 'ward', radius: 12, strength: 0.8 },
+  },
+  {
+    key: 'househall', name: 'Hall of the Nine Houses', category: 'marvel',
+    desc: 'The seals of the nine houses of Lukuku hung in a hall of remembrance. Faith within 12 tiles, land value, and happiness +2 for the whole city. Needs the Seals relic set entire.',
+    flavor: 'Nine seals, nine names, and a tenth hook on the wall that nobody explains.',
+    w: 2, h: 2, cost: 5000, upkeep: 40, manaUse: 2, unlock: 4, landValue: 15, relic: 'ninehouses', maxCount: 1,
+    service: { type: 'faith', radius: 12, strength: 0.9 },
+  },
+  {
+    key: 'saltfont', name: 'Salt Font of Morrow', category: 'marvel',
+    desc: 'The three Salt Spoons stir a font that quiets 30 dead a day within 14 tiles. Needs the Salt Spoons relic set entire.',
+    flavor: 'Hollis will not say what the font is filled with. It is not water.',
+    w: 2, h: 2, cost: 4500, upkeep: 45, manaUse: 3, unlock: 4, relic: 'saltspoons', maxCount: 1,
+    service: { type: 'death', radius: 14, strength: 0.8, quietRate: 30 },
+  },
+  {
+    key: 'chartroom', name: 'Concord Chart-Room', category: 'marvel',
+    desc: 'The three Concord Charts under glass. Every export pays 15% more, and the room reads the season like an Observatory. Needs the Concord Charts relic set entire.',
+    flavor: 'The charts show roads that no longer exist to cities that never did.',
+    w: 2, h: 2, cost: 3500, upkeep: 35, manaUse: 2, unlock: 4, landValue: 8, relic: 'concordcharts', maxCount: 1,
+    service: { type: 'leisure', radius: 6, strength: 0.3 },
+  },
+  {
     key: 'cartersyard', name: "Carters' Yard", category: 'special',
     desc: 'Raised by a pleased Carters\' Guild. Counts as a second depot for the Gloam road and shelters carts: leisure within 6. Locks while the guild strikes.',
     flavor: 'Mules, wheels, and a board where every road in Eda is chalked and argued over.',
@@ -534,9 +563,10 @@ export const MILESTONES: Milestone[] = [
     text: 'Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley.' },
 ];
 
-export function isBuildingUnlocked(milestone: number, key: string): boolean {
+export function isBuildingUnlocked(milestone: number, key: string, relics?: string[]): boolean {
   const def = BUILDING_BY_KEY[key];
   if (!def) return false;
+  if (def.relic && !(relics ?? []).includes(def.relic)) return false;
   return milestone >= def.unlock;
 }
 

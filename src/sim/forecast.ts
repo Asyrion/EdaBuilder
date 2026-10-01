@@ -9,7 +9,7 @@ export const FORECAST_DAYS = 5;
 export interface ForecastLine { text: string; kind: 'info' | 'warn' | 'bad' | 'good' }
 
 export function hasObservatory(s: GameState): boolean {
-  return s.buildings.some((b) => b && b.kind === 'observatory' && b.state === 'ok' && b.lit);
+  return s.buildings.some((b) => b && (b.kind === 'observatory' || b.kind === 'chartroom') && b.state === 'ok' && b.lit);
 }
 
 /** Pure: lines about the next FORECAST_DAYS days. Empty without a lit Observatory. */

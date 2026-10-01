@@ -8,7 +8,7 @@ export const BREED_DAY = 50; // Bloom day 20 of each year (day % 120)
 export const BREED_MOOD = 60;
 const NAMES = ['Twain', 'Half-Ember', 'Marrow', 'Dapple', 'Sorrel', 'Pyre-and-Salt', 'Lantern', 'Mottle', 'Weft', 'Eddy'];
 
-export interface BreedCheck { ok: boolean; why: string; sire?: Dragon; dam?: Dragon; line?: DragonLine; second?: DragonLine }
+export interface BreedCheck { ok: boolean; why: string; sire?: Dragon; dam?: Dragon; line?: DragonLine; second?: DragonLine; trueblood?: boolean }
 
 /** Why a cradle can or cannot breed this year. */
 export function canBreed(s: GameState, cradle: Building): BreedCheck {
@@ -24,7 +24,8 @@ export function canBreed(s: GameState, cradle: Building): BreedCheck {
   if (!cradle.lit) return { ok: false, why: 'the cradle is cold' };
   if (a.mood < BREED_MOOD || b.mood < BREED_MOOD) return { ok: false, why: `both must be content (mood ${BREED_MOOD}+)` };
   if (!freeCradle(s)) return { ok: false, why: 'no cradle has a free slot for the egg' };
-  return { ok: true, why: 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second: dam.line };
+  const trueblood = !!sire.second && !!dam.second;
+  return { ok: true, why: trueblood ? 'two crossed parents: a trueblood egg will be laid on Bloom day 20' : 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second: dam.line, trueblood };
 }
 
 /** Daily: on Bloom day 20 every breeding cradle lays one crossed egg into a free cradle. */
@@ -39,11 +40,12 @@ export function dailyBreeding(s: GameState): void {
     const home = freeCradle(s);
     if (!home) break;
     const d: Dragon = {
-      id: s.nextDragonId++, name: rng.pick(NAMES), line: chk.line!, second: chk.second, stage: 0, days: 0, cradleId: home.id,
+      id: s.nextDragonId++, name: rng.pick(NAMES), line: chk.line!, second: chk.second, trueblood: chk.trueblood || undefined, stage: 0, days: 0, cradleId: home.id,
       role: 'none', roleTarget: -1, mood: 70, hungry: 0, training: 'gentle', agentId: -1, born: s.day,
     };
     s.dragons.push(d);
     s.stats.crossEggs++;
+    if (chk.trueblood) { s.stats.truebloods++; pushMessage(s, `${chk.sire!.name} and ${chk.dam!.name}, both crossed, have laid a trueblood egg at (${c.x},${c.y}): ${LINE_INFO[d.line].name} and ${LINE_INFO[d.second!].name} in full. A bloodline begins in ${s.cityName}.`, 'milestone', true, { x: c.x, y: c.y }); continue; }
     pushMessage(s, `${chk.sire!.name} and ${chk.dam!.name} have laid a crossed egg at (${c.x},${c.y}): ${LINE_INFO[d.line].name} shot through with ${LINE_INFO[d.second!].name}. It will carry both auras.`, 'milestone', true, { x: c.x, y: c.y });
   }
   commitRng(s, rng);

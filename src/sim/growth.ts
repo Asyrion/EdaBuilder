@@ -125,6 +125,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (raysLured(state)) h += 3;
   if (hasMarvel(state, 'hallofmarvels')) h += 8;
   if (relicDone(state, 'ninehouses')) h += 3;
+  if (hasMarvel(state, 'househall')) h += 2;
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
@@ -474,6 +475,7 @@ export function dailyTrade(state: GameState): void {
     });
   }
   state.artifactsSold += 0; // artifacts handled separately
+  if (hasMarvel(state, 'chartroom')) crowns *= 1.15;
   state.treasury += crowns; // exports are cash on the day
   t.exported = Math.round(t.exported);
   state.tradeIncomeToday = Math.round(crowns);

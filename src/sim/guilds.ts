@@ -62,6 +62,10 @@ export interface GuildState {
 }
 
 export const COUNCIL_SPACING = 20;
+/** Old grudges: a favoured guild's rival resents it, and a granted petition stings the rival. */
+export const RIVAL_OF: Record<GuildId, GuildId> = { carters: 'spirewrights', spirewrights: 'carters', alchemists: 'sextons', sextons: 'alchemists' };
+export const RIVALRY_DRIFT = 0.4;
+export const RIVALRY_STING = 5;
 export const HALL_DAYS = 10;
 /** The hall each guild raises for itself after HALL_DAYS pleased days. */
 export const HALL_OF: Record<GuildId, string> = { carters: 'cartersyard', alchemists: 'lyceum', spirewrights: 'wrightslodge', sextons: 'sextonchapel' };
@@ -134,6 +138,7 @@ export function guildDrivers(s: GameState, g: GuildId): { text: string; value: n
       break;
     }
   }
+  if (s.guilds && s.guilds.standing[RIVAL_OF[g]] >= BOON_AT) add(`${GUILDS[RIVAL_OF[g]].name} are favoured`, -RIVALRY_DRIFT);
   const d = s.guilds?.demand;
   if (d && d.guild === g && d.until > s.day) add(s.edicts[GUILDS[g].edict] ? 'the granted petition is kept' : 'the granted petition was broken', s.edicts[GUILDS[g].edict] ? 1 : -2);
   return out;
@@ -198,7 +203,7 @@ function councilEvent(g: GuildDef): EventDef {
   return {
     id: `council_${g.id}`, title: `${g.name} petitions`, text: g.petition, when: () => false,
     choices: [
-      { label: 'Grant the petition', desc: `Enact the edict they ask for; standing +15, and +1 a day while it stays on for 20 days (−2 a day if it is turned off).`, apply: (s) => { s.edicts[g.edict] = true; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 15); s.guilds.demand = { guild: g.id, until: s.day + 20 }; return `The seal of ${g.seal} is pressed into the edict. The guild drinks the Warden-Reeve's health.`; } },
+      { label: 'Grant the petition', desc: `Enact the edict they ask for; standing +15, and +1 a day while it stays on for 20 days (−2 a day if it is turned off). ${GUILDS[RIVAL_OF[g.id]].name} take it ill (−${RIVALRY_STING}).`, apply: (s) => { s.edicts[g.edict] = true; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 15); s.guilds.standing[RIVAL_OF[g.id]] = Math.max(0, s.guilds.standing[RIVAL_OF[g.id]] - RIVALRY_STING); s.guilds.demand = { guild: g.id, until: s.day + 20 }; return `The seal of ${g.seal} is pressed into the edict. The guild drinks the Warden-Reeve's health.`; } },
       { label: 'Pay them off (400 crowns)', desc: 'Standing +8; no edict.', apply: (s) => { s.treasury -= 400; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 8); return 'The purse changes hands under the table. Nobody writes anything down.'; } },
       { label: 'Refuse', desc: 'Standing −12; happiness −2 for 8 days as the guild grumbles in every tavern.', apply: (s) => { s.guilds.standing[g.id] = Math.max(0, s.guilds.standing[g.id] - 12); s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 8, label: `${g.name} refused` }); return 'The guildmaster bows a little too low and leaves. The songs that night are not kind.'; } },
     ],

@@ -110,6 +110,7 @@ export interface Dragon {
   name: string;
   line: DragonLine;
   second?: DragonLine; // crossed: a second line and a second aura (breeding.ts)
+  trueblood?: boolean; // born of two crossed parents: both auras full, grows and sheds more
   stage: DragonStage;
   days: number; // days in the current stage
   cradleId: number; // building id
@@ -373,6 +374,7 @@ export interface GameState {
     feastGoods: number; // goods eaten at the last Thaw feast
     crossEggs: number;
     guildHalls: number;
+    truebloods: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)
