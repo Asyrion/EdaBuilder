@@ -285,7 +285,7 @@ export class Tools {
       const y = hover[1] - Math.floor((def.h - 1) / 2);
       const why = canPlaceBuilding(s, this.tool.key, x, y);
       const radius = def.service?.radius ?? def.waterRadius ?? (this.tool.key === 'spire' ? 5 : this.tool.key === 'nexus' ? 9 : 0);
-      v.ghost = { key: this.tool.key, x, y, ok: !why && isBuildingUnlocked(s.milestone, this.tool.key) && def.cost <= s.treasury, radius };
+      v.ghost = { key: this.tool.key, x, y, ok: !why && isBuildingUnlocked(s.milestone, this.tool.key, s.relics.complete) && def.cost <= s.treasury, radius };
       this.previewReason = why;
     } else if (this.tool.kind === 'bulldoze') {
       if (inBounds(hover[0], hover[1])) v.previewTiles = [{ i: idx(hover[0], hover[1]), ok: false }];

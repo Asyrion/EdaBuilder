@@ -731,6 +731,25 @@ hammer); at a site they swing the hammer and throw sparks, and every 120 ticks a
 builders raises a `hammer` sound cue. `construction.instant` skips all of it for tests and
 headless tools (the vitest setup file turns it on; `construction.test.ts` turns it off).
 
+### 4.52 Bloodlines
+
+`canBreed` reports `trueblood` when both parents carry `second`; `dailyBreeding` sets
+`Dragon.trueblood`. `dragonAuras` gives the second aura the full radius; `dailyDragons`
+multiplies growth by 1.25 and scale by 1.5. `stats.truebloods`; quest `k_blood`.
+
+### 4.53 Relic buildings
+
+`BuildingDef.relic` names the set; `isBuildingUnlocked(milestone, key, relics)` refuses
+without it and `placeBuilding` says which set is needed. Buildings: `corelantern` (ward r12
+0.8, selfLit, 30 storage, max 2), `househall` (faith r12 0.9, land value 15, +2 happiness via
+`hasMarvel`), `saltfont` (death r14 quietRate 30), `chartroom` (leisure r6, exports ×1.15,
+counts as an observatory for `forecast`). Quest `k_relicbuild`.
+
+### 4.54 Guild rivalries
+
+`RIVAL_OF` pairs the guilds; `guildDrivers` adds −0.4 while the rival is at or above 70;
+granting a petition takes 5 from the rival. Shown in the council block and the petition text.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1215,10 +1234,28 @@ overdraw) and the Sextons' Chapel (quiets 15 dead within 12). A hall locks while
 strikes. This is the "faction builds for you" reward from Anno and Against the Storm,
 scoped to each guild's own system.
 
-### 13.10 Later phases
+### 13.10 Phase 4: bloodlines, relic buildings and rivalries (iteration 27)
 
-Dragon bloodlines (a third generation from two crossed parents), relic sets that unlock a
-building each, and guild rivalries (one guild's boon costs another's standing).
+**Bloodlines (4.52).** Two crossed parents (both with a second line) in a breeding cradle
+lay a *trueblood* egg: both auras at full radius, growth a quarter faster, half again the
+scale on each stage. The Chronicle records the bloodline. This is the third generation of
+the aspect chain: node, attuned cradle, crossed egg, trueblood.
+
+**Relic buildings (4.53).** Each complete relic set unlocks a building in the Marvels tab:
+the Lantern of the Cores (a ward that lights itself), the Hall of the Nine Houses (faith
+and +2 happiness), the Salt Font of Morrow (quiets 30 dead), the Concord Chart-Room
+(exports +15% and a forecast). `isBuildingUnlocked` takes the complete sets, and the build
+menu says which set a locked relic building needs.
+
+**Rivalries (4.54).** Carters and Spire-Wrights, Alchemists and Sextons are rivals: a
+favoured guild (70+) drags its rival −0.4 a day, and a granted petition stings the rival −5
+at once. The council block names each guild's rival. Pleasing everyone is now a balancing
+act rather than a checklist.
+
+### 13.11 Later phases
+
+Dragon roles for truebloods (a wyrm stage), relic trade with the Crown, and a guild war
+event when two rivals strike at once.
 
 ## 9. Verification
 
@@ -1346,3 +1383,5 @@ building each, and guild rivalries (one guild's boon costs another's standing).
   locks on a strike, so standing stays a live stake rather than a one-time unlock.
 - *Construction shows its work:* placed buildings rise over days under visible builders,
   but zone buildings raise themselves in a day so growth pacing is untouched (iteration 26).
+- *Rewards unlock places, not numbers:* relic sets open buildings and bloodlines open auras,
+  so late-game depth is still something to put on the map (iteration 27).

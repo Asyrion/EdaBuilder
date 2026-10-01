@@ -131,7 +131,7 @@ export function dailyDragons(state: GameState): void {
     const warm = cradle.lit;
     const asp = aspectAt(state, cradle.x, cradle.y);
     const attuned = asp === d.line || (!!d.second && asp === d.second);
-    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1);
+    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1);
     if (d.stage === 0) {
       if (warm) d.days += 1;
       else if (rng.chance(0.15)) pushMessage(state, `The eggs in the cradle at (${cradle.x},${cradle.y}) are going cold: it needs mana.`, 'warn');
@@ -181,7 +181,7 @@ export function dailyDragons(state: GameState): void {
       if (d.days >= STAGE_DAYS[d.stage]) {
         d.stage = (d.stage + 1) as Dragon['stage'];
         d.days = 0;
-        state.materials.scale += LINE_INFO[d.line].scale + (d.second ? LINE_INFO[d.second].scale / 2 : 0);
+        state.materials.scale += (LINE_INFO[d.line].scale + (d.second ? LINE_INFO[d.second].scale / 2 : 0)) * (d.trueblood ? 1.5 : 1);
         if (d.stage === 3 && d.role === 'delver') { d.role = 'none'; d.roleTarget = -1; }
         pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. ${d.stage === 3 ? 'It can fly goods as a courier.' : 'Give it a role in the Wyrms panel.'}`, 'milestone');
       }

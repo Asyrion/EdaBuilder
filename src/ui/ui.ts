@@ -6,7 +6,7 @@ import { manaUseOf } from '../sim/networks';
 import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
-import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, HALL_DAYS, HALL_OF, STRIKE_AT, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
+import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
 import { builderTarget, buildersAt } from '../sim/construction';
@@ -282,7 +282,7 @@ export class UI {
         add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${MILESTONES[WALL_UNLOCK].name}</span>` : ''}`);
       }
       for (const d of BUILDINGS.filter(cat.filter)) {
-        const locked = !isBuildingUnlocked(s.milestone, d.key);
+        const locked = !isBuildingUnlocked(s.milestone, d.key, s.relics.complete);
         const mats = d.materials ? ' + ' + Object.entries(d.materials).map(([k, v]) => `${v} ${k}`).join(', ') : '';
         add(d.name, `${d.cost}c${mats}`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked));
       }
@@ -301,7 +301,7 @@ export class UI {
     if (d.service) bits.push(`radius ${d.service.radius}`);
     if (d.waterRadius) bits.push(`waters ${d.waterRadius} tiles`);
     if (d.needsMana) bits.push('needs mana');
-    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">Unlocks at ${MILESTONES[d.unlock].name} (${MILESTONES[d.unlock].pop} folk)</span>` : ''}`;
+    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${d.relic && !this.host.state.relics.complete.includes(d.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === d.relic)?.name} entire (Ruin Delve and Academy)` : `Unlocks at ${MILESTONES[d.unlock].name} (${MILESTONES[d.unlock].pop} folk)`}</span>` : ''}`;
   }
 
   showTooltip(html: string, x: number, y: number): void {
@@ -492,7 +492,7 @@ export class UI {
       const cat = CATEGORIES.find((c) => c.filter(def));
       if (cat) this.category = cat.id;
       this.refreshItems();
-      if (isBuildingUnlocked(s.milestone, f.build)) this.host.setTool({ kind: 'build', key: f.build });
+      if (isBuildingUnlocked(s.milestone, f.build, s.relics.complete)) this.host.setTool({ kind: 'build', key: f.build });
       else this.toast(`<p>${def.name} unlocks at ${MILESTONES[def.unlock].name}.</p>`, 2500);
     } else if ('panel' in f) {
       if (f.panel === 'edicts') this.toggleEdicts(true);
@@ -1301,7 +1301,7 @@ export class UI {
         ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
-        <div><b>${d.name}</b> <span class="muted">the ${d.second ? `${LINE_INFO[d.line].name}-${LINE_INFO[d.second].name} crossed` : LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
+        <div><b>${d.name}</b> <span class="muted">the ${d.second ? `${LINE_INFO[d.line].name}-${LINE_INFO[d.second].name} ${d.trueblood ? 'trueblood' : 'crossed'}` : LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
         <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= 2 && (d.role === 'none' || d.role === 'warden') ? `<span class="good">Aura: ${AURA_INFO[d.line]}${d.second ? `; and, fainter, ${AURA_INFO[d.second]}` : ''}.</span> ` : ''}${(() => { const c = st.buildings.find((b) => b && b.id === d.cradleId); return c && aspectAt(st, c.x, c.y) === d.line ? '<span class="good">Attuned to its node.</span> ' : ''; })()}${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
@@ -1415,7 +1415,7 @@ export class UI {
       const hall = st.buildings.some((b) => b && b.kind === HALL_OF[id] && b.state === 'ok');
       const hallText = hall ? `${BUILDING_BY_KEY[HALL_OF[id]].name} stands${eff < 0 ? ' (locked by the strike)' : ''}.` : eff > 0 ? `Pleased ${g.pleasedDays[id]} of ${HALL_DAYS} days toward raising ${BUILDING_BY_KEY[HALL_OF[id]].name}.` : '';
       return `<div class="guild"><div><b>${d.name}</b> <span class="${eff > 0 ? 'good' : eff < 0 ? 'bad' : 'muted'}">${guildMood(v)}</span> <span class="muted">(${v})</span><div class="bar"><span style="width:${v}%"></span></div></div>
-        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
+        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. Rival: ${GUILDS[RIVAL_OF[id]].name}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
     }).join('');
     const dm = g.demand;
     const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICTS.find((e) => e.key === GUILDS[dm.guild].edict)?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';

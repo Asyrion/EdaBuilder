@@ -194,6 +194,15 @@
   to each site, swing hammers and finish it with a bell. Zone buildings are raised by their
   own folk in a day. Sites are inert until finished; the info panel shows progress and crew.
 
+## Done in iteration 27
+
+- Bloodlines: two crossed parents lay a trueblood egg with both auras in full, faster growth
+  and more scale; the Chronicle records it.
+- Relic buildings: each complete set unlocks one in the Marvels tab (Lantern of the Cores,
+  Hall of the Nine Houses, Salt Font of Morrow, Concord Chart-Room); the menu names the set.
+- Guild rivalries: favoured guilds drag their rivals down and granted petitions sting them.
+- Two quests, tests.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -244,8 +253,8 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Deep dive, phase 4** (DESIGN §13.10): dragon bloodlines from two crossed parents,
-   relic sets that unlock a building each, and guild rivalries.
+0. **Deep dive, phase 5** (DESIGN §13.11): a wyrm stage for truebloods, relic trade with
+   the Crown, and a guild war event when two rivals strike at once.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
