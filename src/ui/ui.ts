@@ -1,4 +1,4 @@
-import { FACTIONS, buildsFor, canBuild, factionOf, milestonesOf, type FactionId } from '../data/factions';
+import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, type FactionId } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
@@ -493,12 +493,13 @@ export class UI {
       this.host.setTool(tool);
       if (t === 'road' || t === 'zoneHearth') this.host.centerOn(s.founding.x, s.founding.y);
     } else if ('build' in f) {
-      const def = BUILDING_BY_KEY[f.build];
+      const key = factionKey(s, f.build); // a people's replacement (a Seep for a well)
+      const def = BUILDING_BY_KEY[key];
       if (!def) return;
       const cat = CATEGORIES.find((c) => c.filter(def));
       if (cat) this.category = cat.id;
       this.refreshItems();
-      if (canBuild(s, f.build)) this.host.setTool({ kind: 'build', key: f.build });
+      if (canBuild(s, key)) this.host.setTool({ kind: 'build', key });
       else this.toast(`<p>${def.name} unlocks at ${this.ms()[def.unlock].name}.</p>`, 2500);
     } else if ('panel' in f) {
       if (f.panel === 'edicts') this.toggleEdicts(true);
@@ -690,7 +691,7 @@ export class UI {
     { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
     if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); }
     if (b.kind === 'depot') { const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note); }
-    if (b.kind === 'golemfoundry') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit foundry.`); }
+    if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }
     if (b.kind === 'quay') { const qn = s.buildings.filter((o) => o && o.kind === 'quay').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); if (qn < 2) problems.push('A single quay has nowhere to send a barge: build another on the same water.'); }

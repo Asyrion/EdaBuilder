@@ -1,4 +1,6 @@
 import { isCradle } from './wyrmcraft';
+/** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
+export const LEY_HALLS = ['lantern', 'underkingseat'];
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
@@ -52,13 +54,13 @@ export function updateMana(state: GameState): void {
   // 2. spire chain: BFS from nodes over spires/nexus
   const spires: Building[] = [];
   forEachBuilding(state, (b) => {
-    if ((b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'lantern' || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
+    if ((b.kind === 'spire' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
   });
   const spireLit = new Array(spires.length).fill(false);
   const sources: { x: number; y: number; r: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y, r: NODE_RADIUS }));
   const queue: { x: number; y: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y }));
-  const linkOf = (b: Building) => (b.kind === 'nexus' || b.kind === 'lantern' ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK);
-  const radiusOf = (b: Building) => (b.kind === 'nexus' || b.kind === 'lantern' ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : SPIRE_RADIUS);
+  const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK);
+  const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : SPIRE_RADIUS);
   while (queue.length) {
     const q = queue.pop()!;
     for (let k = 0; k < spires.length; k++) {

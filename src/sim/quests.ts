@@ -3,17 +3,22 @@ import { QUESTS, type QuestDef } from '../data/quests';
 import type { GameState } from './types';
 import { pushMessage } from './world';
 
+/** A people's own chapter belongs to that people alone; every other quest is everyone's. */
+export function questsFor(s: GameState): QuestDef[] {
+  return QUESTS.filter((q) => !q.people || q.people === s.faction);
+}
+
 export function activeQuests(s: GameState, max = 3): QuestDef[] {
   const done = new Set(s.questsDone);
   // A quest whose goal is already met is hidden at once; the next check pays it.
-  return QUESTS.filter((q) => !done.has(q.id) && q.when(s) && !q.done(s)).sort((a, b) => a.priority - b.priority).slice(0, max);
+  return questsFor(s).filter((q) => !done.has(q.id) && q.when(s) && !q.done(s)).sort((a, b) => a.priority - b.priority).slice(0, max);
 }
 
 /** Every 50 ticks: complete quests whose condition holds (active or not, so nothing is missed). One ticker line per batch. */
 export function checkQuests(s: GameState): QuestDef[] {
   const done = new Set(s.questsDone);
   const completed: QuestDef[] = [];
-  for (const q of QUESTS) {
+  for (const q of questsFor(s)) {
     if (done.has(q.id)) continue;
     if (!q.when(s) && !q.done(s)) continue;
     if (q.done(s)) {
@@ -32,5 +37,5 @@ export function checkQuests(s: GameState): QuestDef[] {
 }
 
 export function questProgress(s: GameState): { done: number; total: number } {
-  return { done: s.questsDone.length, total: QUESTS.length };
+  return { done: s.questsDone.length, total: questsFor(s).length };
 }

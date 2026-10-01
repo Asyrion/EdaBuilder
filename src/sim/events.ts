@@ -452,7 +452,45 @@ export const WYRM_EVENTS: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
+/** The Grimmen's own tales: the Underking's envoy, a collapse, a vein of true leystone. Only a Grimmen city hears them. */
+function hillBuildings(s: GameState): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(s, (b) => { if (b.state === 'ok' && s.terrain[idx(b.x, b.y)] === Terrain.Hills) out.push(b); });
+  return out;
+}
+export const GRIMMEN: EventDef[] = [
+  {
+    id: 'underking_envoy', title: "The Underking's envoy",
+    text: 'A grey-cloaked envoy of the Underking comes up the ramp with two stone-faced wardens and a ledger of obligations older than the Crown. The deep holds ask what the Underhill sends them this year.',
+    when: (s) => s.faction === 'grimmen' && s.milestone >= 3,
+    choices: [
+      { label: 'Send 1,500 crowns', desc: 'The deep holds open their galleries to your carts: happiness +4 for 15 days.', apply: (s) => { if (s.treasury < 1500) return 'The purse is too light. The envoy writes it down and goes.'; s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 15, label: 'The deep holds trade' }); return 'The envoy counts it twice and bows once. Deep-hold salt and lamp-oil come up the ramp for a season.'; } },
+      { label: 'Send 30 goods', desc: 'From the market shelves; happiness +2 for 10 days.', apply: (s) => { const n = takeGoods(s, 30); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'The deep holds fed' }); return `${n} goods go down the ramp on the wardens' backs. The envoy says the Underking will remember the weight.`; } },
+      { label: 'Refuse', desc: 'The galleries close: happiness −4 for 12 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -4, until: s.day + 12, label: 'The deep holds shut' }); return 'The envoy does not argue. The deep-hold doors are shut by nightfall, and the Grimmen of the Underhill feel the dark behind them.'; } },
+    ],
+  },
+  {
+    id: 'collapse', title: 'A gallery collapses',
+    text: 'A crack runs through the hill like a slow bell. The cutters say a gallery under the street is going, and there is an hour, perhaps two, to shore it.',
+    when: (s) => s.faction === 'grimmen' && hillBuildings(s).length >= 4,
+    choices: [
+      { label: 'Shore it up (600 crowns)', desc: 'The crews hold it; nothing falls.', apply: (s) => { if (s.treasury < 600) return 'There is no coin for timber. The crews do what they can with their hands, which is nothing.'; s.treasury -= 600; return 'Timber and prayer. The crack stops at the third prop and the street holds.'; } },
+      { label: 'Let it fall', desc: 'One building on the hill is lost to ruin; the rubble counts two stone quarried.', apply: (s) => { const rng = rngOf(s); const list = hillBuildings(s).filter((b) => BUILDING_BY_KEY[b.kind].category === 'zone'); if (!list.length) { commitRng(s, rng); s.stats.terraformed += 2; return 'The gallery falls under empty ground. The cutters carry out the stone and count it.'; } const b = rng.pick(list); commitRng(s, rng); b.state = 'ruin'; b.stateDays = 0; b.residents = 0; b.workers = 0; markDirty(s, b.x, b.y); s.stats.terraformed += 2; return `The ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) goes down into the dark with a sound like a door. The rubble is good stone.`; } },
+    ],
+  },
+  {
+    id: 'true_leystone', title: 'A vein of true leystone', once: true,
+    text: 'The miners break into a seam that hums. True leystone, clear as water and warm as a hand: the Concord cut their Wardens from it. The Underhill has never found so much at once.',
+    when: (s) => s.faction === 'grimmen' && s.buildings.some((b) => b && b.kind === 'mine' && b.state === 'ok'),
+    choices: [
+      { label: 'Mine it', desc: 'Every mine fills by 30 leystone; +3 scale for the Marvels.', apply: (s) => { let n = 0; forEachBuilding(s, (b) => { if (b.kind === 'mine' && b.state === 'ok') { b.stock = Math.min(60, b.stock + 30); n++; } }); s.materials.scale += 3; return `${n} mine${n === 1 ? '' : 's'} fill with true leystone. The enchanters will not sleep this week.`; } },
+      { label: 'Sell the news to the Crown', desc: '+2,500 crowns; the Crown sends its own cutters.', apply: (s) => { s.treasury += 2500; return "The Crown's assessor arrives with a purse and a very long lease. The seam is theirs now, and the crowns are yours."; } },
+      { label: 'Leave it to the Veins', desc: 'The seam stays in the hill: the ley nodes flow 10 more mana a day for ever.', apply: (s) => { s.stats.trueVeins++; return 'The miners wall the seam up with their own hands. That night every spire in the Underhill burns a shade brighter.'; } },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -497,7 +535,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };

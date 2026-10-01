@@ -31,7 +31,11 @@ export interface FactionDef {
 /** Stone quarried: hills levelled, plus two for every building standing on hills. The Grimmen's depth milestones need it. */
 export function stoneQuarried(s: GameState): number {
   let n = s.stats.terraformed;
-  for (const b of s.buildings) if (b && b.state !== 'ruin' && s.terrain[idx(b.x, b.y)] === Terrain.Hills) n += 2;
+  for (const b of s.buildings) {
+    if (!b || b.state === 'ruin') continue;
+    if (s.terrain[idx(b.x, b.y)] === Terrain.Hills) n += 2;
+    if (b.kind === 'underkingseat' && b.state === 'ok') n += 10; // the Seat is the deepest cut of all
+  }
   return n;
 }
 export const GRIMMEN_STONE = [0, 2, 6, 12, 20, 30, 42, 56, 72];
@@ -44,10 +48,10 @@ const GRIMMEN_TEXTS = [
   'The Deep Hold. The deep Veins may be tapped, and a Hatchery cut for the stone lines.',
   'An under-market: carts from three valleys come down the ramps. The guilds petition for a hall.',
   'A deephold of a thousand souls. The Four Vigils ask for a temple under the hill.',
-  "The Underking's Hall: the Crown grants you the right to raise a Lantern of Vell over the hill.",
+  "The Underking's Hall: the Crown grants you the right to cut the Underking's Seat into the hill.",
   "The Underking's Seat. The deepest hall in Eda, and the Gloam has never seen the inside of it.",
 ];
-const SWAP: Record<string, string> = { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery' };
+const SWAP: Record<string, string> = { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery', golemfoundry: 'forgetemple', lantern_wonder: 'underkingseat' };
 export const GRIMMEN_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: GRIMMEN_NAMES[i], text: GRIMMEN_TEXTS[i], unlocks: m.unlocks.map((k) => SWAP[k] ?? k) }));
 
 export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0 };
@@ -61,7 +65,7 @@ export const FACTIONS: Record<string, FactionDef> = {
   grimmen: {
     id: 'grimmen', name: 'The Grimmen of the Underhill', people: 'Grimmen', playable: true,
     lore: 'Ash-grey stone folk the Gloam cannot touch. Hills are their best land and grass is poor; they drink from seeps, hold the grey with standing stones instead of lanterns, draw more from the hill than from the spires, and hatch only the stone lines. Their milestones are cut by depth: each needs stone quarried as well as folk.',
-    milestones: GRIMMEN_MILESTONES, deny: [], replaces: { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery' },
+    milestones: GRIMMEN_MILESTONES, deny: [], replaces: { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery', golemfoundry: 'forgetemple', lantern: 'underkingseat' },
     rules: { hillLandValue: 12, grassPenalty: 6, hillBuildable: true, wallWard: 2, lanternWard: 1, hillMana: 1.33, nodeMana: 0.67, startCrowns: 0, milestoneGate: (s, next) => stoneQuarried(s) >= GRIMMEN_STONE[next] },
   },
 };

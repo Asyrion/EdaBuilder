@@ -28,9 +28,12 @@ export function wildGolems(s: GameState): number {
   for (const a of s.agents) if (isGolem(a) && a.load === 0) n++;
   return n;
 }
+/** Buildings that bind Wardens: the Vellish Golem Foundry and the Grimmen Forge-Temple. */
+export const GOLEM_HOUSES = ['golemfoundry', 'forgetemple'];
+export const FORGE_WAKE_RADIUS = 20; // a Warden woken this near a lit Forge-Temple climbs out bound
 export function foundries(s: GameState): Building[] {
   const out: Building[] = [];
-  forEachBuilding(s, (b) => { if (b.kind === 'golemfoundry' && b.state === 'ok' && b.lit) out.push(b); });
+  forEachBuilding(s, (b) => { if (GOLEM_HOUSES.includes(b.kind) && b.state === 'ok' && b.lit) out.push(b); });
   return out;
 }
 /** Mana a lit foundry draws for the golems it holds. */
@@ -51,7 +54,8 @@ function spawnGolem(s: GameState, x: number, y: number, bound = false): Agent {
 /** Daily: mines wake Concord Wardens in the hills nearby; foundries bind wild ones within reach. */
 export function dailyBeasts(s: GameState): void {
   const rng = rngOf(s);
-  // 1. mining wakes wardens
+  const fs = foundries(s);
+  // 1. mining wakes wardens; near a lit Forge-Temple they climb out already bound
   if (creatureN(s, 'golem') < GOLEM_CAP) {
     forEachBuilding(s, (b) => {
       if (b.kind !== 'mine' || b.state !== 'ok' || b.age < 5) return;
@@ -60,16 +64,22 @@ export function dailyBeasts(s: GameState): void {
         const x = b.x + rng.int(13) - 6;
         const y = b.y + rng.int(13) - 6;
         if (!inBounds(x, y) || s.terrain[idx(x, y)] !== Terrain.Hills || s.bIndex[idx(x, y)] >= 0) continue;
-        spawnGolem(s, x, y);
+        const forge = fs.find((f) => f.kind === 'forgetemple' && Math.hypot(f.x + 1 - x, f.y + 1 - y) <= FORGE_WAKE_RADIUS);
+        const g = spawnGolem(s, x, y, !!forge);
         s.stats.golemsWoken++;
         effects.push({ x, y, kind: 'stomp', tick: s.tick });
-        pushMessage(s, `The miners at (${b.x},${b.y}) have woken a Concord Warden: a stone giant climbs out of the hill and starts walking. Nothing burns it and the Gloam parts for it. A Golem Foundry (Burgh) can bind it.`, 'warn', true, { x, y });
+        if (forge) {
+          g.homeId = forge.id;
+          g.ax = forge.x + 1;
+          g.ay = forge.y + 2.5;
+          s.stats.golemsBound++;
+          pushMessage(s, `The miners at (${b.x},${b.y}) have woken a Concord Warden, and it walks straight to the Forge-Temple at (${forge.x},${forge.y}) and kneels. The Grimmen say the forge remembers it.`, 'good', true, { x, y });
+        } else pushMessage(s, `The miners at (${b.x},${b.y}) have woken a Concord Warden: a stone giant climbs out of the hill and starts walking. Nothing burns it and the Gloam parts for it. A ${s.faction === 'grimmen' ? 'Forge-Temple' : 'Golem Foundry'} (Burgh) can bind it.`, 'warn', true, { x, y });
         break;
       }
     });
   }
   // 2. foundries bind wild wardens within reach
-  const fs = foundries(s);
   if (fs.length) {
     for (const a of s.agents) {
       if (!isGolem(a) || a.load > 0) continue;
@@ -80,7 +90,7 @@ export function dailyBeasts(s: GameState): void {
       a.ax = f.x + 1;
       a.ay = f.y + 2.5;
       s.stats.golemsBound++;
-      pushMessage(s, `The Golem Foundry at (${f.x},${f.y}) binds a Concord Warden. It will labour for ${GOLEM_LABOUR} hands and never sleep.`, 'good', true, { x: f.x, y: f.y });
+      pushMessage(s, `The ${BUILDING_BY_KEY[f.kind].name} at (${f.x},${f.y}) binds a Concord Warden. It will labour for ${GOLEM_LABOUR} hands and never sleep.`, 'good', true, { x: f.x, y: f.y });
     }
   }
   // 3. skyrays: a school crosses the map in Bloom and Ember; a lit Ley Beacon keeps it

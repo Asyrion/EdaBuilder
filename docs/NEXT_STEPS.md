@@ -262,6 +262,13 @@
   Seep, the Stone Ward and the Hatchery replacing the well, the lantern and the cradle, and
   every zone building in stone. Cradles generalised to a kind.
 
+## Done in iteration 36
+
+- The Grimmen part 2: the Forge-Temple (Wardens woken near it climb out bound), the
+  Underking's Seat as their wonder (wards 30, relays the ley, counts ten stone), the Underhill
+  quest chapter of eight, and three tales (the Underking's envoy, a collapse, a vein of true
+  leystone). Quests carry a people and shared goals read through the replacements.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -312,10 +319,11 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M11 Peoples, the Grimmen part 2** (DESIGN §14.2): iteration 36 the Forge-Temple
-   (golems start bound), the Underking's Seat as the wonder, a quest chapter of eight and
-   three events (the Underking's envoy, a collapse, a vein of true leystone); 37 the
-   stone-sexton walker, the bot playing the Grimmen and balance on three seeds.
+0. **M11 Peoples, the Grimmen part 3** (DESIGN §14.2): iteration 37 the stone-sexton walker
+   (from the Forge-Temple and the Seep, laying the restless the Gloam cannot touch), the bot
+   playing the Grimmen (hill zoning, seeps, stone wards, the stone gate), and balance: the
+   bot reaches the fifth Grimmen milestone by day 70 on three seeds. That closes M11's proof
+   of concept; the other peoples stay designed in §14.2.
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.

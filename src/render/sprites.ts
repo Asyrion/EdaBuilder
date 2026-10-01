@@ -1357,6 +1357,8 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
   hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
   golemfoundry: { w: 2, h: 2, height: 14, roofH: 6, wall: 'darkstone', roof: 'copper', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 37, runeBand: true, alembic: true },
+  forgetemple: { w: 2, h: 2, height: 15, roofH: 4, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 41, runeBand: true, standingStones: true, bellTower: true },
+  underkingseat: { w: 3, h: 3, height: 30, roofH: 6, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 4, door: true, glowWindows: true, seed: 44, crystal: true, runeBand: true, standingStones: true, leyLamps: true },
   leybeacon: { w: 1, h: 1, height: 24, roofH: 5, wall: 'stone', roof: 'cone', windows: 1, windowRows: 3, seed: 38, spire: true, crystal: true, runeBand: true },
   drakemews: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 2, windowRows: 1, door: true, banner: true, glowWindows: true, seed: 39, lanternPost: true, ridgeOrnament: true },
   scaleward: { w: 1, h: 1, height: 14, roofH: 4, wall: 'bone', roof: 'cone', windows: 1, windowRows: 2, seed: 43, leyLamps: true, runeBand: true, spire: true },

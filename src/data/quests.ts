@@ -1,7 +1,8 @@
 import { isCradle } from '../sim/wyrmcraft';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
-import { AgentKind, Zone, type GameState } from '../sim/types';
+import { AgentKind, Terrain, Zone, idx, type GameState } from '../sim/types';
 import { BUILDING_BY_KEY } from '../sim/catalog';
+import { factionKey, stoneQuarried, type FactionId } from './factions';
 import { chose } from '../sim/events';
 import { aspectAt } from '../sim/weave';
 
@@ -22,10 +23,13 @@ export interface QuestDef {
   focus?: Focus;
   reward: number; // crowns
   priority: number; // lower first
+  people?: FactionId; // a people's own chapter: shown and paid for that people only
 }
 
 const hasCradle = (s: GameState) => s.buildings.some((b) => b && isCradle(b.kind) && b.state !== 'ruin' && b.state !== 'building');
-const has = (s: GameState, kind: string, n = 1) => s.buildings.filter((b) => b && b.kind === kind && b.state !== 'ruin' && b.state !== 'building').length >= n;
+/** Counts this people's building for a Vellish key (a Seep for 'well'), so the Charter's goals read for every people. */
+const has = (s: GameState, kind0: string, n = 1) => { const kind = factionKey(s, kind0); return s.buildings.filter((b) => b && b.kind === kind && b.state !== 'ruin' && b.state !== 'building').length >= n; };
+const onHills = (s: GameState, kind: string) => s.buildings.filter((b) => b && b.kind === kind && b.state === 'ok' && s.terrain[idx(b.x, b.y)] === Terrain.Hills).length;
 const zoned = (s: GameState, z: Zone, n: number) => { let c = 0; for (let i = 0; i < s.zone.length; i++) if (s.zone[i] === z) c++; return c >= n; };
 const roads = (s: GameState) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i]) c++; return c; };
 const walls = (s: GameState) => { let c = 0; for (let i = 0; i < s.wall.length; i++) if (s.wall[i] === 1) c++; return c; };
@@ -142,6 +146,15 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_scholar', chapter: 'The riverbank', title: 'A scholar at the delve', hint: 'A lit Academy on a road sends a scholar to the Ruin Delve; every relic piece is carried home and named by hand.', when: (s) => (has(s, 'academy') || has(s, 'grandacademy')) && has(s, 'ruindelve'), done: (s) => s.stats.scholarTrips > 0, focus: { build: 'academy' }, reward: 600, priority: 51 },
   { id: 'w_tamer', chapter: 'Wyrmcraft', title: 'The tamer makes her rounds', hint: "A Tamer's Lodge on a road sends a tamer to every cradle within ten tiles that holds dragons: calmer and faster-growing that day.", when: (s) => has(s, 'tamerslodge') && hasCradle(s), done: (s) => s.stats.tamerVisits > 0, focus: { build: 'tamerslodge' }, reward: 500, priority: 37 },
   { id: 'w_pilgrim', chapter: 'Faith', title: 'Pilgrims on the road', hint: 'Shrines and temples on roads send pilgrims to one another and to the Founding Stake; the roads they walk count as under faith.', when: (s) => s.buildings.filter((b) => b && (b.kind === 'shrine' || b.kind === 'temple') && b.state === 'ok').length >= 2, done: (s) => s.stats.pilgrimPrayers > 0, focus: { overlay: 'faith' }, reward: 400, priority: 28 },
+  // The Underhill (the Grimmen's own chapter)
+  { id: 'u_cut', chapter: 'The Underhill', people: 'grimmen', title: 'Cut the first hill', hint: 'Stone quarried is counted from hills levelled (Land tab) and buildings standing on hills; every depth milestone needs it. Two stone opens the Cut.', when: (s) => s.faction === 'grimmen', done: (s) => stoneQuarried(s) >= 2, focus: { tool: 'zoneHearth' }, reward: 300, priority: 2 },
+  { id: 'u_seep', chapter: 'The Underhill', people: 'grimmen', title: 'Cut a Seep at the hill foot', hint: 'Water tab. A Seep must touch hills; it waters 6 tiles and asks no mana.', when: (s) => s.faction === 'grimmen', done: (s) => has(s, 'seep'), focus: { build: 'seep' }, reward: 300, priority: 3 },
+  { id: 'u_street', chapter: 'The Underhill', people: 'grimmen', title: 'A street of six halls on the hill', hint: 'Zone hearths on hill tiles beside a road: hills are the Grimmen\'s best land and grass is poor.', when: (s) => s.faction === 'grimmen', done: (s) => onHills(s, 'hearth') >= 6, focus: { tool: 'zoneHearth' }, reward: 500, priority: 6 },
+  { id: 'u_ward', chapter: 'The Underhill', people: 'grimmen', title: 'Raise a Stone Ward', hint: 'Services tab at the Gallery. A standing stone holds the Gloam back 8 tiles with no mana.', when: (s) => s.faction === 'grimmen' && s.milestone >= 2, done: (s) => has(s, 'stoneward'), focus: { build: 'stoneward' }, reward: 500, priority: 12 },
+  { id: 'u_gallery', chapter: 'The Underhill', people: 'grimmen', title: 'Reach the Gallery', hint: 'A hundred folk and six stone quarried.', when: (s) => s.faction === 'grimmen', done: (s) => s.milestone >= 2, focus: { center: 'founding' }, reward: 800, priority: 14 },
+  { id: 'u_hatch', chapter: 'The Underhill', people: 'grimmen', title: 'Hatch a stone line', hint: 'A Hatchery (Deep Hold) takes Bone, Grey and Ember eggs only; the bright lines are sold on to the Crown.', when: (s) => s.faction === 'grimmen' && s.milestone >= 4, done: (s) => s.dragons.some((d) => { const c = s.buildings.find((b) => b && b.id === d.cradleId); return !!c && c.kind === 'hatchery'; }), focus: { build: 'hatchery' }, reward: 1000, priority: 36 },
+  { id: 'u_forge', chapter: 'The Underhill', people: 'grimmen', title: 'Bind a Warden at the Forge-Temple', hint: 'Deephold. A Warden that mining wakes within 20 tiles of a lit Forge-Temple climbs out already bound.', when: (s) => s.faction === 'grimmen' && s.milestone >= 6, done: (s) => has(s, 'forgetemple') && s.stats.golemsBound > 0, focus: { build: 'forgetemple' }, reward: 1500, priority: 52 },
+  { id: 'u_seat', chapter: 'The Underhill', people: 'grimmen', title: "Cut the Underking's Seat", hint: 'Leisure tab at the Underking\'s Hall. The deepest hall in Eda wards 30 tiles and counts ten stone.', when: (s) => s.faction === 'grimmen' && s.milestone >= 7, done: (s) => has(s, 'underkingseat'), focus: { build: 'underkingseat' }, reward: 5000, priority: 70 },
   // The Vein-Wyrm
   { id: 'v_find', chapter: 'The Vein-Wyrm', title: 'Find the Sleeping Wyrm', hint: 'One distant node is ringed with scale, not stone. Click it. Spires there would wake it.', when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },
   { id: 'v_tribute', chapter: 'The Vein-Wyrm', title: 'Settle a tribute', hint: 'Awake, it asks each season: crowns or goods. Refuse and it burns.', when: (s) => s.wyrm.state === 'awake', done: (s) => s.stats.wyrmTributes > 0, focus: { center: 'wyrm' }, reward: 500, priority: 42 },
