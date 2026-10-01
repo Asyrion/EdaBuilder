@@ -2,6 +2,7 @@ import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
+import { canFoundDaughter, foundDaughter } from './sim/charter';
 import type { Scenario } from './sim/types';
 import { tick, recomputeAll } from './sim/sim';
 import { serialize, deserialize } from './sim/save';
@@ -100,6 +101,8 @@ class Game {
       get selectedNode() { return game.selectedNode; },
       deepenNode: (i) => { const why = deepenNode(this.state, i); if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); },
       canDeepenNode: (i) => canDeepenNode(this.state, i),
+      canFoundDaughter: (i) => canFoundDaughter(this.state, i),
+      foundDaughter: (i, name) => { const why = foundDaughter(this.state, i, name); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
       setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },

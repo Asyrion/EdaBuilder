@@ -105,7 +105,9 @@ main node.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →
 Market Town (650) → Burgh (1000) → Free City (1500, unlocks the Lantern of Vell wonder) →
-Beacon of Eda (2200).
+Beacon of Eda (2200). At Beacon of Eda, click a far ley node to found a **daughter
+wardlight**: a second stake, a district and a grant, sharing one treasury. Five hundred folk
+there makes the **Twin Beacons**.
 
 **Ways to lose:** treasury below −8,000 for five days; the Gloam reaches the founding
 node; forty restless dead walk the streets.
@@ -161,6 +163,9 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
+  it to 500 folk for the Twin Beacons.
+- Touch: one finger for tools, two fingers to pan, pinch to zoom.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
   the inherited collapse, each with a goal; a Done page in the Ledger; per-district
   problem counts in the Districts view.

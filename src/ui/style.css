@@ -15,7 +15,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0912; color: var(--text); }
-canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
+canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; touch-action: none; }
 #ui { position: fixed; inset: 0; pointer-events: none; font-size: 13px; zoom: var(--ui-scale); }
 #ui > * { pointer-events: auto; }
 .panel { background: linear-gradient(180deg, rgba(38,28,48,0.94), rgba(22,16,30,0.94)); border: 1px solid #6a5478; box-shadow: 0 0 0 1px #0b0912, inset 0 0 0 1px rgba(233,194,91,0.12), 0 4px 18px rgba(0,0,0,0.55), 0 0 24px rgba(79,227,255,0.06); border-radius: 3px; position: relative; }

@@ -131,6 +131,8 @@ export const QUESTS: QuestDef[] = [
   { id: 'c_burgh', chapter: 'The Crown', title: 'Become a Burgh (1000 folk)', hint: 'Watch the mana; a Nexus and Fonts carry a burgh.', when: (s) => s.milestone === 5, done: (s) => s.milestone >= 6, reward: 0, priority: 64 },
   { id: 'c_free', chapter: 'The Crown', title: 'Become a Free City (1500 folk)', hint: 'Deepen the Wellspring; districts and edicts keep the peace.', when: (s) => s.milestone === 6, done: (s) => s.milestone >= 7, reward: 0, priority: 65 },
   { id: 'c_beacon', chapter: 'The Crown', title: 'Become a Beacon of Eda (2200 folk)', hint: 'Raise the Lantern of Vell.', when: (s) => s.milestone === 7, done: (s) => s.milestone >= 8, reward: 0, priority: 66 },
+  { id: 'c_daughter', chapter: 'The Crown', title: 'Found a daughter wardlight', hint: 'Click a ley node at least 30 tiles from the Stake: a second stake, a district and a 15,000-crown grant. One treasury, one Charter.', when: (s) => s.milestone >= 8 && !s.daughter, done: (s) => !!s.daughter, focus: { center: 'node' }, reward: 0, priority: 70 },
+  { id: 'c_twin', chapter: 'The Crown', title: 'Twin Beacons: 500 folk at the daughter wardlight', hint: 'Zone, light and water within 30 tiles of the daughter stake.', when: (s) => !!s.daughter, done: (s) => !!s.daughter && s.daughter.twin >= 0, reward: 0, priority: 71 },
 ];
 
 /** The advisor: one line about the city's worst current problem, or null. */
