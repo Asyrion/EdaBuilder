@@ -191,10 +191,11 @@ Charter as `.json`.
   Cut, and climb milestones cut by depth that need stone quarried as well as folk. The
   Veshari of the Sable found their city within six tiles of water, drink from tide-wells,
   moor barges at landings, draw more from Torrent Mills than from the Veins, never see the
-  river freeze, hatch only the water lines in a Tide Pool, and climb milestones named by
-  reach that need moorings as well as folk.
-- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims and
-  the Grimmen's stone-sextons walk the roads from their buildings and do their jobs where
+  river freeze, hatch only the water lines in a Tide Pool, weather the Hush flood or hold it
+  with the Great Weir, follow the Sable chapter and tales, keep bargemen on the bank, and
+  climb milestones named by reach that need moorings as well as folk.
+- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims,
+  the Grimmen's stone-sextons and the Veshari's bargemen walk the roads from their buildings and do their jobs where
   they go; the streets they walk
   count as covered.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily

@@ -75,10 +75,10 @@ const VESHARI_TEXTS = [
   'A haven. The deep Veins may be tapped, the mills may turn in the current, and a Tide Pool dug for the water lines.',
   'A river-market: barges from three valleys tie up at your moorings. The guilds petition for a hall.',
   'A weirhold of a thousand souls. The Four Vigils ask for a temple with its feet in the water.',
-  "Vesh's Court: the Crown grants you the right to raise the Lantern of Vell on the water.",
+  "Vesh's Court: the Crown grants you the right to raise the Great Weir across the Sable.",
   'The Sable Crown. The river runs through the city and the city runs the river, and the Gloam has never crossed it.',
 ];
-const VESHARI_SWAP: Record<string, string> = { well: 'tidewell', cradle: 'tidepool' };
+const VESHARI_SWAP: Record<string, string> = { well: 'tidewell', cradle: 'tidepool', lantern_wonder: 'greatweir' };
 export const VESHARI_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: VESHARI_NAMES[i], text: VESHARI_TEXTS[i], unlocks: m.unlocks.map((k) => VESHARI_SWAP[k] ?? k) }));
 
 export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1 };
@@ -98,7 +98,7 @@ export const FACTIONS: Record<string, FactionDef> = {
   veshari: {
     id: 'veshari', name: 'The Veshari of the Sable', people: 'Veshari', playable: true,
     lore: 'The water-mages of Vesh and their river-kin, chartered on the Sable\'s bank. The riverbank is their best land and dry ground is poor; they drink from tide-wells, moor barges at landings where the Vellish send carts, draw more from the mills in the current than from the Veins, and the river never freezes for them. Their milestones are measured by reach: each needs moorings as well as folk.',
-    milestones: VESHARI_MILESTONES, deny: [], replaces: { well: 'tidewell', cradle: 'tidepool' },
+    milestones: VESHARI_MILESTONES, deny: [], replaces: { well: 'tidewell', cradle: 'tidepool', lantern: 'greatweir' },
     rules: { ...NEUTRAL_RULES, waterLandValue: 2, dryPenalty: 6, riverFreezes: false, millMana: 1.33, nodeMana: 0.8, milestoneGate: (s, next) => moorings(s) >= VESHARI_MOORINGS[next] },
   },
 };

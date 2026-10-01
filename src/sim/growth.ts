@@ -9,7 +9,7 @@ import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, boundGolems, raysLured } from './beasts';
-import { aspectAt, hasMarvel, marvelNear } from './weave';
+import { aspectAt, hasMarvel, marvelNear, FLOODPROOF, flooding } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -101,6 +101,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (b.lit) h += 6;
   else h -= 9;
   if ((b.tended ?? -1) >= state.day) h += 4;
+  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && flooding(state)) h -= 10; // the Sable in flood
   if (b.watered) h += 6;
   else h -= 11;
   h -= (state.miasma[i] / 255) * 30;

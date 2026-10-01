@@ -6,6 +6,7 @@ import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
 import { riverFrozen } from './weave';
+import { modifierSum } from './edicts';
 import { seasonOf } from './world';
 import { MOORINGS } from '../data/factions';
 
@@ -104,7 +105,7 @@ function near(s: GameState, q: Building, test: (b: Building) => boolean): Buildi
 /** Daily: every quay sends a barge to a quay whose markets are emptier, along the water. */
 export function dailyBarges(s: GameState): void {
   const qs = quays(s);
-  if (qs.length < 2 || riverFrozen(s)) return;
+  if (qs.length < 2 || riverFrozen(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
   const rng = rngOf(s);
   for (const from of qs) {
     if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id)) continue;

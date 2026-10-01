@@ -311,6 +311,15 @@
   the bot moors, waters from tide-wells and raises mills. Found and fixed: `waterDist` was
   rebuilt from the seed on load, not from the saved terrain.
 
+## Done in iteration 40 (M12 part 2b, the Veshari's water)
+
+- The Hush flood (the river rises instead of freezing: bank land value and homes lose 10
+  unless a Great Weir stands; floods weathered are counted), the Great Weir wonder (2×2 on
+  the water, 90 mana, ward 30, a ley hall; `WONDER_HALLS` replaces the renderer's lists), the
+  Sable chapter of eight, three tales (the tide egg in the net, the storm egg, the bargemen's
+  strike with a `barges` modifier), the bargeman walker (bails flooded homes), and the bot
+  laying landings beside its works and raising the Weir. M12 Peoples II is closed.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -361,16 +370,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M12 Peoples II, part 2b: the Veshari's water** (DESIGN §7, §4.70): the Hush flood (in
-   the Hush the river rises: tiles within one of water lose their land value and a bank
-   building not on a landing or quay may be swept, unless a Weir stands); the **Great Weir**
-   wonder replacing the Lantern of Vell (must touch water, 2×2, makes mana like three mills,
-   wards 20 across the water, ends the flood); a chapter of eight (the first tide-well, two
-   landings and a barge, a mill in the current, the Tide Pool, a tide hatchling, the first
-   flood survived, the Weir) and three tales with tide and storm eggs (a tide egg in a
-   fisher's net, a storm egg after a mana-storm, the bargemen's strike); a bargeman walker
-   from landings (walks the bank, mends a flooded tile, +leisure); the Veshari late game on
-   three seeds (Weirhold by day 120).
+0. **M13: the third people, the Tallowkin candle-folk** (DESIGN §14.2, designed): light is
+   life. Every building must be lit or it is abandoned in a day; spires reach 7 but cost
+   double; the Hush vigil is mandatory and cheap; their wonder is the Lantern of Vell rebuilt
+   as the Lantern of Wicks. The scaffold has held twice, so the cut is: rules (spire reach
+   and cost, the unlit-abandon rule, the vigil), a wickhouse zone look, a Candle-Shrine and a
+   Wick-Tower (a cheap spire that lights but does not relay), milestones by light, a
+   chapter, tales and a lamplighter walker, two iterations. Alternative if the user prefers:
+   the hand-made art pass (item 1) or the Grimmen mana game (DESIGN §4.69's finding).
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

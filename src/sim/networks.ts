@@ -1,8 +1,8 @@
 import { isCradle } from './wyrmcraft';
 /** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
-export const LEY_HALLS = ['lantern', 'underkingseat'];
+export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
-import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
+import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA, WONDER_HALLS } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';

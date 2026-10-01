@@ -6,6 +6,8 @@ import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent
 import { commitRng, forEachBuilding, markDirty, rngOf } from './world';
 import { catalogue } from './relics';
 import { CRADLE_KINDS, isCradle } from './wyrmcraft';
+import { MOORINGS, factionOf } from '../data/factions';
+import { flooding } from './weave';
 
 export interface WalkerJob {
   id: string;
@@ -272,6 +274,41 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'bell', tick: s.tick });
       logLine(a, `Laid one of the restless at (${Math.floor(a.x)},${Math.floor(a.y)}); the grey cannot hold a Grimmen.`);
       return true;
+    },
+  },
+  bargeman: {
+    id: 'bargeman', name: 'bargeman', plural: 'bargemen', prop: 'pole',
+    desc: 'Walks the bank from its landing or quay: the streets it walks count as leisure, and when the Sable floods it bails the flooded homes in reach (+4 happiness there for a day, six a day). Only a people whose river never freezes keeps bargemen.',
+    from: MOORINGS,
+    count: (s) => (factionOf(s).rules.riverFreezes ? 0 : 1),
+    radius: () => 10,
+    cap: 6,
+    target: (s, a, anchor) => {
+      if (!flooding(s)) return null;
+      let best: Building | null = null;
+      let bd = Infinity;
+      forEachBuilding(s, (b) => {
+        if (b.state !== 'ok' || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth) return;
+        if (Math.abs(b.x - anchor.x) > 10 || Math.abs(b.y - anchor.y) > 10) return;
+        if (s.waterDist[idx(b.x, b.y)] > 1 || (b.tended ?? -1) >= s.day) return;
+        const d = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+        if (d < bd) { bd = d; best = b; }
+      });
+      if (!best) return null;
+      const rt = roadTileOf(s, best);
+      return rt >= 0 ? rt : null;
+    },
+    onTile: (s, _a, i) => paintBonus(s, 'leisure', i, 0.03, 0.12),
+    onArrive: (s, a, i) => {
+      if (a.load >= 6) return;
+      for (const b of buildingsAt(s, i)) {
+        if (BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || (b.tended ?? -1) >= s.day) continue;
+        b.tended = s.day;
+        a.load += 1;
+        s.stats.bargemanRounds++;
+        logLine(a, `Bailed the hearths at (${b.x},${b.y}) as the Sable rose.`);
+        break;
+      }
     },
   },
   watchman: {

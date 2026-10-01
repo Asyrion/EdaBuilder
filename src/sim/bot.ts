@@ -1,4 +1,4 @@
-import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried } from '../data/factions';
+import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried, MOORINGS } from '../data/factions';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
@@ -215,6 +215,12 @@ export class Bot {
     const gate = factionOf(s).rules.milestoneGate;
     if (!gate || !canBuild(s, 'landing')) return;
     const next = s.milestone + 1;
+    // a landing for trade: works with no mooring within a barge's reach get one of their own
+    if (s.treasury >= BUILDING_BY_KEY.landing.cost + 1500) {
+      const moors = s.buildings.filter((b): b is NonNullable<typeof b> => !!b && MOORINGS.includes(b.kind) && b.state === 'ok');
+      const works = moors.length ? s.buildings.find((b) => b && b.kind === 'craft' && b.state === 'ok' && !moors.some((m) => Math.abs(m.x - b.x) <= 8 && Math.abs(m.y - b.y) <= 8)) : null;
+      if (works && this.placeNear('landing', works.x, works.y, 8)) return;
+    }
     if (next >= milestonesOf(s).length || gate(s, next) || s.treasury < BUILDING_BY_KEY.landing.cost + 100) return;
     // the gate holds the milestone grants back, so a mooring is worth a home on the bank (clear mode asks before it digs)
     if (this.placeNear('landing', this.cx, this.cy, this.radius) || this.placeNear('landing', this.cx, this.cy, this.radius, true)) return;
@@ -390,6 +396,8 @@ export class Bot {
     if (s.milestone >= 7 && s.treasury > 30000) want('lantern', 1);
     // a people that draws on the current: Torrent Mills are its spires
     if (factionOf(s).rules.millMana > 1 && canBuild(s, 'torrentmill') && s.manaSupply - s.manaDemand < 20 && s.treasury > 7000) this.placeNear('torrentmill', this.cx, this.cy, this.radius);
+    // the Weir must touch water, so the home-side search of want() rarely finds it a place
+    if (s.milestone >= 7 && s.treasury > 30000 && canBuild(s, 'greatweir') && this.countKind('greatweir') === 0) this.placeNear('greatweir', this.cx, this.cy, this.radius);
     void MILESTONES;
   }
 

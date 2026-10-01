@@ -1,12 +1,13 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
+import { moorings } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, addEgg, isCradle } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
-import { TIGER_FOREST, forestTiles, marketDistrict } from './lore';
+import { TIGER_FOREST, forestTiles, marketDistrict, startStorm } from './lore';
 import { districtName, markDirty } from './world';
 import { inBounds, idx } from './types';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
@@ -490,7 +491,43 @@ export const GRIMMEN: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
+/** The Veshari's own tales: the eggs of the water lines, and the bargemen. */
+function tidePool(s: GameState): Building | undefined {
+  return s.buildings.find((b) => b && b.kind === 'tidepool' && b.state === 'ok') ?? undefined;
+}
+export const VESHARI: EventDef[] = [
+  {
+    id: 'tide_net', title: 'A tide egg in the net', once: true,
+    text: 'A fisher on the Sable hauls up something heavier than a fish: an egg the colour of deep water, finned along its seam. The pool-keepers are already arguing over who found it.',
+    when: (s) => s.faction === 'veshari' && !!tidePool(s) && s.dragons.length < 6,
+    choices: [
+      { label: 'Keep it', desc: 'The egg goes to the Tide Pool.', apply: (s) => { const d = addEgg(s, 'tide'); if (d) return `${d.name} is laid in the pool and the fisher gets a landing named after her.`; s.treasury += 2500; return "No pool had room. The Crown's assessor pays 2,500 crowns and the fisher gets a drink."; } },
+      { label: 'Sell it to the Crown', desc: '+2,500 crowns.', apply: (s) => { s.treasury += 2500; return 'The assessor wraps it in wet cloth and rides for Vell-on-Sable. 2,500 crowns.'; } },
+      { label: 'Give it to the pool-keepers', desc: 'Kept on the pool wall as a relic: +3 happiness for 20 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 20, label: 'The egg in the net' }); return 'They set it on the pool wall and do not hatch it. Folk come down to the water to look.'; } },
+    ],
+  },
+  {
+    id: 'storm_egg', title: 'A storm egg', once: true,
+    text: 'When the mana-storm passed over the water it left something floating: an egg veined with violet lightning, humming like a struck bell. The pool-keepers wade out for it with a net on a pole.',
+    when: (s) => s.faction === 'veshari' && (s.stats.stormWarps > 0 || s.storms.length > 0) && s.dragons.length < 6,
+    choices: [
+      { label: 'Keep it', desc: 'The egg goes to the Tide Pool.', apply: (s) => { const d = addEgg(s, 'storm'); if (d) return `${d.name} is laid in the pool. The water around it crackles for a week.`; s.treasury += 3000; return "No pool had room. The Crown's assessor pays 3,000 crowns and keeps his gloves on."; } },
+      { label: 'Sell it to the Crown', desc: '+3,000 crowns.', apply: (s) => { s.treasury += 3000; return 'The assessor pays 3,000 crowns and carries it in a lead box. 3,000 crowns.'; } },
+      { label: 'Let it hatch wild', desc: 'A mana-storm breaks over the water for four days.', apply: (s) => { const p = tidePool(s); startStorm(s, p ? p.x : s.founding.x, p ? p.y : s.founding.y); return 'The egg splits in the shallows and the sky splits with it. Nobody sees what came out.'; } },
+    ],
+  },
+  {
+    id: 'bargemen_strike', title: "The bargemen's strike",
+    text: 'The bargemen have tied up every barge on the Sable and sit on the landings with their poles across their knees. They want rope-money: the river is theirs first, they say, and the Veshari only borrow it.',
+    when: (s) => s.faction === 'veshari' && moorings(s) >= 4,
+    choices: [
+      { label: 'Pay the rope-money', desc: '900 crowns; the barges cast off at dawn.', apply: (s) => { s.treasury -= 900; return 'The purse goes round the landings. By dawn the poles are back in the water. 900 crowns.'; } },
+      { label: 'Let them sit', desc: 'No barge sails for eight days; the carts manage.', apply: (s) => { s.modifiers.push({ kind: 'barges', value: -1, until: s.day + 8, label: 'The bargemen strike' }); return 'They sit. The river goes on without them, which they find insulting. Eight days later they are back, poorer.'; } },
+    ],
+  },
+];
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -535,7 +572,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };

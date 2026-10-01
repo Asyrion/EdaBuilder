@@ -359,6 +359,13 @@ export const BUILDINGS: BuildingDef[] = [
     w: 3, h: 3, cost: 22000, upkeep: 180, manaUse: 14, needsMana: true, nearHills: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
+  {
+    key: 'greatweir', name: 'The Great Weir', category: 'wonder', faction: ['veshari'],
+    desc: 'A leystone weir across the Sable with sluice gates and lamps. Makes 90 mana a day from the current, wards 30 tiles across the water, relays the ley like a Nexus, and holds the Hush flood back. Must touch water. No mana.',
+    flavor: 'The river did not agree to it. The river was not asked. The river, the Veshari say, is still thinking it over.',
+    w: 2, h: 2, cost: 22000, upkeep: 160, manaUse: 0, manaProduce: 90, nearWater: true,
+    service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
+  },
 
   {
     key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
@@ -644,6 +651,8 @@ export function isZoneUnlocked(milestone: number, zone: Zone): boolean {
 export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
+/** Great halls that relay the ley like a Nexus and light like the Lantern: one row per people's wonder. */
+export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir'];
 
 export const WALL_COST = 60;
 export const WALL_UPKEEP = 0.4;
