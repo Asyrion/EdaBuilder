@@ -1464,10 +1464,14 @@ one row on a panel.
 
 **Linked nodes.** The chain search carries each queue entry's node; a member (spire,
 Wick-Tower, Nexus, hall or Stake) found straight from a node marks it linked
-(`state.nodeLinked`, recomputed every update). A node's flow, 90 plus its depth and a Vein's
-15, counts only while linked (`nodeFlow(state, linked)` in world.ts); the one-node scenario's
-deep Vein and the true veins left to the ley count always. The node panel has a Linked row,
-and the deepen button refuses an unlinked node. The bot links the nearest unlinked node in
+(`state.nodeLinked`, recomputed every update). A linked node gives its full flow, 90 plus its
+depth and a Vein's 15; an unlinked node **seeps half its 90** into the ground and none of its
+depth (`nodeFlow(state, linked)` in world.ts, `NODE_SEEP`); the one-node scenario's deep Vein
+and the true veins left to the ley count always. The first cut gave an unlinked node nothing,
+and every bot collapsed: a Village needs some 200 mana and a valley's one linked node gave 90,
+so the Grimmen ran on 70 and the Tallowkin stuck at 72 % lit. Half is the number at which
+the early city stands and linking a node is still worth a spire and a sector. The node panel
+has a Linked row that names the seep, and the deepen button refuses an unlinked node. The bot links the nearest unlinked node in
 its reach when demand passes 85 % of supply, never a sleeping wyrm's (`linkNodes`).
 
 **Spire load.** Every lit consumer draws through its nearest lit member or node (centre

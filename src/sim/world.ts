@@ -419,11 +419,13 @@ export function waterRadiusOf(state: GameState, b: Building): number {
   return r;
 }
 
-/** The nodes' flow before the people's multiplier: 90 a node plus its depth and a Vein's 15, for the linked nodes only when a list is given (a node's flow counts only while a lit spire, stake or hall within 6 tiles links it). The one-node scenario's deep Vein and the true veins left to the ley count always. */
+/** An unlinked node seeps this share of its 90 into the ground; a lit spire, stake or hall within 6 draws the rest, and its depth and a Vein's 15 come only with the link. */
+export const NODE_SEEP = 0.5;
+/** The nodes' flow before the people's multiplier: 90 a node plus its depth and a Vein's 15 when linked (a list given), else the seep. The one-node scenario's deep Vein and the true veins left to the ley count always. */
 export function nodeFlow(state: GameState, linked?: boolean[]): number {
   let m = 0;
   state.nodes.forEach((n, k) => {
-    if (linked && linked[k] === false) return;
+    if (linked && linked[k] === false) { m += NODE_MANA * NODE_SEEP; return; }
     m += NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0);
   });
   if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
@@ -442,7 +444,7 @@ export function canDeepenNode(state: GameState, ni: number): string | null {
   const depth = n.depth ?? 0;
   if (depth >= NODE_DEEPEN_COST.length) return 'This Wellspring is as deep as it goes';
   if (state.milestone < 6) return 'Unlocks at Burgh';
-  if (state.nodeLinked.length && state.nodeLinked[ni] === false) return 'Unlinked: raise a spire within 6 tiles first, or the deeper flow is not drawn';
+  if (state.nodeLinked.length && state.nodeLinked[ni] === false) return 'Unlinked: raise a spire within 6 tiles first; an unlinked node seeps only half its flow and none of its depth';
   if (state.treasury < NODE_DEEPEN_COST[depth]) return 'Not enough crowns';
   return null;
 }

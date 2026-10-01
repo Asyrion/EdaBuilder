@@ -351,8 +351,8 @@
 
 ## Done in iteration 45 (M14 part 1a: the ley has limits)
 
-- A node's flow counts only while a lit spire, stake or hall within 6 links it (the panel
-  says so; the bot links its nodes); a spire carries 80 mana of buildings (Wick-Tower 20,
+- An unlinked node seeps half its flow; a lit spire, stake or hall within 6 draws the rest and
+  its depth (the panel says so; the bot links its nodes); a spire carries 80 mana of buildings (Wick-Tower 20,
   Stake 60, Nexus 200) and sheds its farthest over that, with a Load row and a problem;
   brownout tiers (Essential, Normal, Dim) per building, set from its panel; lantern-ways dim
   first when the ley runs short and an unlit lantern tile is cobble.

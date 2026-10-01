@@ -205,7 +205,7 @@ Charter as `.json`.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
   Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
   still be set per district. A selected building shows its reach.
-- The ley has limits: a node's flow counts only while a spire links it, a spire carries 80
+- The ley has limits: an unlinked node seeps only half its flow, a spire carries 80
   mana of buildings and its farthest go dark over that (a Load row), every building has a
   brownout tier, and lantern-ways dim first when the ley runs short.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily

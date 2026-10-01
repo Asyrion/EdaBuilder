@@ -5,7 +5,7 @@ import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
 import { isLeyMember, loadCapOf, priorityOf } from '../sim/networks';
 import { mewsActive } from '../sim/beasts';
 import { MOORINGS } from '../data/factions';
@@ -789,7 +789,7 @@ export class UI {
     const asp = n.aspect ? ASPECT_INFO[n.aspect] : null;
     const rows = [
       row('Flow', `${Math.round(nodeFlowOf(s, i) * factionOf(s).rules.nodeMana)} mana / day`),
-      row('Linked', s.nodeLinked[i] === false ? '<span class="warn">no: nothing lit within 6 tiles links it, so its flow is not drawn</span>' : 'yes: a lit spire, stake or hall within 6 tiles draws its flow'),
+      row('Linked', s.nodeLinked[i] === false ? `<span class="warn">no: it seeps ${Math.round(90 * NODE_SEEP * factionOf(s).rules.nodeMana)} into the ground; a lit spire, stake or hall within 6 tiles draws the rest (and its depth)</span>` : 'yes: a lit spire, stake or hall within 6 tiles draws its full flow'),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
@@ -994,7 +994,7 @@ export class UI {
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
             <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) where the demand bars ask.</li>
-            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. A node's flow counts only while a spire links it; a spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
+            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>

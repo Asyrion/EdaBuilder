@@ -34,7 +34,7 @@ describe('Linked nodes', () => {
     expect(s.nodeLinked[other]).toBe(false);
     const flow = nodeFlow(s, s.nodeLinked);
     expect(s.manaSupply).toBe(flow);
-    expect(flow).toBeLessThan(nodeFlow(s)); // the unlinked nodes are not drawn
+    expect(flow).toBeLessThan(nodeFlow(s)); // the unlinked nodes seep only half
     expect(canDeepenNode(s, other)).toMatch(/Unlinked/);
     // a spire within 6 of the other node links it
     const n = s.nodes[other];
@@ -45,7 +45,7 @@ describe('Linked nodes', () => {
     updateMana(s);
     expect(sp.lit).toBe(true);
     expect(s.nodeLinked[other]).toBe(true);
-    expect(s.manaSupply).toBe(flow + 90 + ((s.nodes[other].aspect === 'vein' ? 15 : 0)) + (s.nodes[other].depth ?? 0) * 45);
+    expect(s.manaSupply).toBe(flow + 45 + ((s.nodes[other].aspect === 'vein' ? 15 : 0)) + (s.nodes[other].depth ?? 0) * 45); // the other half of its flow, and its Vein
     expect(canDeepenNode(s, other)).toBeNull();
   });
 });
@@ -89,7 +89,7 @@ describe('Brownout tiers', () => {
     const ward = placeBuildingRaw(s, 'wardlantern', f.x + 2, f.y - 2); ok(ward); // essential by default (6 mana)
     expect(priorityOf(ward)).toBe(0);
     const hs = [] as ReturnType<typeof placeBuildingRaw>[];
-    for (let k = 0; k < 20; k++) { const b = placeBuildingRaw(s, 'arcane', f.x - 10 + k, f.y + 1, 3); ok(b); hs.push(b); } // 8 mana each at level 3
+    for (let k = 0; k < 40; k++) { const b = placeBuildingRaw(s, 'arcane', f.x - 10 + (k % 20), f.y + 1 + 2 * Math.floor(k / 20), 3); ok(b); hs.push(b); } // 8 mana each at level 3, two rows
     expect(priorityOf(hs[0])).toBe(1);
     hs[0].priority = 2; hs[1].priority = 2; // two homes the player marks Dim
     updateMana(s);
@@ -129,7 +129,7 @@ describe('Lantern-ways', () => {
     s.nodes.forEach((n) => { n.depth = 0; });
     const extra = [] as ReturnType<typeof placeBuildingRaw>[];
     let k = 0;
-    while (s.manaDemand <= s.manaSupply) { const b = placeBuildingRaw(s, 'arcane', f.x - 6 + k, f.y + 1, 3); ok(b); extra.push(b); k++; updateMana(s); if (k > 12) break; } // lit along the lane
+    while (s.manaDemand <= s.manaSupply) { const b = placeBuildingRaw(s, 'arcane', f.x - 6 + (k % 13), k < 13 ? f.y + 1 : k < 26 ? f.y + 4 : f.y + 5, 3); ok(b); extra.push(b); k++; updateMana(s); if (k > 38) break; } // lit along the lane and by adjacency
     expect(s.roadsDim).toBe(true);
     expect(s.lit[t]).toBe(0);
     expect(roadAt(s, t)).toBe(RoadType.Cobble);
