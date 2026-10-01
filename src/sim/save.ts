@@ -28,6 +28,7 @@ export function serialize(state: GameState): string {
   for (const [k, v] of Object.entries(state)) {
     if (k === 'dirtyChunks' || k === 'zoneList' || k === 'zoneListDirty') continue;
     if (k === 'coverage' || k === 'lit' || k === 'watered' || k === 'landValue' || k === 'miasma' || k === 'traffic' || k === 'waterDist' || k === 'gloamDist') continue;
+    if (k === 'walkerBonus') continue; // transient (walkers.ts), rebuilt from nothing after a load; as JSON it was 80,000 keys
     if (v instanceof Uint8Array) o[k] = { u8: toB64(v) };
     else if (v instanceof Int32Array) o[k] = { i32: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
     else if (v instanceof Uint16Array) o[k] = { u16: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
@@ -41,7 +42,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (typeof o.seed !== 'number') throw new Error('Not a Wardlight save');
   const state = fresh(o.seed);
   for (const [k, v] of Object.entries(o)) {
-    if (!(k in state)) continue;
+    if (!(k in state) || k === 'walkerBonus') continue; // saves before the hotfix carried the walkers' bonus as plain objects
     if (v && typeof v === 'object' && 'u8' in v) (state as any)[k] = fromB64(v.u8);
     else if (v && typeof v === 'object' && 'i32' in v) {
       const b = fromB64(v.i32);

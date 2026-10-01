@@ -1065,7 +1065,8 @@ export class Renderer {
       const p = plist[k];
       if (!p.glow || p.seed % stride !== 0) continue;
       const pr = dv === 2 ? 6 : 3;
-      const spr = lightSprite(pr, p.color, 0.6 * Math.min(1, p.life / p.maxLife));
+      // quantized: a continuous intensity made a new cached canvas every frame and crashed the tab at dusk
+      const spr = lightSprite(pr, p.color, (Math.round(Math.min(1, p.life / p.maxLife) * 10) / 10) * 0.6);
       l.drawImage(spr, Math.round((p.x - L) / dv - pr), Math.round((p.y - T) / dv - pr));
     }
     const ctx = this.ctx;
