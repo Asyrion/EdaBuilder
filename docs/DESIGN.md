@@ -1327,6 +1327,33 @@ seed; seed 42's lost Beacon is recorded in NEXT_STEPS as something to look at wh
 late game is next on the table. The other peoples on seed 42: Grimmen Deephold 81 (70),
 Veshari Weirhold 48 (54), Tallowkin Bright Town 48 (42).
 
+### 4.74 Two playtest findings: window light in depth order, the caravan's rhythm (iteration 43)
+
+**Window light.** At night every lit sprite's glow (the windows of a house, the ley of a
+spire, a glimmoth) was collected in one list and added after the light pass with no depth
+order, so the lit windows of a house showed through the roof of the house in front of it.
+The renderer now keeps an **emissive layer** the size of the back buffer, filled in the same
+depth order as the sprites: each item lays its glow down at its place in the sorted draw, and
+each sprite in front first cuts its own silhouette out of the layer (`destination-out`), so a
+glow behind a roof is gone before the roof is drawn over it. The ward wall's inlays go down
+first, under everything. The light pass then adds the layer twice as before (soft at quarter
+size for bloom, crisp at full size); by day the layer is not touched. Cost: one extra
+`drawImage` per visible sprite at night, nothing by day. `scripts/playtest42.mjs` draws two
+overlapping rows of lit hearths at the dead of night.
+
+**The caravan.** The Ledger's "Sell 200 goods to a Belerial caravan" could never complete:
+the Trade choice sold the goods and never counted them, and the caravan was one random tale
+among forty, drawn by the storyteller every ten to eighteen days with a one-in-four chance, so
+a player with a depot could wait a season and never see one. It was written in §11 as "every
+season a caravan *may* reach the depot"; now it does. The caravan keeps a rhythm of its own
+(`maybeFireCaravan`, before the storyteller's draw): the first halts six days after the Trade
+Depot stands, then **every twelve days** while a depot stands and the city is a Village; it
+is never drawn as a random tale any more. Trade counts what it sells (`stats.caravanGoods`),
+its description says how many surplus goods wait on the shelves, and the depot's panel has a
+**Caravan** row: days until the next, the surplus it would buy, the goods sold so far. The
+quest's hint says the rhythm and the rule (works' stock above ten). Saves carry
+`stats.lastCaravanDay`; an old save starts the count the day it loads.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2187,3 +2214,9 @@ picks it beside the scenario; the bot plays any of them.
 - *A charter is a people's rule for a neighbourhood (iteration 42):* the five charters read
   at the same hooks the peoples' rules read, one line each, so the two systems cannot drift
   apart and a sixth charter is a row.
+- *Emissive light obeys the same depth order as the sprites (iteration 43):* a glow is part
+  of the sprite that casts it, so it goes down where the sprite goes down and is cut away by
+  what is drawn in front; one layer, one order, no second sort.
+- *A quest names a thing the player can wait for (iteration 43):* "sell to a caravan" with a
+  caravan the storyteller might never draw was a quest that could not be done; a visitor a
+  quest depends on keeps a rhythm the player can read off a panel.

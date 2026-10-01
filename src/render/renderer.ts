@@ -68,6 +68,10 @@ export class Renderer {
   overlayVersion = 0;
   private lightDiv = 2;
   private bloom: HTMLCanvasElement | null = null;
+  /** The emissive layer: window light and ley glow, laid down in depth order so a house in front covers the windows of the one behind. */
+  private emissive: HTMLCanvasElement | null = null;
+  private ectx: CanvasRenderingContext2D | null = null;
+  private emitted = 0;
   private overlayBuiltVersion = -1;
   private overlayBuiltId: string | null = null;
   time = 0; // seconds of real time for animation
@@ -132,6 +136,49 @@ export class Renderer {
     ctx.globalAlpha = alpha;
     ctx.drawImage(this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
     ctx.globalAlpha = 1;
+  }
+
+  // ---------- the emissive layer ----------
+  /** A cleared emissive layer the size of the back buffer (night only). */
+  private beginEmissive(): CanvasRenderingContext2D {
+    if (!this.emissive) this.emissive = document.createElement('canvas');
+    if (this.emissive.width !== this.back.width || this.emissive.height !== this.back.height) {
+      this.emissive.width = this.back.width;
+      this.emissive.height = this.back.height;
+      this.ectx = null;
+    }
+    if (!this.ectx) {
+      this.ectx = this.emissive.getContext('2d')!;
+      this.ectx.imageSmoothingEnabled = false;
+    }
+    const e = this.ectx;
+    e.globalCompositeOperation = 'source-over';
+    e.globalAlpha = 1;
+    e.clearRect(0, 0, this.emissive.width, this.emissive.height);
+    this.emitted = 0;
+    return e;
+  }
+  /** A glow laid onto the emissive layer, at its sprite's place in the depth order. */
+  private emitGlow(e: CanvasRenderingContext2D, s: SpriteRect, wx: number, wy: number, alpha: number): void {
+    if (!s.glow || alpha <= 0) return;
+    const x = Math.round(wx - s.ax - this.camera.left);
+    const y = Math.round(wy - s.ay - this.camera.top);
+    if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
+    e.globalCompositeOperation = 'source-over';
+    e.globalAlpha = alpha;
+    e.drawImage(this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
+    e.globalAlpha = 1;
+    this.emitted++;
+  }
+  /** A sprite drawn in front of earlier glows covers them: its silhouette is cut out of the emissive layer. */
+  private occludeGlow(e: CanvasRenderingContext2D, s: SpriteRect, wx: number, wy: number): void {
+    if (this.emitted === 0) return;
+    const x = Math.round(wx - s.ax - this.camera.left);
+    const y = Math.round(wy - s.ay - this.camera.top);
+    if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
+    e.globalCompositeOperation = 'destination-out';
+    e.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
+    e.globalCompositeOperation = 'source-over';
   }
 
   // ---------- ground chunks ----------
@@ -422,11 +469,13 @@ export class Renderer {
     this.drawPreviews(state, view);
 
     // objects: props, buildings, agents
-    const items: { d: number; y: number; fn: () => void }[] = [];
+    // every item may name the sprite it draws (occ: it covers the glows behind it) and a glow of its own (g)
+    const items: { d: number; y: number; fn: () => void; occ?: { s: SpriteRect; x: number; y: number }; g?: { s: SpriteRect; x: number; y: number; a: number } }[] = [];
     const sky: { s: SpriteRect | null; x: number; y: number; alt: number; line: number }[] = [];
     const icons: { x: number; y: number; name: string }[] = [];
     const lights: { x: number; y: number; r: number; c: string; i: number }[] = [];
-    const glows: { s: SpriteRect; x: number; y: number; a: number }[] = [];
+    // glows under everything (the ward wall's inlays): laid down before the sorted items
+    const groundGlows: { s: SpriteRect; x: number; y: number; a: number }[] = [];
     const sway = Math.sin(this.time * 1.3) * 1;
     const useSway = cam.zoom > 1;
     for (const ci of visible) {
@@ -434,8 +483,11 @@ export class Renderer {
       for (const p of c.props) {
         const s = this.atlas.get(p.name);
         const sw = useSway && p.sway ? Math.round(sway * p.sway) : 0;
-        items.push({ d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy) });
-        if (s && s.glow && night > 0.05) glows.push({ s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' || p.name.startsWith('wyrm_') ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 });
+        items.push({
+          d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy),
+          occ: s ? { s, x: p.wx + sw, y: p.wy } : undefined,
+          g: s && s.glow ? { s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' || p.name.startsWith('wyrm_') ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 } : undefined,
+        });
       }
       for (const l of c.lights) {
         lights.push(l);
@@ -472,7 +524,7 @@ export class Renderer {
       if (def.zone === Zone.Market && b.state === 'ok') marketSeen++;
       if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || WONDER_HALLS.includes(b.kind))) leySeen++;
       if (b.kind === 'torrentmill' && b.state === 'ok') millSeen++;
-      items.push({ d, y: wy, fn: () => {
+      const item: (typeof items)[number] = { d, y: wy, fn: () => {
         if (rising) {
           this.draw(s, wx, wy, 0.22);
           this.drawRising(s, wx, wy, frac);
@@ -494,7 +546,9 @@ export class Renderer {
           this.draw(f, bx - 4, by + 4);
           this.draw(f, wx + 4, wy + 6);
         }
-      } });
+      } };
+      if (s && !rising) item.occ = { s, x: wx, y: wy };
+      items.push(item);
       // icons
       if (def.category === 'zone' && b.state === 'ok' && cam.zoom >= 2) {
         if (!b.lit && b.problemDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_nomana' });
@@ -515,7 +569,7 @@ export class Renderer {
         const ley = b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
         if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) ? 100 : b.kind === 'spire' ? 34 : b.kind === 'wicktower' ? 28 : 46, c: b.kind === 'wicktower' ? PAL.lampWarm : PAL.ley1, i: 0.8 });
         else if ((def.category === 'zone' && (cam.zoom > 1 || (b.x + b.y) % 3 === 0)) || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
-        if (s && s.glow) glows.push({ s, x: wx, y: wy, a: 0.9 });
+        if (s && s.glow) item.g = { s, x: wx, y: wy, a: 0.9 };
         // spire sparkles
         if ((b.kind === 'spire' || b.kind === 'nexus') && Math.random() < 0.08) this.particles.emit({ x: cx + (Math.random() - 0.5) * 6, y: cy - 20 - Math.random() * 10, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 1.5, size: 1, color: PAL.leyGlow, glow: true, kind: 'spark' });
         if (b.kind === 'wardlantern' && Math.random() < 0.1) this.particles.emit({ x: cx + (Math.random() - 0.5) * 20, y: cy - 8 - Math.random() * 16, vx: (Math.random() - 0.5) * 8, vy: -3, maxLife: 2, size: 1, color: PAL.ley1, glow: true, kind: 'ward' });
@@ -553,8 +607,7 @@ export class Renderer {
         if (sp === 'glimmoth') {
           const s = this.atlas.get(`glimmoth_${Math.floor(this.time * 10 + a.id) % 2}`);
           const bob = Math.sin(this.time * 4 + a.id) * 2 - 14;
-          items.push({ d: a.x + a.y + 0.6, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob) });
-          if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.9 });
+          items.push({ d: a.x + a.y + 0.6, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob), g: s ? { s, x: wx, y: wy + 8 + bob, a: 0.9 } : undefined });
           if (night > 0.2 && Math.random() < 0.03) this.particles.emit({ x: wx, y: wy + 8 + bob, vx: (Math.random() - 0.5) * 3, vy: 2, maxLife: 1.5, size: 1, color: PAL.glimleaf, glow: true, kind: 'spark' });
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
@@ -579,25 +632,21 @@ export class Renderer {
           const d = state.dragons.find((x) => x.id === a.dragonId);
           const stage = d && d.stage >= 2 ? 2 : 1;
           const s = this.atlas.get(`dragon_${a.variant}_${stage}_${a.path.length ? Math.floor(this.time * 6 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-          if (s && s.glow) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
+          items.push({ d: a.x + a.y, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
           if (a.variant === 0 && Math.random() < 0.08) this.particles.emit({ x: wx + 6, y: wy + 2, vx: (Math.random() - 0.5) * 4, vy: -8, maxLife: 1, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
           if (a.variant === 2) lights.push({ x: wx, y: wy + 4, r: 22, c: PAL.lampWarm, i: 0.6 });
           if (a.variant === 1 && Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 2, vx: 0, vy: -4, maxLife: 1.5, size: 1, color: PAL.restless, glow: true, kind: 'restless' });
         } else if (sp === 'hound') {
           const s = this.atlas.get(`hound_${a.timer > 0 ? 0 : Math.floor(this.time * 8 + a.id) % 2}`);
-          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-          if (s) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
+          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
           if (Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 6, vx: (Math.random() - 0.5) * 3, vy: -3, maxLife: 2, size: 1, color: PAL.gloam3, glow: false, kind: 'mote' });
         } else if (sp === 'golem') {
           const s = this.atlas.get(`golem_${a.path.length ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-          if (s && s.glow && a.load > 0) glows.push({ s, x: wx, y: wy + 8, a: 0.8 });
+          items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow && a.load > 0 ? { s, x: wx, y: wy + 8, a: 0.8 } : undefined });
           if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
         } else if (sp === 'tiger') {
           const s = this.atlas.get(`tiger_${a.path.length ? Math.floor(this.time * 8 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-          if (s && s.glow) glows.push({ s, x: wx, y: wy + 8, a: 0.9 });
+          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
         } else if (sp === 'rider' || sp === 'airship') {
           const alt = a.alt ?? 0;
           const big = sp === 'airship';
@@ -625,8 +674,7 @@ export class Renderer {
         } else if (sp === 'wisp') {
           const s = this.atlas.get(`wisp_${Math.floor(this.time * 3 + a.id) % 2}`);
           const bob = Math.sin(this.time * 2 + a.id) * 3 - 10;
-          items.push({ d: a.x + a.y + 0.5, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob, 0.85) });
-          if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });
+          items.push({ d: a.x + a.y + 0.5, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob, 0.85), g: s ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined });
           lights.push({ x: wx, y: wy + bob, r: 14, c: PAL.restless, i: 0.4 });
         }
         continue;
@@ -642,12 +690,15 @@ export class Renderer {
       const s = this.atlas.get(name);
       const floating = a.kind === AgentKind.Cart && a.variant === 3;
       const bob = a.kind === AgentKind.Restless ? Math.sin(this.time * 3 + a.id) * 2 - 3 : floating ? Math.sin(this.time * 2.5 + a.id) * 1.5 - 5 : 0;
-      if (floating && s && s.glow && night > 0.05) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });
       if (floating && Math.random() < 0.2) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 10, vx: 0, vy: 3, maxLife: 0.5, size: 1, color: PAL.arcane2, glow: true, kind: 'spark' });
       if (a.kind === AgentKind.Cart && a.variant === 4 && a.pathIdx < a.path.length && Math.random() < 0.3) this.particles.emit({ x: wx + (Math.random() - 0.5) * 6, y: wy + 10, vx: (Math.random() - 0.5) * 6, vy: -1, maxLife: 0.7, size: 1, color: PAL.waterHi, glow: false, kind: 'mote' });
-      items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob) });
-      if (a.kind === AgentKind.Restless) {
-        if (s) glows.push({ s, x: wx, y: wy + 8 + bob, a: 0.8 });
+      const restless = a.kind === AgentKind.Restless;
+      items.push({
+        d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob),
+        occ: s && !restless && !floating ? { s, x: wx, y: wy + 8 + bob } : undefined,
+        g: s && (restless || (floating && s.glow)) ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined,
+      });
+      if (restless) {
         lights.push({ x: wx, y: wy + 4, r: 18, c: PAL.restless, i: 0.5 });
         if (Math.random() < 0.1) this.particles.emit({ x: wx + (Math.random() - 0.5) * 6, y: wy + 4, vx: (Math.random() - 0.5) * 3, vy: -5, maxLife: 1.5, size: 1, color: PAL.restless, glow: true, kind: 'restless' });
       }
@@ -660,10 +711,31 @@ export class Renderer {
       const s = this.atlas.get(def.category === 'zone' ? `${g.key}_l1_v0${this.zoneSuffix}` : `b_${g.key}`);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
+    // warding wall inlays glow, under everything
+    if (night > 0.05) {
+      for (let y = minY; y <= maxY; y++)
+        for (let x = minX; x <= maxX; x++) {
+          const i = idx(x, y);
+          if (state.wall[i] !== 1) continue;
+          const [wx, wy] = tileToWorld(x, y);
+          const s = this.atlas.get(`wall_${(y > 0 && state.wall[idx(x, y - 1)] ? 1 : 0) | (x < MAP_W - 1 && state.wall[idx(x + 1, y)] ? 2 : 0) | (y < MAP_H - 1 && state.wall[idx(x, y + 1)] ? 4 : 0) | (x > 0 && state.wall[idx(x - 1, y)] ? 8 : 0)}`);
+          if (s) groundGlows.push({ s, x: wx, y: wy, a: 0.6 });
+          if ((x + y) % 3 === 0) lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.ley1, i: 0.3 });
+        }
+    }
     const tSort = performance.now();
     items.sort((p, q) => p.d - q.d || p.y - q.y);
     const tObjects = performance.now();
-    for (const it of items) it.fn();
+    // the emissive layer is filled in the same depth order as the sprites: a glow behind a sprite is cut out by it
+    const e = night > 0.05 ? this.beginEmissive() : null;
+    if (!e) this.emitted = 0;
+    if (e) for (const g of groundGlows) this.emitGlow(e, g.s, g.x, g.y, Math.min(1, g.a * night));
+    for (const it of items) {
+      it.fn();
+      if (!e) continue;
+      if (it.occ) this.occludeGlow(e, it.occ.s, it.occ.x, it.occ.y);
+      if (it.g) this.emitGlow(e, it.g.s, it.g.x, it.g.y, Math.min(1, it.g.a * night));
+    }
     const tParticles = performance.now();
 
     // particles
@@ -678,18 +750,6 @@ export class Renderer {
     }
     ctx.globalAlpha = 1;
 
-    // warding wall inlays glow
-    if (night > 0.05) {
-      for (let y = minY; y <= maxY; y++)
-        for (let x = minX; x <= maxX; x++) {
-          const i = idx(x, y);
-          if (state.wall[i] !== 1) continue;
-          const [wx, wy] = tileToWorld(x, y);
-          const s = this.atlas.get(`wall_${(y > 0 && state.wall[idx(x, y - 1)] ? 1 : 0) | (x < MAP_W - 1 && state.wall[idx(x + 1, y)] ? 2 : 0) | (y < MAP_H - 1 && state.wall[idx(x, y + 1)] ? 4 : 0) | (x > 0 && state.wall[idx(x - 1, y)] ? 8 : 0)}`);
-          if (s) glows.push({ s, x: wx, y: wy, a: 0.6 });
-          if ((x + y) % 3 === 0) lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.ley1, i: 0.3 });
-        }
-    }
     // lantern-way road lights
     if (night > 0.05) {
       for (let y = minY; y <= maxY; y++)
@@ -721,7 +781,7 @@ export class Renderer {
     if (view.overlay === 'district') this.drawDistrictLabels(state, minX, maxX, minY, maxY);
     // lighting
     const tLight = performance.now();
-    if (night > 0.01) this.applyLighting(tod, night, lights, glows);
+    if (night > 0.01) this.applyLighting(tod, night, lights, e ? this.emissive : null);
     else this.applyDayTint(tod);
     // ley lines shimmer above the lit scene at night
     if (night > 0.05) this.drawLeyLines(state, night);
@@ -1049,7 +1109,7 @@ export class Renderer {
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  private applyLighting(tod: number, night: number, lights: { x: number; y: number; r: number; c: string; i: number }[], glows: { s: SpriteRect; x: number; y: number; a: number }[]): void {
+  private applyLighting(tod: number, night: number, lights: { x: number; y: number; r: number; c: string; i: number }[], emissive: HTMLCanvasElement | null): void {
     const l = this.lctx;
     const a = ambientFor(tod);
     l.globalCompositeOperation = 'source-over';
@@ -1087,7 +1147,8 @@ export class Renderer {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(this.light, 0, 0, this.light.width, this.light.height, 0, 0, this.back.width, this.back.height);
     ctx.imageSmoothingEnabled = false;
-    // emissive glow, drawn twice: once soft (bloom) and once crisp
+    // the emissive layer (already in depth order, already cut out behind sprites), added twice: once soft (bloom) and once crisp
+    if (!emissive || this.emitted === 0) return;
     if (!this.bloom) {
       this.bloom = document.createElement('canvas');
     }
@@ -1101,16 +1162,8 @@ export class Renderer {
     bctx.globalCompositeOperation = 'source-over';
     bctx.clearRect(0, 0, bw, bh);
     bctx.imageSmoothingEnabled = true;
-    bctx.globalCompositeOperation = 'lighter';
-    for (const g of glows) {
-      const gs = g.s;
-      if (!gs.glow) continue;
-      const x = (g.x - gs.ax - L) / 4;
-      const y = (g.y - gs.ay - T) / 4;
-      if (x + gs.w / 4 < 0 || y + gs.h / 4 < 0 || x > bw || y > bh) continue;
-      bctx.globalAlpha = Math.min(1, g.a * night) * 0.9;
-      bctx.drawImage(this.atlas.image, gs.glow.x, gs.glow.y, gs.w, gs.h, x, y, gs.w / 4, gs.h / 4);
-    }
+    bctx.globalAlpha = 0.9;
+    bctx.drawImage(emissive, 0, 0, this.back.width, this.back.height, 0, 0, bw, bh);
     bctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'lighter';
     ctx.imageSmoothingEnabled = true;
@@ -1118,7 +1171,7 @@ export class Renderer {
     ctx.drawImage(this.bloom, 0, 0, bw, bh, -2, -2, this.back.width + 4, this.back.height + 4);
     ctx.globalAlpha = 1;
     ctx.imageSmoothingEnabled = false;
-    for (const g of glows) this.drawGlow(g.s, g.x, g.y, Math.min(1, g.a * night));
+    ctx.drawImage(emissive, 0, 0);
     ctx.globalCompositeOperation = 'source-over';
   }
 

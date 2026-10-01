@@ -14,6 +14,7 @@ import { WALKER_JOBS, walkersOf } from '../sim/walkers';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
+import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
 import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId } from '../sim/districts';
@@ -696,7 +697,11 @@ export class UI {
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relic sets', s.relics.complete.length ? s.relics.complete.map((id) => RELIC_SETS.find((r) => r.id === id)!.name).join(', ') : 'none catalogued yet'));
     { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
     if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); }
-    if (b.kind === 'depot') { const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note); }
+    if (b.kind === 'depot') {
+      const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
+      const due = caravanDue(s);
+      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods} sold so far`));
+    }
     if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }

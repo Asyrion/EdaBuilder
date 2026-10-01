@@ -61,6 +61,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.chronicle = state.chronicle ?? [];
   state.questsDone = state.questsDone ?? [];
   for (const k of ['goodsDelivered', 'houndsKilled', 'gloamBurned', 'restlessLaid', 'caravanGoods', 'courierTrips'] as const) (state.stats as any)[k] = (state.stats as any)[k] ?? 0;
+  state.stats.lastCaravanDay = state.stats.lastCaravanDay ?? -1;
   state.stats.boutsLost = state.stats.boutsLost ?? 0;
   for (const a of state.agents) a.load = a.load ?? 0;
   state.agents = state.agents.filter((a) => a.kind !== 5 || !!a.job);

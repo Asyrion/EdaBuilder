@@ -162,7 +162,8 @@ Charter as `.json`.
   wardens, mine delvers, flying couriers or champions of the Wyrm-Ring, and collect scale
   and wyrmfire in the Wyrms panel.
 - Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
-  caravans and the Wandering Merchant.
+  caravans (every twelve days at a Trade Depot; the depot panel counts them down) and the
+  Wandering Merchant.
 - The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
 - The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,

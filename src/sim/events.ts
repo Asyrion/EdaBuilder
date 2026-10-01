@@ -385,7 +385,7 @@ const VISITORS: EventDef[] = [
     text: 'Dust on the Gloam road: riders on tall two-legged striders, banners the colour of the yellow plains, wagons behind. They halt at the Trade Depot and unroll their goods.',
     when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
     choices: [
-      { label: 'Trade', desc: 'Sell surplus goods from full works at 1.5x the season price.', apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; return `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.`; } },
+      { label: 'Trade', desc: (s) => `Sell every works' surplus above 10 goods at 1.5x the season price (${caravanSurplus(s)} goods on the shelves now).`, apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } sold = Math.round(sold); const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; s.stats.caravanGoods += sold; return sold > 0 ? `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.` : 'The works have nothing to spare above ten goods a shelf. The riders buy bread and water the striders.'; } },
       { label: 'Sell rare goods', desc: 'Scale 400, rayscale 300, glim-dust 150 crowns each; the Plains pay well for what they cannot breed.', apply: (s) => { const m = s.materials; const crowns = Math.round(m.scale * 400 + m.rayscale * 300 + m.glimdust * 150); const line = `${Math.round(m.scale)} scale, ${m.rayscale.toFixed(1)} rayscale and ${m.glimdust.toFixed(1)} glim-dust`; m.scale = 0; m.rayscale = 0; m.glimdust = 0; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns.` : 'The jars are empty. The riders shrug and water the striders.'; } },
       { label: 'Buy striders (2,000 crowns)', desc: 'Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days.', apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
       { label: 'Auction the loose relics', desc: 'The caravan bids 100 to 140 crowns a relic, above the Crown; one collector in three buys an uncatalogued piece for 2,500. Sextons −5.', apply: (s) => { if (s.relicStock < 1) return 'There are no loose relics to auction. The riders look at the empty table and laugh.'; const rng = rngOf(s); const price = 100 + rng.int(41); const n = s.relicStock; let out = `${n} relics go under the hammer at ${price} each: ${n * price} crowns.`; s.treasury += n * price; s.relicStock = 0; s.stats.relicsSold += n; s.stats.relicsAuctioned += n; if (s.relics.uncatalogued > 0 && rng.chance(0.34)) { s.relics.uncatalogued--; s.treasury += 2500; out += ' A Belerial collector in a striped coat pays 2,500 for a piece nobody has named yet.'; } commitRng(s, rng); s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return out; } },
@@ -563,6 +563,35 @@ export function maybeFireWyrm(s: GameState): void {
   }
 }
 
+/** The Belerial caravan keeps a rhythm of its own: every CARAVAN_EVERY days at a standing depot, the first half a rhythm after the depot opens. */
+export const CARAVAN_EVERY = 12;
+export function hasDepot(s: GameState): boolean {
+  return s.milestone >= 3 && s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
+}
+/** Goods the caravan's Trade would buy today: every works' stock above ten. */
+export function caravanSurplus(s: GameState): number {
+  let n = 0;
+  for (const b of s.buildings) if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].zone === Zone.Craft && b.stock > 10) n += b.stock - 10;
+  return Math.round(n);
+}
+/** Days until the next caravan halts (0 when one waits at the gate); null without a depot. */
+export function caravanDue(s: GameState): number | null {
+  if (!hasDepot(s)) return null;
+  if (s.pendingEvent && s.pendingEvent.id === 'caravan') return 0;
+  const last = s.stats.lastCaravanDay < 0 ? s.day - CARAVAN_EVERY / 2 : s.stats.lastCaravanDay;
+  return Math.max(0, last + CARAVAN_EVERY - s.day);
+}
+export function maybeFireCaravan(s: GameState): void {
+  if (s.pendingEvent || s.gameOver || !hasDepot(s)) return;
+  if (s.stats.lastCaravanDay < 0) s.stats.lastCaravanDay = s.day - CARAVAN_EVERY / 2;
+  if (s.day - s.stats.lastCaravanDay < CARAVAN_EVERY) return;
+  const e = ALL_EVENTS.find((x) => x.id === 'caravan')!;
+  s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+  s.firedEvents.push(`${e.id}:?`);
+  if (s.firedEvents.length > 40) s.firedEvents.shift();
+  s.stats.lastCaravanDay = s.day;
+}
+
 export function maybeFireEvent(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
   // the storyteller: a grace week after an ill tiding; a long calm invites trouble
@@ -576,7 +605,8 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  // the caravan keeps its own rhythm (maybeFireCaravan) and is never drawn here
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
