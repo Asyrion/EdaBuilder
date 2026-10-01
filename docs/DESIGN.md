@@ -105,7 +105,7 @@ non-obvious call carries a one-line rationale. Lore lives in `EDA_LORE.md`.
   level 2 and ×2 at level 3; cisterns 8, wards 6, lantern-ways 1 per tile.
 - If demand > supply: **brownout** — a proportion of buildings are unlit each day
   (deterministic ordering by distance from nodes so the far edge fails first). If
-  demand > 1.25× supply for 3 days: **wild surge** — random lit buildings are
+  demand > 1.25× supply for 5 days (and only while the Nexus store is empty): **wild surge** — random lit buildings are
   *warped* (become ruins) and the surge produces a burst of particles. This is the
   "power outage with teeth".
 - A **Ley Nexus** (Township) stores 120 mana to soak up peaks; a **Thrum Font**
@@ -128,7 +128,7 @@ service type per tick slice), stored as `Uint8Array` per service.
 | Fire | Veshari Hall (r12) | | extinguishes fires |
 | Faith | Shrine of Aume (r8), Temple of the Four Vigils (r18) | | happiness |
 | Schooling | Academy of the Ley (r14), Grand Academy (r22) | | educated share |
-| Deathcare | Boneyard (cap 200, r12), Ossuary (cap 800, r20) | | quiets the dead |
+| Deathcare | Boneyard (quiets 12 a day, r12), Ossuary (40 a day, r20) | | quiets the dead |
 | Ward | Ward Lantern (r10) | | repels Gloam, lowers gloam-fear |
 | Leisure | Garden of Aume (r6), Market Square (r8) | | land value & happiness |
 
@@ -140,7 +140,7 @@ watered − miasma − gloam proximity − traffic. Range 0–100.
 - Per-building happiness = f(services, land value, tax, lit, watered, miasma,
   gloam nearby, unrest, traffic). City happiness = resident-weighted mean.
 - Health from healer coverage + water − miasma. Deaths per day = residents ×
-  base mortality × (1.5 − health). Bodies go to deathcare capacity; excess become
+  base mortality × (1.7 − health). Bodies go to deathcare capacity; excess become
   restless (see hazards).
 - Unrest = base + unemployment + tax − watch coverage. High unrest lowers tax
   yield and happiness.
@@ -165,7 +165,7 @@ buildings/roads and pays a Crown grant. Thresholds sized so an average player at
   no ward coverage and no building within 2 tiles. Every 12 days a **pocket** of Gloam
   opens somewhere unlit, unbuilt and unwarded. Gloamed zone tiles lose their building. Gloam within 6
   tiles lowers happiness ("the whispering"). Ward Lanterns clear gloam in radius.
-  **Fail: The Gloam takes the founding node** (any gloam tile within 2 tiles of the
+  **Fail: The Gloam takes the founding node** (any gloam tile within 3 tiles of the
   central node): "The light goes out."
 - **Restless dead:** unquieted bodies accumulate; each day above 20 unquieted, a
   restless spawns near the Boneyard (or where the deaths happened) and wanders,
@@ -1360,6 +1360,100 @@ depot (`want('depot', 1)`) and never stands one on any seed (`depot 0` at day 15
 everywhere), so neither the Gloam road nor the caravan is played by the balance bot. Recorded
 in NEXT_STEPS for the depth pass.
 
+### 4.75 The sweep: seventy findings from the audit (iteration 44)
+
+After the run of playtest bugs, five reviewers read every building and mechanic against
+what its description, quest, help line and this document promise; a sixth hunted only for
+broken mechanics and confirmed the worst with scripts. The whole review is **docs/AUDIT.md**:
+seventy numbered findings (B1–B70), a depth rating for all 74 buildings and every system,
+and the design of M14 (§15). This iteration fixed everything the audit marks "44"; what
+follows is the shape of it, by group.
+
+**Quests.** Festival tales are recorded as `id@year:choice`, and `chose()` now reads that
+form, so the Hush vigil and the Thaw feast complete. Scenario goals carry `strict: true`
+and complete only while their `when` holds, so a valley game no longer collects the one-node
+and inherited rewards at Burgh; the failed daily leaves the Ledger after day 60. Three quests
+read a thing that was never counted: `stormsDissolved` (a storm the wards end early),
+`fullDays` (days in a row with no market short), and the Vein egg is a dragon of the line,
+not a tale fired. "See glimmoths" needs a lit spire or loft as the moths' source; "Name a
+district" ignores the daughter's; the taming-edict quest reads district edicts; the Beacon
+quest sends the player to the Lantern of Vell, which the Beacon of Eda now requires lit.
+Buying a sector no longer counts its Gloam as burned.
+
+**Timing and counting.** A walker's visit is stamped for the day the daily reader sees
+(`tended = day + 1`), so the healer's +4, the bargeman's bailing and the tamer's tenth land
+in the stored numbers instead of only in the panel. The surge count runs only while the
+Nexus store is empty, the store drains by its deficit over the eighteen updates of a day
+(it drained 1.8× too fast), and the top bar shows "store 96/120". The fired-tales list is no
+longer cut to forty entries, so `once` tales stay fired and chains keep their earlier choice;
+the Concord relic is once. Trade is banked before the ledger copies the day. Couriers fill a
+shelf to its real cap (the market quarter's, the Fen-Nex's) and carry the rest back to the
+works. "Send leystone" counts before it takes; two craft-tax caps give the lower, not the
+sum; the Sextons are driven by the restless walking and the dead left waiting, not by a
+threshold the restless pipeline made unreachable. The Thaw's day on the wards marks chunks,
+counts its burn and recomputes the Gloam distance; the Lukuku hoard holds sellable relics.
+The aura cache is keyed by seed. Old saves default four more counters.
+
+**Scope.** Five edicts are read city-wide only (Beastmasters, Bounty, Wyrm-Peace, Spire
+Wardens, Imports); they are flagged `cityOnly`, hidden from the district scope and never
+billed per district. The tiger bounty reads `edictOn`.
+
+**Promises kept.** The Glowvine Lane conducts light like a lantern-way, so it lights the
+hearths along it (and only a Hanging Gardens keeps a lane alive). A Market Square's markets
+within 8 pay 15 % more tithe. The Lantern of Vell gives +5 happiness city-wide while lit.
+A Moth-Loft's Craft bonus is 4 % per glimmoth that swarmed it the night before (its `stock`
+remembers the most moths within 8), up to the 20 %. The Hall of Marvels needs light. The
+caravan buys wyrmfire (500) and eggshell (200), as the Wyrms panel said. The
+Storm-Caller's Peak is raised only by a city that gave the storm caller the hills (the tale
+is drawn first while it is eligible, so every Township meets them); the Wyrm-Court needs a
+woken wyrm. `specialLock(s, key)` is the one place such gates live, and `canBuild` reads it.
+
+**Panels.** "No walker" shows only on a building that could field one; the advisor's Watch
+focus opens the Watch view; the node's Flow row carries the people's multiplier and the Vein
+bonus; the Waters row shows the dug-near-water and Tide bonuses; the Watch House shows the
+Mews-doubled radius and its watchman patrols it; a trueblood's growth is a true percentage;
+landings count as moorings and get rows; a building's abandonment is always told, with its
+cause and a jump.
+
+**Sim logic.** A teleport checks both arches lit; a gate is bulldozed before the road under
+it; the bot deepens the founding node by its coordinates (it could deepen the wyrm's and
+wake it); bred eggs go to a cradle of their line; the Crown's gift is a tide egg for the
+Veshari; the poachers check room and purse before taking crowns; the Fen-Nex fallback pays
+its 500; the captain's story fires on maps without a wyrm; the Academy names a piece itself
+after ten days a scholar brought none; the theft tale needs an Academy; the Gloam road
+carries 8 a day per depot city-wide from the fullest shelves (DESIGN 4.22, at last) and the
+Quarry's and the Gardens' goods go with them; a works makes by its hands (×workers/jobs,
+floor a quarter); the Carters' Yard counts as a depot for the carters and the routes list,
+and landings for "a second quay"; eggshell keeps and wyrmfire leaks 0.02 a day; the wyrm's
+bones quiet 80 for 120 days and 20 after; the merchant needs ten quiet days, not thirty; a
+choice that names "(N crowns)" in its label is refused by a lighter purse.
+
+Balance after the sweep, 150 days, against iteration 43 in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 67 (52), no Beacon | 2,824 (2,072) |
+| Vellish seed 43 | never: Burgh 47 (48) | 1,312 (1,910) |
+| Vellish seed 44 | 60 (51), no Beacon (83) | 2,005 (3,316) |
+| Grimmen seed 42 | Deephold 53 (81) | 1,342 (1,256) |
+| Veshari seed 42 | Weirhold 71 (48), Vesh's Court 103 (89) | 2,107 (2,023) |
+| Tallowkin seed 42 | Bright Town 41 (48) | 1,316 (1,100) |
+
+The Vellish bot is slower on all three seeds, and the day-by-day comparison of seed 43
+names the cause: the old game paid the bot crowns it was never meant to have. "No market
+short for five days" completed on its first good tick (+600 around day 20: one spire's
+worth, which on seed 43 is the difference between a Township on day 20 and on day 27), and
+both scenario goals paid at Burgh with ten clean days in an ordinary valley (+10,000). The
+fixed game is poorer by that much and honestly so; this table is the baseline the depth
+pass is measured against, and M14 part 5 (the bot's depot, taxes and edicts) is where the
+bot earns it back. The Beacon of Eda now needs the Lantern lit; the bot wants one only with
+30,000 crowns spare, which seeds 42 and 44 never had, so the "no Beacon" is the bot's purse,
+not the gate. The Grimmen and the Tallowkin gain (the quarry's hands, the loft's moths, the
+Sextons' drivers); the Veshari's Harbour came on day 57 instead of 15 on seed 42, a stall
+of the bot's second landing on a poorer early purse that the three-seed rule treats as one
+seed's path. The founding-node failure stays at 3 tiles (the code's number; this document
+said 2).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1442,6 +1536,9 @@ in NEXT_STEPS for the depth pass.
 - **M13 The third people** — the Tallowkin of the Wick: part 1, rules, buildings, the
   twin-node start, the look, the bot (iteration 41, §4.72) ✅; part 2, the chapter, the
   tales, the lamplighter and the late game.
+- **M14 The depth pass** — the audit's five parts (§15, docs/AUDIT.md): supply has limits;
+  services with staff and stakes; wyrmcraft matured; the world pushes back; the bot plays it
+  all. Preceded by the sweep of iteration 44 (§4.75).
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -2026,6 +2123,36 @@ picks it beside the scenario; the bot plays any of them.
   `scripts/playtest.mjs` drives the real UI with mouse/keyboard; `scripts/shot.mjs`,
   `start.mjs`, `atlas.mjs` produce screenshots for art review.
 
+## 15. M14: the depth pass
+
+The audit (docs/AUDIT.md §4) found that most buildings are a stat bump with nothing to
+decide, and most systems lack a failure mode. M14 gives them depth in five parts, one
+iteration each, under one rule: a mechanic exists only if the player can see it, decide
+about it and lose by it. The full designs, with numbers and hooks, are in AUDIT.md §4;
+this section is the table of contents and the order.
+
+1. **Supply has limits** (ley, water, roads): linked nodes only; spire load (80, Nexus 200);
+   the store shown and spent, brownout priority tiers; wells with capacity (30 zone levels,
+   cistern 90) and the dry-land reason for the cistern; roads that need their light; mine
+   seams (2,400), Font bore flares, mills that share a river, portal crossings; the Gloam
+   that takes an unlit, unwarded building after two days' warning.
+2. **Services with staff and stakes**: crews that scale coverage; happiness and land value
+   breakdowns and the missing level-up condition; unrest with a riot and theft; deathcare
+   in the open with a land-value price; wards with a burn budget (strength matters; Stone
+   and Scale Wards stop dominating); halls with a difference (draughts, consecration, the
+   fire hall's water, the Grand Academy's prices, the Academy's kept relics).
+3. **Wyrmcraft matured**: lines that do what they say; the Great Cradle; lodges with
+   capacity; feeding reach; departed dragons return; roles with a price; champions who can
+   lose; materials with sinks; marvels and wonders with a role; the Wyrm-Court after the
+   binding; golems assigned.
+4. **The world pushes back**: weather of its own; the Crown's levy, favour, debt and loans;
+   gates and memory (the Vellish happiness gate, tales with an uncapped memory and three
+   grown chains); edicts as commitments and charters with a price that spills; festivals
+   seen; a daily challenge that can fail.
+5. **The bot plays it all, and the Annals**: taxes, edicts, walls, a depot, breeding, a
+   warden, a greedy choice policy; an Annals page for every counter; save migrations by
+   version; five dev commands.
+
 ## 12. Decision log
 
 - *Game name "Wardlight":* a wardlight is what the lore calls a chartered city; the
@@ -2226,3 +2353,10 @@ picks it beside the scenario; the bot plays any of them.
 - *A quest names a thing the player can wait for (iteration 43):* "sell to a caravan" with a
   caravan the storyteller might never draw was a quest that could not be done; a visitor a
   quest depends on keeps a rhythm the player can read off a panel.
+- *A description is a contract (iteration 44):* the audit found a dozen buildings whose text
+  promised what no hook did (a square's trade, a lantern's delight, a lane's light); each is
+  now either done or reworded, and `specialLock` is the one place a building's own gate
+  lives, so the tooltip and `canBuild` cannot disagree.
+- *Read the whole catalogue against the code before adding to it (iteration 44):* seventy
+  findings in one sitting is cheaper than seventy playtest reports; the audit becomes a
+  standing step before every milestone that adds buildings.

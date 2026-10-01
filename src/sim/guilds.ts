@@ -1,8 +1,9 @@
 /** The guild council: four guilds that sit at the Guildhall, each with a standing, a boon, a strike and an edict they petition for. See DESIGN.md 4.44. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Zone, type Building, type GameState } from './types';
+import { AgentKind, Zone, type Building, type GameState } from './types';
 import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
+import { MOORINGS } from '../data/factions';
 import { canPlaceBuilding, markDirty, placeBuildingRaw, pushMessage } from './world';
 
 export type GuildId = 'carters' | 'alchemists' | 'spirewrights' | 'sextons';
@@ -131,9 +132,9 @@ export function guildDrivers(s: GameState, g: GuildId): { text: string; value: n
   const on = (k: string) => !!s.edicts[k];
   switch (g) {
     case 'carters': {
-      const depots = count(s, (k) => k === 'depot');
+      const depots = count(s, (k) => k === 'depot' || (k === 'cartersyard' && hallActive(s, 'cartersyard')));
       add(depots ? 'a Trade Depot' : 'no Trade Depot', depots ? 0.6 : -0.6);
-      if (count(s, (k) => k === 'quay') >= 2) add('barges on the river', 0.4);
+      if (count(s, (k) => MOORINGS.includes(k)) >= 2) add('barges on the river', 0.4);
       const routes = tradeRoutes(s).filter((r) => r.kind !== 'road').length;
       if (routes) add(`${routes} open trade route${routes > 1 ? 's' : ''}`, Math.min(0.9, routes * 0.3));
       let jam = 0, roads = 0;
@@ -160,7 +161,8 @@ export function guildDrivers(s: GameState, g: GuildId): { text: string; value: n
     case 'sextons': {
       if (count(s, (k) => k === 'ossuary') > 0) add('an Ossuary', 0.5);
       if (on('rites')) add('the Rite Subsidy', 0.3);
-      if (s.unquieted > 20) add(`${Math.round(s.unquieted)} unquieted dead`, -0.8);
+      { const walking = s.agents.filter((a) => a.kind === AgentKind.Restless).length; if (walking > 0) add(`${walking} restless walking`, -Math.min(0.9, 0.15 * walking)); }
+      if (s.unquieted > 10) add(`${Math.round(s.unquieted)} dead waiting`, -0.4);
       break;
     }
   }
@@ -208,7 +210,6 @@ export function dailyGuilds(s: GameState): void {
   const def = COUNCIL_EVENTS.find((e) => e.id === `council_${low}`)!;
   s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: typeof c.desc === 'function' ? c.desc(s) : c.desc })) };
   s.firedEvents.push(`${def.id}:?`);
-  if (s.firedEvents.length > 40) s.firedEvents.shift();
   gs.lastCouncil = s.day;
   s.stats.councils++;
 }

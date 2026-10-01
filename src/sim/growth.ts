@@ -137,6 +137,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (tree) h += treeStage(tree);
   if (raysLured(state)) h += 3;
   if (hasMarvel(state, 'hallofmarvels')) h += 8;
+  if (state.buildings.some((o) => o && o.kind === 'lantern' && o.state === 'ok' && o.lit)) h += 5; // the Lantern of Vell delights the whole city
   if (relicDone(state, 'ninehouses')) h += 3;
   if (hasMarvel(state, 'househall')) h += 2;
   if (edictOn(state, 'curfew', b)) h -= 4;
@@ -194,7 +195,7 @@ export function dailyBuildings(state: GameState): void {
     if (def.category !== 'zone') {
       b.age++;
       if (def.goodsRate && b.state === 'ok') {
-        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5));
+        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands
         b.stock += Math.max(0, made);
         state.goodsProduced += Math.max(0, made);
       }
@@ -249,7 +250,7 @@ export function dailyBuildings(state: GameState): void {
       b.residents = 0;
       b.workers = 0;
       markDirty(state, b.x, b.y);
-      if (rng.chance(0.3)) pushMessage(state, `${def.name.split(' ')[0]} at (${b.x},${b.y}) abandoned: ${dark ? 'no light' : b.dryDays > 12 ? 'no mana or water' : 'nobody wants to stay'}.`, 'warn');
+      pushMessage(state, `${def.name.split(' ')[0]} at (${b.x},${b.y}) abandoned: ${dark ? 'no light' : b.dryDays > 14 ? 'no water' : `nobody wants to stay (happiness ${Math.round(b.happiness)})`}.`, 'warn', true, { x: b.x, y: b.y });
       return;
     }
     const cap = capacityOf(b, state);
@@ -327,6 +328,7 @@ export function dailyBuildings(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
+    if (b.kind === 'mothloft') b.stock = 0; // last night's moths were counted by the works today; the next night counts afresh
   });
   state.population = pop;
   state.jobs = jobs;
@@ -474,17 +476,28 @@ export function dailyTrade(state: GameState): void {
   let crowns = 0;
   const carters = guildEffect(state, 'carters');
   const perDepot = 8 * (carters > 0 ? 1.5 : carters < 0 ? 0.5 : 1);
+  // the Gloam road carries 8 goods a day per depot, city-wide, from the fullest shelves first (DESIGN 4.22)
+  let budget = perDepot * depots.length;
+  const full: Building[] = [];
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (b.state === 'ok' && (def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8) full.push(b);
+  });
+  full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
+  for (const b of full) {
+    if (budget <= 0) break;
+    const sell = Math.min(b.stock - craftStockCap(b) * 0.5, budget);
+    if (sell > 0) {
+      b.stock -= sell;
+      budget -= sell;
+      t.exported += sell;
+      crowns += sell * t.priceGoods;
+    }
+  }
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
-    if (def.zone === Zone.Craft && b.stock >= craftStockCap(b) * 0.8) {
-      const sell = Math.min(b.stock - craftStockCap(b) * 0.5, perDepot * depots.length);
-      if (sell > 0) {
-        b.stock -= sell;
-        t.exported += sell;
-        crowns += sell * t.priceGoods;
-      }
-    } else if (def.leystone && !hasBuyers && b.stock >= 30) {
+    if (def.leystone && !hasBuyers && b.stock >= 30) {
       const sell = Math.min(b.stock - 10, perDepot * depots.length);
       b.stock -= sell;
       t.exported += sell;
@@ -510,7 +523,6 @@ export function dailyTrade(state: GameState): void {
       t.importCost += buy * t.priceGoods * 2;
     });
   }
-  state.artifactsSold += 0; // artifacts handled separately
   if (hasMarvel(state, 'chartroom')) crowns *= 1.15;
   state.treasury += crowns; // exports are cash on the day
   t.exported = Math.round(t.exported);

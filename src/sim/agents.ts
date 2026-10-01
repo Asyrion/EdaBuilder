@@ -458,7 +458,9 @@ export function tickAgents(state: GameState): void {
     const dy = ty - a.y;
     let d = Math.hypot(dx, dy);
     if (d > 1.6) {
-      // a Portal Arch: step out of the far arch
+      // a Portal Arch: step out of the far arch, if both arches still stand lit
+      const archLit = (x: number, y: number) => state.buildings.some((b) => b && b.kind === 'portalarch' && b.state === 'ok' && b.lit && Math.abs(b.x + (b.w - 1) / 2 - x) <= 2.5 && Math.abs(b.y + (b.h - 1) / 2 - y) <= 2.5);
+      if (!archLit(a.x, a.y) || !archLit(tx, ty)) { a.path = []; a.pathIdx = 0; return; }
       effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'portal', tick: state.tick });
       effects.push({ x: t % MAP_W, y: (t / MAP_W) | 0, kind: 'portal', tick: state.tick });
       state.stats.portalTrips++;

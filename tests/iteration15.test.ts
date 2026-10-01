@@ -111,7 +111,7 @@ describe('The airship', () => {
     for (let k = 0; k < 4000 && s.agents.some((a) => a.species === 'airship' && a.timer >= 0); k++) tickCreatures(s);
     updateCreatures(s);
     expect(s.agents.some((a) => a.species === 'airship')).toBe(false);
-    s.day = 42;
+    s.day = 43; // ten days there and back
     dailyAirship(s);
     expect(s.agents.some((a) => a.species === 'airship' && a.phase === 1)).toBe(true);
     const before = s.treasury;

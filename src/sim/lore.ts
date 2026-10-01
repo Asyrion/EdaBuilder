@@ -4,6 +4,7 @@ import { AgentKind, MAP_H, MAP_W, Terrain, Zone, idx, inBounds, isWater, type Ag
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf } from './world';
 import { effects } from './hazards';
 import { auraAt, nodesOfAspect } from './weave';
+import { edictOn } from './edicts';
 
 export const STORM_DAYS = 4;
 export const STORM_RADIUS = 5;
@@ -51,6 +52,7 @@ export function dailyStorms(s: GameState): void {
     const ci = idx(st.x, st.y);
     const stormStill = nodesOfAspect(s, 'storm').some((n) => Math.hypot(n.x - st.x, n.y - st.y) <= 10) || auraAt(s, 'storm', st.x, st.y);
     if (s.day >= st.until || s.coverage.ward[ci] > 90 || stormStill) {
+      if (s.day < st.until) s.stats.stormsDissolved++;
       pushMessage(s, s.day >= st.until ? `The mana-storm at (${st.x},${st.y}) blows itself out.` : `The wards at (${st.x},${st.y}) dissolve the mana-storm.`, 'info', true, { x: st.x, y: st.y });
       continue;
     }
@@ -90,7 +92,7 @@ export function maybeSpawnTiger(s: GameState, night: boolean): void {
   const season = seasonOf(s);
   if (forestTiles(s) < TIGER_FOREST) return;
   const rng = rngOf(s);
-  const p = (season === 2 ? 0.05 : season === 3 ? 0.08 : 0.02) * (s.edicts.bounty ? 0.5 : 1);
+  const p = (season === 2 ? 0.05 : season === 3 ? 0.08 : 0.02) * (edictOn(s, 'bounty') ? 0.5 : 1);
   if (!rng.chance(p)) { commitRng(s, rng); return; }
   // a forest tile within 10 of a building that touches forest
   const spots: number[] = [];
@@ -128,7 +130,7 @@ export function dailyTigers(s: GameState, wardenDistricts: Set<number>): number 
   s.agents = s.agents.filter((a) => {
     if (a.kind !== AgentKind.Creature || a.species !== 'tiger') return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    if (lodges.some((l) => Math.hypot(l.x - a.x, l.y - a.y) <= (s.edicts.bounty ? 20 : 12)) && rng.chance(0.35)) { killed++; return false; }
+    if (lodges.some((l) => Math.hypot(l.x - a.x, l.y - a.y) <= (edictOn(s, 'bounty') ? 20 : 12)) && rng.chance(0.35)) { killed++; return false; }
     if (s.coverage.watch[i] > 160 && rng.chance(0.25)) { killed++; return false; }
     if (s.district[i] && wardenDistricts.has(s.district[i]) && rng.chance(0.5)) { killed++; return false; }
     // it takes someone from a hearth it lies beside

@@ -207,7 +207,7 @@ export function dailyAirship(s: GameState): void {
     spawnAirship(s, dock, true);
     effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
     pushMessage(s, `The airship casts off from the Sky-Dock with ${Math.round(goods)} goods for the wardlights beyond the Gloam. Ten days there and back.`, 'info', true, { x: dock.x, y: dock.y });
-  } else if (air.status === 'away' && s.day - air.since >= AIRSHIP_DAYS - 1 && !s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'airship')) {
+  } else if (air.status === 'away' && s.day - air.since >= AIRSHIP_DAYS && !s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'airship')) {
     spawnAirship(s, dock, false);
   }
 }

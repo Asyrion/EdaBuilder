@@ -34,7 +34,7 @@ export function createScenario(seed: number, name: string, id: Scenario, faction
   return s;
 }
 
-/** Forty days of a careless bot, then a collapse: debt, ruins, the dead, and an overdraw. */
+/** Twenty-eight days of a careless bot, then a collapse: debt, ruins, the dead, and an overdraw. */
 function inherit(s: GameState): void {
   const bot = new Bot(s, { aggressive: true });
   s.treasury += 20000;
@@ -80,7 +80,3 @@ export function createChallenge(name: string, key = todayKey()): GameState {
   return s;
 }
 
-/** Days in a row the inherited city has been clean (positive treasury, no ruins, no restless). */
-export function inheritedClean(s: GameState): boolean {
-  return s.treasury > 0 && !s.buildings.some((b) => b && b.state === 'ruin') && !s.agents.some((a) => a.kind === 2);
-}

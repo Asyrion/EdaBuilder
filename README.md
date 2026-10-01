@@ -253,6 +253,7 @@ Charter as `.json`.
 - `docs/EDA_LORE.md` — the world bible (history, peoples, gods, magic rules).
 - `docs/EDA_CITY_LORE.md` — what was canon vs. what Wardlight proposes.
 - `docs/NEXT_STEPS.md` — known issues and the prioritized next iteration.
+- `docs/AUDIT.md` — the iteration 44 review: every building and mechanic rated for depth, seventy findings, and the design of M14.
 
 ## Project layout
 

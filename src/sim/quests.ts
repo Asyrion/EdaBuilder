@@ -20,7 +20,7 @@ export function checkQuests(s: GameState): QuestDef[] {
   const completed: QuestDef[] = [];
   for (const q of questsFor(s)) {
     if (done.has(q.id)) continue;
-    if (!q.when(s) && !q.done(s)) continue;
+    if (!q.when(s) && (q.strict || !q.done(s))) continue;
     if (q.done(s)) {
       s.questsDone.push(q.id);
       if (q.reward > 0) s.treasury += q.reward;

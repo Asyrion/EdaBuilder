@@ -11,7 +11,7 @@ export const RELIC_SETS: RelicSet[] = [
 ];
 export const RELICS_PER_PIECE = 12;
 
-export interface RelicState { pieces: Record<string, number>; uncatalogued: number; complete: string[]; lastRelics: number }
+export interface RelicState { pieces: Record<string, number>; uncatalogued: number; complete: string[]; lastRelics: number; idle?: number }
 export function initRelics(): RelicState {
   return { pieces: {}, uncatalogued: 0, complete: [], lastRelics: 0 };
 }
@@ -59,8 +59,11 @@ export function dailyRelics(s: GameState): void {
     if (!hasAcademy(s)) pushMessage(s, `The diggers bring up a piece of something older than the Concord. Without an Academy nobody can say what.`, 'info');
   }
   // scholars carry the pieces home themselves once an Academy fields one (walkers.ts); otherwise one a day by the book
-  if (r.uncatalogued > 0 && hasAcademy(s) && !s.agents.some((a) => a.kind === 5 && a.job === 'scholar')) {
+  // a scholar whose delve is out of reach would stall the book forever: after ten idle days the Academy names a piece itself
+  r.idle = r.uncatalogued > 0 ? (r.idle ?? 0) + 1 : 0;
+  if (r.uncatalogued > 0 && hasAcademy(s) && (!s.agents.some((a) => a.kind === 5 && a.job === 'scholar') || (r.idle ?? 0) >= 10)) {
     r.uncatalogued--;
+    r.idle = 0;
     catalogue(s);
   }
 }

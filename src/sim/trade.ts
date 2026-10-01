@@ -5,6 +5,7 @@ import { marketStockCap } from './agents';
 import { riverFrozen } from './weave';
 import { forEachBuilding } from './world';
 import { MOORINGS } from '../data/factions';
+import { hallActive } from './guilds';
 
 export interface TradeRoute {
   kind: 'road' | 'river' | 'sky' | 'portal' | 'twin';
@@ -45,7 +46,7 @@ export function twinDepots(s: GameState): [Building, Building] | null {
 /** Every route the city has, open or not, for the Ledger. */
 export function tradeRoutes(s: GameState): TradeRoute[] {
   const out: TradeRoute[] = [];
-  const depots = okOf(s, 'depot');
+  const depots = okOf(s, 'depot').concat(hallActive(s, 'cartersyard') ? okOf(s, 'cartersyard') : []);
   if (depots.length) out.push({ kind: 'road', name: 'The Gloam road', at: depots[0], to: null, note: `${depots.length} depot${depots.length > 1 ? 's' : ''}: surplus sold to the Crown at ${s.trade.priceGoods.toFixed(1)} a good${s.stats.relicsSold ? `; ${s.stats.relicsSold} relics sold` : ''}${s.relicStock > 10 ? `; ${s.relicStock} loose relics in the camp` : ''}`, open: true });
   const quays = MOORINGS.flatMap((k) => okOf(s, k));
   if (quays.length) {

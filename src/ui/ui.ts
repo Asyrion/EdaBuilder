@@ -5,7 +5,9 @@ import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay, waterRadiusOf } from '../sim/world';
+import { mewsActive } from '../sim/beasts';
+import { MOORINGS } from '../data/factions';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, isChartered, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
@@ -384,7 +386,7 @@ export class UI {
     const wf = workforceOf(s);
     this.q('#tb-jobs').textContent = `${s.employed}/${wf}${s.jobs > wf ? ' (+' + (s.jobs - wf) + ' open)' : ''}`;
     const mana = this.q('#tb-mana');
-    mana.textContent = `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`;
+    mana.textContent = `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}${s.manaStorageMax > 0 ? ` · store ${Math.round(s.manaStorage)}/${Math.round(s.manaStorageMax)}` : ''}`;
     mana.className = `v ${s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
     const hp = this.q('#tb-happy');
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
@@ -513,8 +515,7 @@ export class UI {
       else if (f.panel === 'chronicle') this.toggleChronicle(true);
       else this.el.views.classList.remove('hidden');
     } else if ('overlay' in f) {
-      const id = f.overlay === 'watch' ? 'ward' : f.overlay;
-      this.host.setOverlay(id);
+      this.host.setOverlay(f.overlay);
       this.el.views.classList.remove('hidden');
     } else if ('center' in f) {
       if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
@@ -672,8 +673,8 @@ export class UI {
     } else {
       rows.push(row('Upkeep', `${def.upkeep} c/day`));
       if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
-      if (def.service) rows.push(row('Radius', `${def.service.radius} tiles`));
-      if (def.waterRadius) rows.push(row('Waters', `${def.waterRadius} tiles`));
+      if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
+      if (def.waterRadius) { const near = def.waterNearBonus && s.waterDist[idx(b.x, b.y)] <= 3 ? def.waterNearBonus : 0; rows.push(row('Waters', `${waterRadiusOf(s, b) + near} tiles${near ? ' (dug near water)' : ''}${waterRadiusOf(s, b) > def.waterRadius ? ' (Tide ley)' : ''}`)); }
       if (def.capacity) rows.push(row('Workers', `${b.workers} / ${capacityOf(b, s)}`));
       if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
@@ -688,7 +689,7 @@ export class UI {
       rows.push(row('Growth', st >= 3 ? 'full-grown' : `stage ${st + 1} of 4, ${30 - (b.age % 30)} days to the next`));
       rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
     }
-    { const ws = walkersOf(s, b); if (ws.length) { const job = WALKER_JOBS[ws[0].job!]; rows.push(row('Walkers', `${ws.length} ${ws.length === 1 ? job.name : job.plural} on patrol`)); for (const line of ws.flatMap((w) => w.log ?? []).slice(-3)) rows.push(`<div class="fc good">✦ ${line}</div>`); } else if (Object.values(WALKER_JOBS).some((j) => j.from.includes(b.kind)) && b.state === 'ok') problems.push('No walker: the building needs a road at its door to send one out.'); }
+    { const ws = walkersOf(s, b); if (ws.length) { const job = WALKER_JOBS[ws[0].job!]; rows.push(row('Walkers', `${ws.length} ${ws.length === 1 ? job.name : job.plural} on patrol`)); for (const line of ws.flatMap((w) => w.log ?? []).slice(-3)) rows.push(`<div class="fc good">✦ ${line}</div>`); } else if (Object.values(WALKER_JOBS).some((j) => j.from.includes(b.kind) && j.count(s, b) > 0) && b.state === 'ok') problems.push('No walker: the building needs a road at its door to send one out.'); }
     if (b.kind === 'ruindelve') {
       rows.push(row('Relics brought up', `${s.stats.relics} (a set piece every ${RELICS_PER_PIECE})`));
       for (const set of RELIC_SETS) rows.push(row(set.name, s.relics.complete.includes(set.id) ? `<span class="good">entire: ${set.bonus}</span>` : `${s.relics.pieces[set.id] ?? 0} of 3`));
@@ -705,7 +706,7 @@ export class UI {
     if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }
-    if (b.kind === 'quay') { const qn = s.buildings.filter((o) => o && o.kind === 'quay').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); if (qn < 2) problems.push('A single quay has nowhere to send a barge: build another on the same water.'); }
+    if (MOORINGS.includes(b.kind)) { const qn = s.buildings.filter((o) => o && MOORINGS.includes(o.kind) && o.state === 'ok').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); rows.push(row('Moorings', `${qn} on the map`)); if (qn < 2) problems.push('A single mooring has nowhere to send a barge: build another on the same water.'); }
     if (b.kind === 'skydock') { const air = s.airship; rows.push(row('Airship', air.status === 'away' ? `away, back in ${Math.max(0, 10 - (s.day - air.since))} days with ${Math.round(air.goods)} goods` : air.status === 'docked' ? `docked; leaves on day 3 of the season` : 'none')); rows.push(row('Voyages', `${s.stats.airshipVoyages} · ${s.stats.airshipCrowns} crowns earned`)); }
     if (b.kind === 'portalarch') {
       const other = s.buildings.filter((o) => o && o.kind === 'portalarch' && o !== b) as Building[];
@@ -733,7 +734,7 @@ export class UI {
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
     if (b.kind === 'stormpeak') {
       const btn = document.createElement('button');
-      btn.textContent = b.cooldown > 0 ? `Call rain (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Call rain over the district (300 crowns)';
+      btn.textContent = b.cooldown > 0 ? `Call rain (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Call rain over the city (300 crowns)';
       btn.disabled = b.cooldown > 0;
       btn.style.width = '100%';
       btn.onclick = () => this.host.callRain(b.id);
@@ -782,7 +783,7 @@ export class UI {
     const isWyrm = i === s.wyrm.node && s.wyrm.state !== 'none';
     const asp = n.aspect ? ASPECT_INFO[n.aspect] : null;
     const rows = [
-      row('Flow', `${90 + depth * NODE_DEEPEN_MANA} mana / day`),
+      row('Flow', `${Math.round((90 + depth * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0)) * factionOf(s).rules.nodeMana)} mana / day`),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
@@ -1320,7 +1321,7 @@ export class UI {
     const districts = districtsInUse(st);
     const rows = st.dragons.map((d) => {
       const stageMax = STAGE_DAYS[d.stage];
-      const pct = d.stage >= MAX_STAGE_NOW ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
+      const pct = d.stage >= stageCap(d) ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
       const hasRing = st.buildings.some((b) => b && b.kind === 'ring');
       const roleSel = d.stage >= 2
         ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
@@ -1395,7 +1396,7 @@ export class UI {
       const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}" title="${q.effect} ${q.cost}">${q.name}</button>`).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" title="No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost}</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : '<div class="muted">A charter gives every building in the district a gift and a price. Pick one.</div>'}</div>`;
       stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>${quarters}`;
     }
-    const rows = edictsFor(st).map((e) => {
+    const rows = edictsFor(st).filter((e) => !this.edictScope || !e.cityOnly).map((e) => {
       const locked = st.milestone < e.unlock;
       const on = this.edictScope ? !!st.districtEdicts[`${this.edictScope}:${e.key}`] : !!st.edicts[e.key];
       const cityOn = this.edictScope ? !!st.edicts[e.key] : false;

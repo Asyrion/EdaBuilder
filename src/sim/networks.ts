@@ -90,7 +90,7 @@ export function updateMana(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.selfLit && b.state === 'ok') {
-      gardens.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 });
+      if (b.kind === 'hanginggardens') gardens.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 }); // only the vines' own gardens keep a lane alive
       sources.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, r: 2 });
     }
   });
@@ -119,7 +119,8 @@ export function updateMana(state: GameState): void {
   const litB: boolean[] = new Array(state.buildings.length).fill(false);
   const bq: number[] = [];
   const conductors = new Uint8Array(n); // road tiles that conduct (lantern-way)
-  for (let i = 0; i < n; i++) if (state.road[i] === RoadType.Lantern) conductors[i] = 1;
+  // lantern-ways conduct; a living glowvine lane is lit already and lights what stands along it
+  for (let i = 0; i < n; i++) if (state.road[i] === RoadType.Lantern || (state.road[i] === RoadType.Glowvine && lit[i])) conductors[i] = 1;
   for (let s = 0; s < state.buildings.length; s++) {
     const b = state.buildings[s];
     if (!b || b.state === 'ruin') continue;
@@ -223,11 +224,11 @@ export function updateMana(state: GameState): void {
   let effectiveSupply = supply;
   if (demand > supply) {
     const deficit = demand - supply;
-    const take = Math.min(state.manaStorage, deficit * 0.1); // per update slice (10 per day)
+    const take = Math.min(state.manaStorage, deficit / 18); // per update slice (18 updates a day)
     state.manaStorage -= take;
-    effectiveSupply += take * 10;
+    effectiveSupply += take * 18;
   } else {
-    state.manaStorage = Math.min(storageMax, state.manaStorage + (supply - demand) * 0.1);
+    state.manaStorage = Math.min(storageMax, state.manaStorage + (supply - demand) / 18);
   }
   state.manaStorageMax = storageMax;
   let brownout = 0;

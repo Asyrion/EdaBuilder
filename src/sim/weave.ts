@@ -56,7 +56,7 @@ export interface Aura { x: number; y: number; r: number; line: DragonLine; name:
 let auraCache: { tick: number; list: Aura[] } | null = null;
 /** Drakes and wyverns at stage 2+ with no role or a warden post radiate their line's aura. Cached per 50 ticks. */
 export function dragonAuras(s: GameState): Aura[] {
-  const stamp = Math.floor(s.tick / 50) * 1000003 + s.dragons.length;
+  const stamp = Math.floor(s.tick / 50) * 1000003 + s.dragons.length * 7919 + (s.seed % 1000003);
   if (auraCache && auraCache.tick === stamp) return auraCache.list;
   const list: Aura[] = [];
   for (const d of s.dragons) {
@@ -166,7 +166,8 @@ export function dailyWeave(s: GameState): void {
 }
 
 export function hasMarvel(s: GameState, key: string): boolean {
-  return s.buildings.some((b) => b && b.kind === key && b.state === 'ok');
+  const needsMana = !!BUILDING_BY_KEY[key]?.needsMana;
+  return s.buildings.some((b) => b && b.kind === key && b.state === 'ok' && (b.lit || !needsMana));
 }
 export function marvelNear(s: GameState, key: string, b: Building, r = 8): boolean {
   return s.buildings.some((o) => o && o.kind === key && o.state === 'ok' && o.lit && Math.abs(o.x - b.x) <= r && Math.abs(o.y - b.y) <= r);

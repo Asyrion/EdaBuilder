@@ -1,3 +1,4 @@
+import { manaUseOf } from '../src/sim/networks';
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw, canPlaceBuilding } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
@@ -62,7 +63,12 @@ describe('Hanging Gardens and the Glowvine Lane', () => {
     recomputeAll(s);
     expect(s.lit[idx(f.x - 6, f.y + 6)]).toBe(1); // within 12
     expect(s.lit[idx(f.x + 10, f.y + 6)]).toBe(0); // too far from the vines
-    expect(s.manaDemand).toBe(0); // no mana for glowvine
+    // the lane lights what stands along it, with no spire: a hearth beside the vines is lit, and draws only its own mana
+    const before = s.manaDemand;
+    const h = placeBuildingRaw(s, 'hearth', f.x - 4, f.y + 7, 1);
+    recomputeAll(s);
+    expect(h.lit).toBe(true);
+    expect(s.manaDemand).toBe(before + manaUseOf(h)); // the lane itself costs nothing: only the hearth's own draw is added
     const b = deserialize(serialize(s), (seed) => createGame(seed));
     expect(b.road[idx(f.x, f.y + 6)]).toBe(RoadType.Glowvine);
   });

@@ -79,7 +79,7 @@ describe('Tamers', () => {
     w.timer = 0;
     expect(WALKER_JOBS.tamer.target!(s, w, lodge)).not.toBeNull(); // c1 has a dragon
     d1.mood = 50;
-    expect(walkUntil(s, () => c1.visited === s.day)).toBeLessThan(3000);
+    expect(walkUntil(s, () => (c1.visited ?? -1) >= s.day)).toBeLessThan(3000);
     expect(d1.mood).toBe(52);
     expect(s.stats.tamerVisits).toBe(1);
     expect(w.log![0]).toMatch(/Worked the 1 dragon/);

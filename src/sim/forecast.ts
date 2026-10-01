@@ -25,7 +25,7 @@ export function forecast(s: GameState): ForecastLine[] {
   }
   if (s.overdrawDays > 0) {
     const d = 5 - s.overdrawDays;
-    out.push({ text: d <= 0 ? 'A wild surge breaks loose today.' : `A wild surge in ${d} day${d === 1 ? '' : 's'} unless mana demand falls below the flow.`, kind: 'bad' });
+    out.push({ text: d <= 0 ? 'A wild surge breaks loose today.' : `A wild surge in ${d} day${d === 1 ? '' : 's'} unless mana demand falls below 1.25× the flow or a Nexus store holds.`, kind: 'bad' });
   } else if (s.manaDemand > s.manaSupply * 0.95) out.push({ text: 'Mana demand is at the edge of the flow; a brownout is one building away.', kind: 'warn' });
   if (s.stats.gloamTiles > 0 && s.day >= 6) {
     const hush = season === 3;

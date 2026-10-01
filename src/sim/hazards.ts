@@ -100,10 +100,11 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
 
 export function dailySurge(state: GameState): void {
   const threshold = (edictOn(state, 'wardens') ? 1.5 : 1.25) + (hallActive(state, 'wrightslodge') ? 0.15 : 0);
-  if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20) {
+  // a Nexus store soaks up the peak: the count runs only once the store is spent
+  if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20 && state.manaStorage <= 0.5) {
     state.overdrawDays++;
     state.stats.brownoutOpen = 1;
-    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn', true);
+    if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font, store it in a Nexus, or cut consumers.', 'warn', true);
     else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
   } else {
     if (state.stats.brownoutOpen) { state.stats.brownoutsSurvived++; state.stats.brownoutOpen = 0; }

@@ -1,5 +1,6 @@
 /** Walkers: NPC kinds that embody a service by doing a visible job on the roads around their building. See DESIGN.md 4.62 and 14.1. */
 import { BUILDING_BY_KEY } from './catalog';
+import { mewsActive } from './beasts';
 import { findPath, roadTileOf } from './agents';
 import { effects, recomputeGloamDist } from './hazards';
 import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent, type Building, type GameState, type ServiceType } from './types';
@@ -16,7 +17,7 @@ export interface WalkerJob {
   desc: string;
   from: string[]; // building kinds that field it
   count: (s: GameState, b: Building) => number; // walkers per building today
-  radius: (b: Building) => number; // patrol radius around the anchor
+  radius: (b: Building, s: GameState) => number; // patrol radius around the anchor
   prop: string; // sprite prop key (sprites.ts)
   target?: (s: GameState, a: Agent, anchor: Building) => number | null; // a road tile to walk to; null falls back to a random patrol tile
   onArrive?: (s: GameState, a: Agent, i: number) => void; // reaching the end of a leg
@@ -130,7 +131,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
         return;
       }
       if (a.phase === 1 && atHome(s, a, i)) {
-        if (a.load > 0) { a.load = 0; catalogue(s); s.stats.scholarTrips++; logLine(a, 'Named the piece in the Academy\'s book.'); }
+        if (a.load > 0) { a.load = 0; s.relics.idle = 0; catalogue(s); s.stats.scholarTrips++; logLine(a, 'Named the piece in the Academy\'s book.'); }
         a.phase = 0;
       }
     },
@@ -147,7 +148,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
       const c = buildingsAt(s, i).find((b) => isCradle(b.kind));
       if (c && a.load < 3 && (c.visited ?? -1) < s.day) {
-        c.visited = s.day;
+        c.visited = s.day + 1; // the daily reader runs after the day rolls over
         a.load += 1;
         let n = 0;
         for (const d of s.dragons) if (d.cradleId === c.id) { d.mood = Math.min(100, d.mood + 2); n++; }
@@ -220,7 +221,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       if (a.load >= 6) return;
       for (const b of buildingsAt(s, i)) {
         if (BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || (b.tended ?? -1) >= s.day) continue;
-        b.tended = s.day;
+        b.tended = s.day + 1; // the daily reader runs after the day rolls over
         a.load += 1;
         s.stats.healerVisits++;
         logLine(a, `Tended the hearths at (${b.x},${b.y}).`);
@@ -303,7 +304,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       if (a.load >= 6) return;
       for (const b of buildingsAt(s, i)) {
         if (BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || (b.tended ?? -1) >= s.day) continue;
-        b.tended = s.day;
+        b.tended = s.day + 1;
         a.load += 1;
         s.stats.bargemanRounds++;
         logLine(a, `Bailed the hearths at (${b.x},${b.y}) as the Sable rose.`);
@@ -316,7 +317,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     desc: 'Patrols the streets around its Watch House: the tiles it walks count as watched, and it kills hounds and lays the restless it meets, two of each a day.',
     from: ['watchpost', 'watchhouse'],
     count: (_s, b) => (b.kind === 'watchhouse' ? (b.lit ? 2 : 1) : 1),
-    radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
+    radius: (b, s) => (BUILDING_BY_KEY[b.kind].service?.radius ?? 8) * (b.kind === 'watchhouse' && mewsActive(s) ? 2 : 1),
     onTile: (s, _a, i) => paintBonus(s, 'watch', i, 0.08, 0.3),
     meets: [AgentKind.Creature, AgentKind.Restless],
     cap: 4,
@@ -419,7 +420,7 @@ export function tickWalkers(s: GameState): void {
       rng ??= rngOf(s);
       const ax = a.ax ?? Math.floor(a.x);
       const ay = a.ay ?? Math.floor(a.y);
-      const r = job.radius(a.anchorId !== undefined ? s.buildings.find((b) => b && b.id === a.anchorId) ?? ({ kind: 'watchpost' } as Building) : ({ kind: 'watchpost' } as Building));
+      const r = job.radius(a.anchorId !== undefined ? s.buildings.find((b) => b && b.id === a.anchorId) ?? ({ kind: 'watchpost' } as Building) : ({ kind: 'watchpost' } as Building), s);
       const cur = idx(Math.floor(a.x), Math.floor(a.y));
       let path: number[] | null = null;
       const anchor = a.anchorId !== undefined ? s.buildings.find((b) => b && b.id === a.anchorId) : null;

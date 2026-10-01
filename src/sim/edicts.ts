@@ -11,6 +11,7 @@ export interface EdictDef {
   costPerDay: (s: GameState) => number;
   unlock: number; // milestone
   faction?: FactionId[]; // a people's own edict; absent = every people
+  cityOnly?: boolean; // read city-wide only: never offered or billed per district
 }
 
 export const EDICTS: EdictDef[] = [
@@ -18,19 +19,19 @@ export const EDICTS: EdictDef[] = [
     key: 'beastmasters', name: "Beastmasters' Charter",
     desc: 'Drakes and golems are fed from the city purse: cradles and foundries draw 40% less mana, but the tamers\' scraps draw hounds: packs come 50% more often. 40 crowns/day.',
     flavor: 'Everything that eats can be tamed. Everything that is tamed still eats.',
-    costPerDay: () => 40, unlock: 4,
+    costPerDay: () => 40, unlock: 4, cityOnly: true,
   },
   {
     key: 'bounty', name: "Hunters' Bounty",
     desc: 'A crown a pelt. Hunters\' Lodges clear hounds twice as far, the Watch kills them more often, and thrumhares vanish from the meadows (they are pelts too).',
     flavor: 'The lodge door ran out of room for notches in a season.',
-    costPerDay: (s) => 20 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 15, unlock: 2,
+    costPerDay: (s) => 20 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 15, unlock: 2, cityOnly: true,
   },
   {
     key: 'wyrmpeace', name: 'Wyrm-Peace',
     desc: 'A standing offering at the wyrm\'s node: tribute is halved, and so is the ward of a bound wyrm\'s lair. 80 crowns/day.',
     flavor: 'Half a hoard buys half a guardian. The wyrm can count.',
-    costPerDay: () => 80, unlock: 5,
+    costPerDay: () => 80, unlock: 5, cityOnly: true,
   },
   {
     key: 'curfew', name: 'Night Curfew',
@@ -54,7 +55,7 @@ export const EDICTS: EdictDef[] = [
     key: 'wardens', name: 'Spire Wardens',
     desc: 'Tallowkin wardens watch the spires day and night. Wild surges only strike above 1.5× overdraw. 60 crowns/day.',
     flavor: 'They sleep in shifts under the obelisks and dream in blue.',
-    costPerDay: () => 60, unlock: 2,
+    costPerDay: () => 60, unlock: 2, cityOnly: true,
   },
   {
     key: 'herbgardens', name: 'Herb Garden Edict',
@@ -72,7 +73,7 @@ export const EDICTS: EdictDef[] = [
     key: 'imports', name: 'Import Goods',
     desc: 'The Trade Depot buys goods for markets with empty shelves at twice the export price. Needs a Trade Depot.',
     flavor: 'Potions from Vell-on-Sable, sold at Vell-on-Sable prices.',
-    costPerDay: (s) => s.trade.importCost, unlock: 3,
+    costPerDay: (s) => s.trade.importCost, unlock: 3, cityOnly: true,
   },
   {
     key: 'scholars', name: 'Scholars\' Stipend',
@@ -138,6 +139,7 @@ export function edictUpkeep(s: GameState): number {
       c += e.costPerDay(s);
       continue;
     }
+    if (e.cityOnly) continue; // a city-only edict is never billed per district
     // per-district: flat costs are split, per-resident costs follow the residents
     const share = edictShare(s, e.key);
     if (share > 0) c += Math.round(e.costPerDay(s) * Math.max(share, 0.25));

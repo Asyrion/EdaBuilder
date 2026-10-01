@@ -17,6 +17,7 @@ import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, ti
 
 const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
+import { marketStockCap } from './agents';
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -76,7 +77,15 @@ export function updateCreatures(state: GameState): void {
   if (night) {
     const sources = leySources(state);
     const want = Math.min(CAP.glimmoth, sources.length * 2);
-    if (want > 0) state.stats.mothsSeen = Math.max(state.stats.mothsSeen, want);
+    // seen at a lit spire or loft (a bare node's moths are not the Ledger's)
+    if (want > 0 && sources.some((src) => src.id >= 0)) state.stats.mothsSeen = Math.max(state.stats.mothsSeen, want);
+    // each lit loft remembers the most moths that swarmed within 8 of it tonight (read by the works at dawn)
+    forEachBuilding(state, (o) => {
+      if (o.kind !== 'mothloft' || !o.lit || o.state !== 'ok') return;
+      let near = 0;
+      for (const a of state.agents) if (a.kind === AgentKind.Creature && a.species === 'glimmoth' && Math.hypot(a.x - o.x, a.y - o.y) <= 8) near++;
+      if (near > o.stock) o.stock = near;
+    });
     if (moths < want) {
       for (let k = moths; k < want && k - moths < 12; k++) {
         const s = rng.pick(sources);
@@ -701,10 +710,14 @@ export function tickCreatures(state: GameState): void {
           } else if (a.phase === 2) {
             const to = state.buildings.find((b) => b && b.id === a.targetId);
             if (to) {
-              to.stock = Math.min(20 * to.level, to.stock + a.load);
-              state.goodsSold += a.load;
-              state.stats.goodsDelivered += a.load;
+              const cap = BUILDING_BY_KEY[to.kind].zone === Zone.Market ? marketStockCap(to) : 20 * to.level;
+              const put = Math.max(0, Math.min(a.load, cap - to.stock));
+              to.stock += put;
+              if (BUILDING_BY_KEY[to.kind].zone === Zone.Market) state.goodsSold += put;
+              state.stats.goodsDelivered += put;
               state.stats.courierTrips++;
+              const from = state.buildings.find((b) => b && b.id === a.homeId);
+              if (from && a.load > put) from.stock += a.load - put; // the rest goes back on the works' shelf
             }
             a.load = 0;
             a.phase = 0;
@@ -745,12 +758,12 @@ export function tickCreatures(state: GameState): void {
   commitRng(state, rng);
 }
 
-/** Moth-Loft bonus for a craft building: +20% if a lit loft with moths is within 8 tiles. */
+/** Moth-Loft bonus for a craft building: 4 % per glimmoth that swarmed a lit loft within 8 tiles last night (a loft's `stock`), up to 20 %. */
 export function mothBonus(state: GameState, b: Building): number {
   let bonus = 0;
   forEachBuilding(state, (o) => {
     if (o.kind !== 'mothloft' || !o.lit || o.state !== 'ok') return;
-    if (Math.hypot(o.x - b.x, o.y - b.y) <= 8) bonus = 0.2;
+    if (Math.hypot(o.x - b.x, o.y - b.y) <= 8) bonus = Math.max(bonus, Math.min(0.2, 0.04 * o.stock));
   });
   return bonus;
 }

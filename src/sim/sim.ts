@@ -70,8 +70,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   if (t % TICKS_PER_DAY === 0) {
     state.day++;
     dailyBuildings(state);
+    state.stats.fullDays = state.goodsShort === 0 ? state.stats.fullDays + 1 : 0;
     updateSocial(state);
-    dailyEconomy(state);
     dailyTraffic(state);
     dailyAgents(state);
     dailyWalkers(state);
@@ -86,10 +86,11 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyBeasts(state);
     dailyBarges(state);
     dailyAirship(state);
+    dailyTwinRoad(state);
+    dailyEconomy(state);
     dailyStorms(state);
     dailyTigers(state, wardenDistricts(state));
     dailyDaughter(state);
-    dailyTwinRoad(state);
     dailyWeave(state);
     dailyGuilds(state);
     dailyConstruction(state);
