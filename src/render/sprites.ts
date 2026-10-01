@@ -1297,7 +1297,15 @@ function icon(kind: string): Painter {
 // ---------- building specs ----------
 const V = (n: number) => n;
 
-function zoneSpecs(zone: string, level: number, variant: number): BuildingSpec {
+/** The Grimmen cut in stone: every wall stone or dark stone, every roof slate, flat or none. */
+function stoneSpec(spec: BuildingSpec, level: number, variant: number): BuildingSpec {
+  const walls: Wall[] = ['stone', 'darkstone', 'stone', 'darkstone'];
+  const roofs: Roof[] = level === 1 ? ['flat', 'none', 'flat', 'slate'] : level === 2 ? ['slate', 'flat', 'slate', 'none'] : ['slate', 'slate', 'flat', 'slate'];
+  return { ...spec, wall: walls[variant % 4], roof: roofs[variant % 4], roofH: Math.max(2, spec.roofH - 3), chimney: false, lanternPost: false, runeBand: level >= 2 || spec.runeBand, seed: (spec.seed ?? 0) + 500 };
+}
+
+function zoneSpecs(zone: string, level: number, variant: number, people?: string): BuildingSpec {
+  if (people === 'grimmen') return stoneSpec(zoneSpecs(zone, level, variant), level, variant);
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
@@ -1339,6 +1347,9 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   mothloft: { w: 1, h: 1, height: 16, roofH: 5, wall: 'timber', roof: 'cone', windows: 2, windowRows: 3, seed: 25, runeBand: true, orbit: true },
   hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
   cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
+  hatchery: { w: 2, h: 2, height: 5, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 33, runeBand: true, leyLamps: true, standingStones: true },
+  seep: { w: 1, h: 1, height: 3, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 9 },
+  stoneward: { w: 1, h: 1, height: 12, roofH: 2, wall: 'darkstone', roof: 'flat', windows: 0, seed: 21, runeBand: true, standingStones: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
   torrentmill: { w: 1, h: 1, height: 12, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
@@ -1653,7 +1664,7 @@ export function generateSprites(): SpriteDef[] {
   // zoned buildings
   for (const z of ['hearth', 'market', 'craft', 'arcane'])
     for (let lvl = 1; lvl <= 3; lvl++)
-      for (let v = 0; v < 4; v++) push(`${z}_l${lvl}_v${v}`, drawBuilding(zoneSpecs(z, lvl, v)));
+      for (let v = 0; v < 4; v++) { push(`${z}_l${lvl}_v${v}`, drawBuilding(zoneSpecs(z, lvl, v))); push(`${z}_l${lvl}_v${v}_grimmen`, drawBuilding(zoneSpecs(z, lvl, v, 'grimmen'))); }
   // ruin
   {
     const p = new Painter(34, 26);

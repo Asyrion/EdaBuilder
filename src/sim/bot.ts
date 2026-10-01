@@ -235,7 +235,7 @@ export class Bot {
         spots.push({ x: b.x, y: b.y, d: dmin });
       });
       spots.sort((a, b) => b.d - a.d);
-      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'tamerslodge';
+      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tamerslodge';
       for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
       if (this.radius < 40) this.radius += 5; // no room: grow the town
     };
@@ -255,7 +255,7 @@ export class Bot {
     want('depot', 1);
     want('cradle', 1);
     want('ring', 1);
-    want('tamerslodge', this.countKind('cradle'));
+    want('tamerslodge', this.countKind(factionKey(s, 'cradle')));
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     // deepen the founding Wellspring when mana runs short
     if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {

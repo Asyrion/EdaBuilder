@@ -16,7 +16,7 @@ import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
-import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, stageCap } from '../sim/wyrmcraft';
+import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, isCradle, stageCap } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap } from '../sim/agents';
@@ -513,7 +513,7 @@ export class UI {
     } else if ('center' in f) {
       if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
       else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
-      else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && b.kind === 'cradle'); if (c) this.host.centerOn(c.x, c.y); }
+      else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && isCradle(b.kind)); if (c) this.host.centerOn(c.x, c.y); }
       else if (f.center === 'wyrm') { const n = wyrmNode(s); if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'ruins') { for (let i = 0; i < s.terrain.length; i++) if (s.terrain[i] === 8) { this.host.centerOn(i % s.w, (i / s.w) | 0); break; } }
       else if (f.center === 'gloam') {
@@ -703,7 +703,7 @@ export class UI {
     if (b.kind === 'stormpeak') {
       rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
     }
-    if (b.kind === 'cradle') {
+    if (isCradle(b.kind)) {
       const inside = dragonsIn(s, b.id);
       rows.push(row('Eggs and young', `${inside.length} / ${cradleCapacity(b)}`));
       for (const d of inside) rows.push(row(d.name, `${LINE_INFO[d.line].name}${d.second ? `-${LINE_INFO[d.second].name}` : ''} ${STAGE_NAMES[d.stage]}, mood ${Math.round(d.mood)}`));
@@ -1302,7 +1302,7 @@ export class UI {
   refreshWyrms(): void {
     const st = this.host.state;
     if (this.el.wyrms.classList.contains('hidden')) return;
-    const cradles = st.buildings.filter((b) => b && b.kind === 'cradle') as NonNullable<typeof st.buildings[number]>[];
+    const cradles = st.buildings.filter((b) => b && isCradle(b.kind)) as NonNullable<typeof st.buildings[number]>[];
     const slots = cradles.reduce((n, c) => n + cradleCapacity(c), 0);
     const mines = st.buildings.filter((b) => b && b.kind === 'mine') as NonNullable<typeof st.buildings[number]>[];
     const districts = districtsInUse(st);

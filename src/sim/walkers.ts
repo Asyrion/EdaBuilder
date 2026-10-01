@@ -5,6 +5,7 @@ import { effects } from './hazards';
 import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent, type Building, type GameState, type ServiceType } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { catalogue } from './relics';
+import { CRADLE_KINDS, isCradle } from './wyrmcraft';
 
 export interface WalkerJob {
   id: string;
@@ -139,10 +140,10 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     count: () => 1,
     radius: () => 10,
     cap: 3,
-    target: (s, a, anchor) => errandTarget(s, a, anchor, () => (a.load >= 3 ? -1 : nearestRoadOf(s, a, ['cradle'], (b) => Math.hypot(b.x - anchor.x, b.y - anchor.y) <= 10 && (b.visited ?? -1) < s.day && s.dragons.some((d) => d.cradleId === b.id)))),
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => (a.load >= 3 ? -1 : nearestRoadOf(s, a, CRADLE_KINDS, (b) => Math.hypot(b.x - anchor.x, b.y - anchor.y) <= 10 && (b.visited ?? -1) < s.day && s.dragons.some((d) => d.cradleId === b.id)))),
     onArrive: (s, a, i) => {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
-      const c = buildingsAt(s, i).find((b) => b.kind === 'cradle');
+      const c = buildingsAt(s, i).find((b) => isCradle(b.kind));
       if (c && a.load < 3 && (c.visited ?? -1) < s.day) {
         c.visited = s.day;
         a.load += 1;

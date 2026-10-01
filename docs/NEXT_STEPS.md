@@ -255,6 +255,13 @@
   block read at one point per rule (hills, ward, mana, crowns, milestones, unlocks), the
   title-screen peoples row and the topbar name; seed 42 bit-identical to main.
 
+## Done in iteration 35
+
+- The Grimmen are playable: stone rules (hills valued and buildable, the gates' ward
+  doubled, hill mana up and node mana down), depth milestones gated by stone quarried, the
+  Seep, the Stone Ward and the Hatchery replacing the well, the lantern and the cradle, and
+  every zone building in stone. Cradles generalised to a kind.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -305,10 +312,10 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M11 Peoples, the Grimmen of the Underhill** (DESIGN §14.2): iteration 35 the stone
-   rules, zone sprites in stone, the Seep, the Stone Ward and the Hatchery with the depth
-   milestones and the quarry gate; 36 the Forge-Temple, the Underking's Seat, the quest
-   chapter and three events; 37 the stone-sexton walker, the bot playing them and balance.
+0. **M11 Peoples, the Grimmen part 2** (DESIGN §14.2): iteration 36 the Forge-Temple
+   (golems start bound), the Underking's Seat as the wonder, a quest chapter of eight and
+   three events (the Underking's envoy, a collapse, a vein of true leystone); 37 the
+   stone-sexton walker, the bot playing the Grimmen and balance on three seeds.
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.

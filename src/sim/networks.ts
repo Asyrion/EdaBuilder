@@ -1,3 +1,4 @@
+import { isCradle } from './wyrmcraft';
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
@@ -23,7 +24,7 @@ export function manaUseOf(b: Building, hush = false): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
   const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
-  if (b.kind === 'cradle' && beastmastersOn) return base * 0.6;
+  if (isCradle(b.kind) && beastmastersOn) return base * 0.6;
   return hush && def.category === 'zone' ? base * 1.25 : base;
 }
 
