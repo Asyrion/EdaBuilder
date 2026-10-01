@@ -182,8 +182,9 @@ Charter as `.json`.
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
 - Peoples: the city belongs to a people chosen on the title screen. The Vellish are the
   default; the Grimmen of the Underhill build in stone on the hills, drink from seeps, hold
-  the Gloam with standing stones, hatch only the stone lines, and climb milestones cut by
-  depth that need stone quarried as well as folk.
+  the Gloam with standing stones, hatch only the stone lines, bind the Concord Wardens at a
+  Forge-Temple, cut the Underking's Seat as their wonder, follow their own Underhill chapter
+  and tales, and climb milestones cut by depth that need stone quarried as well as folk.
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers and pilgrims walk
   the roads from their buildings and do their jobs where they go; the streets they walk
   count as covered.

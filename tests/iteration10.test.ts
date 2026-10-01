@@ -23,7 +23,7 @@ describe("The Charter's Ledger (quests)", () => {
     const q = activeQuests(s);
     expect(q.length).toBeLessThanOrEqual(3);
     expect(q[0].id).toBe('f_road');
-    expect(questProgress(s)).toEqual({ done: 0, total: QUESTS.length });
+    expect(questProgress(s)).toEqual({ done: 0, total: QUESTS.filter((q) => !q.people).length }); // a people's own chapter is not counted for the others
   });
 
   it('completes quests in order, pays rewards once and writes the Chronicle', () => {

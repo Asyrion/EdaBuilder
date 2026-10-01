@@ -397,6 +397,7 @@ export interface GameState {
     scholarTrips: number;
     tamerVisits: number;
     pilgrimPrayers: number;
+    trueVeins: number; // veins of true leystone left to the ley: +10 node mana each
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

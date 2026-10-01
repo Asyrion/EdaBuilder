@@ -925,6 +925,32 @@ dark stone walls with slate, flat or no roofs and no chimneys; the atlas holds a
 copy of all 48 zone sprites and the renderer picks it by the state's people. The three
 buildings have dark-stone specs. The Vellish game is untouched: seed 42 is identical to main.
 
+### 4.67 The Grimmen of the Underhill, part 2: forge, seat, tales (iteration 36)
+
+Two more replacements (`golemfoundry → forgetemple`, `lantern → underkingseat`):
+
+- **Forge-Temple** (service, faith r8, binds Wardens within 12 like a foundry): the golem
+  houses are a list (`GOLEM_HOUSES`), and `dailyBeasts` knows them before the mines wake
+  anything, so a Warden woken within `FORGE_WAKE_RADIUS` (20) of a lit Forge-Temple climbs out
+  already bound, with its own message. The inspector names the forge.
+- **Underking's Seat** (wonder, must touch hills, ward r30, land value 20): relays the ley
+  like a Nexus (`LEY_HALLS` in networks.ts), lights like the Lantern in the renderer, and
+  `stoneQuarried` counts it as ten stone.
+
+**Quests read the people.** `has(s, kind)` resolves `factionKey` first, so the Vellish goals
+for the well, the lantern, the foundry and the cradle read as the seep, the stone ward, the
+forge and the hatchery; the UI's "Show me" maps the build key the same way. A quest may name
+its `people`: a people's own chapter is shown, counted and paid for that people only
+(`questsFor` in sim/quests.ts), which is what keeps the Vellish game identical. Chapter
+**The Underhill** (eight): cut the first hill, a Seep, six halls on the hill, a Stone Ward,
+reach the Gallery, hatch a stone line, bind a Warden at the forge, cut the Seat.
+
+**Three tales** (`GRIMMEN` in events.ts, in the pool, gated on the people): the Underking's
+envoy (1,500 crowns for +4 happiness, 30 goods for +2, or refuse for −4), a gallery collapse
+(600 crowns to shore it, or one hill building to ruin and two stone from the rubble), and a
+vein of true leystone, once (every mine +30 leystone and +3 scale, 2,500 crowns from the
+Crown, or `stats.trueVeins` for +10 node mana for ever).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1533,7 +1559,7 @@ picks it beside the scenario; the bot plays any of them.
   with what the Grimmen need: terrain preferences (land value and buildability on hills),
   a ward source multiplier (walls, lanterns), a mana source multiplier (mines, nodes), a
   water rule (wells vs seeps), a dragon rule (cradles or foundries), and a starting kit.
-- **Proof of concept: the Grimmen of the Underhill (iterations 35–37; 35 ✅ as 4.66).** Stone folk who dig.
+- **Proof of concept: the Grimmen of the Underhill (iterations 35–37; 35 ✅ as 4.66, 36 ✅ as 4.67).** Stone folk who dig.
   Hearths are *Deep Halls* cut into hills (hills are their best land; grass is poor), water
   comes from *Seeps* in hills rather than wells by the river, the Gloam is held by stone:
   the Warding Wall wards double and the Ward Lantern is replaced by the *Stone Ward*, mana
@@ -1704,3 +1730,6 @@ picks it beside the scenario; the bot plays any of them.
 - *A people replaces, it does not add (iteration 35):* the Grimmen's seep, stone ward and
   hatchery stand in for the well, the lantern and the cradle, so the systems behind them are
   shared and a Hatchery is a cradle everywhere; only the rules and the look differ.
+- *A people's chapter is its own (iteration 36):* the quest checker pays any met goal, so
+  the Underhill quests briefly paid the Vellish and moved their balance; quests now carry a
+  `people` and the shared goals read through `factionKey`, so both peoples see one Ledger.

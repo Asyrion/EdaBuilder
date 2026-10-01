@@ -341,6 +341,14 @@ export const BUILDINGS: BuildingDef[] = [
   },
 
   {
+    key: 'underkingseat', name: "Underking's Seat", category: 'wonder', faction: ['grimmen'],
+    desc: 'The deepest hall in Eda, cut into the hill with a leystone heart. Wards 30 tiles, relays the ley like a Nexus, counts ten stone quarried, and marks the Grimmen a true people of the Underhill. Must touch hills. Needs mana.',
+    flavor: 'The Underking has not sat in it for three hundred years. The chair is kept warm anyway.',
+    w: 3, h: 3, cost: 22000, upkeep: 180, manaUse: 14, needsMana: true, nearHills: true,
+    service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
+  },
+
+  {
     key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
     desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day.',
     flavor: 'The song has no words. The singers say the wyrm supplies them.',
@@ -386,6 +394,13 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden labours for 12 hands with no housing and drinks 10 mana a day here. A wild surge sets them loose again.',
     flavor: 'The Concord built them to guard a city that is gone. They do not seem to mind the change of employer.',
     w: 2, h: 2, cost: 9000, upkeep: 80, manaUse: 8, unlock: 6, needsMana: true,
+  },
+  {
+    key: 'forgetemple', name: 'Forge-Temple', category: 'service', faction: ['grimmen'],
+    desc: 'The Grimmen pray to the forge that made the Wardens. Binds Concord Wardens within 12 tiles like a foundry, and a Warden that mining wakes within 20 tiles of a lit Forge-Temple climbs out already bound. Faith within 8. Each bound warden labours for 12 hands and drinks 10 mana a day here. Needs mana.',
+    flavor: 'The hammers keep time with something under the floor. The priests say it is the forge. The miners say it is not.',
+    w: 2, h: 2, cost: 7500, upkeep: 70, manaUse: 6, unlock: 6, needsMana: true,
+    service: { type: 'faith', radius: 8, strength: 0.5 },
   },
   {
     key: 'leybeacon', name: 'Ley Beacon', category: 'ley',
