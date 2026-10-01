@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, W
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 import { inCharter } from './sectors';
+import { aspectAt } from './weave';
 import { effects } from './hazards';
 import { MAP_W } from './types';
 
@@ -135,6 +136,8 @@ export function placeBuilding(state: GameState, key: string, x: number, y: numbe
   const why = canPlaceBuilding(state, key, x, y);
   if (why) return { ok: false, reason: why };
   if (def.cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
+  if (def.materials) for (const [k, v] of Object.entries(def.materials)) if ((state.materials[k as keyof typeof state.materials] ?? 0) < (v ?? 0)) return { ok: false, reason: `Needs ${v} ${k}` };
+  if (def.materials) { for (const [k, v] of Object.entries(def.materials)) state.materials[k as keyof typeof state.materials] -= v ?? 0; state.stats.marvels++; }
   state.treasury -= def.cost;
   for (let dy = 0; dy < def.h; dy++)
     for (let dx = 0; dx < def.w; dx++) state.zone[idx(x + dx, y + dy)] = Zone.None;
@@ -357,7 +360,7 @@ export function callRain(state: GameState, buildingId: number): ActionResult {
   if (b.cooldown > 0) return { ok: false, reason: `The sky is spent: ${b.cooldown} day(s) until the next call` };
   if (state.treasury < 300) return { ok: false, reason: 'Not enough crowns (300)' };
   state.treasury -= 300;
-  b.cooldown = 3;
+  b.cooldown = aspectAt(state, b.x, b.y) === 'storm' ? Math.ceil(3 / 2) : 3;
   let doused = 0;
   for (const o of state.buildings) {
     if (!o || o.state !== 'burning') continue;

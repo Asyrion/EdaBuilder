@@ -2,6 +2,7 @@
 import { AgentKind, Zone, type GameState } from '../sim/types';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { chose } from '../sim/events';
+import { aspectAt } from '../sim/weave';
 
 export type Focus =
   | { tool: 'road' | 'zoneHearth' | 'zoneMarket' | 'zoneCraft' | 'zoneArcane' | 'wall' | 'gateBelregi' | 'district' }
@@ -114,6 +115,10 @@ export const QUESTS: QuestDef[] = [
   { id: 'n_tiger', chapter: 'Beasts', title: 'Bring down a war-tiger', hint: "Hunters' Lodges within 12, Watch Houses at full strength, or a warden drake's district.", when: (s) => s.stats.tigersTotal > 0, done: (s) => s.stats.tigersKilled > 0, focus: { build: 'hunterslodge' }, reward: 1200, priority: 58 },
   { id: 'n_font', chapter: 'The dead', title: 'Raise the Font of Quieting', hint: 'Services tab, Free City. Deathcare +50% and the restless lie down easily.', when: (s) => s.milestone >= 7, done: (s) => has(s, 'fontquieting'), focus: { build: 'fontquieting' }, reward: 1500, priority: 59 },
   { id: 'n_storm', chapter: 'Mana', title: 'Dissolve a mana-storm with wards', hint: 'After a surge a storm drifts; ward coverage over its eye ends it.', when: (s) => s.storms.length > 0, done: (s) => s.stats.surgesTotal > 0 && s.storms.length === 0 && s.stats.stormWarps > 0, focus: { overlay: 'ward' }, reward: 800, priority: 60 },
+  // The ley-weave
+  { id: 'y_attune', chapter: 'Wyrmcraft', title: 'Attune a cradle to its node', hint: 'Click a node to see its aspect; a cradle within 10 tiles grows matching eggs a quarter faster.', when: (s) => s.dragons.length > 0, done: (s) => s.dragons.some((d) => { const c = s.buildings.find((b) => b && b.id === d.cradleId); return !!c && aspectAt(s, c.x, c.y) === d.line; }), focus: { center: 'cradle' }, reward: 600, priority: 36 },
+  { id: 'y_marvel', chapter: 'The arcane', title: 'Raise a Marvel', hint: 'The Marvels tab spends scale, wyrmfire, eggshell, rayscale and glim-dust on buildings no crowns can buy.', when: (s) => s.milestone >= 4 && (s.materials.scale > 0 || s.materials.rayscale > 0 || s.materials.glimdust > 0), done: (s) => s.stats.marvels > 0, focus: { build: 'scaleward' }, reward: 1000, priority: 49 },
+  { id: 'y_quiet', chapter: 'The dead', title: 'Keep the Gloam quiet through a Hush', hint: 'Pressure below 45% on every day of a Hush: deathcare, faith coverage and Grey ley.', when: (s) => s.day >= 60, done: (s) => s.stats.quietHush > 0, focus: { build: 'shrine' }, reward: 1500, priority: 42 },
   // The Vein-Wyrm
   { id: 'v_find', chapter: 'The Vein-Wyrm', title: 'Find the Sleeping Wyrm', hint: 'One distant node is ringed with scale, not stone. Click it. Spires there would wake it.', when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },
   { id: 'v_tribute', chapter: 'The Vein-Wyrm', title: 'Settle a tribute', hint: 'Awake, it asks each season: crowns or goods. Refuse and it burns.', when: (s) => s.wyrm.state === 'awake', done: (s) => s.stats.wyrmTributes > 0, focus: { center: 'wyrm' }, reward: 500, priority: 42 },
@@ -153,6 +158,7 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   if (s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'hound') && !has(s, 'hunterslodge')) return { text: "Gloam-hounds are hunting at the edge. A Hunters' Lodge or a Warding Wall stops them.", focus: { build: 'hunterslodge' } };
   if (s.wyrm.state === 'bound' && s.wyrm.sulking > 0) return { text: 'The bound wyrm is sulking: its lair no longer wards the Gloam. Feed it 40 goods a day from the markets.', focus: { overlay: 'goods' } };
   if (s.wyrm.state === 'sleeping' && s.wyrm.waking >= 50) return { text: 'Spires near the Sleeping Wyrm are waking it. Bulldoze them, or prepare a tribute.', focus: { center: 'wyrm' } };
+  if (s.gloamPressure >= 0.65) return { text: 'The Gloam is hungry: unquieted dead and the restless feed it. Quiet the dead (Boneyard, Ossuary) and spread Shrines of Aume.', focus: { build: 'boneyard' } };
   if (s.unrest > 0.35) return { text: 'Unrest is high. More Watch coverage, lower taxes, or a Night Curfew edict.', focus: { panel: 'edicts' } };
   if (s.happiness < 40) return { text: 'Folk are unhappy. Check the Happiness view (4) for the worst streets.', focus: { overlay: 'happiness' } };
   const gloamNear = zb.some((b) => s.gloamDist[b.y * s.w + b.x] < 6);

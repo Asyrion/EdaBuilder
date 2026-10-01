@@ -10,6 +10,7 @@ import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
 import { dailyStorms, dailyTigers } from './lore';
 import { dailyDaughter } from './charter';
+import { dailyWeave } from './weave';
 import { wardenDistricts } from './wyrmcraft';
 import { setFenNex } from './agents';
 import { updateMana, updateWater } from './networks';
@@ -76,6 +77,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyStorms(state);
     dailyTigers(state, wardenDistricts(state));
     dailyDaughter(state);
+    dailyWeave(state);
     state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);

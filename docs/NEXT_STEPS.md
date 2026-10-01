@@ -129,11 +129,10 @@
 - Counters for the six unbacked quests and a Done page in the Ledger.
 - Per-district unlit / dry / empty counts under the district labels.
 
-## Done in iteration 18 (the daughter charter, touch)
+## Done in iteration 18 (the daughter charter)
 
 - The daughter charter at Beacon of Eda: a second stake and district on a far node, a
   grant, and the Twin Beacons at 500 folk; two quests.
-- Touch controls: one finger for tools, two fingers to pan, pinch to zoom.
 
 ## Done in iteration 19 (land, daily challenge, key bindings)
 
@@ -141,11 +140,10 @@
 - Today's challenge on the title screen: one valley per UTC date, Market Town by day 60.
 - Remappable keys in the Menu, shared by the game and the tool layer.
 
-## Done in iteration 20 (phone layout, challenge results, accessibility)
+## Done in iteration 20 (challenge results, accessibility)
 
-- A narrow-screen layout: bottom-sheet toolbar and Ledger, compact top bar, small minimap
-  and ticker; the daily challenge shows progress and a copyable result; aria labels and
-  roles on the panels.
+- The daily challenge shows progress and a copyable result; aria labels and roles on the
+  panels. (A phone layout shipped here and was removed in iteration 23: desktop only.)
 
 ## Done in iteration 21 (sound pass)
 
@@ -157,6 +155,15 @@
 - The Charter line: sixteen map sectors, four to six chartered at the start, the rest
   dimmed and for sale from Hamlet when they touch the Charter; the Gloam inside a bought
   sector draws back. Purchase panel, minimap dimming, a quest, bot support.
+
+## Done in iteration 23 (the interconnection deep dive, phase 1)
+
+- Mobile focus removed (desktop only).
+- Ley aspects on every node (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) changing
+  the rules within 10 tiles; attuned cradles; dragon auras per line; rare goods as inputs
+  through the Marvels tab and caravan trade, with glim-dust from Moth-Lofts; Gloam
+  pressure from the dead, faith and the beasts; the river freezing in the Hush and
+  flooding in the Thaw; a storyteller pacing events. See DESIGN.md §13.
 
 ## Known issues
 
@@ -208,12 +215,15 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
+0. **Deep dive, phase 2** (DESIGN §13.8): festival depth, guild politics at the
+   Guildhall, trade routes between depot, quays and the daughter, and a *Weave* info view
+   painting aspects and auras. Then phase 3: cross-line breeding at attuned cradles and
+   relic sets from the delve.
+
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
    and citizen sprites most.
 8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
    ramps, scale and keys are done).
-9. **Mobile polish.** The layout fits a phone; a long-press for right-click panning and
-   larger hit targets on the map would help.
 10. **Replays.** The sim is deterministic; a command log would allow replays (the daily
     result is already shareable as text).

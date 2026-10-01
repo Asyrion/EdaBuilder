@@ -1,5 +1,6 @@
 /** JSON serialization of GameState. Typed arrays are base64-encoded. */
 import { chooseWyrmNode, newWyrm } from './wyrm';
+import { assignAspects } from './weave';
 import type { WyrmState } from './types';
 import { SAVE_VERSION, SERVICE_TYPES, type GameState, type ServiceType } from './types';
 import { markAllDirty } from './world';
@@ -70,6 +71,10 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.nextDragonId = state.nextDragonId ?? 1;
   state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0 };
   state.materials.rayscale = state.materials.rayscale ?? 0;
+  state.materials.glimdust = state.materials.glimdust ?? 0;
+  state.gloamPressure = state.gloamPressure ?? 0.3;
+  state.lastBadDay = state.lastBadDay ?? -30;
+  assignAspects(state.nodes, state.founding, (() => { let k = 0; return () => (k++ * 5 + 3); })());
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
@@ -79,7 +84,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'wispRing'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   state.fenNex = state.fenNex ?? 0;
   state.scenario = state.scenario ?? 'valley';

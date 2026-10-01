@@ -5,6 +5,8 @@ import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
+import { riverFrozen } from './weave';
+import { seasonOf } from './world';
 
 export const FLOAT_VARIANT = 3; // cart variant: hovers, ignores congestion, 1 mana while moving
 export const BARGE_VARIANT = 4; // cart variant: travels water between quays
@@ -100,7 +102,7 @@ function near(s: GameState, q: Building, test: (b: Building) => boolean): Buildi
 /** Daily: every quay sends a barge to a quay whose markets are emptier, along the water. */
 export function dailyBarges(s: GameState): void {
   const qs = quays(s);
-  if (qs.length < 2) return;
+  if (qs.length < 2 || riverFrozen(s)) return;
   const rng = rngOf(s);
   for (const from of qs) {
     if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id)) continue;
@@ -122,7 +124,7 @@ export function dailyBarges(s: GameState): void {
     if (w0 < 0 || w1 < 0) continue;
     const path = waterPath(s, w0, w1);
     if (!path) continue;
-    let load = Math.min(BARGE_LOAD, avail, bestNeed);
+    let load = Math.min(seasonOf(s) === 0 ? BARGE_LOAD * 1.5 : BARGE_LOAD, avail, bestNeed);
     const total = load;
     for (const src of sources) {
       if (load <= 0) break;

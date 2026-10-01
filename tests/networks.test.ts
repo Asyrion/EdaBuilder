@@ -26,7 +26,7 @@ describe('mana network', () => {
     expect(spires.map((b) => b!.lit)).toEqual([true, true, false]);
     // houses within radius 5 of s2 (x <= f.x+16) lit directly; the rest by adjacency chain
     for (const h of houses) expect(h.lit).toBe(true);
-    expect(s.manaSupply).toBe(s.nodes.length * NODE_MANA);
+    expect(s.manaSupply).toBe(s.nodes.length * NODE_MANA + 15 * s.nodes.filter((n) => n.aspect === 'vein').length); // Vein ley adds 15
     expect(s.manaDemand).toBe(houses.length * 1);
   });
   it('browns out the farthest consumers when demand exceeds supply', () => {

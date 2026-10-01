@@ -13,7 +13,7 @@ describe('Scenario charters', () => {
     const s = createScenario(5, 'One', 'onenode');
     expect(s.nodes.length).toBe(1);
     updateMana(s);
-    expect(s.manaSupply).toBe(180);
+    expect(s.manaSupply).toBe(195); // 2x flow plus the Vein aspect
     expect(activeQuests(s)[0].id).toBe('z_onenode');
     expect(s.wyrm.state).toBe('none');
   });

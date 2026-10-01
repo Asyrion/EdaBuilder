@@ -25,6 +25,7 @@ describe('Torrent Mill', () => {
     expect(canPlaceBuilding(s, 'torrentmill', f.x + 2, f.y + 4)).toMatch(/water/);
     s.terrain[idx(f.x + 3, f.y + 4)] = Terrain.Water;
     expect(canPlaceBuilding(s, 'torrentmill', f.x + 2, f.y + 4)).toBeNull();
+    s.day = 40; // Bloom: the river runs at its normal flow
     updateMana(s);
     const before = s.manaSupply;
     expect(placeBuilding(s, 'torrentmill', f.x + 2, f.y + 4).ok).toBe(true);

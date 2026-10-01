@@ -44,7 +44,9 @@ main node.
 2. **Zones** — drag rectangles next to roads: **Hearth** (homes), **Market** (trade),
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.
-3. **Mana** — ley nodes give 90 mana/day each. A **Ley Spire** within 6 tiles of a node
+3. **Mana and the ley-weave** — ley nodes give 90 mana/day each and each carries an
+   **aspect** (click it): Ember, Bone, Glim, Vein, Sky, Grey, Tide or Storm ley changes the
+   rules within 10 tiles, so where you build matters. A **Ley Spire** within 6 tiles of a node
    (or of another lit spire) lights 5 tiles around it; lit buildings light the buildings
    they touch. Draw more than the Veins give and the spires flicker; overdraw for five days
    and a **wild surge** warps buildings into ruins. Thrum Fonts and a Ley Nexus help later.
@@ -168,15 +170,18 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- The ley-weave: every node has an aspect that changes the rules around it (Ember works,
+  Bone deathcare, Glim moths, Vein mana, Sky couriers, Grey stillness, Tide water, Storm
+  calm); cradles attune to matching eggs; grown dragons radiate their line's aura; rare
+  goods build the Marvels tab or sell to caravans; the Gloam presses harder as the dead go
+  unquieted and eases under faith; the river freezes in the Hush.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
   date with a copyable result, and remappable keys in the Menu.
-- A phone layout: bottom-sheet toolbar, compact top bar, touch gestures; aria labels and
-  roles on the panels.
+- Aria labels and roles on the panels. Desktop browsers only (mouse and keyboard).
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
-- Touch: one finger for tools, two fingers to pan, pinch to zoom.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
   the inherited collapse, each with a goal; a Done page in the Ledger; per-district
   problem counts in the Districts view.

@@ -140,6 +140,7 @@ export interface Materials {
   wyrmfire: number;
   eggshell: number;
   rayscale: number;
+  glimdust: number;
 }
 
 export interface Agent {
@@ -247,7 +248,7 @@ export interface GameState {
   trafficSmooth: Uint8Array; // 0..255 relative congestion
   waterDist: Uint8Array; // distance to nearest water, capped 15
   gloamDist: Uint8Array; // distance to nearest gloam, capped 15
-  nodes: { x: number; y: number; depth?: number }[]; // depth: times deepened (0..2)
+  nodes: { x: number; y: number; depth?: number; aspect?: DragonLine }[]; // depth: times deepened (0..2); aspect: the node's ley
   founding: { x: number; y: number };
   // entities
   buildings: (Building | null)[];
@@ -297,6 +298,8 @@ export interface GameState {
   wyrm: WyrmState;
   fenNex: number; // district granted to the Fen-Nex, 0 none
   scenario: Scenario;
+  gloamPressure: number; // 0..1, recomputed daily (see weave.ts)
+  lastBadDay: number; // storyteller: day of the last ill tiding
   sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter
   challenge: string | null; // daily challenge date, e.g. '2026-10-01'
   challengeDay: number; // day the challenge goal was met, -1
@@ -348,6 +351,10 @@ export interface GameState {
     daughters: number;
     terraformed: number;
     sectorsBought: number;
+    glimdustTotal: number;
+    marvels: number;
+    quietHush: number;
+    hushPressureBreaks: number; // days of the current Hush with pressure >= 0.45
     wispRing: number;
     wyrmFlyovers: number;
     gloamTiles: number;

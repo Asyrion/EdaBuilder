@@ -6,6 +6,7 @@ import { seasonOf } from './world';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, boundGolems, raysLured } from './beasts';
+import { aspectAt, hasMarvel, marvelNear } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -120,6 +121,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   const tree = worldTree(state);
   if (tree) h += treeStage(tree);
   if (raysLured(state)) h += 3;
+  if (hasMarvel(state, 'hallofmarvels')) h += 8;
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
@@ -246,8 +248,9 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      const glim = glimhouseNear(state, b);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0));
+      const glim = glimhouseNear(state, b) || marvelNear(state, 'wyrmforge', b);
+      const asp = aspectAt(state, b.x, b.y);
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (marvelNear(state, 'wyrmforge', b) ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
       const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
       b.stock += Math.max(0, made);
@@ -260,7 +263,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1);
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 : 1);
     }
     // levelling
     const i = idx(b.x, b.y);

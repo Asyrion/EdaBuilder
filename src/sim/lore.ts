@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf } from './world';
 import { effects } from './hazards';
+import { auraAt, nodesOfAspect } from './weave';
 
 export const STORM_DAYS = 4;
 export const STORM_RADIUS = 5;
@@ -48,7 +49,8 @@ export function dailyStorms(s: GameState): void {
     st.x = Math.max(2, Math.min(MAP_W - 3, st.x + st.vx * 3));
     st.y = Math.max(2, Math.min(MAP_H - 3, st.y + st.vy * 3));
     const ci = idx(st.x, st.y);
-    if (s.day >= st.until || s.coverage.ward[ci] > 90) {
+    const stormStill = nodesOfAspect(s, 'storm').some((n) => Math.hypot(n.x - st.x, n.y - st.y) <= 10) || auraAt(s, 'storm', st.x, st.y);
+    if (s.day >= st.until || s.coverage.ward[ci] > 90 || stormStill) {
       pushMessage(s, s.day >= st.until ? `The mana-storm at (${st.x},${st.y}) blows itself out.` : `The wards at (${st.x},${st.y}) dissolve the mana-storm.`, 'info', true, { x: st.x, y: st.y });
       continue;
     }

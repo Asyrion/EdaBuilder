@@ -2,6 +2,7 @@
 import { treeStage } from '../sim/growth';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { inCharter } from '../sim/sectors';
+import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
@@ -260,7 +261,8 @@ export class Renderer {
         } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
           if (h2(x, y, 27) < 0.05) cache.props.push({ name: 'bush', wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.LeyNode) {
-          cache.lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
+          const nodeHere = state.nodes.find((n) => n.x === x && n.y === y);
+          cache.lights.push({ x: wx, y: wy + 8, r: 70, c: nodeHere?.aspect ? ASPECT_INFO[nodeHere.aspect].color : PAL.ley1, i: 0.9 });
           cache.props.push({ name: 'leynode', wx, wy, d: x + y + 0.4, sway: 0 });
           const wn = state.wyrm && state.wyrm.node >= 0 ? state.nodes[state.wyrm.node] : null;
           if (wn && wn.x === x && wn.y === y && state.wyrm.state !== 'none' && !(state.wyrm.flyover > 0)) {

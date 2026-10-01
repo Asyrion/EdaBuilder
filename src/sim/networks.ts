@@ -1,11 +1,12 @@
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
-import { forEachBuilding, markDirty, nodeMana, seasonOf } from './world';
+import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
+import { aspectAt, dragonAuras, millFactor } from './weave';
 import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
@@ -40,8 +41,8 @@ export function updateMana(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
-    if (def.manaProduce) supply += def.manaProduce;
-    if (def.manaStorage) storageMax += def.manaStorage;
+    if (def.manaProduce) supply += def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) : 1);
+    if (def.manaStorage) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
   });
 
   // 2. spire chain: BFS from nodes over spires/nexus
@@ -72,6 +73,11 @@ export function updateMana(state: GameState): void {
   }
   for (let k = 0; k < spires.length; k++) if (!spireLit[k]) spires[k].lit = false;
 
+  // 2a. drakes: a Glim drake lights its cradle's neighbours; a Vein drake roosting adds flow
+  for (const au of dragonAuras(state)) {
+    if (au.line === 'glim') sources.push({ x: au.x, y: au.y, r: 3 });
+    if (au.line === 'vein') supply += 10;
+  }
   // 2b. self-lit buildings (Hanging Gardens) and living glowvine lanes are sources that need no Vein
   const gardens: { x: number; y: number }[] = [];
   forEachBuilding(state, (b) => {
@@ -258,7 +264,7 @@ export function updateWater(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.waterRadius || b.state !== 'ok') return;
     if (def.needsMana && !b.lit) return;
-    let r = def.waterRadius;
+    let r = waterRadiusOf(state, b);
     if (def.waterNearBonus) {
       const cx = b.x;
       const cy = b.y;

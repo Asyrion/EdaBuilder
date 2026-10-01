@@ -10,6 +10,7 @@ import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
 import { fontOfQuieting, startStorm } from './lore';
+import { aspectAt, nodesOfAspect } from './weave';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
@@ -70,6 +71,10 @@ export function dailyFire(state: GameState): void {
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
     if (def.key === 'font') p *= 6;
     if (def.key === 'drakemews' && state.happiness < 40) p *= 12; // spooked drakes
+    const asp = aspectAt(state, b.x, b.y);
+    if (asp === 'ember') p *= 1.5;
+    else if (asp === 'tide') p *= 0.7;
+    if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
     p *= 1 - fireCov * 0.5;
     if (rng.chance(p)) toIgnite.push(b);
   });
@@ -196,7 +201,8 @@ export function dailyGloam(state: GameState): void {
   // 2. creep
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
-    const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1);
+    const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1) * (0.5 + state.gloamPressure);
+    const greyNodes = nodesOfAspect(state, 'grey');
     const gloam = state.gloam;
     const newTiles: number[] = [];
     for (let y = 0; y < MAP_H; y++)
@@ -208,6 +214,7 @@ export function dailyGloam(state: GameState): void {
           const j = idx(nx, ny);
           if (gloam[j] || isWater(state.terrain[j]) || state.wall[j]) continue;
           if (state.coverage.ward[j] > 0) continue;
+          if (greyNodes.some((g) => Math.hypot(g.x - nx, g.y - ny) <= 10)) continue;
           if (hasBuildingNear(state, nx, ny, 2)) continue;
           if (rng.chance(p * 0.25)) newTiles.push(j);
         }
@@ -223,7 +230,7 @@ export function dailyGloam(state: GameState): void {
       }
     }
     // 3. pockets: every ~12 days a pocket opens somewhere unlit and unbuilt
-    if (state.day % 12 === 0 && state.day >= 24) {
+    if (state.day % 12 === 0 && state.day >= 24 && state.gloamPressure >= 0.3) {
       for (let t = 0; t < 40; t++) {
         const x = 6 + rng.int(MAP_W - 12);
         const y = 6 + rng.int(MAP_H - 12);
@@ -304,7 +311,7 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1);
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1);
   });
   quietCap += wyrmBoneQuiet(state);
   if (fontOfQuieting(state)) quietCap *= 1.5;

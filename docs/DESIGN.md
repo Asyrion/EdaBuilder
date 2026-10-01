@@ -569,7 +569,7 @@ A **Done** button on the Ledger lists every completed quest by chapter.
 district's zoned-building problems: unlit, dry and empty-shelved counts, in red, only
 when there are any.
 
-### 4.39 The daughter charter and touch controls (iteration 18)
+### 4.39 The daughter charter (iteration 18)
 
 **The daughter charter** is the endgame. At Beacon of Eda the panel of any ley node that
 is not the founding node, not the wyrm's, and at least 30 tiles from the Stake offers
@@ -581,33 +581,12 @@ ladder; the daughter's population is the folk living within 30 tiles of its stak
 folk the **Twin Beacons** fire once: 10,000 crowns and a Chronicle milestone. Two Ledger
 quests carry it. `state.daughter` holds node, stake position, name, day and the twin day.
 
-**Touch controls.** One finger uses the current tool exactly like the left mouse button
-(synthesised mouse events); two fingers pan by their midpoint and pinch-zoom one step per
-30 % change in spread; the canvas has `touch-action: none`.
+**Platform.** Wardlight is a desktop browser game: mouse and keyboard only, by decision
+(see the decision log). Touch gestures and a phone layout were tried in iterations 18 and
+20 and removed again; they doubled the UI surface to test for every change.
 
-### 4.40 Land, the daily challenge and key bindings (iteration 19)
+### 4.41 Challenge results and accessibility (iteration 20)
 
-- **Land tab** (terraforming): *Clear forest* (40 crowns, forest to grass), *Plant glimwood*
-  (60, Thorp, grass or meadow to forest) and *Level hills* (220, Township, hills to grass),
-  one tile at a time, drag to paint, never under a building, road, wall or Gloam. Terrain
-  is part of the undo snapshot. `stats.terraformed` counts tiles.
-- **Today's challenge** (title screen): the open valley on a seed hashed from the UTC date
-  (FNV-1a of `YYYY-MM-DD`), so every player gets the same map on the same day;
-  `state.challenge` holds the date and a priority-0 quest asks for Market Town by day 60.
-- **Key bindings** (Menu → Key bindings): thirteen actions (pause, speeds, the four tool
-  keys, views, help, Chronicle, quick save and load, cancel) stored in settings and read by
-  both the game and the tool layer through `keyFor`; click a row and press a key; a key
-  taken from another action unbinds it; reset to defaults. Ctrl+Z, Shift+G and the view
-  number keys stay fixed.
-
-### 4.41 Phone layout, challenge results, accessibility (iteration 20)
-
-- **Narrow screens** (900 px and under, one media query): the toolbar and the Ledger
-  become a bottom sheet (the Ledger starts collapsed), the toolbar items scroll in three
-  columns, the top bar keeps the city, day, crowns and folk and scrolls sideways for its
-  buttons, the minimap and ticker sit top-right at half size, the demand bars and perf
-  line hide, info panels and modals stretch to the width. Touch gestures from §4.39 do
-  the rest.
 - **Challenge results**: `challengeDay` records the day the daily goal is met; the Ledger
   shows a progress line while the challenge runs and a result line with *Copy result*
   afterwards (a one-line share text with the site link, via the clipboard).
@@ -994,6 +973,104 @@ consistent with `EDA_LORE.md` §9.
     a random large effect), the Cloud Forest Wizard (offers a glimwood grove), and a
     guarded cameo of Asyrion (a description only, never a sprite, unless asked).
 
+## 13. Interconnection deep dive (iteration 23)
+
+A pass over every system with one question: what does it feed, and what feeds it? The
+inspiration is the builders that last. **Anno** makes every output someone's input and
+every tier hungrier than the last. **Against the Storm** and **Frostpunk** never let a
+stable city rest: the hostility outside rises on a rhythm and the player's margin is the
+game. **Civilization VI** makes placement a puzzle through adjacency, so two identical
+buildings are not worth the same. **Dwarf Fortress** and **RimWorld** let many systems
+touch many others so that stories fall out of the simulation, and RimWorld paces them with
+a storyteller rather than a dice roll. Wardlight already has the parts; this section wires
+them together, with magic as the medium every wire runs through.
+
+### 13.1 Feature map: what each system feeds
+
+| System | Feeds | Fed by (new links in **bold**) |
+|---|---|---|
+| Ley nodes | spires, cradles, Moth-Lofts, the wyrm, deepening | **aspects**: each node is Ember, Bone, Glim, Vein, Sky, Grey, Tide or Storm ley |
+| Mana | every lit building, wards, golems, floating carts | nodes, fonts, Torrent Mills (**seasonal flow**, **Tide ley**), **Vein drakes**, **Eggshell Font** |
+| Water | hearths, works, happiness | wells (**Tide ley +2 radius**), cisterns (mana) |
+| Goods | markets, carts, barges, couriers, the wyrm, dragons, the airship, caravans | works (**Ember ley**, Glimhouse, **Wyrmfire Forge**, glim-dust, rain), Hanging Gardens |
+| Rare goods | **Marvels row**, **caravans**, artifacts (rayscale), the Hall of Marvels | eggs (eggshell, scale), bouts and dragons (scale, wyrmfire), skyrays (rayscale), **Moth-Lofts (glim-dust)**, the delve (relics) |
+| Deathcare | the restless, wisps, **Gloam pressure** | Boneyards, Ossuary, the Font, the wyrm's bones, **Bone ley**, **Bone drakes** |
+| Faith | happiness, the restless, **Gloam pressure** | shrines, temple, gates, **Hall of Marvels** |
+| The Gloam | hounds, pockets, land value, fear, the Long Night | **pressure** (dead, restless, overdraw, wild beasts, the Hush) minus faith, the wyrm, the Tree, **Grey ley**, **Grey drakes** |
+| Dragons | roles, bouts, materials, **auras per line** | eggs from every creature system; **attuned cradles** grow faster |
+| Creatures | moths (dust), rays (rayscale), golems (labour), tigers (fear) | **Glim ley doubles moths**, **Sky ley reaches rays**, **Fen drakes hide hearths from hounds** |
+| Seasons | festivals, goods, mana, hounds, tigers | **the river freezes in the Hush** (barges stop, mills halve) and **floods in the Thaw** (mills +30 %, barges carry 60) |
+| Events | crowns, folk, eggs, modifiers | **storyteller**: a grace week after ill tidings, and twice the chance after 25 calm days |
+| Trade | crowns, imports | depot, caravans (**rare goods**), the airship, barges |
+
+### 13.2 Ley aspects (Civ-style adjacency, in magic)
+
+Every node carries an **aspect**, one of the eight dragon lines' elements. The founding
+node is always Vein; the rest are seeded. Within 10 tiles of a node its aspect changes the
+rules, so the map's magic geography decides what belongs where:
+
+| Aspect | Within 10 tiles |
+|---|---|
+| Ember | Craft output +15 %; fires start ×1.5 |
+| Bone | deathcare ×1.5 |
+| Glim | glimmoths ×2 at the node; Moth-Lofts gather double glim-dust |
+| Vein | +15 mana a day; a Nexus stores ×1.5 |
+| Sky | couriers from a cradle fly +25 %; a Ley Beacon reaches 45 tiles |
+| Grey | the Gloam never creeps; ward coverage 0.35 (no burning); hounds shy |
+| Tide | wells +2 radius; Torrent Mills ×1.5; fires ×0.7 |
+| Storm | mana-storms dissolve; the Storm-Caller's cooldown halves |
+
+A cradle within 10 tiles of a node whose aspect matches the egg's line is **attuned**:
+growth +25 % and mood +2 a day. The node panel names the aspect; the node's light and the
+minimap take its colour.
+
+### 13.3 Dragon auras (every line does something)
+
+A drake or wyvern at stage 2 or more with no role (at its cradle, radius 8) or a warden
+post (its district's centre, radius 12) radiates its line: Glim lights the neighbours
+without mana, Vein adds 10 mana while it roosts, Grey wards, Tide douses fires, Bone lays
+the restless down, Storm dissolves mana-storms, Fen hides hearths from hounds, Sky couriers
+carry 40 a third faster, Ember keeps its wyrmfire. The Wyrms panel says what each one does.
+
+### 13.4 Rare goods are inputs (Anno)
+
+Five materials now have sinks. The **Marvels** row (Township to Burgh) is built from them:
+the Scale Ward (10 scale: a ward lantern that needs no mana), the Wyrmfire Forge (8
+wyrmfire: Craft +25 % within 8 and no Hush), the Eggshell Font (6 eggshell: +25 mana),
+the Rayscale Mirror (8 rayscale: leisure within 14 and every passing skyray school turns
+to circle it), and the Hall of Marvels (10 of each, one only: happiness +8, artifacts ×1.5,
+faith within 12). Moth-Lofts gather **glim-dust** (0.3 a day, double on Glim ley).
+Belerial caravans buy rare goods at 400, 300 and 150 crowns.
+
+### 13.5 Gloam pressure (hostility with a rhythm)
+
+`gloamPressure` (0..1, daily) starts at 0.3 and rises with unquieted dead, the restless,
+wild golems and tigers, an overdraw, a mana-storm and the Hush; it falls with the share of
+zoned buildings under faith coverage, a guarding wyrm, the World Tree's stage and Grey
+nodes. Creep probability scales with (0.5 + pressure) and pockets open only above 0.3.
+The Forecast and the Advisor name it in words: quiet, restless, pressing, hungry. Deathcare
+and faith are now the Gloam's counterweights, not only the Ward Lanterns.
+
+### 13.6 Seasons touch the river
+
+From the fifth day of the Hush the river freezes: barges stay at the quay and Torrent
+Mills halve; in the Thaw the flood runs mills at 130 % and barges carry 60. Ember, the
+dry season, starts fires ×1.3.
+
+### 13.7 The storyteller
+
+Random events keep their 18-day spacing but skip the six days after any ill tiding, and
+after 25 calm days the spacing drops to 10 and the chance doubles, so a stable city is
+visited sooner by the world.
+
+### 13.8 Later phases
+
+Phase 2: festival depth (the Thaw feast costs goods and pays happiness by district; the
+Remembrance needs an Ossuary to count; the Hush vigil draws on stored mana), guild politics
+(the Guildhall as a council with demands tied to edicts), trade routes between the depot,
+quays and the daughter wardlight, and a *Weave* info view that paints aspects and auras.
+Phase 3: dragon breeding across lines at attuned cradles, and relic sets from the delve.
+
 ## 9. Verification
 
 - `npm test` runs 59 vitest cases: terrain determinism, road/zone/building rules, spire
@@ -1102,3 +1179,9 @@ consistent with `EDA_LORE.md` §9.
 - *Sectors are a gate on actions, not a second map:* one 16-byte array and one
   `inCharter` check in each action keep the whole sim unaware of the Charter line; only
   the ground tint and the purchase panel know it exists.
+- *Desktop only:* the phone layout and touch gestures were removed. Every panel, tool and
+  test now targets one surface, which keeps each feature cheap to add and to verify.
+- *Aspects over new buildings:* the deep dive added rules to existing places rather than
+  new places, so a player's map knowledge grows deeper instead of wider.
+- *Pressure, not timers:* the Gloam's hostility is a function of the city's own neglect
+  and care, which makes deathcare and faith matter every day rather than at the rim.

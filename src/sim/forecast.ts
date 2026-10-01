@@ -2,6 +2,7 @@
 import { DAYS_PER_SEASON, SEASON_NAMES, type GameState } from './types';
 import { seasonOf } from './world';
 import { spiresAtWyrm, WYRM_WAKE_PER_SPIRE, WYRM_EATS, WYRM_SULK_AFTER } from './wyrm';
+import { pressureWord } from './weave';
 
 export const FORECAST_DAYS = 5;
 
@@ -55,6 +56,7 @@ export function forecast(s: GameState): ForecastLine[] {
   } else if (w.state === 'bound' && w.unfed > 0) {
     out.push({ text: `The guardian has gone ${w.unfed} day${w.unfed === 1 ? '' : 's'} without its ${WYRM_EATS} goods; it sulks after ${WYRM_SULK_AFTER}.`, kind: w.unfed >= WYRM_SULK_AFTER - 3 ? 'bad' : 'warn' });
   }
+  out.push({ text: `The Gloam is ${pressureWord(s.gloamPressure)}${s.gloamPressure >= 0.45 ? ': quiet the dead and spread faith coverage to ease it' : ''}.`, kind: s.gloamPressure >= 0.65 ? 'bad' : s.gloamPressure >= 0.45 ? 'warn' : 'info' });
   if (!out.length) out.push({ text: 'Clear skies in the ley. Nothing stirs this week.', kind: 'good' });
   return out;
 }
