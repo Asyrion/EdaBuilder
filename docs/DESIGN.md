@@ -760,7 +760,9 @@ at the camera centre; wild surge, fire, clear all Gloam, +20 unquieted), Wyrms (
 a line, grow every dragon a stage, dragons content, wake the wyrm, flyover), Guilds & relics
 (a guild ±25, petition now, complete a relic set) and Events & map (fire any event by name,
 charter the whole map, flatten here). The panel shows a live status line and copies a state
-summary. `runDev` counts every use in `stats.devUses`, writes one Chronicle line the first
+summary. Rule: anything table-driven (events, relic sets, guilds, egg lines, walker jobs)
+appears in the panel by itself through its select; a mechanic that needs a bespoke action gets
+its command in the same iteration. `runDev` counts every use in `stats.devUses`, writes one Chronicle line the first
 time, and the daily-challenge result is marked "(dev tools used)". The game pauses after
 each command so the effect can be inspected.
 
@@ -802,6 +804,32 @@ Caravan choice "Auction the loose relics": price 100 + rng(0..40) per relic from
 costs `CHARTER_COST` (2,000) at a seated council; `isChartered` switches off the rivalry
 drift, the petition sting and the brawl. Buttons in the council block; `stats.guildCharters`;
 quest `k_charter`.
+
+### 4.62 The walker framework
+
+`walkers.ts` holds `WALKER_JOBS`, a table of NPC jobs. A job names the building kinds that
+field it (`from`), how many each fields today (`count`, e.g. a lit Watch House two, unlit one),
+a patrol radius, a sprite prop, an `onTile` hook for every road tile entered, the agent kinds
+it `meets` and an `onMeet` hook (returning true removes the other agent), and a daily `cap`
+on effects counted in `a.load`. Walkers are `AgentKind.Walker` with `job`, `anchorId`
+(`homeId` too, so `dailyAgents` keeps them), and a three-line `log` of what they did today.
+
+`dailyWalkers` tops every building up to its count at its road tile, dismisses orphans and
+surplus, resets counters and logs, and halves the bonus layer. `tickWalkers` runs every tick:
+a walker with no path picks a random road tile within its radius (six tries, `findPath` with
+800 nodes), walks it with the shared `stepRoad` step (builders use the same), calls `onTile`
+on each new tile, pauses 20–60 ticks at the end of a leg, and every five ticks tests the
+agents within 1.2 tiles for `onMeet`, pausing or not. The bonus layer `walkerBonus[type]` is
+transient (not saved) and is added into `updateCoverage` before the final conversion, so a
+patrolled street reads as covered in the overlay and in `dailyRestless`.
+
+The watchman proves it: from Watch Posts and Watch Houses, radius = the service radius,
++0.08 watch per tile walked (cap 0.3), kills hounds and lays the restless it meets, two of
+each a day, with a growl cue and a log line. Sprites `walker_<job>_<variant>_<frame>` are the
+citizen painter plus a prop (`rod`: red cap and the Watch's rod). The building panel lists its
+walkers and their last three log lines; the dev panel's "Walker here" lists every job in the
+table. Stats `walkerKills`, `walkerLayings`; quest `w_patrol`. Balance: seed 42 reaches Free
+City on day 60 (was 61) and Beacon on day 95 (was 92), inside the §14.1 tolerance.
 
 ## 5. Art direction
 
@@ -1367,7 +1395,7 @@ showed that a walker who *does* the job makes a system legible: you see the watc
 chase the hound, the sexton walk the dead home. The plan keeps static coverage for balance
 (it is tested and tuned) and adds walkers as the visible, bonus half of each service:
 
-- **Framework (iteration 31).** `AgentKind.Walker` with a `job` (a string key into a
+- **Framework (iteration 31). ✅ Built as 4.62.** `AgentKind.Walker` with a `job` (a string key into a
   `WALKER_JOBS` table) and an `anchorId` (its building). A job declares: who spawns it
   (building kind, count by level or lit state), a patrol (random road walks within the
   service radius, like citizens, or a target picker), an `onTile(state, agent)` hook run
@@ -1570,3 +1598,5 @@ picks it beside the scenario; the bot plays any of them.
   pays off the delve, and the brawl pays off neglected guilds (iteration 29).
 - *Walkers before peoples (iteration 30):* NPC kinds are the smaller step and each people
   will want its own; both are built as data so the second of each is cheap.
+- *Walkers are a bonus layer, never the coverage itself (iteration 31):* static radii stay
+  the balance baseline; walkers paint on top and their effects are capped per day.

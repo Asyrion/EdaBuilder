@@ -96,6 +96,7 @@ export const enum AgentKind {
   Restless = 2,
   Creature = 3,
   Builder = 4,
+  Walker = 5,
 }
 
 export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger';
@@ -171,6 +172,8 @@ export interface Agent {
   anchorId?: number; // building id (or -1) a creature is tied to
   ax?: number; // anchor tile for free-moving creatures
   ay?: number;
+  job?: string; // walkers: key into WALKER_JOBS
+  log?: string[]; // walkers: what it did today, last three lines
 }
 
 export interface TaxRates {
@@ -383,9 +386,12 @@ export interface GameState {
     wyrmDuels: number;
     relicsAuctioned: number;
     guildCharters: number;
+    walkerKills: number;
+    walkerLayings: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)
+  walkerBonus?: Record<ServiceType, Float32Array>; // walkers' bonus on coverage (walkers.ts)
   dirtyChunks?: Set<number>;
   zoneListDirty?: boolean;
   zoneList?: number[];

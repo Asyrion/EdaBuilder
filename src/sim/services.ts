@@ -115,6 +115,8 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     const wd = wardenDistricts(state);
     if (wd.size) for (let i = 0; i < n; i++) if (state.district[i] && wd.has(state.district[i])) acc[i] += 0.5;
   }
+  const wb = state.walkerBonus?.[type];
+  if (wb) for (let i = 0; i < n; i++) acc[i] += wb[i];
   const out = state.coverage[type];
   for (let i = 0; i < n; i++) out[i] = Math.min(255, Math.round(Math.min(1, acc[i]) * 255));
 }

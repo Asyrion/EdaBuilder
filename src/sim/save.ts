@@ -61,6 +61,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   for (const k of ['goodsDelivered', 'houndsKilled', 'gloamBurned', 'restlessLaid', 'caravanGoods', 'courierTrips'] as const) (state.stats as any)[k] = (state.stats as any)[k] ?? 0;
   state.stats.boutsLost = state.stats.boutsLost ?? 0;
   for (const a of state.agents) a.load = a.load ?? 0;
+  state.agents = state.agents.filter((a) => a.kind !== 5 || !!a.job);
   state.edicts = state.edicts ?? {};
   state.modifiers = state.modifiers ?? [];
   state.pendingEvent = state.pendingEvent ?? null;
@@ -86,7 +87,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();
   state.guilds.pleasedDays = state.guilds.pleasedDays ?? { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 };

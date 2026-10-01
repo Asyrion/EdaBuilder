@@ -1128,6 +1128,22 @@ function builder(variant: number, frame: number): Painter {
   return p;
 }
 
+/** A walker: a citizen with a signature prop so the kind reads at 2x. Props: rod (watchman). */
+function walker(prop: string, variant: number, frame: number): Painter {
+  const { p } = citizen(variant + 2, frame, false, false);
+  switch (prop) {
+    case 'rod':
+      p.rect(3, 0, 2, 1, 'fire1'); // red cap
+      p.rect(7, 1, 1, 6, 'wood1'); // the Watch's rod
+      p.px(7, 1, 'stone2');
+      break;
+    default:
+      p.px(6, 3, 'cloth5');
+  }
+  p.outline('outline');
+  return p;
+}
+
 function cart(variant: number): Painter {
   const p = new Painter(18, 12);
   if (variant === 3) {
@@ -1653,6 +1669,7 @@ export function generateSprites(): SpriteDef[] {
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
+  for (const [job, prop] of [['watchman', 'rod']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {
     const p = cart(v);
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
