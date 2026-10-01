@@ -1088,8 +1088,8 @@ Quarry, the Deep Cut and the bot's deep game.
 All three seeds reach the Deephold by day 120, as the plan asked, and Deep Hold no later
 than before. The bulldozer fix did most of the lifting (stage 1 doubled the folk); the deep
 game turns the plateau at the Under-Market into the Deephold and keeps growing past it. The
-stage-2 Vellish lines are bit-identical to stage 1 on seeds 42 and 43 (seed 44 is confirmed in
-the closing commit). What the table also shows for the
+stage-2 Vellish lines are bit-identical to stage 1 on all three seeds (seed 42: Burgh 42, Free
+City 64, Beacon 92). What the table also shows for the
 next iteration: a Grimmen town of 1,300 folk runs a brownout of a quarter (their node mana
 is two thirds of the Vellish and the bot stops placing spires once demand nears supply), so
 their mana game, Crystal Mines and the Forge-Temple early, is the next balance item.
