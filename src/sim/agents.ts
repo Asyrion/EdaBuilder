@@ -4,6 +4,7 @@ import { marketQuarterAt } from './districts';
 import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
 import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
+import { roadAt } from './roads';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
@@ -127,7 +128,7 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
     for (let k = 0; k < nb.length; k++) {
       if (k < 4 && !ok[k]) continue;
       const j = nb[k];
-      const rt = state.road[j];
+      const rt = roadAt(state, j);
       if (!rt) continue;
       const congestion = state.trafficSmooth[j] / 255;
       const cost = 1 / ROAD_BY_TYPE[rt].speed + congestion * 1.5;
@@ -448,7 +449,7 @@ export function tickAgents(state: GameState): void {
     const t = a.path[a.pathIdx];
     const tx = (t % MAP_W) + 0.5;
     const ty = ((t / MAP_W) | 0) + 0.5;
-    const rt = state.road[t] || 1;
+    const rt = roadAt(state, t) || 1;
     const congestion = state.trafficSmooth[t] / 255;
     const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
     const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
@@ -507,7 +508,7 @@ export function tickAgents(state: GameState): void {
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
   for (let i = 0; i < state.traffic.length; i++) {
-    const rt = state.road[i];
+    const rt = roadAt(state, i);
     let v = 0;
     if (rt) {
       const cap = ROAD_BY_TYPE[rt].capacity;

@@ -7,7 +7,7 @@ import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
 import { assignAspects, aspectAt } from './weave';
 import { Rng, hashString } from '../core/rng';
-import { BUILDING_BY_KEY, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
+import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
   DAYS_PER_SEASON,
@@ -85,6 +85,8 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     manaStorageMax: 0,
     overdrawDays: 0,
     brownout: 0,
+    nodeLinked: [],
+    roadsDim: false,
     waterSupply: 0,
     waterDemand: 0,
     unquieted: 0,
@@ -417,13 +419,21 @@ export function waterRadiusOf(state: GameState, b: Building): number {
   return r;
 }
 
-export function nodeMana(state: GameState): number {
+/** The nodes' flow before the people's multiplier: 90 a node plus its depth and a Vein's 15, for the linked nodes only when a list is given (a node's flow counts only while a lit spire, stake or hall within 6 tiles links it). The one-node scenario's deep Vein and the true veins left to the ley count always. */
+export function nodeFlow(state: GameState, linked?: boolean[]): number {
   let m = 0;
-  for (const n of state.nodes) m += (n.depth ?? 0) * NODE_DEEPEN_MANA;
+  state.nodes.forEach((n, k) => {
+    if (linked && linked[k] === false) return;
+    m += NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0);
+  });
   if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
-  for (const n of state.nodes) if (n.aspect === 'vein') m += 15;
   m += (state.stats.trueVeins ?? 0) * 10; // veins of true leystone left to the ley (the Grimmen's choice)
   return m;
+}
+/** One node's flow as its panel shows it. */
+export function nodeFlowOf(state: GameState, ni: number): number {
+  const n = state.nodes[ni];
+  return NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0) + (state.scenario === 'onenode' ? 90 : 0);
 }
 
 export function canDeepenNode(state: GameState, ni: number): string | null {
@@ -432,6 +442,7 @@ export function canDeepenNode(state: GameState, ni: number): string | null {
   const depth = n.depth ?? 0;
   if (depth >= NODE_DEEPEN_COST.length) return 'This Wellspring is as deep as it goes';
   if (state.milestone < 6) return 'Unlocks at Burgh';
+  if (state.nodeLinked.length && state.nodeLinked[ni] === false) return 'Unlinked: raise a spire within 6 tiles first, or the deeper flow is not drawn';
   if (state.treasury < NODE_DEEPEN_COST[depth]) return 'Not enough crowns';
   return null;
 }

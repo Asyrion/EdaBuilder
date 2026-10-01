@@ -66,7 +66,7 @@ function coverageOverlay(id: OverlayId, name: string, key: string, type: Service
 
 export const OVERLAY_LIST: OverlayDef[] = [
   {
-    id: 'mana', name: 'Mana', key: '1', desc: 'Lit tiles and unlit buildings. Spires light 5 tiles; lit buildings light their neighbours.',
+    id: 'mana', name: 'Mana', key: '1', desc: 'Lit tiles and unlit buildings. Spires light 5 tiles; lit buildings light their neighbours. A node counts only while a spire within 6 links it; a spire carries 80 mana of buildings and its farthest go dark over that.',
     legend: [['rgba(79,227,255,0.6)', 'lit by ley'], ['rgba(230,80,80,0.6)', 'building without mana']],
     tile: (s, i) => {
       const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;

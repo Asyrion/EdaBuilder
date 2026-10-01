@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, placeBuildingRaw } from '../src/sim/world';
+import { createGame, placeBuildingRaw, nodeFlow } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { idx } from '../src/sim/types';
 import { ASPECTS, aspectAt, dragonAuras, auraAt, computeGloamPressure, riverFrozen, millFactor, dailyWeave } from '../src/sim/weave';
@@ -32,7 +32,8 @@ describe('Ley aspects', () => {
     flatten(s, f.x - 12, f.y - 8, f.x + 12, f.y + 12);
     updateMana(s);
     const vein = s.nodes.filter((n) => n.aspect === 'vein').length;
-    expect(s.manaSupply).toBe(s.nodes.length * 90 + vein * 15);
+    expect(s.manaSupply).toBe(nodeFlow(s, s.nodeLinked)); // the linked nodes only
+    void vein;
     // force the founding node to Tide for the water test
     s.nodes[0].aspect = 'tide';
     buildRoad(s, RoadType.Track, roadPath(f.x - 8, f.y + 3, f.x + 8, f.y + 3, false));

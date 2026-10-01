@@ -92,6 +92,8 @@ export interface Building {
   visited?: number; // day a tamer last visited this cradle (growth ×1.1 that day)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
+  priority?: 0 | 1 | 2; // brownout tier: 0 essential, 1 normal, 2 dim (dark first); unset = by category
+  load?: number; // a spire's load: the mana of the buildings it lights (transient)
 }
 
 export const enum AgentKind {
@@ -291,6 +293,8 @@ export interface GameState {
   manaStorageMax: number;
   overdrawDays: number;
   brownout: number; // fraction of consumers unlit 0..1
+  nodeLinked: boolean[]; // a node's flow counts only while a lit spire, stake or hall links it (transient)
+  roadsDim: boolean; // lantern-ways are the first thing a shortfall dims (hysteresis)
   // water
   waterSupply: number;
   waterDemand: number;

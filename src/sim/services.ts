@@ -1,5 +1,6 @@
 /** Service coverage, miasma, land value. */
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
+import { roadAt } from './roads';
 import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
@@ -192,7 +193,8 @@ export function updateLandValue(state: GameState): void {
       let road = 0;
       for (const j of [i, i - 1, i + 1, i - MAP_W, i + MAP_W]) {
         if (j < 0 || j >= n) continue;
-        if (state.road[j] > road) road = state.road[j];
+        const rj = roadAt(state, j); // an unlit lantern-way is cobble
+        if (rj > road) road = rj;
       }
       if (road) v += ROAD_BY_TYPE[road].landValue + 4;
       const wd = state.waterDist[i];

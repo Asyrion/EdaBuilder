@@ -349,6 +349,14 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 45 (M14 part 1a: the ley has limits)
+
+- A node's flow counts only while a lit spire, stake or hall within 6 links it (the panel
+  says so; the bot links its nodes); a spire carries 80 mana of buildings (Wick-Tower 20,
+  Stake 60, Nexus 200) and sheds its farthest over that, with a Load row and a problem;
+  brownout tiers (Essential, Normal, Dim) per building, set from its panel; lantern-ways dim
+  first when the ley runs short and an unlit lantern tile is cobble.
+
 ## Done in iteration 44 (the sweep)
 
 - A review of every building and mechanic (docs/AUDIT.md): seventy findings, a depth table,
@@ -430,10 +438,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 1: supply has limits** (DESIGN §15, AUDIT.md §4 part 1): linked nodes only,
-   spire load, the store spent with brownout priority tiers, wells with capacity, roads that
-   need their light, mine seams, Font flares, shared rivers, portal crossings, the Gloam that
-   takes a dark building. Balance re-based on the iteration 44 table; the three-seed rule.
+0. **M14 part 1b: supply has limits, the ground** (DESIGN §15, AUDIT.md §4 part 1): wells
+   with capacity (30 zone levels, cistern 90, Tide-Well 45, Seep 20; nearest first; a
+   "Drawn 34/30" row and an overdrawn problem; wells more than 8 from water reach 4; the
+   Seep's seasons; the Hush flood fouls bank wells), mud on dirt tracks in the Thaw and the
+   Hush, mine seams (2,400; spent shafts wake golems), Font bore flares over 90 % of flow,
+   mills that share a river (×0.6 within 8), portal crossings (60 a day, 0.1 mana each), and
+   the Gloam that takes an unlit, unwarded building after two days' warning when pressure
+   is 0.65 or more. Balance against the iteration 45 table; the three-seed rule.
 1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge

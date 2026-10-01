@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame } from '../src/sim/world';
+import { createGame, nodeFlow } from '../src/sim/world';
 import { buildRoad, paintZone, placeBuilding, roadPath } from '../src/sim/actions';
 import { RoadType, Zone, idx } from '../src/sim/types';
 import { updateMana, updateWater } from '../src/sim/networks';
@@ -26,7 +26,9 @@ describe('mana network', () => {
     expect(spires.map((b) => b!.lit)).toEqual([true, true, false]);
     // houses within radius 5 of s2 (x <= f.x+16) lit directly; the rest by adjacency chain
     for (const h of houses) expect(h.lit).toBe(true);
-    expect(s.manaSupply).toBe(s.nodes.length * NODE_MANA + 15 * s.nodes.filter((n) => n.aspect === 'vein').length); // Vein ley adds 15
+    expect(s.manaSupply).toBe(nodeFlow(s, s.nodeLinked)); // the linked nodes only (Vein ley adds 15)
+    expect(s.nodeLinked.filter(Boolean).length).toBeGreaterThanOrEqual(1);
+    void NODE_MANA;
     expect(s.manaDemand).toBe(houses.length * 1);
   });
   it('browns out the farthest consumers when demand exceeds supply', () => {

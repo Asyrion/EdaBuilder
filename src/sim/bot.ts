@@ -48,6 +48,7 @@ export class Bot {
     this.moor();
     this.brighten();
     this.keepLit();
+    this.linkNodes();
     this.buyServices();
     // expand when zone tiles are mostly used and demand is positive
     const free = this.freeZoneTiles();
@@ -154,6 +155,24 @@ export class Bot {
       const near = lit.some((l) => Math.hypot(l.x - b.x, l.y - b.y) <= reach + 2);
       if (near ? this.placeNear('wicktower', b.x, b.y, 3) : this.placeNear('spire', b.x, b.y, 3)) done++;
     });
+  }
+
+  /** A node's flow counts only while a spire links it: when the ley runs short, link the nearest unlinked node in reach (never a sleeping wyrm's). */
+  private linkNodes(): void {
+    const s = this.s;
+    if (!s.nodeLinked.length || s.manaDemand < s.manaSupply * 0.85) return;
+    const f = s.founding;
+    let best = -1;
+    let bd = Infinity;
+    s.nodes.forEach((n, k) => {
+      if (s.nodeLinked[k]) return;
+      if (k === s.wyrm.node && s.wyrm.state === 'sleeping') return;
+      const d = Math.hypot(n.x - f.x, n.y - f.y);
+      if (d <= this.radius + 8 && d < bd) { bd = d; best = k; }
+    });
+    if (best < 0) return;
+    const n = s.nodes[best];
+    this.placeNear(factionKey(s, 'spire'), n.x, n.y, 5, true);
   }
 
   /** Place spires near unlit buildings, chained to the lit network. */

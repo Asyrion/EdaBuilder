@@ -119,6 +119,7 @@ class Game {
       canFoundDaughter: (i) => canFoundDaughter(this.state, i),
       foundDaughter: (i, name) => { const why = foundDaughter(this.state, i, name); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
       setQuarter: (d, q) => { setQuarter(this.state, d, q); recomputeAll(this.state); this.renderer.overlayVersion++; this.audio.click(); },
+      setPriority: (id, p) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b) { b.priority = p; b.lit = true; /* a changed tier is judged afresh: the brownout darkens the already-dark first */ recomputeAll(this.state); this.audio.click(); } },
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
       setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
