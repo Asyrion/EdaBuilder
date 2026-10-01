@@ -706,6 +706,31 @@ so it never appears in the build menu). `hallActive(s, kind)` is false while the
 at or under 25; coverage, storage, the depot count, miasma scrubbing and the surge
 threshold all read it. Quest `k_hall`.
 
+### 4.51 Construction and the builders
+
+Nothing the player places stands at once. `placeBuilding` and `trySpawnBuildings` create the
+building in state `building` with `work` and `workTotal` in builder-ticks (`construction.ts`):
+zone buildings take one day, others `ceil(cost / 1500)` days clamped to 1..6 and wonders
+half again (cap 10), free guild halls two. A site is inert: every system reads `state ===
+'ok'`, and spires, the mana graph and the quest counters skip `building` explicitly.
+
+Zone buildings are raised by the folk who will live or work there at one work per tick (a
+day, no builders). Placed buildings are raised by the Warden-Reeve's builders, a new agent
+kind (`AgentKind.Builder`) hired at the Founding Stake's road: 2 + population/150, capped at
+10, kept daily and topped up as soon as a site exists. Every tick idle builders take the
+nearest understaffed site (at most three per site, two assignments per tick to keep A* cheap),
+walk the roads to its road tile at 1.4 tiles a second, and work it: `work -= 0.25 + present`.
+With no builder present the folk still raise it at a quarter pace, and a site no road reaches
+from the Stake says so in its panel. At zero the building finishes (ticker line for
+non-zone buildings, a bell cue), and the crew moves on.
+
+Rendering: a site draws its sprite as a 22% ghost with the bottom `1 - work/workTotal` of
+its rows at full strength, so buildings rise out of their foundations, and a 16-pixel
+progress bar at 2x or closer. Builders have their own four-frame sprites (cap, plank,
+hammer); at a site they swing the hammer and throw sparks, and every 120 ticks a site with
+builders raises a `hammer` sound cue. `construction.instant` skips all of it for tests and
+headless tools (the vitest setup file turns it on; `construction.test.ts` turns it off).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1319,3 +1344,5 @@ building each, and guild rivalries (one guild's boon costs another's standing).
   cradle, so the aspects decide which crosses a map allows (iteration 25).
 - *Guilds build for themselves:* a hall arrives as a reward that the sim places, and it
   locks on a strike, so standing stays a live stake rather than a one-time unlock.
+- *Construction shows its work:* placed buildings rise over days under visible builders,
+  but zone buildings raise themselves in a day so growth pacing is untouched (iteration 26).

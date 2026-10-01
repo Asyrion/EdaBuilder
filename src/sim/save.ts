@@ -91,6 +91,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.guilds = state.guilds ?? initGuilds();
   state.guilds.pleasedDays = state.guilds.pleasedDays ?? { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 };
   state.relics = state.relics ?? initRelics();
+  for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
   state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   state.fenNex = state.fenNex ?? 0;
   state.scenario = state.scenario ?? 'valley';

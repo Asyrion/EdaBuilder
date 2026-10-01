@@ -16,8 +16,8 @@ import { aspectAt, nodesOfAspect } from './weave';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
-export type SoundCue = 'howl' | 'roar' | 'growl' | 'horn' | 'bell' | 'song' | 'storm' | 'stomp' | 'rain';
-export const SOUND_CUES: SoundCue[] = ['howl', 'roar', 'growl', 'horn', 'bell', 'song', 'storm', 'stomp', 'rain'];
+export type SoundCue = 'howl' | 'roar' | 'growl' | 'horn' | 'bell' | 'song' | 'storm' | 'stomp' | 'rain' | 'hammer';
+export const SOUND_CUES: SoundCue[] = ['howl', 'roar', 'growl', 'horn', 'bell', 'song', 'storm', 'stomp', 'rain', 'hammer'];
 
 export interface Effect {
   x: number;

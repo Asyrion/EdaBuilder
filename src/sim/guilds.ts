@@ -186,7 +186,7 @@ function raiseHall(s: GameState, g: GuildId): void {
         const x = hall.x + dx;
         const y = hall.y + dy;
         if (canPlaceBuilding(s, kind, x, y)) continue;
-        const b = placeBuildingRaw(s, kind, x, y);
+        const b = placeBuildingRaw(s, kind, x, y, 1, true);
         s.stats.guildHalls++;
         s.guilds.pleasedDays[g] = 0;
         pushMessage(s, `${GUILDS[g].name} has raised ${BUILDING_BY_KEY[kind].name} at (${x},${y}) at its own cost: ${BUILDING_BY_KEY[kind].desc}`, 'milestone', true, { x: b.x, y: b.y });

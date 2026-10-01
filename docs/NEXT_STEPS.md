@@ -187,6 +187,13 @@
   lyceum, lodge, chapel), each with an effect in its guild's system; halls lock on strike.
 - Three quests, info rows for cradles, the delve, the Academy and the halls.
 
+## Done in iteration 26
+
+- Construction: placed buildings rise over days (by cost; wonders longer) out of their
+  foundations with a progress bar; builder NPCs hired at the Founding Stake walk the roads
+  to each site, swing hammers and finish it with a bell. Zone buildings are raised by their
+  own folk in a day. Sites are inert until finished; the info panel shows progress and crew.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,

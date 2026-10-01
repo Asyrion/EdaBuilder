@@ -362,6 +362,7 @@ export class Audio {
       case 'song': osc('sine', 880, 1320, 1.6, 0.07, 0, 2); osc('sine', 1320, 1100, 1.4, 0.05, 1.2, 2.5); osc('sine', 660, 990, 1.8, 0.04, 0.4, 2); break;
       case 'storm': noise(0.12, 0.4, 3000, 0, 'highpass'); noise(0.1, 0.35, 2500, 0.18, 'highpass'); noise(0.15, 0.4, 2000, 0.4, 'highpass'); osc('sine', 523, 1046, 0.5, 0.06); osc('sine', 659, 1318, 0.5, 0.05, 0.15); osc('sine', 784, 1568, 0.6, 0.05, 0.3); break;
       case 'stomp': osc('sine', 80, 40, 0.35, 0.3); noise(0.2, 0.25, 180); osc('sine', 70, 38, 0.35, 0.25, 0.5); noise(0.2, 0.2, 180, 0.5); break;
+      case 'hammer': osc('square', 820, 540, 0.05, 0.05); noise(0.04, 0.18, 2200, 0, 'highpass'); osc('square', 760, 500, 0.05, 0.04, 0.16); noise(0.04, 0.15, 2000, 0.16, 'highpass'); break;
       case 'rain': noise(2.5, 0.25, 1800, 0, 'bandpass'); noise(2.0, 0.15, 900, 0.3); osc('sine', 392, 392, 0.5, 0.05, 0.2); break;
     }
   }

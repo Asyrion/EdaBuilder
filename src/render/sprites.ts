@@ -1117,6 +1117,17 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   return { p, glow };
 }
 
+/** A builder: a citizen in a leather cap with a plank on one shoulder and a hammer; frames 2 and 3 swing the hammer. */
+function builder(variant: number, frame: number): Painter {
+  const { p } = citizen(variant + 1, frame % 2, false, false);
+  p.rect(3, 0, 2, 1, 'wood2'); // cap
+  p.rect(0, 3, 5, 1, 'wood1'); // plank on the shoulder
+  if (frame >= 2) { p.px(6, frame === 2 ? 2 : 4, 'outline'); p.px(7, frame === 2 ? 1 : 4, 'stone2'); } // hammer up / down
+  else p.px(6, 3, 'stone2');
+  p.outline('outline');
+  return p;
+}
+
 function cart(variant: number): Painter {
   const p = new Painter(18, 12);
   if (variant === 3) {
@@ -1641,6 +1652,7 @@ export function generateSprites(): SpriteDef[] {
   // agents
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
+  for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {
     const p = cart(v);
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }

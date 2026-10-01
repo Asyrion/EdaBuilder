@@ -61,7 +61,7 @@ export const SERVICE_TYPES: ServiceType[] = [
   'leisure',
 ];
 
-export type BuildingState = 'ok' | 'burning' | 'ruin' | 'abandoned';
+export type BuildingState = 'ok' | 'burning' | 'ruin' | 'abandoned' | 'building';
 
 export interface Building {
   id: number;
@@ -86,6 +86,8 @@ export interface Building {
   cooldown: number; // days until an ability can be used again
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
+  work: number; // construction work left in builder-ticks (0 when standing)
+  workTotal: number;
 }
 
 export const enum AgentKind {
@@ -93,6 +95,7 @@ export const enum AgentKind {
   Cart = 1,
   Restless = 2,
   Creature = 3,
+  Builder = 4,
 }
 
 export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger';

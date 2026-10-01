@@ -74,7 +74,7 @@ export function trySpawnBuildings(state: GameState, attempts = 5): void {
     // arcane requires schooling coverage at the tile
     if (z === Zone.Arcane && state.coverage.school[i] < 40) continue;
     commitRng(state, rng);
-    const b = placeBuildingRaw(state, ZONE_KEY[z], x, y, 1);
+    const b = placeBuildingRaw(state, ZONE_KEY[z], x, y, 1, true);
     if (z === Zone.Hearth) b.residents = 2;
     rng.state = state.rngState;
   }
@@ -196,7 +196,7 @@ export function dailyBuildings(state: GameState): void {
     }
     b.age++;
     b.stateDays++;
-    if (b.state === 'burning') return;
+    if (b.state === 'burning' || b.state === 'building') return;
     if (b.state === 'ruin') {
       if (b.stateDays > 12) removeBuilding(state, b);
       return;

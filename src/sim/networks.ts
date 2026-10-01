@@ -50,7 +50,7 @@ export function updateMana(state: GameState): void {
   // 2. spire chain: BFS from nodes over spires/nexus
   const spires: Building[] = [];
   forEachBuilding(state, (b) => {
-    if ((b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'lantern' || b.kind === 'stake') && b.state !== 'ruin') spires.push(b);
+    if ((b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'lantern' || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
   });
   const spireLit = new Array(spires.length).fill(false);
   const sources: { x: number; y: number; r: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y, r: NODE_RADIUS }));
@@ -141,7 +141,7 @@ export function updateMana(state: GameState): void {
     const s = state.bIndex[idx(x, y)];
     if (s >= 0 && !litB[s]) {
       const b = state.buildings[s];
-      if (b && b.state !== 'ruin') {
+      if (b && b.state !== 'ruin' && b.state !== 'building') {
         litB[s] = true;
         bq.push(s);
       }

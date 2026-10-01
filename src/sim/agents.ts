@@ -433,7 +433,7 @@ export function tickAgents(state: GameState): void {
   };
   const dt = 1 / TICKS_PER_SEC;
   for (const a of state.agents) {
-    if (a.kind === AgentKind.Creature) continue;
+    if (a.kind === AgentKind.Creature || a.kind === AgentKind.Builder) continue;
     if (a.timer > 0) {
       a.timer--;
       continue;

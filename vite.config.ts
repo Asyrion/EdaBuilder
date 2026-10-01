@@ -3,5 +3,5 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   base: './',
   build: { target: 'es2022', sourcemap: false },
-  test: { include: ['tests/**/*.test.ts'] },
+  test: { include: ['tests/**/*.test.ts'], setupFiles: ['tests/setup.ts'] },
 });
