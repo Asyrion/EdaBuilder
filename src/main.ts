@@ -4,6 +4,7 @@ import { createGame, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
 import { canFoundDaughter, foundDaughter } from './sim/charter';
 import { SOUND_CUES, type SoundCue } from './sim/hazards';
+import { buySector } from './sim/sectors';
 import { tileToWorld } from './render/iso';
 import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
@@ -41,6 +42,7 @@ class Game {
   paused = false;
   selected: Building | null = null;
   selectedNode = -1;
+  selectedSector = -1;
   undoStack: Snapshot[] = [];
   muted = false;
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> } = { colorBlind: false, uiScale: 1, keys: { ...DEFAULT_KEYS } };
@@ -68,6 +70,7 @@ class Game {
       onAction: (kind, msg) => this.onAction(kind, msg),
       onSelect: (b) => this.select(b),
       onSelectNode: (i) => { this.selectedNode = i; this.ui.refresh(); },
+      onSelectSector: (k) => { this.selectedSector = k; this.ui.refresh(); },
       beforeAction: (label) => this.pushUndo(label),
       onKey: (k, e) => this.onKey(k, e),
       keys: () => this.settings.keys,
@@ -104,6 +107,8 @@ class Game {
       setEdict: (k, on, district) => { if (district) this.state.districtEdicts[`${district}:${k}`] = on; else this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
       get settings() { return game.settings; },
       get selectedNode() { return game.selectedNode; },
+      get selectedSector() { return game.selectedSector; },
+      buySector: (k) => { const why = buySector(this.state, k); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); this.selectedSector = -1; } return why; },
       deepenNode: (i) => { const why = deepenNode(this.state, i); if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); },
       canDeepenNode: (i) => canDeepenNode(this.state, i),
       canFoundDaughter: (i) => canFoundDaughter(this.state, i),
@@ -240,7 +245,7 @@ class Game {
   }
 
   select(b: Building | null): void {
-    if (b) this.selectedNode = -1;
+    if (b) { this.selectedNode = -1; this.selectedSector = -1; }
     this.selected = b;
     this.view.selected = b;
     this.ui.refresh();

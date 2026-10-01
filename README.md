@@ -35,6 +35,9 @@ lake, forests, hills, several **ley nodes** (glowing springs of magic) and a gre
 **Gloam** (blighted wilds). You start with 15,000 crowns and a Founding Stake next to the
 main node.
 
+0. **The Charter line** — the dimmed land beyond it cannot be built on. Click it to see
+   the price; from Hamlet, buy a sector that touches the Charter and the Gloam inside it
+   draws back.
 1. **Roads** — pick *Dirt Track* and drag. Everything grows beside a road. Bridges over
    shallow water cost 4×. Cobbles (Hamlet) raise land value; Lantern-ways (Township) also
    carry mana along their length.
@@ -165,6 +168,8 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
+  Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
   date with a copyable result, and remappable keys in the Menu.
 - A phone layout: bottom-sheet toolbar, compact top bar, touch gestures; aria labels and

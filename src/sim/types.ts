@@ -297,6 +297,7 @@ export interface GameState {
   wyrm: WyrmState;
   fenNex: number; // district granted to the Fen-Nex, 0 none
   scenario: Scenario;
+  sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter
   challenge: string | null; // daily challenge date, e.g. '2026-10-01'
   challengeDay: number; // day the challenge goal was met, -1
   daughter: { node: number; x: number; y: number; name: string; day: number; twin: number } | null;
@@ -346,6 +347,7 @@ export interface GameState {
     mothsSeen: number;
     daughters: number;
     terraformed: number;
+    sectorsBought: number;
     wispRing: number;
     wyrmFlyovers: number;
     gloamTiles: number;

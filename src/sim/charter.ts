@@ -5,6 +5,7 @@ import { districtsInUse } from './edicts';
 import { MAX_DISTRICTS, RoadType, Terrain, Zone, idx, inBounds, type GameState } from './types';
 import { canPlaceBuilding, forEachBuilding, markDirtyAround, placeBuildingRaw, pushMessage } from './world';
 import { wyrmNode } from './wyrm';
+import { sectorOf } from './sectors';
 
 export const DAUGHTER_GRANT = 15000;
 export const DAUGHTER_MIN_DIST = 30;
@@ -51,6 +52,8 @@ export function foundDaughter(s: GameState, ni: number, name: string): string | 
   const [x, y] = spot;
   // clear forest under and beside the stake so the stub can be laid
   for (let yy = y - 1; yy <= y + 2; yy++) for (let xx = x - 1; xx <= x + 2; xx++) if (inBounds(xx, yy) && s.terrain[idx(xx, yy)] === Terrain.Forest) s.terrain[idx(xx, yy)] = Terrain.Grass;
+  // the Crown charters the daughter's sector with the stake
+  s.sectors[sectorOf(x, y)] = 1;
   placeBuildingRaw(s, 'stake', x, y);
   markDirtyAround(s, x, y);
   // a road stub along the stake's south edge

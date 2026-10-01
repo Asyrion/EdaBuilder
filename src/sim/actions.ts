@@ -2,6 +2,9 @@
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
+import { inCharter } from './sectors';
+import { effects } from './hazards';
+import { MAP_W } from './types';
 
 export interface ActionResult {
   ok: boolean;
@@ -17,6 +20,7 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (state.bIndex[i] >= 0) return -1;
   if (state.gloam[i]) return -1;
   if (state.wall[i] === 1) return -1; // roads pass through gates, not walls
+  if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1; // beyond the Charter
   let cost = def.cost;
   if (t === Terrain.Water) cost *= 4; // bridge
   if (t === Terrain.Hills) cost *= 3; // cut into rock
@@ -105,6 +109,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       if (state.road[i]) continue;
       const t = state.terrain[i];
       if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+      if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];
         if (b && BUILDING_BY_KEY[b.kind].category === 'zone' && zone === Zone.None) {
@@ -193,6 +198,7 @@ export function paintDistrict(state: GameState, district: number, x0: number, y0
       if (!inBounds(x, y)) continue;
       const i = idx(x, y);
       if (isWater(state.terrain[i])) continue;
+      if (!inCharter(state, x, y)) continue;
       if (state.district[i] !== district) {
         state.district[i] = district;
         n++;
@@ -258,6 +264,7 @@ export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock
 /** Terraforming: one tile at a time. */
 export function terraform(state: GameState, op: TerraformOp, x: number, y: number): ActionResult {
   if (!inBounds(x, y)) return { ok: false };
+  if (!inCharter(state, x, y)) return { ok: false, reason: 'Beyond the Charter' };
   const i = idx(x, y);
   const def = TERRAFORM[op];
   if (state.milestone < def.unlock) return { ok: false, reason: 'Not yet unlocked' };
@@ -277,6 +284,7 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
 
 /** Warding Wall: a line of leystone-inlaid stone the Gloam cannot cross and hounds cannot pass. */
 export function wallTileCost(state: GameState, i: number): number {
+  if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1;
   const t = state.terrain[i];
   if (isWater(t) || t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0 || state.road[i] || state.gloam[i]) return -1;
@@ -327,6 +335,7 @@ export function placeGate(state: GameState, style: 2 | 3, x: number, y: number):
   const i = idx(x, y);
   const t = state.terrain[i];
   if (isWater(t) || t === Terrain.LeyNode || state.bIndex[i] >= 0 || state.gloam[i]) return { ok: false, reason: 'Cannot build here' };
+  if (!inCharter(state, x, y)) return { ok: false, reason: 'Beyond the Charter' };
   const nearWall = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < state.wall.length && state.wall[j] === 1);
   if (state.wall[i] !== 1 && !nearWall) return { ok: false, reason: 'A gate must stand in or beside the Warding Wall' };
   const cost = GATE_COST[style];
@@ -360,6 +369,7 @@ export function callRain(state: GameState, buildingId: number): ActionResult {
     }
   }
   state.modifiers.push({ kind: 'rain', value: 1, until: state.day + 3, label: 'Called rain' });
+  effects.push({ x: b.x, y: b.y, kind: 'rain', tick: state.tick });
   pushMessage(state, `The storm caller climbs the peak. Rain comes down in sheets: ${doused} fire${doused === 1 ? '' : 's'} out, the miasma washed into the gutters, the glimherb drinking.`, 'good');
   return { ok: true, cost: 300 };
 }

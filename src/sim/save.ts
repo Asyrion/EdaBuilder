@@ -48,6 +48,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
       (state as any)[k] = new Uint16Array(b.buffer, b.byteOffset, b.byteLength / 2);
     } else (state as any)[k] = v;
   }
+  if (!('sectors' in o)) state.sectors.fill(1); // saves from before map sectors own the whole map
   state.version = SAVE_VERSION;
   // forward-compat defaults for fields added after v3
   for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; b.cooldown = b.cooldown ?? 0; }
@@ -78,7 +79,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'wispRing'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'wispRing'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   state.fenNex = state.fenNex ?? 0;
   state.scenario = state.scenario ?? 'valley';
