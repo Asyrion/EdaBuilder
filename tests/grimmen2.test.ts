@@ -131,10 +131,10 @@ describe('The Underhill chapter and the Grimmen tales', () => {
     for (let k = 0; k < 4; k++) placeBuildingRaw(g, 'hearth', f.x - 6 + k * 3, f.y + 4);
     recomputeAll(g);
     expect(GRIMMEN.find((e) => e.id === 'collapse')!.when(g)).toBe(true);
-    const stone0 = g.stats.terraformed;
+    const stone0 = g.stats.stoneCut;
     fire(g, 'collapse', 1);
     expect(g.buildings.filter((b) => b && b.state === 'ruin').length).toBe(1);
-    expect(g.stats.terraformed - stone0).toBe(2);
+    expect(g.stats.stoneCut - stone0).toBe(2);
     fire(g, 'collapse', 0);
     expect(g.buildings.filter((b) => b && b.state === 'ruin').length).toBe(1);
     // the true vein

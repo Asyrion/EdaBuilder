@@ -205,6 +205,7 @@ export interface BuildingSpec {
   glassDome?: boolean;
   waterWheel?: boolean; // a mill wheel on the left face
   vines?: boolean; // glowing vines down the walls
+  stonePile?: boolean; // cut blocks stepped beside the right face and a windlass post over them (the Quarry)
 }
 
 const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
@@ -567,6 +568,19 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
     p.rect(x + 1, y - 8, 2, 3, 'lampWarm');
     p.px(x + 1, y - 8, 'windowLit');
     glow.rect(x, y - 9, 4, 5, 'lampWarm', 230);
+  }
+  if (spec.stonePile) {
+    // dressed blocks in three stepped rows, and the windlass: a post with an arm and an iron hook
+    const x = R[0] - 11;
+    const y = R[1] - 2;
+    for (let k = 0; k < 3; k++) {
+      p.rect(x + k, y - 2 * k - 2, 7 - 2 * k, 2, k % 2 ? 'stone2' : 'stone1');
+      p.px(x + k + 2, y - 2 * k - 2, 'stone3');
+    }
+    p.rect(x + 8, y - 11, 1, 10, 'wood2');
+    p.line(x + 8, y - 11, x + 2, y - 11, 'wood1');
+    p.rect(x + 2, y - 10, 1, 3, 'ironDark');
+    p.px(x + 3, y - 7, 'ironDark');
   }
   if (spec.alembic) {
     // copper still with a green glass bulb on the roof
@@ -1357,6 +1371,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   hatchery: { w: 2, h: 2, height: 5, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 33, runeBand: true, leyLamps: true, standingStones: true },
   seep: { w: 1, h: 1, height: 3, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 9 },
   stoneward: { w: 1, h: 1, height: 12, roofH: 2, wall: 'darkstone', roof: 'flat', windows: 0, seed: 21, runeBand: true, standingStones: true },
+  quarry: { w: 1, h: 1, height: 6, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 46, lanternPost: true, stonePile: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
   torrentmill: { w: 1, h: 1, height: 12, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },

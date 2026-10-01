@@ -4,7 +4,7 @@ import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK
 import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
-import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
+import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, isChartered, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
@@ -15,7 +15,7 @@ import { builderTarget, buildersAt, construction, sites } from '../sim/construct
 import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
-import { EDICTS, districtsInUse } from '../sim/edicts';
+import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
 import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, isCradle, stageCap } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
@@ -267,7 +267,7 @@ export class UI {
       }
       add('De-zone', '', false, t.kind === 'zone' && t.zone === Zone.None, () => this.host.setTool({ kind: 'zone', zone: Zone.None }), () => `<div class="t">De-zone</div>Removes zoning (and any zoned building) from the area.`);
     } else if (this.category === 'land') {
-      for (const op of Object.keys(TERRAFORM) as TerraformOp[]) {
+      for (const op of (Object.keys(TERRAFORM) as TerraformOp[]).filter((k) => !TERRAFORM[k].faction || TERRAFORM[k].faction!.includes(s.faction))) {
         const d = TERRAFORM[op];
         const locked = s.milestone < d.unlock;
         add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${this.ms()[d.unlock].name}</span>` : ''}`);
@@ -640,7 +640,7 @@ export class UI {
     const i = idx(b.x, b.y);
     const problems: string[] = [];
     if (def.category === 'zone') {
-      const cap = capacityOf(b);
+      const cap = capacityOf(b, s);
       rows.push(row('Level', `${b.level} / 3`));
       if (def.zone === Zone.Hearth) rows.push(row('Residents', `${b.residents} / ${cap}`));
       else rows.push(row('Workers', `${b.workers} / ${cap}`));
@@ -669,6 +669,8 @@ export class UI {
       if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
       if (def.service) rows.push(row('Radius', `${def.service.radius} tiles`));
       if (def.waterRadius) rows.push(row('Waters', `${def.waterRadius} tiles`));
+      if (def.capacity) rows.push(row('Workers', `${b.workers} / ${capacityOf(b, s)}`));
+      if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
       if (b.kind === 'spire' && !b.lit) problems.push('Not linked: a spire must be within 6 tiles of a ley node or a lit spire.');
     }
@@ -1382,7 +1384,7 @@ export class UI {
       }
       stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>`;
     }
-    const rows = EDICTS.map((e) => {
+    const rows = edictsFor(st).map((e) => {
       const locked = st.milestone < e.unlock;
       const on = this.edictScope ? !!st.districtEdicts[`${this.edictScope}:${e.key}`] : !!st.edicts[e.key];
       const cityOn = this.edictScope ? !!st.edicts[e.key] : false;
@@ -1433,7 +1435,7 @@ export class UI {
         <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. Rival: ${GUILDS[RIVAL_OF[id]].name}${isChartered(st, id) ? ' (chartered: no grudge)' : ''}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
     }).join('');
     const dm = g.demand;
-    const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICTS.find((e) => e.key === GUILDS[dm.guild].edict)?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';
+    const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICT_BY_KEY[GUILDS[dm.guild].edict]?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';
     const charters = council ? (['carters', 'alchemists'] as GuildId[]).filter((p) => !st.guilds.charters.includes(p)).map((p) => `<button class="show" data-charter="${p}" ${st.treasury < CHARTER_COST ? 'disabled' : ''}>Charter ${GUILDS[p].name.replace('The ', 'the ')} and ${GUILDS[RIVAL_OF[p]].name.replace('The ', 'the ')} (${CHARTER_COST} crowns)</button>`).join(' ') : '';
     return `<h3 style="margin-top:8px">The guild council</h3>
       <p class="muted">${council ? `The four guilds sit at the Guildhall. Every ${COUNCIL_SPACING} days the least pleased of them petitions for an edict. ${st.stats.councils} petition${st.stats.councils === 1 ? '' : 's'} heard.` : 'No lit Guildhall: the guilds have no seat and no voice. Build one (Leisure tab) to hear petitions and earn their boons.'}</p>

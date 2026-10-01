@@ -86,14 +86,16 @@ describe('The bot plays the Grimmen', () => {
     expect(s.milestone).toBeGreaterThanOrEqual(1);
   });
 
-  it('levels hills when its folk outrun its stone at the Land tool', () => {
+  it('delves beside its streets when its folk outrun its stone, and never levels its own hills', () => {
     const s = town();
     const bot = new Bot(s);
     s.milestone = 4; s.population = 700; // Under-Market needs 650 folk and 30 stone
     expect(stoneQuarried(s)).toBeLessThan(GRIMMEN_STONE[5]);
-    const t0 = s.stats.terraformed;
+    const hills0 = s.terrain.filter((t) => t === Terrain.Hills).length;
+    const t0 = s.stats.stoneCut;
     bot.step();
-    expect(s.stats.terraformed - t0).toBe(3);
+    expect(s.stats.stoneCut - t0).toBe(4);
+    expect(s.terrain.filter((t) => t === Terrain.Hills).length).toBe(hills0 + 4); // delved, not levelled
     expect(s.milestone).toBe(4);
     for (let d = 0; d < 12; d++) bot.step();
     expect(stoneQuarried(s)).toBeGreaterThanOrEqual(GRIMMEN_STONE[5]);

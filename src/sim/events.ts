@@ -24,7 +24,7 @@ function addResidents(s: GameState, n: number): number {
   let left = n;
   forEachBuilding(s, (b) => {
     if (left <= 0 || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || b.state !== 'ok') return;
-    const room = capacityOf(b) - b.residents;
+    const room = capacityOf(b, s) - b.residents;
     const take = Math.min(room, left, 3);
     if (take > 0) {
       b.residents += take;
@@ -475,7 +475,7 @@ export const GRIMMEN: EventDef[] = [
     when: (s) => s.faction === 'grimmen' && hillBuildings(s).length >= 4,
     choices: [
       { label: 'Shore it up (600 crowns)', desc: 'The crews hold it; nothing falls.', apply: (s) => { if (s.treasury < 600) return 'There is no coin for timber. The crews do what they can with their hands, which is nothing.'; s.treasury -= 600; return 'Timber and prayer. The crack stops at the third prop and the street holds.'; } },
-      { label: 'Let it fall', desc: 'One building on the hill is lost to ruin; the rubble counts two stone quarried.', apply: (s) => { const rng = rngOf(s); const list = hillBuildings(s).filter((b) => BUILDING_BY_KEY[b.kind].category === 'zone'); if (!list.length) { commitRng(s, rng); s.stats.terraformed += 2; return 'The gallery falls under empty ground. The cutters carry out the stone and count it.'; } const b = rng.pick(list); commitRng(s, rng); b.state = 'ruin'; b.stateDays = 0; b.residents = 0; b.workers = 0; markDirty(s, b.x, b.y); s.stats.terraformed += 2; return `The ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) goes down into the dark with a sound like a door. The rubble is good stone.`; } },
+      { label: 'Let it fall', desc: 'One building on the hill is lost to ruin; the rubble counts two stone quarried.', apply: (s) => { const rng = rngOf(s); const list = hillBuildings(s).filter((b) => BUILDING_BY_KEY[b.kind].category === 'zone'); if (!list.length) { commitRng(s, rng); s.stats.stoneCut += 2; return 'The gallery falls under empty ground. The cutters carry out the stone and count it.'; } const b = rng.pick(list); commitRng(s, rng); b.state = 'ruin'; b.stateDays = 0; b.residents = 0; b.workers = 0; markDirty(s, b.x, b.y); s.stats.stoneCut += 2; return `The ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) goes down into the dark with a sound like a door. The rubble is good stone.`; } },
     ],
   },
   {

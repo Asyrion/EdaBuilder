@@ -368,6 +368,7 @@ export interface GameState {
     mothsSeen: number;
     daughters: number;
     terraformed: number;
+    stoneCut: number; // hills levelled or ground delved, and collapse rubble: what the Grimmen count as stone
     sectorsBought: number;
     glimdustTotal: number;
     marvels: number;

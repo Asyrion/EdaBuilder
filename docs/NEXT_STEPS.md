@@ -289,11 +289,19 @@
   walkers' transient bonus layer as 80,000 plain-JSON numbers; it is skipped now and dropped
   from older saves on load (252 KB instead of about 2 MB).
 
-## Known issues
+## Done in iteration 38 (M12 part 1, the Grimmen's deep game)
 
-- **The Grimmen plateau.** The bot's Grimmen towns settle between 350 and 700 folk: the
-  ridge fills, grass is poor land for them, and hills are levelled only for stone, never for
-  room. The Deephold (1,000 folk) is out of the bot's reach. See item 0.
+- The plateau's real cause: the bot's clear mode bulldozed homes before learning that the
+  seep could not stand there; `canPlaceBuilding` has a `clearing` mode and the bulldozer asks
+  first (Vellish Free City mean 60.5 → 57, a gain, accepted as a bug fix).
+- `stats.stoneCut` (only cuts count as stone), the Delve (Grimmen terraform op: grass to
+  hill land, 160 crowns, from the Gallery), the Quarry (Grimmen service dug into hills: eight
+  jobs, 5 goods of stone a day for the carts, four stone), the Deep Cut (Grimmen edict: hill
+  hearths reach level 3 without schooling and hold two more). Ops and edicts carry a people.
+- The bot delves for room or stone, cuts quarries when the shelves run short, and turns the
+  Deep Cut on once an Academy stands.
+
+## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
   800-agent city renders in ~10 ms at 2–3× zoom but ~28 ms at 1× (the full-resolution blit
@@ -343,14 +351,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M12 Peoples II, the Grimmen's deep game** (DESIGN §7, §4.68): a hill economy past
-   the Under-Market so a Grimmen town can reach the Deephold and the Underking's Seat.
-   Candidates, in order: stone as a good (levelled hills and hill halls yield stone that the
-   Under-Market sells and the Seat consumes), the bot levelling hills for room as well as
-   for stone once the ridge is full, and a Grimmen edict or two (the Deep Cut: halls dig a
-   level deeper for folk at a stone cost). Then a second people on the scaffold (the Veshari
-   river-folk are the best candidate: quays as hearths, the river as the road) to prove it
-   holds twice. The remaining peoples stay designed in §14.2.
+0. **M12 Peoples II, part 2: a second people** (DESIGN §7, §14.2): the Veshari river-folk
+   on the scaffold, to prove it holds twice. A cut that fits the rules: the river never
+   freezes for them and the Hush floods instead; wells are replaced by river cisterns that
+   must touch water; Torrent Mills are their spires (mana from the current, a third more,
+   spires a third less); barges carry goods where carts would; quays (markets that must
+   touch water) hold double; dragons of Tide and Storm only; milestones named by reach
+   (Landing, Jetty, Quay, Harbour…) gated on quays built; a chapter of eight and three tales;
+   a bargeman walker. Then the balance bot playing them on three seeds.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

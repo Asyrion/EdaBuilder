@@ -89,6 +89,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
   for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins'] as const) state.stats[k] = state.stats[k] ?? 0;
+  state.stats.stoneCut = state.stats.stoneCut ?? state.stats.terraformed; // before iteration 38 every terraform op counted as stone
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();
   state.guilds.pleasedDays = state.guilds.pleasedDays ?? { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 };

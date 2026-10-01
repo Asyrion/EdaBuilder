@@ -1009,6 +1009,69 @@ grass is poor for them, and the bot levels hills only for stone, not for room, s
 (1,000 folk) is out of its reach. That is the first item of the next iteration, not a fault of
 the people: a hill people needs a hill economy past the Under-Market.
 
+### 4.69 The Grimmen's deep game, part 1: the bulldozer, the Delve, the Quarry, the Deep Cut (iteration 38)
+
+M12 Peoples II opens with the finding of 4.68: the bot's Grimmen towns plateau between 350
+and 700 folk. The exploration found the real cause before any new mechanic.
+
+**The bot's bulldozer asked nobody.** `Bot.placeNear` in clear mode sacrificed 1×1 zone
+buildings to make room for a well, a seep or a service, then called `placeBuilding`, which
+can still refuse: no road touching, no hill touching for a seep, no hills under the footprint,
+the Charter. The homes were gone either way. A dry Grimmen home with no hill within six tiles
+made every candidate in the 13×13 square fail, so the bot flattened the whole block, every
+day, for nothing; the Vellish lost homes too, less often (a well has no hill rule).
+`canPlaceBuilding` takes a `clearing` flag under which a 1×1 zone building is not a blocker
+and every other rule still applies, and the clear loop asks it before it digs. With the
+clear mode simply switched off in a throwaway run, the Grimmen bot reached the Deephold on
+days 61, 120 and 65 instead of never. This is a change for every people, so Vellish
+bit-identity does not hold for it; §14.1's rule (the mean day of Free City over seeds 42–44
+against main) is the one that applies: the bot stops destroying its own homes, and the new
+lines become the baseline that the faction-only changes below match bit for bit.
+
+| Vellish, 150 days | seed 42 | seed 43 | seed 44 |
+|---|---|---|---|
+| main | Burgh 42, Free City 66, Beacon 97 | Burgh 36, no Free City | Burgh 37, Free City 55, Beacon 93 |
+| with the bulldozer fix | Burgh 42, Free City 64, Beacon 92 | Burgh 36, no Free City (1,456 folk) | Burgh 35, Free City 50, Beacon 91 |
+
+The mean day of Free City over the seeds that reach it moves from 60.5 to 57: the fix is a
+gain of three and a half days, outside the two-day band, and it is accepted as such because
+it removes a bug rather than tuning a system (the decision log).
+
+**Stone is what is cut.** `stats.terraformed` counted forest clearings and plantings as
+stone. `stats.stoneCut` counts only hills levelled, ground delved and collapse rubble;
+`stoneQuarried` reads it; old saves take `terraformed` as their starting count.
+
+**The Delve** (`TERRAFORM.delve`, 160 crowns, from the Gallery, Grimmen only): a grass or
+meadow tile dug down and the rock heaped: it is hill land from then on, for land value, for
+halls that count stone, for seeps that must touch a hill, and for the renderer. Terraform
+ops carry a `faction`; `terraform()` refuses an op another people may not use ("The Vellish
+do not delve") and the Land tab lists only this people's ops. A hill people is no longer
+bounded by the hills the map happened to give it (seed 43 has 141 hill tiles in all).
+
+**The Quarry** (Grimmen only, 1,400 crowns, from the Cut, dug into hills, touching a road):
+eight cutters, 5 goods of dressed stone a day for the carts (half unlit, no mana), four
+stone quarried while it works. It rides the existing goods path: a `goodsRate` service gets
+carts homed at it like the Hanging Gardens and `chooseTrip` takes them to the markets. One
+hook was missing: a non-zone building's `capacity` supplied no jobs, so `dailyBuildings`
+keeps an `extraJobs` list (jobs and workers, not folded into the happiness average). The
+inspector shows Workers and Carts for such buildings. The sprite is a dark stone cut with
+a windlass and three stepped rows of blocks (`stonePile`).
+
+**The Deep Cut** (edict, Grimmen only, from the Hold, 1.5 crowns a day per hill hearth): a
+hearth standing on hills reaches its third level without schooling and holds two more folk
+there. Edicts carry a `faction`: `edictOn` is false for another people's edict whatever the
+flags say (a Set probe on the hot path), the panel lists `edictsFor(s)`, the upkeep skips
+foreign edicts, and no guild petitions for it. `capacityOf(b, s)` adds the two.
+
+**The bot's deep game.** `quarry()` is now: reach the hills with a track before the Delve
+(as before); never level hills for a people that builds on them; **delve** up to four grass
+tiles a day beside its streets, nearest the centre first, when the hill zone has fewer than
+ten free tiles and hearths are wanted, or when stone is short, with 2,000 crowns kept back;
+a **Quarry** on the hill when the works cannot keep the shelves full (craft demand above 0.15
+or goods short), up to half the markets plus one; and the **Deep Cut** once an Academy stands.
+
+**Balance (150 days, three seeds):** the table follows in the closing commit of this iteration.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1082,9 +1145,9 @@ the people: a hill people needs a hill economy past the Under-Market.
 - **M11 Peoples** — playable factions with their own buildings, progression and rules,
   one as proof of concept (the Grimmen of the Underhill), the rest designed (§14.2).
   ✅ (iterations 34–37)
-- **M12 Peoples II (proposed)** — the Grimmen's deep game (a hill economy past the
-  Under-Market: stone as a good, the bot levelling for room) and a second people built on
-  the scaffold to prove it holds twice; the candidates are in §14.2.
+- **M12 Peoples II** — part 1, the Grimmen's deep game: the bot's bulldozer fixed, the
+  Delve, the Quarry, the Deep Cut (iteration 38, §4.69) ✅; part 2, a second people built
+  on the scaffold to prove it holds twice (the candidates are in §14.2).
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1635,7 +1698,9 @@ picks it beside the scenario; the bot plays any of them.
   stone-sexton) once M10 exists. Verification: the bot reaches the fifth Grimmen milestone
   by day 70 on three seeds; every Vellish test still passes untouched. *Met in iteration 37*
   (Deep Hold on days 33, 51 and 43; the Vellish run is bit-identical), with one finding: the
-  Grimmen plateau at 350–700 folk, so their deep game is the next step (M12).
+  Grimmen plateau at 350–700 folk. *Iteration 38 (4.69)* found the plateau was mostly the
+  bot bulldozing its own homes, and gave the Grimmen their deep game: the Delve, the Quarry
+  and the Deep Cut.
 - **Designed, not built (ideas for the remaining peoples).** *Veshari river-folk:* the city
   lives on the water: quays are hearths, barges are the roads, the river never freezes for
   them but the Hush floods; mana from Torrent Mills; dragons of Tide and Storm only.
@@ -1810,3 +1875,14 @@ picks it beside the scenario; the bot plays any of them.
   the tab died. Callers now quantize, the cache is bounded, and the Playwright night scene
   counts canvases. The same rule for saves: a transient layer (the walkers' bonus) is never
   serialized; the save was carrying eighty thousand numbers of it.
+- *Ask before you dig (iteration 38):* the bot's clear mode bulldozed homes and only then
+  learned the seep could not stand there; the placement check now has a `clearing` mode and
+  the bulldozer asks it first. Fixing the bot moved the Vellish balance by more than the
+  two-day band of §14.1 (a gain), and that is accepted: the band guards against sim drift,
+  not against the bot ceasing to wreck its own town; the new lines are the baseline.
+- *Stone is what is cut, not what is touched (iteration 38):* the stone count read the total
+  of every terraform op; it now reads a count only cuts raise, so a forest clearing is not
+  a depth milestone.
+- *A people's op or edict is a field on the table (iteration 38):* terraform ops and edicts
+  carry `faction` like buildings do; the table filters the UI, the action refuses, and the
+  hot-path reads (`edictOn`) are gated once, so a second people adds rows, not branches.
