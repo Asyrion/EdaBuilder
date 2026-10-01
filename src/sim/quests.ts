@@ -19,6 +19,7 @@ export function checkQuests(s: GameState): QuestDef[] {
     if (q.done(s)) {
       s.questsDone.push(q.id);
       if (q.reward > 0) s.treasury += q.reward;
+      if (q.id === 'z_daily') s.challengeDay = s.day;
       completed.push(q);
     }
   }

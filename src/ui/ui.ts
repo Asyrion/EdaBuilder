@@ -145,7 +145,7 @@ export class UI {
         </div>
         <div class="hint"></div>
       </div>
-      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="score hidden"></div><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
       </div>
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
@@ -184,6 +184,14 @@ export class UI {
     this.buildMinimap();
     this.makeDraggable(this.el.log, 'log');
     this.makeDraggable(this.el.info, 'info');
+    // accessibility: names for icon-only controls, roles for panels and dialogs, a live ticker
+    this.root.querySelectorAll('button[title]').forEach((b) => b.setAttribute('aria-label', (b as HTMLButtonElement).title));
+    this.el.toolbar.setAttribute('role', 'toolbar');
+    this.el.toolbar.setAttribute('aria-label', 'Build tools');
+    this.el.log.querySelector('.lines')!.setAttribute('aria-live', 'polite');
+    this.root.querySelectorAll('.modal').forEach((m) => { m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); });
+    this.el.minimap.setAttribute('aria-label', 'Minimap: click to move the view');
+    if (window.matchMedia('(max-width: 900px)').matches) this.tasksCollapsed = true;
     this.buildTabs();
     this.buildViews();
     this.buildHelp();
@@ -430,6 +438,15 @@ export class UI {
     });
     const fc = el.querySelector('.forecast') as HTMLElement;
     const lines = forecast(s);
+    const score = el.querySelector('.score') as HTMLElement;
+    if (s.challenge) {
+      const done = s.challengeDay >= 0;
+      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${MILESTONES[s.milestone].name}`;
+      score.classList.remove('hidden');
+      score.innerHTML = `<span class="lbl">${done ? 'Result' : 'Challenge'}</span> ${text}${done ? ' <button class="show" id="q-copy">Copy result</button>' : ''}`;
+      const cp = score.querySelector('#q-copy') as HTMLButtonElement | null;
+      if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge}: Market Town on day ${s.challengeDay} in ${s.cityName}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
+    } else score.classList.add('hidden');
     fc.classList.toggle('hidden', !lines.length);
     if (lines.length) fc.innerHTML = `<span class="lbl">Forecast</span>${lines.map((f) => `<div class="${f.kind}">✦ ${f.text}</div>`).join('')}`;
     const a = advise(s);

@@ -600,6 +600,20 @@ quests carry it. `state.daughter` holds node, stake position, name, day and the 
   taken from another action unbinds it; reset to defaults. Ctrl+Z, Shift+G and the view
   number keys stay fixed.
 
+### 4.41 Phone layout, challenge results, accessibility (iteration 20)
+
+- **Narrow screens** (900 px and under, one media query): the toolbar and the Ledger
+  become a bottom sheet (the Ledger starts collapsed), the toolbar items scroll in three
+  columns, the top bar keeps the city, day, crowns and folk and scrolls sideways for its
+  buttons, the minimap and ticker sit top-right at half size, the demand bars and perf
+  line hide, info panels and modals stretch to the width. Touch gestures from §4.39 do
+  the rest.
+- **Challenge results**: `challengeDay` records the day the daily goal is met; the Ledger
+  shows a progress line while the challenge runs and a result line with *Copy result*
+  afterwards (a one-line share text with the site link, via the clipboard).
+- **Accessibility**: every titled button gets an `aria-label`, the toolbar a toolbar role,
+  modals a dialog role, the ticker `aria-live="polite"`, the minimap a label.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.

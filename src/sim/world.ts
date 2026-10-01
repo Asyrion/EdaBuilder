@@ -101,6 +101,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     scenario,
     daughter: null,
     challenge: null,
+    challengeDay: -1,
     cleanDays: 0,
     storms: [],
     artifactsSold: 0,

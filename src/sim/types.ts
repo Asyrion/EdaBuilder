@@ -298,6 +298,7 @@ export interface GameState {
   fenNex: number; // district granted to the Fen-Nex, 0 none
   scenario: Scenario;
   challenge: string | null; // daily challenge date, e.g. '2026-10-01'
+  challengeDay: number; // day the challenge goal was met, -1
   daughter: { node: number; x: number; y: number; name: string; day: number; twin: number } | null;
   cleanDays: number; // inherited-collapse scenario: days in a row clean
   storms: { x: number; y: number; until: number; vx: number; vy: number }[];

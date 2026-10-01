@@ -84,6 +84,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.scenario = state.scenario ?? 'valley';
   state.daughter = state.daughter ?? null;
   state.challenge = state.challenge ?? null;
+  state.challengeDay = state.challengeDay ?? -1;
   state.cleanDays = state.cleanDays ?? 0;
   state.storms = state.storms ?? [];
   if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));

@@ -166,7 +166,9 @@ Charter as `.json`.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
-  date, and remappable keys in the Menu.
+  date with a copyable result, and remappable keys in the Menu.
+- A phone layout: bottom-sheet toolbar, compact top bar, touch gestures; aria labels and
+  roles on the panels.
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
 - Touch: one finger for tools, two fingers to pan, pinch to zoom.

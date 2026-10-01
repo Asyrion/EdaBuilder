@@ -59,3 +59,16 @@ describe('Key bindings', () => {
     expect(keyFor({ ...DEFAULT_KEYS, bulldoze: 'q' }, 'b')).toBeNull();
   });
 });
+
+describe('Daily challenge result', () => {
+  it('records the day the goal was met', async () => {
+    const { createChallenge: cc } = await import('../src/sim/scenario');
+    const { checkQuests } = await import('../src/sim/quests');
+    const s = cc('Race', '2026-10-01');
+    s.milestone = 5;
+    s.day = 40;
+    checkQuests(s);
+    expect(s.challengeDay).toBe(40);
+    expect(s.questsDone).toContain('z_daily');
+  });
+});
