@@ -86,6 +86,7 @@ export interface Building {
   cooldown: number; // days until an ability can be used again
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
+  tended?: number; // day a healer last tended this home (+4 happiness that day)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
 }
@@ -388,6 +389,8 @@ export interface GameState {
     guildCharters: number;
     walkerKills: number;
     walkerLayings: number;
+    healerVisits: number;
+    wardenRounds: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

@@ -180,8 +180,9 @@ Charter as `.json`.
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
-- Walkers: Watch Houses send watchmen along the roads who make the streets they walk count
-  as watched and deal with the hounds and restless they meet (more kinds to come).
+- Walkers: watchmen from Watch Houses, sextons from Boneyards, healers from Healer's Shrines
+  and Tallowkin wardens from spires under their edict walk the roads and do their jobs on
+  what they meet; the streets they walk count as covered.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
   result).
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the

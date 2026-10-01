@@ -91,6 +91,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   h += (cov.faith[i] / 255) * 8 + (cov.leisure[i] / 255) * 8 + (cov.health[i] / 255) * 6 + (cov.watch[i] / 255) * 5;
   if (b.lit) h += 6;
   else h -= 9;
+  if ((b.tended ?? -1) >= state.day) h += 4;
   if (b.watered) h += 6;
   else h -= 11;
   h -= (state.miasma[i] / 255) * 30;

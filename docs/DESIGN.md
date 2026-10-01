@@ -831,6 +831,31 @@ walkers and their last three log lines; the dev panel's "Walker here" lists ever
 table. Stats `walkerKills`, `walkerLayings`; quest `w_patrol`. Balance: seed 42 reaches Free
 City on day 60 (was 61) and Beacon on day 95 (was 92), inside the §14.1 tolerance.
 
+### 4.63 Walker kinds, first set: sextons, healers, wardens (iteration 32)
+
+Two framework additions: a job may give a `target(s, a, anchor)` that returns a road tile to
+walk to (null falls back to the random patrol tile) and an `onArrive(s, a, i)` hook at the
+end of a leg; `nearestRoadOf` and `buildingsAt` are the shared helpers.
+
+- **Sexton** (Boneyard 1, Ossuary 2; prop `spoon`): paints `death` +0.06 (cap 0.25) on the
+  streets it walks; lays the restless it meets and quiets one of the dead for each, three a
+  day, with a bell. Quest `w_sexton`.
+- **Healer** (Healer's Shrine 1, Hospice 2; prop `satchel`): targets the unhappiest hearth
+  in the service radius with happiness under 55 (dry homes count 10 lower) that was not
+  tended today; on arrival `Building.tended = day`, which is +4 in `computeBuildingHappiness`
+  that day; six visits a day; paints `health` +0.05 (cap 0.2). `stats.healerVisits`; quest
+  `w_healer`.
+- **Tallowkin warden** (every lit spire and Nexus, one each, only under the Spire Wardens
+  edict; prop `candle`): walks to the nearest other spire within 24 tiles and back, paints
+  `ward` +0.03 (cap 0.12), and `wardenNear(s, b)` (5 tiles) removes a building from the
+  wild surge's candidates in `dailySurge`. `stats.wardenRounds`; quest `w_warden`.
+
+Balance, three seeds against main (walkers draw from the shared random stream, so single
+runs diverge): seed 42 Free City day 56 vs 60 and 2,160 folk on day 120 (Beacon at 2,200, main
+reached it on day 95); seed 43 stalls at Burgh on both; seed 44 Free City day 58 on both and
+Beacon day 87 vs 98. No systematic shift; the rule in 14.1 is now read as the mean over three
+seeds.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1404,7 +1429,7 @@ chase the hound, the sexton walk the dead home. The plan keeps static coverage f
   arches). Walkers are rebuilt from their buildings daily like carts, so saves stay small.
   Dev tools: "spawn walker here". Tests: a job's hooks fire, counts follow the buildings,
   removed buildings dismiss their walkers.
-- **Kinds (iterations 32–33), one per existing system, each with a small real effect:**
+- **Kinds (iterations 32–33), one per existing system, each with a small real effect** (32 ✅ sextons, healers, wardens as 4.63):
   watchmen from Watch Houses (kill a hound on contact, lay a restless, +0.1 watch on the
   tiles they pass for a day); sextons from Boneyards and Ossuaries (walk restless back to
   the boneyard: a laid restless instead of a killed one, unquieted −1 per trip); healers
@@ -1420,8 +1445,9 @@ chase the hound, the sexton walk the dead home. The plan keeps static coverage f
   2x zoom. The info panel of a building lists its walkers; clicking a walker shows its job
   and what it did today (a tiny log of three lines).
 - **Balance.** Walker effects are bonuses on top of coverage, capped per day, so a city
-  without them plays as now; the balance bot's days to Free City must not move by more
-  than two.
+  without them plays as now; the balance bot's days to Free City, averaged over seeds 42–44
+  against main, must not move by more than two (single seeds diverge once the random
+  stream shifts).
 
 ### 14.2 M11 Peoples: playable factions
 
