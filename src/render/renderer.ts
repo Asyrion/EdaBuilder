@@ -789,11 +789,30 @@ export class Renderer {
         e.y += y;
         e.n++;
       }
+    // per-district problems: unlit, dry, empty shelves
+    const prob = new Map<number, { unlit: number; dry: number; empty: number }>();
+    for (const b of state.buildings) {
+      if (!b || b.state !== 'ok') continue;
+      const def = BUILDING_BY_KEY[b.kind];
+      if (def.category !== 'zone') continue;
+      const d = state.district[idx(b.x, b.y)];
+      if (!d) continue;
+      let p = prob.get(d);
+      if (!p) prob.set(d, (p = { unlit: 0, dry: 0, empty: 0 }));
+      if (!b.lit) p.unlit++;
+      if (!b.watered) p.dry++;
+      if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) p.empty++;
+    }
     const ctx = this.ctx;
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
     for (const [d, e] of sums) {
       if (e.n < 4) continue;
+      const p = prob.get(d);
+      const bits: string[] = [];
+      if (p?.unlit) bits.push(`${p.unlit} unlit`);
+      if (p?.dry) bits.push(`${p.dry} dry`);
+      if (p?.empty) bits.push(`${p.empty} empty`);
       const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
       const sx = Math.round(wx - this.camera.left);
       const sy = Math.round(wy - this.camera.top);
@@ -803,6 +822,16 @@ export class Renderer {
       ctx.fillRect(sx - w / 2, sy - 7, w, 11);
       ctx.fillStyle = DISTRICT_COLORS[d - 1];
       ctx.fillText(name, sx, sy + 2);
+      if (bits.length) {
+        const line = bits.join(' · ');
+        ctx.font = '8px sans-serif';
+        const w2 = ctx.measureText(line).width + 6;
+        ctx.fillStyle = 'rgba(10,8,16,0.75)';
+        ctx.fillRect(sx - w2 / 2, sy + 5, w2, 10);
+        ctx.fillStyle = PAL.fire2;
+        ctx.fillText(line, sx, sy + 13);
+        ctx.font = 'bold 9px sans-serif';
+      }
     }
     ctx.textAlign = 'left';
   }

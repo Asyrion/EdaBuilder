@@ -548,6 +548,27 @@ tasks.
   Wizard* (twelve glimwood tiles near the founding node, a season of happiness), and a
   quiet traveller who leaves a purse and a note. Descriptions only, no sprites.
 
+### 4.38 Scenario charters, quest counters, district summaries (iteration 17)
+
+**Scenario charters** (`src/sim/scenario.ts`, chosen on the title screen, stored as
+`state.scenario`; the open valley is the default and unchanged):
+
+| Charter | Twist | Goal (a priority-0 Ledger quest, +5,000 crowns) |
+|---|---|---|
+| The one-node valley | terrain generates only the founding node; it yields 180 mana a day instead of 90; no Sleeping Wyrm | reach Burgh |
+| The Gloam-locked island | everything beyond about 36 tiles of the founding node (noisy edge) starts as Gloam | Township and 300 Gloam tiles burned back |
+| The inherited collapse | an aggressive bot plays 28 days, then: treasury −7,000, eight buildings ruined, 30 unquieted, eight restless at the stake, overdraw at day 3 of 5; the Chronicle starts there | ten clean days in a row (treasury positive, no ruins, no restless; `cleanDays`), then Burgh |
+
+**Quest counters.** The six goals from §4.27 that lacked a counter now have one:
+`brownoutsSurvived` (an overdraw that ends without a surge; `brownoutOpen` marks a running
+one), a named district (`districtNames`), the Hush vigil kept and the Thaw feast held
+(`chose` on the calendar events), `mothsSeen` and `wispRing` (six or more wisps at once).
+A **Done** button on the Ledger lists every completed quest by chapter.
+
+**District summaries.** In the Districts view each label gets a second line with the
+district's zoned-building problems: unlit, dry and empty-shelved counts, in red, only
+when there are any.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -993,3 +1014,6 @@ consistent with `EDA_LORE.md` §9.
   its lodges and wardens.
 - *The Fen-Nex quarter is one number:* a district id on the state, read by the tithe and
   the shelf cap, keeps the fox-folk a bargain rather than a system.
+- *Scenarios are generation options plus a quest:* two terrain flags, one mana constant
+  and a scripted collapse give three charters without a second code path; the goal is a
+  normal quest with priority 0, so the Ledger and the Chronicle already handle it.

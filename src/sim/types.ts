@@ -116,6 +116,8 @@ export interface Dragon {
   born: number; // day
 }
 
+export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited';
+
 export interface WyrmState {
   node: number; // index into nodes, -1 none
   state: 'none' | 'sleeping' | 'awake' | 'bound' | 'dead';
@@ -294,6 +296,8 @@ export interface GameState {
   materials: Materials;
   wyrm: WyrmState;
   fenNex: number; // district granted to the Fen-Nex, 0 none
+  scenario: Scenario;
+  cleanDays: number; // inherited-collapse scenario: days in a row clean
   storms: { x: number; y: number; until: number; vx: number; vy: number }[];
   airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number };
   artifactsSold: number; // crowns from artifacts today
@@ -334,6 +338,10 @@ export interface GameState {
     stormWarps: number;
     tigersTotal: number;
     tigersKilled: number;
+    brownoutsSurvived: number;
+    brownoutOpen: number; // 1 while an overdraw is running
+    mothsSeen: number;
+    wispRing: number;
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;

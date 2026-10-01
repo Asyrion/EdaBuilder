@@ -16,6 +16,9 @@ import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
 import type { Camera } from '../render/camera';
+import type { Scenario } from '../sim/types';
+import { SCENARIOS } from '../sim/scenario';
+import { QUESTS } from '../data/quests';
 import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
@@ -37,7 +40,7 @@ export interface UiHost {
   togglePause(): void;
   setTool(t: Tool): void;
   setOverlay(id: string | null): void;
-  newGame(seed: number, name: string): void;
+  newGame(seed: number, name: string, scenario: Scenario): void;
   continueGame(): boolean;
   hasSave(): boolean;
   save(): void;
@@ -136,7 +139,7 @@ export class UI {
         </div>
         <div class="hint"></div>
       </div>
-      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
       </div>
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
@@ -162,7 +165,8 @@ export class UI {
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-wyrms').onclick = () => this.toggleWyrms();
     this.q('#btn-chronicle').onclick = () => this.toggleChronicle();
-    (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; };
+    (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; this.refreshTasks(); };
+    (this.q('#tasks .done') as HTMLButtonElement).onclick = () => { this.showDone = !this.showDone; this.lastQuestKey = ''; this.refreshTasks(); };
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
@@ -371,13 +375,14 @@ export class UI {
   }
 
   private tasksCollapsed = false;
+  private showDone = false;
   private lastQuestKey = '';
 
   private refreshTasks(): void {
     const s = this.host.state;
     const el = this.el.tasks;
     // Re-evaluate at most every 20 ticks, or when a quest completes.
-    const key = `${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}`;
+    const key = `${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}:${this.showDone}`;
     if (key === this.lastQuestKey) return;
     this.lastQuestKey = key;
     el.classList.remove('hidden');
@@ -389,6 +394,16 @@ export class UI {
     if (this.tasksCollapsed) {
       list.innerHTML = '';
       adv.classList.add('hidden');
+      return;
+    }
+    (el.querySelector('.done') as HTMLButtonElement).classList.toggle('active', this.showDone);
+    if (this.showDone) {
+      const done = new Set(s.questsDone);
+      const byChapter = new Map<string, string[]>();
+      for (const q of QUESTS) if (done.has(q.id)) { const l = byChapter.get(q.chapter) ?? []; l.push(q.title); byChapter.set(q.chapter, l); }
+      list.innerHTML = byChapter.size ? [...byChapter].map(([ch, titles]) => `<div class="q done"><div class="t"><span class="ch">${ch}</span></div><div class="h">${titles.map((t) => `✓ ${t}`).join('<br>')}</div></div>`).join('') : '<div class="flavor">Nothing finished yet.</div>';
+      adv.classList.add('hidden');
+      (el.querySelector('.forecast') as HTMLElement).classList.add('hidden');
       return;
     }
     const quests = activeQuests(s, 3);
@@ -915,16 +930,19 @@ export class UI {
       <p class="lore">Three hundred years after the Hollowing, the world of Eda is islands of light in a grey sea. The Ashen Crown of Vell has surveyed a young ley node in a river valley at the edge of the Gloam, and granted you a Charter: <i>light it, hold it, and make it pay.</i> Draw roads, zone hearths and markets, raise spires to carry the ley, and keep the dead quiet. Grow a camp into a Beacon of Eda.</p>
       <div class="row"><label>Valley name</label><input type="text" id="t-name" value="${CITY_NAMES[Math.floor(Math.random() * CITY_NAMES.length)]}"><label>Seed</label><input type="number" id="t-seed" value="${Math.floor(Math.random() * 99999)}" style="width:100px"></div>
       <div class="names">${names}</div>
+      <div class="scenarios">${SCENARIOS.map((sc, i) => `<button data-sc="${sc.id}" class="${i === 0 ? 'active' : ''}" title="${sc.goal}"><b>${sc.name}</b><span>${sc.blurb}</span><em>Goal: ${sc.goal}</em></button>`).join('')}</div>
       <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
       <input type="file" id="t-file" accept=".json" class="hidden">
       <p class="muted" style="font-size:11px">Runs entirely in your browser. Autosaves every day to this browser. Press <b>H</b> in game for help.</p>
     </div>`;
     const t = this.el.title;
+    let scenario: Scenario = 'valley';
+    t.querySelectorAll('.scenarios button').forEach((b) => ((b as HTMLButtonElement).onclick = () => { scenario = (b as HTMLElement).dataset.sc as Scenario; t.querySelectorAll('.scenarios button').forEach((o) => o.classList.toggle('active', o === b)); }));
     t.querySelectorAll('.names button').forEach((b) => ((b as HTMLButtonElement).onclick = () => ((t.querySelector('#t-name') as HTMLInputElement).value = (b as HTMLElement).dataset.name!)));
     (t.querySelector('#t-new') as HTMLButtonElement).onclick = () => {
       const name = (t.querySelector('#t-name') as HTMLInputElement).value.trim() || 'Thornwick';
       const seed = Number((t.querySelector('#t-seed') as HTMLInputElement).value) || 1;
-      this.host.newGame(seed >>> 0, name);
+      this.host.newGame(seed >>> 0, name, scenario);
       t.classList.add('hidden');
       this.toggleHelp(true);
     };

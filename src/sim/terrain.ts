@@ -10,7 +10,9 @@ export interface TerrainResult {
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export function generateTerrain(seed: number): TerrainResult {
+export interface TerrainOptions { nodes?: number; island?: boolean }
+
+export function generateTerrain(seed: number, opts: TerrainOptions = {}): TerrainResult {
   const rng = new Rng(seed ^ 0x9e3779b9);
   const nz = new Noise2D(seed);
   const nz2 = new Noise2D(seed + 1337);
@@ -127,7 +129,7 @@ export function generateTerrain(seed: number): TerrainResult {
     }
   }
   nodes.push({ x: fx, y: fy });
-  const targetNodes = 4 + rng.int(3);
+  const targetNodes = opts.nodes ?? 4 + rng.int(3);
   for (let tries = 0; tries < 3000 && nodes.length < targetNodes; tries++) {
     const x = 10 + rng.int(MAP_W - 20);
     const y = 10 + rng.int(MAP_H - 20);
@@ -178,6 +180,7 @@ export function generateTerrain(seed: number): TerrainResult {
       const n = nz2.noise(x / 11 + 200, y / 11 + 200);
       const threshold = 3 + n * 3;
       if (edge < threshold) gloam[i] = 1;
+      if (opts.island && Math.hypot(x - fx, y - fy) + n * 4 > 36) gloam[i] = 1;
     }
   // never near founding
   for (let y = 0; y < MAP_H; y++)

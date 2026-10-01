@@ -133,7 +133,13 @@ h3 { font-size: 13px; color: var(--gold); }
 #tasks { position: relative; width: 268px; padding: 8px 10px; font-size: 12px; flex: 0 1 auto; min-height: 0; overflow: auto; }
 #tasks h3 { display: flex; align-items: center; gap: 6px; }
 #tasks h3 .prog { font-weight: normal; font-size: 11px; }
-#tasks h3 .min { margin-left: auto; padding: 0 6px; line-height: 1.2; }
+#tasks h3 .min { padding: 0 6px; line-height: 1.2; }
+#tasks h3 .done { margin-left: auto; padding: 0 6px; font-size: 10px; line-height: 1.4; }
+#tasks .q.done .h { color: var(--good); }
+#title .scenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+#title .scenarios button { text-align: left; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 11px; line-height: 1.3; }
+#title .scenarios button span { color: var(--muted); }
+#title .scenarios button em { color: var(--gold); font-style: normal; font-size: 10px; }
 #tasks .advice { margin: 2px 0 6px; padding: 5px 7px; border: 1px solid rgba(233,194,91,0.35); border-radius: 3px; background: rgba(233,194,91,0.06); color: var(--text); line-height: 1.35; }
 #tasks .forecast { margin: 2px 0 6px; padding: 5px 7px; border: 1px solid rgba(79,227,255,0.3); border-radius: 3px; background: rgba(79,227,255,0.05); line-height: 1.35; }
 #tasks .forecast .lbl, #info .fc { color: var(--ley); font-weight: 600; }
