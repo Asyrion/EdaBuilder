@@ -31,7 +31,7 @@ import {
 export const CITY_NAMES = ['Thornwick', 'Ashmere', 'Glimford', 'Hollowmoor', 'Candlecross', 'Wickholm', 'Sablemere', 'Morrowford'];
 
 export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley', faction: FactionId = 'vellish'): GameState {
-  const t = generateTerrain(seed, scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : {});
+  const t = generateTerrain(seed, { ...(scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : {}), underhill: faction === 'grimmen' });
   const n = MAP_W * MAP_H;
   const coverage = {} as Record<ServiceType, Uint8Array>;
   for (const s of SERVICE_TYPES) coverage[s] = new Uint8Array(n);

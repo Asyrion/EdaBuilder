@@ -10,7 +10,7 @@ export interface TerrainResult {
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean }
+export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean }
 
 export function generateTerrain(seed: number, opts: TerrainOptions = {}): TerrainResult {
   const rng = new Rng(seed ^ 0x9e3779b9);
@@ -146,6 +146,18 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
   }
   // Founding clearing: make sure there is room to build.
   clearAround(fx, fy, 5);
+
+  // The Underhill: a people that builds in stone starts beside a hill ridge (6 to 9 tiles south of the founding).
+  if (opts.underhill) {
+    for (let dy = 5; dy <= 9; dy++)
+      for (let dx = -9; dx <= 9; dx++) {
+        const x = fx + dx;
+        const y = fy + dy;
+        if (!inBounds(x, y) || Math.max(Math.abs(dx), dy) < 6) continue;
+        const i = idx(x, y);
+        if (terrain[i] === Terrain.Grass || terrain[i] === Terrain.Meadow || terrain[i] === Terrain.Forest) terrain[i] = Terrain.Hills;
+      }
+  }
   terrain[idx(fx, fy)] = Terrain.LeyNode;
 
   // The Ruins of Lukuku: one flagstone cluster in a forest, well away from the founding node.

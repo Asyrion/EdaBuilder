@@ -18,6 +18,7 @@ npm run preview    # serve the production build
 npm test           # vitest: terrain, actions, networks, sim, hazards, creatures, wyrmcraft, quests, save/load
 npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
+npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
 ```
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
@@ -184,9 +185,11 @@ Charter as `.json`.
   default; the Grimmen of the Underhill build in stone on the hills, drink from seeps, hold
   the Gloam with standing stones, hatch only the stone lines, bind the Concord Wardens at a
   Forge-Temple, cut the Underking's Seat as their wonder, follow their own Underhill chapter
-  and tales, and climb milestones cut by depth that need stone quarried as well as folk.
-- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers and pilgrims walk
-  the roads from their buildings and do their jobs where they go; the streets they walk
+  and tales, start beside a hill ridge, field stone-sextons who cut the Gloam back with salt
+  and chisel, and climb milestones cut by depth that need stone quarried as well as folk.
+- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims and
+  the Grimmen's stone-sextons walk the roads from their buildings and do their jobs where
+  they go; the streets they walk
   count as covered.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
   result).

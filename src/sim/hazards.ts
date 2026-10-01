@@ -159,7 +159,8 @@ export function dailyGloam(state: GameState): void {
   // 1. wards clear gloam in radius
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (!def.service || def.service.type !== 'ward' || b.state !== 'ok' || !b.lit) return;
+    if (!def.service || def.service.type !== 'ward' || b.state !== 'ok') return;
+    if (!b.lit && (def.needsMana || def.manaUse > 0)) return; // a Stone Ward asks no mana and burns the grey unlit
     const r = def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;

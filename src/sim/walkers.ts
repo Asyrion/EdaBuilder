@@ -1,9 +1,9 @@
 /** Walkers: NPC kinds that embody a service by doing a visible job on the roads around their building. See DESIGN.md 4.62 and 14.1. */
 import { BUILDING_BY_KEY } from './catalog';
 import { findPath, roadTileOf } from './agents';
-import { effects } from './hazards';
+import { effects, recomputeGloamDist } from './hazards';
 import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent, type Building, type GameState, type ServiceType } from './types';
-import { commitRng, forEachBuilding, rngOf } from './world';
+import { commitRng, forEachBuilding, markDirty, rngOf } from './world';
 import { catalogue } from './relics';
 import { CRADLE_KINDS, isCradle } from './wyrmcraft';
 
@@ -236,6 +236,43 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     target: (s, a) => { const rt = nearestRoadOf(s, a, ['spire', 'nexus'], (b) => Math.abs(b.x - a.x) + Math.abs(b.y - a.y) <= 24); return rt >= 0 ? rt : null; },
     onTile: (s, _a, i) => paintBonus(s, 'ward', i, 0.03, 0.12),
     onArrive: (s, a, i) => { const sp = buildingsAt(s, i).find((b) => b.kind === 'spire' || b.kind === 'nexus'); if (sp) { s.stats.wardenRounds++; logLine(a, `Checked the ${sp.kind === 'nexus' ? 'Nexus' : 'spire'} at (${sp.x},${sp.y}).`); } },
+  },
+  stonesexton: {
+    id: 'stonesexton', name: 'stone-sexton', plural: 'stone-sextons', prop: 'salt',
+    desc: 'A Grimmen sexton from a Stone Ward or the Forge-Temple, whom the Gloam cannot touch: the streets it walks count as warded, it cuts back a grey tile beside its road (two a day), and it lays the restless it meets, three a day.',
+    from: ['stoneward', 'forgetemple'],
+    count: () => 1,
+    radius: () => 10,
+    cap: 3,
+    onTile: (s, a, i) => {
+      paintBonus(s, 'ward', i, 0.04, 0.15);
+      if (Math.floor(a.load / 10) >= 2) return;
+      const x = i % MAP_W;
+      const y = (i / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (!inBounds(nx, ny) || !s.gloam[idx(nx, ny)]) continue;
+        s.gloam[idx(nx, ny)] = 0;
+        s.stats.gloamBurned++;
+        markDirty(s, nx, ny);
+        recomputeGloamDist(s);
+        effects.push({ x: nx, y: ny, kind: 'ward', tick: s.tick });
+        a.load += 10;
+        logLine(a, `Cut the grey back at (${nx},${ny}) with salt and chisel.`);
+        return;
+      }
+    },
+    meets: [AgentKind.Restless],
+    onMeet: (s, a, o) => {
+      if (o.kind !== AgentKind.Restless || a.load % 10 >= 3) return false;
+      a.load += 1;
+      s.stats.restlessLaid++;
+      s.stats.walkerLayings++;
+      effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'bell', tick: s.tick });
+      logLine(a, `Laid one of the restless at (${Math.floor(a.x)},${Math.floor(a.y)}); the grey cannot hold a Grimmen.`);
+      return true;
+    },
   },
   watchman: {
     id: 'watchman', name: 'watchman', plural: 'watchmen', prop: 'rod',

@@ -269,7 +269,20 @@
   quest chapter of eight, and three tales (the Underking's envoy, a collapse, a vein of true
   leystone). Quests carry a people and shared goals read through the replacements.
 
+## Done in iteration 37
+
+- The Grimmen part 3, closing M11's proof of concept: the stone-sexton walker (from Stone
+  Wards and the Forge-Temple; paints ward, cuts the Gloam beside its road, lays the restless),
+  unlit manaless wards burn Gloam, the Underhill start (a hill ridge south of a Grimmen
+  founding; Vellish maps untouched), the bot playing the Grimmen (hills first, seeps, a track
+  to the ridge, levelling for stone), and `balance.ts` taking a people. Grimmen seeds 42–44
+  reach Deep Hold on days 33, 51 and 43; Vellish seed 42 is identical to main.
+
 ## Known issues
+
+- **The Grimmen plateau.** The bot's Grimmen towns settle between 350 and 700 folk: the
+  ridge fills, grass is poor land for them, and hills are levelled only for stone, never for
+  room. The Deephold (1,000 folk) is out of the bot's reach. See item 0.
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
   800-agent city renders in ~10 ms at 2–3× zoom but ~28 ms at 1× (the full-resolution blit
@@ -319,14 +332,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M11 Peoples, the Grimmen part 3** (DESIGN §14.2): iteration 37 the stone-sexton walker
-   (from the Forge-Temple and the Seep, laying the restless the Gloam cannot touch), the bot
-   playing the Grimmen (hill zoning, seeps, stone wards, the stone gate), and balance: the
-   bot reaches the fifth Grimmen milestone by day 70 on three seeds. That closes M11's proof
-   of concept; the other peoples stay designed in §14.2.
-
-0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
-   Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.
+0. **M12 Peoples II, the Grimmen's deep game** (DESIGN §7, §4.68): a hill economy past
+   the Under-Market so a Grimmen town can reach the Deephold and the Underking's Seat.
+   Candidates, in order: stone as a good (levelled hills and hill halls yield stone that the
+   Under-Market sells and the Seat consumes), the bot levelling hills for room as well as
+   for stone once the ridge is full, and a Grimmen edict or two (the Deep Cut: halls dig a
+   level deeper for folk at a stone cost). Then a second people on the scaffold (the Veshari
+   river-folk are the best candidate: quays as hearths, the river as the road) to prove it
+   holds twice. The remaining peoples stay designed in §14.2.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
