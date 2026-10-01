@@ -1,6 +1,6 @@
 import { RoadType, Zone, type ServiceType } from './types';
 
-export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'special';
+export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'marvel' | 'special';
 
 export interface ServiceDef {
   type: ServiceType;
@@ -40,6 +40,7 @@ export interface BuildingDef {
   goodsRate?: number; // goods produced per day, carted like a Craft works
   onRuins?: boolean; // footprint must be Ruins tiles
   maxCount?: number; // at most this many in the city
+  materials?: { scale?: number; wyrmfire?: number; eggshell?: number; rayscale?: number; glimdust?: number }; // rare goods consumed to build
   leystone?: number; // leystone mined per day
 }
 
@@ -394,6 +395,41 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A basin of still water sung over by Grimmen sextons. Every Boneyard and Ossuary in the city quiets 50% more dead, and the wisps become allies: the restless are laid down far more easily everywhere. 15 mana.',
     flavor: 'Nothing moves on the water. That is the point.',
     w: 2, h: 2, cost: 12000, upkeep: 90, manaUse: 15, unlock: 7, needsMana: true, maxCount: 1,
+  },
+
+  // ---- marvels: built from rare goods ----
+  {
+    key: 'scaleward', name: 'Scale Ward', category: 'marvel',
+    desc: 'A ward lantern plated in dragon scale. Burns back the Gloam within 10 tiles and needs no mana at all. Costs 10 scale.',
+    flavor: 'The Gloam remembers what the scale belonged to.',
+    w: 1, h: 1, cost: 1500, upkeep: 20, manaUse: 0, unlock: 4, materials: { scale: 10 },
+    service: { type: 'ward', radius: 10, strength: 1.0 },
+  },
+  {
+    key: 'wyrmforge', name: 'Wyrmfire Forge', category: 'marvel',
+    desc: 'A forge fed with bottled wyrmfire. Craft works within 8 make 25% more and ignore the Hush. Costs 8 wyrmfire.',
+    flavor: 'The smiths wear glass over their eyes and sing to keep the fire sweet.',
+    w: 2, h: 2, cost: 4000, upkeep: 45, manaUse: 4, unlock: 4, needsMana: true, materials: { wyrmfire: 8 }, miasma: 1,
+  },
+  {
+    key: 'eggshellfont', name: 'Eggshell Font', category: 'marvel',
+    desc: 'A font lined with crushed dragon eggshell, which drinks the ley like a hatchling. +25 mana a day anywhere. Costs 6 eggshell.',
+    flavor: 'It purrs. Nobody has decided whether that is a good sign.',
+    w: 1, h: 1, cost: 3000, upkeep: 30, manaUse: 0, manaProduce: 25, unlock: 5, materials: { eggshell: 6 },
+  },
+  {
+    key: 'raymirror', name: 'Rayscale Mirror', category: 'marvel',
+    desc: 'A mirror of polished rayscale that throws the ley into the sky. Leisure within 14 tiles, and every skyray school that crosses the valley turns to circle it. Costs 8 rayscale.',
+    flavor: 'On clear nights the mirror shows a different sky.',
+    w: 2, h: 2, cost: 5000, upkeep: 40, manaUse: 6, unlock: 6, needsMana: true, materials: { rayscale: 8 }, landValue: 10,
+    service: { type: 'leisure', radius: 14, strength: 0.8 },
+  },
+  {
+    key: 'hallofmarvels', name: 'Hall of Marvels', category: 'marvel',
+    desc: 'A gallery of everything the valley has tamed: scale, wyrmfire, eggshell, rayscale and glim-dust under one roof. Happiness +8 for the whole city, artifacts sell for half again as much. Costs 10 of each.',
+    flavor: 'Pilgrims come to see the dust that lights itself, and stay for the market.',
+    w: 3, h: 3, cost: 15000, upkeep: 120, manaUse: 10, unlock: 6, needsMana: true, maxCount: 1, landValue: 20, materials: { scale: 10, wyrmfire: 10, eggshell: 10, rayscale: 10, glimdust: 10 },
+    service: { type: 'faith', radius: 12, strength: 0.5 },
   },
 
   // ---- special ----

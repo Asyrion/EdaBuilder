@@ -20,6 +20,7 @@ import type { Scenario } from '../sim/types';
 import { SCENARIOS } from '../sim/scenario';
 import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
+import { ASPECT_INFO, AURA_INFO, aspectAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
@@ -85,6 +86,7 @@ const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolea
   { id: 'water', name: 'Water', filter: (d) => d.category === 'water' },
   { id: 'service', name: 'Services', filter: (d) => d.category === 'service' },
   { id: 'leisure', name: 'Leisure', filter: (d) => d.category === 'leisure' || d.category === 'wonder' },
+  { id: 'marvel', name: 'Marvels', filter: (d) => d.category === 'marvel' },
   { id: 'districts', name: 'Districts', filter: () => false },
   { id: 'land', name: 'Land', filter: () => false },
 ];
@@ -276,7 +278,8 @@ export class UI {
       }
       for (const d of BUILDINGS.filter(cat.filter)) {
         const locked = !isBuildingUnlocked(s.milestone, d.key);
-        add(d.name, `${d.cost}c`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked));
+        const mats = d.materials ? ' + ' + Object.entries(d.materials).map(([k, v]) => `${v} ${k}`).join(', ') : '';
+        add(d.name, `${d.cost}c${mats}`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked));
       }
     }
     this.q('#q-select').classList.toggle('active', t.kind === 'select');
@@ -742,11 +745,13 @@ export class UI {
     const why = this.host.canDeepenNode(i);
     const founding = n.x === s.founding.x && n.y === s.founding.y;
     const isWyrm = i === s.wyrm.node && s.wyrm.state !== 'none';
+    const asp = n.aspect ? ASPECT_INFO[n.aspect] : null;
     const rows = [
       row('Flow', `${90 + depth * NODE_DEEPEN_MANA} mana / day`),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
+    if (asp) rows.push(row('Aspect', `<span style="color:${asp.color}">${asp.name} ley</span>`), `<div class="muted" style="margin:2px 0 6px">${asp.desc[0].toUpperCase() + asp.desc.slice(1)}. A cradle here attunes ${asp.name} eggs.</div>`);
     if (isWyrm) {
       const w = s.wyrm;
       rows.push(row('The wyrm', w.state === 'sleeping' ? (w.waking > 0 ? 'stirring' : 'asleep') : w.state));
@@ -822,7 +827,7 @@ export class UI {
         d[i + 2] = parseInt(hex.slice(5, 7), 16);
         d[i + 3] = a;
       };
-      const terrainCol = (t: number): string => {
+      const terrainCol = (t: number, x = 0, y = 0): string => {
         switch (t) {
           case Terrain.DeepWater: return PAL.water1;
           case Terrain.Water: return PAL.water2;
@@ -830,7 +835,7 @@ export class UI {
           case Terrain.Meadow: return PAL.meadow;
           case Terrain.Forest: return PAL.forestFloor;
           case Terrain.Hills: return PAL.hillGrass;
-          case Terrain.LeyNode: return PAL.ley1;
+          case Terrain.LeyNode: { const nd = s.nodes.find((n) => n.x === x && n.y === y); return nd?.aspect ? ASPECT_INFO[nd.aspect].color : PAL.ley1; }
           case Terrain.Ruins: return PAL.stone2;
           default: return PAL.grass2;
         }
@@ -838,7 +843,7 @@ export class UI {
       for (let y = 0; y < s.h; y++)
         for (let x = 0; x < s.w; x++) {
           const i = y * s.w + x;
-          let col = s.gloam[i] ? PAL.gloam1 : terrainCol(s.terrain[i]);
+          let col = s.gloam[i] ? PAL.gloam1 : terrainCol(s.terrain[i], x, y);
           const dim = !inCharter(s, x, y);
           if (s.road[i]) col = s.road[i] === 3 ? PAL.lanternLight : s.road[i] === 4 ? PAL.glimleaf : PAL.dirt2;
           if (s.wall[i]) col = PAL.stone3;
@@ -962,6 +967,7 @@ export class UI {
             <li><b>Longwood and the Fen-Nex</b>: big forests hide <b>war-tigers</b> that hunt hearths by night (hunters, strong Watch or warden drakes kill them); the <b>Fen-Nex</b> fox-folk trade honestly half the time and may take a quarter of the city; a wild surge can leave a drifting <b>mana-storm</b> that warps buildings until wards dissolve it; the <b>Font of Quieting</b> (Free City) makes the dead easy to lay down.</li>
             <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; a lit <b>Drake Mews</b> sends <b>drake riders</b> to the restless and to fires; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus.</li>
             <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills; a <b>Golem Foundry</b> (Burgh) binds them into tireless labour that drinks mana. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
+            <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura; rare goods build the <b>Marvels</b> tab; the Gloam's pressure rises with the dead and falls with faith.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
           </ol>
@@ -1274,7 +1280,7 @@ export class UI {
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
         <div><b>${d.name}</b> <span class="muted">the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
-        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
+        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= 2 && (d.role === 'none' || d.role === 'warden') ? `<span class="good">Aura: ${AURA_INFO[d.line]}.</span> ` : ''}${(() => { const c = st.buildings.find((b) => b && b.id === d.cradleId); return c && aspectAt(st, c.x, c.y) === d.line ? '<span class="good">Attuned to its node.</span> ' : ''; })()}${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
     });
@@ -1282,7 +1288,8 @@ export class UI {
     this.el.wyrms.innerHTML = `<div class="box panel">
       <h2>Wyrmcraft</h2>
       <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
-      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)} · rayscale ${m.rayscale.toFixed(1)}</p>
+      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)} · rayscale ${m.rayscale.toFixed(1)} · glim-dust ${m.glimdust.toFixed(1)} <span class="muted">(the Marvels tab spends them; caravans buy them)</span></p>
+      <p class="muted">The Gloam is <b>${pressureWord(st.gloamPressure)}</b> (${Math.round(st.gloamPressure * 100)}%): the dead, the restless, overdraw and wild beasts press it; faith, the wyrm, the Tree and Grey ley hold it back.</p>
       <p class="muted">Beasts: ${describeBeasts(st)}</p>
       ${st.wyrm.state !== 'none' ? `<div class="wyrmrow"><b>The Vein-Wyrm</b> <span class="muted">at (${wyrmNode(st)!.x},${wyrmNode(st)!.y})</span><div class="${st.wyrm.state === 'bound' && st.wyrm.sulking === 0 ? 'good' : st.wyrm.state === 'awake' || st.wyrm.sulking > 0 ? 'warn' : 'muted'}">${describeWyrm(st)}</div><button id="w-goto">Show me</button></div>` : ''}
       ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}

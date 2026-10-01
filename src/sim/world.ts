@@ -1,6 +1,7 @@
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
+import { assignAspects, aspectAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -95,7 +96,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     dragons: [],
     nextDragonId: 1,
-    materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0 },
+    materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
     wyrm: newWyrm(chooseWyrmNode(t.nodes, t.founding)),
     airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
     fenNex: 0,
@@ -103,6 +104,8 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     daughter: null,
     challenge: null,
     sectors: initialSectors(t.founding),
+    gloamPressure: 0.3,
+    lastBadDay: -30,
     challengeDay: -1,
     cleanDays: 0,
     storms: [],
@@ -116,7 +119,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, sectorsBought: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -133,6 +136,8 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
   }
   markAllDirty(state);
   pushMessage(state, `The Charter of ${state.cityName} is signed. Draw a road from the Founding Stake and zone some hearths.`, 'milestone');
+  assignAspects(state.nodes, state.founding, () => rng.int(1000));
+  commitRng(state, rng);
   return state;
 }
 
@@ -161,6 +166,7 @@ export function pushMessage(state: GameState, text: string, kind: Message['kind'
   state.messages.push({ tick: state.tick, text, kind });
   if (state.messages.length > 60) state.messages.splice(0, state.messages.length - 60);
   if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
+  if (kind === 'bad') state.lastBadDay = state.day;
 }
 
 export function pushChronicle(state: GameState, text: string, kind: Message['kind'], at?: { x: number; y: number }): void {
@@ -377,10 +383,19 @@ export const NODE_DEEPEN_COST = [8000, 14000];
 export const NODE_DEEPEN_MANA = 45;
 
 /** Extra mana from deepened nodes. */
+/** Water radius with the Tide aspect. */
+export function waterRadiusOf(state: GameState, b: Building): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  let r = def.waterRadius ?? 0;
+  if (r && aspectAt(state, b.x, b.y) === 'tide') r += 2;
+  return r;
+}
+
 export function nodeMana(state: GameState): number {
   let m = 0;
   for (const n of state.nodes) m += (n.depth ?? 0) * NODE_DEEPEN_MANA;
   if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
+  for (const n of state.nodes) if (n.aspect === 'vein') m += 15;
   return m;
 }
 

@@ -2,6 +2,7 @@
  * Wyrmcraft I: dragons raised from eggs in a Wyrm-Cradle. Egg -> hatchling -> drake in this
  * iteration; wyvern and wyrm stages arrive with the sky layer. See DESIGN.md 8.6.
  */
+import { aspectAt } from './weave';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, Zone, idx, type Building, type Dragon, type DragonLine, type DragonRole, type GameState, type Training } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf } from './world';
@@ -128,7 +129,8 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     const warm = cradle.lit;
-    const speed = d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6;
+    const attuned = aspectAt(state, cradle.x, cradle.y) === d.line;
+    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1);
     if (d.stage === 0) {
       if (warm) d.days += 1;
       else if (rng.chance(0.15)) pushMessage(state, `The eggs in the cradle at (${cradle.x},${cradle.y}) are going cold: it needs mana.`, 'warn');
@@ -145,7 +147,7 @@ export function dailyDragons(state: GameState): void {
     const fedNow = feed(state, cradle, d.stage === 1 ? 6 : d.stage === 2 ? 10 : 14);
     if (fedNow) {
       d.hungry = 0;
-      d.mood = Math.min(100, d.mood + (d.training === 'gentle' ? 6 : 3));
+      d.mood = Math.min(100, d.mood + (d.training === 'gentle' ? 6 : 3) + (attuned ? 2 : 0));
     } else {
       d.hungry++;
       d.mood = Math.max(0, d.mood - 12);

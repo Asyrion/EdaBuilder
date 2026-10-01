@@ -156,6 +156,15 @@
   dimmed and for sale from Hamlet when they touch the Charter; the Gloam inside a bought
   sector draws back. Purchase panel, minimap dimming, a quest, bot support.
 
+## Done in iteration 23 (the interconnection deep dive, phase 1)
+
+- Mobile focus removed (desktop only).
+- Ley aspects on every node (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) changing
+  the rules within 10 tiles; attuned cradles; dragon auras per line; rare goods as inputs
+  through the Marvels tab and caravan trade, with glim-dust from Moth-Lofts; Gloam
+  pressure from the dead, faith and the beasts; the river freezing in the Hush and
+  flooding in the Thaw; a storyteller pacing events. See DESIGN.md §13.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -205,6 +214,11 @@ Lukuku, the World Tree sapling. Next: Fen-Nex visitors, war-tigers, swamp and at
 cameo events.
 
 ## Prioritized ideas for the next iteration
+
+0. **Deep dive, phase 2** (DESIGN §13.8): festival depth, guild politics at the
+   Guildhall, trade routes between depot, quays and the daughter, and a *Weave* info view
+   painting aspects and auras. Then phase 3: cross-line breeding at attuned cradles and
+   relic sets from the delve.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

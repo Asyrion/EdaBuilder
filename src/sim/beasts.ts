@@ -129,7 +129,7 @@ export function surgeMaddensGolems(s: GameState): number {
 /** Skyrays lured by a lit Ley Beacon circle it (phase 1) and stay. */
 export function beacon(s: GameState): Building | null {
   let out: Building | null = null;
-  forEachBuilding(s, (b) => { if (b.kind === 'leybeacon' && b.state === 'ok' && b.lit) out = out ?? b; });
+  forEachBuilding(s, (b) => { if ((b.kind === 'leybeacon' || b.kind === 'raymirror') && b.state === 'ok' && b.lit) out = out ?? b; });
   return out;
 }
 

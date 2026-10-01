@@ -8,6 +8,7 @@ import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
 import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { maybeSpawnTiger } from './lore';
+import { aspectAt, auraAt } from './weave';
 import { edictOn } from './edicts';
 import { effects, igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
@@ -57,6 +58,7 @@ function spawn(state: GameState, species: Species, x: number, y: number, anchorI
 /** Sources glimmoths swarm: ley nodes and lit spires/nexus/wards. */
 function leySources(state: GameState): { x: number; y: number; id: number }[] {
   const out = state.nodes.map((n) => ({ x: n.x, y: n.y, id: -1 }));
+  for (const n of state.nodes) if (n.aspect === 'glim') out.push({ x: n.x, y: n.y, id: -1 });
   forEachBuilding(state, (b) => {
     if (b.lit && b.state === 'ok' && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'wardlantern' || b.kind === 'mothloft')) out.push({ x: b.x, y: b.y, id: b.id });
     if (b.kind === 'worldtree' && b.state === 'ok' && b.age >= 60) { out.push({ x: b.x + 1, y: b.y + 1, id: b.id }); out.push({ x: b.x + 1, y: b.y, id: b.id }); }
@@ -181,7 +183,7 @@ export function updateCreatures(state: GameState): void {
     const a = spawn(state, want, c.x, c.y + c.h);
     a.dragonId = d.id;
     a.variant = lineIndex(d.line);
-    a.speed = want === 'wyvern' ? 4.5 : d.stage >= 2 ? 1.1 : 0.7;
+    a.speed = want === 'wyvern' ? (d.line === 'sky' ? 6 : 4.5) * (c.lit && aspectAt(state, c.x, c.y) === 'sky' ? 1.25 : 1) : d.stage >= 2 ? 1.1 : 0.7;
     a.alt = 0;
     a.phase = 0;
   }
@@ -294,7 +296,7 @@ export function tickCreatures(state: GameState): void {
           a.alt = 50 + Math.sin(t * 0.8 + ph) * 6;
           break;
         }
-        if (bc && Math.hypot(bc.x - a.x, bc.y - a.y) <= 30) {
+        if (bc && Math.hypot(bc.x - a.x, bc.y - a.y) <= (aspectAt(state, bc.x, bc.y) === 'sky' ? 45 : 30)) {
           a.phase = 1;
           if (a.variant === 0) effects.push({ x: bc.x, y: bc.y, kind: 'song', tick: state.tick });
           if (a.variant === 0) pushMessage(state, `The skyrays turn on the Ley Beacon's song at (${bc.x},${bc.y}) and begin to circle. They will stay the season.`, 'good', true, { x: bc.x, y: bc.y });
@@ -464,7 +466,7 @@ export function tickCreatures(state: GameState): void {
         const hy = Math.floor(a.y);
         const hi = idx(hx, hy);
         // light and wards hurt: flee toward the anchor (its gloam tile)
-        const scared = state.coverage.ward[hi] > 0 || state.lit[hi] === 1 || state.coverage.watch[hi] > 90;
+        const scared = state.coverage.ward[hi] > 0 || state.lit[hi] === 1 || state.coverage.watch[hi] > 90 || auraAt(state, 'fen', a.x, a.y);
         let tx: number;
         let ty: number;
         if (scared) {
@@ -690,7 +692,7 @@ export function tickCreatures(state: GameState): void {
           if (a.phase === 1) {
             const from = state.buildings.find((b) => b && b.id === a.homeId);
             if (from) {
-              a.load = Math.min(30, from.stock);
+              a.load = Math.min(d.line === 'sky' ? 40 : 30, from.stock);
               from.stock -= a.load;
             }
             a.phase = 2;

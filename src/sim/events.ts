@@ -336,6 +336,7 @@ const VISITORS: EventDef[] = [
     when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
     choices: [
       { label: 'Trade', desc: 'Sell surplus goods from full works at 1.5x the season price.', apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; return `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.`; } },
+      { label: 'Sell rare goods', desc: 'Scale 400, rayscale 300, glim-dust 150 crowns each; the Plains pay well for what they cannot breed.', apply: (s) => { const m = s.materials; const crowns = Math.round(m.scale * 400 + m.rayscale * 300 + m.glimdust * 150); const line = `${Math.round(m.scale)} scale, ${m.rayscale.toFixed(1)} rayscale and ${m.glimdust.toFixed(1)} glim-dust`; m.scale = 0; m.rayscale = 0; m.glimdust = 0; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns.` : 'The jars are empty. The riders shrug and water the striders.'; } },
       { label: 'Buy striders (2,000 crowns)', desc: 'Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days.', apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
       { label: 'Send them on', desc: 'No effect.', apply: () => 'They water the striders and ride for the next wardlight before noon.' },
     ],
@@ -439,9 +440,12 @@ export function maybeFireWyrm(s: GameState): void {
 
 export function maybeFireEvent(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
-  if (s.day - s.lastEventDay < 18) return;
+  // the storyteller: a grace week after an ill tiding; a long calm invites trouble
+  if (s.day - s.lastBadDay < 6) return;
+  const calm = s.day - Math.max(s.lastBadDay, s.lastEventDay);
+  if (s.day - s.lastEventDay < (calm > 25 ? 10 : 18)) return;
   const rng = rngOf(s);
-  if (!rng.chance(0.12)) {
+  if (!rng.chance(calm > 25 ? 0.24 : 0.12)) {
     commitRng(s, rng);
     return;
   }

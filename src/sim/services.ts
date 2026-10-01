@@ -8,6 +8,7 @@ import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
 import { mewsActive } from './beasts';
+import { dragonAuras, nodesOfAspect } from './weave';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -54,6 +55,29 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
           acc[idx(x, y)] += str * (1 - (d / r) * 0.6);
         }
     }
+  }
+  // dragon auras and ley aspects
+  for (const au of dragonAuras(state)) {
+    const str = (type === 'ward' && au.line === 'grey') || (type === 'fire' && au.line === 'tide') || (type === 'death' && au.line === 'bone') ? 0.5 : 0;
+    if (!str) continue;
+    const r = au.r;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        const x = Math.round(au.x + dx);
+        const y = Math.round(au.y + dy);
+        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
+        acc[idx(x, y)] += str * (1 - Math.hypot(dx, dy) / r * 0.6);
+      }
+  }
+  if (type === 'ward') for (const g of nodesOfAspect(state, 'grey')) {
+    const r = 10;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        const x = g.x + dx;
+        const y = g.y + dy;
+        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
+        acc[idx(x, y)] += 0.35;
+      }
   }
   if (type === 'ward') {
     // the World Tree's roots hold the Gloam under its shade (no burning, just holding)
