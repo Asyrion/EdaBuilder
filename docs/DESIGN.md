@@ -1354,6 +1354,12 @@ its description says how many surplus goods wait on the shelves, and the depot's
 quest's hint says the rhythm and the rule (works' stock above ten). Saves carry
 `stats.lastCaravanDay`; an old save starts the count the day it loads.
 
+Balance: the six runs of §4.73's table (Vellish 42/43/44, Grimmen, Veshari and Tallowkin 42,
+150 days) are bit-identical to iteration 42, which is a finding of its own: the bot wants a
+depot (`want('depot', 1)`) and never stands one on any seed (`depot 0` at day 150
+everywhere), so neither the Gloam road nor the caravan is played by the balance bot. Recorded
+in NEXT_STEPS for the depth pass.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
