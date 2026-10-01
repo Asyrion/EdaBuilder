@@ -434,6 +434,30 @@ export const BUILDINGS: BuildingDef[] = [
 
   // ---- special ----
   {
+    key: 'cartersyard', name: "Carters' Yard", category: 'special',
+    desc: 'Raised by a pleased Carters\' Guild. Counts as a second depot for the Gloam road and shelters carts: leisure within 6. Locks while the guild strikes.',
+    flavor: 'Mules, wheels, and a board where every road in Eda is chalked and argued over.',
+    w: 2, h: 2, cost: 0, upkeep: 10, manaUse: 0, unlock: 99, service: { type: 'leisure', radius: 6, strength: 0.4 },
+  },
+  {
+    key: 'lyceum', name: "Alchemists' Lyceum", category: 'special',
+    desc: 'Raised by a pleased Alchemists\' Guild. Scrubs miasma by a third within 10 tiles and teaches within 8. Locks while the guild strikes.',
+    flavor: 'The lectures are free. The antidotes are not.',
+    w: 2, h: 2, cost: 0, upkeep: 15, manaUse: 2, unlock: 99, service: { type: 'school', radius: 8, strength: 0.4 },
+  },
+  {
+    key: 'wrightslodge', name: "Spire-Wrights' Lodge", category: 'special',
+    desc: 'Raised by pleased Spire-Wrights. Holds 40 mana and the spires bear 15% more overdraw before a surge. Locks while the guild strikes.',
+    flavor: 'Blue chalk on every wall: the ley as the wrights see it, which is to say, as a debt.',
+    w: 2, h: 2, cost: 0, upkeep: 15, manaUse: 2, unlock: 99, manaStorage: 40,
+  },
+  {
+    key: 'sextonchapel', name: "Sextons' Chapel", category: 'special',
+    desc: 'Raised by pleased Sextons of Morrow. Quiets 15 dead a day within 12 tiles. Locks while the guild strikes.',
+    flavor: 'Salt in the font, a coin in the bowl, and Hollis asleep in the back pew.',
+    w: 2, h: 2, cost: 0, upkeep: 10, manaUse: 1, unlock: 99, service: { type: 'death', radius: 12, strength: 0.6, quietRate: 15 },
+  },
+  {
     key: 'stake', name: 'Founding Stake', category: 'special',
     desc: "The Warden-Reeve's hall, the Charter nailed to its door and the Charter well in its yard. Lights and waters a few tiles around it.",
     flavor: '"Light it, hold it, and make it pay."',

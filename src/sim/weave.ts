@@ -72,7 +72,9 @@ export function dragonAuras(s: GameState): Aura[] {
       x = c.x + 1;
       y = c.y + 1;
     }
-    list.push({ x, y, r: d.role === 'warden' ? 12 : 8, line: d.line, name: d.name });
+    const r = d.role === 'warden' ? 12 : 8;
+    list.push({ x, y, r, line: d.line, name: d.name });
+    if (d.second) list.push({ x, y, r: r - 3, line: d.second, name: d.name });
   }
   auraCache = { tick: stamp, list };
   return list;

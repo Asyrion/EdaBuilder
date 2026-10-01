@@ -180,6 +180,8 @@ Charter as `.json`.
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
+- Crossed eggs from attuned cradles (two auras in one dragon), relic sets catalogued by the
+  Academy from the Ruin Delve, and guild halls that pleased guilds raise for themselves.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the

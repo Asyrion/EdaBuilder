@@ -1,7 +1,8 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
 import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
-import { guildEffect } from './guilds';
+import { guildEffect, hallActive } from './guilds';
+import { relicDone } from './relics';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
 import { mothBonus } from './creatures';
@@ -123,6 +124,7 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   if (tree) h += treeStage(tree);
   if (raysLured(state)) h += 3;
   if (hasMarvel(state, 'hallofmarvels')) h += 8;
+  if (relicDone(state, 'ninehouses')) h += 3;
   if (edictOn(state, 'curfew', b)) h -= 4;
   if (seasonOf(state) === 1) h += 2; // Bloom
   if (def.zone === Zone.Hearth) {
@@ -264,7 +266,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 : 1);
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 + 0.05 * state.relics.complete.length : 1);
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -438,7 +440,7 @@ export function dailyTrade(state: GameState): void {
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
-  const depots = state.buildings.filter((b) => b && b.kind === 'depot' && b.state === 'ok');
+  const depots = state.buildings.filter((b) => b && (b.kind === 'depot' || (b.kind === 'cartersyard' && hallActive(state, 'cartersyard'))) && b.state === 'ok');
   if (!depots.length) return;
   const hasBuyers = state.buildings.some((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok');
   let crowns = 0;

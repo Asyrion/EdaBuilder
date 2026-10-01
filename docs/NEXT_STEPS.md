@@ -177,6 +177,16 @@
   daughter wardlight with a Crown toll.
 - The Weave info view (W) painting aspects and dragon auras. Four quests.
 
+## Done in iteration 25
+
+- Cross-line breeding: two content drakes of different lines in a lit, attuned cradle lay a
+  crossed egg on Bloom day 20; crossed dragons carry a second aura and attune to either line.
+- Relic sets: every twelfth relic is a set piece, catalogued by an Academy; four sets with
+  lasting boons (storage, happiness, deathcare, sector prices) and a Hall of Marvels bonus.
+- Guild halls: a guild pleased for ten days raises its own hall by the Guildhall (yard,
+  lyceum, lodge, chapel), each with an effect in its guild's system; halls lock on strike.
+- Three quests, info rows for cradles, the delve, the Academy and the halls.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -227,8 +237,8 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Deep dive, phase 3** (DESIGN §13.9): cross-line breeding at attuned cradles, relic
-   sets from the delve, and a hall per guild so a pleased guild builds something.
+0. **Deep dive, phase 4** (DESIGN §13.10): dragon bloodlines from two crossed parents,
+   relic sets that unlock a building each, and guild rivalries.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
