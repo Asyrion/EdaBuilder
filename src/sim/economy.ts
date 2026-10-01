@@ -1,6 +1,7 @@
+import { factionOf, milestonesOf } from '../data/factions';
 /** Daily tithe: taxes and upkeep. */
 import { inFenNex } from './lore';
-import { BUILDING_BY_KEY, MILESTONES, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
+import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
@@ -73,9 +74,11 @@ export function dailyEconomy(state: GameState): void {
 }
 
 export function checkMilestones(state: GameState): void {
-  while (state.milestone + 1 < MILESTONES.length && state.population >= MILESTONES[state.milestone + 1].pop) {
+  const MS = milestonesOf(state);
+  const gate = factionOf(state).rules.milestoneGate;
+  while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1))) {
     state.milestone++;
-    const m = MILESTONES[state.milestone];
+    const m = MS[state.milestone];
     state.treasury += m.grant;
     state.ledger.grants += m.grant;
     pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${m.grant} crowns)`, 'milestone');

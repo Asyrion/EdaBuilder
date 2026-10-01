@@ -9,6 +9,7 @@ import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
 import { mewsActive } from './beasts';
 import { hallActive } from './guilds';
+import { factionOf } from '../data/factions';
 import { dragonAuras, nodesOfAspect } from './weave';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
@@ -20,6 +21,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (b.state !== 'ok') return;
     if (def.category === 'special' && b.kind !== 'stake' && !hallActive(state, b.kind)) return;
     let strength = def.service.strength;
+    if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
@@ -54,7 +56,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
           if (!inBounds(x, y)) continue;
           const d = Math.hypot(dx, dy);
           if (d > r) continue;
-          acc[idx(x, y)] += str * (1 - (d / r) * 0.6);
+          acc[idx(x, y)] += str * (1 - (d / r) * 0.6) * (type === 'ward' ? factionOf(state).rules.wallWard : 1);
         }
     }
   }
@@ -156,6 +158,7 @@ export function updateMiasma(state: GameState): void {
 }
 
 export function updateLandValue(state: GameState): void {
+  const fr = factionOf(state).rules;
   const n = MAP_W * MAP_H;
   const lv = state.landValue;
   const cov = state.coverage;
@@ -203,6 +206,7 @@ export function updateLandValue(state: GameState): void {
       if (gd < 8) v -= (8 - gd) * 4;
       v -= (state.trafficSmooth[i] / 255) * 12;
       if (state.terrain[i] === Terrain.Forest) v += 3;
+      if (state.terrain[i] === Terrain.Hills) v += fr.hillLandValue; else v -= fr.grassPenalty;
       lv[i] = Math.max(0, Math.min(100, Math.round(v)));
     }
 }

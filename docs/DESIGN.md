@@ -880,6 +880,28 @@ This completes M10: seven walker kinds, one per service, all data in `WALKER_JOB
 over seeds 42–44 against main: Free City days 66 / stalls / 50 vs 60 / stalls / 58 (mean 58 vs
 59), Beacon days 97 / – / 91 vs 95 / – / 98; within the rule.
 
+### 4.65 The faction scaffold (iteration 34)
+
+`src/data/factions.ts` holds `FACTIONS`: a `FactionDef` per people with a name, lore, a
+`playable` flag, its own `milestones` table (same length and indices as `MILESTONES`), a
+`deny` list, a `replaces` map (Vellish key → this people's key) and a `rules` block:
+`hillLandValue`, `grassPenalty`, `hillBuildable`, `wallWard`, `lanternWard`, `hillMana`,
+`nodeMana`, `startCrowns` and an optional `milestoneGate`. `GameState.faction` names the
+people (`createGame` and `createScenario` take it; the daily challenge is always Vellish;
+old saves default to Vellish). The Vellish entry has neutral rules; the Grimmen entry is a
+lore stub shown disabled on the title screen until iteration 35.
+
+Each rule is read at exactly one point: land value (`services.ts updateLandValue`),
+placement and zoning on hills (`world.ts canPlaceBuilding`, `actions.ts paintZone`), the
+gates' ward and the Ward Lantern's strength (`updateCoverage`), the node flow and a hill
+building's `manaProduce` (`networks.ts updateMana`), the starting treasury (`createGame`),
+and `checkMilestones` (which reads `milestonesOf` and the gate). `canBuild(s, key)` joins
+the milestone, the relic sets and `buildsFor` (deny, replaces, `BuildingDef.faction`); the
+build menu, the tools, the actions and the bot use it, and the bot's `want` goes through
+`factionKey` so a people's replacement is placed instead. The title screen has a peoples
+row above the scenarios; the topbar names the people after the milestone. Seed 42 is
+bit-identical to main (Burgh 42, Free City 66, Beacon 97): the scaffold adds no rng call.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1482,7 +1504,7 @@ its own milestone table and names, a `rules` block read by the systems at a hand
 points, a quest chapter, and an event pool. `GameState.faction` names it; the title screen
 picks it beside the scenario; the bot plays any of them.
 
-- **Scaffold (iteration 34).** The default Vellish city becomes a faction with no rule
+- **Scaffold (iteration 34). ✅ Built as 4.65.** The default Vellish city becomes a faction with no rule
   changes, so nothing moves. The catalog gains `faction?: FactionId[]` (who may build) and
   `replaces?: string`; `isBuildingUnlocked` reads the faction. The `rules` block starts
   with what the Grimmen need: terrain preferences (land value and buildability on hills),
@@ -1653,3 +1675,6 @@ picks it beside the scenario; the bot plays any of them.
 - *A walk replaces a timer where it can (iteration 33):* relic pieces are named when a
   scholar carries them home, not by a daily counter, because the walk is the thing the player
   sees; the counter stays only as the fallback for an Academy with no scholar.
+- *One rule, one read (iteration 34):* every faction rule is read at a single point in the
+  systems and proved by a throwaway people in the tests, so a new people is a table entry and
+  the Vellish game cannot drift.

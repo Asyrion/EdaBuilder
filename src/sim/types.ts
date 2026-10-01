@@ -1,4 +1,5 @@
 import type { GuildState } from './guilds';
+import type { FactionId } from '../data/factions';
 import type { RelicState } from './relics';
 /** Plain-data simulation types. Nothing here touches the DOM. */
 
@@ -314,6 +315,7 @@ export interface GameState {
   relics: RelicState; // relic sets from the delve (relics.ts)
   relicStock: number; // loose relics the delve has brought up and not yet sold
   scenario: Scenario;
+  faction: FactionId; // the people (data/factions.ts)
   gloamPressure: number; // 0..1, recomputed daily (see weave.ts)
   lastBadDay: number; // storyteller: day of the last ill tiding
   sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter

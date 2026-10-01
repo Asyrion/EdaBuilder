@@ -99,6 +99,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   state.fenNex = state.fenNex ?? 0;
   state.scenario = state.scenario ?? 'valley';
+  state.faction = state.faction ?? 'vellish';
   state.daughter = state.daughter ?? null;
   state.challenge = state.challenge ?? null;
   state.challengeDay = state.challengeDay ?? -1;

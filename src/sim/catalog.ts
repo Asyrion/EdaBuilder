@@ -1,3 +1,4 @@
+import type { FactionId } from '../data/factions';
 import { RoadType, Zone, type ServiceType } from './types';
 
 export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'marvel' | 'special';
@@ -42,6 +43,7 @@ export interface BuildingDef {
   maxCount?: number; // at most this many in the city
   materials?: { scale?: number; wyrmfire?: number; eggshell?: number; rayscale?: number; glimdust?: number }; // rare goods consumed to build
   relic?: string; // needs this relic set entire (relics.ts)
+  faction?: FactionId[]; // a people's own building; absent = every people
   leystone?: number; // leystone mined per day
 }
 

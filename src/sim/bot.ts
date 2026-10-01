@@ -1,3 +1,4 @@
+import { canBuild, factionKey } from '../data/factions';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
@@ -120,8 +121,8 @@ export class Bot {
     let placed = 0;
     for (let k = 0; k < dry.length && placed < 3; k += Math.max(1, Math.floor(dry.length / 6))) {
       const d = dry[k];
-      const key = s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well';
-      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear('well', d.x, d.y, 6, true)) placed++;
+      const key = factionKey(s, s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
+      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(factionKey(s, 'well'), d.x, d.y, 6, true)) placed++;
     }
   }
 
@@ -192,8 +193,9 @@ export class Bot {
     const s = this.s;
     const buildings = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone').length;
     const buffer = 1500;
-    const want = (key: string, target: number, nearGloam = false) => {
-      if (!isBuildingUnlocked(s.milestone, key)) return;
+    const want = (key0: string, target: number, nearGloam = false) => {
+      const key = factionKey(s, key0);
+      if (!canBuild(s, key)) return;
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
       if (s.treasury < def.cost + buffer) return;

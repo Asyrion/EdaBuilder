@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage({ viewport: { width: 1400, height: 800 } });
+const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+await page.goto('http://localhost:4173/');
+await page.waitForFunction(() => window.__game);
+console.log('peoples:', await page.evaluate(() => Array.from(document.querySelectorAll('#title .peoples button')).map((b) => `${b.querySelector('b').textContent}${b.disabled ? '[disabled]' : ''}${b.classList.contains('active') ? '[active]' : ''}`).join(' | ')));
+await page.screenshot({ path: 'shots/iter34_title.png' });
+await page.click('#t-new'); await page.waitForTimeout(300);
+await page.evaluate(() => { document.getElementById('help').classList.add('hidden'); });
+console.log('topbar:', await page.evaluate(() => document.querySelector('#tb-title')?.textContent));
+console.log('faction:', await page.evaluate(() => window.__game.state.faction));
+await page.click('#toolbar .tabs button:nth-child(5)'); await page.waitForTimeout(150);
+console.log('services tab count:', await page.evaluate(() => document.querySelectorAll('#toolbar .items button').length));
+console.log('errors', errors);
+await browser.close();

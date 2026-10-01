@@ -1,6 +1,6 @@
 /** Dev tools: commands for playtesting and checking mechanics. Every use is counted, marks the daily result, and writes one Chronicle line. See DESIGN.md 4.55. */
 import { ALL_EVENTS } from './events';
-import { MILESTONES } from './catalog';
+import { milestonesOf } from '../data/factions';
 import { ASPECTS } from './weave';
 import { LINE_INFO, addEgg, STAGE_NAMES, stageCap } from './wyrmcraft';
 import { GUILDS, GUILD_IDS, dailyGuilds, type GuildId } from './guilds';
@@ -50,7 +50,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   // purse
   { id: 'crowns', group: 'Purse', name: '+10,000 crowns', desc: 'Into the treasury.', run: (s) => { s.treasury += 10000; return 'The Crown sends a chest.'; } },
   { id: 'materials', group: 'Purse', name: '+10 of every rare good', desc: 'Scale, wyrmfire, eggshell, rayscale, glim-dust.', run: (s) => { for (const k of Object.keys(s.materials) as (keyof typeof s.materials)[]) s.materials[k] += 10; return 'The vaults fill.'; } },
-  { id: 'milestone', group: 'Purse', name: 'Next milestone', desc: 'Raises the milestone by one (unlocks follow).', run: (s) => { s.milestone = Math.min(MILESTONES.length - 1, s.milestone + 1); return `Now ${MILESTONES[s.milestone].name}.`; } },
+  { id: 'milestone', group: 'Purse', name: 'Next milestone', desc: 'Raises the milestone by one (unlocks follow).', run: (s) => { const MS = milestonesOf(s); s.milestone = Math.min(MS.length - 1, s.milestone + 1); return `Now ${MS[s.milestone].name}.`; } },
   { id: 'population', group: 'Purse', name: 'Fill every home', desc: 'Residents and workers to capacity for one day.', run: (s) => { let n = 0; forEachBuilding(s, (b) => { const d = BUILDING_BY_KEY[b.kind]; if (d.zone === Zone.Hearth && b.state === 'ok') { b.residents = 8 * b.level; n += b.residents; } }); s.population = Math.max(s.population, n); checkMilestones(s); return `${n} folk housed.`; } },
   // time
   { id: 'day', group: 'Time', name: 'Run a day', desc: '900 ticks; the game pauses after.', run: (s) => { run(s, 900); return `Day ${s.day}.`; } },

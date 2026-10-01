@@ -3,7 +3,8 @@ import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
 import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
-import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
+import { BUILDING_BY_KEY } from '../sim/catalog';
+import { canBuild } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding } from '../sim/world';
 import { bumpRoadVersion } from '../sim/agents';
@@ -285,7 +286,7 @@ export class Tools {
       const y = hover[1] - Math.floor((def.h - 1) / 2);
       const why = canPlaceBuilding(s, this.tool.key, x, y);
       const radius = def.service?.radius ?? def.waterRadius ?? (this.tool.key === 'spire' ? 5 : this.tool.key === 'nexus' ? 9 : 0);
-      v.ghost = { key: this.tool.key, x, y, ok: !why && isBuildingUnlocked(s.milestone, this.tool.key, s.relics.complete) && def.cost <= s.treasury, radius };
+      v.ghost = { key: this.tool.key, x, y, ok: !why && canBuild(s, this.tool.key) && def.cost <= s.treasury, radius };
       this.previewReason = why;
     } else if (this.tool.kind === 'bulldoze') {
       if (inBounds(hover[0], hover[1])) v.previewTiles = [{ i: idx(hover[0], hover[1]), ok: false }];

@@ -1,5 +1,6 @@
+import { FACTIONS, buildsFor, canBuild, factionOf, milestonesOf, type FactionId } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
-import { BUILDINGS, BUILDING_BY_KEY, MILESTONES, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
+import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
@@ -52,7 +53,7 @@ export interface UiHost {
   togglePause(): void;
   setTool(t: Tool): void;
   setOverlay(id: string | null): void;
-  newGame(seed: number, name: string, scenario: Scenario | 'daily'): void;
+  newGame(seed: number, name: string, scenario: Scenario | 'daily', faction?: FactionId): void;
   continueGame(): boolean;
   hasSave(): boolean;
   save(): void;
@@ -250,7 +251,7 @@ export class UI {
     if (this.category === 'roads') {
       for (const r of ROADS) {
         const locked = !isRoadUnlocked(s.milestone, r.type) || (!!r.requires && !s.buildings.some((b) => b && b.kind === r.requires && b.state === 'ok'));
-        add(r.name, `${r.cost}c/tile`, locked, t.kind === 'road' && t.type === r.type, () => this.host.setTool({ kind: 'road', type: r.type }), () => `<div class="t">${r.name}</div>${r.desc}<br><span class="muted">Cost ${r.cost}/tile · upkeep ${r.upkeep}/day${r.manaUse ? ` · ${r.manaUse} mana/tile` : ''}${locked ? `<br>Unlocks at ${MILESTONES[r.unlock].name}` : ''}</span>`);
+        add(r.name, `${r.cost}c/tile`, locked, t.kind === 'road' && t.type === r.type, () => this.host.setTool({ kind: 'road', type: r.type }), () => `<div class="t">${r.name}</div>${r.desc}<br><span class="muted">Cost ${r.cost}/tile · upkeep ${r.upkeep}/day${r.manaUse ? ` · ${r.manaUse} mana/tile` : ''}${locked ? `<br>Unlocks at ${this.ms()[r.unlock].name}` : ''}</span>`);
       }
     } else if (this.category === 'zones') {
       const zones: [Zone, string, string][] = [
@@ -262,14 +263,14 @@ export class UI {
       for (const [z, name, key] of zones) {
         const def = BUILDING_BY_KEY[key];
         const locked = !isZoneUnlocked(s.milestone, z);
-        add(name, 'free', locked, t.kind === 'zone' && t.zone === z, () => this.host.setTool({ kind: 'zone', zone: z }), () => `<div class="t">${def.name}</div>${def.desc}<br><span class="flavor">${def.flavor}</span>${locked ? `<br><span class="muted">Unlocks at ${MILESTONES[def.unlock].name}</span>` : ''}`);
+        add(name, 'free', locked, t.kind === 'zone' && t.zone === z, () => this.host.setTool({ kind: 'zone', zone: z }), () => `<div class="t">${def.name}</div>${def.desc}<br><span class="flavor">${def.flavor}</span>${locked ? `<br><span class="muted">Unlocks at ${this.ms()[def.unlock].name}</span>` : ''}`);
       }
       add('De-zone', '', false, t.kind === 'zone' && t.zone === Zone.None, () => this.host.setTool({ kind: 'zone', zone: Zone.None }), () => `<div class="t">De-zone</div>Removes zoning (and any zoned building) from the area.`);
     } else if (this.category === 'land') {
       for (const op of Object.keys(TERRAFORM) as TerraformOp[]) {
         const d = TERRAFORM[op];
         const locked = s.milestone < d.unlock;
-        add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${MILESTONES[d.unlock].name}</span>` : ''}`);
+        add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${this.ms()[d.unlock].name}</span>` : ''}`);
       }
     } else if (this.category === 'districts') {
       for (let d = 1; d <= MAX_DISTRICTS; d++) {
@@ -282,12 +283,12 @@ export class UI {
       if (this.category === 'service') {
         const locked = s.milestone < WALL_UNLOCK;
         const glocked = s.milestone < GATE_UNLOCK;
-        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles.<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
-        add('Uzulim Gate', `${GATE_COST[3]}c`, glocked, t.kind === 'gate' && t.style === 3, () => this.host.setTool({ kind: 'gate', style: 3 }), () => `<div class="t">Uzulim Gate</div>A dark volcanic arch with crimson symbols and hooded statues; roads pass through it. Ward +0.4 and watch +0.3 within 10 tiles; unrest +2% per gate.<br><span class="flavor">The statues' eyes follow anyone who approaches.</span>${glocked ? `<br><span class="warn">Unlocks at ${MILESTONES[GATE_UNLOCK].name}</span>` : ''}`);
-        add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${MILESTONES[WALL_UNLOCK].name}</span>` : ''}`);
+        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles.<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${this.ms()[GATE_UNLOCK].name}</span>` : ''}`);
+        add('Uzulim Gate', `${GATE_COST[3]}c`, glocked, t.kind === 'gate' && t.style === 3, () => this.host.setTool({ kind: 'gate', style: 3 }), () => `<div class="t">Uzulim Gate</div>A dark volcanic arch with crimson symbols and hooded statues; roads pass through it. Ward +0.4 and watch +0.3 within 10 tiles; unrest +2% per gate.<br><span class="flavor">The statues' eyes follow anyone who approaches.</span>${glocked ? `<br><span class="warn">Unlocks at ${this.ms()[GATE_UNLOCK].name}</span>` : ''}`);
+        add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${this.ms()[WALL_UNLOCK].name}</span>` : ''}`);
       }
-      for (const d of BUILDINGS.filter(cat.filter)) {
-        const locked = !isBuildingUnlocked(s.milestone, d.key, s.relics.complete);
+      for (const d of BUILDINGS.filter(cat.filter).filter((d) => buildsFor(factionOf(s), d))) {
+        const locked = !canBuild(s, d.key);
         const mats = d.materials ? ' + ' + Object.entries(d.materials).map(([k, v]) => `${v} ${k}`).join(', ') : '';
         add(d.name, `${d.cost}c${mats}`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked));
       }
@@ -306,7 +307,7 @@ export class UI {
     if (d.service) bits.push(`radius ${d.service.radius}`);
     if (d.waterRadius) bits.push(`waters ${d.waterRadius} tiles`);
     if (d.needsMana) bits.push('needs mana');
-    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${d.relic && !this.host.state.relics.complete.includes(d.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === d.relic)?.name} entire (Ruin Delve and Academy)` : `Unlocks at ${MILESTONES[d.unlock].name} (${MILESTONES[d.unlock].pop} folk)`}</span>` : ''}`;
+    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${d.relic && !this.host.state.relics.complete.includes(d.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === d.relic)?.name} entire (Ruin Delve and Academy)` : `Unlocks at ${this.ms()[d.unlock].name} (${this.ms()[d.unlock].pop} folk)`}</span>` : ''}`;
   }
 
   showTooltip(html: string, x: number, y: number): void {
@@ -363,7 +364,7 @@ export class UI {
     const s = this.host.state;
     const h = this.host;
     this.q('#tb-name').textContent = s.cityName;
-    this.q('#tb-title').textContent = MILESTONES[s.milestone].name;
+    this.q('#tb-title').textContent = `${this.ms()[s.milestone].name} · ${factionOf(s).people}`;
     const season = SEASON_NAMES[Math.floor(s.day / DAYS_PER_SEASON) % 4];
     const year = 1 + Math.floor(s.day / (DAYS_PER_SEASON * 4));
     this.q('#tb-date').textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}`;
@@ -402,7 +403,7 @@ export class UI {
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
-      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${MILESTONES[s.milestone].name}</h2><p>${MILESTONES[s.milestone].text}</p><p class="muted">Grant: +${MILESTONES[s.milestone].grant} crowns. New buildings unlocked in the toolbar.</p>`, 9000);
+      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p><p class="muted">Grant: +${this.ms()[s.milestone].grant} crowns. New buildings unlocked in the toolbar.</p>`, 9000);
       this.lastMilestone = s.milestone;
       this.refreshItems();
     }
@@ -456,7 +457,7 @@ export class UI {
     const score = el.querySelector('.score') as HTMLElement;
     if (s.challenge) {
       const done = s.challengeDay >= 0;
-      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}${s.stats.devUses ? ' (dev tools used)' : ''}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${MILESTONES[s.milestone].name}`;
+      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}${s.stats.devUses ? ' (dev tools used)' : ''}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${this.ms()[s.milestone].name}`;
       score.classList.remove('hidden');
       score.innerHTML = `<span class="lbl">${done ? 'Result' : 'Challenge'}</span> ${text}${done ? ' <button class="show" id="q-copy">Copy result</button>' : ''}`;
       const cp = score.querySelector('#q-copy') as HTMLButtonElement | null;
@@ -497,8 +498,8 @@ export class UI {
       const cat = CATEGORIES.find((c) => c.filter(def));
       if (cat) this.category = cat.id;
       this.refreshItems();
-      if (isBuildingUnlocked(s.milestone, f.build, s.relics.complete)) this.host.setTool({ kind: 'build', key: f.build });
-      else this.toast(`<p>${def.name} unlocks at ${MILESTONES[def.unlock].name}.</p>`, 2500);
+      if (canBuild(s, f.build)) this.host.setTool({ kind: 'build', key: f.build });
+      else this.toast(`<p>${def.name} unlocks at ${this.ms()[def.unlock].name}.</p>`, 2500);
     } else if ('panel' in f) {
       if (f.panel === 'edicts') this.toggleEdicts(true);
       else if (f.panel === 'wyrms') this.toggleWyrms(true);
@@ -1028,6 +1029,7 @@ export class UI {
       <p class="lore">Three hundred years after the Hollowing, the world of Eda is islands of light in a grey sea. The Ashen Crown of Vell has surveyed a young ley node in a river valley at the edge of the Gloam, and granted you a Charter: <i>light it, hold it, and make it pay.</i> Draw roads, zone hearths and markets, raise spires to carry the ley, and keep the dead quiet. Grow a camp into a Beacon of Eda.</p>
       <div class="row"><label>Valley name</label><input type="text" id="t-name" value="${CITY_NAMES[Math.floor(Math.random() * CITY_NAMES.length)]}"><label>Seed</label><input type="number" id="t-seed" value="${Math.floor(Math.random() * 99999)}" style="width:100px"></div>
       <div class="names">${names}</div>
+      <div class="peoples">${Object.values(FACTIONS).map((fd) => `<button data-fac="${fd.id}" class="${fd.id === 'vellish' ? 'active' : ''}" ${fd.playable ? '' : 'disabled'} title="${fd.lore}"><b>${fd.name}</b><span>${fd.playable ? fd.lore : 'Coming in a later iteration.'}</span></button>`).join('')}</div>
       <div class="scenarios">${SCENARIOS.map((sc, i) => `<button data-sc="${sc.id}" class="${i === 0 ? 'active' : ''}" title="${sc.goal}"><b>${sc.name}</b><span>${sc.blurb}</span><em>Goal: ${sc.goal}</em></button>`).join('')}</div>
       <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley for everyone today; Market Town by day 60">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
       <input type="file" id="t-file" accept=".json" class="hidden">
@@ -1035,12 +1037,14 @@ export class UI {
     </div>`;
     const t = this.el.title;
     let scenario: Scenario = 'valley';
+    let faction: FactionId = 'vellish';
+    t.querySelectorAll('.peoples button').forEach((b) => ((b as HTMLButtonElement).onclick = () => { faction = (b as HTMLElement).dataset.fac as FactionId; t.querySelectorAll('.peoples button').forEach((o) => o.classList.toggle('active', o === b)); }));
     t.querySelectorAll('.scenarios button').forEach((b) => ((b as HTMLButtonElement).onclick = () => { scenario = (b as HTMLElement).dataset.sc as Scenario; t.querySelectorAll('.scenarios button').forEach((o) => o.classList.toggle('active', o === b)); }));
     t.querySelectorAll('.names button').forEach((b) => ((b as HTMLButtonElement).onclick = () => ((t.querySelector('#t-name') as HTMLInputElement).value = (b as HTMLElement).dataset.name!)));
     (t.querySelector('#t-new') as HTMLButtonElement).onclick = () => {
       const name = (t.querySelector('#t-name') as HTMLInputElement).value.trim() || 'Thornwick';
       const seed = Number((t.querySelector('#t-seed') as HTMLInputElement).value) || 1;
-      this.host.newGame(seed >>> 0, name, scenario);
+      this.host.newGame(seed >>> 0, name, scenario, faction);
       t.classList.add('hidden');
       this.toggleHelp(true);
     };
@@ -1383,7 +1387,7 @@ export class UI {
       const cityOn = this.edictScope ? !!st.edicts[e.key] : false;
       return `<div class="edict ${locked ? 'locked' : ''}">
         <label><input type="checkbox" data-key="${e.key}" ${on || cityOn ? 'checked' : ''} ${locked || cityOn ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day${this.edictScope ? ', scaled to the district' : ''})</span>${cityOn ? ' <span class="muted">city-wide</span>' : ''}</label>
-        <div class="muted">${e.desc}${locked ? ` <span class="warn">Unlocks at ${MILESTONES[e.unlock].name}.</span>` : ''}</div>
+        <div class="muted">${e.desc}${locked ? ` <span class="warn">Unlocks at ${this.ms()[e.unlock].name}.</span>` : ''}</div>
         <div class="flavor">${e.flavor}</div>
       </div>`;
     });
@@ -1461,6 +1465,8 @@ export class UI {
     (el.querySelector('#dev-close') as HTMLButtonElement).onclick = () => this.toggleDev(false);
   }
 
+  private ms() { return milestonesOf(this.host.state); }
+
   private eventShownId: string | null = null;
 
   refreshEvent(): void {
@@ -1488,7 +1494,7 @@ export class UI {
     this.el.gameover.innerHTML = `<div class="box panel">
       <h2>The light goes out</h2>
       <p>${s.gameOver}</p>
-      <p class="muted">${s.cityName} reached ${MILESTONES[s.milestone].name} with a peak of ${s.stats.peakPopulation} folk over ${s.day} days. Fires: ${s.stats.firesTotal}. Surges: ${s.stats.surgesTotal}. Restless risen: ${s.stats.restlessTotal}.</p>
+      <p class="muted">${s.cityName} reached ${this.ms()[s.milestone].name} with a peak of ${s.stats.peakPopulation} folk over ${s.day} days. Fires: ${s.stats.firesTotal}. Surges: ${s.stats.surgesTotal}. Restless risen: ${s.stats.restlessTotal}.</p>
       <div style="text-align:right"><button id="go-title">Found another wardlight</button></div>
     </div>`;
     this.el.gameover.classList.remove('hidden');
