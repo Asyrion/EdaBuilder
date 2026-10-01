@@ -1255,7 +1255,20 @@ frame, stacked on the same pixel. Each agent now walks at its own pace (its spee
 id), stands still when it has no path, and keeps a lane of its own (a two-pixel sideways
 offset by id), so a crowd on one road reads as a crowd.
 
-**Balance (150 days):** the three-seed table follows in the closing commit of this iteration.
+**Balance (150 days, twin-node start):**
+
+| Tallowkin | Taper | Candle | Lamp | Lantern (fifth) | Beacon-Street | Bright Town (1,000) | Hall of Wicks | folk d150 | lit d150 |
+|---|---|---|---|---|---|---|---|---|---|
+| seed 42 | 3 | 10 | 16 | 21 | 31 | 42 | — | 1,101 | 86 % |
+| seed 43 | 4 | 10 | 15 | 20 | 27 | 37 | 54 | 1,644 | 99 % |
+| seed 44 | 5 | 10 | 16 | 22 | 30 | 38 | — | 1,120 | 86 % |
+
+All three reach the Lantern by day 22 (the plan asked for day 70) and Bright Town by day 42:
+two nodes a fifth stronger each make the early game the fastest of the four peoples. Two
+seeds then sit at 86 % lit, four points short of the Hall of Wicks, because the bot only
+brightens what the gate demands and a town of a thousand has corners the Wick-Towers do
+not reach; the lamplighter and the bot's late light are part 2. Vellish, Grimmen and Veshari
+seed 42 are bit-identical to main.
 
 ## 5. Art direction
 
