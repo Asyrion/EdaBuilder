@@ -286,6 +286,12 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'ward', radius: 8, strength: 0.9 }, unlock: 2,
   },
   {
+    key: 'quarry', name: 'Quarry', category: 'service', faction: ['grimmen'],
+    desc: 'A cut face in the hill with a windlass over it. Eight cutters dress 5 goods of stone a day for the carts (half unlit, no mana) and the open cut counts four stone quarried while it works. Must be dug into hills and touch a road.',
+    flavor: 'The Grimmen say a hill is only a hall that has not been asked yet.',
+    w: 1, h: 1, cost: 1400, upkeep: 14, manaUse: 0, unlock: 1, onHills: true, capacity: [8], goodsRate: 5,
+  },
+  {
     key: 'hatchery', name: 'Hatchery', category: 'service', faction: ['grimmen'],
     desc: 'A stone nest in the hill\'s warmth. Holds two eggs of the stone lines only: Bone, Grey and Ember. Must be lit and drinks 6 mana a day; needs a ley node or spire within 6 to be cut at all.',
     flavor: 'The Grimmen do not breed the bright lines. "We keep what the Gloam cannot touch," they say, "and what the Gloam cannot touch is grey."',

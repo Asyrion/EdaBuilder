@@ -1,6 +1,7 @@
 /** City-wide edicts (policies). Toggled by the player; effects are read by the systems. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Zone, idx, type Building, type GameState } from './types';
+import { Terrain, Zone, idx, type Building, type GameState } from './types';
+import type { FactionId } from '../data/factions';
 
 export interface EdictDef {
   key: string;
@@ -9,6 +10,7 @@ export interface EdictDef {
   flavor: string;
   costPerDay: (s: GameState) => number;
   unlock: number; // milestone
+  faction?: FactionId[]; // a people's own edict; absent = every people
 }
 
 export const EDICTS: EdictDef[] = [
@@ -78,12 +80,30 @@ export const EDICTS: EdictDef[] = [
     flavor: 'The girl who reads leystone like a book now has forty classmates.',
     costPerDay: (s) => Math.round(s.population * 0.2), unlock: 3,
   },
+  {
+    key: 'deepcut', name: 'The Deep Cut', faction: ['grimmen'],
+    desc: 'Halls on the hill dig a level deeper: a hill hearth reaches its third level without schooling and holds two more folk there. 1.5 crowns a day per hill hearth.',
+    flavor: 'Down is a direction the Vellish forget they have.',
+    costPerDay: (s) => Math.round(1.5 * s.buildings.filter((b) => b && b.kind === 'hearth' && b.state !== 'ruin' && s.terrain[idx(b.x, b.y)] === Terrain.Hills).length), unlock: 3,
+  },
 ];
 
 export const EDICT_BY_KEY: Record<string, EdictDef> = Object.fromEntries(EDICTS.map((e) => [e.key, e]));
+const FACTION_EDICTS = new Set(EDICTS.filter((e) => e.faction).map((e) => e.key));
+
+/** Does this people have the edict at all? Another people's edict is never on, whatever the flags say. */
+export function edictOf(s: GameState, key: string): boolean {
+  return !FACTION_EDICTS.has(key) || !!EDICT_BY_KEY[key].faction!.includes(s.faction);
+}
+
+/** The edicts this people can see: the shared ones and its own. */
+export function edictsFor(s: GameState): EdictDef[] {
+  return EDICTS.filter((e) => !e.faction || e.faction.includes(s.faction));
+}
 
 /** City-wide edict, or the edict of the district a tile/building lies in. */
 export function edictOn(s: GameState, key: string, at?: number | Building): boolean {
+  if (FACTION_EDICTS.has(key) && !edictOf(s, key)) return false;
   if (s.edicts[key]) return true;
   if (at === undefined) return false;
   const i = typeof at === 'number' ? at : idx(at.x, at.y);
@@ -113,6 +133,7 @@ export function districtsInUse(s: GameState): number[] {
 export function edictUpkeep(s: GameState): number {
   let c = 0;
   for (const e of EDICTS) {
+    if (e.faction && !e.faction.includes(s.faction)) continue;
     if (s.edicts[e.key]) {
       c += e.costPerDay(s);
       continue;

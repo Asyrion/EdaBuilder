@@ -5,7 +5,8 @@ import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuar
  * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
  */
 import { buySector, canBuySector, sectorCost } from './sectors';
-import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath, terraform } from './actions';
+import { TERRAFORM, buildRoad, bulldoze, paintZone, placeBuilding, roadPath, terraform } from './actions';
+import { EDICT_BY_KEY } from './edicts';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, deepenNode, forEachBuilding } from './world';
@@ -186,37 +187,81 @@ export class Bot {
     }
   }
 
-  /** A people gated on stone levels hills when its folk have outrun its quarrying (needs the Land tool, milestone 4). */
+  /** Hill zone tiles with nothing built yet: the room a hill people has left for its halls. */
+  private freeHillZoneTiles(): number {
+    const s = this.s;
+    let n = 0;
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0 && s.terrain[i] === Terrain.Hills) n++;
+    return n;
+  }
+
+  /** The deep game of a people gated on stone: reach the hills, delve for room or stone, cut a quarry, dig the Deep Cut.
+   *  A people that cannot build on hills levels them for stone as a last resort. */
   private quarry(): void {
     const s = this.s;
     const gate = factionOf(s).rules.milestoneGate;
-    if (!gate || s.milestone + 1 >= milestonesOf(s).length) return;
+    const hillOK = factionOf(s).rules.hillBuildable;
     const next = s.milestone + 1;
-    if (gate(s, next)) return;
-    if (s.milestone < 4) {
-      // no Land tool yet: reach the nearest hills with a road and widen the grid so the hill pass can zone them
-      let bx = -1; let by = -1; let bd = Infinity;
-      for (let y = 1; y < MAP_H - 1; y++) for (let x = 1; x < MAP_W - 1; x++) {
-        if (s.terrain[idx(x, y)] !== Terrain.Hills || s.bIndex[idx(x, y)] >= 0) continue;
-        const d = Math.abs(x - this.cx) + Math.abs(y - this.cy);
-        if (d < bd) { bd = d; bx = x; by = y; }
+    const stoneShort = !!gate && next < milestonesOf(s).length && !gate(s, next);
+    const delve = TERRAFORM.delve;
+    const canDelve = s.milestone >= delve.unlock && !!delve.faction?.includes(s.faction);
+    if (!gate) return;
+    if (!canDelve) {
+      if (!stoneShort) return;
+      if (hillOK) {
+        // no Delve yet: reach the nearest hills with a road and widen the grid so the hill pass can zone them
+        let bx = -1; let by = -1; let bd = Infinity;
+        for (let y = 1; y < MAP_H - 1; y++) for (let x = 1; x < MAP_W - 1; x++) {
+          if (s.terrain[idx(x, y)] !== Terrain.Hills || s.bIndex[idx(x, y)] >= 0) continue;
+          const d = Math.abs(x - this.cx) + Math.abs(y - this.cy);
+          if (d < bd) { bd = d; bx = x; by = y; }
+        }
+        if (bx < 0 || bd > 45 || s.treasury < 600) return;
+        if (bd > this.radius) { this.radius = Math.min(40, Math.max(this.radius, bd + 2)); }
+        if (!s.road[idx(bx, by)]) buildRoad(s, RoadType.Track, roadPath(this.cx, this.cy, bx, by, false));
+        return;
       }
-      if (bx < 0 || bd > 45 || s.treasury < 600) return;
-      if (bd > this.radius) { this.radius = Math.min(40, Math.max(this.radius, bd + 2)); }
-      if (!s.road[idx(bx, by)]) buildRoad(s, RoadType.Track, roadPath(this.cx, this.cy, bx, by, false));
+      if (s.milestone < 4 || s.treasury < 2500 || s.population < milestonesOf(s)[next].pop * 0.8) return;
+      let done = 0;
+      for (let r = 2; r <= this.radius + 8 && done < 3; r++)
+        for (let dy = -r; dy <= r && done < 3; dy++)
+          for (let dx = -r; dx <= r && done < 3; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+            const x = this.cx + dx;
+            const y = this.cy + dy;
+            if (!inBounds(x, y) || s.terrain[idx(x, y)] !== Terrain.Hills) continue;
+            if (terraform(s, 'level', x, y).ok) done++;
+          }
       return;
     }
-    if (s.treasury < 2500 || s.population < milestonesOf(s)[next].pop * 0.8) return;
-    let done = 0;
-    for (let r = 2; r <= this.radius + 8 && done < 3; r++)
-      for (let dy = -r; dy <= r && done < 3; dy++)
-        for (let dx = -r; dx <= r && done < 3; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          const x = this.cx + dx;
-          const y = this.cy + dy;
-          if (!inBounds(x, y) || s.terrain[idx(x, y)] !== Terrain.Hills) continue;
-          if (terraform(s, 'level', x, y).ok) done++;
+    // delve for room or stone: grass beside the streets, nearest the centre first, four a day
+    const roomShort = this.freeHillZoneTiles() < 10 && s.demand.hearth > 0.15;
+    if ((roomShort || stoneShort) && s.treasury > 2000) {
+      const r = this.radius;
+      const cands: { x: number; y: number; d: number }[] = [];
+      for (let y = this.cy - r; y <= this.cy + r; y++)
+        for (let x = this.cx - r; x <= this.cx + r; x++) {
+          if (!inBounds(x, y)) continue;
+          const i = idx(x, y);
+          const t = s.terrain[i];
+          if ((t !== Terrain.Grass && t !== Terrain.Meadow) || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
+          const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
+          if (!adj) continue;
+          cands.push({ x, y, d: Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy)) });
         }
+      cands.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+      let done = 0;
+      for (const c of cands) {
+        if (done >= 4 || s.treasury <= 2000) break;
+        if (terraform(s, 'delve', c.x, c.y).ok) done++;
+      }
+    }
+    // a quarry on the hill when the works cannot keep the shelves full
+    if (canBuild(s, 'quarry') && (s.demand.craft > 0.15 || s.goodsShort > 0) && this.countKind('quarry') < Math.floor(this.countKind('market') / 2) + 1 && s.treasury > 2900) {
+      this.placeNear('quarry', this.cx, this.cy, this.radius);
+    }
+    // the Deep Cut once an Academy stands
+    if (hillOK && !s.edicts.deepcut && s.milestone >= EDICT_BY_KEY.deepcut.unlock && this.countKind('academy') > 0) s.edicts.deepcut = true;
     void GRIMMEN_STONE; void stoneQuarried;
   }
 
@@ -385,6 +430,8 @@ export class Bot {
               }
             }
           if (!ok) continue;
+          // ask before digging: a seep still needs its hill, a service its road; the victims are not restored on failure
+          if (canPlaceBuilding(s, key, px, py, true)) continue;
           for (const [vx, vy] of victims) bulldoze(s, vx, vy);
           if (placeBuilding(s, key, px, py).ok) return true;
         }

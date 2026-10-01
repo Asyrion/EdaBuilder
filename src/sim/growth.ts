@@ -5,6 +5,7 @@ import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { marketStockCap } from './agents';
 import { seasonOf } from './world';
+import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, boundGolems, raysLured } from './beasts';
@@ -36,14 +37,22 @@ export function isGoodsSource(b: Building): boolean {
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
 import { delverBonus, wyrmfireBonus } from './wyrmcraft';
-import { MAP_W, Zone, idx, inBounds, type Building, type GameState } from './types';
+import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
-export function capacityOf(b: Building): number {
+export function capacityOf(b: Building, s?: GameState): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (!def.capacity) return 0;
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
-  return def.capacity[Math.min(b.level, def.capacity.length) - 1];
+  let cap = def.capacity[Math.min(b.level, def.capacity.length) - 1];
+  // the Deep Cut: a hill hall of a people that builds on hills digs a level deeper
+  if (s && b.level >= 3 && def.zone === Zone.Hearth && deepCut(s, b)) cap += 2;
+  return cap;
+}
+
+/** The Deep Cut edict applies to this hearth: it stands on hills, the people builds on hills, the edict is on here. */
+export function deepCut(s: GameState, b: Building): boolean {
+  return factionOf(s).rules.hillBuildable && s.terrain[idx(b.x, b.y)] === Terrain.Hills && edictOn(s, 'deepcut', b);
 }
 
 function demandFor(state: GameState, zone: Zone): number {
@@ -175,6 +184,7 @@ export function dailyBuildings(state: GameState): void {
   const workforce = workforceOf(state);
   // jobs first (uses last day's population)
   const jobBuildings: Building[] = [];
+  const extraJobs: Building[] = []; // non-zone buildings with a capacity (the Quarry): jobs, not part of the happiness average
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.cooldown > 0) b.cooldown--;
@@ -184,6 +194,10 @@ export function dailyBuildings(state: GameState): void {
         const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5));
         b.stock += Math.max(0, made);
         state.goodsProduced += Math.max(0, made);
+      }
+      if (def.capacity && b.state === 'ok') {
+        extraJobs.push(b);
+        jobs += capacityOf(b, state);
       }
       if (b.kind === 'worldtree' && b.age % 30 === 0 && b.age <= 90) {
         markDirty(state, b.x, b.y);
@@ -233,7 +247,7 @@ export function dailyBuildings(state: GameState): void {
       if (rng.chance(0.3)) pushMessage(state, `${def.name.split(' ')[0]} at (${b.x},${b.y}) abandoned: ${b.dryDays > 12 ? 'no mana or water' : 'nobody wants to stay'}.`, 'warn');
       return;
     }
-    const cap = capacityOf(b);
+    const cap = capacityOf(b, state);
     if (def.zone === Zone.Hearth) {
       // move-in / move-out
       const d = state.demand.hearth;
@@ -276,7 +290,7 @@ export function dailyBuildings(state: GameState): void {
     const lv = state.landValue[i];
     let target = 1;
     if (lv >= 38 && b.lit && b.watered) target = 2;
-    if (lv >= 62 && b.lit && b.watered && (state.educated > 0.25 || state.coverage.school[i] > 100)) target = 3;
+    if (lv >= 62 && b.lit && b.watered && (state.educated > 0.25 || state.coverage.school[i] > 100 || (def.zone === Zone.Hearth && deepCut(state, b)))) target = 3;
     if (def.zone === Zone.Arcane && target === 3 && state.educated < 0.35) target = 2;
     if (target > b.level && b.happiness > 45) b.progress += 8 + (lv - 30) * 0.2;
     else if (target < b.level) b.progress -= 6;
@@ -289,7 +303,7 @@ export function dailyBuildings(state: GameState): void {
     } else if (b.progress <= -100 && b.level > 1) {
       b.level--;
       b.progress = 0;
-      b.residents = Math.min(b.residents, capacityOf(b));
+      b.residents = Math.min(b.residents, capacityOf(b, state));
       markDirty(state, b.x, b.y);
     }
   });
@@ -299,10 +313,11 @@ export function dailyBuildings(state: GameState): void {
   void eduNeeded;
   const fill = jobs > 0 ? employed / jobs : 0;
   for (const b of jobBuildings) {
-    b.workers = Math.round(capacityOf(b) * fill);
+    b.workers = Math.round(capacityOf(b, state) * fill);
     happySum += b.happiness * 2;
     happyW += 2;
   }
+  for (const b of extraJobs) b.workers = Math.round(capacityOf(b, state) * fill);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
@@ -332,11 +347,11 @@ export function updateDemand(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.category !== 'zone' || b.state !== 'ok') return;
     if (def.zone === Zone.Hearth) {
-      hearthCap += capacityOf(b);
+      hearthCap += capacityOf(b, state);
       hearthRes += b.residents;
-    } else if (def.zone === Zone.Market) marketJobs += capacityOf(b);
-    else if (def.zone === Zone.Craft) craftJobs += capacityOf(b);
-    else if (def.zone === Zone.Arcane) arcaneJobs += capacityOf(b);
+    } else if (def.zone === Zone.Market) marketJobs += capacityOf(b, state);
+    else if (def.zone === Zone.Craft) craftJobs += capacityOf(b, state);
+    else if (def.zone === Zone.Arcane) arcaneJobs += capacityOf(b, state);
   });
   const happy = state.happiness / 100;
   // Hearth: people want to come when there are jobs, happiness and room is scarce.

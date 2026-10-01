@@ -1,6 +1,6 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { RELIC_SETS } from './relics';
-import { buildsFor, canBuild, factionOf } from '../data/factions';
+import { buildsFor, canBuild, factionOf, type FactionId } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
@@ -259,11 +259,12 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
   }
 }
 
-export type TerraformOp = 'clear' | 'plant' | 'level';
-export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string }> = {
+export type TerraformOp = 'clear' | 'plant' | 'level' | 'delve';
+export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string; faction?: FactionId[] }> = {
   clear: { name: 'Clear forest', cost: 40, unlock: 0, desc: 'Fell a forest tile to grass. Woodcutters are cheap; glimwood is not replanted by itself.' },
   plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little, hide war-tigers, and shade the Gloam\'s approach not at all.' },
   level: { name: 'Level hills', cost: 220, unlock: 4, desc: 'Grimmen crews cut a hills tile down to grass. Slow, loud, and the only way to build a 2x2 where the rock was.' },
+  delve: { name: 'Delve', cost: 160, unlock: 2, faction: ['grimmen'], desc: 'Grimmen cutters dig a grass or meadow tile down and heap the rock: hill land for halls and seeps, and a stone counted toward the next depth.' },
 };
 
 /** Terraforming: one tile at a time. */
@@ -273,16 +274,19 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
   const i = idx(x, y);
   const def = TERRAFORM[op];
   if (state.milestone < def.unlock) return { ok: false, reason: 'Not yet unlocked' };
+  if (def.faction && !def.faction.includes(state.faction)) return { ok: false, reason: `The ${factionOf(state).people} do not ${def.name.toLowerCase()}` };
   if (state.bIndex[i] >= 0 || state.road[i] || state.wall[i]) return { ok: false, reason: 'Something stands here' };
   if (state.gloam[i]) return { ok: false, reason: 'The Gloam holds this ground' };
   const t = state.terrain[i];
   if (op === 'clear' && t !== Terrain.Forest) return { ok: false, reason: 'No forest here' };
   if (op === 'plant' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be planted' };
   if (op === 'level' && t !== Terrain.Hills) return { ok: false, reason: 'No hills here' };
+  if (op === 'delve' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be delved' };
   if (state.treasury < def.cost) return { ok: false, reason: 'Not enough crowns' };
   state.treasury -= def.cost;
-  state.terrain[i] = op === 'plant' ? Terrain.Forest : Terrain.Grass;
+  state.terrain[i] = op === 'plant' ? Terrain.Forest : op === 'delve' ? Terrain.Hills : Terrain.Grass;
   state.stats.terraformed++;
+  if (op === 'level' || op === 'delve') state.stats.stoneCut++;
   markDirtyAround(state, x, y);
   return { ok: true, cost: def.cost };
 }

@@ -186,7 +186,8 @@ Charter as `.json`.
   the Gloam with standing stones, hatch only the stone lines, bind the Concord Wardens at a
   Forge-Temple, cut the Underking's Seat as their wonder, follow their own Underhill chapter
   and tales, start beside a hill ridge, field stone-sextons who cut the Gloam back with salt
-  and chisel, and climb milestones cut by depth that need stone quarried as well as folk.
+  and chisel, delve grass into hill land, cut stone at Quarries for the carts, dig the Deep
+  Cut, and climb milestones cut by depth that need stone quarried as well as folk.
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims and
   the Grimmen's stone-sextons walk the roads from their buildings and do their jobs where
   they go; the streets they walk

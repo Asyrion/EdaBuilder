@@ -124,7 +124,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -220,8 +220,10 @@ export function isBuildableTerrain(t: number): boolean {
   return t === Terrain.Grass || t === Terrain.Meadow || t === Terrain.Forest || t === Terrain.Shore;
 }
 
-/** Can a building of size w×h be placed with origin (x,y)? Returns reason or null. */
-export function canPlaceBuilding(state: GameState, key: string, x: number, y: number): string | null {
+/** Can a building of size w×h be placed with origin (x,y)? Returns reason or null.
+ *  With `clearing`, a 1×1 zone building on a footprint tile is not a blocker (the bot's clear mode asks
+ *  before it bulldozes); every other rule still applies. */
+export function canPlaceBuilding(state: GameState, key: string, x: number, y: number, clearing = false): string | null {
   const def = BUILDING_BY_KEY[key];
   if (!def) return 'Unknown building';
   for (let dy = 0; dy < def.h; dy++)
@@ -238,7 +240,10 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.road[i]) return 'A road is in the way';
       if (state.wall[i]) return 'The Warding Wall is in the way';
       if (def.onHills === false) { /* no-op */ }
-      if (state.bIndex[i] >= 0) return 'Something is already built here';
+      if (state.bIndex[i] >= 0) {
+        const other = state.buildings[state.bIndex[i]];
+        if (!clearing || !other || other.w !== 1 || BUILDING_BY_KEY[other.kind].category !== 'zone') return 'Something is already built here';
+      }
       if (state.gloam[i]) return 'The Gloam holds this ground';
       if (!inCharter(state, tx, ty)) return 'Beyond the Charter: buy this sector first';
     }

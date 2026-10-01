@@ -88,7 +88,7 @@ export function checkMilestones(state: GameState): void {
 export function totalCapacity(state: GameState, zone: Zone): number {
   let c = 0;
   forEachBuilding(state, (b) => {
-    if (BUILDING_BY_KEY[b.kind].zone === zone) c += capacityOf(b);
+    if (BUILDING_BY_KEY[b.kind].zone === zone) c += capacityOf(b, state);
   });
   return c;
 }

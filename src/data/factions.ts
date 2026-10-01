@@ -30,10 +30,10 @@ export interface FactionDef {
 
 /** Stone quarried: hills levelled, plus two for every building standing on hills. The Grimmen's depth milestones need it. */
 export function stoneQuarried(s: GameState): number {
-  let n = s.stats.terraformed;
+  let n = s.stats.stoneCut;
   for (const b of s.buildings) {
     if (!b || b.state === 'ruin') continue;
-    if (s.terrain[idx(b.x, b.y)] === Terrain.Hills) n += 2;
+    if (s.terrain[idx(b.x, b.y)] === Terrain.Hills) n += b.kind === 'quarry' && b.state === 'ok' ? 4 : 2; // a quarry is the hill cut open
     if (b.kind === 'underkingseat' && b.state === 'ok') n += 10; // the Seat is the deepest cut of all
   }
   return n;
