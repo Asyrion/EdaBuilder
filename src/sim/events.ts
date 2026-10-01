@@ -3,13 +3,15 @@ import { BUILDING_BY_KEY } from './catalog';
 import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
-import { LINE_INFO, addEgg, isCradle } from './wyrmcraft';
+import { LINE_INFO, addEgg, freeCradle, isCradle } from './wyrmcraft';
+import { hasAcademy } from './relics';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
 import { TIGER_FOREST, forestTiles, marketDistrict, startStorm } from './lore';
 import { districtName, markDirty } from './world';
-import { inBounds, idx } from './types';
+import { MAP_W, inBounds, idx } from './types';
+import { recomputeGloamDist } from './hazards';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
@@ -18,6 +20,7 @@ export interface EventDef {
   text: string;
   when: (s: GameState) => boolean;
   once?: boolean; // never repeats
+  priority?: boolean; // drawn before any other tale while it is eligible (a tale something else depends on)
   choices: { label: string; desc: string | ((s: GameState) => string); apply: (s: GameState) => string }[];
 }
 /** A choice's description for this city (a people may change the numbers). */
@@ -56,7 +59,7 @@ export const EVENTS: EventDef[] = [
     ],
   },
   {
-    id: 'relic', title: 'A relic of the Concord',
+    id: 'relic', title: 'A relic of the Concord', once: true,
     text: 'Miners in the hills unearth a leystone lantern-core of the Aurel Concord, still faintly humming after three centuries.',
     when: (s) => hasHills(s) && s.milestone >= 2,
     choices: [
@@ -114,7 +117,11 @@ export const EVENTS: EventDef[] = [
 
 /** True if event `id` was answered with choice `choice` at least `daysAgo` days ago. */
 export function chose(s: GameState, id: string, choice: number): boolean {
-  return s.firedEvents.includes(`${id}:${choice}`);
+  // a tale is recorded as `id:choice`; a festival as `id@year:choice`
+  const plain = `${id}:${choice}`;
+  const tail = `:${choice}`;
+  const head = `${id}@`;
+  return s.firedEvents.some((f) => f === plain || (f.startsWith(head) && f.endsWith(tail)));
 }
 
 const CHAINS: EventDef[] = [
@@ -133,13 +140,13 @@ const CHAINS: EventDef[] = [
     when: (s) => (chose(s, 'lukuku_first', 0) || chose(s, 'lukuku_first', 1)) && s.day - s.lastEventDay >= 12 && s.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok'),
     choices: [
       { label: 'Seal it with the Rite of Quieting', desc: 'Costs 1,500 crowns; unquieted dead −15; nothing comes out.', apply: (s) => { s.treasury -= 1500; s.unquieted = Math.max(0, s.unquieted - 15); return 'The sextons sing for a night and a day. The hum stops. The foreman sleeps.'; } },
-      { label: 'Open it', desc: 'Half the time a hoard: +8,000 crowns and relics. Half the time the old dead: eight restless rise at the ruins and the unquieted +20.', apply: (s) => { const rng = rngOf(s); const hoard = rng.chance(0.5); commitRng(s, rng); const d = s.buildings.find((b) => b && b.kind === 'ruindelve'); if (hoard) { s.treasury += 8000; s.stats.relics += 20; return 'A vault of lantern-cores and gold under a ceiling of painted stars. The diggers are paid triple and still will not go back.'; } s.unquieted += 20; if (d) for (let k = 0; k < 8; k++) spawnRestless(s, d.x + (k % 3), d.y + Math.floor(k / 3)); pushMessage(s, `The door at the Ruins of Lukuku opens and the old dead walk out at (${d?.x ?? 0},${d?.y ?? 0}).`, 'bad', true); return 'The door opens on stairs going down, and things coming up.'; } },
+      { label: 'Open it', desc: 'Half the time a hoard: +8,000 crowns and relics. Half the time the old dead: eight restless rise at the ruins and the unquieted +20.', apply: (s) => { const rng = rngOf(s); const hoard = rng.chance(0.5); commitRng(s, rng); const d = s.buildings.find((b) => b && b.kind === 'ruindelve'); if (hoard) { s.treasury += 8000; s.stats.relics += 20; s.relicStock += 20; return 'A vault of lantern-cores and gold under a ceiling of painted stars. The diggers are paid triple and still will not go back.'; } s.unquieted += 20; if (d) for (let k = 0; k < 8; k++) spawnRestless(s, d.x + (k % 3), d.y + Math.floor(k / 3)); pushMessage(s, `The door at the Ruins of Lukuku opens and the old dead walk out at (${d?.x ?? 0},${d?.y ?? 0}).`, 'bad', true); return 'The door opens on stairs going down, and things coming up.'; } },
     ],
   },
   {
     id: 'relic_stolen', title: 'The relic is gone', once: true,
     text: 'The Concord lantern-core has vanished from the Academy\'s warded case. A cult of the Undying Court is suspected; their marks are chalked on the door.',
-    when: (s) => chose(s, 'relic', 1) && s.day - s.lastEventDay >= 15,
+    when: (s) => chose(s, 'relic', 1) && s.day - s.lastEventDay >= 15 && hasAcademy(s),
     choices: [
       { label: 'Send the Watch after them (500 crowns)', desc: 'Likely recovers the relic and its worth: +2,500 crowns.', apply: (s) => { s.treasury -= 500; const rng = rngOf(s); const ok = rng.chance(0.75); commitRng(s, rng); if (ok) { s.treasury += 2500; return 'The Watch corners the cult in a Boneyard at midnight. The relic comes back; three cultists do not.'; } s.modifiers.push({ kind: 'unrest', value: 0.06, until: s.day + 10, label: 'Cult at large' }); return 'The cult slips into the Gloam. The chalk marks keep appearing.'; } },
       { label: 'Let it go', desc: 'Unrest +6% for 12 days; the cult is emboldened.', apply: (s) => { s.modifiers.push({ kind: 'unrest', value: 0.06, until: s.day + 12, label: 'Cult emboldened' }); return 'Nobody sleeps well for a fortnight.'; } },
@@ -208,7 +215,7 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     when: (s) => s.population > 40,
     choices: [
       { label: 'A feast (300 crowns and 40 goods)', desc: 'Markets give up to 40 goods from their shelves. Happiness +3 for 15 days everywhere, and +5 more in every district whose markets fed the feast. Under 10 goods it is a thin feast: +2 for 8 days.', apply: (s) => { s.treasury -= 300; const fed = holdFeast(s, 40); if (fed.goods < 10) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 8, label: 'A thin feast' }); return `The shelves were bare: ${Math.round(fed.goods)} goods make a thin feast of bread and water. The choir sings anyway.`; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 15, label: 'Thaw feast' }); for (const d of fed.districts) s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 15, label: `Thaw feast (${d ? DISTRICT_NAMES[d - 1] : 'the old town'})`, district: d }); return `${Math.round(fed.goods)} goods from ${fed.districts.length} quarter${fed.districts.length === 1 ? '' : 's'}: bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.`; } },
-      { label: 'A day on the wards', desc: 'Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 5, label: 'Ward labour' }); let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i] && s.coverage.ward[i] > 0) { s.gloam[i] = 0; n++; } return `${n} tiles of grey grass are cut and burned under the lanterns.`; } },
+      { label: 'A day on the wards', desc: 'Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 5, label: 'Ward labour' }); let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i] && s.coverage.ward[i] > 0) { s.gloam[i] = 0; n++; markDirty(s, i % MAP_W, Math.floor(i / MAP_W)); } s.stats.gloamBurned += n; if (n) recomputeGloamDist(s); return `${n} tiles of grey grass are cut and burned under the lanterns.`; } },
     ],
   },
   {
@@ -255,7 +262,7 @@ const EGGS: EventDef[] = [
     text: 'A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg "so that the valley may learn what it is to keep a dragon".',
     when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
     choices: [
-      { label: 'Accept the egg', desc: 'An ember egg goes into your cradle.', apply: (s) => { const d = addEgg(s, 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
+      { label: 'Accept the egg', desc: (s) => `${s.faction === 'veshari' ? 'A tide' : 'An ember'} egg goes into your cradle.`, apply: (s) => { const d = addEgg(s, s.faction === 'veshari' ? 'tide' : 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
       { label: 'Decline politely', desc: '+800 crowns from the Crown for your modesty; no egg.', apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
     ],
   },
@@ -294,7 +301,7 @@ const EGGS: EventDef[] = [
     text: 'Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.',
     when: (s) => s.buildings.some((b) => b && isCradle(b.kind)) && s.treasury > 3000 && s.dragons.length < 6,
     choices: [
-      { label: 'Buy the egg (2,500 crowns)', desc: 'An ember, bone or glim egg, if a cradle has room.', apply: (s) => { const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim'] as DragonLine[]); commitRng(s, rng); s.treasury -= 2500; const d = addEgg(s, line); return d ? `A ${LINE_INFO[line].name.toLowerCase()} egg, still warm. The poachers are gone before the crowns are counted.` : 'No cradle had room; the egg is sold on to the Crown at a loss. The poachers laugh.'; } },
+      { label: 'Buy the egg (2,500 crowns)', desc: 'An ember, bone or glim egg, if a cradle has room.', apply: (s) => { if (s.treasury < 2500) return 'The purse is too light; the carters pull their hoods up and go.'; const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim'] as DragonLine[]); commitRng(s, rng); if (!freeCradle(s, line)) return `No cradle has room for a ${LINE_INFO[line].name.toLowerCase()} egg; the poachers sell it on to the Crown.`; s.treasury -= 2500; const d = addEgg(s, line); return d ? `A ${LINE_INFO[line].name.toLowerCase()} egg, still warm. The poachers are gone before the crowns are counted.` : 'No cradle had room; the egg is sold on to the Crown at a loss. The poachers laugh.'; } },
       { label: 'Arrest them', desc: 'Unrest −3% for 10 days; 40% chance the egg is recovered anyway.', apply: (s) => { s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'Poachers jailed' }); const rng = rngOf(s); const luck = rng.chance(0.4); commitRng(s, rng); if (luck) { const d = addEgg(s, 'ember'); if (d) return 'The Watch takes the carters and the egg. It goes to the cradle.'; } return 'The Watch takes the carters. The egg is not in the cart.'; } },
       { label: 'Send them away', desc: 'Nothing changes.', apply: () => 'They leave by the Gloam road, moss dripping.' },
     ],
@@ -323,7 +330,7 @@ const VISITORS: EventDef[] = [
     when: (s) => s.milestone >= 4 && s.population > 250,
     choices: [
       { label: 'Trade with them', desc: 'Half the time +3,000 crowns; half the time −1,500 crowns and a week of grumbling.', apply: (s) => { const rng = rngOf(s); const honest = rng.chance(0.5); commitRng(s, rng); if (honest) { s.treasury += 3000; return 'Honest, this time. Salts, dyes and a set of scales that weigh true, paid for in coin that stays coin.'; } s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 7, label: 'Swindled by foxes' }); return 'The coin turns to leaves by morning. The Fen-Nex are already two valleys away, laughing.'; } },
-      { label: 'Grant them a quarter', desc: 'The district with the most markets becomes the Fen-Nex quarter: its markets pay no tithe but hold twice the goods. Needs a painted district with markets.', apply: (s) => { const d = marketDistrict(s); if (!d) return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
+      { label: 'Grant them a quarter', desc: 'The district with the most markets becomes the Fen-Nex quarter: its markets pay no tithe but hold twice the goods. Needs a painted district with markets.', apply: (s) => { const d = marketDistrict(s); if (!d) { s.treasury += 500; return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; } s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
       { label: 'Turn them away', desc: 'No effect, probably.', apply: () => 'They bow, and bow, and are gone. One of the Watch lanterns is missing in the morning.' },
     ],
   },
@@ -372,12 +379,12 @@ const VISITORS: EventDef[] = [
     ],
   },
   {
-    id: 'stormcaller', title: 'A storm caller of the Huruhui', once: true,
+    id: 'stormcaller', title: 'A storm caller of the Huruhui', once: true, priority: true,
     text: 'A traveller with white hair and glowing sigils on their arms asks for a hilltop to work from. They say the valleys beyond the Pass of Buluiain taught them to call rain, and that your Craft district smells like it needs some.',
     when: (s) => s.milestone >= 4 && s.population > 300,
     choices: [
       { label: 'Give them the hills', desc: 'Rain over the whole city for 10 days (fires out, miasma washed, herbs thriving); educated share +2%. The Storm-Caller\'s Peak becomes buildable at Township.', apply: (s) => { s.modifiers.push({ kind: 'rain', value: 1, until: s.day + 10, label: 'Huruhui rain' }); s.educated = Math.min(0.95, s.educated + 0.02); let n = 0; for (const b of s.buildings) if (b && b.state === 'burning') { b.state = 'ok'; b.stateDays = 0; n++; } return `They climb at dusk. By midnight it is raining on every roof in the valley and ${n} fire${n === 1 ? ' is' : 's are'} out. The Academy takes notes.`; } },
-      { label: 'Send them on to Vell-on-Sable', desc: 'No effect.', apply: () => 'They bow, and the wind picks up as they leave, which may be coincidence.' },
+      { label: 'Send them on to Vell-on-Sable', desc: 'No Storm-Caller\'s Peak for this city: the stair needs its caller.', apply: () => 'They bow, and the wind picks up as they leave, which may be coincidence.' },
     ],
   },
   {
@@ -386,7 +393,7 @@ const VISITORS: EventDef[] = [
     when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
     choices: [
       { label: 'Trade', desc: (s) => `Sell every works' surplus above 10 goods at 1.5x the season price (${caravanSurplus(s)} goods on the shelves now).`, apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } sold = Math.round(sold); const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; s.stats.caravanGoods += sold; return sold > 0 ? `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.` : 'The works have nothing to spare above ten goods a shelf. The riders buy bread and water the striders.'; } },
-      { label: 'Sell rare goods', desc: 'Scale 400, rayscale 300, glim-dust 150 crowns each; the Plains pay well for what they cannot breed.', apply: (s) => { const m = s.materials; const crowns = Math.round(m.scale * 400 + m.rayscale * 300 + m.glimdust * 150); const line = `${Math.round(m.scale)} scale, ${m.rayscale.toFixed(1)} rayscale and ${m.glimdust.toFixed(1)} glim-dust`; m.scale = 0; m.rayscale = 0; m.glimdust = 0; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns.` : 'The jars are empty. The riders shrug and water the striders.'; } },
+      { label: 'Sell rare goods', desc: 'Scale 400, wyrmfire 500, eggshell 200, rayscale 300, glim-dust 150 crowns each; the Plains pay well for what they cannot breed.', apply: (s) => { const m = s.materials; const crowns = Math.round(m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150); const line = `${Math.round(m.scale)} scale, ${m.wyrmfire.toFixed(1)} wyrmfire, ${m.eggshell.toFixed(1)} eggshell, ${m.rayscale.toFixed(1)} rayscale and ${m.glimdust.toFixed(1)} glim-dust`; m.scale = 0; m.wyrmfire = 0; m.eggshell = 0; m.rayscale = 0; m.glimdust = 0; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns.` : 'The jars are empty. The riders shrug and water the striders.'; } },
       { label: 'Buy striders (2,000 crowns)', desc: 'Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days.', apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
       { label: 'Auction the loose relics', desc: 'The caravan bids 100 to 140 crowns a relic, above the Crown; one collector in three buys an uncatalogued piece for 2,500. Sextons −5.', apply: (s) => { if (s.relicStock < 1) return 'There are no loose relics to auction. The riders look at the empty table and laugh.'; const rng = rngOf(s); const price = 100 + rng.int(41); const n = s.relicStock; let out = `${n} relics go under the hammer at ${price} each: ${n * price} crowns.`; s.treasury += n * price; s.relicStock = 0; s.stats.relicsSold += n; s.stats.relicsAuctioned += n; if (s.relics.uncatalogued > 0 && rng.chance(0.34)) { s.relics.uncatalogued--; s.treasury += 2500; out += ' A Belerial collector in a striped coat pays 2,500 for a piece nobody has named yet.'; } commitRng(s, rng); s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return out; } },
       { label: 'Send them on', desc: 'No effect.', apply: () => 'They water the striders and ride for the next wardlight before noon.' },
@@ -395,7 +402,7 @@ const VISITORS: EventDef[] = [
   {
     id: 'merchant', title: 'The Wandering Merchant of Belerial',
     text: 'A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.',
-    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay > 30,
+    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay >= 10,
     choices: [
       { label: 'The white egg (4,000 crowns)', desc: 'A sky egg: a wyvern-only line, the fastest courier. Needs a free cradle.', apply: (s) => { if (s.treasury < 4000) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, 'sky'); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= 4000; return `The egg is white as the plains at noon. The tamers name it ${d.name}.`; } },
       { label: 'Longwood seeds (1,200 crowns)', desc: 'Goods production +20% for 30 days.', apply: (s) => { if (s.treasury < 1200) return 'Not enough crowns.'; s.treasury -= 1200; s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
@@ -422,7 +429,7 @@ export const WYRM_EVENTS: EventDef[] = [
     text: 'Its head rests on the ridge above the node, eyes like two ley-lamps. A Tallowkin who claims to understand it says the terms are simple: a tribute each season, rising, or it flies.',
     when: (s) => s.wyrm.state === 'awake' && s.wyrm.tributeDay >= 0 && s.day >= s.wyrm.tributeDay && !s.pendingEvent,
     choices: [
-      { label: 'Pay in crowns', desc: 'Costs the current tribute; the next will be half again as much.', apply: (s) => payTribute(s, 'crowns') },
+      { label: 'Pay in crowns', desc: 'Costs the current tribute; each tribute asks 750 crowns more than the last.', apply: (s) => payTribute(s, 'crowns') },
       { label: 'Pay in goods', desc: `${WYRM_TRIBUTE_GOODS} goods taken from the market shelves. Fewer than half and it counts as a refusal.`, apply: (s) => payTribute(s, 'goods') },
       { label: 'Refuse', desc: 'It flies over the city and burns up to four buildings, then sleeps again; spires near it will wake it once more.', apply: (s) => refuse(s) },
     ],
@@ -441,7 +448,7 @@ export const WYRM_EVENTS: EventDef[] = [
     text: 'The markets have not fed the wyrm for ten days. It lies with its back to the city and the Gloam creeps a little closer each night. Its keeper says it would take leystone, or coin, as an apology.',
     when: (s) => s.wyrm.state === 'bound' && s.wyrm.sulking >= 2 && s.wyrm.sulking % 10 === 2 && !s.pendingEvent,
     choices: [
-      { label: 'Send leystone (60)', desc: 'Taken from Arcane workshops; the wyrm is content again at once.', apply: (s) => { let left = 60; forEachBuilding(s, (b) => { if (left > 0 && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.stock > 0) { const t = Math.min(b.stock, left); b.stock -= t; left -= t; } }); if (left > 30) return 'There is not enough leystone in the city. The wyrm sniffs at what came and turns away.'; s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'It eats the leystone like bread and comes back to its post by the node.'; } },
+      { label: 'Send leystone (60)', desc: 'Taken from Arcane workshops; the wyrm is content again at once.', apply: (s) => { let have = 0; forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].zone === Zone.Arcane) have += b.stock; }); if (have < 30) return 'There is not enough leystone in the city. The wyrm sniffs at the empty carts and turns away.'; let left = 60; forEachBuilding(s, (b) => { if (left > 0 && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.stock > 0) { const t = Math.min(b.stock, left); b.stock -= t; left -= t; } }); s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'It eats the leystone like bread and comes back to its post by the node.'; } },
       { label: 'Pay 3,000 crowns', desc: 'Bought goods from Belerial are carted to it.', apply: (s) => { s.treasury -= 3000; s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'Forty carts of Belerial bread and beer. The wyrm is content, for now.'; } },
       { label: 'Let it sulk', desc: `No ward from its lair until markets feed it ${WYRM_EATS} goods a day. Forty days of sulking and it dies.`, apply: () => 'It does not look at the city. The lanterns at the edge burn alone.' },
     ],
@@ -552,13 +559,13 @@ export function maybeFireCalendar(s: GameState): void {
 
 /** Wyrm events fire on their own terms (no random draw, no 18-day spacing). */
 export function maybeFireWyrm(s: GameState): void {
-  if (s.pendingEvent || s.gameOver || s.wyrm.state === 'none') return;
+  if (s.pendingEvent || s.gameOver) return;
   for (const e of WYRM_EVENTS) {
+    if (s.wyrm.state === 'none' && e.id !== 'airship_tale') continue; // the captain's story needs no wyrm
     if (!e.when(s)) continue;
     if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${e.id}:?`);
-    if (s.firedEvents.length > 40) s.firedEvents.shift();
     return;
   }
 }
@@ -588,7 +595,6 @@ export function maybeFireCaravan(s: GameState): void {
   const e = ALL_EVENTS.find((x) => x.id === 'caravan')!;
   s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
   s.firedEvents.push(`${e.id}:?`);
-  if (s.firedEvents.length > 40) s.firedEvents.shift();
   s.stats.lastCaravanDay = s.day;
 }
 
@@ -608,11 +614,10 @@ export function maybeFireEvent(s: GameState): void {
   // the caravan keeps its own rhythm (maybeFireCaravan) and is never drawn here
   const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
-    const e = rng.pick(pool);
+    const e = pool.find((x) => x.priority) ?? rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.lastEventDay = s.day;
     s.firedEvents.push(`${e.id}:?`);
-    if (s.firedEvents.length > 40) s.firedEvents.shift();
   }
   commitRng(s, rng);
 }
@@ -625,10 +630,13 @@ export function resolveEvent(s: GameState, choice: number): void {
   if (!def) return;
   const ci = Math.max(0, Math.min(def.choices.length - 1, choice));
   const c = def.choices[ci];
+  // a choice that names its price in its label is refused when the purse cannot pay it
+  const price = /\(([\d,]+) crowns\)/.exec(c.label);
+  const asked = price ? Number(price[1].replace(/,/g, '')) : 0;
   for (let k = s.firedEvents.length - 1; k >= 0; k--) {
     const f = s.firedEvents[k];
     if (f.endsWith(':?') && (f === `${def.id}:?` || f.startsWith(`${def.id}@`))) { s.firedEvents[k] = f.slice(0, -1) + ci; break; }
   }
-  const result = c.apply(s);
+  const result = asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s);
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }

@@ -23,7 +23,7 @@ export function canBreed(s: GameState, cradle: Building): BreedCheck {
   const dam = sire === a ? b : a;
   if (!cradle.lit) return { ok: false, why: 'the cradle is cold' };
   if (a.mood < BREED_MOOD || b.mood < BREED_MOOD) return { ok: false, why: `both must be content (mood ${BREED_MOOD}+)` };
-  if (!freeCradle(s)) return { ok: false, why: 'no cradle has a free slot for the egg' };
+  if (!freeCradle(s, sire.line)) return { ok: false, why: `no cradle that takes a ${LINE_INFO[sire.line].name} egg has a free slot` };
   const trueblood = !!sire.second && !!dam.second;
   return { ok: true, why: trueblood ? 'two crossed parents: a trueblood egg will be laid on Bloom day 20' : 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second: dam.line, trueblood };
 }
@@ -37,8 +37,8 @@ export function dailyBreeding(s: GameState): void {
   for (const c of cradles) {
     const chk = canBreed(s, c);
     if (!chk.ok) continue;
-    const home = freeCradle(s);
-    if (!home) break;
+    const home = freeCradle(s, chk.line);
+    if (!home) continue;
     const d: Dragon = {
       id: s.nextDragonId++, name: rng.pick(NAMES), line: chk.line!, second: chk.second, trueblood: chk.trueblood || undefined, stage: 0, days: 0, cradleId: home.id,
       role: 'none', roleTarget: -1, mood: 70, hungry: 0, training: 'gentle', agentId: -1, born: s.day,

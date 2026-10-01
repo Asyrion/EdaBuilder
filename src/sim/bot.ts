@@ -419,7 +419,7 @@ export class Bot {
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     // deepen the founding Wellspring when mana runs short
     if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {
-      const i = s.nodes.findIndex((n) => (n.depth ?? 0) < 2);
+      const i = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y && (n.depth ?? 0) < 2); // the founding node only: deepening the wyrm's wakes it
       if (i >= 0) deepenNode(s, i);
     }
     want('nexus', Math.floor(buildings / 220));

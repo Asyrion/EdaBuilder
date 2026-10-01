@@ -349,6 +349,17 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 44 (the sweep)
+
+- A review of every building and mechanic (docs/AUDIT.md): seventy findings, a depth table,
+  and the design of M14. Everything the audit marks "44" is fixed: quests that could never
+  complete or paid wrongly, walker visits that never counted, the Nexus that could not stop a
+  surge, once-tales that came back, couriers that destroyed goods, five edicts sold per
+  district that did nothing there, a dozen descriptions made true (the lane's light, the
+  square's trade, the Lantern's delight, the loft's moths), the panels' wrong rows, and the
+  sim logic behind them (the depot's city-wide cap, the quarry's hands, the egg lines, the
+  gates). 231 tests.
+
 ## Known issues
 
 - **The bot never stands a Trade Depot.** `want('depot', 1)` is in its list, yet every
@@ -414,7 +425,11 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
+0. **M14 part 1: supply has limits** (DESIGN §15, AUDIT.md §4 part 1): linked nodes only,
+   spire load, the store spent with brownout priority tiers, wells with capacity, roads that
+   need their light, mine seams, Font flares, shared rivers, portal crossings, the Gloam that
+   takes a dark building. Balance re-based on the iteration 44 table; the three-seed rule.
+1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
    warps the wickhouses, a candle-eyed child who reads the Veins), the lamplighter walker

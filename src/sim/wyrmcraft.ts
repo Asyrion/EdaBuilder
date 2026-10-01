@@ -148,7 +148,7 @@ export function dailyDragons(state: GameState): void {
     const warm = cradle.lit;
     const asp = aspectAt(state, cradle.x, cradle.y);
     const attuned = asp === d.line || (!!d.second && asp === d.second);
-    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1) * (cradle.visited === state.day ? 1.1 : 1);
+    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1) * ((cradle.visited ?? -1) >= state.day ? 1.1 : 1);
     if (d.stage === 0) {
       if (warm) d.days += 1;
       else if (rng.chance(0.15)) pushMessage(state, `The eggs in the cradle at (${cradle.x},${cradle.y}) are going cold: it needs mana.`, 'warn');
@@ -217,8 +217,7 @@ export function dailyDragons(state: GameState): void {
     state.agents = state.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId !== undefined && ids.has(a.dragonId)));
   }
   // consume materials in use
-  if (state.materials.wyrmfire > 0) state.materials.wyrmfire = Math.max(0, state.materials.wyrmfire - 0.05);
-  if (state.materials.eggshell > 0) state.materials.eggshell = Math.max(0, state.materials.eggshell - 0.02);
+  if (state.materials.wyrmfire > 0) state.materials.wyrmfire = Math.max(0, state.materials.wyrmfire - 0.02); // jars leak a little; eggshell keeps
   commitRng(state, rng);
 }
 
@@ -320,7 +319,7 @@ export function courierJob(state: GameState): { from: Building; to: Building; am
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
     if (leystone ? def.zone !== Zone.Arcane : def.zone !== Zone.Market) return;
-    const cap = 20 * b.level;
+    const cap = leystone ? 20 * b.level : marketStockCap(b);
     const ratio = b.stock / cap;
     if (ratio < low && ratio < 0.8) {
       low = ratio;

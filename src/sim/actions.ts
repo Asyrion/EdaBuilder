@@ -163,6 +163,12 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     removeBuilding(state, b);
     return { ok: true, cost };
   }
+  if (state.road[i] && state.wall[i] >= 2) {
+    // a gate goes first; the road under it stays
+    state.wall[i] = 0;
+    markDirtyAround(state, x, y);
+    return { ok: true, cost: 0 };
+  }
   if (state.road[i]) {
     state.road[i] = RoadType.None;
     state.treasury -= BULLDOZE_COST;
@@ -170,11 +176,6 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     return { ok: true, cost: BULLDOZE_COST };
   }
   if (state.wall[i]) {
-    state.wall[i] = 0;
-    markDirtyAround(state, x, y);
-    return { ok: true, cost: 0 };
-  }
-  if (state.road[i] && state.wall[i] >= 2) {
     state.wall[i] = 0;
     markDirtyAround(state, x, y);
     return { ok: true, cost: 0 };

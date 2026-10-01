@@ -105,6 +105,8 @@ describe("Storm-Caller's Peak and visitors", () => {
     for (let yy = f.y + 6; yy <= f.y + 6; yy++) s.terrain[idx(f.x, yy)] = Terrain.Hills;
     buildRoad(s, RoadType.Track, roadPath(f.x, f.y + 4, f.x, f.y + 5, true));
     s.milestone = 5;
+    expect(placeBuilding(s, 'stormpeak', f.x, f.y + 6).ok).toBe(false); // no caller yet
+    s.firedEvents.push('stormcaller:0'); // the storm caller was given the hills
     const r = placeBuilding(s, 'stormpeak', f.x, f.y + 6);
     expect(r.ok).toBe(true);
     const peak = s.buildings.find((b) => b && b.kind === 'stormpeak')!;

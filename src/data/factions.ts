@@ -163,8 +163,14 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
 }
 
 /** Unlocked for this city: milestone, relic set, and the people. */
+/** A building's own gate beyond the milestone: the reason it cannot be raised now, or null. */
+export function specialLock(s: GameState, key: string): string | null {
+  if (key === 'stormpeak' && !s.firedEvents.includes('stormcaller:0')) return 'Needs its caller: give the Huruhui storm caller the hills when they come (a Township of 300 folk).';
+  if (key === 'wyrmcourt' && (s.wyrm.state === 'none' || s.wyrm.state === 'sleeping')) return 'Raised for a woken wyrm: there is none awake to court.';
+  return null;
+}
 export function canBuild(s: GameState, key: string): boolean {
   const def = BUILDING_BY_KEY[key];
   if (!def) return false;
-  return buildsFor(factionOf(s), def) && isBuildingUnlocked(s.milestone, key, s.relics?.complete);
+  return buildsFor(factionOf(s), def) && isBuildingUnlocked(s.milestone, key, s.relics?.complete) && !specialLock(s, key);
 }

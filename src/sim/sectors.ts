@@ -82,8 +82,7 @@ export function buySector(s: GameState, k: number): string | null {
       const i = idx(x, y);
       if (s.gloam[i] && edge >= 4) { s.gloam[i] = 0; burned++; }
     }
-  s.stats.gloamBurned += burned;
-  s.stats.sectorsBought++;
+  s.stats.sectorsBought++; // the surveyors' wards are the Crown's; the Charter's burn count is the city's
   markAllDirty(s);
   pushMessage(s, `The Crown extends the Charter to ${sectorName(k)} for ${cost} crowns.${burned ? ` The Gloam draws back from ${burned} tiles as the surveyors' wards go in.` : ''}`, 'milestone', true, { x: x0 + SECTOR / 2, y: y0 + SECTOR / 2 });
   return null;

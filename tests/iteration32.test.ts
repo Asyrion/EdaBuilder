@@ -61,12 +61,12 @@ describe('Healers', () => {
     expect(to).not.toBeNull();
     expect(buildingsAt(s, to!).some((b) => b.id === h2.id)).toBe(true); // the unhappiest first
     for (let t = 0; t < 400 && (h2.tended ?? -1) < s.day; t++) tickWalkers(s);
-    expect(h2.tended).toBe(s.day);
+    expect(h2.tended).toBe(s.day + 1); // stamped for the day the daily reader sees
     expect(s.stats.healerVisits).toBe(1);
     const before = computeBuildingHappiness(s, h2);
     h2.tended = -1;
     expect(before - computeBuildingHappiness(s, h2)).toBe(4);
-    h2.tended = s.day;
+    h2.tended = s.day + 1;
     expect(WALKER_JOBS.healer.target!(s, w, hs)).not.toBe(to); // tended homes are skipped
     w.load = 6;
     WALKER_JOBS.healer.onArrive!(s, w, roadTileOfHome(s, h1));

@@ -364,6 +364,8 @@ export interface GameState {
     airshipCrowns: number;
     riderRescues: number;
     stormWarps: number;
+    stormsDissolved: number; // storms the wards or a Storm ley ended early
+    fullDays: number; // days in a row with no market short
     tigersTotal: number;
     tigersKilled: number;
     brownoutsSurvived: number;

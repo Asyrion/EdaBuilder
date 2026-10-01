@@ -74,7 +74,11 @@ describe('creatures', () => {
     loft.lit = true;
     const near = placeBuildingRaw(s, 'craft', f.x + 6, f.y + 4, 1);
     const far = placeBuildingRaw(s, 'craft', f.x - 13, f.y + 4, 1);
-    expect(mothBonus(s, near)).toBeCloseTo(0.2);
+    expect(mothBonus(s, near)).toBe(0); // no moths swarmed it yet
+    loft.stock = 3; // three moths swarmed the loft last night: 4 % each
+    expect(mothBonus(s, near)).toBeCloseTo(0.12);
+    loft.stock = 9;
+    expect(mothBonus(s, near)).toBeCloseTo(0.2); // capped
     expect(mothBonus(s, far)).toBe(0);
   });
   it('creatures survive a long run and a save/load round trip', () => {

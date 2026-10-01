@@ -178,7 +178,7 @@ describe('The bargeman', () => {
     recomputeAll(s);
     dailyWalkers(s);
     for (let k = 0; k < 2500 && (home.tended ?? -1) < s.day; k++) { tickWalkers(s); s.tick++; }
-    expect(home.tended).toBe(s.day);
+    expect(home.tended).toBe(s.day + 1);
     expect(s.stats.bargemanRounds).toBeGreaterThanOrEqual(1);
     expect(computeBuildingHappiness(s, home)).toBeGreaterThan(0);
   });

@@ -251,7 +251,8 @@ export function dailyWyrm(s: GameState): void {
 
 /** Deathcare from the wyrm's bones (per day), for dailyDeath. */
 export function wyrmBoneQuiet(s: GameState): number {
-  return s.wyrm.state === 'dead' ? 80 : 0;
+  // the bones quiet the dead for a season's worth of days, then the ley forgets them
+  return s.wyrm.state === 'dead' ? (s.day - s.wyrm.died <= 120 ? 80 : 20) : 0;
 }
 
 /** Ward strength at a tile from the bound wyrm's lair (0..1). */

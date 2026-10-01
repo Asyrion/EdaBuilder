@@ -341,7 +341,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'stormpeak', name: "Storm-Caller's Peak", category: 'service',
-    desc: 'A stair to a hilltop where a Huruhui-trained storm caller works. From its panel, call rain over the district: fires out, miasma washed away for three days, glimherb thriving. Three-day cooldown. Must be built into hills.',
+    desc: 'A stair to a hilltop where a Huruhui-trained storm caller works. From its panel, call rain over the whole city for 300 crowns: fires within 14 tiles of the Peak go out, miasma washed away and Craft +15% for three days. Three-day cooldown. Must be built into hills.',
     flavor: 'They climbed for three nights and came down with white hair and the rain behind them.',
     w: 1, h: 1, cost: 2800, upkeep: 30, manaUse: 6, unlock: 4, onHills: true, needsMana: true,
     service: { type: 'leisure', radius: 6, strength: 0.4 },
@@ -422,7 +422,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'worldtree', name: 'World Tree Sapling', category: 'wonder',
-    desc: 'A cutting from the World Trees of Longwood. Grows over four seasons into a tree taller than the Lantern of Vell: leisure and happiness for a widening ring (6 to 24 tiles), land value, glimmoths at night, and roots that hold the Gloam where its shade falls. No mana.',
+    desc: 'A cutting from the World Trees of Longwood. Grows over three seasons into a tree taller than the Lantern of Vell: leisure and happiness for a widening ring (6 to 24 tiles), land value, glimmoths at night, and roots that hold the Gloam where its shade falls. No mana.',
     flavor: 'It grew a hand-span the night it was planted, and the children swear it hums.',
     w: 3, h: 3, cost: 20000, upkeep: 120, manaUse: 0, unlock: 7, wonder: true, landValue: 20,
     service: { type: 'leisure', radius: 6, strength: 1.0 },
@@ -497,7 +497,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'wyrmforge', name: 'Wyrmfire Forge', category: 'marvel',
-    desc: 'A forge fed with bottled wyrmfire. Craft works within 8 make 25% more and ignore the Hush. Costs 8 wyrmfire.',
+    desc: 'A forge fed with bottled wyrmfire. Craft works within 8 make 35% more (a Glimhouse\'s tenth and the forge\'s quarter) and ignore the Hush. Costs 8 wyrmfire.',
     flavor: 'The smiths wear glass over their eyes and sing to keep the fire sweet.',
     w: 2, h: 2, cost: 4000, upkeep: 45, manaUse: 4, unlock: 4, needsMana: true, materials: { wyrmfire: 8 }, miasma: 1,
   },

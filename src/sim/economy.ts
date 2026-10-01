@@ -3,7 +3,7 @@ import { factionOf, milestonesOf } from '../data/factions';
 import { inFenNex } from './lore';
 import { quarterOf } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
-import { Zone, type GameState } from './types';
+import { Zone, type Building, type GameState } from './types';
 import { forEachBuilding, pushMessage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
@@ -13,7 +13,9 @@ export function taxOf(state: GameState, zone: Zone): number {
     case Zone.Hearth: return state.taxRates.hearth;
     case Zone.Market: return state.taxRates.market;
     case Zone.Craft: {
-      const cap = modifierSum(state, 'craftTax');
+      // a cap is a ceiling: two caps give the lower one, not their sum
+      let cap = 0;
+      for (const m of state.modifiers) if (m.kind === 'craftTax' && !m.district && (cap === 0 || m.value < cap)) cap = m.value;
       return cap > 0 ? Math.min(state.taxRates.craft, cap) : state.taxRates.craft;
     }
     case Zone.Arcane: return state.taxRates.arcane;
@@ -25,6 +27,9 @@ export function taxOf(state: GameState, zone: Zone): number {
 export function computeLedger(state: GameState) {
   const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
   const unrestMod = (1 - state.unrest * 0.5) * (1 + modifierSum(state, 'tithe'));
+  // a Market Square's trade: markets within 8 of a square pay 15 % more
+  const squares = state.buildings.filter((q) => q && q.kind === 'square' && q.state === 'ok') as Building[];
+  const nearSquare = (b: Building) => squares.some((q) => Math.abs(q.x - b.x) <= 8 && Math.abs(q.y - b.y) <= 8);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return;
@@ -37,7 +42,7 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1); break; }
+        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1) * (nearSquare(b) ? 1.15 : 1); break; }
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }
@@ -77,7 +82,9 @@ export function dailyEconomy(state: GameState): void {
 export function checkMilestones(state: GameState): void {
   const MS = milestonesOf(state);
   const gate = factionOf(state).rules.milestoneGate;
-  while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1))) {
+  // the Vellish Beacon of Eda needs the Lantern of Vell standing and lit: the Crown names no Beacon without one
+  const beaconLit = () => state.faction !== 'vellish' || state.buildings.some((b) => b && b.kind === 'lantern' && b.state === 'ok' && b.lit);
+  while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1)) && (state.milestone + 1 < MS.length - 1 || beaconLit())) {
     state.milestone++;
     const m = MS[state.milestone];
     state.treasury += m.grant;

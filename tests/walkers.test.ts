@@ -66,7 +66,7 @@ describe('The walker framework', () => {
       expect(s.road[idx(Math.floor(w.x), Math.floor(w.y))]).toBeGreaterThan(0);
     }
     expect(moved).toBe(true);
-    expect(maxD).toBeLessThanOrEqual(WALKER_JOBS.watchman.radius(wh) + 3);
+    expect(maxD).toBeLessThanOrEqual(WALKER_JOBS.watchman.radius(wh, s) + 3);
     const bonus = walkerBonus(s, 'watch');
     let painted = 0;
     for (let i = 0; i < bonus.length; i++) if (bonus[i] > 0) painted++;
