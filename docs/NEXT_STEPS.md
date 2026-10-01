@@ -278,6 +278,17 @@
   to the ridge, levelling for stone), and `balance.ts` taking a people. Grimmen seeds 42–44
   reach Deep Hold on days 33, 51 and 43; Vellish seed 42 is identical to main.
 
+## Done in the hotfix after iteration 37 (the night crash)
+
+- Reported by the player: tabs crashed shortly after the first roads and zones. Cause: the
+  first dusk. Every glowing particle was drawn as a light with a continuous intensity, and
+  the light-sprite cache created and kept a canvas element per distinct key, over twenty
+  thousand in one night. Fixed by quantizing the particle intensity (eleven steps), bounding
+  the cache, and a Playwright night scene (`scripts/playtest37.mjs`) that counts canvas
+  elements (96 across a run that made 20,000 before). Also found: the autosave carried the
+  walkers' transient bonus layer as 80,000 plain-JSON numbers; it is skipped now and dropped
+  from older saves on load (252 KB instead of about 2 MB).
+
 ## Known issues
 
 - **The Grimmen plateau.** The bot's Grimmen towns settle between 350 and 700 folk: the

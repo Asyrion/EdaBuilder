@@ -1804,3 +1804,9 @@ picks it beside the scenario; the bot plays any of them.
 - *A description is a rule (iteration 37):* the Stone Ward "asks no mana" but only lit wards
   burned Gloam; the gate now reads the catalog's mana fields instead of the lit flag, so a
   building's text and its code cannot disagree about mana.
+- *A cache key is a finite set (hotfix after iteration 37):* the light-sprite cache made a
+  new canvas element for every distinct key and kept it for ever, and the particle lights
+  keyed on a continuous intensity, so the first dusk created twenty thousand canvases and
+  the tab died. Callers now quantize, the cache is bounded, and the Playwright night scene
+  counts canvases. The same rule for saves: a transient layer (the walkers' bonus) is never
+  serialized; the save was carrying eighty thousand numbers of it.

@@ -1,10 +1,16 @@
-/** Cached radial light sprites for the light map. */
+/** Cached radial light sprites for the light map. Keys must come from a finite set (callers quantize
+ *  the intensity); the bound below is a safety net, because every entry is a live canvas element. */
 const cache = new Map<string, HTMLCanvasElement>();
+export const LIGHT_CACHE_MAX = 512;
+export function lightCacheSize(): number {
+  return cache.size;
+}
 
 export function lightSprite(radius: number, color: string, intensity = 1): HTMLCanvasElement {
   const key = `${radius}|${color}|${intensity}`;
   let c = cache.get(key);
   if (c) return c;
+  if (cache.size >= LIGHT_CACHE_MAX) cache.clear();
   c = document.createElement('canvas');
   c.width = c.height = radius * 2;
   const ctx = c.getContext('2d')!;
