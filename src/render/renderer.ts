@@ -333,6 +333,7 @@ export class Renderer {
 
   // ---------- main ----------
   render(state: GameState, view: ViewState, dt: number): void {
+    this.zoneSuffix = state.faction === 'grimmen' ? '_grimmen' : '';
     const t0 = performance.now();
     this.stats.drawn = 0;
     this.time += dt;
@@ -650,7 +651,7 @@ export class Renderer {
       const g = view.ghost;
       const def = BUILDING_BY_KEY[g.key];
       const [wx, wy] = tileToWorld(g.x, g.y);
-      const s = this.atlas.get(def.category === 'zone' ? `${g.key}_l1_v0` : `b_${g.key}`);
+      const s = this.atlas.get(def.category === 'zone' ? `${g.key}_l1_v0${this.zoneSuffix}` : `b_${g.key}`);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
     const tSort = performance.now();
@@ -771,10 +772,12 @@ export class Renderer {
     this.stats.blit = tEnd - tBlit;
   }
 
+  private zoneSuffix = '';
+
   private spriteNameFor(b: Building): string {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
-    if (def.category === 'zone') return `${b.kind}_l${b.level}_v${b.variant % 4}`;
+    if (def.category === 'zone') return `${b.kind}_l${b.level}_v${b.variant % 4}${this.zoneSuffix}`;
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     return `b_${b.kind}`;
   }

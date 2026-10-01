@@ -1,6 +1,6 @@
 /** Cross-line breeding: two grown dragons of different lines in a cradle attuned to one of them lay a crossed egg on Bloom day 20. See DESIGN.md 4.48. */
 import { aspectAt } from './weave';
-import { LINE_INFO, cradleCapacity, dragonsIn, freeCradle } from './wyrmcraft';
+import { LINE_INFO, cradleCapacity, dragonsIn, freeCradle, isCradle } from './wyrmcraft';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import type { Building, Dragon, DragonLine, GameState } from './types';
 
@@ -32,7 +32,7 @@ export function canBreed(s: GameState, cradle: Building): BreedCheck {
 export function dailyBreeding(s: GameState): void {
   if (s.day % 120 !== BREED_DAY) return;
   const cradles: Building[] = [];
-  forEachBuilding(s, (b) => { if (b.kind === 'cradle' && b.state === 'ok' && cradleCapacity(b) > 0) cradles.push(b); });
+  forEachBuilding(s, (b) => { if (isCradle(b.kind) && b.state === 'ok' && cradleCapacity(b) > 0) cradles.push(b); });
   const rng = rngOf(s);
   for (const c of cradles) {
     const chk = canBreed(s, c);

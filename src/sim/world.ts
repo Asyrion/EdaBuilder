@@ -246,10 +246,10 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
   if (def.maxCount && state.buildings.filter((b) => b && b.kind === key).length >= def.maxCount) return `Only ${def.maxCount} may stand`;
   if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
   if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
-  if (def.key === 'mothloft' || def.key === 'cradle') {
+  if (def.key === 'mothloft' || def.key === 'cradle' || def.key === 'hatchery') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
-    if (!near) return def.key === 'cradle' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
+    if (!near) return def.key !== 'mothloft' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
   }
   return null;
 }

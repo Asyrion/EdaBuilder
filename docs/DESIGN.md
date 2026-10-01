@@ -902,6 +902,29 @@ build menu, the tools, the actions and the bot use it, and the bot's `want` goes
 row above the scenarios; the topbar names the people after the milestone. Seed 42 is
 bit-identical to main (Burgh 42, Free City 66, Beacon 97): the scaffold adds no rng call.
 
+### 4.66 The Grimmen of the Underhill, part 1: stone (iteration 35)
+
+The Grimmen are playable from the title screen. Rules: hills +12 land value and every other
+tile −6, buildings and zones on hills, the gates' ward ×2, a third more mana from buildings on
+hills and a third less from the nodes, and a milestone gate on **stone quarried**
+(`stoneQuarried`: hills levelled plus two per building standing on hills) with thresholds
+0, 2, 6, 12, 20, 30, 42, 56, 72. Their nine milestones keep the Vellish folk counts and grants
+under depth names: Camp, Cut, Gallery, Hold, Deep Hold, Under-Market, Deephold, Underking's
+Hall, Underking's Seat, with their own texts.
+
+Three replacements (`replaces: { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery' }`,
+all `faction: ['grimmen']`): the **Seep** (water, must touch hills, waters 6, no mana), the
+**Stone Ward** (ward 8 at 0.9 with no mana and no light), and the **Hatchery** (a cradle for
+the Bone, Grey and Ember lines only). Cradles are generalised: `CRADLE_KINDS`, `isCradle`,
+`cradleAccepts(b, line)`, `freeCradle(s, line)`; every `'cradle'` literal in the sim, the UI
+and the quests reads `isCradle`, so eggs, breeding, tamers, events, the Wyrms panel and the
+cradle quests all take a Hatchery.
+
+The look: `zoneSpecs(zone, level, variant, 'grimmen')` turns every zone building to stone or
+dark stone walls with slate, flat or no roofs and no chimneys; the atlas holds a `_grimmen`
+copy of all 48 zone sprites and the renderer picks it by the state's people. The three
+buildings have dark-stone specs. The Vellish game is untouched: seed 42 is identical to main.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1510,7 +1533,7 @@ picks it beside the scenario; the bot plays any of them.
   with what the Grimmen need: terrain preferences (land value and buildability on hills),
   a ward source multiplier (walls, lanterns), a mana source multiplier (mines, nodes), a
   water rule (wells vs seeps), a dragon rule (cradles or foundries), and a starting kit.
-- **Proof of concept: the Grimmen of the Underhill (iterations 35–37).** Stone folk who dig.
+- **Proof of concept: the Grimmen of the Underhill (iterations 35–37; 35 ✅ as 4.66).** Stone folk who dig.
   Hearths are *Deep Halls* cut into hills (hills are their best land; grass is poor), water
   comes from *Seeps* in hills rather than wells by the river, the Gloam is held by stone:
   the Warding Wall wards double and the Ward Lantern is replaced by the *Stone Ward*, mana
@@ -1678,3 +1701,6 @@ picks it beside the scenario; the bot plays any of them.
 - *One rule, one read (iteration 34):* every faction rule is read at a single point in the
   systems and proved by a throwaway people in the tests, so a new people is a table entry and
   the Vellish game cannot drift.
+- *A people replaces, it does not add (iteration 35):* the Grimmen's seep, stone ward and
+  hatchery stand in for the well, the lantern and the cradle, so the systems behind them are
+  shared and a Hatchery is a cradle everywhere; only the rules and the look differ.

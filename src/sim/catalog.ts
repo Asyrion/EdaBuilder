@@ -140,6 +140,12 @@ export const BUILDINGS: BuildingDef[] = [
     w: 1, h: 1, cost: 300, upkeep: 4, manaUse: 0, waterRadius: 8, waterNearBonus: 2, unlock: 0,
   },
   {
+    key: 'seep', name: 'Seep', category: 'water', faction: ['grimmen'],
+    desc: 'A basin cut into the hill foot where the stone weeps. Waters buildings within 6 tiles; must touch hills. No mana, no coin to the water-mage.',
+    flavor: 'The Grimmen say the hill is only sleeping, and the seep is where it dreams of the river.',
+    w: 1, h: 1, cost: 350, upkeep: 4, manaUse: 0, waterRadius: 6, nearHills: true, unlock: 0,
+  },
+  {
     key: 'cistern', name: 'Cistern of Vesh', category: 'water',
     desc: 'A mana-driven cistern that lifts water uphill. Waters buildings within 12 tiles. Needs mana.',
     flavor: 'The water rises because it is asked nicely, and because eight mana a day are spent on the asking.',
@@ -272,6 +278,20 @@ export const BUILDINGS: BuildingDef[] = [
   },
 
   // ---- wyrmcraft ----
+  {
+    key: 'stoneward', name: 'Stone Ward', category: 'service', faction: ['grimmen'],
+    desc: 'A standing stone cut with the old grey runes. Holds the Gloam back within 8 tiles with no mana at all: the grey cannot cross what the Grimmen have cut.',
+    flavor: 'No light. The grass simply stops being grey at the foot of it, as if embarrassed.',
+    w: 1, h: 1, cost: 800, upkeep: 12, manaUse: 0,
+    service: { type: 'ward', radius: 8, strength: 0.9 }, unlock: 2,
+  },
+  {
+    key: 'hatchery', name: 'Hatchery', category: 'service', faction: ['grimmen'],
+    desc: 'A stone nest in the hill\'s warmth. Holds two eggs of the stone lines only: Bone, Grey and Ember. Must be lit and drinks 6 mana a day; needs a ley node or spire within 6 to be cut at all.',
+    flavor: 'The Grimmen do not breed the bright lines. "We keep what the Gloam cannot touch," they say, "and what the Gloam cannot touch is grey."',
+    w: 2, h: 2, cost: 3200, upkeep: 28, manaUse: 6, unlock: 4, needsMana: true,
+    service: { type: 'leisure', radius: 5, strength: 0.3 },
+  },
   {
     key: 'cradle', name: 'Wyrm-Cradle', category: 'service',
     desc: 'A stone nest warmed by the ley. Holds two dragon eggs; hatchlings and drakes live here until given a role. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Needs a ley node or spire within 6 to be raised at all.',

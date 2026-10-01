@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY } from './catalog';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
-import { LINE_INFO, addEgg } from './wyrmcraft';
+import { LINE_INFO, addEgg, isCradle } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
@@ -248,7 +248,7 @@ const EGGS: EventDef[] = [
   {
     id: 'egg_first', title: "The Crown's gift", once: true,
     text: 'A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg "so that the valley may learn what it is to keep a dragon".',
-    when: (s) => s.buildings.some((b) => b && b.kind === 'cradle' && b.state === 'ok') && s.dragons.length === 0,
+    when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
     choices: [
       { label: 'Accept the egg', desc: 'An ember egg goes into your cradle.', apply: (s) => { const d = addEgg(s, 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
       { label: 'Decline politely', desc: '+800 crowns from the Crown for your modesty; no egg.', apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
@@ -287,7 +287,7 @@ const EGGS: EventDef[] = [
   {
     id: 'egg_poachers', title: 'Poachers at the gate',
     text: 'Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.',
-    when: (s) => s.buildings.some((b) => b && b.kind === 'cradle') && s.treasury > 3000 && s.dragons.length < 6,
+    when: (s) => s.buildings.some((b) => b && isCradle(b.kind)) && s.treasury > 3000 && s.dragons.length < 6,
     choices: [
       { label: 'Buy the egg (2,500 crowns)', desc: 'An ember, bone or glim egg, if a cradle has room.', apply: (s) => { const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim'] as DragonLine[]); commitRng(s, rng); s.treasury -= 2500; const d = addEgg(s, line); return d ? `A ${LINE_INFO[line].name.toLowerCase()} egg, still warm. The poachers are gone before the crowns are counted.` : 'No cradle had room; the egg is sold on to the Crown at a loss. The poachers laugh.'; } },
       { label: 'Arrest them', desc: 'Unrest −3% for 10 days; 40% chance the egg is recovered anyway.', apply: (s) => { s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'Poachers jailed' }); const rng = rngOf(s); const luck = rng.chance(0.4); commitRng(s, rng); if (luck) { const d = addEgg(s, 'ember'); if (d) return 'The Watch takes the carters and the egg. It goes to the cradle.'; } return 'The Watch takes the carters. The egg is not in the cart.'; } },
@@ -325,7 +325,7 @@ const VISITORS: EventDef[] = [
   {
     id: 'fennex_gift', title: 'A gift from the quarter', once: true,
     text: 'The Fen-Nex speaker brings a basket to the Founding Stake: in it, an egg the colour of fox fur, warm and purring. "Half our gifts are real," she says. "Guess which half."',
-    when: (s) => s.fenNex > 0 && s.day - s.lastEventDay >= 20 && s.buildings.some((b) => b && b.kind === 'cradle' && b.state === 'ok'),
+    when: (s) => s.fenNex > 0 && s.day - s.lastEventDay >= 20 && s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok'),
     choices: [
       { label: 'Take the egg', desc: 'A fen-drake egg, if a cradle has room; or a basket of leaves.', apply: (s) => { const rng = rngOf(s); const real = rng.chance(0.5); commitRng(s, rng); if (!real) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'A good joke' }); return 'Leaves. Very warm leaves. The whole quarter is laughing and, somehow, so is the city.'; } const d = addEgg(s, 'fen'); return d ? `Real. The tamers call it ${d.name}; it is already stealing shoes.` : 'Real, and no cradle has room. The speaker takes it back with a look of sympathy.'; } },
       { label: 'Decline', desc: 'Nothing changes.', apply: () => '"Wise," she says, in a tone that means the opposite.' },

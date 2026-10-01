@@ -1,3 +1,4 @@
+import { isCradle } from '../sim/wyrmcraft';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, Zone, type GameState } from '../sim/types';
 import { BUILDING_BY_KEY } from '../sim/catalog';
@@ -23,6 +24,7 @@ export interface QuestDef {
   priority: number; // lower first
 }
 
+const hasCradle = (s: GameState) => s.buildings.some((b) => b && isCradle(b.kind) && b.state !== 'ruin' && b.state !== 'building');
 const has = (s: GameState, kind: string, n = 1) => s.buildings.filter((b) => b && b.kind === kind && b.state !== 'ruin' && b.state !== 'building').length >= n;
 const zoned = (s: GameState, z: Zone, n: number) => { let c = 0; for (let i = 0; i < s.zone.length; i++) if (s.zone[i] === z) c++; return c >= n; };
 const roads = (s: GameState) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i]) c++; return c; };
@@ -84,8 +86,8 @@ export const QUESTS: QuestDef[] = [
   // Beasts
   { id: 'b_loft', chapter: 'Beasts', title: 'Build a Moth-Loft', hint: 'Glimmoths swarm lit ley at night; a loft near it gathers glim-dust for the works.', when: (s) => s.milestone >= 2, done: (s) => has(s, 'mothloft'), focus: { build: 'mothloft' }, reward: 500, priority: 28 },
   // Wyrmcraft
-  { id: 'w_cradle', chapter: 'Wyrmcraft', title: 'Raise a Wyrm-Cradle and a Tamer\'s Lodge', hint: 'Cradle near a spire (it must be lit); lodge within 10 tiles.', when: (s) => s.milestone >= 4, done: (s) => has(s, 'cradle') && has(s, 'tamerslodge'), focus: { build: 'cradle' }, reward: 1000, priority: 33 },
-  { id: 'w_egg', chapter: 'Wyrmcraft', title: 'Accept an egg', hint: 'The Crown sends one to your first cradle; more come from mines, boneyards, lofts and poachers.', when: (s) => has(s, 'cradle'), done: (s) => s.dragons.length > 0, focus: { panel: 'wyrms' }, reward: 0, priority: 34 },
+  { id: 'w_cradle', chapter: 'Wyrmcraft', title: 'Raise a Wyrm-Cradle and a Tamer\'s Lodge', hint: 'Cradle near a spire (it must be lit); lodge within 10 tiles.', when: (s) => s.milestone >= 4, done: (s) => hasCradle(s) && has(s, 'tamerslodge'), focus: { build: 'cradle' }, reward: 1000, priority: 33 },
+  { id: 'w_egg', chapter: 'Wyrmcraft', title: 'Accept an egg', hint: 'The Crown sends one to your first cradle; more come from mines, boneyards, lofts and poachers.', when: (s) => hasCradle(s), done: (s) => s.dragons.length > 0, focus: { panel: 'wyrms' }, reward: 0, priority: 34 },
   { id: 'w_hatch', chapter: 'Wyrmcraft', title: 'Hatch it', hint: 'Keep the cradle lit for 30 days. Then feed it from nearby markets.', when: (s) => s.dragons.length > 0, done: (s) => s.dragons.some((d) => d.stage >= 1) || s.materials.eggshell > 0, focus: { panel: 'wyrms' }, reward: 800, priority: 35 },
   { id: 'w_role', chapter: 'Wyrmcraft', title: 'Give a drake a role', hint: 'Wyrms panel: warden of a district or delver at a mine.', when: (s) => s.dragons.some((d) => d.stage >= 2), done: (s) => s.dragons.some((d) => d.role !== 'none'), focus: { panel: 'wyrms' }, reward: 1000, priority: 36 },
   { id: 'w_courier', chapter: 'Wyrmcraft', title: 'Fly goods with a wyvern courier', hint: 'Ember, vein, sky and storm lines grow wings.', when: (s) => s.dragons.some((d) => d.stage >= 3), done: (s) => s.stats.courierTrips > 0, focus: { panel: 'wyrms' }, reward: 1500, priority: 37 },
@@ -138,7 +140,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_healer', chapter: 'Health', title: 'A healer at the door', hint: "Healer's Shrines and Hospices send healers to the unhappiest home in reach: +4 happiness there for a day.", when: (s) => has(s, 'healer') || has(s, 'hospice'), done: (s) => s.stats.healerVisits > 0, focus: { overlay: 'health' }, reward: 400, priority: 26 },
   { id: 'w_warden', chapter: 'The ley', title: 'Candles on the spires', hint: 'Under the Spire Wardens edict every lit spire sends a Tallowkin warden walking spire to spire; nothing near a warden is warped by a surge.', when: (s) => s.milestone >= 2 && s.buildings.filter((b) => b && (b.kind === 'spire' || b.kind === 'nexus')).length >= 2, done: (s) => s.stats.wardenRounds > 0, focus: { panel: 'edicts' }, reward: 600, priority: 27 },
   { id: 'w_scholar', chapter: 'The riverbank', title: 'A scholar at the delve', hint: 'A lit Academy on a road sends a scholar to the Ruin Delve; every relic piece is carried home and named by hand.', when: (s) => (has(s, 'academy') || has(s, 'grandacademy')) && has(s, 'ruindelve'), done: (s) => s.stats.scholarTrips > 0, focus: { build: 'academy' }, reward: 600, priority: 51 },
-  { id: 'w_tamer', chapter: 'Wyrmcraft', title: 'The tamer makes her rounds', hint: "A Tamer's Lodge on a road sends a tamer to every cradle within ten tiles that holds dragons: calmer and faster-growing that day.", when: (s) => has(s, 'tamerslodge') && has(s, 'cradle'), done: (s) => s.stats.tamerVisits > 0, focus: { build: 'tamerslodge' }, reward: 500, priority: 37 },
+  { id: 'w_tamer', chapter: 'Wyrmcraft', title: 'The tamer makes her rounds', hint: "A Tamer's Lodge on a road sends a tamer to every cradle within ten tiles that holds dragons: calmer and faster-growing that day.", when: (s) => has(s, 'tamerslodge') && hasCradle(s), done: (s) => s.stats.tamerVisits > 0, focus: { build: 'tamerslodge' }, reward: 500, priority: 37 },
   { id: 'w_pilgrim', chapter: 'Faith', title: 'Pilgrims on the road', hint: 'Shrines and temples on roads send pilgrims to one another and to the Founding Stake; the roads they walk count as under faith.', when: (s) => s.buildings.filter((b) => b && (b.kind === 'shrine' || b.kind === 'temple') && b.state === 'ok').length >= 2, done: (s) => s.stats.pilgrimPrayers > 0, focus: { overlay: 'faith' }, reward: 400, priority: 28 },
   // The Vein-Wyrm
   { id: 'v_find', chapter: 'The Vein-Wyrm', title: 'Find the Sleeping Wyrm', hint: 'One distant node is ringed with scale, not stone. Click it. Spires there would wake it.', when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },

@@ -33,8 +33,19 @@ export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: 
 };
 const NAMES = ['Ashvel', 'Tammet', 'Orrin', 'Sablewick', 'Morrowlight', 'Pell', 'Vessa', 'Glimmer', 'Cinder', 'Ossa', 'Hollow', 'Brightscale', 'Quiet', 'Ember-of-Vell', 'Wick', 'Thrum'];
 
+/** Buildings that hold dragons: the Vellish Wyrm-Cradle and the Grimmen Hatchery. */
+export const CRADLE_KINDS = ['cradle', 'hatchery'];
+export const HATCHERY_LINES: DragonLine[] = ['bone', 'grey', 'ember'];
+export function isCradle(kind: string): boolean {
+  return CRADLE_KINDS.includes(kind);
+}
+/** A Hatchery takes only the stone lines; a cradle takes any. */
+export function cradleAccepts(b: Building, line?: DragonLine): boolean {
+  if (!isCradle(b.kind)) return false;
+  return b.kind !== 'hatchery' || !line || HATCHERY_LINES.includes(line);
+}
 export function cradleCapacity(b: Building): number {
-  return b.kind === 'cradle' ? 2 : 0;
+  return isCradle(b.kind) ? 2 : 0;
 }
 
 export function dragonsIn(state: GameState, cradleId: number): Dragon[] {
@@ -42,17 +53,17 @@ export function dragonsIn(state: GameState, cradleId: number): Dragon[] {
 }
 
 /** A cradle with a free slot, or null. */
-export function freeCradle(state: GameState): Building | null {
+export function freeCradle(state: GameState, line?: DragonLine): Building | null {
   let found: Building | null = null;
   forEachBuilding(state, (b) => {
-    if (found || b.kind !== 'cradle' || b.state !== 'ok') return;
+    if (found || !cradleAccepts(b, line) || b.state !== 'ok') return;
     if (dragonsIn(state, b.id).length < cradleCapacity(b)) found = b;
   });
   return found;
 }
 
 export function addEgg(state: GameState, line: DragonLine): Dragon | null {
-  const cradle = freeCradle(state);
+  const cradle = freeCradle(state, line);
   if (!cradle) return null;
   const rng = rngOf(state);
   const d: Dragon = {
