@@ -33,16 +33,17 @@ export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: 
 };
 const NAMES = ['Ashvel', 'Tammet', 'Orrin', 'Sablewick', 'Morrowlight', 'Pell', 'Vessa', 'Glimmer', 'Cinder', 'Ossa', 'Hollow', 'Brightscale', 'Quiet', 'Ember-of-Vell', 'Wick', 'Thrum'];
 
-/** Buildings that hold dragons: the Vellish Wyrm-Cradle and the Grimmen Hatchery. */
-export const CRADLE_KINDS = ['cradle', 'hatchery'];
-export const HATCHERY_LINES: DragonLine[] = ['bone', 'grey', 'ember'];
+/** Buildings that hold dragons: the Vellish Wyrm-Cradle, the Grimmen Hatchery, the Veshari Tide Pool. */
+export const CRADLE_KINDS = ['cradle', 'hatchery', 'tidepool'];
+/** A people's cradle takes only its lines; a kind not listed takes any. */
+export const CRADLE_LINES: Partial<Record<string, DragonLine[]>> = { hatchery: ['bone', 'grey', 'ember'], tidepool: ['tide', 'storm', 'glim'] };
 export function isCradle(kind: string): boolean {
   return CRADLE_KINDS.includes(kind);
 }
-/** A Hatchery takes only the stone lines; a cradle takes any. */
 export function cradleAccepts(b: Building, line?: DragonLine): boolean {
   if (!isCradle(b.kind)) return false;
-  return b.kind !== 'hatchery' || !line || HATCHERY_LINES.includes(line);
+  const lines = CRADLE_LINES[b.kind];
+  return !lines || !line || lines.includes(line);
 }
 export function cradleCapacity(b: Building): number {
   return isCradle(b.kind) ? 2 : 0;

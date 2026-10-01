@@ -301,6 +301,16 @@
 - The bot delves for room or stone, cuts quarries when the shelves run short, and turns the
   Deep Cut on once an Academy stands.
 
+## Done in iteration 39 (M12 part 2a, the Veshari of the Sable)
+
+- The second people on the scaffold: four new rule fields (river land value ×2, a dry
+  penalty, the river never freezes, mills ×1.33) and node mana ×0.8; reach milestones gated
+  on moorings; the Tide-Well, the Landing (barges sail between landings and quays) and the
+  Tide Pool (water lines only; `CRADLE_LINES` is a table now); a plank-and-reed zone look
+  through `ZONE_LOOKS`; the riverside start (a channel cut to within six of the founding);
+  the bot moors, waters from tide-wells and raises mills. Found and fixed: `waterDist` was
+  rebuilt from the seed on load, not from the saved terrain.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -351,14 +361,16 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M12 Peoples II, part 2: a second people** (DESIGN §7, §14.2): the Veshari river-folk
-   on the scaffold, to prove it holds twice. A cut that fits the rules: the river never
-   freezes for them and the Hush floods instead; wells are replaced by river cisterns that
-   must touch water; Torrent Mills are their spires (mana from the current, a third more,
-   spires a third less); barges carry goods where carts would; quays (markets that must
-   touch water) hold double; dragons of Tide and Storm only; milestones named by reach
-   (Landing, Jetty, Quay, Harbour…) gated on quays built; a chapter of eight and three tales;
-   a bargeman walker. Then the balance bot playing them on three seeds.
+0. **M12 Peoples II, part 2b: the Veshari's water** (DESIGN §7, §4.70): the Hush flood (in
+   the Hush the river rises: tiles within one of water lose their land value and a bank
+   building not on a landing or quay may be swept, unless a Weir stands); the **Great Weir**
+   wonder replacing the Lantern of Vell (must touch water, 2×2, makes mana like three mills,
+   wards 20 across the water, ends the flood); a chapter of eight (the first tide-well, two
+   landings and a barge, a mill in the current, the Tide Pool, a tide hatchling, the first
+   flood survived, the Weir) and three tales with tide and storm eggs (a tide egg in a
+   fisher's net, a storm egg after a mana-storm, the bargemen's strike); a bargeman walker
+   from landings (walks the bank, mends a flooded tile, +leisure); the Veshari late game on
+   three seeds (Weirhold by day 120).
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

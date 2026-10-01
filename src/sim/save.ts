@@ -4,9 +4,10 @@ import { initRelics } from './relics';
 import { chooseWyrmNode, newWyrm } from './wyrm';
 import { assignAspects } from './weave';
 import type { WyrmState } from './types';
-import { SAVE_VERSION, SERVICE_TYPES, type GameState, type ServiceType } from './types';
+import { SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
 import { markAllDirty } from './world';
 import { recomputeAll } from './sim';
+import { distanceMap } from './terrain';
 
 function toB64(bytes: Uint8Array): string {
   let s = '';
@@ -116,6 +117,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.dirtyChunks = new Set();
   markAllDirty(state);
   void U8_FIELDS;
+  // the water map is derived from the saved terrain, not from the fresh seed's (a people may have cut a channel)
+  state.waterDist = distanceMap((i) => isWater(state.terrain[i]), 15);
   recomputeAll(state);
   return state;
 }

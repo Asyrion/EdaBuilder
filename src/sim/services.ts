@@ -192,7 +192,8 @@ export function updateLandValue(state: GameState): void {
       }
       if (road) v += ROAD_BY_TYPE[road].landValue + 4;
       const wd = state.waterDist[i];
-      if (wd <= 5) v += (5 - wd) * 2.5;
+      if (wd <= 5) v += (5 - wd) * 2.5 * fr.waterLandValue;
+      else if (wd > 8) v -= fr.dryPenalty;
       v += (cov.leisure[i] / 255) * 16;
       v += (cov.faith[i] / 255) * 10;
       v += (cov.watch[i] / 255) * 6;

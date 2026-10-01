@@ -9,7 +9,7 @@ import { TERRAFORM, buildRoad, bulldoze, paintZone, placeBuilding, roadPath, ter
 import { EDICT_BY_KEY } from './edicts';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, deepenNode, forEachBuilding } from './world';
+import { canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
 import { resolveEvent } from './events';
 import { setRole } from './wyrmcraft';
 
@@ -42,6 +42,7 @@ export class Bot {
     this.zoneByDemand();
     this.keepWatered();
     this.quarry();
+    this.moor();
     this.keepLit();
     this.buyServices();
     // expand when zone tiles are mostly used and demand is positive
@@ -128,7 +129,7 @@ export class Bot {
       const d = dry[k];
       const key = factionKey(s, s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
       const well = factionKey(s, 'well');
-      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(well, d.x, d.y, 6, true) || (well !== 'well' && (this.placeNear(well, d.x, d.y, 10) || (canBuild(s, 'cistern') && s.manaSupply - s.manaDemand > 10 && this.placeNear('cistern', d.x, d.y, 6))))) placed++;
+      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(well, d.x, d.y, 6, true) || (well !== 'well' && (this.placeNear(well, d.x, d.y, 10) || (BUILDING_BY_KEY[well].nearWater && this.placeNear(well, d.x, d.y, 14)) || (canBuild(s, 'cistern') && s.manaSupply - s.manaDemand > 10 && this.placeNear('cistern', d.x, d.y, 6))))) placed++;
     }
   }
 
@@ -195,6 +196,40 @@ export class Bot {
     return n;
   }
 
+  /** The nearest free tile matching `pred`, Manhattan from the centre (as the Grimmen hill track finds its hills). */
+  private nearestTile(pred: (x: number, y: number) => boolean): { x: number; y: number; d: number } | null {
+    const s = this.s;
+    let best: { x: number; y: number; d: number } | null = null;
+    for (let y = 1; y < MAP_H - 1; y++)
+      for (let x = 1; x < MAP_W - 1; x++) {
+        if (s.bIndex[idx(x, y)] >= 0 || !pred(x, y)) continue;
+        const d = Math.abs(x - this.cx) + Math.abs(y - this.cy);
+        if (!best || d < best.d) best = { x, y, d };
+      }
+    return best;
+  }
+
+  /** A people gated on moorings lays a landing when its folk outrun its reach; when none can stand, a track to the water. */
+  private moor(): void {
+    const s = this.s;
+    const gate = factionOf(s).rules.milestoneGate;
+    if (!gate || !canBuild(s, 'landing')) return;
+    const next = s.milestone + 1;
+    if (next >= milestonesOf(s).length || gate(s, next) || s.treasury < BUILDING_BY_KEY.landing.cost + 100) return;
+    // the gate holds the milestone grants back, so a mooring is worth a home on the bank (clear mode asks before it digs)
+    if (this.placeNear('landing', this.cx, this.cy, this.radius) || this.placeNear('landing', this.cx, this.cy, this.radius, true)) return;
+    // no bank beside a street: find the nearest free bank tile and bring a track to the land beside it (never onto it)
+    const land = (x: number, y: number) => inBounds(x, y) && !isWater(s.terrain[idx(x, y)]) && s.terrain[idx(x, y)] !== Terrain.LeyNode && s.bIndex[idx(x, y)] < 0;
+    const t = this.nearestTile((x, y) => land(x, y) && !s.road[idx(x, y)] && touchesTerrain(s, x, y, 1, 1, (tt) => tt === Terrain.Water));
+    if (!t || t.d > 45) return;
+    if (t.d > this.radius) this.radius = Math.min(40, Math.max(this.radius, t.d + 2));
+    const ends = ([[t.x - 1, t.y], [t.x + 1, t.y], [t.x, t.y - 1], [t.x, t.y + 1]] as [number, number][]).filter(([x, y]) => land(x, y));
+    if (!ends.length) return;
+    ends.sort((a, b) => Math.abs(a[0] - this.cx) + Math.abs(a[1] - this.cy) - (Math.abs(b[0] - this.cx) + Math.abs(b[1] - this.cy)));
+    const [ex, ey] = ends[0];
+    if (!s.road[idx(ex, ey)]) buildRoad(s, RoadType.Track, roadPath(this.cx, this.cy, ex, ey, false));
+  }
+
   /** The deep game of a people gated on stone: reach the hills, delve for room or stone, cut a quarry, dig the Deep Cut.
    *  A people that cannot build on hills levels them for stone as a last resort. */
   private quarry(): void {
@@ -206,6 +241,7 @@ export class Bot {
     const delve = TERRAFORM.delve;
     const canDelve = s.milestone >= delve.unlock && !!delve.faction?.includes(s.faction);
     if (!gate) return;
+    if (!hillOK && !delve.faction?.includes(s.faction)) return; // a people gated on something other than stone never levels hills for it
     if (!canDelve) {
       if (!stoneShort) return;
       if (hillOK) {
@@ -319,7 +355,7 @@ export class Bot {
         spots.push({ x: b.x, y: b.y, d: dmin });
       });
       spots.sort((a, b) => b.d - a.d);
-      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tamerslodge';
+      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tidepool' || key === 'tamerslodge';
       for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
       if (this.radius < 40) this.radius += 5; // no room: grow the town
     };
@@ -352,6 +388,8 @@ export class Bot {
     want('grandacademy', 1);
     want('font', s.manaDemand > s.manaSupply * 0.85 ? 1 + this.countKind('font') : 0);
     if (s.milestone >= 7 && s.treasury > 30000) want('lantern', 1);
+    // a people that draws on the current: Torrent Mills are its spires
+    if (factionOf(s).rules.millMana > 1 && canBuild(s, 'torrentmill') && s.manaSupply - s.manaDemand < 20 && s.treasury > 7000) this.placeNear('torrentmill', this.cx, this.cy, this.radius);
     void MILESTONES;
   }
 

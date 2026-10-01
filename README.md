@@ -19,6 +19,7 @@ npm test           # vitest: terrain, actions, networks, sim, hazards, creatures
 npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
+npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
 ```
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
@@ -187,7 +188,11 @@ Charter as `.json`.
   Forge-Temple, cut the Underking's Seat as their wonder, follow their own Underhill chapter
   and tales, start beside a hill ridge, field stone-sextons who cut the Gloam back with salt
   and chisel, delve grass into hill land, cut stone at Quarries for the carts, dig the Deep
-  Cut, and climb milestones cut by depth that need stone quarried as well as folk.
+  Cut, and climb milestones cut by depth that need stone quarried as well as folk. The
+  Veshari of the Sable found their city within six tiles of water, drink from tide-wells,
+  moor barges at landings, draw more from Torrent Mills than from the Veins, never see the
+  river freeze, hatch only the water lines in a Tide Pool, and climb milestones named by
+  reach that need moorings as well as folk.
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims and
   the Grimmen's stone-sextons walk the roads from their buildings and do their jobs where
   they go; the streets they walk
