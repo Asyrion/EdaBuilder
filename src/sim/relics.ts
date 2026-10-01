@@ -40,6 +40,14 @@ function catalogue(s: GameState): void {
   } else pushMessage(s, `The Academy catalogues ${set.pieces[n - 1]} of ${set.name} (${n} of 3).`, 'good');
 }
 
+/** Dev tools: a set entire at once. */
+export function grantRelicSet(s: GameState, id: string): void {
+  if (!s.relics) s.relics = initRelics();
+  if (!RELIC_SETS.some((r) => r.id === id) || s.relics.complete.includes(id)) return;
+  s.relics.pieces[id] = 3;
+  s.relics.complete.push(id);
+}
+
 /** Daily: every twelfth relic the delve brings up is a set piece; an Academy catalogues one piece a day. */
 export function dailyRelics(s: GameState): void {
   if (!s.relics) s.relics = initRelics();

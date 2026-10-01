@@ -750,6 +750,20 @@ counts as an observatory for `forecast`). Quest `k_relicbuild`.
 `RIVAL_OF` pairs the guilds; `guildDrivers` adds −0.4 while the rival is at or above 70;
 granting a petition takes 5 from the rival. Shown in the council block and the petition text.
 
+### 4.55 Dev tools
+
+A playtesting panel (backtick key, or Menu → Dev tools…) built from `DEV_COMMANDS` in
+`dev.ts`: pure commands on the state grouped as Purse (crowns, rare goods, next milestone,
+fill homes), Time (run a day, run to the next season, toggle instant build, finish every
+site, hire builders), Hazards (hound pack, restless, war-tiger, mana-storm and Gloam pocket
+at the camera centre; wild surge, fire, clear all Gloam, +20 unquieted), Wyrms (lay an egg of
+a line, grow every dragon a stage, dragons content, wake the wyrm, flyover), Guilds & relics
+(a guild ±25, petition now, complete a relic set) and Events & map (fire any event by name,
+charter the whole map, flatten here). The panel shows a live status line and copies a state
+summary. `runDev` counts every use in `stats.devUses`, writes one Chronicle line the first
+time, and the daily-challenge result is marked "(dev tools used)". The game pauses after
+each command so the effect can be inspected.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1385,3 +1399,5 @@ event when two rivals strike at once.
   but zone buildings raise themselves in a day so growth pacing is untouched (iteration 26).
 - *Rewards unlock places, not numbers:* relic sets open buildings and bloodlines open auras,
   so late-game depth is still something to put on the map (iteration 27).
+- *Dev tools are honest:* they live in the shipped build behind a key, every use is counted
+  and marks the daily result, so playtesting is cheap and scores stay meaningful.

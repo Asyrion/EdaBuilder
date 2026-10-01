@@ -40,6 +40,11 @@ h3 { font-size: 13px; color: var(--gold); }
 .guild .bar { display: inline-block; width: 120px; height: 6px; margin-left: 8px; background: #1a1430; border: 1px solid #3a3058; vertical-align: middle; }
 .guild .bar span { display: block; height: 100%; background: linear-gradient(90deg, #c04040, #e0c060 40%, #60c080); }
 .route { margin: 3px 0; }
+.devgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; margin: 4px 0 8px; }
+.devcmd { display: flex; gap: 4px; align-items: center; }
+.devcmd button { flex: 1; text-align: left; }
+.devcmd select { max-width: 150px; }
+.devstatus { font-size: 12px; }
 .bad { color: var(--bad); } .good { color: var(--good); } .warn { color: var(--warn); } .ley { color: var(--ley); } .gold { color: var(--gold); }
 
 #topbar { position: absolute; top: 0; left: 0; right: 0; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-radius: 0; border-top: none; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
