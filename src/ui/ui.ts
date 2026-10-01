@@ -19,6 +19,8 @@ import type { Camera } from '../render/camera';
 import type { Scenario } from '../sim/types';
 import { SCENARIOS } from '../sim/scenario';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
+import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
+import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
 import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
@@ -41,7 +43,7 @@ export interface UiHost {
   togglePause(): void;
   setTool(t: Tool): void;
   setOverlay(id: string | null): void;
-  newGame(seed: number, name: string, scenario: Scenario): void;
+  newGame(seed: number, name: string, scenario: Scenario | 'daily'): void;
   continueGame(): boolean;
   hasSave(): boolean;
   save(): void;
@@ -52,8 +54,8 @@ export interface UiHost {
   setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
-  settings: { colorBlind: boolean; uiScale: number };
-  setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void;
+  settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> };
+  setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void;
   selectedNode: number;
   deepenNode(i: number): void;
   foundDaughter(i: number, name: string): string | null;
@@ -81,6 +83,7 @@ const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolea
   { id: 'service', name: 'Services', filter: (d) => d.category === 'service' },
   { id: 'leisure', name: 'Leisure', filter: (d) => d.category === 'leisure' || d.category === 'wonder' },
   { id: 'districts', name: 'Districts', filter: () => false },
+  { id: 'land', name: 'Land', filter: () => false },
 ];
 
 
@@ -240,6 +243,12 @@ export class UI {
         add(name, 'free', locked, t.kind === 'zone' && t.zone === z, () => this.host.setTool({ kind: 'zone', zone: z }), () => `<div class="t">${def.name}</div>${def.desc}<br><span class="flavor">${def.flavor}</span>${locked ? `<br><span class="muted">Unlocks at ${MILESTONES[def.unlock].name}</span>` : ''}`);
       }
       add('De-zone', '', false, t.kind === 'zone' && t.zone === Zone.None, () => this.host.setTool({ kind: 'zone', zone: Zone.None }), () => `<div class="t">De-zone</div>Removes zoning (and any zoned building) from the area.`);
+    } else if (this.category === 'land') {
+      for (const op of Object.keys(TERRAFORM) as TerraformOp[]) {
+        const d = TERRAFORM[op];
+        const locked = s.milestone < d.unlock;
+        add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${MILESTONES[d.unlock].name}</span>` : ''}`);
+      }
     } else if (this.category === 'districts') {
       for (let d = 1; d <= MAX_DISTRICTS; d++) {
         const name = DISTRICT_NAMES[d - 1];
@@ -385,7 +394,7 @@ export class UI {
     const s = this.host.state;
     const el = this.el.tasks;
     // Re-evaluate at most every 20 ticks, or when a quest completes.
-    const key = `${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}:${this.showDone}`;
+    const key = `${s.seed}:${s.day}:${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}:${this.showDone}`;
     if (key === this.lastQuestKey) return;
     this.lastQuestKey = key;
     el.classList.remove('hidden');
@@ -877,7 +886,8 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
+            <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley for everyone, Market Town by day 60.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
@@ -940,7 +950,7 @@ export class UI {
       <div class="row"><label>Valley name</label><input type="text" id="t-name" value="${CITY_NAMES[Math.floor(Math.random() * CITY_NAMES.length)]}"><label>Seed</label><input type="number" id="t-seed" value="${Math.floor(Math.random() * 99999)}" style="width:100px"></div>
       <div class="names">${names}</div>
       <div class="scenarios">${SCENARIOS.map((sc, i) => `<button data-sc="${sc.id}" class="${i === 0 ? 'active' : ''}" title="${sc.goal}"><b>${sc.name}</b><span>${sc.blurb}</span><em>Goal: ${sc.goal}</em></button>`).join('')}</div>
-      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
+      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley for everyone today; Market Town by day 60">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
       <input type="file" id="t-file" accept=".json" class="hidden">
       <p class="muted" style="font-size:11px">Runs entirely in your browser. Autosaves every day to this browser. Press <b>H</b> in game for help.</p>
     </div>`;
@@ -952,6 +962,12 @@ export class UI {
       const name = (t.querySelector('#t-name') as HTMLInputElement).value.trim() || 'Thornwick';
       const seed = Number((t.querySelector('#t-seed') as HTMLInputElement).value) || 1;
       this.host.newGame(seed >>> 0, name, scenario);
+      t.classList.add('hidden');
+      this.toggleHelp(true);
+    };
+    (t.querySelector('#t-daily') as HTMLButtonElement).onclick = () => {
+      const name = (t.querySelector('#t-name') as HTMLInputElement).value.trim() || 'Thornwick';
+      this.host.newGame(0, name, 'daily');
       t.classList.add('hidden');
       this.toggleHelp(true);
     };
@@ -1029,6 +1045,7 @@ export class UI {
         <button id="m-music">Music: on</button>
         <button id="m-cb">Colour-blind overlay ramps: off</button>
         <button id="m-scale">UI scale: 100%</button>
+        <button id="m-keys">Key bindings…</button>
         <button id="m-title">Back to title (autosaves)</button>
         <button id="m-close">Close</button>
       </div>
@@ -1057,6 +1074,7 @@ export class UI {
     mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`;
     mu.onclick = () => { this.host.setMusic(!this.host.musicOn); mu.textContent = `Music: ${this.host.musicOn ? 'on' : 'off'}`; };
     const cb = m.querySelector('#m-cb') as HTMLButtonElement;
+    (m.querySelector('#m-keys') as HTMLButtonElement).onclick = () => this.showKeys();
     const sc = m.querySelector('#m-scale') as HTMLButtonElement;
     const syncA11y = () => {
       cb.textContent = `Colour-blind overlay ramps: ${this.host.settings.colorBlind ? 'on' : 'off'}`;
@@ -1150,6 +1168,38 @@ export class UI {
         (inp.nextElementSibling as HTMLOutputElement).textContent = `${st.taxRates[z]}%`;
       }
     });
+  }
+
+  /** Key bindings: click a row, press a key. */
+  private showKeys(): void {
+    const m = this.el.menu;
+    const keys = { ...this.host.settings.keys };
+    const render = (waiting: KeyAction | null) => {
+      m.innerHTML = `<div class="box panel" style="width:380px">
+        <h2>Key bindings</h2>
+        <p class="muted">Click an action, then press the key for it. Ctrl+Z undo, Shift+G grid and the view keys 1–0 are fixed.</p>
+        ${KEY_ACTIONS.map((a) => `<div class="keyrow ${waiting === a.id ? 'waiting' : ''}" data-k="${a.id}"><span>${a.name}</span><kbd>${waiting === a.id ? 'press a key…' : keyLabel(keys[a.id])}</kbd></div>`).join('')}
+        <div class="row"><button id="k-reset">Reset to defaults</button><button id="k-done">Done</button></div>
+      </div>`;
+      m.querySelectorAll('.keyrow').forEach((r) => ((r as HTMLElement).onclick = () => render((r as HTMLElement).dataset.k as KeyAction)));
+      (m.querySelector('#k-reset') as HTMLButtonElement).onclick = () => { for (const a of KEY_ACTIONS) keys[a.id] = DEFAULT_KEYS_LOCAL[a.id]; render(null); };
+      (m.querySelector('#k-done') as HTMLButtonElement).onclick = () => { this.host.setSetting('keys', keys); window.removeEventListener('keydown', onKey, true); this.buildMenu(); this.toggleMenu(false); };
+    };
+    let waitingFor: KeyAction | null = null;
+    const onKey = (e: KeyboardEvent) => {
+      const row = m.querySelector('.keyrow.waiting') as HTMLElement | null;
+      if (!row) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const k = e.key.toLowerCase();
+      const id = row.dataset.k as KeyAction;
+      for (const a of KEY_ACTIONS) if (keys[a.id] === k && a.id !== id) keys[a.id] = '';
+      keys[id] = k;
+      waitingFor = null;
+      render(waitingFor);
+    };
+    window.addEventListener('keydown', onKey, true);
+    render(null);
   }
 
   toggleWyrms(show?: boolean): void {

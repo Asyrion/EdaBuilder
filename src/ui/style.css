@@ -133,6 +133,10 @@ h3 { font-size: 13px; color: var(--gold); }
 #tasks { position: relative; width: 268px; padding: 8px 10px; font-size: 12px; flex: 0 1 auto; min-height: 0; overflow: auto; }
 #tasks h3 { display: flex; align-items: center; gap: 6px; }
 #tasks h3 .prog { font-weight: normal; font-size: 11px; }
+#menu .keyrow { display: flex; justify-content: space-between; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; font-size: 12px; }
+#menu .keyrow:hover { background: rgba(255,255,255,0.04); }
+#menu .keyrow.waiting kbd { color: var(--gold); }
+#menu .keyrow kbd { font-family: inherit; color: var(--ley); }
 #tasks h3 .min { padding: 0 6px; line-height: 1.2; }
 #tasks h3 .done { margin-left: auto; padding: 0 6px; font-size: 10px; line-height: 1.4; }
 #tasks .q.done .h { color: var(--good); }

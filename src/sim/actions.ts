@@ -1,7 +1,7 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
+import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 
 export interface ActionResult {
   ok: boolean;
@@ -203,6 +203,7 @@ export function paintDistrict(state: GameState, district: number, x0: number, y0
 
 /** Snapshot of everything a player action can change, for undo. Agents and time are left alone. */
 export interface Snapshot {
+  terrain?: Uint8Array;
   road: Uint8Array;
   zone: Uint8Array;
   district: Uint8Array;
@@ -216,6 +217,7 @@ export interface Snapshot {
 
 export function takeSnapshot(state: GameState, label: string): Snapshot {
   return {
+    terrain: state.terrain.slice(),
     road: state.road.slice(),
     zone: state.zone.slice(),
     district: state.district.slice(),
@@ -229,6 +231,7 @@ export function takeSnapshot(state: GameState, label: string): Snapshot {
 }
 
 export function restoreSnapshot(state: GameState, snap: Snapshot): void {
+  if (snap.terrain) { state.terrain.set(snap.terrain); markAllDirty(state); }
   state.road.set(snap.road);
   state.zone.set(snap.zone);
   state.district.set(snap.district);
@@ -243,6 +246,33 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
     if (a.homeId >= 0 && !ids.has(a.homeId)) a.homeId = -1;
     if (a.targetId >= 0 && !ids.has(a.targetId)) { a.targetId = -1; a.path = []; a.pathIdx = 0; }
   }
+}
+
+export type TerraformOp = 'clear' | 'plant' | 'level';
+export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string }> = {
+  clear: { name: 'Clear forest', cost: 40, unlock: 0, desc: 'Fell a forest tile to grass. Woodcutters are cheap; glimwood is not replanted by itself.' },
+  plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little, hide war-tigers, and shade the Gloam\'s approach not at all.' },
+  level: { name: 'Level hills', cost: 220, unlock: 4, desc: 'Grimmen crews cut a hills tile down to grass. Slow, loud, and the only way to build a 2x2 where the rock was.' },
+};
+
+/** Terraforming: one tile at a time. */
+export function terraform(state: GameState, op: TerraformOp, x: number, y: number): ActionResult {
+  if (!inBounds(x, y)) return { ok: false };
+  const i = idx(x, y);
+  const def = TERRAFORM[op];
+  if (state.milestone < def.unlock) return { ok: false, reason: 'Not yet unlocked' };
+  if (state.bIndex[i] >= 0 || state.road[i] || state.wall[i]) return { ok: false, reason: 'Something stands here' };
+  if (state.gloam[i]) return { ok: false, reason: 'The Gloam holds this ground' };
+  const t = state.terrain[i];
+  if (op === 'clear' && t !== Terrain.Forest) return { ok: false, reason: 'No forest here' };
+  if (op === 'plant' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be planted' };
+  if (op === 'level' && t !== Terrain.Hills) return { ok: false, reason: 'No hills here' };
+  if (state.treasury < def.cost) return { ok: false, reason: 'Not enough crowns' };
+  state.treasury -= def.cost;
+  state.terrain[i] = op === 'plant' ? Terrain.Forest : Terrain.Grass;
+  state.stats.terraformed++;
+  markDirtyAround(state, x, y);
+  return { ok: true, cost: def.cost };
 }
 
 /** Warding Wall: a line of leystone-inlaid stone the Gloam cannot cross and hounds cannot pass. */

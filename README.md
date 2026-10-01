@@ -126,7 +126,9 @@ node; forty restless dead walk the streets.
 | `Space`, `,` `.` , `Shift`+`1 2 3` | pause, slower/faster, set speed |
 | `1`–`0` `-` `=` `g` `m` `o` `i` | info views · `Tab` view list |
 | `H` | help · `C` Chronicle · `Shift`+`G` grid · `F5` / `F9` quick save / load |
-| `Ctrl`+`Z` | undo the last road, zone, district, building or bulldoze |
+| `Ctrl`+`Z` | undo the last road, zone, district, building, bulldoze or land change |
+
+Every key above except `Ctrl`+`Z`, `Shift`+`G` and the view keys can be rebound in Menu → Key bindings.
 
 Saves go to `localStorage` automatically every day; the Menu can export/import a
 Charter as `.json`.
@@ -163,6 +165,8 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
+  date, and remappable keys in the Menu.
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
 - Touch: one finger for tools, two fingers to pan, pinch to zoom.
