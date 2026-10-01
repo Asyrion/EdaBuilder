@@ -1,6 +1,7 @@
 /** Mouse/keyboard input → tool state → sim actions. */
 import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
+import { inCharter, sectorOf } from '../sim/sectors';
 import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
@@ -31,6 +32,7 @@ export interface ToolHost {
   beforeAction: (label: string) => void; // undo snapshot hook
   onSelect: (b: Building | null) => void;
   onSelectNode?: (index: number) => void;
+  onSelectSector?: (index: number) => void;
   onKey: (key: string, ev: KeyboardEvent) => boolean;
   refreshUI: () => void;
 }
@@ -168,6 +170,7 @@ export class Tools {
         const b = buildingAt(this.host.state, t[0], t[1]);
         this.host.onSelect(b);
         this.host.onSelectNode?.(this.host.state.nodes.findIndex((n) => n.x === t[0] && n.y === t[1]));
+        this.host.onSelectSector?.(inBounds(t[0], t[1]) && !inCharter(this.host.state, t[0], t[1]) ? sectorOf(t[0], t[1]) : -1);
         this.host.onAction('click');
         break;
       }

@@ -3,6 +3,7 @@
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
  * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
  */
+import { buySector, canBuySector, sectorCost } from './sectors';
 import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath } from './actions';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
@@ -46,6 +47,13 @@ export class Bot {
     if (free < 12 && wantMore && s.day - this.lastExpand >= 4 && s.treasury > 800 && this.radius < 40) {
       this.radius += 5;
       this.lastExpand = s.day;
+    }
+    // extend the Charter when the purse allows and the grid is pressing on its edge
+    if (s.milestone >= 1 && s.treasury > 9000 && s.day % 5 === 0) {
+      let best = -1;
+      let bc = Infinity;
+      for (let k = 0; k < s.sectors.length; k++) if (!s.sectors[k] && canBuySector(s, k) === null && sectorCost(s, k) < bc) { bc = sectorCost(s, k); best = k; }
+      if (best >= 0 && bc < s.treasury * 0.5) buySector(s, best);
     }
   }
 

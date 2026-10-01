@@ -1,6 +1,7 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
 import { treeStage } from '../sim/growth';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
+import { inCharter } from '../sim/sectors';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay } from '../sim/world';
@@ -176,6 +177,16 @@ export class Renderer {
         if (isWater(t) && !state.gloam[i]) hasWater = true;
         let s = this.terrainSprite(state, i, x, y, waterFrame);
         if (s) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
+        if (!inCharter(state, x, y)) {
+          // beyond the Charter: dimmed, with a surveyor's hatch
+          ctx.fillStyle = (x + y) % 4 === 0 ? 'rgba(10,8,16,0.55)' : 'rgba(10,8,16,0.42)';
+          ctx.beginPath();
+          ctx.moveTo(dx, dy);
+          ctx.lineTo(dx + 16, dy + 8);
+          ctx.lineTo(dx, dy + 16);
+          ctx.lineTo(dx - 16, dy + 8);
+          ctx.fill();
+        }
         const r = state.road[i];
         if (r) {
           const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : r === RoadType.Glowvine ? 'glowvine' : 'lantern';

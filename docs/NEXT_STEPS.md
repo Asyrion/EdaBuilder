@@ -152,6 +152,12 @@
 - Positional sound cues (howl, roar, growl, horn, bell, song, storm, stomp, rain) panned
   and attenuated by the camera, and in-view emitters for mills, storms, golems and skyrays.
 
+## Done in iteration 22 (map sectors)
+
+- The Charter line: sixteen map sectors, four to six chartered at the start, the rest
+  dimmed and for sale from Hamlet when they touch the Charter; the Gloam inside a bought
+  sector draws back. Purchase panel, minimap dimming, a quest, bot support.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -205,8 +211,6 @@ cameo events.
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
    and citizen sprites most.
-7. **Map sectors.** Buy map sectors like CS1's tile purchase, with the Gloam retreating
-   as sectors are chartered (terraforming itself is done).
 8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
    ramps, scale and keys are done).
 9. **Mobile polish.** The layout fits a phone; a long-press for right-click panning and

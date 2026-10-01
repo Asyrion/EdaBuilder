@@ -629,6 +629,22 @@ Call Rain (rain). Each voice is a few oscillators and filtered noise through a
 the water bed, a mana-storm in view crackles, walking golems in view thud at one-second
 intervals, and skyrays in view sing every twelve seconds, panned at random.
 
+### 4.43 Map sectors: the Charter line (iteration 22)
+
+The 128×128 map is sixteen **sectors** of 32×32 tiles (`state.sectors`). A new game
+charters the founding sector and every sector whose edge lies within 18 tiles of the
+founding node (usually four, sometimes six); the daughter charter also charters its
+stake's sector. Beyond the Charter nothing can be built, zoned, paved, walled, gated or
+terraformed: the ground is drawn dimmed with a surveyor's hatch, the minimap dims it too,
+and clicking it with the select tool opens a panel with the sector's name, its price, the
+Gloam inside and *Extend the Charter*. From Hamlet a sector that touches the Charter can be
+bought: price 2,500 × (1 + 0.6 × sector distance from the founding sector) × (1 + 0.2 ×
+sectors already bought). On purchase the Crown's surveyors ward the ground: every Gloam
+tile inside the sector that is not on the map's four-tile rim is cleared (counted in
+`gloamBurned`), so the Gloam retreats as the Charter grows, the CS1 tile-purchase feel
+with the setting's own reason. Saves from before sectors own the whole map; the bot buys
+the cheapest touching sector when it holds more than twice the price. One quest.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -1083,3 +1099,6 @@ consistent with `EDA_LORE.md` §9.
   valley, so the challenge works offline and in any time zone that agrees on UTC.
 - *Sound cues ride the effect channel:* the sim stays silent and deterministic; it names a
   place and a kind, and the presentation layer decides pan, volume and voice.
+- *Sectors are a gate on actions, not a second map:* one 16-byte array and one
+  `inCharter` check in each action keep the whole sim unaware of the Charter line; only
+  the ground tint and the purchase panel know it exists.

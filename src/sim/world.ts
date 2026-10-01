@@ -1,5 +1,6 @@
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
+import { initialSectors, inCharter } from './sectors';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -101,6 +102,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     scenario,
     daughter: null,
     challenge: null,
+    sectors: initialSectors(t.founding),
     challengeDay: -1,
     cleanDays: 0,
     storms: [],
@@ -114,7 +116,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, sectorsBought: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -224,6 +226,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (def.onHills === false) { /* no-op */ }
       if (state.bIndex[i] >= 0) return 'Something is already built here';
       if (state.gloam[i]) return 'The Gloam holds this ground';
+      if (!inCharter(state, tx, ty)) return 'Beyond the Charter: buy this sector first';
     }
   if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
   if (def.maxCount && state.buildings.filter((b) => b && b.kind === key).length >= def.maxCount) return `Only ${def.maxCount} may stand`;

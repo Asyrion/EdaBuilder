@@ -18,6 +18,7 @@ import type { Tool } from './tools';
 import type { Camera } from '../render/camera';
 import type { Scenario } from '../sim/types';
 import { SCENARIOS } from '../sim/scenario';
+import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
@@ -57,6 +58,8 @@ export interface UiHost {
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> };
   setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void;
   selectedNode: number;
+  selectedSector: number;
+  buySector(k: number): string | null;
   deepenNode(i: number): void;
   foundDaughter(i: number, name: string): string | null;
   canDeepenNode(i: number): string | null;
@@ -604,6 +607,10 @@ export class UI {
         this.refreshNodeInfo(this.host.selectedNode);
         return;
       }
+      if (this.host.selectedSector >= 0) {
+        this.refreshSectorInfo(this.host.selectedSector);
+        return;
+      }
       el.classList.add('hidden');
       return;
     }
@@ -698,6 +705,30 @@ export class UI {
   }
 
   private nodeShown = -1;
+
+  private sectorShown = -1;
+  private refreshSectorInfo(k: number): void {
+    const s = this.host.state;
+    const el = this.el.info;
+    if (this.sectorShown === k && !el.classList.contains('hidden') && s.tick % 30 !== 0) return;
+    this.sectorShown = k;
+    this.nodeShown = -1;
+    el.classList.remove('hidden');
+    const why = canBuySector(s, k);
+    const cost = sectorCost(s, k);
+    let gloam = 0;
+    const x0 = (k % SECTORS_X) * SECTOR;
+    const y0 = Math.floor(k / SECTORS_X) * SECTOR;
+    for (let y = y0; y < y0 + SECTOR; y++) for (let x = x0; x < x0 + SECTOR; x++) if (s.gloam[idx(x, y)]) gloam++;
+    el.innerHTML = `<button class="close">✕</button><h2>Beyond the Charter</h2><div class="muted">${sectorName(k)[0].toUpperCase() + sectorName(k).slice(1)} · ${SECTOR}×${SECTOR} tiles</div>
+      ${row('Price', `${cost} crowns`)}${row('Gloam inside', `${gloam} tiles${gloam ? ' (drawn back on purchase)' : ''}`)}${row('Chartered', `${charteredCount(s)} of ${s.sectors.length} sectors`)}
+      <p class="muted">Nothing can be built, zoned or paved beyond the Charter. Buying a sector that touches it extends the Charter; the Crown's surveyors ward the ground and the Gloam inside draws back to the map's rim. Prices rise with distance and with every sector bought.</p>
+      <button id="sec-buy" ${why ? 'disabled' : ''}>Extend the Charter (${cost} crowns)</button>
+      ${why ? `<div class="muted" style="margin-top:4px">${why}</div>` : ''}
+      <p class="flavor">The old maps end at the Charter line. Past it the cartographers wrote "here the lantern does not reach".</p>`;
+    el.querySelector('.close')!.addEventListener('click', () => { (this.host as { selectedSector: number }).selectedSector = -1; el.classList.add('hidden'); });
+    (el.querySelector('#sec-buy') as HTMLButtonElement).onclick = () => { const w = this.host.buySector(k); if (w) this.toast(`<p class="bad">${w}</p>`, 2500); else { this.toast(`<h2>The Charter grows</h2><p>${sectorName(k)[0].toUpperCase() + sectorName(k).slice(1)} is yours to build.</p>`, 5000); el.classList.add('hidden'); } };
+  }
 
   private refreshNodeInfo(i: number): void {
     const s = this.host.state;
@@ -809,6 +840,7 @@ export class UI {
         for (let x = 0; x < s.w; x++) {
           const i = y * s.w + x;
           let col = s.gloam[i] ? PAL.gloam1 : terrainCol(s.terrain[i]);
+          const dim = !inCharter(s, x, y);
           if (s.road[i]) col = s.road[i] === 3 ? PAL.lanternLight : s.road[i] === 4 ? PAL.glimleaf : PAL.dirt2;
           if (s.wall[i]) col = PAL.stone3;
           const bi = s.bIndex[i];
@@ -819,7 +851,7 @@ export class UI {
               col = b.state === 'burning' ? PAL.fire1 : b.state === 'ruin' ? PAL.stone1 : def.zone === Zone.Hearth ? PAL.zoneHearth : def.zone === Zone.Market ? PAL.zoneMarket : def.zone === Zone.Craft ? PAL.zoneCraft : def.zone === Zone.Arcane ? PAL.zoneArcane : def.category === 'ley' ? PAL.ley2 : PAL.whitewash;
             }
           }
-          put(x, y, col);
+          put(x, y, col, dim ? 110 : 255);
         }
       const wn = s.wyrm.node >= 0 ? s.nodes[s.wyrm.node] : null;
       if (wn && s.wyrm.state !== 'none') put(wn.x, wn.y, s.wyrm.state === 'awake' ? PAL.fire1 : PAL.leyGlow);
@@ -904,6 +936,7 @@ export class UI {
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
+            <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley for everyone, Market Town by day 60.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
