@@ -1,5 +1,6 @@
 import { initGuilds } from './guilds';
 import { initRelics } from './relics';
+import { FACTIONS, factionOf, type FactionId } from '../data/factions';
 import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
@@ -29,7 +30,7 @@ import {
 
 export const CITY_NAMES = ['Thornwick', 'Ashmere', 'Glimford', 'Hollowmoor', 'Candlecross', 'Wickholm', 'Sablemere', 'Morrowford'];
 
-export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley'): GameState {
+export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley', faction: FactionId = 'vellish'): GameState {
   const t = generateTerrain(seed, scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : {});
   const n = MAP_W * MAP_H;
   const coverage = {} as Record<ServiceType, Uint8Array>;
@@ -66,7 +67,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     nextBuildingId: 1,
     agents: [],
     nextAgentId: 1,
-    treasury: START_TREASURY,
+    treasury: START_TREASURY + (FACTIONS[faction]?.rules.startCrowns ?? 0),
     taxRates: { hearth: 10, market: 10, craft: 10, arcane: 10 },
     ledger: emptyLedger(),
     ledgerHistory: [],
@@ -104,6 +105,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
     fenNex: 0,
     scenario,
+    faction,
     daughter: null,
     challenge: null,
     sectors: initialSectors(t.founding),
@@ -232,7 +234,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
         if (state.terrain[i] !== Terrain.Hills) return 'Must be dug into hills';
       } else if (def.onRuins) {
         if (state.terrain[i] !== Terrain.Ruins) return 'Must stand on the ruin flagstones';
-      } else if (!isBuildableTerrain(state.terrain[i])) return 'Cannot build on this terrain';
+      } else if (!isBuildableTerrain(state.terrain[i]) && !(state.terrain[i] === Terrain.Hills && factionOf(state).rules.hillBuildable)) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
       if (state.wall[i]) return 'The Warding Wall is in the way';
       if (def.onHills === false) { /* no-op */ }

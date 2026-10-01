@@ -1,3 +1,4 @@
+import type { FactionId } from './data/factions';
 import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
@@ -96,7 +97,7 @@ class Game {
       togglePause: () => { this.paused = !this.paused; this.ui.refresh(); },
       setTool: (t) => this.tools.setTool(t),
       setOverlay: (id) => { this.view.overlay = id as ViewState['overlay']; this.ui.refreshViews(); },
-      newGame: (seed, name, scenario) => this.newGame(seed, name, scenario),
+      newGame: (seed, name, scenario, faction) => this.newGame(seed, name, scenario, faction),
       continueGame: () => this.load(),
       hasSave: () => !!localStorage.getItem(SAVE_KEY),
       save: () => this.save(),
@@ -182,8 +183,8 @@ class Game {
     this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
-  newGame(seed: number, name: string, scenario: Scenario | 'daily' = 'valley'): void {
-    this.bindState(scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name) : createScenario(seed, name, scenario));
+  newGame(seed: number, name: string, scenario: Scenario | 'daily' = 'valley', faction: FactionId = 'vellish'): void {
+    this.bindState(scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name, 'valley', faction) : createScenario(seed, name, scenario, faction));
     this.audio.milestone();
   }
 

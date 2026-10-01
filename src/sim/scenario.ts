@@ -1,4 +1,5 @@
 /** Scenario charters: pre-built maps with a goal and a twist, chosen on the title screen. See DESIGN.md 4.38. */
+import type { FactionId } from '../data/factions';
 import { Bot } from './bot';
 import { createGame, pushMessage } from './world';
 import { run, recomputeAll } from './sim';
@@ -25,8 +26,8 @@ export function scenarioDef(id: Scenario): ScenarioDef {
 }
 
 /** Create a game for a scenario. The seed and name work as for the open valley. */
-export function createScenario(seed: number, name: string, id: Scenario): GameState {
-  const s = createGame(seed, name, id);
+export function createScenario(seed: number, name: string, id: Scenario, faction: FactionId = 'vellish'): GameState {
+  const s = createGame(seed, name, id, faction);
   if (id === 'inherited') inherit(s);
   if (id === 'island') pushMessage(s, 'The sea of grey is forty tiles off in every direction and closer every week. Ward Lanterns, the Watch and a Hunters\' Lodge before anything else.', 'warn', true);
   if (id === 'onenode') pushMessage(s, 'One Vein, running deep: twice the flow of a common node, and no other. Every spire you raise drinks from it.', 'warn', true);

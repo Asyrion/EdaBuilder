@@ -249,6 +249,12 @@
   pilgrim paints faith on the road between the houses of the Vigils. Three quests, three prop
   sprites. M10 complete.
 
+## Done in iteration 34
+
+- The faction scaffold: `FACTIONS` with the Vellish default and a Grimmen stub, a rules
+  block read at one point per rule (hills, ward, mana, crowns, milestones, unlocks), the
+  title-screen peoples row and the topbar name; seed 42 bit-identical to main.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -299,10 +305,10 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M11 Peoples, scaffold** (DESIGN §14.2): a `FactionDef` table with the Vellish default
-   and no rule change, `GameState.faction`, the title-screen picker beside the scenario, the
-   catalog's `faction`/`replaces` fields, and the `rules` block the Grimmen will need
-   (iteration 34). Then the Grimmen of the Underhill (35–37).
+0. **M11 Peoples, the Grimmen of the Underhill** (DESIGN §14.2): iteration 35 the stone
+   rules, zone sprites in stone, the Seep, the Stone Ward and the Hatchery with the depth
+   milestones and the quarry gate; 36 the Forge-Temple, the Underking's Seat, the quest
+   chapter and three events; 37 the stone-sexton walker, the bot playing them and balance.
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.

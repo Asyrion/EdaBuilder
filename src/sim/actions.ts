@@ -1,5 +1,6 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { RELIC_SETS } from './relics';
+import { buildsFor, canBuild, factionOf } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
@@ -110,7 +111,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+      if (isWater(t) || (t === Terrain.Hills && !factionOf(state).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
       if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];
@@ -132,7 +133,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
 export function placeBuilding(state: GameState, key: string, x: number, y: number): ActionResult {
   const def = BUILDING_BY_KEY[key];
   if (!def) return { ok: false, reason: 'Unknown building' };
-  if (!isBuildingUnlocked(state.milestone, key, state.relics?.complete)) return { ok: false, reason: def.relic && !state.relics?.complete.includes(def.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === def.relic)?.name} entire` : 'Not yet unlocked' };
+  if (!canBuild(state, key)) return { ok: false, reason: def.relic && !state.relics?.complete.includes(def.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === def.relic)?.name} entire` : !buildsFor(factionOf(state), def) ? `The ${factionOf(state).people} do not build this` : 'Not yet unlocked' };
   if (def.wonder && state.buildings.some((b) => b && b.kind === key)) return { ok: false, reason: 'Only one may be raised' };
   const why = canPlaceBuilding(state, key, x, y);
   if (why) return { ok: false, reason: why };

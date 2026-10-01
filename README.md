@@ -180,6 +180,8 @@ Charter as `.json`.
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
+- Peoples: the city belongs to a people chosen on the title screen; the Vellish are the
+  default and the Grimmen of the Underhill are coming (DESIGN §14.2).
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers and pilgrims walk
   the roads from their buildings and do their jobs where they go; the streets they walk
   count as covered.

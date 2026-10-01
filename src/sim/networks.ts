@@ -1,10 +1,11 @@
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './catalog';
-import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
+import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
+import { factionOf } from '../data/factions';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
@@ -38,12 +39,12 @@ export function updateMana(state: GameState): void {
   const oldLit = state.lit;
 
   // 1. supply
-  let supply = state.nodes.length * NODE_MANA + nodeMana(state);
+  let supply = (state.nodes.length * NODE_MANA + nodeMana(state)) * factionOf(state).rules.nodeMana;
   let storageMax = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
-    if (def.manaProduce) supply += def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) : 1);
+    if (def.manaProduce) supply += def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1);
     if (def.manaStorage && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
   });
 
