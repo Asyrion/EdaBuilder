@@ -172,11 +172,9 @@ Charter as `.json`.
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
   date with a copyable result, and remappable keys in the Menu.
-- A phone layout: bottom-sheet toolbar, compact top bar, touch gestures; aria labels and
-  roles on the panels.
+- Aria labels and roles on the panels. Desktop browsers only (mouse and keyboard).
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
-- Touch: one finger for tools, two fingers to pan, pinch to zoom.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
   the inherited collapse, each with a goal; a Done page in the Ledger; per-district
   problem counts in the Districts view.

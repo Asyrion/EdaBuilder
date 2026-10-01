@@ -15,7 +15,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0912; color: var(--text); }
-canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; touch-action: none; }
+canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
 #ui { position: fixed; inset: 0; pointer-events: none; font-size: 13px; zoom: var(--ui-scale); }
 #ui > * { pointer-events: auto; }
 .panel { background: linear-gradient(180deg, rgba(38,28,48,0.94), rgba(22,16,30,0.94)); border: 1px solid #6a5478; box-shadow: 0 0 0 1px #0b0912, inset 0 0 0 1px rgba(233,194,91,0.12), 0 4px 18px rgba(0,0,0,0.55), 0 0 24px rgba(79,227,255,0.06); border-radius: 3px; position: relative; }
@@ -185,37 +185,3 @@ h3 { font-size: 13px; color: var(--gold); }
 #wyrms .dragon { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
 #wyrms .drow { margin-top: 3px; }
 #wyrms select { font: inherit; background: #0b0912; color: var(--text); border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; }
-
-/* ---- narrow screens (phones, small tablets): the toolbar becomes a bottom sheet ---- */
-@media (max-width: 900px) {
-  #ui { font-size: 12px; }
-  #topbar { height: 36px; gap: 6px; padding: 0 6px; overflow-x: auto; overflow-y: hidden; }
-  #topbar .stat { min-width: 44px; }
-  #topbar .city { min-width: 90px; }
-  #topbar .stat .v { font-size: 12px; }
-  #topbar .stat .l { font-size: 8px; letter-spacing: 0; }
-  #topbar .stat:nth-child(n+7), #topbar .speed { display: none; }
-  #topbar > button { padding: 2px 5px; font-size: 11px; }
-  #left { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 44vh; flex-direction: column-reverse; gap: 4px; }
-  #toolbar { width: 100%; padding: 4px 6px; border-radius: 3px 3px 0 0; }
-  #toolbar .tabs { gap: 2px; margin-bottom: 4px; overflow-x: auto; flex-wrap: nowrap; }
-  #toolbar .tabs button { padding: 2px 5px; font-size: 11px; white-space: nowrap; }
-  #toolbar .items { grid-template-columns: 1fr 1fr 1fr; gap: 3px; max-height: 20vh; overflow-y: auto; }
-  #toolbar .items button { padding: 3px 4px; font-size: 11px; }
-  #toolbar .hint { display: none; }
-  #toolbar .quick { margin-top: 4px; }
-  #tasks { width: 100%; max-height: 18vh; font-size: 11px; }
-  #demand { display: none; }
-  #perf { display: none; }
-  #minimap { right: 8px; bottom: auto; top: 44px; padding: 2px; }
-  #minimap canvas { width: 132px; height: 66px; }
-  #minimap .min { display: none; }
-  #log { right: 8px; top: 118px; bottom: auto; width: 46vw; max-height: 64px; font-size: 10px; padding: 3px 6px; }
-  #views { top: 44px; left: 8px; right: auto; width: 150px; max-height: 44vh; }
-  #views button { font-size: 11px; padding: 2px 4px; }
-  #info { left: 8px; top: 44px; width: calc(100vw - 16px); max-height: 46vh; overflow: auto; padding: 8px; }
-  .modal .box { width: 96vw; max-height: 92vh; padding: 10px 12px; }
-  #title .scenarios { grid-template-columns: 1fr; }
-  #title .names { display: none; }
-  #toast { max-width: 92vw; top: 42px; padding: 8px 12px; }
-}

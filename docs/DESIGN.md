@@ -569,7 +569,7 @@ A **Done** button on the Ledger lists every completed quest by chapter.
 district's zoned-building problems: unlit, dry and empty-shelved counts, in red, only
 when there are any.
 
-### 4.39 The daughter charter and touch controls (iteration 18)
+### 4.39 The daughter charter (iteration 18)
 
 **The daughter charter** is the endgame. At Beacon of Eda the panel of any ley node that
 is not the founding node, not the wyrm's, and at least 30 tiles from the Stake offers
@@ -581,33 +581,12 @@ ladder; the daughter's population is the folk living within 30 tiles of its stak
 folk the **Twin Beacons** fire once: 10,000 crowns and a Chronicle milestone. Two Ledger
 quests carry it. `state.daughter` holds node, stake position, name, day and the twin day.
 
-**Touch controls.** One finger uses the current tool exactly like the left mouse button
-(synthesised mouse events); two fingers pan by their midpoint and pinch-zoom one step per
-30 % change in spread; the canvas has `touch-action: none`.
+**Platform.** Wardlight is a desktop browser game: mouse and keyboard only, by decision
+(see the decision log). Touch gestures and a phone layout were tried in iterations 18 and
+20 and removed again; they doubled the UI surface to test for every change.
 
-### 4.40 Land, the daily challenge and key bindings (iteration 19)
+### 4.41 Challenge results and accessibility (iteration 20)
 
-- **Land tab** (terraforming): *Clear forest* (40 crowns, forest to grass), *Plant glimwood*
-  (60, Thorp, grass or meadow to forest) and *Level hills* (220, Township, hills to grass),
-  one tile at a time, drag to paint, never under a building, road, wall or Gloam. Terrain
-  is part of the undo snapshot. `stats.terraformed` counts tiles.
-- **Today's challenge** (title screen): the open valley on a seed hashed from the UTC date
-  (FNV-1a of `YYYY-MM-DD`), so every player gets the same map on the same day;
-  `state.challenge` holds the date and a priority-0 quest asks for Market Town by day 60.
-- **Key bindings** (Menu → Key bindings): thirteen actions (pause, speeds, the four tool
-  keys, views, help, Chronicle, quick save and load, cancel) stored in settings and read by
-  both the game and the tool layer through `keyFor`; click a row and press a key; a key
-  taken from another action unbinds it; reset to defaults. Ctrl+Z, Shift+G and the view
-  number keys stay fixed.
-
-### 4.41 Phone layout, challenge results, accessibility (iteration 20)
-
-- **Narrow screens** (900 px and under, one media query): the toolbar and the Ledger
-  become a bottom sheet (the Ledger starts collapsed), the toolbar items scroll in three
-  columns, the top bar keeps the city, day, crowns and folk and scrolls sideways for its
-  buttons, the minimap and ticker sit top-right at half size, the demand bars and perf
-  line hide, info panels and modals stretch to the width. Touch gestures from §4.39 do
-  the rest.
 - **Challenge results**: `challengeDay` records the day the daily goal is met; the Ledger
   shows a progress line while the challenge runs and a result line with *Copy result*
   afterwards (a one-line share text with the site link, via the clipboard).
@@ -1102,3 +1081,5 @@ consistent with `EDA_LORE.md` §9.
 - *Sectors are a gate on actions, not a second map:* one 16-byte array and one
   `inCharter` check in each action keep the whole sim unaware of the Charter line; only
   the ground tint and the purchase panel know it exists.
+- *Desktop only:* the phone layout and touch gestures were removed. Every panel, tool and
+  test now targets one surface, which keeps each feature cheap to add and to verify.

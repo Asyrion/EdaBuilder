@@ -194,7 +194,6 @@ export class UI {
     this.el.log.querySelector('.lines')!.setAttribute('aria-live', 'polite');
     this.root.querySelectorAll('.modal').forEach((m) => { m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); });
     this.el.minimap.setAttribute('aria-label', 'Minimap: click to move the view');
-    if (window.matchMedia('(max-width: 900px)').matches) this.tasksCollapsed = true;
     this.buildTabs();
     this.buildViews();
     this.buildHelp();
