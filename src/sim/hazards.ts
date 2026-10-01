@@ -6,6 +6,7 @@ import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
+import { guildEffect } from './guilds';
 import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
@@ -311,7 +312,7 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1);
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons'));
   });
   quietCap += wyrmBoneQuiet(state);
   if (fontOfQuieting(state)) quietCap *= 1.5;

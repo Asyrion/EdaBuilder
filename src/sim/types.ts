@@ -1,3 +1,4 @@
+import type { GuildState } from './guilds';
 /** Plain-data simulation types. Nothing here touches the DOM. */
 
 export const MAP_W = 128;
@@ -209,10 +210,11 @@ export interface DayLedger {
 }
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price';
   value: number;
   until: number; // day
   label: string;
+  district?: number; // only buildings in this district feel it (0 = undistricted)
 }
 
 export interface PendingEvent {
@@ -297,6 +299,7 @@ export interface GameState {
   materials: Materials;
   wyrm: WyrmState;
   fenNex: number; // district granted to the Fen-Nex, 0 none
+  guilds: GuildState; // the council at the Guildhall (guilds.ts)
   scenario: Scenario;
   gloamPressure: number; // 0..1, recomputed daily (see weave.ts)
   lastBadDay: number; // storyteller: day of the last ill tiding
@@ -359,6 +362,10 @@ export interface GameState {
     wyrmFlyovers: number;
     gloamTiles: number;
     peakPopulation: number;
+    councils: number; // petitions heard
+    twinGoods: number; // goods carried on the Twin Road
+    feastGoods: number; // goods eaten at the last Thaw feast
+    lastFeastDay: number;
   };
   // transient (rebuilt after load)
   dirtyChunks?: Set<number>;

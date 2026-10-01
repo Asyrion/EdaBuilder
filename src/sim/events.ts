@@ -1,6 +1,7 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Terrain, Zone, type DragonLine, type GameState } from './types';
+import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
+import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, addEgg } from './wyrmcraft';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
@@ -173,6 +174,27 @@ function findSpot(s: GameState, key: string): [number, number] | null {
   return null;
 }
 
+function hasOssuary(s: GameState): boolean {
+  return s.buildings.some((b) => b && b.kind === 'ossuary' && b.state === 'ok');
+}
+
+/** The Thaw feast eats from market shelves; every district that fed it is remembered. */
+export function holdFeast(s: GameState, want: number): { goods: number; districts: number[] } {
+  let goods = 0;
+  const districts = new Set<number>();
+  const markets = s.buildings.filter((b): b is Building => !!b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok' && b.stock > 4).sort((a, b) => b.stock - a.stock);
+  for (const m of markets) {
+    if (goods >= want) break;
+    const t = Math.min(m.stock - 4, want - goods);
+    m.stock -= t;
+    goods += t;
+    districts.add(s.district[idx(m.x, m.y)]);
+  }
+  s.stats.feastGoods = Math.round(goods);
+  s.stats.lastFeastDay = s.day;
+  return { goods, districts: [...districts] };
+}
+
 /** Calendar events fire on fixed days of the season, at most once per year each. */
 const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
   {
@@ -180,7 +202,7 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'The ice has cracked on the river. By old Vellish custom the Warden-Reeve opens the Thaw with a feast on the square, or with a day of labour on the wards.',
     when: (s) => s.population > 40,
     choices: [
-      { label: 'A feast (600 crowns)', desc: 'Happiness +6 for 15 days.', apply: (s) => { s.treasury -= 600; s.modifiers.push({ kind: 'happiness', value: 6, until: s.day + 15, label: 'Thaw feast' }); return 'Bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.'; } },
+      { label: 'A feast (300 crowns and 40 goods)', desc: 'Markets give up to 40 goods from their shelves. Happiness +3 for 15 days everywhere, and +5 more in every district whose markets fed the feast. Under 10 goods it is a thin feast: +2 for 8 days.', apply: (s) => { s.treasury -= 300; const fed = holdFeast(s, 40); if (fed.goods < 10) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 8, label: 'A thin feast' }); return `The shelves were bare: ${Math.round(fed.goods)} goods make a thin feast of bread and water. The choir sings anyway.`; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 15, label: 'Thaw feast' }); for (const d of fed.districts) s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 15, label: `Thaw feast (${d ? DISTRICT_NAMES[d - 1] : 'the old town'})`, district: d }); return `${Math.round(fed.goods)} goods from ${fed.districts.length} quarter${fed.districts.length === 1 ? '' : 's'}: bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.`; } },
       { label: 'A day on the wards', desc: 'Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 5, label: 'Ward labour' }); let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i] && s.coverage.ward[i] > 0) { s.gloam[i] = 0; n++; } return `${n} tiles of grey grass are cut and burned under the lanterns.`; } },
     ],
   },
@@ -189,8 +211,8 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'Mid-Ember is the Remembrance of the Hollowing. Scholars ask to read the names of the nine houses aloud from the Founding Stake; the priests of Morrow would rather the names stayed buried.',
     when: (s) => s.population > 80,
     choices: [
-      { label: 'Read the names', desc: 'Educated share +4%; unquieted dead +8 (the ley stirs).', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.04); s.unquieted += 8; return 'The names are read. The spires hum a half-tone flat until dawn.'; } },
-      { label: 'Keep the silence', desc: 'Unquieted dead −8; the Four Vigils are pleased: happiness +2 for 10 days.', apply: (s) => { s.unquieted = Math.max(0, s.unquieted - 8); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'Remembrance kept' }); return 'A night of candles and no speeches. Morrow approves.'; } },
+      { label: 'Read the names', desc: 'Educated share +4%. The ley stirs: unquieted dead +12, or only +3 if an Ossuary holds the bones steady.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.04); const oss = hasOssuary(s); s.unquieted += oss ? 3 : 12; return oss ? 'The names are read over the vaults. The bones keep their pattern and the spires barely flutter.' : 'The names are read. The spires hum a half-tone flat until dawn.'; } },
+      { label: 'Keep the silence', desc: 'Unquieted dead −6, or −15 with an Ossuary to lay them in; the Four Vigils are pleased: happiness +2 for 10 days.', apply: (s) => { const oss = hasOssuary(s); s.unquieted = Math.max(0, s.unquieted - (oss ? 15 : 6)); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'Remembrance kept' }); return oss ? 'A night of candles in the Ossuary. Hollis counts the quiet and finds it good.' : 'A night of candles and no speeches. Morrow approves.'; } },
     ],
   },
   {
@@ -198,8 +220,17 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'The first night of the Hush. Tradition asks every hearth to keep a lamp burning until dawn, so that the Gloam finds no dark window to whisper at.',
     when: (s) => s.population > 40,
     choices: [
-      { label: 'Keep the vigil', desc: 'Mana demand +15% for 10 days; the Gloam does not creep for 10 days.', apply: (s) => { s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + 10, label: 'Vigil holds the Gloam' }); return 'Every window in the valley burns amber. Beyond the last lantern, the grey grass waits.'; } },
+      { label: 'Keep the vigil', desc: 'The lamps draw up to 120 stored mana from the Nexus rings: the Gloam holds 6 days, plus a day for every 12 mana drawn. Shallow stores (under 60) mean the lamps burn from the spires instead: demand +15% for 10 days.', apply: (s) => { const take = Math.min(120, s.manaStorage); s.manaStorage -= take; const days = 6 + Math.floor(take / 12); if (take < 60) s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + days, label: 'Vigil holds the Gloam' }); return take >= 60 ? `${Math.round(take)} mana from the stores keeps every window amber for ${days} nights. Beyond the last lantern, the grey grass waits.` : `The stores are shallow: the spires burn hot to keep the windows lit, and the Gloam holds ${days} nights.`; } },
       { label: 'Let folk sleep', desc: 'No cost. The whispering is louder this Hush: happiness −3 for 20 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 20, label: 'Vigil skipped' }); return 'Old Maud keeps her lamp lit anyway. She says the dark remembers who did not.'; } },
+    ],
+  },
+  {
+    id: 'lanternfair', title: 'The Lantern Fair', season: 1, seasonDay: 12,
+    text: 'Mid-Bloom, and the Guildhall asks leave to hold the Lantern Fair: carters from three wardlights, alchemists hawking draughts, and buyers who pay Bloom prices and half again.',
+    when: (s) => s.population > 60 && s.buildings.some((b) => b && b.kind === 'guildhall' && b.state === 'ok'),
+    choices: [
+      { label: 'Open the fair (500 crowns)', desc: 'Export prices +50% for 6 days; the carters (+10) and alchemists (+5) are pleased.', apply: (s) => { s.treasury -= 500; s.modifiers.push({ kind: 'price', value: 0.5, until: s.day + 6, label: 'Lantern Fair' }); s.guilds.standing.carters = Math.min(100, s.guilds.standing.carters + 10); s.guilds.standing.alchemists = Math.min(100, s.guilds.standing.alchemists + 5); return 'Lanterns on every cart. A Belerial buyer pays gold for a crate of glimherb ale and asks if there is more.'; } },
+      { label: 'Keep the gates shut', desc: 'No cost; hounds are about and the Watch is glad of it. The carters sulk (−8).', apply: (s) => { s.guilds.standing.carters = Math.max(0, s.guilds.standing.carters - 8); return 'The carters from the other wardlights turn their mules around at the gate. The Watch sleeps well.'; } },
     ],
   },
 ];
@@ -406,7 +437,7 @@ export const WYRM_EVENTS: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR, ...WYRM_EVENTS];
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {

@@ -2,8 +2,14 @@
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { DISTRICT_NAMES, type GameState, type ServiceType } from '../sim/types';
 import { computeBuildingHappiness } from '../sim/growth';
+import { ASPECTS, ASPECT_INFO, ASPECT_RADIUS, dragonAuras } from '../sim/weave';
 
-export type OverlayId = 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
+function hex(c: string, a: number): string {
+  const n = parseInt(c.slice(1), 16);
+  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a.toFixed(2)})`;
+}
+
+export type OverlayId = 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district' | 'weave';
 
 export const DISTRICT_COLORS = ['#ff8a5c', '#5ee36f', '#5aa8ff', '#ffd166', '#c58cff', '#4fe3ff', '#ff6fa8', '#b9c46a'];
 
@@ -135,6 +141,24 @@ export const OVERLAY_LIST: OverlayDef[] = [
     id: 'district', name: 'Districts', key: 'i', desc: 'Painted districts. Edicts can be applied per district from the Edicts panel.',
     legend: DISTRICT_COLORS.map((c, k) => [c + 'aa', DISTRICT_NAMES[k]] as [string, string]),
     tile: (s, i) => (s.district[i] ? DISTRICT_COLORS[s.district[i] - 1] + '66' : null),
+  },
+  {
+    id: 'weave', name: 'The Weave', key: 'w', desc: 'Ley aspects around each node (10 tiles) and the auras of grown dragons. Build to the ley: Craft on Ember, deathcare on Bone, a Nexus on Vein, wells on Tide.',
+    legend: [...ASPECTS.map((a) => [hex(ASPECT_INFO[a].color, 0.55), `${ASPECT_INFO[a].name} ley`] as [string, string]), ['rgba(255,255,255,0.35)', 'dragon aura']],
+    tile: (s, i, x, y) => {
+      for (const a of dragonAuras(s)) {
+        const d = Math.max(Math.abs(a.x - x), Math.abs(a.y - y));
+        if (d <= a.r) return hex(ASPECT_INFO[a.line].color, 0.62 - (d / a.r) * 0.2);
+      }
+      let best = ASPECT_RADIUS + 1;
+      let line: string | null = null;
+      for (const n of s.nodes) {
+        const d = Math.max(Math.abs(n.x - x), Math.abs(n.y - y));
+        if (d < best && n.aspect) { best = d; line = ASPECT_INFO[n.aspect].color; }
+      }
+      if (!line || best > ASPECT_RADIUS) return s.gloam[i] ? 'rgba(40,30,60,0.5)' : null;
+      return hex(line, 0.45 - (best / ASPECT_RADIUS) * 0.25);
+    },
   },
   {
     id: 'miasma', name: 'Miasma', key: 'm', desc: 'Alchemical fog from Craft districts. Lowers health and land value.',

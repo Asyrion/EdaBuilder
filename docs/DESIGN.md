@@ -641,6 +641,43 @@ the cheapest touching sector when it holds more than twice the price. One quest.
   two seconds after alarms, and has its own toggle in the menu (persisted). Milestone
   phrases (4.21) play over it in the same key.
 
+### 4.44 The guild council
+
+A lit Guildhall seats the Carters, the Alchemists, the Spire-Wrights and the Sextons of
+Morrow. Standing 0..100 drifts toward 50 (2% a day) and moves with daily drivers listed in
+the Edicts panel. Every 20 days the least pleased guild petitions for its edict (Import,
+Herb Garden, Spire Wardens, Rite Subsidy). Grant (+15; the edict becomes a 20-day promise:
++1 a day kept, −2 a day broken), pay 400 crowns (+8) or refuse (−12, happiness −2 for 8
+days). Boon at 70, strike at 25: depots ×1.5 / ×0.5 export cap, Craft +8% / −10%, ley
+stores +20% / −20%, deathcare +15% / −15%. The Lantern Fair and the feast also move
+standings. Quests: seat the council, please a guild.
+
+### 4.45 Trade routes
+
+`trade.ts` lists the Gloam road, river barges, the airship, the arches and the Twin Road
+with an open flag and a note; the Ledger shows them with a Show button. The Twin Road needs
+a depot within 12 tiles of the daughter's stake and another at least 20 tiles away; it moves
+up to 30 goods a day from works (stock above 8) near the mother depot to markets near the
+daughter depot, pays a Crown toll of 1 crown a good into the day's trade income, and counts
+toward goods delivered. The depot's info panel names the open routes.
+
+### 4.46 Festival depth
+
+Thaw feast: 300 crowns and up to 40 goods from the fullest markets (each keeps 4); +3
+happiness for 15 days city-wide and +5 in every district whose markets contributed
+(district-scoped modifiers via `modifierSumAt`); under 10 goods a thin feast gives +2 for
+8 days. Remembrance: with an Ossuary, reading the names stirs +3 unquieted (else +12) and
+the silence lays −15 (else −6). Hush vigil: draws min(120, stored mana); the Gloam holds
+6 + floor(mana/12) days; under 60 drawn the spires carry it (+15% demand for 10 days).
+Lantern Fair (Bloom day 12, Guildhall, 60 folk): 500 crowns for a `price` modifier of +50%
+on exports for 6 days, Carters +10, Alchemists +5; or shut the gates, Carters −8.
+
+### 4.47 The Weave view
+
+Overlay `weave` (key W): dragon auras in their line colour (alpha fading with distance),
+then the nearest node's aspect within 10 tiles, Gloam beneath. Legend lists the eight
+aspects and the aura swatch.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1063,13 +1100,47 @@ Random events keep their 18-day spacing but skip the six days after any ill tidi
 after 25 calm days the spacing drops to 10 and the chance doubles, so a stable city is
 visited sooner by the world.
 
-### 13.8 Later phases
+### 13.8 Phase 2: the council, the feasts, the routes and the Weave (iteration 24)
 
-Phase 2: festival depth (the Thaw feast costs goods and pays happiness by district; the
-Remembrance needs an Ossuary to count; the Hush vigil draws on stored mana), guild politics
-(the Guildhall as a council with demands tied to edicts), trade routes between the depot,
-quays and the daughter wardlight, and a *Weave* info view that paints aspects and auras.
-Phase 3: dragon breeding across lines at attuned cradles, and relic sets from the delve.
+**The guild council (4.44).** A lit Guildhall seats four guilds, each with a standing from 0
+to 100 that drifts toward 50 and moves daily with things the player already does: the
+Carters want a depot, barges, open routes and clear roads; the Alchemists want five Craft
+yards, the Herb Garden Edict and full shelves; the Spire-Wrights want a Nexus and Spire
+Wardens and hate overdraw; the Sextons of Morrow want an Ossuary, the Rite Subsidy and fewer
+than twenty unquieted dead. Every 20 days the least pleased guild (under 60, and only if its
+edict is off) petitions for its edict: grant it (+15, and the edict is a promise: +1 a day
+while it stays on for 20 days, −2 a day if broken), pay 400 crowns (+8), or refuse (−12 and a
+small happiness dip). At 70 a guild pays a boon that touches a system it already represents:
+depots sell half again as much, Craft makes 8% more, ley stores hold a fifth more, deathcare
+quiets 15% more. At 25 it strikes with the mirror penalty. This is the Frostpunk/Anno
+"factions as pressure on policy" loop in Eda's terms: the guilds are how the city argues with
+the Warden-Reeve, and edicts stop being free toggles.
+
+**Festival depth (4.46).** The Thaw feast now eats up to 40 goods from the fullest market
+shelves (300 crowns) and pays +3 happiness everywhere plus +5 in every district whose
+markets fed it (modifiers can be district-scoped now); under ten goods it is a thin feast.
+The Remembrance reads the ley through the Ossuary: with one, reading the names stirs only +3
+unquieted and keeping the silence lays −15; without one, +12 and −6. The Hush vigil draws
+up to 120 stored mana from the Nexus rings and holds the Gloam 6 days plus one per 12 mana;
+shallow stores burn the spires instead (+15% demand). A fourth festival, the Lantern Fair
+(mid-Bloom, needs a Guildhall), raises export prices by half for six days and pleases the
+Carters and Alchemists. Festivals thus read the city's stores, its deathcare and its
+markets rather than only its treasury.
+
+**Trade routes (4.45).** The Ledger lists every route the city has and whether it is open:
+the Gloam road (depots), river barges (two quays, frozen in the Hush), the airship, the
+lit arches, and the new Twin Road. A depot within 12 tiles of the daughter's stake and one
+in the mother city carry 30 goods a day from the mother's works to the daughter's markets,
+and the Crown pays a toll of one crown a good. The Carters count every open route.
+
+**The Weave view (4.47).** Key W paints each node's aspect for 10 tiles in its line colour
+and the auras of grown dragons on top, so the adjacency rules of 13.2 are visible on the map
+rather than only in the node panel.
+
+### 13.9 Later phases
+
+Phase 3: dragon breeding across lines at attuned cradles, relic sets from the delve, and a
+guild hall per guild (a Carters' Yard, an Alchemists' Lyceum) so a pleased guild builds.
 
 ## 9. Verification
 
@@ -1185,3 +1256,9 @@ Phase 3: dragon breeding across lines at attuned cradles, and relic sets from th
   new places, so a player's map knowledge grows deeper instead of wider.
 - *Pressure, not timers:* the Gloam's hostility is a function of the city's own neglect
   and care, which makes deathcare and faith matter every day rather than at the rim.
+- *Guilds judge what the player already does:* standings read depots, yards, stores and
+  the dead instead of new resources, so the council deepens existing systems (iteration 24).
+- *Edicts as promises:* a granted petition ties a guild's standing to the edict for twenty
+  days, so turning one off is a political act, not a free click.
+- *Festivals spend the city, not the purse:* the feast eats shelves, the vigil drains the
+  Nexus rings and the Remembrance needs the Ossuary, so each festival tests a system.

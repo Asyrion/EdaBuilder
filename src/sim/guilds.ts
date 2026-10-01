@@ -1,0 +1,172 @@
+/** The guild council: four guilds that sit at the Guildhall, each with a standing, a boon, a strike and an edict they petition for. See DESIGN.md 4.44. */
+import { BUILDING_BY_KEY } from './catalog';
+import { Zone, type GameState } from './types';
+import type { EventDef } from './events';
+import { tradeRoutes } from './trade';
+
+export type GuildId = 'carters' | 'alchemists' | 'spirewrights' | 'sextons';
+export const GUILD_IDS: GuildId[] = ['carters', 'alchemists', 'spirewrights', 'sextons'];
+
+export interface GuildDef {
+  id: GuildId;
+  name: string;
+  seal: string;
+  desc: string; // what raises and lowers standing
+  edict: string; // the edict they petition for
+  boon: string;
+  strike: string;
+  petition: string; // event text
+}
+
+export const GUILDS: Record<GuildId, GuildDef> = {
+  carters: {
+    id: 'carters', name: "The Carters' Guild", seal: 'a cart wheel',
+    desc: 'Pleased by a Trade Depot, a second quay and every open trade route; displeased by a city without a depot and by congested roads.',
+    edict: 'imports',
+    boon: 'depots sell half again as much surplus each day',
+    strike: 'the yards work slow: depots sell half as much',
+    petition: 'The carters crowd the Guildhall steps with their caps in their hands. Their master says the markets run dry while his carts stand idle, and asks the Warden-Reeve to let the guild buy from the Gloam road.',
+  },
+  alchemists: {
+    id: 'alchemists', name: "The Alchemists' Guild", seal: 'a mortar',
+    desc: 'Pleased by five or more Craft yards and by the Herb Garden Edict; displeased when markets run dry of their goods.',
+    edict: 'herbgardens',
+    boon: 'every Craft yard makes 8% more',
+    strike: 'the stills run cold: Craft yards make 10% less',
+    petition: 'The alchemists send a letter sealed in blue wax. Every yard in the city, they write, should keep a glimherb bed by law, miasma or no miasma, and they would like the Warden-Reeve to say so.',
+  },
+  spirewrights: {
+    id: 'spirewrights', name: 'The Spire-Wrights', seal: 'a blue obelisk',
+    desc: 'Pleased by a Ley Nexus and by Spire Wardens; displeased by every day of overdraw and by brownouts.',
+    edict: 'wardens',
+    boon: 'ley stores hold a fifth more mana',
+    strike: 'ley stores leak: a fifth less mana held',
+    petition: 'The spire-wrights come at dusk, as they do. The spires have been run hot, they say, and nobody watches them at night. They ask for Tallowkin wardens on the city purse.',
+  },
+  sextons: {
+    id: 'sextons', name: 'The Sextons of Morrow', seal: 'a salt spoon',
+    desc: 'Pleased by an Ossuary and by the Rite Subsidy; displeased when more than twenty dead lie unquieted.',
+    edict: 'rites',
+    boon: 'boneyards and ossuaries quiet 15% more dead',
+    strike: 'the sextons work to rule: deathcare quiets 15% fewer',
+    petition: 'Hollis of the sextons stands in the Guildhall with his spoon of salt and says nothing for a long time. Then he says the city should pay for the rites it expects, and that the dead are counting.',
+  },
+};
+
+export interface GuildState {
+  standing: Record<GuildId, number>; // 0..100, 50 is indifferent
+  demand: { guild: GuildId; until: number } | null; // a granted petition: keep the edict on until this day
+  lastCouncil: number; // day of the last petition
+}
+
+export const COUNCIL_SPACING = 20;
+export const BOON_AT = 70;
+export const STRIKE_AT = 25;
+
+export function initGuilds(): GuildState {
+  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0 };
+}
+
+/** A lit, standing Guildhall seats the council. */
+export function hasCouncil(s: GameState): boolean {
+  return s.buildings.some((b) => b && b.kind === 'guildhall' && b.state === 'ok' && b.lit);
+}
+
+/** +1 while the guild is pleased (boon), -1 while it strikes, else 0. Without a council no guild acts. */
+export function guildEffect(s: GameState, g: GuildId): -1 | 0 | 1 {
+  if (!s.guilds || !hasCouncil(s)) return 0;
+  const st = s.guilds.standing[g];
+  return st >= BOON_AT ? 1 : st <= STRIKE_AT ? -1 : 0;
+}
+
+export function guildMood(st: number): string {
+  return st >= BOON_AT ? 'pleased' : st >= 55 ? 'content' : st > STRIKE_AT ? 'grumbling' : 'on strike';
+}
+
+function count(s: GameState, test: (kind: string) => boolean): number {
+  let n = 0;
+  for (const b of s.buildings) if (b && b.state === 'ok' && test(b.kind)) n++;
+  return n;
+}
+
+/** What moved each guild's standing today, for the UI and the daily drift. */
+export function guildDrivers(s: GameState, g: GuildId): { text: string; value: number }[] {
+  const out: { text: string; value: number }[] = [];
+  const add = (text: string, value: number) => { if (value) out.push({ text, value }); };
+  const on = (k: string) => !!s.edicts[k];
+  switch (g) {
+    case 'carters': {
+      const depots = count(s, (k) => k === 'depot');
+      add(depots ? 'a Trade Depot' : 'no Trade Depot', depots ? 0.6 : -0.6);
+      if (count(s, (k) => k === 'quay') >= 2) add('barges on the river', 0.4);
+      const routes = tradeRoutes(s).filter((r) => r.kind !== 'road').length;
+      if (routes) add(`${routes} open trade route${routes > 1 ? 's' : ''}`, Math.min(0.9, routes * 0.3));
+      let jam = 0, roads = 0;
+      for (let i = 0; i < s.road.length; i++) if (s.road[i]) { roads++; if (s.trafficSmooth[i] > 160) jam++; }
+      if (roads && jam / roads > 0.08) add('congested roads', -0.7);
+      if (on('imports')) add('the Import Edict', 0.3);
+      break;
+    }
+    case 'alchemists': {
+      const yards = count(s, (k) => BUILDING_BY_KEY[k].zone === Zone.Craft);
+      if (yards >= 5) add(`${yards} Craft yards`, 0.5);
+      if (on('herbgardens')) add('the Herb Garden Edict', 0.4);
+      if (s.goodsShort > 0) add('markets ran dry', -0.5);
+      if (s.stats.feastGoods > 0 && s.day - s.stats.lastFeastDay < 15) add('a feast from their shelves', 0.3);
+      break;
+    }
+    case 'spirewrights': {
+      if (count(s, (k) => k === 'nexus') > 0) add('a Ley Nexus', 0.5);
+      if (on('wardens')) add('Spire Wardens', 0.3);
+      if (s.overdrawDays > 0) add('overdraw', -1);
+      if (s.brownout > 0) add('brownout', -0.5);
+      break;
+    }
+    case 'sextons': {
+      if (count(s, (k) => k === 'ossuary') > 0) add('an Ossuary', 0.5);
+      if (on('rites')) add('the Rite Subsidy', 0.3);
+      if (s.unquieted > 20) add(`${Math.round(s.unquieted)} unquieted dead`, -0.8);
+      break;
+    }
+  }
+  const d = s.guilds?.demand;
+  if (d && d.guild === g && d.until > s.day) add(s.edicts[GUILDS[g].edict] ? 'the granted petition is kept' : 'the granted petition was broken', s.edicts[GUILDS[g].edict] ? 1 : -2);
+  return out;
+}
+
+/** Daily: standings drift toward 50 and move with the drivers; a petition is called every 20 days from the lowest guild. */
+export function dailyGuilds(s: GameState): void {
+  if (!s.guilds) s.guilds = initGuilds();
+  const gs = s.guilds;
+  const council = hasCouncil(s);
+  for (const g of GUILD_IDS) {
+    let st = gs.standing[g];
+    st += (50 - st) * 0.02;
+    if (council) for (const d of guildDrivers(s, g)) st += d.value;
+    gs.standing[g] = Math.max(0, Math.min(100, st));
+  }
+  if (gs.demand && gs.demand.until <= s.day) gs.demand = null;
+  if (!council || s.pendingEvent || s.gameOver || s.day - gs.lastCouncil < COUNCIL_SPACING) return;
+  let low: GuildId = 'carters';
+  for (const g of GUILD_IDS) if (gs.standing[g] < gs.standing[low]) low = g;
+  if (gs.standing[low] >= 60 || s.edicts[GUILDS[low].edict]) { gs.lastCouncil = s.day; return; }
+  const def = COUNCIL_EVENTS.find((e) => e.id === `council_${low}`)!;
+  s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+  s.firedEvents.push(`${def.id}:?`);
+  if (s.firedEvents.length > 40) s.firedEvents.shift();
+  gs.lastCouncil = s.day;
+  s.stats.councils++;
+}
+
+function councilEvent(g: GuildDef): EventDef {
+  return {
+    id: `council_${g.id}`, title: `${g.name} petitions`, text: g.petition, when: () => false,
+    choices: [
+      { label: 'Grant the petition', desc: `Enact the edict they ask for; standing +15, and +1 a day while it stays on for 20 days (−2 a day if it is turned off).`, apply: (s) => { s.edicts[g.edict] = true; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 15); s.guilds.demand = { guild: g.id, until: s.day + 20 }; return `The seal of ${g.seal} is pressed into the edict. The guild drinks the Warden-Reeve's health.`; } },
+      { label: 'Pay them off (400 crowns)', desc: 'Standing +8; no edict.', apply: (s) => { s.treasury -= 400; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 8); return 'The purse changes hands under the table. Nobody writes anything down.'; } },
+      { label: 'Refuse', desc: 'Standing −12; happiness −2 for 8 days as the guild grumbles in every tavern.', apply: (s) => { s.guilds.standing[g.id] = Math.max(0, s.guilds.standing[g.id] - 12); s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 8, label: `${g.name} refused` }); return 'The guildmaster bows a little too low and leaves. The songs that night are not kind.'; } },
+    ],
+  };
+}
+
+export const COUNCIL_EVENTS: EventDef[] = GUILD_IDS.map((g) => councilEvent(GUILDS[g]));
