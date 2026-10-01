@@ -1070,7 +1070,29 @@ ten free tiles and hearths are wanted, or when stone is short, with 2,000 crowns
 a **Quarry** on the hill when the works cannot keep the shelves full (craft demand above 0.15
 or goods short), up to half the markets plus one; and the **Deep Cut** once an Academy stands.
 
-**Balance (150 days, three seeds):** the table follows in the closing commit of this iteration.
+**Balance (150 days).** Stage 1 is the bulldozer fix alone; stage 2 adds the Delve, the
+Quarry, the Deep Cut and the bot's deep game.
+
+| Grimmen | Deep Hold | Under-Market | Deephold (1,000 folk) | folk d150 | stone d150 |
+|---|---|---|---|---|---|
+| seed 42, iteration 37 | 33 | 46 | never | 658 (d120) | 52 |
+| seed 42, stage 1 | 25 | 35 | never | 915 | 54 |
+| seed 42, stage 2 | 25 | 35 | **70** | 1,359 | 175 |
+| seed 43, iteration 37 | 51 | never | never | 343 (d120) | 52 |
+| seed 43, stage 1 | 29 | 39 | 87 | 1,048 | 74 |
+| seed 43, stage 2 | 29 | 39 | **77** | 1,244 | 268 |
+| seed 44, iteration 37 | 43 | 59 | never | 714 (d120) | 192 |
+| seed 44, stage 1 | 40 | 57 | never | 937 | 192 |
+| seed 44, stage 2 | 40 | 57 | **87** | 1,425 | 394 |
+
+All three seeds reach the Deephold by day 120, as the plan asked, and Deep Hold no later
+than before. The bulldozer fix did most of the lifting (stage 1 doubled the folk); the deep
+game turns the plateau at the Under-Market into the Deephold and keeps growing past it. The
+stage-2 Vellish lines are bit-identical to stage 1 on seeds 42 and 43 (seed 44 is confirmed in
+the closing commit). What the table also shows for the
+next iteration: a Grimmen town of 1,300 folk runs a brownout of a quarter (their node mana
+is two thirds of the Vellish and the bot stops placing spires once demand nears supply), so
+their mana game, Crystal Mines and the Forge-Temple early, is the next balance item.
 
 ## 5. Art direction
 
