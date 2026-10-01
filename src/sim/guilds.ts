@@ -1,9 +1,9 @@
 /** The guild council: four guilds that sit at the Guildhall, each with a standing, a boon, a strike and an edict they petition for. See DESIGN.md 4.44. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Zone, type GameState } from './types';
+import { Zone, type Building, type GameState } from './types';
 import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
-import { canPlaceBuilding, placeBuildingRaw, pushMessage } from './world';
+import { canPlaceBuilding, markDirty, placeBuildingRaw, pushMessage } from './world';
 
 export type GuildId = 'carters' | 'alchemists' | 'spirewrights' | 'sextons';
 export const GUILD_IDS: GuildId[] = ['carters', 'alchemists', 'spirewrights', 'sextons'];
@@ -59,6 +59,7 @@ export interface GuildState {
   demand: { guild: GuildId; until: number } | null; // a granted petition: keep the edict on until this day
   lastCouncil: number; // day of the last petition
   pleasedDays: Record<GuildId, number>; // days in a row at or above BOON_AT; at HALL_DAYS the guild builds its hall
+  lastWar: number; // day of the last brawl between rivals
 }
 
 export const COUNCIL_SPACING = 20;
@@ -66,6 +67,7 @@ export const COUNCIL_SPACING = 20;
 export const RIVAL_OF: Record<GuildId, GuildId> = { carters: 'spirewrights', spirewrights: 'carters', alchemists: 'sextons', sextons: 'alchemists' };
 export const RIVALRY_DRIFT = 0.4;
 export const RIVALRY_STING = 5;
+export const WAR_SPACING = 60;
 export const HALL_DAYS = 10;
 /** The hall each guild raises for itself after HALL_DAYS pleased days. */
 export const HALL_OF: Record<GuildId, string> = { carters: 'cartersyard', alchemists: 'lyceum', spirewrights: 'wrightslodge', sextons: 'sextonchapel' };
@@ -73,7 +75,7 @@ export const BOON_AT = 70;
 export const STRIKE_AT = 25;
 
 export function initGuilds(): GuildState {
-  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 } };
+  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 }, lastWar: 0 };
 }
 
 /** A lit, standing Guildhall seats the council. */
@@ -160,7 +162,22 @@ export function dailyGuilds(s: GameState): void {
     gs.pleasedDays[g] = council && gs.standing[g] >= BOON_AT ? gs.pleasedDays[g] + 1 : 0;
     if (gs.pleasedDays[g] >= HALL_DAYS && !s.buildings.some((b) => b && b.kind === HALL_OF[g])) raiseHall(s, g);
   }
-  if (!council || s.pendingEvent || s.gameOver || s.day - gs.lastCouncil < COUNCIL_SPACING) return;
+  if (!council || s.pendingEvent || s.gameOver) return;
+  // two rivals striking at once brawl on the square
+  if (s.day - (gs.lastWar ?? 0) >= WAR_SPACING) {
+    for (const a of ['carters', 'alchemists'] as GuildId[]) {
+      const b = RIVAL_OF[a];
+      if (gs.standing[a] <= STRIKE_AT && gs.standing[b] <= STRIKE_AT) {
+        const def = WAR_EVENTS.find((e) => e.id === `guildwar_${a}`)!;
+        s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+        s.firedEvents.push(`${def.id}:?`);
+        gs.lastWar = s.day;
+        s.stats.guildWars++;
+        return;
+      }
+    }
+  }
+  if (s.day - gs.lastCouncil < COUNCIL_SPACING) return;
   let low: GuildId = 'carters';
   for (const g of GUILD_IDS) if (gs.standing[g] < gs.standing[low]) low = g;
   if (gs.standing[low] >= 60 || s.edicts[GUILDS[low].edict]) { gs.lastCouncil = s.day; return; }
@@ -210,4 +227,22 @@ function councilEvent(g: GuildDef): EventDef {
   };
 }
 
-export const COUNCIL_EVENTS: EventDef[] = GUILD_IDS.map((g) => councilEvent(GUILDS[g]));
+function warEvent(a: GuildId): EventDef {
+  const b = RIVAL_OF[a];
+  const A = GUILDS[a].name;
+  const B = GUILDS[b].name;
+  const side = (win: GuildId, lose: GuildId) => (s: GameState) => { s.guilds.standing[win] = Math.min(100, s.guilds.standing[win] + 20); s.guilds.standing[lose] = Math.max(0, s.guilds.standing[lose] - 10); return `The Warden-Reeve stands with ${GUILDS[win].name}. ${GUILDS[lose].name} leave the square in silence.`; };
+  return {
+    id: `guildwar_${a}`, title: `${A} and ${B} brawl`, when: () => false,
+    text: `Both guilds have been on strike for days and today it comes to blows on the square: ${a === 'carters' ? 'cart-staves against wardens\' rods, mules loose in the market' : 'stills overturned, salt thrown in the stills, Hollis bleeding from the nose'}. The Watch waits for a word.`,
+    choices: [
+      { label: `Side with ${A}`, desc: `${A} +20, ${B} −10.`, apply: side(a, b) },
+      { label: `Side with ${B}`, desc: `${B} +20, ${A} −10.`, apply: side(b, a) },
+      { label: 'Call the Watch (300 crowns)', desc: 'Both guilds +5; happiness −3 for 5 days as the square is cleared with rods.', apply: (s) => { s.treasury -= 300; s.guilds.standing[a] = Math.min(100, s.guilds.standing[a] + 5); s.guilds.standing[b] = Math.min(100, s.guilds.standing[b] + 5); s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 5, label: 'The Watch cleared the square' }); return 'The Watch wades in. Nobody wins, which both guilds can live with.'; } },
+      { label: 'Let them brawl', desc: 'A building by the Guildhall catches fire; happiness −6 for 10 days; neither guild is moved.', apply: (s) => { const hall = s.buildings.find((x) => x && x.kind === 'guildhall'); let burnt: Building | null = null; if (hall) for (const x of s.buildings) { if (x && x.state === 'ok' && BUILDING_BY_KEY[x.kind].category === 'zone' && Math.max(Math.abs(x.x - hall.x), Math.abs(x.y - hall.y)) <= 8) { burnt = x; break; } } if (burnt) { burnt.state = 'burning'; burnt.stateDays = 0; markDirty(s, burnt.x, burnt.y); s.stats.firesTotal++; } s.modifiers.push({ kind: 'happiness', value: -6, until: s.day + 10, label: 'The guild brawl' }); return burnt ? `A lamp goes over in the scuffle: fire at (${burnt.x},${burnt.y}). The guilds stop to watch it burn.` : 'They fight until dark and go home bruised.'; } },
+    ],
+  };
+}
+
+export const WAR_EVENTS: EventDef[] = (['carters', 'alchemists'] as GuildId[]).map(warEvent);
+export const COUNCIL_EVENTS: EventDef[] = [...GUILD_IDS.map((g) => councilEvent(GUILDS[g])), ...WAR_EVENTS];

@@ -86,11 +86,13 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();
   state.guilds.pleasedDays = state.guilds.pleasedDays ?? { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 };
   state.relics = state.relics ?? initRelics();
+  state.relicStock = state.relicStock ?? 0;
+  state.guilds.lastWar = state.guilds.lastWar ?? 0;
   for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
   state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
   state.fenNex = state.fenNex ?? 0;

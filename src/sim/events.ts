@@ -297,6 +297,20 @@ const EGGS: EventDef[] = [
 ];
 
 /** Visitors from the wider Eda (lore drop). */
+/** The Crown's assessor comes for relics. */
+const CROWN: EventDef[] = [
+  {
+    id: 'assessor', title: "The Crown's assessor",
+    text: 'A grey coach with the royal lantern on its door stops at the Ruin Delve. The assessor has a ledger, a loupe and a purse, and asks what the diggers have brought up.',
+    when: (s) => s.relicStock >= 12 && s.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok'),
+    choices: [
+      { label: 'Sell the loose relics', desc: '90 crowns each, better than the depot pays; the sextons mutter (−5).', apply: (s) => { const n = s.relicStock; s.treasury += n * 90; s.stats.relicsSold += n; s.relicStock = 0; s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return `${n} relics go north under seal for ${n * 90} crowns. Hollis says the dead will want them back.`; } },
+      { label: 'Sell the uncatalogued pieces', desc: '1,500 crowns for each set piece the Academy has not named; they are gone from the sets. Sextons −8.', apply: (s) => { const n = s.relics.uncatalogued; if (!n) return 'There are no uncatalogued pieces. The assessor buys a cup of tea instead.'; s.treasury += n * 1500; s.relics.uncatalogued = 0; s.stats.relicsSold += n; s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 8); return `${n} piece(s) of something older than the Concord leave in the grey coach for ${n * 1500} crowns.`; } },
+      { label: 'Keep everything for the Academy', desc: 'Educated share +2%; the assessor leaves empty-handed.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.02); return 'The assessor writes a long note and underlines it twice. The scholars are delighted.'; } },
+    ],
+  },
+];
+
 const VISITORS: EventDef[] = [
   {
     id: 'fennex', title: 'The Fen-Nex come to market', once: true,
@@ -437,7 +451,7 @@ export const WYRM_EVENTS: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -482,7 +496,7 @@ export function maybeFireEvent(s: GameState): void {
   }
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };

@@ -72,7 +72,7 @@ export function dragonAuras(s: GameState): Aura[] {
       x = c.x + 1;
       y = c.y + 1;
     }
-    const r = d.role === 'warden' ? 12 : 8;
+    const r = (d.role === 'warden' ? 12 : 8) * (d.stage >= 4 ? 1.5 : 1);
     list.push({ x, y, r, line: d.line, name: d.name });
     if (d.second) list.push({ x, y, r: d.trueblood ? r : r - 3, line: d.second, name: d.name });
   }
@@ -116,6 +116,7 @@ export function computeGloamPressure(s: GameState): number {
   forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') { zoned++; if (s.coverage.faith[idx(b.x, b.y)] > 60) faithful++; } });
   if (zoned) p -= 0.25 * (faithful / zoned);
   if (wyrmGuards(s)) p -= 0.2;
+  p -= Math.min(0.2, 0.1 * s.dragons.filter((d) => d.stage >= 4).length);
   const tree = worldTree(s);
   if (tree) p -= 0.04 * treeStage(tree);
   p -= 0.03 * nodesOfAspect(s, 'grey').length;
