@@ -1,5 +1,6 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
 import { treeStage } from '../sim/growth';
+import { factionOf } from '../data/factions';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
@@ -510,8 +511,8 @@ export class Renderer {
         if (Math.random() < 0.6) this.particles.emit({ x: cx + (Math.random() - 0.5) * 16, y: cy - 6, vx: (Math.random() - 0.5) * 6, vy: -14 - Math.random() * 10, maxLife: 1.2, size: 1, color: Math.random() < 0.5 ? PAL.fire1 : PAL.ember, glow: true, kind: 'ember' });
         if (Math.random() < 0.3) this.particles.emit({ x: cx, y: cy - 10, vx: 0, vy: -10, maxLife: 3, size: 2, color: PAL.smoke, glow: false, kind: 'smoke' });
       } else if (b.lit && b.state === 'ok') {
-        const ley = b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
-        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) ? 100 : b.kind === 'spire' ? 34 : 46, c: PAL.ley1, i: 0.8 });
+        const ley = b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
+        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) ? 100 : b.kind === 'spire' ? 34 : b.kind === 'wicktower' ? 28 : 46, c: b.kind === 'wicktower' ? PAL.lampWarm : PAL.ley1, i: 0.8 });
         else if ((def.category === 'zone' && (cam.zoom > 1 || (b.x + b.y) % 3 === 0)) || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
         if (s && s.glow) glows.push({ s, x: wx, y: wy, a: 0.9 });
         // spire sparkles
@@ -535,13 +536,17 @@ export class Renderer {
     this.inView.ley = Math.min(1, leySeen / 6);
     this.inView.water = Math.min(1, waterSeen / Math.max(6, visible.length * 0.5));
     // agents
-    const walkFrame = Math.floor(this.time * 8) % 4;
     for (const a of state.agents) {
+      // each walker keeps its own pace (its speed and its id), so a crowd on one road does not march in step
+      const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
       if (a.kind === AgentKind.Creature && a.species === 'skyray') raySeen++;
       if (a.kind === AgentKind.Creature && a.species === 'golem' && a.path.length) golemSeen++;
       if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature && a.kind !== AgentKind.Walker) continue; // resting inside a building
-      const [wx, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
+      // a lane of its own: a small sideways offset by id, so agents sharing a tile do not stand on each other
+      const lane = a.kind === AgentKind.Citizen || a.kind === AgentKind.Walker || a.kind === AgentKind.Builder ? ((a.id * 7) % 5) - 2 : 0;
+      const [wx0, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
+      const wx = wx0 + lane;
       if (a.kind === AgentKind.Creature) {
         const sp = a.species;
         if (sp === 'glimmoth') {
@@ -627,10 +632,10 @@ export class Renderer {
       }
       let name: string;
       if (a.kind === AgentKind.Builder) {
-        name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : walkFrame % 2}`;
+        name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : a.phase === 1 && a.pathIdx < a.path.length ? walkFrame % 2 : 0}`;
         if (a.phase === 2 && cam.zoom >= 2 && Math.random() < 0.08) this.particles.emit({ x: wx + 4, y: wy + 2, vx: (Math.random() - 0.5) * 12, vy: -8 - Math.random() * 6, maxLife: 0.4, size: 1, color: PAL.lampWarm, glow: true, kind: 'spark' });
       } else if (a.kind === AgentKind.Walker) name = `walker_${a.job}_${a.variant % 3}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
-      else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
+      else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
       else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);
@@ -809,7 +814,7 @@ export class Renderer {
     const pulse = 0.5 + 0.5 * Math.sin(this.time * 1.5);
     for (const b of state.buildings) {
       if (!b || !b.lit || b.state !== 'ok') continue;
-      if (b.kind !== 'spire' && b.kind !== 'nexus' && b.kind !== 'wardlantern' && b.kind !== 'font' && !WONDER_HALLS.includes(b.kind)) continue;
+      if (b.kind !== 'spire' && b.kind !== 'wicktower' && b.kind !== 'nexus' && b.kind !== 'wardlantern' && b.kind !== 'font' && !WONDER_HALLS.includes(b.kind)) continue;
       if (b.x + b.w < minX || b.x > maxX || b.y + b.h < minY || b.y > maxY) continue;
       const cx = b.x + b.w / 2;
       const cy = b.y + b.h / 2;
@@ -975,7 +980,7 @@ export class Renderer {
     const spires: { x: number; y: number; link: number }[] = [];
     for (const b of state.buildings) {
       if (!b || !b.lit) continue;
-      if (b.kind === 'spire' || b.kind === 'nexus' || WONDER_HALLS.includes(b.kind) || b.kind === 'stake') spires.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, link: b.kind === 'spire' ? 6.5 : b.kind === 'stake' ? 4.5 : 9.5 });
+      if (b.kind === 'spire' || b.kind === 'nexus' || WONDER_HALLS.includes(b.kind) || b.kind === 'stake') spires.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, link: b.kind === 'spire' ? 6.5 + factionOf(state).rules.spireReach : b.kind === 'stake' ? 4.5 : 9.5 });
     }
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';

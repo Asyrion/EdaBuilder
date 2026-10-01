@@ -1,4 +1,5 @@
 import type { FactionId } from './data/factions';
+import { costOf } from './data/factions';
 import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
@@ -335,7 +336,7 @@ class Game {
       case 'zone': hint += 'drag a rectangle beside a road. Buildings grow when demand is high.'; break;
       case 'build': {
         const d = BUILDING_BY_KEY[t.key];
-        hint += `${d.cost} crowns. ${d.desc}`;
+        hint += `${costOf(this.state, d)} crowns. ${d.desc}`;
         break;
       }
       case 'bulldoze': hint += 'click or drag to remove buildings, roads and zones.'; break;

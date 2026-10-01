@@ -95,9 +95,15 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- ley ----
   {
     key: 'spire', name: 'Ley Spire', category: 'ley',
-    desc: 'A carved leystone spire. Lit if within 6 tiles of a ley node or another lit spire; lights buildings within 5 tiles. Lit buildings also light their neighbours.',
+    desc: 'A carved leystone spire. Lit if within 6 tiles of a ley node or another lit spire; lights buildings within 5 tiles (a tile further, at twice the price, for the Tallowkin). Lit buildings also light their neighbours.',
     flavor: 'Hum of a struck bell, felt in the teeth.',
     w: 1, h: 1, cost: 400, upkeep: 6, manaUse: 0, unlock: 0,
+  },
+  {
+    key: 'wicktower', name: 'Wick-Tower', category: 'ley', faction: ['tallowkin'],
+    desc: 'A tallow-lamp pylon. Lit when a lit spire or node is within reach, and lights buildings within 4 tiles, but it relays nothing: no spire and no other Wick-Tower lights from it. Cheap light for the corners.',
+    flavor: 'A spire hums. A Wick-Tower only glows, which the Tallowkin say is the polite thing to do at night.',
+    w: 1, h: 1, cost: 250, upkeep: 4, manaUse: 0, unlock: 0,
   },
   {
     key: 'nexus', name: 'Ley Nexus', category: 'ley',
@@ -200,6 +206,13 @@ export const BUILDINGS: BuildingDef[] = [
     flavor: 'Bread on the sill for the Hearthkeeper. The sparrows take it, but that counts.',
     w: 1, h: 1, cost: 500, upkeep: 8, manaUse: 0,
     service: { type: 'faith', radius: 8, strength: 0.6 }, landValue: 6, unlock: 0,
+  },
+  {
+    key: 'candleshrine', name: 'Candle-Shrine', category: 'service', faction: ['tallowkin'],
+    desc: 'A hearth-shrine with a candle in every niche. Faith within 6 tiles, and it lights itself and its neighbours without a spire.',
+    flavor: 'Bread on the sill for the Hearthkeeper, and a candle so she can find it.',
+    w: 1, h: 1, cost: 500, upkeep: 10, manaUse: 0, selfLit: true,
+    service: { type: 'faith', radius: 6, strength: 0.6 }, landValue: 6, unlock: 0,
   },
   {
     key: 'temple', name: 'Temple of the Four Vigils', category: 'service',
@@ -364,6 +377,13 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A leystone weir across the Sable with sluice gates and lamps. Makes 90 mana a day from the current, wards 30 tiles across the water, relays the ley like a Nexus, and holds the Hush flood back. Must touch water. No mana.',
     flavor: 'The river did not agree to it. The river was not asked. The river, the Veshari say, is still thinking it over.',
     w: 2, h: 2, cost: 22000, upkeep: 160, manaUse: 0, manaProduce: 90, nearWater: true,
+    service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
+  },
+  {
+    key: 'lanternofwicks', name: 'Lantern of Wicks', category: 'wonder', faction: ['tallowkin'],
+    desc: 'The Lantern of Vell rebuilt by the spire-wrights: a leystone lighthouse of ten thousand wicks. Wards 30 tiles, relays the ley like a Nexus, lights itself and the street around it, and marks the Tallowkin a true people of the light.',
+    flavor: 'They say you can read by it from the next valley. They say a lot of things in the next valley.',
+    w: 3, h: 3, cost: 18000, upkeep: 180, manaUse: 10, needsMana: true, selfLit: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
 
@@ -652,7 +672,7 @@ export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
 /** Great halls that relay the ley like a Nexus and light like the Lantern: one row per people's wonder. */
-export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir'];
+export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir', 'lanternofwicks'];
 
 export const WALL_COST = 60;
 export const WALL_UPKEEP = 0.4;

@@ -247,7 +247,7 @@ export function dailyAgents(state: GameState): void {
         homeId: home.id,
         targetId: -1,
         timer: rng.int(200),
-        variant: rng.int(6),
+        variant: ((v) => (state.faction === 'tallowkin' && v < 3 ? 5 : v))(rng.int(6)), // the Tallowkin are candle-eyed more often, with no extra draw
         dir: 0,
         load: 0,
       });

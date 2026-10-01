@@ -239,13 +239,15 @@ export function dailyBuildings(state: GameState): void {
     else b.dryDays = Math.max(0, b.dryDays - 1);
     if (!b.lit || !b.watered) b.problemDays++;
     else b.problemDays = 0;
-    if (b.unhappyDays > 8 || b.dryDays > 14) {
+    const darkAbandon = factionOf(state).rules.darkAbandon;
+    const dark = darkAbandon > 0 && !b.lit && b.problemDays > darkAbandon; // light is life
+    if (b.unhappyDays > 8 || b.dryDays > 14 || dark) {
       b.state = 'abandoned';
       b.stateDays = 0;
       b.residents = 0;
       b.workers = 0;
       markDirty(state, b.x, b.y);
-      if (rng.chance(0.3)) pushMessage(state, `${def.name.split(' ')[0]} at (${b.x},${b.y}) abandoned: ${b.dryDays > 12 ? 'no mana or water' : 'nobody wants to stay'}.`, 'warn');
+      if (rng.chance(0.3)) pushMessage(state, `${def.name.split(' ')[0]} at (${b.x},${b.y}) abandoned: ${dark ? 'no light' : b.dryDays > 12 ? 'no mana or water' : 'nobody wants to stay'}.`, 'warn');
       return;
     }
     const cap = capacityOf(b, state);

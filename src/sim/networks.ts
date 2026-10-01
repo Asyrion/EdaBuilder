@@ -54,13 +54,14 @@ export function updateMana(state: GameState): void {
   // 2. spire chain: BFS from nodes over spires/nexus
   const spires: Building[] = [];
   forEachBuilding(state, (b) => {
-    if ((b.kind === 'spire' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
+    if ((b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
   });
   const spireLit = new Array(spires.length).fill(false);
   const sources: { x: number; y: number; r: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y, r: NODE_RADIUS }));
   const queue: { x: number; y: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y }));
-  const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK);
-  const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : SPIRE_RADIUS);
+  const reach = factionOf(state).rules.spireReach; // the Tallowkin's spires reach a tile further
+  const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK + reach);
+  const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : b.kind === 'wicktower' ? 4 : SPIRE_RADIUS + reach);
   while (queue.length) {
     const q = queue.pop()!;
     for (let k = 0; k < spires.length; k++) {
@@ -72,7 +73,7 @@ export function updateMana(state: GameState): void {
       if (d <= linkOf(s) + 0.5) {
         spireLit[k] = true;
         s.lit = true;
-        queue.push({ x: cx, y: cy });
+        if (s.kind !== 'wicktower') queue.push({ x: cx, y: cy }); // a Wick-Tower glows but relays nothing
         sources.push({ x: cx, y: cy, r: radiusOf(s) });
       }
     }

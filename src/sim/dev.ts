@@ -1,5 +1,5 @@
 /** Dev tools: commands for playtesting and checking mechanics. Every use is counted, marks the daily result, and writes one Chronicle line. See DESIGN.md 4.55. */
-import { ALL_EVENTS } from './events';
+import { ALL_EVENTS, descOf } from './events';
 import { milestonesOf } from '../data/factions';
 import { ASPECTS } from './weave';
 import { LINE_INFO, addEgg, STAGE_NAMES, stageCap } from './wyrmcraft';
@@ -81,7 +81,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   { id: 'petition', group: 'Guilds & relics', name: 'Petition now', desc: 'The least pleased guild petitions today (needs a lit Guildhall).', run: (s) => { s.guilds.lastCouncil = -99; dailyGuilds(s); return s.pendingEvent ? `${s.pendingEvent.title}.` : 'No petition: no council, or every guild is content.'; } },
   { id: 'relic', group: 'Guilds & relics', name: 'Complete a relic set', desc: 'The chosen set entire.', arg: { kind: 'select', options: RELIC_SETS.map((r) => [r.id, r.name]) }, run: (s, id) => { grantRelicSet(s, id); return `${RELIC_SETS.find((r) => r.id === id)?.name} entire.`; } },
   // events & map
-  { id: 'event', group: 'Events & map', name: 'Fire an event', desc: 'Any event or festival by name.', arg: { kind: 'select', options: eventOptions() }, run: (s, id) => { const e = ALL_EVENTS.find((x) => x.id === id); if (!e) return 'Unknown event.'; s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) }; s.firedEvents.push(`${e.id}:?`); return `${e.title}.`; } },
+  { id: 'event', group: 'Events & map', name: 'Fire an event', desc: 'Any event or festival by name.', arg: { kind: 'select', options: eventOptions() }, run: (s, id) => { const e = ALL_EVENTS.find((x) => x.id === id); if (!e) return 'Unknown event.'; s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) }; s.firedEvents.push(`${e.id}:?`); return `${e.title}.`; } },
   { id: 'charter', group: 'Events & map', name: 'Charter the whole map', desc: 'Every sector bought.', run: (s) => { s.sectors.fill(1); markAllDirty(s); return 'Sixteen sectors.'; } },
   { id: 'flatten', group: 'Events & map', name: 'Flatten here', desc: 'Grass in a 21×21 at the camera centre (water and nodes kept).', run: (s, _a, at) => { let n = 0; for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = at.x + dx; const y = at.y + dy; if (!inBounds(x, y)) continue; const i = idx(x, y); const t = s.terrain[i]; if (t === Terrain.Forest || t === Terrain.Hills || t === Terrain.Meadow) { s.terrain[i] = Terrain.Grass; n++; markDirty(s, x, y); } } return `${n} tiles flattened.`; } },
 ];

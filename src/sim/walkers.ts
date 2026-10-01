@@ -160,15 +160,15 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
   pilgrim: {
     id: 'pilgrim', name: 'pilgrim', plural: 'pilgrims', prop: 'staff',
     desc: 'Walks from its shrine or temple to another house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
-    from: ['shrine', 'temple'],
+    from: ['shrine', 'candleshrine', 'temple'],
     count: (_s, b) => (b.kind === 'temple' ? 2 : 1),
     radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
     cap: 99,
-    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'candleshrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),
     onTile: (s, _a, i) => paintBonus(s, 'faith', i, 0.04, 0.15),
     onArrive: (s, a, i) => {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
-      const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'stake');
+      const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'candleshrine' || b.kind === 'stake');
       if (h) { s.stats.pilgrimPrayers++; logLine(a, `Prayed at the ${BUILDING_BY_KEY[h.kind].name} at (${h.x},${h.y}).`); }
       a.phase = 1;
     },

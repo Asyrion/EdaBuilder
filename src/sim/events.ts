@@ -1,6 +1,6 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
-import { moorings } from '../data/factions';
+import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, addEgg, isCradle } from './wyrmcraft';
@@ -18,7 +18,11 @@ export interface EventDef {
   text: string;
   when: (s: GameState) => boolean;
   once?: boolean; // never repeats
-  choices: { label: string; desc: string; apply: (s: GameState) => string }[];
+  choices: { label: string; desc: string | ((s: GameState) => string); apply: (s: GameState) => string }[];
+}
+/** A choice's description for this city (a people may change the numbers). */
+export function descOf(c: { desc: string | ((s: GameState) => string) }, s: GameState): string {
+  return typeof c.desc === 'function' ? c.desc(s) : c.desc;
 }
 
 function addResidents(s: GameState, n: number): number {
@@ -221,8 +225,8 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'The first night of the Hush. Tradition asks every hearth to keep a lamp burning until dawn, so that the Gloam finds no dark window to whisper at.',
     when: (s) => s.population > 40,
     choices: [
-      { label: 'Keep the vigil', desc: 'The lamps draw up to 120 stored mana from the Nexus rings: the Gloam holds 6 days, plus a day for every 12 mana drawn. Shallow stores (under 60) mean the lamps burn from the spires instead: demand +15% for 10 days.', apply: (s) => { const take = Math.min(120, s.manaStorage); s.manaStorage -= take; const days = 6 + Math.floor(take / 12); if (take < 60) s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + days, label: 'Vigil holds the Gloam' }); return take >= 60 ? `${Math.round(take)} mana from the stores keeps every window amber for ${days} nights. Beyond the last lantern, the grey grass waits.` : `The stores are shallow: the spires burn hot to keep the windows lit, and the Gloam holds ${days} nights.`; } },
-      { label: 'Let folk sleep', desc: 'No cost. The whispering is louder this Hush: happiness −3 for 20 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 20, label: 'Vigil skipped' }); return 'Old Maud keeps her lamp lit anyway. She says the dark remembers who did not.'; } },
+      { label: 'Keep the vigil', desc: (s) => { const r = factionOf(s).rules; return `The lamps draw up to ${Math.round(120 * r.vigilCost)} stored mana from the Nexus rings: the Gloam holds 6 days, plus a day for every ${Math.round(12 * r.vigilCost)} mana drawn. Shallow stores (under ${Math.round(60 * r.vigilCost)}) mean the lamps burn from the spires instead: demand +15% for 10 days.`; }, apply: (s) => { const vc = factionOf(s).rules.vigilCost; const take = Math.min(120 * vc, s.manaStorage); s.manaStorage -= take; const days = 6 + Math.floor(take / (12 * vc)); if (take < 60 * vc) s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + days, label: 'Vigil holds the Gloam' }); return take >= 60 * vc ? `${Math.round(take)} mana from the stores keeps every window amber for ${days} nights. Beyond the last lantern, the grey grass waits.` : `The stores are shallow: the spires burn hot to keep the windows lit, and the Gloam holds ${days} nights.`; } },
+      { label: 'Let folk sleep', desc: (s) => (factionOf(s).rules.vigilMandatory ? 'The Tallowkin do not sleep through the vigil. Happiness −8 for 30 days, and the dark remembers.' : 'No cost. The whispering is louder this Hush: happiness −3 for 20 days.'), apply: (s) => { const hard = factionOf(s).rules.vigilMandatory; s.modifiers.push({ kind: 'happiness', value: hard ? -8 : -3, until: s.day + (hard ? 30 : 20), label: 'Vigil skipped' }); return hard ? 'Nobody sleeps. Every candle-eyed child sits at a dark window all night, and in the morning nobody speaks to the Warden-Reeve.' : 'Old Maud keeps her lamp lit anyway. She says the dark remembers who did not.'; } },
     ],
   },
   {
@@ -539,7 +543,7 @@ export function maybeFireCalendar(s: GameState): void {
     if (e.season !== season || e.seasonDay !== dayOfSeason || !e.when(s)) continue;
     const tag = `${e.id}@${year}`;
     if (s.firedEvents.some((f) => f.startsWith(tag))) continue;
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${tag}:?`);
     s.lastEventDay = s.day;
     return;
@@ -552,7 +556,7 @@ export function maybeFireWyrm(s: GameState): void {
   for (const e of WYRM_EVENTS) {
     if (!e.when(s)) continue;
     if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${e.id}:?`);
     if (s.firedEvents.length > 40) s.firedEvents.shift();
     return;
@@ -575,7 +579,7 @@ export function maybeFireEvent(s: GameState): void {
   const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = rng.pick(pool);
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.lastEventDay = s.day;
     s.firedEvents.push(`${e.id}:?`);
     if (s.firedEvents.length > 40) s.firedEvents.shift();

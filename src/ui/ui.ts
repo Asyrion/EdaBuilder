@@ -1,4 +1,4 @@
-import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, type FactionId } from '../data/factions';
+import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
@@ -290,7 +290,7 @@ export class UI {
       for (const d of BUILDINGS.filter(cat.filter).filter((d) => buildsFor(factionOf(s), d))) {
         const locked = !canBuild(s, d.key);
         const mats = d.materials ? ' + ' + Object.entries(d.materials).map(([k, v]) => `${v} ${k}`).join(', ') : '';
-        add(d.name, `${d.cost}c${mats}`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked));
+        add(d.name, `${costOf(s, d)}c${mats}`, locked, t.kind === 'build' && t.key === d.key, () => this.host.setTool({ kind: 'build', key: d.key }), () => this.buildingTip(d, locked, costOf(s, d)));
       }
     }
     this.q('#q-select').classList.toggle('active', t.kind === 'select');
@@ -299,9 +299,9 @@ export class UI {
     this.q('#q-bulldoze').classList.toggle('active', t.kind === 'bulldoze');
   }
 
-  private buildingTip(d: BuildingDef, locked: boolean): string {
+  private buildingTip(d: BuildingDef, locked: boolean, cost = d.cost): string {
     const bits: string[] = [];
-    bits.push(`${d.w}×${d.h} · cost ${d.cost} · upkeep ${d.upkeep}/day`);
+    bits.push(`${d.w}×${d.h} · cost ${cost} · upkeep ${d.upkeep}/day`);
     if (d.manaUse) bits.push(`${d.manaUse} mana/day`);
     if (d.manaProduce) bits.push(`+${d.manaProduce} mana/day`);
     if (d.service) bits.push(`radius ${d.service.radius}`);

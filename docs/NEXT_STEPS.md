@@ -320,6 +320,17 @@
   strike with a `barges` modifier), the bargeman walker (bails flooded homes), and the bot
   laying landings beside its works and raising the Weir. M12 Peoples II is closed.
 
+## Done in iteration 41 (M13 part 1, the Tallowkin of the Wick)
+
+- The third people: five rule fields (spire reach and cost through `costOf`, dark
+  abandonment, the vigil's cost and its mandate) and node mana ×1.2; milestones by lit
+  share; the Wick-Tower (lights, never relays), the Candle-Shrine (self-lit, replaces the
+  shrine), the Lantern of Wicks (the wonder); the wickhouse look and candle-eyed citizens;
+  the twin-node start; the bot's `brighten()`.
+- From the playtests: idle agents stood in the walk cycle and every walker marched in step
+  on one global frame, stacked on one pixel; agents now stand still without a path, walk at
+  their own pace and keep a lane of their own.
+
 ## Known issues
 
 - **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day
@@ -375,14 +386,12 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M13: the third people, the Tallowkin candle-folk** (DESIGN §14.2, designed): light is
-   life. Every building must be lit or it is abandoned in a day; spires reach 7 but cost
-   double; the Hush vigil is mandatory and cheap; their wonder is the Lantern of Vell rebuilt
-   as the Lantern of Wicks. The scaffold has held twice, so the cut is: rules (spire reach
-   and cost, the unlit-abandon rule, the vigil), a wickhouse zone look, a Candle-Shrine and a
-   Wick-Tower (a cheap spire that lights but does not relay), milestones by light, a
-   chapter, tales and a lamplighter walker, two iterations. Alternative if the user prefers:
-   the hand-made art pass (item 1) or the Grimmen mana game (DESIGN §4.69's finding).
+0. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
+   spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
+   Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
+   warps the wickhouses, a candle-eyed child who reads the Veins), the lamplighter walker
+   (from Wick-Towers and spires: relights a dark home for a day, paints ward), a people's
+   dev command, and the late game on three seeds (Bright Town by day 120).
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

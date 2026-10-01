@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked, type BuildingDef, type Milestone } from '../sim/catalog';
 import { Terrain, idx, type GameState } from '../sim/types';
 
-export type FactionId = 'vellish' | 'grimmen' | 'veshari';
+export type FactionId = 'vellish' | 'grimmen' | 'veshari' | 'tallowkin';
 
 export interface FactionRules {
   hillLandValue: number; // land value added on Hills tiles
@@ -17,6 +17,11 @@ export interface FactionRules {
   dryPenalty: number; // land value taken off every tile more than 8 from water
   riverFreezes: boolean; // false: the river runs through the Hush (barges sail, mills turn)
   millMana: number; // × the mana a Torrent Mill makes
+  spireReach: number; // added to a Ley Spire's link and light radius (networks.ts)
+  spireCost: number; // × the crowns a Ley Spire costs (costOf)
+  darkAbandon: number; // days unlit before a zone building is abandoned; 0 = never (growth.ts)
+  vigilCost: number; // × the mana the Hush vigil draws (events.ts)
+  vigilMandatory: boolean; // skipping the vigil costs the people dearly (events.ts)
   milestoneGate?: (s: GameState, next: number) => boolean; // false holds the city at its milestone
 }
 
@@ -81,7 +86,29 @@ const VESHARI_TEXTS = [
 const VESHARI_SWAP: Record<string, string> = { well: 'tidewell', cradle: 'tidepool', lantern_wonder: 'greatweir' };
 export const VESHARI_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: VESHARI_NAMES[i], text: VESHARI_TEXTS[i], unlocks: m.unlocks.map((k) => VESHARI_SWAP[k] ?? k) }));
 
-export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1 };
+/** The share of standing buildings that are lit (the stake counts): the Tallowkin's milestones need it. */
+export function litShare(s: GameState): number {
+  let all = 0; let lit = 0;
+  for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; all++; if (b.lit) lit++; }
+  return all ? lit / all : 1;
+}
+export const TALLOW_LIGHT = [0, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.9];
+const TALLOW_NAMES = ['Wick', 'Taper', 'Candle', 'Lamp', 'Lantern', 'Beacon-Street', 'Bright Town', 'Hall of Wicks', 'Lantern of Wicks'];
+const TALLOW_TEXTS = [
+  'A wick at the node. Raise a spire, light every window, and let no house go dark.',
+  'A taper. The Crown sends cobbles, a sexton and a healer; the Tallowkin send for more leystone.',
+  'A candle in the dark. The Veshari answer, and the first Ward Lantern is yours to raise.',
+  "A lamp on the Crown's maps. Scholars, a proper Watch and the carters' guild follow the light in.",
+  'A lantern town. The deep Veins may be tapped and a Wyrm-Cradle warmed under the spires.',
+  'A beacon-street: carts from three valleys steer by your light. The guilds petition for a hall.',
+  'A bright town of a thousand souls. The Four Vigils ask for a temple with a lamp in every niche.',
+  'The Hall of Wicks: the Crown grants you the right to raise the Lantern of Wicks.',
+  'The Lantern of Wicks. Every window in the city burns, and the Gloam has nowhere to stand.',
+];
+const TALLOW_SWAP: Record<string, string> = { shrine: 'candleshrine', lantern_wonder: 'lanternofwicks' };
+export const TALLOW_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: TALLOW_NAMES[i], text: TALLOW_TEXTS[i], unlocks: m.unlocks.map((k) => TALLOW_SWAP[k] ?? k) }));
+
+export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false };
 
 export const FACTIONS: Record<string, FactionDef> = {
   vellish: {
@@ -101,7 +128,18 @@ export const FACTIONS: Record<string, FactionDef> = {
     milestones: VESHARI_MILESTONES, deny: [], replaces: { well: 'tidewell', cradle: 'tidepool', lantern: 'greatweir' },
     rules: { ...NEUTRAL_RULES, waterLandValue: 2, dryPenalty: 6, riverFreezes: false, millMana: 1.33, nodeMana: 0.8, milestoneGate: (s, next) => moorings(s) >= VESHARI_MOORINGS[next] },
   },
+  tallowkin: {
+    id: 'tallowkin', name: 'The Tallowkin of the Wick', people: 'Tallowkin', playable: true,
+    lore: 'The small candle-eyed people born beside the Veins, the spire-wrights of every wardlight, chartered under two nodes. Light is life: a house three days dark is abandoned, their spires reach a tile further and cost double, Wick-Towers light the corners cheaply, the Hush vigil is theirs to keep, and their milestones are measured by how much of the city burns bright.',
+    milestones: TALLOW_MILESTONES, deny: [], replaces: { shrine: 'candleshrine', lantern: 'lanternofwicks' },
+    rules: { ...NEUTRAL_RULES, spireReach: 1, spireCost: 2, darkAbandon: 3, vigilCost: 0.5, vigilMandatory: true, nodeMana: 1.2, milestoneGate: (s, next) => litShare(s) >= TALLOW_LIGHT[next] },
+  },
 };
+
+/** What a building costs this people: the Ley Spire's price is a rule, everything else is the catalog's. */
+export function costOf(s: GameState, def: BuildingDef): number {
+  return def.key === 'spire' ? Math.round(def.cost * factionOf(s).rules.spireCost) : def.cost;
+}
 
 export function factionOf(s: GameState): FactionDef {
   return FACTIONS[s.faction] ?? FACTIONS.vellish;
