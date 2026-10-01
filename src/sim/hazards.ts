@@ -89,11 +89,16 @@ export function dailySurge(state: GameState): void {
   const threshold = edictOn(state, 'wardens') ? 1.5 : 1.25;
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20) {
     state.overdrawDays++;
+    state.stats.brownoutOpen = 1;
     if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font or Nexus, or cut consumers.', 'warn', true);
     else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
-  } else state.overdrawDays = Math.max(-4, state.overdrawDays - 1);
+  } else {
+    if (state.stats.brownoutOpen) { state.stats.brownoutsSurvived++; state.stats.brownoutOpen = 0; }
+    state.overdrawDays = Math.max(-4, state.overdrawDays - 1);
+  }
   if (state.overdrawDays >= 5) {
     state.overdrawDays = -4;
+    state.stats.brownoutOpen = 0;
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {

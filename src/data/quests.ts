@@ -1,6 +1,7 @@
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, Zone, type GameState } from '../sim/types';
 import { BUILDING_BY_KEY } from '../sim/catalog';
+import { chose } from '../sim/events';
 
 export type Focus =
   | { tool: 'road' | 'zoneHearth' | 'zoneMarket' | 'zoneCraft' | 'zoneArcane' | 'wall' | 'gateBelregi' | 'district' }
@@ -71,6 +72,12 @@ export const QUESTS: QuestDef[] = [
   { id: 'x_paint', chapter: 'Districts', title: 'Paint a district', hint: 'Districts tab. Edicts can then be set per district.', when: (s) => s.milestone >= 2, done: (s) => districts(s), focus: { tool: 'district' }, reward: 300, priority: 26 },
   { id: 'x_edict', chapter: 'Districts', title: 'Set an edict for a district', hint: 'Edicts panel, choose the district in Scope.', when: (s) => districts(s), done: (s) => Object.values(s.districtEdicts).some(Boolean), focus: { panel: 'edicts' }, reward: 400, priority: 27 },
   // Seasons
+  { id: 's_brownout', chapter: 'Mana', title: 'Ride out a brownout', hint: 'When demand passes the flow the spires flicker; cut consumers or add flow before the fifth day and no surge comes.', when: (s) => s.overdrawDays > 0, done: (s) => s.stats.brownoutsSurvived > 0, focus: { build: 'nexus' }, reward: 600, priority: 33 },
+  { id: 'x_rename', chapter: 'Districts', title: 'Name a district', hint: 'Edicts panel: pick the district in Scope and type a name.', when: (s) => districts(s), done: (s) => Object.keys(s.districtNames).length > 0, focus: { panel: 'edicts' }, reward: 200, priority: 28 },
+  { id: 's_vigil', chapter: 'Seasons', title: 'Keep the Hush vigil', hint: 'On the first night of the Hush the city is asked to keep every window lit.', when: (s) => s.day >= 85, done: (s) => chose(s, 'vigil', 0), reward: 800, priority: 51 },
+  { id: 's_feast', chapter: 'Seasons', title: 'Hold a Thaw feast', hint: 'On Thaw-day of the second year, pay for the feast.', when: (s) => s.day >= 110, done: (s) => chose(s, 'thawday', 0), reward: 600, priority: 52 },
+  { id: 'b_moths', chapter: 'Beasts', title: 'See glimmoths at the node', hint: 'They swarm lit ley at night. Zoom in on a spire after dusk.', when: (s) => s.milestone >= 1, done: (s) => s.stats.mothsSeen > 0, focus: { center: 'node' }, reward: 100, priority: 27 },
+  { id: 'b_wisps', chapter: 'The dead', title: 'Glimpse a wisp ring', hint: 'Six or more wisps at once over a boneyard mean the dead are restless there.', when: (s) => s.unquieted > 10, done: (s) => s.stats.wispRing > 0, reward: 300, priority: 41 },
   { id: 's_hush', chapter: 'Seasons', title: 'Survive a Hush', hint: 'Long nights: hearths drink more mana, the Gloam grows bold, hounds hunt.', when: (s) => s.day >= 60, done: (s) => s.day >= 120, reward: 1500, priority: 50 },
   // Beasts
   { id: 'b_loft', chapter: 'Beasts', title: 'Build a Moth-Loft', hint: 'Glimmoths swarm lit ley at night; a loft near it gathers glim-dust for the works.', when: (s) => s.milestone >= 2, done: (s) => has(s, 'mothloft'), focus: { build: 'mothloft' }, reward: 500, priority: 28 },
@@ -112,6 +119,10 @@ export const QUESTS: QuestDef[] = [
   { id: 'v_court', chapter: 'The Vein-Wyrm', title: 'Raise the Wyrm-Court', hint: 'Leisure tab, Free City. Needs 40 mana and a third of the folk educated for the song.', when: (s) => s.wyrm.state === 'awake' && s.milestone >= 7, done: (s) => has(s, 'wyrmcourt'), focus: { build: 'wyrmcourt' }, reward: 1000, priority: 43 },
   { id: 'v_bind', chapter: 'The Vein-Wyrm', title: 'Bind the wyrm', hint: 'When the Court is lit the singers offer the binding. A bound wyrm wards 30 tiles and eats 40 goods a day.', when: (s) => has(s, 'wyrmcourt'), done: (s) => s.wyrm.state === 'bound', focus: { center: 'wyrm' }, reward: 3000, priority: 44 },
   { id: 'v_egg', chapter: 'The Vein-Wyrm', title: 'Keep the guardian fed for a season', hint: 'Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg.', when: (s) => s.wyrm.state === 'bound', done: (s) => s.firedEvents.some((f) => f.startsWith('egg_vein')), focus: { panel: 'wyrms' }, reward: 2000, priority: 45 },
+  // Scenario goals
+  { id: 'z_onenode', chapter: 'The Charter', title: 'The one-node valley: reach Burgh', hint: 'One Vein, running deep. Thrum Fonts, a Torrent Mill and the Nexus carry the rest.', when: (s) => s.scenario === 'onenode', done: (s) => s.milestone >= 6, reward: 5000, priority: 0 },
+  { id: 'z_island', chapter: 'The Charter', title: 'The Gloam-locked island: Township and 300 tiles burned back', hint: 'Ward Lanterns outward from the Stake; the Watch and a Hunters\' Lodge for the hounds.', when: (s) => s.scenario === 'island', done: (s) => s.milestone >= 4 && s.stats.gloamBurned >= 300, focus: { build: 'wardlantern' }, reward: 5000, priority: 0 },
+  { id: 'z_inherited', chapter: 'The Charter', title: 'The inherited collapse: ten clean days, then Burgh', hint: 'Bulldoze the ruins, lay the restless down, cut mana consumers, raise the tithe a little.', when: (s) => s.scenario === 'inherited', done: (s) => s.cleanDays >= 10 && s.milestone >= 6, focus: { panel: 'budget' }, reward: 5000, priority: 0 },
   // The Crown
   { id: 'c_thorp', chapter: 'The Crown', title: 'Become a Thorp (100 folk)', hint: 'Zone, light, water; keep taxes near 10%.', when: (s) => s.milestone === 1, done: (s) => s.milestone >= 2, reward: 0, priority: 60 },
   { id: 'c_village', chapter: 'The Crown', title: 'Become a Village (220 folk)', hint: 'Healers and a Boneyard keep folk alive and quiet.', when: (s) => s.milestone === 2, done: (s) => s.milestone >= 3, reward: 0, priority: 61 },

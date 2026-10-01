@@ -1,4 +1,5 @@
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
+import type { Scenario } from './types';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, START_TREASURY } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -23,8 +24,8 @@ import {
 
 export const CITY_NAMES = ['Thornwick', 'Ashmere', 'Glimford', 'Hollowmoor', 'Candlecross', 'Wickholm', 'Sablemere', 'Morrowford'];
 
-export function createGame(seed: number, cityName?: string): GameState {
-  const t = generateTerrain(seed);
+export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley'): GameState {
+  const t = generateTerrain(seed, scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : {});
   const n = MAP_W * MAP_H;
   const coverage = {} as Record<ServiceType, Uint8Array>;
   for (const s of SERVICE_TYPES) coverage[s] = new Uint8Array(n);
@@ -97,6 +98,8 @@ export function createGame(seed: number, cityName?: string): GameState {
     wyrm: newWyrm(chooseWyrmNode(t.nodes, t.founding)),
     airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
     fenNex: 0,
+    scenario,
+    cleanDays: 0,
     storms: [],
     artifactsSold: 0,
     tradeIncomeToday: 0,
@@ -108,7 +111,7 @@ export function createGame(seed: number, cityName?: string): GameState {
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, gloamTiles: 0, peakPopulation: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -371,6 +374,7 @@ export const NODE_DEEPEN_MANA = 45;
 export function nodeMana(state: GameState): number {
   let m = 0;
   for (const n of state.nodes) m += (n.depth ?? 0) * NODE_DEEPEN_MANA;
+  if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
   return m;
 }
 

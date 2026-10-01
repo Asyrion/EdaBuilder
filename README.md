@@ -25,6 +25,11 @@ push to `main`. The Vite base is relative, so it works from any sub-path.
 
 ## How to play
 
+The title screen offers four charters: the open valley (the standard game), the one-node
+valley (one deep Vein and nothing else), the Gloam-locked island (grey on every side) and
+the inherited collapse (a month-old town in debt, with ruins, the dead walking and a surge
+two days out). Each has a goal that sits at the top of the Ledger.
+
 You are a **Warden-Reeve** with a royal Charter. The map is 128×128 tiles with a river, a
 lake, forests, hills, several **ley nodes** (glowing springs of magic) and a grey rim of
 **Gloam** (blighted wilds). You start with 15,000 crowns and a Founding Stake next to the
@@ -156,6 +161,9 @@ Charter as `.json`.
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
+- Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
+  the inherited collapse, each with a goal; a Done page in the Ledger; per-district
+  problem counts in the Districts view.
 - Longwood and the Fen-Nex: war-tigers on forest-heavy maps, the Fen-Nex fox-folk and
   their tithe-free quarter (and fen-drake eggs), mana-storms after every surge, the Font
   of Quieting, and cameo visitors.

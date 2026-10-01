@@ -1,6 +1,8 @@
 import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
+import { createScenario } from './sim/scenario';
+import type { Scenario } from './sim/types';
 import { tick, recomputeAll } from './sim/sim';
 import { serialize, deserialize } from './sim/save';
 import { TICKS_PER_SEC, Zone, type Building, type GameState } from './sim/types';
@@ -83,7 +85,7 @@ class Game {
       togglePause: () => { this.paused = !this.paused; this.ui.refresh(); },
       setTool: (t) => this.tools.setTool(t),
       setOverlay: (id) => { this.view.overlay = id as ViewState['overlay']; this.ui.refreshViews(); },
-      newGame: (seed, name) => this.newGame(seed, name),
+      newGame: (seed, name, scenario) => this.newGame(seed, name, scenario),
       continueGame: () => this.load(),
       hasSave: () => !!localStorage.getItem(SAVE_KEY),
       save: () => this.save(),
@@ -162,8 +164,8 @@ class Game {
     this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
-  newGame(seed: number, name: string): void {
-    this.bindState(createGame(seed, name));
+  newGame(seed: number, name: string, scenario: Scenario = 'valley'): void {
+    this.bindState(scenario === 'valley' ? createGame(seed, name) : createScenario(seed, name, scenario));
     this.audio.milestone();
   }
 

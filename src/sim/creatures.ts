@@ -73,6 +73,7 @@ export function updateCreatures(state: GameState): void {
   if (night) {
     const sources = leySources(state);
     const want = Math.min(CAP.glimmoth, sources.length * 2);
+    if (want > 0) state.stats.mothsSeen = Math.max(state.stats.mothsSeen, want);
     if (moths < want) {
       for (let k = moths; k < want && k - moths < 12; k++) {
         const s = rng.pick(sources);
@@ -106,6 +107,7 @@ export function updateCreatures(state: GameState): void {
   });
   const restless = state.agents.filter((a) => a.kind === AgentKind.Restless);
   const want = Math.min(CAP.wisp, yards.length + restless.length + Math.floor(state.unquieted / 8));
+  if (wisps >= 6) state.stats.wispRing = Math.max(state.stats.wispRing, wisps);
   if (wisps < want) {
     for (let k = wisps; k < want && k - wisps < 6; k++) {
       let x: number;

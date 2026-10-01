@@ -122,6 +122,13 @@
   shelved Fen-Nex quarter and the fen-drake line, mana-storms after every surge, the Font
   of Quieting, and three cameo events (Dr. Jelly, the Cloud Forest Wizard, a traveller).
 
+## Done in iteration 17 (scenario charters, counters, summaries)
+
+- Three scenario charters on the title screen (the one-node valley, the Gloam-locked
+  island, the inherited collapse), each with a goal quest.
+- Counters for the six unbacked quests and a Done page in the Ledger.
+- Per-district unlit / dry / empty counts under the district labels.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -171,14 +178,7 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Quest counters for the planned-but-unbacked goals** (survive a brownout, rename a
-   district, keep the Hush vigil, hold a Thaw feast, glimmoths seen, a wisp ring) and a
-   completed-quests page in the Ledger.
-1. **Per-district problem summary** in the district overlay (unlit / dry / no goods
-   counts) to replace per-building icon clutter in dense districts.
-2. **Scenario charters.** Pre-built maps with a goal and a twist (a valley with one node,
-   a Gloam-locked island, a city inherited mid-collapse) selectable from the title screen.
-3. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
+1. **A second charter.** Endgame: found a daughter wardlight on the same map, sharing
    the treasury, once the first is a Beacon.
 4. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell
