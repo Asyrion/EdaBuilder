@@ -141,6 +141,12 @@
 - Today's challenge on the title screen: one valley per UTC date, Market Town by day 60.
 - Remappable keys in the Menu, shared by the game and the tool layer.
 
+## Done in iteration 20 (phone layout, challenge results, accessibility)
+
+- A narrow-screen layout: bottom-sheet toolbar and Ledger, compact top bar, small minimap
+  and ticker; the daily challenge shows progress and a copyable result; aria labels and
+  roles on the panels.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -198,7 +204,9 @@ cameo events.
    simple generative melody for milestones.
 7. **Map sectors.** Buy map sectors like CS1's tile purchase, with the Gloam retreating
    as sectors are chartered (terraforming itself is done).
-8. **Accessibility.** Screen-reader labels for the panels (ramps, scale and keys are done).
-9. **Mobile layout.** Touch gestures work; the panels still assume a desktop width.
-10. **Replays.** The sim is deterministic; a command log would allow replays and a
-    shareable score for the daily challenge.
+8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
+   ramps, scale and keys are done).
+9. **Mobile polish.** The layout fits a phone; a long-press for right-click panning and
+   larger hit targets on the map would help.
+10. **Replays.** The sim is deterministic; a command log would allow replays (the daily
+    result is already shareable as text).
