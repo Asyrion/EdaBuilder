@@ -5,7 +5,8 @@ import { computeLedger } from '../sim/economy';
 import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay, waterRadiusOf } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
+import { isLeyMember, loadCapOf, priorityOf } from '../sim/networks';
 import { mewsActive } from '../sim/beasts';
 import { MOORINGS } from '../data/factions';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
@@ -69,6 +70,7 @@ export interface UiHost {
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
   setQuarter(district: number, q: QuarterId | null): void;
+  setPriority(id: number, p: 0 | 1 | 2): void;
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> };
   setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void;
   selectedNode: number;
@@ -679,7 +681,9 @@ export class UI {
       if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
       if (b.kind === 'spire' && !b.lit) problems.push('Not linked: a spire must be within 6 tiles of a ley node or a lit spire.');
+      if (isLeyMember(b) && b.lit && b.load !== undefined) { rows.push(row('Load', `${Math.round(b.load)} / ${loadCapOf(b)} mana of buildings`)); if (b.load > loadCapOf(b)) problems.push('Overloaded: its farthest buildings go dark. Raise another spire among them.'); }
     }
+    if (def.manaUse > 0 && !isLeyMember(b)) { const p = priorityOf(b); rows.push(row('Brownout', `<span class="prio">${[['Essential', 0], ['Normal', 1], ['Dim', 2]].map(([n, v]) => `<button data-prio="${v}" class="${p === v ? 'active' : ''}" title="When the ley runs short, Dim buildings go dark first, then Normal, then Essential">${n}</button>`).join(' ')}</span>`)); }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
     if (def.goodsRate) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
@@ -740,6 +744,7 @@ export class UI {
       btn.onclick = () => this.host.callRain(b.id);
       el.appendChild(btn);
     }
+    el.querySelectorAll('button[data-prio]').forEach((pb) => { (pb as HTMLButtonElement).onclick = () => { this.host.setPriority(b.id, Number((pb as HTMLElement).dataset.prio) as 0 | 1 | 2); this.refreshInfo(); }; });
   }
 
   private nodeShown = -1;
@@ -783,7 +788,8 @@ export class UI {
     const isWyrm = i === s.wyrm.node && s.wyrm.state !== 'none';
     const asp = n.aspect ? ASPECT_INFO[n.aspect] : null;
     const rows = [
-      row('Flow', `${Math.round((90 + depth * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0)) * factionOf(s).rules.nodeMana)} mana / day`),
+      row('Flow', `${Math.round(nodeFlowOf(s, i) * factionOf(s).rules.nodeMana)} mana / day`),
+      row('Linked', s.nodeLinked[i] === false ? `<span class="warn">no: it seeps ${Math.round(90 * NODE_SEEP * factionOf(s).rules.nodeMana)} into the ground; a lit spire, stake or hall within 6 tiles draws the rest (and its depth)</span>` : 'yes: a lit spire, stake or hall within 6 tiles draws its full flow'),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
@@ -988,7 +994,7 @@ export class UI {
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
             <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) where the demand bars ask.</li>
-            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours.</li>
+            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, placeBuildingRaw, nodeMana } from '../src/sim/world';
+import { createGame, placeBuildingRaw, nodeFlow } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { AgentKind, RoadType, Terrain, idx } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
@@ -145,9 +145,9 @@ describe('The Underhill chapter and the Grimmen tales', () => {
     fire(g, 'true_leystone', 0);
     expect(mine.stock).toBe(40);
     expect(g.materials.scale).toBe(3);
-    const m0 = nodeMana(g);
+    const m0 = nodeFlow(g);
     fire(g, 'true_leystone', 2);
-    expect(nodeMana(g) - m0).toBe(10);
+    expect(nodeFlow(g) - m0).toBe(10);
     expect(g.stats.trueVeins).toBe(1);
   });
 });

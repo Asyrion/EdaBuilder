@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, nodeMana, placeBuildingRaw } from '../src/sim/world';
+import { createGame, nodeFlow, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { RoadType, TICKS_PER_DAY, Terrain, idx } from '../src/sim/types';
 import { buildRoad, placeBuilding, roadPath } from '../src/sim/actions';
@@ -66,7 +66,7 @@ describe('The Tallowkin of the Wick: rules', () => {
     const s = town();
     const v = town('vellish');
     expect(s.nodes.length).toBe(v.nodes.length + 1);
-    expect(s.manaSupply).toBeCloseTo((s.nodes.length * 90 + nodeMana(s)) * 1.2, 3); // the twin node, and every node a fifth stronger
+    expect(s.manaSupply).toBeCloseTo(nodeFlow(s, s.nodeLinked) * 1.2, 3); // the linked nodes, every one a fifth stronger
     const vigil = ALL_EVENTS.find((e) => e.id === 'vigil')!;
     expect(descOf(vigil.choices[0], s)).toContain('60 stored mana');
     expect(descOf(vigil.choices[0], v)).toContain('120 stored mana');

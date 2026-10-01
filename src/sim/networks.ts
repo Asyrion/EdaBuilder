@@ -4,7 +4,7 @@ export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA, WONDER_HALLS } from './catalog';
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
-import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
+import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
@@ -20,6 +20,24 @@ const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
 const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
+/** How much mana of buildings a member of the chain can light; over it, its farthest go dark. Nodes carry anything. */
+export const LOAD_CAP: Record<string, number> = { spire: 80, wicktower: 20, stake: 60, nexus: 200 };
+export function loadCapOf(b: Building): number {
+  return LOAD_CAP[b.kind] ?? (LEY_HALLS.includes(b.kind) ? 200 : 80);
+}
+export function isLeyMember(b: Building): boolean {
+  return b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'stake' || LEY_HALLS.includes(b.kind);
+}
+/** Brownout tier: 0 essential (wards, water), 1 normal, 2 dim (leisure): the dim go dark first. */
+export function priorityOf(b: Building): 0 | 1 | 2 {
+  if (b.priority !== undefined) return b.priority;
+  const def = BUILDING_BY_KEY[b.kind];
+  if (def.service?.type === 'ward' || def.waterRadius) return 0;
+  if (def.category === 'leisure') return 2;
+  return 1;
+}
+interface MemberLoad { b: Building; x: number; y: number; cap: number; load: number; list: { c: Consumer; d: number }[] }
+interface Consumer { s: number; use: number; d: number; wasLit: boolean; prio: number }
 
 let beastmastersOn = false;
 export function manaUseOf(b: Building, hush = false): number {
@@ -41,8 +59,8 @@ export function updateMana(state: GameState): void {
   const lit = new Uint8Array(n);
   const oldLit = state.lit;
 
-  // 1. supply
-  let supply = (state.nodes.length * NODE_MANA + nodeMana(state)) * factionOf(state).rules.nodeMana;
+  // 1. supply from the producers; the nodes are added after the chain is drawn (a node's flow counts only while something lit links it)
+  let supply = 0;
   let storageMax = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
@@ -57,8 +75,10 @@ export function updateMana(state: GameState): void {
     if ((b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
   });
   const spireLit = new Array(spires.length).fill(false);
+  const linked: boolean[] = state.nodes.map(() => false);
+  const members: MemberLoad[] = [];
   const sources: { x: number; y: number; r: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y, r: NODE_RADIUS }));
-  const queue: { x: number; y: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y }));
+  const queue: { x: number; y: number; node: number }[] = state.nodes.map((nd, k) => ({ x: nd.x, y: nd.y, node: k }));
   const reach = factionOf(state).rules.spireReach; // the Tallowkin's spires reach a tile further
   const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK + reach);
   const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : b.kind === 'wicktower' ? 4 : SPIRE_RADIUS + reach);
@@ -73,12 +93,16 @@ export function updateMana(state: GameState): void {
       if (d <= linkOf(s) + 0.5) {
         spireLit[k] = true;
         s.lit = true;
-        if (s.kind !== 'wicktower') queue.push({ x: cx, y: cy }); // a Wick-Tower glows but relays nothing
+        if (q.node >= 0) linked[q.node] = true; // a member found straight from a node links it
+        if (s.kind !== 'wicktower') queue.push({ x: cx, y: cy, node: -1 }); // a Wick-Tower glows but relays nothing
         sources.push({ x: cx, y: cy, r: radiusOf(s) });
+        members.push({ b: s, x: cx, y: cy, cap: loadCapOf(s), load: 0, list: [] });
       }
     }
   }
-  for (let k = 0; k < spires.length; k++) if (!spireLit[k]) spires[k].lit = false;
+  for (let k = 0; k < spires.length; k++) if (!spireLit[k]) { spires[k].lit = false; spires[k].load = undefined; }
+  state.nodeLinked = linked;
+  supply += nodeFlow(state, linked) * factionOf(state).rules.nodeMana;
 
   // 2a. drakes: a Glim drake lights its cradle's neighbours; a Vein drake roosting adds flow
   for (const au of dragonAuras(state)) {
@@ -186,10 +210,10 @@ export function updateMana(state: GameState): void {
       tryLightBuildingAt(x, y + 1);
     }
   }
-  for (let i = 0; i < n; i++) if (roadLit[i]) lit[i] = 1;
+  // (lit road tiles are marked after the shortfall decides whether the lantern-ways dim)
 
   // 5. demand & brownout
-  const consumers: { s: number; use: number; d: number; wasLit: boolean }[] = [];
+  let consumers: Consumer[] = [];
   let demand = 0;
   const hush = seasonOf(state) === 3;
   const mult = manaMult(state);
@@ -206,16 +230,51 @@ export function updateMana(state: GameState): void {
       demand += use;
       let dmin = Infinity;
       for (const nd of state.nodes) dmin = Math.min(dmin, Math.hypot(b.x - nd.x, b.y - nd.y));
-      consumers.push({ s, use, d: dmin, wasLit: b.lit });
+      consumers.push({ s, use, d: dmin, wasLit: b.lit, prio: priorityOf(b) });
     }
     b.lit = true;
   }
+  // 5a. spire load: every consumer draws through its nearest lit member or node; a member over its cap sheds its farthest first
+  if (members.length) {
+    for (const c of consumers) {
+      const b = state.buildings[c.s]!;
+      const bx = b.x + (b.w - 1) / 2;
+      const by = b.y + (b.h - 1) / 2;
+      let best: MemberLoad | null = null;
+      let bd = Infinity;
+      for (const nd of state.nodes) { const d = Math.hypot(bx - nd.x, by - nd.y); if (d < bd) { bd = d; best = null; } }
+      for (const m of members) { const d = Math.hypot(bx - m.x, by - m.y); if (d < bd) { bd = d; best = m; } }
+      if (best) { best.load += c.use; best.list.push({ c, d: bd }); }
+    }
+    const shed = new Set<number>();
+    for (const m of members) {
+      m.b.load = m.load;
+      if (m.load <= m.cap) continue;
+      m.list.sort((p, q) => Number(p.c.wasLit) - Number(q.c.wasLit) || q.d - p.d); // already dark first, then the farthest
+      let over = m.load - m.cap;
+      for (const e of m.list) {
+        if (over <= 0) break;
+        state.buildings[e.c.s]!.lit = false;
+        shed.add(e.c.s);
+        over -= e.c.use;
+        demand -= e.c.use;
+      }
+    }
+    if (shed.size) consumers = consumers.filter((c) => !shed.has(c.s));
+  }
   let roadDemand = 0;
-  for (let i = 0; i < n; i++) if (roadLit[i]) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
-  demand += roadDemand;
+  for (let i = 0; i < n; i++) if (roadLit[i] && state.road[i] === RoadType.Lantern) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
   demand += foundryMana(state);
   demand += floatingMana(state);
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
+  // lantern-ways are the first thing a shortfall dims: their draw leaves the demand and they go dark (with hysteresis, so they do not flicker)
+  if (!state.roadsDim && demand + roadDemand > supply) state.roadsDim = true;
+  else if (state.roadsDim && demand + roadDemand <= supply) state.roadsDim = false;
+  if (!state.roadsDim) demand += roadDemand;
+  for (let i = 0; i < n; i++) {
+    if (roadLit[i] && (!state.roadsDim || state.road[i] !== RoadType.Lantern)) lit[i] = 1;
+    else if (state.roadsDim && state.road[i] === RoadType.Lantern) lit[i] = 0; // dimmed even where a spire's own light falls on it
+  }
   void f;
 
   if (relicDone(state, 'lanterncores')) storageMax += 60;
@@ -233,8 +292,8 @@ export function updateMana(state: GameState): void {
   state.manaStorageMax = storageMax;
   let brownout = 0;
   if (demand > effectiveSupply && consumers.length) {
-    // buildings already dark stay dark (no boundary blinking); then the farthest from the nodes go first
-    consumers.sort((a, b) => Number(a.wasLit) - Number(b.wasLit) || b.d - a.d);
+    // buildings already dark stay dark (no boundary blinking); then the dim tier before the normal before the essential; the farthest from the nodes first within a tier
+    consumers.sort((a, b) => Number(a.wasLit) - Number(b.wasLit) || b.prio - a.prio || b.d - a.d);
     let over = demand - effectiveSupply;
     let dark = 0;
     for (const c of consumers) {

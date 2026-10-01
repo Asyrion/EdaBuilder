@@ -1454,6 +1454,75 @@ of the bot's second landing on a poorer early purse that the three-seed rule tre
 seed's path. The founding-node failure stays at 3 tiles (the code's number; this document
 said 2).
 
+### 4.76 M14 part 1a, the ley has limits: linked nodes, spire load, brownout tiers, lantern-ways that need their light (iteration 45)
+
+The audit's first finding about supply was that it had none: every node's 90 mana counted
+whether or not anything stood near it (the node panel even said "spires within 6 drink from
+it"), one spire carried any load, a brownout darkened by distance alone, and an unlit
+lantern-way was a free upgrade over cobble. Four limits, each one read in `updateMana` and
+one row on a panel.
+
+**Linked nodes.** The chain search carries each queue entry's node; a member (spire,
+Wick-Tower, Nexus, hall or Stake) found straight from a node marks it linked
+(`state.nodeLinked`, recomputed every update). A linked node gives its full flow, 90 plus its
+depth and a Vein's 15; an unlinked node **seeps half its 90** into the ground and none of its
+depth (`nodeFlow(state, linked)` in world.ts, `NODE_SEEP`); the one-node scenario's deep Vein
+and the true veins left to the ley count always. The first cut gave an unlinked node nothing,
+and every bot collapsed: a Village needs some 200 mana and a valley's one linked node gave 90,
+so the Grimmen ran on 70 and the Tallowkin stuck at 72 % lit. Half is the number at which
+the early city stands and linking a node is still worth a spire and a sector. The node panel
+has a Linked row that names the seep, and the deepen button refuses an unlinked node. The bot links the nearest unlinked node in
+its reach when demand passes 85 % of supply, never a sleeping wyrm's (`linkNodes`).
+
+**Spire load.** Every lit consumer draws through its nearest lit member or node (centre
+distance); a member's load is the mana of the consumers attributed to it. Caps: a spire 80,
+a Wick-Tower 20, the Stake 60, a Nexus or a hall 200; nodes carry anything. Over the cap a
+member sheds its farthest consumers until it fits, the already-dark first so nothing blinks,
+and this happens before the city brownout. The panel shows "Load 96 / 80 mana of buildings"
+and the problem "Overloaded: its farthest buildings go dark. Raise another spire among them."
+The load is the figure before shedding (`Building.load`, transient), so the player sees how
+far over the spire is. A dense block of level-3 shops at 8 mana each needs a spire every
+ten; this is the reason spires are many and not one long chain.
+
+**Brownout tiers.** `Building.priority` is 0 Essential, 1 Normal or 2 Dim; unset means by
+category (wards and water essential, leisure dim, the rest normal: `priorityOf`). The
+brownout darkens the already-dark first, then Dim, then Normal, then Essential, the farthest
+from the nodes first within a tier. The building panel has a Brownout row of three buttons
+for every mana user; a changed tier is judged afresh (the host marks the building lit before
+recomputing, so the sort does not keep it dark by habit). Saved with the building.
+
+**Lantern-ways that need their light.** When demand with the roads' draw exceeds supply the
+lantern-ways dim first: their mana leaves the demand and every lantern tile is unlit, even
+under a spire's own light, with hysteresis (`state.roadsDim` clears only when demand plus the
+roads fits again) so they do not flicker across the eighteen updates of a day. They still
+conduct this update. An unlit lantern tile is cobble for pathing cost, speed, congestion
+capacity and land value (`roadAt` in `src/sim/roads.ts`, read at those four points), so an
+unlinked lantern-way is no longer a free upgrade. A glowvine lane never draws (it was charged
+a mana a tile by the old count).
+
+Balance, 150 days, against the iteration 44 table in brackets:
+
+| run | Free City / last gate | folk at day 150 | brownout at day 150 |
+|---|---|---|---|
+| Vellish seed 42 | 58 (67) | 3,039 (2,824) | 0 % |
+| Vellish seed 43 | never: Burgh 47 (47) | 1,196 (1,312) | 11 % |
+| Vellish seed 44 | 60 (60) | 3,032 (2,005) | 5 % |
+| Grimmen seed 42 | Deephold 74 (53) | 1,472 (1,342) | 61 % |
+| Veshari seed 42 | Weirhold 106 (71), Vesh's Court 133 (103) | 1,640 (2,107) | 34 % |
+| Tallowkin seed 42 | Beacon-Street 55, no Bright Town (41) | 865 (1,316) | 15 % |
+
+The Vellish bot is unharmed (two of three seeds gain), because the valley's founding node
+and the Fonts it builds carry it and its `linkNodes` reaches a second node. The three peoples'
+bots are not: they are poor (the Grimmen end with a few hundred crowns), so they neither buy
+the sector a far node lies in nor raise the Fonts that would replace the seeped half, and
+they sit in a brownout for the whole late game; the Grimmen's half-flow rule halves the seep
+too. A human Grimmen player raises Thrum Fonts on the hills (×2 there) and a Tallowkin player
+links the nodes along the lantern-ways; the bots will learn both in part 5. Recorded in
+NEXT_STEPS as the peoples' bots' purse.
+
+Water, mud, mine seams, Font flares, shared rivers, portal crossings and the Gloam that takes
+a dark building are part 1b, the next iteration.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2131,8 +2200,8 @@ iteration each, under one rule: a mechanic exists only if the player can see it,
 about it and lose by it. The full designs, with numbers and hooks, are in AUDIT.md §4;
 this section is the table of contents and the order.
 
-1. **Supply has limits** (ley, water, roads): linked nodes only; spire load (80, Nexus 200);
-   the store shown and spent, brownout priority tiers; wells with capacity (30 zone levels,
+1. **Supply has limits** (ley, water, roads): 1a ✅ (iteration 45, §4.76) linked nodes only; spire load (80, Nexus 200);
+   the store shown and spent, brownout priority tiers, lantern-ways that need their light; 1b next: wells with capacity (30 zone levels,
    cistern 90) and the dry-land reason for the cistern; roads that need their light; mine
    seams (2,400), Font bore flares, mills that share a river, portal crossings; the Gloam
    that takes an unlit, unwarded building after two days' warning.
@@ -2360,3 +2429,6 @@ this section is the table of contents and the order.
 - *Read the whole catalogue against the code before adding to it (iteration 44):* seventy
   findings in one sitting is cheaper than seventy playtest reports; the audit becomes a
   standing step before every milestone that adds buildings.
+- *A limit is a number on a panel (iteration 45):* a cap the player cannot read is a bug
+  report waiting to happen; every limit of the ley (the link, the load, the tier, the dimmed
+  road) is one row where the thing it limits is shown, and one read in `updateMana`.

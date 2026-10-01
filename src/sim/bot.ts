@@ -4,7 +4,7 @@ import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuar
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
  * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
  */
-import { buySector, canBuySector, sectorCost } from './sectors';
+import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
 import { TERRAFORM, buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, roadPath, terraform } from './actions';
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY } from './edicts';
@@ -48,6 +48,7 @@ export class Bot {
     this.moor();
     this.brighten();
     this.keepLit();
+    this.linkNodes();
     this.buyServices();
     // expand when zone tiles are mostly used and demand is positive
     const free = this.freeZoneTiles();
@@ -154,6 +155,33 @@ export class Bot {
       const near = lit.some((l) => Math.hypot(l.x - b.x, l.y - b.y) <= reach + 2);
       if (near ? this.placeNear('wicktower', b.x, b.y, 3) : this.placeNear('spire', b.x, b.y, 3)) done++;
     });
+  }
+
+  /** A node's flow counts only while a spire links it: when the ley runs short, link the nearest unlinked node in reach (never a sleeping wyrm's). */
+  private linkNodes(): void {
+    const s = this.s;
+    if (!s.nodeLinked.length || s.manaDemand < s.manaSupply * 0.85) return;
+    const f = s.founding;
+    let best = -1;
+    let bd = Infinity;
+    s.nodes.forEach((n, k) => {
+      if (s.nodeLinked[k]) return;
+      if (k === s.wyrm.node && s.wyrm.state === 'sleeping') return;
+      const d = Math.hypot(n.x - f.x, n.y - f.y);
+      if (d <= this.radius + 16 && d < bd) { bd = d; best = k; }
+    });
+    if (best < 0) return;
+    const n = s.nodes[best];
+    // beyond the Charter: buy the node's sector first when the purse can bear it
+    const sec = sectorOf(n.x, n.y);
+    if (!s.sectors[sec]) {
+      if (canBuySector(s, sec) === null && s.treasury > sectorCost(s, sec) * 1.3) buySector(s, sec);
+      return;
+    }
+    // a spire must touch a road: a track from the city to the node's side, then the spire beside it
+    if (this.placeNear(factionKey(s, 'spire'), n.x, n.y, 5, true)) return;
+    const path = roadPath(this.cx, this.cy, n.x + 2, n.y + 2, false).filter((i) => s.bIndex[i] < 0 && !s.road[i] && s.terrain[i] !== Terrain.LeyNode);
+    if (path.length && s.treasury > path.length * 12 + 2000) buildRoad(s, RoadType.Track, path);
   }
 
   /** Place spires near unlit buildings, chained to the lit network. */
