@@ -3,7 +3,8 @@ import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA } from './ca
 import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState } from './types';
 import { forEachBuilding, markDirty, nodeMana, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
-import { guildEffect } from './guilds';
+import { guildEffect, hallActive } from './guilds';
+import { relicDone } from './relics';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
@@ -43,7 +44,7 @@ export function updateMana(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
     if (def.manaProduce) supply += def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) : 1);
-    if (def.manaStorage) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
+    if (def.manaStorage && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
   });
 
   // 2. spire chain: BFS from nodes over spires/nexus
@@ -211,6 +212,7 @@ export function updateMana(state: GameState): void {
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   void f;
 
+  if (relicDone(state, 'lanterncores')) storageMax += 60;
   storageMax *= 1 + 0.2 * guildEffect(state, 'spirewrights');
   // storage buffers a deficit
   let effectiveSupply = supply;

@@ -3,6 +3,7 @@ import { BUILDING_BY_KEY } from './catalog';
 import { Zone, type GameState } from './types';
 import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
+import { canPlaceBuilding, placeBuildingRaw, pushMessage } from './world';
 
 export type GuildId = 'carters' | 'alchemists' | 'spirewrights' | 'sextons';
 export const GUILD_IDS: GuildId[] = ['carters', 'alchemists', 'spirewrights', 'sextons'];
@@ -57,14 +58,18 @@ export interface GuildState {
   standing: Record<GuildId, number>; // 0..100, 50 is indifferent
   demand: { guild: GuildId; until: number } | null; // a granted petition: keep the edict on until this day
   lastCouncil: number; // day of the last petition
+  pleasedDays: Record<GuildId, number>; // days in a row at or above BOON_AT; at HALL_DAYS the guild builds its hall
 }
 
 export const COUNCIL_SPACING = 20;
+export const HALL_DAYS = 10;
+/** The hall each guild raises for itself after HALL_DAYS pleased days. */
+export const HALL_OF: Record<GuildId, string> = { carters: 'cartersyard', alchemists: 'lyceum', spirewrights: 'wrightslodge', sextons: 'sextonchapel' };
 export const BOON_AT = 70;
 export const STRIKE_AT = 25;
 
 export function initGuilds(): GuildState {
-  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0 };
+  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 } };
 }
 
 /** A lit, standing Guildhall seats the council. */
@@ -146,6 +151,10 @@ export function dailyGuilds(s: GameState): void {
     gs.standing[g] = Math.max(0, Math.min(100, st));
   }
   if (gs.demand && gs.demand.until <= s.day) gs.demand = null;
+  for (const g of GUILD_IDS) {
+    gs.pleasedDays[g] = council && gs.standing[g] >= BOON_AT ? gs.pleasedDays[g] + 1 : 0;
+    if (gs.pleasedDays[g] >= HALL_DAYS && !s.buildings.some((b) => b && b.kind === HALL_OF[g])) raiseHall(s, g);
+  }
   if (!council || s.pendingEvent || s.gameOver || s.day - gs.lastCouncil < COUNCIL_SPACING) return;
   let low: GuildId = 'carters';
   for (const g of GUILD_IDS) if (gs.standing[g] < gs.standing[low]) low = g;
@@ -156,6 +165,33 @@ export function dailyGuilds(s: GameState): void {
   if (s.firedEvents.length > 40) s.firedEvents.shift();
   gs.lastCouncil = s.day;
   s.stats.councils++;
+}
+
+/** A guild hall's effect holds while its guild is not striking. */
+export function hallActive(s: GameState, kind: string): boolean {
+  const g = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === kind);
+  if (!g || !s.guilds || s.guilds.standing[g] <= STRIKE_AT) return false;
+  return s.buildings.some((b) => b && b.kind === kind && b.state === 'ok');
+}
+
+/** The guild builds its hall near the Guildhall at its own cost; only road-touching, chartered ground. */
+function raiseHall(s: GameState, g: GuildId): void {
+  const hall = s.buildings.find((b) => b && b.kind === 'guildhall' && b.state === 'ok');
+  if (!hall) return;
+  const kind = HALL_OF[g];
+  for (let r = 2; r <= 9; r++)
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = hall.x + dx;
+        const y = hall.y + dy;
+        if (canPlaceBuilding(s, kind, x, y)) continue;
+        const b = placeBuildingRaw(s, kind, x, y);
+        s.stats.guildHalls++;
+        s.guilds.pleasedDays[g] = 0;
+        pushMessage(s, `${GUILDS[g].name} has raised ${BUILDING_BY_KEY[kind].name} at (${x},${y}) at its own cost: ${BUILDING_BY_KEY[kind].desc}`, 'milestone', true, { x: b.x, y: b.y });
+        return;
+      }
 }
 
 function councilEvent(g: GuildDef): EventDef {

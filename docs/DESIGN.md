@@ -678,6 +678,34 @@ Overlay `weave` (key W): dragon auras in their line colour (alpha fading with di
 then the nearest node's aspect within 10 tiles, Gloam beneath. Legend lists the eight
 aspects and the aura swatch.
 
+### 4.48 Cross-line breeding
+
+`breeding.ts`: `canBreed(s, cradle)` requires two dragons at stage ≥ 2 of different lines,
+mood ≥ 60, a lit cradle whose node aspect matches one parent, and a free cradle slot
+anywhere. `dailyBreeding` on day % 120 === 50 lays one egg per breeding cradle:
+`line` = the attuned parent's, `second` = the other's. Effects: `dragonAuras` adds an aura
+of `second` at radius −3; attunement counts either line; growth adds half the second
+line's scale; wyrmfire from either Ember. Quest `k_cross`.
+
+### 4.49 Relic sets
+
+`relics.ts`: `RelicState { pieces, uncatalogued, complete, lastRelics }`. `dailyRelics`
+turns each 12 of `stats.relics` into an uncatalogued piece; with an Academy or Grand
+Academy one piece a day is catalogued into a random incomplete set (deterministic rng).
+At three pieces the set completes with a chronicle line. `relicDone(s, id)` is read by
+networks (lanterncores +60 storage), growth (ninehouses +3 happiness; Hall of Marvels
+artifacts +5% per set), hazards (saltspoons ×1.1 quiet) and sectors (concordcharts ×0.8).
+Quest `k_relics`.
+
+### 4.50 Guild halls
+
+`GuildState.pleasedDays` counts days at ≥ 70 with a seated council; at 10 the guild calls
+`raiseHall`, which spirals 2..9 tiles from the Guildhall for a spot `canPlaceBuilding`
+accepts and places the hall with `placeBuildingRaw` (cost 0, category `special`, unlock 99
+so it never appears in the build menu). `hallActive(s, kind)` is false while the guild is
+at or under 25; coverage, storage, the depot count, miasma scrubbing and the surge
+threshold all read it. Quest `k_hall`.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1137,10 +1165,35 @@ and the Crown pays a toll of one crown a good. The Carters count every open rout
 and the auras of grown dragons on top, so the adjacency rules of 13.2 are visible on the map
 rather than only in the node panel.
 
-### 13.9 Later phases
+### 13.9 Phase 3: crossed eggs, relic sets and the guild halls (iteration 25)
 
-Phase 3: dragon breeding across lines at attuned cradles, relic sets from the delve, and a
-guild hall per guild (a Carters' Yard, an Alchemists' Lyceum) so a pleased guild builds.
+**Cross-line breeding (4.48).** Two drakes of different lines, both content, in a lit cradle
+attuned to one of them lay a crossed egg on Bloom day 20 into any free cradle slot. The
+hatchling carries the attuned parent's line and the other as a second line: a second,
+fainter aura, attunement to either node, half the second line's scale on each growth, and
+wyrmfire if either line is Ember. The cradle's info panel always says why it can or cannot
+breed this year. Breeding is the wyrmcraft payoff of the aspects of 13.2: a player who
+built cradles on the right nodes now gets dragons no egg event can give.
+
+**Relic sets (4.49).** Every twelfth relic the Ruin Delve brings up is a piece of one of
+four sets; an Academy catalogues one piece a day, and without one the pieces wait. Three
+pieces complete a set with a lasting boon: the Lantern-Cores hold 60 more mana, the Seals of
+the Nine Houses add 3 happiness, the Salt Spoons quiet 10% more dead, the Concord Charts
+cut sector prices by a fifth. The Hall of Marvels adds 5% to artifact prices per complete
+set. The delve, the Academy and the Hall of Marvels now form one chain.
+
+**Guild halls (4.50).** A guild at 70 or better for ten days in a row raises its own hall
+by the Guildhall at its own cost, on road-touching chartered ground: the Carters' Yard
+(counts as a depot for the Gloam road), the Alchemists' Lyceum (miasma −33% within 10,
+schooling within 8), the Spire-Wrights' Lodge (40 mana stored, the spires bear 15% more
+overdraw) and the Sextons' Chapel (quiets 15 dead within 12). A hall locks while its guild
+strikes. This is the "faction builds for you" reward from Anno and Against the Storm,
+scoped to each guild's own system.
+
+### 13.10 Later phases
+
+Dragon bloodlines (a third generation from two crossed parents), relic sets that unlock a
+building each, and guild rivalries (one guild's boon costs another's standing).
 
 ## 9. Verification
 
@@ -1262,3 +1315,7 @@ guild hall per guild (a Carters' Yard, an Alchemists' Lyceum) so a pleased guild
   days, so turning one off is a political act, not a free click.
 - *Festivals spend the city, not the purse:* the feast eats shelves, the vigil drains the
   Nexus rings and the Remembrance needs the Ossuary, so each festival tests a system.
+- *Breeding is gated by placement, not by a button:* a crossed egg needs an attuned
+  cradle, so the aspects decide which crosses a map allows (iteration 25).
+- *Guilds build for themselves:* a hall arrives as a reward that the sim places, and it
+  locks on a strike, so standing stays a live stake rather than a one-time unlock.

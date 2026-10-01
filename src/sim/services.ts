@@ -8,6 +8,7 @@ import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
 import { mewsActive } from './beasts';
+import { hallActive } from './guilds';
 import { dragonAuras, nodesOfAspect } from './weave';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
@@ -17,6 +18,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.service || def.service.type !== type) return;
     if (b.state !== 'ok') return;
+    if (def.category === 'special' && b.kind !== 'stake' && !hallActive(state, b.kind)) return;
     let strength = def.service.strength;
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
@@ -144,6 +146,10 @@ export function updateMiasma(state: GameState): void {
       }
   });
   const rain = modifierSum(state, 'rain') > 0 ? 0.3 : 1;
+  if (hallActive(state, 'lyceum')) forEachBuilding(state, (b) => {
+    if (b.kind !== 'lyceum' || b.state !== 'ok') return;
+    for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = b.x + 1 + dx; const y = b.y + 1 + dy; if (inBounds(x, y)) acc[idx(x, y)] *= 0.67; }
+  });
   for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12 * rain));
 }
 

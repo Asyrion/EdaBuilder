@@ -129,7 +129,8 @@ export function dailyDragons(state: GameState): void {
       continue;
     }
     const warm = cradle.lit;
-    const attuned = aspectAt(state, cradle.x, cradle.y) === d.line;
+    const asp = aspectAt(state, cradle.x, cradle.y);
+    const attuned = asp === d.line || (!!d.second && asp === d.second);
     const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1);
     if (d.stage === 0) {
       if (warm) d.days += 1;
@@ -180,13 +181,13 @@ export function dailyDragons(state: GameState): void {
       if (d.days >= STAGE_DAYS[d.stage]) {
         d.stage = (d.stage + 1) as Dragon['stage'];
         d.days = 0;
-        state.materials.scale += LINE_INFO[d.line].scale;
+        state.materials.scale += LINE_INFO[d.line].scale + (d.second ? LINE_INFO[d.second].scale / 2 : 0);
         if (d.stage === 3 && d.role === 'delver') { d.role = 'none'; d.roleTarget = -1; }
         pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. ${d.stage === 3 ? 'It can fly goods as a courier.' : 'Give it a role in the Wyrms panel.'}`, 'milestone');
       }
     } else if (d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line))) d.days += 1;
     // materials from grown dragons
-    if (d.stage >= 2 && d.line === 'ember' && state.day % 30 === 0) {
+    if (d.stage >= 2 && (d.line === 'ember' || d.second === 'ember') && state.day % 30 === 0) {
       state.materials.wyrmfire += 1;
       pushMessage(state, `${d.name} breathes a jar of wyrmfire for the alchemists.`, 'good');
     }

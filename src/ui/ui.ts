@@ -6,7 +6,9 @@ import { manaUseOf } from '../sim/networks';
 import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
-import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, STRIKE_AT, guildDrivers, guildEffect, guildMood, hasCouncil } from '../sim/guilds';
+import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, HALL_DAYS, HALL_OF, STRIKE_AT, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
+import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
+import { canBreed } from '../sim/breeding';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
 import { EDICTS, districtsInUse } from '../sim/edicts';
@@ -671,7 +673,13 @@ export class UI {
       rows.push(row('Growth', st >= 3 ? 'full-grown' : `stage ${st + 1} of 4, ${30 - (b.age % 30)} days to the next`));
       rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
     }
-    if (b.kind === 'ruindelve') rows.push(row('Relics brought up', `${s.stats.relics}`));
+    if (b.kind === 'ruindelve') {
+      rows.push(row('Relics brought up', `${s.stats.relics} (a set piece every ${RELICS_PER_PIECE})`));
+      for (const set of RELIC_SETS) rows.push(row(set.name, s.relics.complete.includes(set.id) ? `<span class="good">entire: ${set.bonus}</span>` : `${s.relics.pieces[set.id] ?? 0} of 3`));
+      if (s.relics.uncatalogued > 0) (hasAcademy(s) ? rows : problems).push(hasAcademy(s) ? row('Awaiting the Academy', `${s.relics.uncatalogued} piece(s)`) : `${s.relics.uncatalogued} piece(s) lie uncatalogued: an Academy would name them.`);
+    }
+    if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relic sets', s.relics.complete.length ? s.relics.complete.map((id) => RELIC_SETS.find((r) => r.id === id)!.name).join(', ') : 'none catalogued yet'));
+    { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
     if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); }
     if (b.kind === 'depot') { const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note); }
     if (b.kind === 'golemfoundry') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit foundry.`); }
@@ -690,7 +698,9 @@ export class UI {
     if (b.kind === 'cradle') {
       const inside = dragonsIn(s, b.id);
       rows.push(row('Eggs and young', `${inside.length} / ${cradleCapacity(b)}`));
-      for (const d of inside) rows.push(row(d.name, `${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}, mood ${Math.round(d.mood)}`));
+      for (const d of inside) rows.push(row(d.name, `${LINE_INFO[d.line].name}${d.second ? `-${LINE_INFO[d.second].name}` : ''} ${STAGE_NAMES[d.stage]}, mood ${Math.round(d.mood)}`));
+      const bc = canBreed(s, b);
+      rows.push(row('Breeding', bc.ok ? `<span class="good">${bc.why}</span>` : bc.why));
       if (!b.lit) problems.push('Unlit: the eggs are going cold. A spire within 6 tiles keeps the cradle warm.');
     }
     const dist = s.district[i];
@@ -1289,8 +1299,8 @@ export class UI {
         ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
-        <div><b>${d.name}</b> <span class="muted">the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
-        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= 2 && (d.role === 'none' || d.role === 'warden') ? `<span class="good">Aura: ${AURA_INFO[d.line]}.</span> ` : ''}${(() => { const c = st.buildings.find((b) => b && b.id === d.cradleId); return c && aspectAt(st, c.x, c.y) === d.line ? '<span class="good">Attuned to its node.</span> ' : ''; })()}${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
+        <div><b>${d.name}</b> <span class="muted">the ${d.second ? `${LINE_INFO[d.line].name}-${LINE_INFO[d.second].name} crossed` : LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
+        <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= 2 && (d.role === 'none' || d.role === 'warden') ? `<span class="good">Aura: ${AURA_INFO[d.line]}${d.second ? `; and, fainter, ${AURA_INFO[d.second]}` : ''}.</span> ` : ''}${(() => { const c = st.buildings.find((b) => b && b.id === d.cradleId); return c && aspectAt(st, c.x, c.y) === d.line ? '<span class="good">Attuned to its node.</span> ' : ''; })()}${d.stage >= Math.min(MAX_STAGE_NOW, maxStage(d.line)) ? (d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}.`}</div>
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
     });
@@ -1400,8 +1410,10 @@ export class UI {
       const v = Math.round(g.standing[id]);
       const eff = guildEffect(st, id);
       const drivers = council ? guildDrivers(st, id).map((x) => `${x.value > 0 ? '+' : ''}${x.value.toFixed(1)} ${x.text}`).join(', ') : '';
+      const hall = st.buildings.some((b) => b && b.kind === HALL_OF[id] && b.state === 'ok');
+      const hallText = hall ? `${BUILDING_BY_KEY[HALL_OF[id]].name} stands${eff < 0 ? ' (locked by the strike)' : ''}.` : eff > 0 ? `Pleased ${g.pleasedDays[id]} of ${HALL_DAYS} days toward raising ${BUILDING_BY_KEY[HALL_OF[id]].name}.` : '';
       return `<div class="guild"><div><b>${d.name}</b> <span class="${eff > 0 ? 'good' : eff < 0 ? 'bad' : 'muted'}">${guildMood(v)}</span> <span class="muted">(${v})</span><div class="bar"><span style="width:${v}%"></span></div></div>
-        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}.${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
+        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
     }).join('');
     const dm = g.demand;
     const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICTS.find((e) => e.key === GUILDS[dm.guild].edict)?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';

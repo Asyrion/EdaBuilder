@@ -6,7 +6,8 @@ import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
-import { guildEffect } from './guilds';
+import { guildEffect, hallActive } from './guilds';
+import { relicDone } from './relics';
 import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
@@ -97,7 +98,7 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
 }
 
 export function dailySurge(state: GameState): void {
-  const threshold = edictOn(state, 'wardens') ? 1.5 : 1.25;
+  const threshold = (edictOn(state, 'wardens') ? 1.5 : 1.25) + (hallActive(state, 'wrightslodge') ? 0.15 : 0);
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20) {
     state.overdrawDays++;
     state.stats.brownoutOpen = 1;
@@ -312,7 +313,7 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons'));
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons')) * (relicDone(state, 'saltspoons') ? 1.1 : 1) * (BUILDING_BY_KEY[b.kind].category === 'special' && !hallActive(state, b.kind) ? 0 : 1);
   });
   quietCap += wyrmBoneQuiet(state);
   if (fontOfQuieting(state)) quietCap *= 1.5;
