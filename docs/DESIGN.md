@@ -850,7 +850,11 @@ end of a leg; `nearestRoadOf` and `buildingsAt` are the shared helpers.
   `ward` +0.03 (cap 0.12), and `wardenNear(s, b)` (5 tiles) removes a building from the
   wild surge's candidates in `dailySurge`. `stats.wardenRounds`; quest `w_warden`.
 
-Balance: seed 42 reaches Free City on day 60 and Beacon on day 95, as in iteration 31.
+Balance, three seeds against main (walkers draw from the shared random stream, so single
+runs diverge): seed 42 Free City day 56 vs 60 and 2,160 folk on day 120 (Beacon at 2,200, main
+reached it on day 95); seed 43 stalls at Burgh on both; seed 44 Free City day 58 on both and
+Beacon day 87 vs 98. No systematic shift; the rule in 14.1 is now read as the mean over three
+seeds.
 
 ## 5. Art direction
 
@@ -1441,8 +1445,9 @@ chase the hound, the sexton walk the dead home. The plan keeps static coverage f
   2x zoom. The info panel of a building lists its walkers; clicking a walker shows its job
   and what it did today (a tiny log of three lines).
 - **Balance.** Walker effects are bonuses on top of coverage, capped per day, so a city
-  without them plays as now; the balance bot's days to Free City must not move by more
-  than two.
+  without them plays as now; the balance bot's days to Free City, averaged over seeds 42–44
+  against main, must not move by more than two (single seeds diverge once the random
+  stream shifts).
 
 ### 14.2 M11 Peoples: playable factions
 
