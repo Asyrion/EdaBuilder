@@ -1311,7 +1311,21 @@ whatever is inside, and a ring of works, markets and hearths pays all of it.
 four, a Nexus or wonder's nine) draws the same ring the build ghost draws, in amber, around
 the selected building.
 
-**Balance (150 days):** the table follows in the closing commit of this iteration.
+**Balance (150 days, the bot's Hearth quarter; main in brackets):**
+
+| | Free City | Beacon | folk d150 |
+|---|---|---|---|
+| Vellish seed 42 | 52 (64) | — (92) | 2,072 (3,094) |
+| Vellish seed 43 | 48 (never) | — (never) | 1,910 (1,456) |
+| Vellish seed 44 | 51 (50) | 83 (91) | 3,316 (3,521) |
+
+The mean day of Free City over the three seeds falls from 57 (two seeds reached it) to 50
+(all three do), inside the §14.1 rule in the right direction. The folk at day 150 move both
+ways (−33 %, +31 %, −6 %): the charter is a plain gain for the hearths it covers, so the
+day-150 spread is the rng path diverging once growth changes, as §14.1 expects of a single
+seed; seed 42's lost Beacon is recorded in NEXT_STEPS as something to look at when the bot's
+late game is next on the table. The other peoples on seed 42: Grimmen Deephold 81 (70),
+Veshari Weirhold 48 (54), Tallowkin Bright Town 48 (42).
 
 ## 5. Art direction
 

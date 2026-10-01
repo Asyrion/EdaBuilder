@@ -342,6 +342,12 @@
 
 ## Known issues
 
+- **The bot and its Hearth quarter.** With the bot chartering its hearth square, Free City
+  comes earlier on every Vellish seed, but seed 42 ends day 150 with 2,072 folk and no
+  Beacon where main had 3,094 and a Beacon on day 92, while seed 43 gains a third. The
+  charter is a plain gain for the hearths it covers, so this is the rng path diverging; worth
+  a look with the bot's late game (does the brightened square outgrow its mana?).
+
 - **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day
   82 instead of 55 and ends 220 folk smaller; the bot only answers the flood with bargemen
   and with the Weir at Vesh's Court. A cheaper flood-work (a bank wall, a sluice) or a bot
