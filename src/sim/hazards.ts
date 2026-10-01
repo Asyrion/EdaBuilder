@@ -8,6 +8,7 @@ import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
+import { wardenNear } from './walkers';
 import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
@@ -114,7 +115,7 @@ export function dailySurge(state: GameState): void {
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {
-      if (b.lit && b.state === 'ok' && manaUseOf(b) > 0 && BUILDING_BY_KEY[b.kind].category === 'zone') lit.push(b);
+      if (b.lit && b.state === 'ok' && manaUseOf(b) > 0 && BUILDING_BY_KEY[b.kind].category === 'zone' && !wardenNear(state, b)) lit.push(b);
     });
     const n = Math.min(lit.length, 2 + rng.int(4));
     for (let k = 0; k < n; k++) {

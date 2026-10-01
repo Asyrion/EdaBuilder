@@ -235,6 +235,13 @@
 - The watchman: from Watch Posts and Houses, paints watch on the streets it walks, kills
   hounds and lays the restless it meets, two of each a day. Quest.
 
+## Done in iteration 32
+
+- Sextons, healers and Tallowkin wardens as walker jobs: the sexton lays and quiets, the
+  healer tends the unhappiest home for +4 a day, the warden walks spire to spire and keeps
+  the surge off what it stands beside. Target and arrival hooks in the framework; three
+  quests; three prop sprites.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -285,9 +292,8 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M10 Walkers, kinds** (DESIGN §14.1): the framework and the watchman are in (iteration
-   31); next the sextons, healers, wardens, scholars, tamers and pilgrims (32–33), each a
-   `WALKER_JOBS` entry with a prop sprite.
+0. **M10 Walkers, last kinds** (DESIGN §14.1): scholars (Academy to the delve), tamers
+   (lodge to the cradles) and pilgrims (shrines to the temple) in iteration 33; then M11.
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.
