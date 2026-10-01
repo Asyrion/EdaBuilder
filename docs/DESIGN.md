@@ -1208,6 +1208,68 @@ for day 60 on all three and seed 44 misses it. That is the people's hazard doing
 should, not a bug, and the answer is the Weir (which the bot raises only at Vesh's Court)
 or a cheaper flood-work for part 3; it is recorded in NEXT_STEPS.
 
+### 4.72 The Tallowkin of the Wick, part 1: rules, buildings, the twin-node start, the look, the bot (iteration 41)
+
+The third people on the scaffold (M13). The lore has the Tallowkin as the small candle-eyed
+people born beside the Veins, the spire-wrights of every wardlight, living in tall narrow
+wickhouses and never closing a window at night: so **the Tallowkin of the Wick**, a wardlight
+chartered by the spire-wrights, where a dark house is a dead house and the milestones measure
+how much of the city burns bright.
+
+**Rules** (five new fields, neutral by default, one read each): `spireReach` (+1 to a spire's
+link and light radius: 7 and 6), `spireCost` (×2, through `costOf(s, def)`, the one helper
+every price read now goes through: placement, the build tab and tooltip, the ghost, the bot),
+`darkAbandon` (a zone building unlit for more than 3 days is abandoned "no light"; it reads
+the existing `problemDays`, which also counts dry days, so a long-dry home that goes dark
+falls at once, and that is in the people's spirit), `vigilCost` (the Hush vigil draws 60
+stored mana, not 120) and `vigilMandatory` (sleeping through it costs −8 happiness for 30
+days, not −3 for 20; a choice's `desc` may now be a function of the state so the panel
+shows the people's numbers), plus `nodeMana 1.2`. Milestones by light (Wick, Taper, Candle,
+Lamp, Lantern, Beacon-Street, Bright Town, Hall of Wicks, Lantern of Wicks) are gated on the
+**lit share** of standing buildings: 50 % for the Taper up to 90 % for the Hall.
+
+**Buildings.** The **Wick-Tower** (ley, 250 crowns, no mana) is a member of the spire chain
+that is lit within reach of a lit spire or node and lights four tiles, but is never enqueued:
+it relays nothing, so no spire and no other tower lights from it. The **Candle-Shrine**
+replaces the Shrine of Aume (faith r6, `selfLit`, no mana so a brownout cannot darken a
+self-lit shrine); pilgrims walk from it and pray at it. The **Lantern of Wicks** replaces the
+Lantern of Vell (18,000, `selfLit`, a `WONDER_HALLS` row). The `_tallowkin` zone look is the
+wickhouse: four tiles taller, an overhang, a lit window on every floor, whitewash and plaster
+under cones and shingles; half the people's citizens are candle-eyed (variants 0–2 map to the
+glowing variant without a new rng draw).
+
+**The twin-node start.** A people born beside the Veins founds its city between two:
+`generateTerrain`'s `twinnode` option places a second ley node on the first buildable tile
+at Chebyshev distance 8, pre-set to the Vein aspect (so `assignAspects` draws nothing for it
+and the clearing keeps its aspect), skipped on the one-node scenario. Two nodes a fifth
+stronger each: 216 mana a day from the first morning, against a people whose spires cost
+double and whose homes die in the dark.
+
+**The bot.** A `brighten()` step before `keepLit`: when the light gate is short, a Wick-Tower
+within three tiles of each dark building that has a lit spire or node in reach, else a
+spire; `keepLit`, `placeNear` and `want()` read `costOf`; the reach test reads the rule.
+
+**Also in this iteration, from a playtest report:** idle builders and citizens were drawn
+with the walk cycle while standing still, and every walker marched in step on one global
+frame, stacked on the same pixel. Each agent now walks at its own pace (its speed and its
+id), stands still when it has no path, and keeps a lane of its own (a two-pixel sideways
+offset by id), so a crowd on one road reads as a crowd.
+
+**Balance (150 days, twin-node start):**
+
+| Tallowkin | Taper | Candle | Lamp | Lantern (fifth) | Beacon-Street | Bright Town (1,000) | Hall of Wicks | folk d150 | lit d150 |
+|---|---|---|---|---|---|---|---|---|---|
+| seed 42 | 3 | 10 | 16 | 21 | 31 | 42 | — | 1,101 | 86 % |
+| seed 43 | 4 | 10 | 15 | 20 | 27 | 37 | 54 | 1,644 | 99 % |
+| seed 44 | 5 | 10 | 16 | 22 | 30 | 38 | — | 1,120 | 86 % |
+
+All three reach the Lantern by day 22 (the plan asked for day 70) and Bright Town by day 42:
+two nodes a fifth stronger each make the early game the fastest of the four peoples. Two
+seeds then sit at 86 % lit, four points short of the Hall of Wicks, because the bot only
+brightens what the gate demands and a town of a thousand has corners the Wick-Towers do
+not reach; the lamplighter and the bot's late light are part 2. Vellish, Grimmen and Veshari
+seed 42 are bit-identical to main.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1287,6 +1349,9 @@ or a cheaper flood-work for part 3; it is recorded in NEXT_STEPS.
   part 2b, the Veshari's water: the Hush flood, the Great Weir, the Sable chapter, three
   tales with tide and storm eggs, the bargeman (iteration 40, §4.71) ✅. M12 is closed: the
   scaffold held twice.
+- **M13 The third people** — the Tallowkin of the Wick: part 1, rules, buildings, the
+  twin-node start, the look, the bot (iteration 41, §4.72) ✅; part 2, the chapter, the
+  tales, the lamplighter and the late game.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1845,7 +1910,10 @@ picks it beside the scenario; the bot plays any of them.
   Torrent Mills as spires, the river never freezes for them, reach milestones gated on
   moorings, a Tide Pool for the water lines. *Iteration 40 (4.71)*: the Hush flood, the
   Great Weir, the Sable chapter, the tales and the bargeman.
-- **Designed, not built (ideas for the remaining peoples).** *Tallowkin candle-folk:* light is life: every building must be lit or it is abandoned in
+- **The third people: the Tallowkin of the Wick (iteration 41 ✅ as 4.72, part 1).** Light is
+  life: spires reach further and cost double, Wick-Towers light the corners, a dark house is
+  abandoned in three days, the vigil is theirs, milestones by lit share, a twin-node start.
+- **Designed, not built (ideas for the remaining peoples).** *Tallowkin candle-folk (now built, above):* light is life: every building must be lit or it is abandoned in
   a day, spires reach 7 but cost double, the Hush vigil is mandatory and cheap, their wonder
   is the Lantern of Vell rebuilt. *Fen-Nex:* a trading people with no Craft zones at all,
   goods come by caravan and route, markets hold triple, Fen cat-dragons as wardens, their
@@ -2047,3 +2115,11 @@ picks it beside the scenario; the bot plays any of them.
   stream never moves; a people-gated job is a count, not a branch in the framework.
 - *A hall list is a row (iteration 40):* the renderer's four copies of "lantern or seat"
   became `WONDER_HALLS`; the third wonder cost one string.
+- *A price is read in one place (iteration 41):* the Tallowkin's doubled spire forced every
+  cost read (placement, labels, the ghost, the bot) through `costOf`; a people's price is a
+  rule, not a second catalog.
+- *A member that does not relay is a member that is not enqueued (iteration 41):* the
+  Wick-Tower joins the spire chain's member list and never its queue, so "lights but does
+  not relay" is one `if`, not a second network.
+- *What is stated is what is drawn (iteration 41):* an agent with no path stands still, and
+  a crowd walks out of step; the playtester saw the sprite lie before the numbers did.

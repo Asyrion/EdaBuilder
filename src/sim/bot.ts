@@ -1,4 +1,4 @@
-import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried, MOORINGS } from '../data/factions';
+import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
@@ -43,6 +43,7 @@ export class Bot {
     this.keepWatered();
     this.quarry();
     this.moor();
+    this.brighten();
     this.keepLit();
     this.buyServices();
     // expand when zone tiles are mostly used and demand is positive
@@ -133,6 +134,25 @@ export class Bot {
     }
   }
 
+  /** A people gated on light: Wick-Towers beside the dark buildings when a lit spire or node is in reach, else a spire. */
+  private brighten(): void {
+    const s = this.s;
+    const gate = factionOf(s).rules.milestoneGate;
+    if (!gate || !canBuild(s, 'wicktower')) return;
+    const next = s.milestone + 1;
+    if (next >= milestonesOf(s).length || gate(s, next)) return;
+    const reach = 6 + factionOf(s).rules.spireReach;
+    const lit: { x: number; y: number }[] = s.nodes.map((n) => ({ x: n.x, y: n.y }));
+    forEachBuilding(s, (b) => { if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake')) lit.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 }); });
+    let done = 0;
+    forEachBuilding(s, (b) => {
+      if (done >= 3 || b.lit || b.state !== 'ok' || BUILDING_BY_KEY[b.kind].category !== 'zone') return;
+      if (s.treasury < BUILDING_BY_KEY.wicktower.cost + 400) return;
+      const near = lit.some((l) => Math.hypot(l.x - b.x, l.y - b.y) <= reach + 2);
+      if (near ? this.placeNear('wicktower', b.x, b.y, 3) : this.placeNear('spire', b.x, b.y, 3)) done++;
+    });
+  }
+
   /** Place spires near unlit buildings, chained to the lit network. */
   private keepLit(): void {
     const s = this.s;
@@ -144,9 +164,10 @@ export class Bot {
     if (s.manaDemand > s.manaSupply * 0.95) return; // no point lighting more
     const d = dark as { x: number; y: number };
     // candidate spots within 5 of the dark building that are within 6 of a lit spire/node
-    const lit: { x: number; y: number; link: number }[] = s.nodes.map((n) => ({ x: n.x, y: n.y, link: 6 }));
+    const reach = 6 + factionOf(s).rules.spireReach;
+    const lit: { x: number; y: number; link: number }[] = s.nodes.map((n) => ({ x: n.x, y: n.y, link: reach }));
     forEachBuilding(s, (b) => {
-      if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake')) lit.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, link: b.kind === 'spire' ? 6 : b.kind === 'stake' ? 4 : 9 });
+      if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake')) lit.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, link: b.kind === 'spire' ? reach : b.kind === 'stake' ? 4 : 9 });
     });
     let best: { x: number; y: number; score: number } | null = null;
     for (let dy = -6; dy <= 6; dy++)
@@ -324,7 +345,7 @@ export class Bot {
       if (!canBuild(s, key)) return;
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
-      if (s.treasury < def.cost + buffer) return;
+      if (s.treasury < costOf(s, def) + buffer) return;
       if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply) return;
       if (nearGloam) {
         // place toward the nearest gloam tile from the city centre
@@ -436,7 +457,7 @@ export class Bot {
   private placeNear(key: string, x: number, y: number, r: number, allowClear = false): boolean {
     const s = this.s;
     const def = BUILDING_BY_KEY[key];
-    if (s.treasury < def.cost) return false;
+    if (s.treasury < costOf(s, def)) return false;
     let best: { x: number; y: number; d: number } | null = null;
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {

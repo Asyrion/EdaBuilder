@@ -4,7 +4,7 @@ import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
 import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
-import { canBuild } from '../data/factions';
+import { canBuild, costOf, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding } from '../sim/world';
 import { bumpRoadVersion } from '../sim/agents';
@@ -285,8 +285,8 @@ export class Tools {
       const x = hover[0] - Math.floor((def.w - 1) / 2);
       const y = hover[1] - Math.floor((def.h - 1) / 2);
       const why = canPlaceBuilding(s, this.tool.key, x, y);
-      const radius = def.service?.radius ?? def.waterRadius ?? (this.tool.key === 'spire' ? 5 : this.tool.key === 'nexus' ? 9 : 0);
-      v.ghost = { key: this.tool.key, x, y, ok: !why && canBuild(s, this.tool.key) && def.cost <= s.treasury, radius };
+      const radius = def.service?.radius ?? def.waterRadius ?? (this.tool.key === 'spire' ? 5 + factionOf(s).rules.spireReach : this.tool.key === 'wicktower' ? 4 : this.tool.key === 'nexus' ? 9 : 0);
+      v.ghost = { key: this.tool.key, x, y, ok: !why && canBuild(s, this.tool.key) && costOf(s, def) <= s.treasury, radius };
       this.previewReason = why;
     } else if (this.tool.kind === 'bulldoze') {
       if (inBounds(hover[0], hover[1])) v.previewTiles = [{ i: idx(hover[0], hover[1]), ok: false }];

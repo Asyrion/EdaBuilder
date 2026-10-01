@@ -1338,12 +1338,20 @@ function reedSpec(spec: BuildingSpec, level: number, variant: number, zone: stri
   return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], lanternPost: spec.lanternPost || zone === 'market', seed: (spec.seed ?? 0) + 700 };
 }
 
+/** The Tallowkin build wickhouses: tall, narrow, an overhang, a lit window on every floor, whitewash and plaster under cones and shingles. */
+function wickSpec(spec: BuildingSpec, level: number, variant: number): BuildingSpec {
+  const walls: Wall[] = ['whitewash', 'plaster', 'whitewash', 'timber'];
+  const roofs: Roof[] = level === 1 ? ['cone', 'shingle', 'cone', 'shingle'] : level === 2 ? ['shingle', 'cone', 'cone', 'tile'] : ['cone', 'copper', 'cone', 'slate'];
+  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], height: spec.height + 4, overhang: true, glowWindows: true, windowRows: (spec.windowRows ?? 1) + 1, seed: (spec.seed ?? 0) + 900 };
+}
+
 /** Peoples with a zone look of their own: the atlas carries a `_people` copy of every zoned sprite. */
-export const ZONE_LOOKS = ['grimmen', 'veshari'];
+export const ZONE_LOOKS = ['grimmen', 'veshari', 'tallowkin'];
 
 function zoneSpecs(zone: string, level: number, variant: number, people?: string): BuildingSpec {
   if (people === 'grimmen') return stoneSpec(zoneSpecs(zone, level, variant), level, variant);
   if (people === 'veshari') return reedSpec(zoneSpecs(zone, level, variant), level, variant, zone);
+  if (people === 'tallowkin') return wickSpec(zoneSpecs(zone, level, variant), level, variant);
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
@@ -1421,6 +1429,8 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   hospice: { w: 2, h: 2, height: 16, roofH: 8, wall: 'whitewash', roof: 'green', windows: 3, windowRows: 3, door: true, chimney: true, glowWindows: true, seed: 10, hip: true, bottles: true, glassDome: true, lanternPost: true },
   veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true, runeBand: true, bellTower: true },
   shrine: { w: 1, h: 1, height: 8, roofH: 8, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
+  candleshrine: { w: 1, h: 1, height: 9, roofH: 7, wall: 'whitewash', roof: 'cone', windows: 1, windowRows: 2, door: true, glowWindows: true, seed: 52, lanternPost: true, leyLamps: true },
+  wicktower: { w: 1, h: 1, height: 14, roofH: 3, wall: 'plaster', roof: 'cone', windows: 1, windowRows: 3, seed: 53, glowWindows: true, lanternPost: true },
   temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true },
   academy: { w: 2, h: 2, height: 18, roofH: 8, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
   grandacademy: { w: 3, h: 3, height: 26, roofH: 10, wall: 'stone', roof: 'arcane', windows: 4, windowRows: 4, door: true, glowWindows: true, seed: 15, crystal: true, hip: true, orbit: true, runeBand: true, bellTower: true },
@@ -1433,6 +1443,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24, lanternPost: true, banner: true },
   ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
+  lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
   greatweir: { w: 2, h: 2, height: 10, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 51, runeBand: true, leyLamps: true, waterWheel: true, lanternPost: true, crystal: true },
 };
 

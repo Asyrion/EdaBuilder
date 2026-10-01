@@ -193,7 +193,7 @@ export function dailyGuilds(s: GameState): void {
       const b = RIVAL_OF[a];
       if (!gs.charters.includes(a) && gs.standing[a] <= STRIKE_AT && gs.standing[b] <= STRIKE_AT) {
         const def = WAR_EVENTS.find((e) => e.id === `guildwar_${a}`)!;
-        s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+        s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: typeof c.desc === 'function' ? c.desc(s) : c.desc })) };
         s.firedEvents.push(`${def.id}:?`);
         gs.lastWar = s.day;
         s.stats.guildWars++;
@@ -206,7 +206,7 @@ export function dailyGuilds(s: GameState): void {
   for (const g of GUILD_IDS) if (gs.standing[g] < gs.standing[low]) low = g;
   if (gs.standing[low] >= 60 || s.edicts[GUILDS[low].edict]) { gs.lastCouncil = s.day; return; }
   const def = COUNCIL_EVENTS.find((e) => e.id === `council_${low}`)!;
-  s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+  s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: typeof c.desc === 'function' ? c.desc(s) : c.desc })) };
   s.firedEvents.push(`${def.id}:?`);
   if (s.firedEvents.length > 40) s.firedEvents.shift();
   gs.lastCouncil = s.day;

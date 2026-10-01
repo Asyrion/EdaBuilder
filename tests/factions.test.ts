@@ -18,7 +18,7 @@ FACTIONS.test = {
   id: 'grimmen', name: 'The Test Folk', people: 'Testish', playable: true, lore: 'test',
   milestones: MILESTONES.map((m, i) => ({ ...m, name: `Depth ${i}` })),
   deny: ['garden'], replaces: { well: 'cistern' },
-  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, wallWard: 2, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, milestoneGate: (_s, next) => next < 2 },
+  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, wallWard: 2, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false, milestoneGate: (_s, next) => next < 2 },
 };
 afterAll(() => { delete FACTIONS.test; });
 

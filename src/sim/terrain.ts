@@ -5,12 +5,12 @@ import { MAP_H, MAP_W, Terrain, idx, inBounds, isWater } from './types';
 export interface TerrainResult {
   terrain: Uint8Array;
   gloam: Uint8Array;
-  nodes: { x: number; y: number }[];
+  nodes: { x: number; y: number; aspect?: 'vein' }[];
   founding: { x: number; y: number };
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean; riverside?: boolean }
+export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean; riverside?: boolean; twinnode?: boolean }
 
 /** The shore rule: a land tile (not hills, not a node, not ruins) with water among its eight neighbours. */
 function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
@@ -100,7 +100,7 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
     for (let x = 0; x < MAP_W; x++) if (shoreTile(terrain, x, y)) terrain[idx(x, y)] = Terrain.Shore;
 
   // Ley nodes: one near centre (founding), 3-5 others spread out on buildable land.
-  const nodes: { x: number; y: number }[] = [];
+  const nodes: { x: number; y: number; aspect?: 'vein' }[] = [];
   const buildable = (x: number, y: number) => {
     if (!inBounds(x, y)) return false;
     const t = terrain[idx(x, y)];
@@ -144,6 +144,22 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
   }
   // Founding clearing: make sure there is room to build.
   clearAround(fx, fy, 5);
+
+  // The twin node: a people born beside the Veins founds its city between two. The first buildable tile at Chebyshev
+  // distance 8 in fixed scan order; it keeps the founding's Vein aspect. No rng; other maps are untouched.
+  if (opts.twinnode && opts.nodes !== 1) {
+    let placed = false;
+    for (let dy = -8; dy <= 8 && !placed; dy++)
+      for (let dx = -8; dx <= 8 && !placed; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 8) continue;
+        const x = fx + dx; const y = fy + dy;
+        if (!buildable(x, y) || nodes.some((n) => Math.hypot(n.x - x, n.y - y) < 6)) continue;
+        clearAround(x, y, 2);
+        terrain[idx(x, y)] = Terrain.LeyNode;
+        nodes.push({ x, y, aspect: 'vein' });
+        placed = true;
+      }
+  }
 
   // The Underhill: a people that builds in stone starts beside a hill ridge (6 to 9 tiles south of the founding).
   if (opts.underhill) {

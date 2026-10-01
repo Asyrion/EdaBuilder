@@ -1,6 +1,6 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { RELIC_SETS } from './relics';
-import { buildsFor, canBuild, factionOf, type FactionId } from '../data/factions';
+import { buildsFor, canBuild, factionOf, type FactionId, costOf } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
@@ -137,16 +137,17 @@ export function placeBuilding(state: GameState, key: string, x: number, y: numbe
   if (def.wonder && state.buildings.some((b) => b && b.kind === key)) return { ok: false, reason: 'Only one may be raised' };
   const why = canPlaceBuilding(state, key, x, y);
   if (why) return { ok: false, reason: why };
-  if (def.cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
+  const cost = costOf(state, def);
+  if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
   if (def.materials) for (const [k, v] of Object.entries(def.materials)) if ((state.materials[k as keyof typeof state.materials] ?? 0) < (v ?? 0)) return { ok: false, reason: `Needs ${v} ${k}` };
   if (def.materials) { for (const [k, v] of Object.entries(def.materials)) state.materials[k as keyof typeof state.materials] -= v ?? 0; state.stats.marvels++; }
-  state.treasury -= def.cost;
+  state.treasury -= cost;
   for (let dy = 0; dy < def.h; dy++)
     for (let dx = 0; dx < def.w; dx++) state.zone[idx(x + dx, y + dy)] = Zone.None;
   placeBuildingRaw(state, key, x, y, 1, true);
   state.zoneListDirty = true;
   if (def.wonder) pushMessage(state, `${def.name} rises over ${state.cityName}. ${def.flavor}`, 'milestone');
-  return { ok: true, cost: def.cost };
+  return { ok: true, cost };
 }
 
 /** Bulldoze: removes building, road, or zone at tile. */

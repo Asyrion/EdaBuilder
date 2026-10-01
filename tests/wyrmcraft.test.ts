@@ -89,7 +89,7 @@ describe('Wyrmcraft', () => {
     expect(first.when(s)).toBe(true);
     const seam = ALL_EVENTS.find((e) => e.id === 'egg_seam')!;
     const t0 = s.treasury;
-    s.pendingEvent = { id: 'egg_seam', title: seam.title, text: seam.text, choices: seam.choices.map((c) => ({ label: c.label, desc: c.desc })) };
+    s.pendingEvent = { id: 'egg_seam', title: seam.title, text: seam.text, choices: seam.choices.map((c) => ({ label: c.label, desc: String(c.desc) })) };
     resolveEvent(s, 0);
     expect(s.dragons.length).toBe(1);
     expect(s.dragons[0].line).toBe('ember');

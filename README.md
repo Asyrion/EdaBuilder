@@ -193,7 +193,10 @@ Charter as `.json`.
   moor barges at landings, draw more from Torrent Mills than from the Veins, never see the
   river freeze, hatch only the water lines in a Tide Pool, weather the Hush flood or hold it
   with the Great Weir, follow the Sable chapter and tales, keep bargemen on the bank, and
-  climb milestones named by reach that need moorings as well as folk.
+  climb milestones named by reach that need moorings as well as folk. The Tallowkin of the
+  Wick are born between two nodes: their spires reach further and cost double, Wick-Towers
+  light the corners, a house three days dark is abandoned, the Hush vigil is theirs to keep,
+  and their milestones are measured by how much of the city burns bright.
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims,
   the Grimmen's stone-sextons and the Veshari's bargemen walk the roads from their buildings and do their jobs where
   they go; the streets they walk
