@@ -136,7 +136,7 @@ export function dailyDragons(state: GameState): void {
     const warm = cradle.lit;
     const asp = aspectAt(state, cradle.x, cradle.y);
     const attuned = asp === d.line || (!!d.second && asp === d.second);
-    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1);
+    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1) * (cradle.visited === state.day ? 1.1 : 1);
     if (d.stage === 0) {
       if (warm) d.days += 1;
       else if (rng.chance(0.15)) pushMessage(state, `The eggs in the cradle at (${cradle.x},${cradle.y}) are going cold: it needs mana.`, 'warn');

@@ -25,7 +25,7 @@ export function relicDone(s: GameState, id: string): boolean {
 }
 
 /** Catalogue one piece into a random incomplete set; completes the set at three. */
-function catalogue(s: GameState): void {
+export function catalogue(s: GameState): void {
   const r = s.relics;
   const open = RELIC_SETS.filter((set) => !r.complete.includes(set.id));
   if (!open.length) return;
@@ -58,7 +58,8 @@ export function dailyRelics(s: GameState): void {
     r.uncatalogued += got;
     if (!hasAcademy(s)) pushMessage(s, `The diggers bring up a piece of something older than the Concord. Without an Academy nobody can say what.`, 'info');
   }
-  if (r.uncatalogued > 0 && hasAcademy(s)) {
+  // scholars carry the pieces home themselves once an Academy fields one (walkers.ts); otherwise one a day by the book
+  if (r.uncatalogued > 0 && hasAcademy(s) && !s.agents.some((a) => a.kind === 5 && a.job === 'scholar')) {
     r.uncatalogued--;
     catalogue(s);
   }

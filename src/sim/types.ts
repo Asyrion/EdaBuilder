@@ -87,6 +87,7 @@ export interface Building {
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
   tended?: number; // day a healer last tended this home (+4 happiness that day)
+  visited?: number; // day a tamer last visited this cradle (growth ×1.1 that day)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
 }
@@ -391,6 +392,9 @@ export interface GameState {
     walkerLayings: number;
     healerVisits: number;
     wardenRounds: number;
+    scholarTrips: number;
+    tamerVisits: number;
+    pilgrimPrayers: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)
