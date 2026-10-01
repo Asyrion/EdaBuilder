@@ -6,7 +6,7 @@ import { manaUseOf } from '../sim/networks';
 import { RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, districtName, timeOfDay } from '../sim/world';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
-import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
+import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, isChartered, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
@@ -84,6 +84,7 @@ export interface UiHost {
   select(b: Building | null): void;
   perf: { fps: number; ms: number; drawn: number };
   dev(id: string, arg: string): string;
+  charterGuilds(g: GuildId): string | null;
 }
 
 const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolean }[] = [
@@ -1406,6 +1407,7 @@ export class UI {
       this.refreshEdicts();
     };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
+    this.el.edicts.querySelectorAll('button[data-charter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.charterGuilds((b as HTMLElement).dataset.charter as GuildId); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); }; });
   }
 
   /** The guild council block: standings, moods, today's drivers and the open petition. */
@@ -1420,13 +1422,14 @@ export class UI {
       const hall = st.buildings.some((b) => b && b.kind === HALL_OF[id] && b.state === 'ok');
       const hallText = hall ? `${BUILDING_BY_KEY[HALL_OF[id]].name} stands${eff < 0 ? ' (locked by the strike)' : ''}.` : eff > 0 ? `Pleased ${g.pleasedDays[id]} of ${HALL_DAYS} days toward raising ${BUILDING_BY_KEY[HALL_OF[id]].name}.` : '';
       return `<div class="guild"><div><b>${d.name}</b> <span class="${eff > 0 ? 'good' : eff < 0 ? 'bad' : 'muted'}">${guildMood(v)}</span> <span class="muted">(${v})</span><div class="bar"><span style="width:${v}%"></span></div></div>
-        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. Rival: ${GUILDS[RIVAL_OF[id]].name}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
+        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. Rival: ${GUILDS[RIVAL_OF[id]].name}${isChartered(st, id) ? ' (chartered: no grudge)' : ''}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
     }).join('');
     const dm = g.demand;
     const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICTS.find((e) => e.key === GUILDS[dm.guild].edict)?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';
+    const charters = council ? (['carters', 'alchemists'] as GuildId[]).filter((p) => !st.guilds.charters.includes(p)).map((p) => `<button class="show" data-charter="${p}" ${st.treasury < CHARTER_COST ? 'disabled' : ''}>Charter ${GUILDS[p].name.replace('The ', 'the ')} and ${GUILDS[RIVAL_OF[p]].name.replace('The ', 'the ')} (${CHARTER_COST} crowns)</button>`).join(' ') : '';
     return `<h3 style="margin-top:8px">The guild council</h3>
       <p class="muted">${council ? `The four guilds sit at the Guildhall. Every ${COUNCIL_SPACING} days the least pleased of them petitions for an edict. ${st.stats.councils} petition${st.stats.councils === 1 ? '' : 's'} heard.` : 'No lit Guildhall: the guilds have no seat and no voice. Build one (Leisure tab) to hear petitions and earn their boons.'}</p>
-      ${demand}${rows}`;
+      ${demand}${rows}${charters ? `<p class="muted">A charter ends a rivalry for good: both guilds +10, no more drag, sting or brawls. ${charters}</p>` : ''}`;
   }
 
   /** Dev tools: grouped commands with a live status line. */

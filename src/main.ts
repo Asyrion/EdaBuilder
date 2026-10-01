@@ -7,6 +7,7 @@ import { SOUND_CUES, type SoundCue } from './sim/hazards';
 import { buySector } from './sim/sectors';
 import { tileToWorld, worldToTile } from './render/iso';
 import { runDev } from './sim/dev';
+import { charterGuilds } from './sim/guilds';
 import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
@@ -123,6 +124,7 @@ class Game {
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
+      charterGuilds: (g) => { const why = charterGuilds(this.state, g); if (!why) { this.audio.coin(); this.ui.refresh(); } return why; },
       dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = runDev(this.state, id, arg, { x: Math.floor(u), y: Math.floor(v) }); recomputeAll(this.state); this.paused = true; this.ui.refresh(); return out; },
       get camera() { return game.renderer.camera; },
       select: (b) => this.select(b),

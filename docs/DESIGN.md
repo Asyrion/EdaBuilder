@@ -784,6 +784,25 @@ Event `assessor` (pool, when relicStock ≥ 12 and a delve stands). Quest `k_ass
 since `guilds.lastWar`, `guildwar_<guild>` fires (`WAR_EVENTS`, in `COUNCIL_EVENTS`).
 `stats.guildWars`.
 
+### 4.59 The duel
+
+`greatWyrm(s)` finds a stage-4 dragon; `flyoverFireCap` halves `WYRM_FLYOVER_FIRES` while
+one stands; `startFlyover` writes the tale and counts `stats.wyrmDuels`; `endFlyover` sets
+waking 20. Quest `k_duel`.
+
+### 4.60 The auction
+
+Caravan choice "Auction the loose relics": price 100 + rng(0..40) per relic from
+`relicStock`, `stats.relicsAuctioned`, a 34% collector purchase of one uncatalogued piece for
+2,500, sextons −5.
+
+### 4.61 The charter
+
+`guilds.charters` lists reconciled pairs by their first guild (`pairOf`). `charterGuilds`
+costs `CHARTER_COST` (2,000) at a seated council; `isChartered` switches off the rivalry
+drift, the petition sting and the brawl. Buttons in the council block; `stats.guildCharters`;
+quest `k_charter`.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -847,6 +866,15 @@ since `guilds.lastWar`, `guildwar_<guild>` fires (`WAR_EVENTS`, in `COUNCIL_EVEN
 - **M4 Networks & services** — mana, water, services, coverage, overlays. ✅
 - **M5 Life** — agents, traffic, day/night, lighting, particles, audio. ✅
 - **M6 Polish** — onboarding, balancing, hazards tuning, bug sweep, docs. ✅
+- **M7 The fantasy layer** — creatures, dragons, the Vein-Wyrm, magical buildings,
+  vehicles, the Charter line, scenarios (iterations 7–23). ✅
+- **M8 The deep dive** — aspects, auras, pressure, the council, festivals, routes, breeding,
+  relics, halls, rivalries (iterations 23–29, §13). ✅ (phase 6 in progress)
+- **M9 Construction and dev tools** — sites, builders, the dev panel (iterations 26, 28). ✅
+- **M10 Walkers** — more NPC kinds that embody the systems: watchmen, sextons, healers,
+  wardens, scholars, tamers and pilgrims on the roads, each doing a visible job (§14.1).
+- **M11 Peoples** — playable factions with their own buildings, progression and rules,
+  one as proof of concept (the Grimmen of the Underhill), the rest designed (§14.2).
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1303,10 +1331,110 @@ when twelve or more wait, paying 90 each in person, or 1,500 per uncatalogued se
 the square: side with either (+20 / −10), call the Watch for 300 crowns (both +5, a
 happiness dip), or let them fight (a building by the Guildhall burns, happiness −6).
 
-### 13.12 Later phases
+### 13.12 Phase 6: the duel, the auction and the charter (iteration 30)
 
-A tale for the great wyrm (it answers the Vein-Wyrm's flyover), relic auctions between the
-Crown and the Belerial caravans, and a guild charter that ends a rivalry for a price.
+**The duel (4.59).** A great wyrm rises to meet a hostile Vein-Wyrm flyover: the tale is
+written, the fires are halved and the old wyrm sleeps deeper afterwards (waking 20, not
+50). The dragon you bred now protects the city from the dragon you woke.
+
+**The auction (4.60).** The Belerial caravan bids 100 to 140 crowns a relic, above the
+Crown's 60 and 90, and one collector in three buys an uncatalogued piece for 2,500. The
+player chooses between the Crown's steady price, the caravan's gamble, and the Academy's
+sets; the sextons dislike all of it.
+
+**The charter (4.61).** For 2,000 crowns at a seated council a rival pair sign a charter:
+both +10, no more drag, sting or brawls. Rivalries become a cost the player can pay away
+once, which is the Anno-style "settle the faction" lever without a diplomacy screen.
+
+This closes M8, the deep dive. The next large steps are M10 Walkers and M11 Peoples (§14).
+
+### 13.13 Later
+
+Smaller follow-ups once walkers exist: scholars carry relic pieces, sextons attend the
+brawl, and the great wyrm's duel is flown by the wyvern agent itself.
+
+## 14. Milestones ahead: walkers and peoples
+
+Two large steps, agreed in iteration 30. Both are "rules as data" so that each new kind
+or people is cheap once the framework stands. Walkers come first: they are smaller, and a
+people without its own walkers would feel thin.
+
+### 14.1 M10 Walkers: NPC kinds that embody the systems
+
+Today the city has citizens (who only walk), carts, builders, the restless and creatures.
+Every service is a static radius. The Impressions city builders (Caesar III, Pharaoh)
+showed that a walker who *does* the job makes a system legible: you see the watchman
+chase the hound, the sexton walk the dead home. The plan keeps static coverage for balance
+(it is tested and tuned) and adds walkers as the visible, bonus half of each service:
+
+- **Framework (iteration 31).** `AgentKind.Walker` with a `job` (a string key into a
+  `WALKER_JOBS` table) and an `anchorId` (its building). A job declares: who spawns it
+  (building kind, count by level or lit state), a patrol (random road walks within the
+  service radius, like citizens, or a target picker), an `onTile(state, agent)` hook run
+  every few ticks, an `onMeet(state, agent, other)` hook for agent contact, a sprite set
+  and a sound cue. `tickWalkers` reuses the citizen movement code (paths, congestion,
+  arches). Walkers are rebuilt from their buildings daily like carts, so saves stay small.
+  Dev tools: "spawn walker here". Tests: a job's hooks fire, counts follow the buildings,
+  removed buildings dismiss their walkers.
+- **Kinds (iterations 32–33), one per existing system, each with a small real effect:**
+  watchmen from Watch Houses (kill a hound on contact, lay a restless, +0.1 watch on the
+  tiles they pass for a day); sextons from Boneyards and Ossuaries (walk restless back to
+  the boneyard: a laid restless instead of a killed one, unquieted −1 per trip); healers
+  from the Veshari Hall and Healing Houses (visit unhappy or dry homes: +4 happiness for a
+  day); Tallowkin wardens from spires under the Spire Wardens edict (walk spire to spire;
+  a spire with a warden present cannot surge); scholars from the Academy (walk to the delve
+  and back: a catalogued piece arrives when a scholar does, not by magic); tamers from
+  Tamer's Lodges (visit cradles: mood +2 per visit, and a hatchling only grows on days a
+  tamer came); pilgrims (spawned by events and shrines: walk to the temple, +faith on the
+  road). Guild walkers come with M11 so each people can have its own.
+- **Rendering.** Each job has a 4-frame sprite in the citizen style with one signature
+  prop (a rod, a salt spoon, a satchel, a candle, a book, a leash, a staff) so kinds read at
+  2x zoom. The info panel of a building lists its walkers; clicking a walker shows its job
+  and what it did today (a tiny log of three lines).
+- **Balance.** Walker effects are bonuses on top of coverage, capped per day, so a city
+  without them plays as now; the balance bot's days to Free City must not move by more
+  than two.
+
+### 14.2 M11 Peoples: playable factions
+
+The lore has six peoples. The default city is Vellish and Hearthfolk. A people is a
+`FactionDef` in `src/data/factions.ts`: a name and lore, a palette swap for zone sprites,
+a building list (which catalog entries it may build, which it replaces, which are its own),
+its own milestone table and names, a `rules` block read by the systems at a handful of
+points, a quest chapter, and an event pool. `GameState.faction` names it; the title screen
+picks it beside the scenario; the bot plays any of them.
+
+- **Scaffold (iteration 34).** The default Vellish city becomes a faction with no rule
+  changes, so nothing moves. The catalog gains `faction?: FactionId[]` (who may build) and
+  `replaces?: string`; `isBuildingUnlocked` reads the faction. The `rules` block starts
+  with what the Grimmen need: terrain preferences (land value and buildability on hills),
+  a ward source multiplier (walls, lanterns), a mana source multiplier (mines, nodes), a
+  water rule (wells vs seeps), a dragon rule (cradles or foundries), and a starting kit.
+- **Proof of concept: the Grimmen of the Underhill (iterations 35–37).** Stone folk who dig.
+  Hearths are *Deep Halls* cut into hills (hills are their best land; grass is poor), water
+  comes from *Seeps* in hills rather than wells by the river, the Gloam is held by stone:
+  the Warding Wall wards double and the Ward Lantern is replaced by the *Stone Ward*, mana
+  comes a third more from Crystal Mines and a third less from spires, golems bind at a
+  *Forge-Temple* instead of a Golem Foundry and start bound, the Wyrm-Cradle is replaced by
+  the *Hatchery* that only takes Bone, Grey and Ember eggs, milestones are named by depth
+  (Camp, Cut, Gallery, Hold, Deephold, Underking's Seat) and advance by stone quarried as
+  well as folk. Three unique buildings beyond the replacements (the Forge-Temple, the
+  Stone Ward, the Underking's Seat as the wonder), a quest chapter of eight, three events
+  (the Underking's envoy, a collapse, a vein of true leystone), and a Grimmen walker (the
+  stone-sexton) once M10 exists. Verification: the bot reaches the fifth Grimmen milestone
+  by day 70 on three seeds; every Vellish test still passes untouched.
+- **Designed, not built (ideas for the remaining peoples).** *Veshari river-folk:* the city
+  lives on the water: quays are hearths, barges are the roads, the river never freezes for
+  them but the Hush floods; mana from Torrent Mills; dragons of Tide and Storm only.
+  *Tallowkin candle-folk:* light is life: every building must be lit or it is abandoned in
+  a day, spires reach 7 but cost double, the Hush vigil is mandatory and cheap, their wonder
+  is the Lantern of Vell rebuilt. *Fen-Nex:* a trading people with no Craft zones at all,
+  goods come by caravan and route, markets hold triple, Fen cat-dragons as wardens, their
+  progression is by trade routes opened. *Belerial plains-riders:* no walls, striders for
+  carts (fast, no congestion), hounds are hunted for sport (bounty always on), the Gloam
+  is outrun rather than warded (pressure matters more, wards less), progression by herds.
+- **Cost control.** A people must not touch more than ten rule points in the systems; if a
+  people needs an eleventh, the rule becomes data for all peoples first.
 
 ## 9. Verification
 
@@ -1440,3 +1568,5 @@ Crown and the Belerial caravans, and a guild charter that ends a rivalry for a p
   and marks the daily result, so playtesting is cheap and scores stay meaningful.
 - *The late game answers the early game:* the great wyrm pays off the aspects, the assessor
   pays off the delve, and the brawl pays off neglected guilds (iteration 29).
+- *Walkers before peoples (iteration 30):* NPC kinds are the smaller step and each people
+  will want its own; both are built as data so the second of each is cheap.

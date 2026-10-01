@@ -60,6 +60,7 @@ export interface GuildState {
   lastCouncil: number; // day of the last petition
   pleasedDays: Record<GuildId, number>; // days in a row at or above BOON_AT; at HALL_DAYS the guild builds its hall
   lastWar: number; // day of the last brawl between rivals
+  charters: GuildId[]; // rival pairs reconciled by charter, keyed by the first of the pair ('carters' | 'alchemists')
 }
 
 export const COUNCIL_SPACING = 20;
@@ -68,6 +69,29 @@ export const RIVAL_OF: Record<GuildId, GuildId> = { carters: 'spirewrights', spi
 export const RIVALRY_DRIFT = 0.4;
 export const RIVALRY_STING = 5;
 export const WAR_SPACING = 60;
+export const CHARTER_COST = 2000;
+/** The first guild of each rival pair names the pair. */
+export function pairOf(g: GuildId): GuildId {
+  return g === 'carters' || g === 'spirewrights' ? 'carters' : 'alchemists';
+}
+export function isChartered(s: GameState, g: GuildId): boolean {
+  return !!s.guilds?.charters?.includes(pairOf(g));
+}
+/** A guild charter ends a rivalry for good: 2,000 crowns, both guilds +10, no more drag, sting or brawls. */
+export function charterGuilds(s: GameState, g: GuildId): string | null {
+  const pair = pairOf(g);
+  if (!hasCouncil(s)) return 'No lit Guildhall seats the council';
+  if (s.guilds.charters.includes(pair)) return 'This rivalry is already chartered';
+  if (s.treasury < CHARTER_COST) return `Needs ${CHARTER_COST} crowns`;
+  s.treasury -= CHARTER_COST;
+  s.guilds.charters.push(pair);
+  const b = RIVAL_OF[pair];
+  s.guilds.standing[pair] = Math.min(100, s.guilds.standing[pair] + 10);
+  s.guilds.standing[b] = Math.min(100, s.guilds.standing[b] + 10);
+  s.stats.guildCharters++;
+  pushMessage(s, `${GUILDS[pair].name} and ${GUILDS[b].name} sign a charter at the Guildhall: the old grudge is struck from both their books for ${CHARTER_COST} crowns.`, 'milestone', true);
+  return null;
+}
 export const HALL_DAYS = 10;
 /** The hall each guild raises for itself after HALL_DAYS pleased days. */
 export const HALL_OF: Record<GuildId, string> = { carters: 'cartersyard', alchemists: 'lyceum', spirewrights: 'wrightslodge', sextons: 'sextonchapel' };
@@ -75,7 +99,7 @@ export const BOON_AT = 70;
 export const STRIKE_AT = 25;
 
 export function initGuilds(): GuildState {
-  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 }, lastWar: 0 };
+  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 }, lastWar: 0, charters: [] };
 }
 
 /** A lit, standing Guildhall seats the council. */
@@ -140,7 +164,7 @@ export function guildDrivers(s: GameState, g: GuildId): { text: string; value: n
       break;
     }
   }
-  if (s.guilds && s.guilds.standing[RIVAL_OF[g]] >= BOON_AT) add(`${GUILDS[RIVAL_OF[g]].name} are favoured`, -RIVALRY_DRIFT);
+  if (s.guilds && !isChartered(s, g) && s.guilds.standing[RIVAL_OF[g]] >= BOON_AT) add(`${GUILDS[RIVAL_OF[g]].name} are favoured`, -RIVALRY_DRIFT);
   const d = s.guilds?.demand;
   if (d && d.guild === g && d.until > s.day) add(s.edicts[GUILDS[g].edict] ? 'the granted petition is kept' : 'the granted petition was broken', s.edicts[GUILDS[g].edict] ? 1 : -2);
   return out;
@@ -167,7 +191,7 @@ export function dailyGuilds(s: GameState): void {
   if (s.day - (gs.lastWar ?? 0) >= WAR_SPACING) {
     for (const a of ['carters', 'alchemists'] as GuildId[]) {
       const b = RIVAL_OF[a];
-      if (gs.standing[a] <= STRIKE_AT && gs.standing[b] <= STRIKE_AT) {
+      if (!gs.charters.includes(a) && gs.standing[a] <= STRIKE_AT && gs.standing[b] <= STRIKE_AT) {
         const def = WAR_EVENTS.find((e) => e.id === `guildwar_${a}`)!;
         s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: c.desc })) };
         s.firedEvents.push(`${def.id}:?`);
@@ -220,7 +244,7 @@ function councilEvent(g: GuildDef): EventDef {
   return {
     id: `council_${g.id}`, title: `${g.name} petitions`, text: g.petition, when: () => false,
     choices: [
-      { label: 'Grant the petition', desc: `Enact the edict they ask for; standing +15, and +1 a day while it stays on for 20 days (−2 a day if it is turned off). ${GUILDS[RIVAL_OF[g.id]].name} take it ill (−${RIVALRY_STING}).`, apply: (s) => { s.edicts[g.edict] = true; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 15); s.guilds.standing[RIVAL_OF[g.id]] = Math.max(0, s.guilds.standing[RIVAL_OF[g.id]] - RIVALRY_STING); s.guilds.demand = { guild: g.id, until: s.day + 20 }; return `The seal of ${g.seal} is pressed into the edict. The guild drinks the Warden-Reeve's health.`; } },
+      { label: 'Grant the petition', desc: `Enact the edict they ask for; standing +15, and +1 a day while it stays on for 20 days (−2 a day if it is turned off). ${GUILDS[RIVAL_OF[g.id]].name} take it ill (−${RIVALRY_STING}).`, apply: (s) => { s.edicts[g.edict] = true; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 15); if (!isChartered(s, g.id)) s.guilds.standing[RIVAL_OF[g.id]] = Math.max(0, s.guilds.standing[RIVAL_OF[g.id]] - RIVALRY_STING); s.guilds.demand = { guild: g.id, until: s.day + 20 }; return `The seal of ${g.seal} is pressed into the edict. The guild drinks the Warden-Reeve's health.`; } },
       { label: 'Pay them off (400 crowns)', desc: 'Standing +8; no edict.', apply: (s) => { s.treasury -= 400; s.guilds.standing[g.id] = Math.min(100, s.guilds.standing[g.id] + 8); return 'The purse changes hands under the table. Nobody writes anything down.'; } },
       { label: 'Refuse', desc: 'Standing −12; happiness −2 for 8 days as the guild grumbles in every tavern.', apply: (s) => { s.guilds.standing[g.id] = Math.max(0, s.guilds.standing[g.id] - 12); s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 8, label: `${g.name} refused` }); return 'The guildmaster bows a little too low and leaves. The songs that night are not kind.'; } },
     ],

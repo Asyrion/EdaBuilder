@@ -187,7 +187,8 @@ Charter as `.json`.
 - Crossed eggs from attuned cradles (two auras in one dragon) and trueblood eggs from two
   crossed parents; relic sets catalogued by the Academy from the Ruin Delve, each unlocking
   a building; guild halls that pleased guilds raise for themselves, guild rivalries and
-  brawls; great wyrms from trueblood lines; relics sold to the Crown's assessor.
+  brawls and charters; great wyrms from trueblood lines that meet the Vein-Wyrm in the
+  air; relics sold to the Crown's assessor or auctioned to the caravans.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
