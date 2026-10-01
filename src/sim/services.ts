@@ -10,7 +10,7 @@ import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './g
 import { mewsActive } from './beasts';
 import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
-import { dragonAuras, nodesOfAspect } from './weave';
+import { dragonAuras, nodesOfAspect, flooding } from './weave';
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -159,6 +159,7 @@ export function updateMiasma(state: GameState): void {
 
 export function updateLandValue(state: GameState): void {
   const fr = factionOf(state).rules;
+  const flood = flooding(state);
   const n = MAP_W * MAP_H;
   const lv = state.landValue;
   const cov = state.coverage;
@@ -194,6 +195,7 @@ export function updateLandValue(state: GameState): void {
       const wd = state.waterDist[i];
       if (wd <= 5) v += (5 - wd) * 2.5 * fr.waterLandValue;
       else if (wd > 8) v -= fr.dryPenalty;
+      if (flood && wd <= 1) v -= 10;
       v += (cov.leisure[i] / 255) * 16;
       v += (cov.faith[i] / 255) * 10;
       v += (cov.watch[i] / 255) * 6;

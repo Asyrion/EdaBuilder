@@ -1155,6 +1155,59 @@ was allowed), and on that seed its landings cluster at the centre where no works
 within reach, so no barge ever sailed; a landing placed for its trade, not only its count,
 is the bot's next lesson.
 
+### 4.71 The Veshari's water: the Hush flood, the Great Weir, the Sable chapter, the tales, the bargeman (iteration 40)
+
+Part 2b gives the people a hazard, a wonder, a story and a walker, as 4.67–4.68 did for the
+Grimmen. Everything is gated on the people, so the Vellish and the Grimmen are bit-identical.
+
+**The Hush flood.** The Sable never freezes for the Veshari; instead it rises. `flooding(s)`
+holds for a people whose river does not freeze, from the fifth day of the Hush, while no
+Great Weir stands. Tiles within one of water lose 10 land value and the homes on them 10
+happiness (`FLOODPROOF` buildings live on the water: moorings, tide-wells, mills, the Weir).
+The Hush season message warns of it, or says the Weir holds it. `stats.floodDays` counts the
+days and `floodsWeathered` the Hushes come through with the river up (counted when the
+season ends, as `quietHush` is), which a quest reads.
+
+**The Great Weir** replaces the Lantern of Vell for the Veshari (in `replaces` and in the
+milestone unlocks): 2×2 on the water, 22,000 crowns, no mana, 90 mana a day from the
+current, a ward of 30 across the water, land value 20, a ley hall like the Lantern and the
+Seat, and the flood ends while it stands. The renderer's four wonder lists became one
+`WONDER_HALLS` constant in the catalog (`LEY_HALLS` reads it), so a wonder is a row.
+
+**The Sable chapter** (eight quests, `people: 'veshari'`): a tide-well, two landings, the
+first barge, a mill in the current, a Tide Pool, a water hatchling, the first flood
+weathered, the Great Weir.
+
+**Three tales** (`VESHARI` in events.ts, in the pool and in `ALL_EVENTS`): a tide egg in a
+fisher's net once a Tide Pool stands (keep, sell, or keep it on the pool wall for +3
+happiness), a storm egg after a mana-storm (keep, sell, or let it hatch wild and a storm
+breaks over the water), and the bargemen's strike at four moorings (900 crowns of
+rope-money, or a `barges` modifier that halts barges for eight days; the modifier kind
+joined the union and `dailyBarges` reads it). Until now nothing laid a tide or storm egg.
+
+**The bargeman** (`WALKER_JOBS.bargeman`, prop `pole`): one from every mooring of a people
+whose river never freezes (count 0 for the others, so no rng moves), radius 10. He paints
+leisure on the bank streets; in a flood he walks to the flooded homes in reach and bails
+them (`tended`, the healer's +4, so a flood costs 6 rather than 10), six a day.
+
+**The bot** lays a landing beside works that have no mooring within a barge's reach (the
+finding of 4.70), and raises the Weir at Vesh's Court through its own water-side search.
+
+**Balance (150 days).** Iteration 39's numbers in brackets.
+
+| Veshari | Harbour | Haven | Weirhold (1,000) | folk d150 | barges d150 |
+|---|---|---|---|---|---|
+| seed 42 | 15 (42) | 44 (43) | 54 (53) | 1,898 (1,913) | 268 (0) |
+| seed 43 | 14 (12) | 25 (21) | 59 (53) | 1,380 (1,190) | 171 (114) |
+| seed 44 | 22 (24) | 31 (31) | **82** (55) | 1,207 (1,426) | 215 (171) |
+
+Every seed sails now (the landing beside the works), and Vellish and Grimmen seed 42 are
+bit-identical to main. The flood has a price: seed 44, whose town sits lowest on the bank,
+reaches the Weirhold 27 days later than before and ends 220 folk smaller; the plan asked
+for day 60 on all three and seed 44 misses it. That is the people's hazard doing what it
+should, not a bug, and the answer is the Weir (which the bot raises only at Vesh's Court)
+or a cheaper flood-work for part 3; it is recorded in NEXT_STEPS.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1231,8 +1284,9 @@ is the bot's next lesson.
 - **M12 Peoples II** — part 1, the Grimmen's deep game: the bot's bulldozer fixed, the
   Delve, the Quarry, the Deep Cut (iteration 38, §4.69) ✅; part 2a, the Veshari of the Sable
   on the scaffold: rules, buildings, the riverside start, the bot (iteration 39, §4.70) ✅;
-  part 2b: the Hush flood, the Great Weir wonder, a chapter of eight, three tales with tide
-  and storm eggs, a bargeman walker.
+  part 2b, the Veshari's water: the Hush flood, the Great Weir, the Sable chapter, three
+  tales with tide and storm eggs, the bargeman (iteration 40, §4.71) ✅. M12 is closed: the
+  scaffold held twice.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1789,8 +1843,8 @@ picks it beside the scenario; the bot plays any of them.
 - **The second people: the Veshari of the Sable (iteration 39 ✅ as 4.70, part 1).** The
   city lives on the water: tide-wells and landings, barges where the Vellish send carts,
   Torrent Mills as spires, the river never freezes for them, reach milestones gated on
-  moorings, a Tide Pool for the water lines. Part 2 (the Hush flood, the Great Weir, the
-  chapter, the tales, the bargeman) is the next iteration.
+  moorings, a Tide Pool for the water lines. *Iteration 40 (4.71)*: the Hush flood, the
+  Great Weir, the Sable chapter, the tales and the bargeman.
 - **Designed, not built (ideas for the remaining peoples).** *Tallowkin candle-folk:* light is life: every building must be lit or it is abandoned in
   a day, spires reach 7 but cost double, the Hush vigil is mandatory and cheap, their wonder
   is the Lantern of Vell rebuilt. *Fen-Nex:* a trading people with no Craft zones at all,
@@ -1985,3 +2039,11 @@ picks it beside the scenario; the bot plays any of them.
 - *The start keeps the promise, again (iteration 39):* as the ridge for the Grimmen, a channel
   brings the water within six tiles of a Veshari founding rather than teaching the bot and
   the player to walk to it.
+- *A people's hazard is the absence of a rule (iteration 40):* the flood is what happens
+  where the freeze does not, read from the same `riverFreezes` field, so the Vellish winter
+  and the Veshari winter are one season with two faces and no new rule point.
+- *A walker that spawns zero is a walker that is not there (iteration 40):* the bargeman's
+  `count` is 0 for a people whose river freezes, so Vellish quays field none and their rng
+  stream never moves; a people-gated job is a count, not a branch in the framework.
+- *A hall list is a row (iteration 40):* the renderer's four copies of "lantern or seat"
+  became `WONDER_HALLS`; the third wonder cost one string.

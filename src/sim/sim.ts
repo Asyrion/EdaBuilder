@@ -1,4 +1,5 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
+import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
 import { maybeFireCalendar, maybeFireEvent, maybeFireWyrm } from './events';
 import { seasonOf } from './world';
@@ -10,7 +11,7 @@ import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
 import { dailyStorms, dailyTigers } from './lore';
 import { dailyDaughter } from './charter';
-import { dailyWeave } from './weave';
+import { dailyWeave, hasMarvel } from './weave';
 import { dailyGuilds } from './guilds';
 import { dailyTwinRoad } from './trade';
 import { dailyBreeding } from './breeding';
@@ -113,7 +114,9 @@ const SEASON_TEXT = [
 
 function seasonMessage(state: GameState): void {
   const season = seasonOf(state);
-  if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${SEASON_TEXT[season]}`, season === 3 ? 'warn' : 'milestone', true);
+  let text = SEASON_TEXT[season];
+  if (season === 3 && !factionOf(state).rules.riverFreezes) text = hasMarvel(state, 'greatweir') ? 'The Hush. Long nights and cold hearths; the Sable rises from the fifth night, and the Great Weir holds it.' : 'The Hush. Long nights and cold hearths; from the fifth night the Sable rises and the homes on the bank lose heart. Bargemen bail; a Great Weir would hold it.';
+  if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${text}`, season === 3 ? 'warn' : 'milestone', true);
   if (state.dirtyChunks) for (let i = 0; i < 256; i++) state.dirtyChunks.add(i);
 }
 

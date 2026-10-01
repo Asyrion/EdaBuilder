@@ -5,7 +5,7 @@ import { forEachBuilding, seasonOf } from './world';
 import { treeStage, worldTree } from './growth';
 import { wyrmGuards } from './wyrm';
 import { districtTiles } from './wyrmcraft';
-import { factionOf } from '../data/factions';
+import { factionOf, MOORINGS } from '../data/factions';
 
 export const ASPECT_RADIUS = 10;
 export const ASPECTS: DragonLine[] = ['ember', 'bone', 'glim', 'vein', 'sky', 'grey', 'tide', 'storm'];
@@ -131,6 +131,12 @@ export function pressureWord(p: number): string {
 export function riverFrozen(s: GameState): boolean {
   return factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5;
 }
+/** The Hush flood: a people whose river never freezes sees it rise instead, from the fifth day, unless a Great Weir stands. */
+export function flooding(s: GameState): boolean {
+  return !factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5 && !hasMarvel(s, 'greatweir');
+}
+/** Buildings the flood does not touch: moorings, tide-wells, mills and the Weir live on the water. */
+export const FLOODPROOF = [...MOORINGS, 'tidewell', 'torrentmill', 'greatweir'];
 /** Torrent Mill output by season: the Thaw flood, the Hush freeze. */
 export function millFactor(s: GameState): number {
   if (riverFrozen(s)) return 0.5;
@@ -152,6 +158,10 @@ export function dailyWeave(s: GameState): void {
     if (dos === 0) s.stats.hushPressureBreaks = 0;
     if (s.gloamPressure >= 0.45) s.stats.hushPressureBreaks++;
     if (dos === DAYS_PER_SEASON - 1 && s.stats.hushPressureBreaks === 0) s.stats.quietHush++;
+    // the flood: counted when the season ends and the river rose during it
+    if (dos === 0) s.stats.floodDays = 0;
+    if (flooding(s)) s.stats.floodDays++;
+    if (dos === DAYS_PER_SEASON - 1 && s.stats.floodDays > 0) s.stats.floodsWeathered++;
   }
 }
 

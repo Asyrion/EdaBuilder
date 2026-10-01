@@ -222,7 +222,7 @@ export interface DayLedger {
 }
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges';
   value: number;
   until: number; // day
   label: string;
@@ -399,6 +399,9 @@ export interface GameState {
     tamerVisits: number;
     pilgrimPrayers: number;
     trueVeins: number; // veins of true leystone left to the ley: +10 node mana each
+    floodDays: number; // days of the current Hush the Sable has been in flood (weave.ts)
+    floodsWeathered: number; // Hushes a water people came through with the river in flood
+    bargemanRounds: number; // flooded homes bailed by bargemen
     lastFeastDay: number;
   };
   // transient (rebuilt after load)
