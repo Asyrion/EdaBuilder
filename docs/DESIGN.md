@@ -1428,10 +1428,31 @@ and landings for "a second quay"; eggshell keeps and wyrmfire leaks 0.02 a day; 
 bones quiet 80 for 120 days and 20 after; the merchant needs ten quiet days, not thirty; a
 choice that names "(N crowns)" in its label is refused by a lighter purse.
 
-Balance after the sweep is in the table below (recorded once the six runs finish); the
-numbers move because the healer's +4 now counts, the Gloam road sells less from a city with
-many works and one depot, works make by their hands, squares pay, and the Lantern delights.
-The founding-node failure stays at 3 tiles (the code's number; this document said 2).
+Balance after the sweep, 150 days, against iteration 43 in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 67 (52), no Beacon | 2,824 (2,072) |
+| Vellish seed 43 | never: Burgh 47 (48) | 1,312 (1,910) |
+| Vellish seed 44 | 60 (51), no Beacon (83) | 2,005 (3,316) |
+| Grimmen seed 42 | Deephold 53 (81) | 1,342 (1,256) |
+| Veshari seed 42 | Weirhold 71 (48), Vesh's Court 103 (89) | 2,107 (2,023) |
+| Tallowkin seed 42 | Bright Town 41 (48) | 1,316 (1,100) |
+
+The Vellish bot is slower on all three seeds, and the day-by-day comparison of seed 43
+names the cause: the old game paid the bot crowns it was never meant to have. "No market
+short for five days" completed on its first good tick (+600 around day 20: one spire's
+worth, which on seed 43 is the difference between a Township on day 20 and on day 27), and
+both scenario goals paid at Burgh with ten clean days in an ordinary valley (+10,000). The
+fixed game is poorer by that much and honestly so; this table is the baseline the depth
+pass is measured against, and M14 part 5 (the bot's depot, taxes and edicts) is where the
+bot earns it back. The Beacon of Eda now needs the Lantern lit; the bot wants one only with
+30,000 crowns spare, which seeds 42 and 44 never had, so the "no Beacon" is the bot's purse,
+not the gate. The Grimmen and the Tallowkin gain (the quarry's hands, the loft's moths, the
+Sextons' drivers); the Veshari's Harbour came on day 57 instead of 15 on seed 42, a stall
+of the bot's second landing on a poorer early purse that the three-seed rule treats as one
+seed's path. The founding-node failure stays at 3 tiles (the code's number; this document
+said 2).
 
 ## 5. Art direction
 

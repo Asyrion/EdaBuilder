@@ -362,6 +362,11 @@
 
 ## Known issues
 
+- **The bot after the sweep.** With the quest rewards it was never meant to have gone
+  (+600 at day 20, +10,000 at Burgh), the Vellish bot reaches Free City on day 67 / never /
+  60 (seeds 42/43/44; was 52/48/51) and raises no Lantern, so no Beacon. The table in
+  DESIGN §4.75 is the new baseline; M14 part 5 (a depot, taxes, edicts, a Lantern once
+  rich) is where it earns it back. The Veshari bot's Harbour on seed 42 stalled to day 57.
 - **The bot never stands a Trade Depot.** `want('depot', 1)` is in its list, yet every
   balance seed ends day 150 with `depot 0` and no exports, so the Gloam road, the caravan
   and the Twin Road are unplayed by the bot and their balance is unmeasured. Find why the
