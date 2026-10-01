@@ -343,6 +343,7 @@ export interface GameState {
     gloamBurned: number;
     restlessLaid: number;
     caravanGoods: number;
+    lastCaravanDay: number; // the Belerial caravan's rhythm; −1 before the first
     courierTrips: number;
     boutsWon: number;
     boutsLost: number;

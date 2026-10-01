@@ -340,8 +340,21 @@
   its mixed ring cost it a third of its folk, so the price is real).
 - From the playtests: a selected building shows its reach as a ring.
 
+## Done in iteration 43 (two playtest findings)
+
+- Night window light is laid down in depth order on an emissive layer, each sprite cutting
+  its silhouette out of the glows behind it; a house in front covers the windows of the house
+  behind.
+- The Belerial caravan keeps its own rhythm: six days after the Trade Depot stands, then
+  every twelve days; Trade counts its goods (the Ledger quest can complete), says the
+  surplus on the shelves, and the depot panel counts the caravan down.
+
 ## Known issues
 
+- **The bot never stands a Trade Depot.** `want('depot', 1)` is in its list, yet every
+  balance seed ends day 150 with `depot 0` and no exports, so the Gloam road, the caravan
+  and the Twin Road are unplayed by the bot and their balance is unmeasured. Find why the
+  placement fails (a 2×2 beside its grid? the leisure radius?) in the depth pass.
 - **The bot and its Hearth quarter.** With the bot chartering its hearth square, Free City
   comes earlier on every Vellish seed, but seed 42 ends day 150 with 2,072 folk and no
   Beacon where main had 3,094 and a Beacon on day 92, while seed 43 gains a third. The

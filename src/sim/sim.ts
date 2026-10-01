@@ -1,7 +1,7 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
-import { maybeFireCalendar, maybeFireEvent, maybeFireWyrm } from './events';
+import { maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireWyrm } from './events';
 import { seasonOf } from './world';
 import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
 import { dailyDragons, seasonalBout } from './wyrmcraft';
@@ -102,6 +102,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     maybeFireWyrm(state);
     maybeFireCalendar(state);
+    maybeFireCaravan(state);
     maybeFireEvent(state);
     dailyChatter(state);
     hooks?.onDay?.(state);
