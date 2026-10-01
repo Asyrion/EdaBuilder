@@ -62,6 +62,23 @@ function inherit(s: GameState): void {
   pushMessage(s, `${s.cityName} is yours by default. The last Warden-Reeve left ${-s.treasury} crowns of debt, ${ruined} ruins, ${s.unquieted} unquieted dead and a surge two days out. Five days below −8,000 ends the Charter.`, 'bad', true);
 }
 
+/** The daily challenge: the open valley on a seed made from today's date; the goal is Market Town by day 60. */
+export const CHALLENGE_DAYS = 60;
+export function todayKey(d = new Date()): string {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+}
+export function challengeSeed(key: string): number {
+  let h = 2166136261;
+  for (const ch of key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return h % 1000000;
+}
+export function createChallenge(name: string, key = todayKey()): GameState {
+  const s = createGame(challengeSeed(key), name, 'valley');
+  s.challenge = key;
+  pushMessage(s, `The daily challenge of ${key}: every Warden-Reeve in Eda plays this valley today. Reach Market Town by day ${CHALLENGE_DAYS}.`, 'milestone', true);
+  return s;
+}
+
 /** Days in a row the inherited city has been clean (positive treasury, no ruins, no restless). */
 export function inheritedClean(s: GameState): boolean {
   return s.treasury > 0 && !s.buildings.some((b) => b && b.state === 'ruin') && !s.agents.some((a) => a.kind === 2);

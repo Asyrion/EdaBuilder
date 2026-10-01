@@ -3,6 +3,8 @@ import { Renderer, type ViewState } from './render/renderer';
 import { createGame, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
 import { canFoundDaughter, foundDaughter } from './sim/charter';
+import { createChallenge } from './sim/scenario';
+import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
 import { tick, recomputeAll } from './sim/sim';
 import { serialize, deserialize } from './sim/save';
@@ -39,7 +41,7 @@ class Game {
   selectedNode = -1;
   undoStack: Snapshot[] = [];
   muted = false;
-  settings = { colorBlind: false, uiScale: 1 };
+  settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> } = { colorBlind: false, uiScale: 1, keys: { ...DEFAULT_KEYS } };
   perf = { fps: 60, ms: 0, drawn: 0 };
   private acc = 0;
   private last = 0;
@@ -66,6 +68,7 @@ class Game {
       onSelectNode: (i) => { this.selectedNode = i; this.ui.refresh(); },
       beforeAction: (label) => this.pushUndo(label),
       onKey: (k, e) => this.onKey(k, e),
+      keys: () => this.settings.keys,
       refreshUI: () => {
         this.ui.refreshItems();
         this.ui.refreshViews();
@@ -149,7 +152,7 @@ class Game {
     this.speed = 1;
   }
 
-  setSetting(key: 'colorBlind' | 'uiScale', value: boolean | number): void {
+  setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void {
     (this.settings as any)[key] = value;
     ramps.colorBlind = this.settings.colorBlind;
     document.documentElement.style.setProperty('--ui-scale', String(this.settings.uiScale));
@@ -164,11 +167,12 @@ class Game {
       const raw = localStorage.getItem('wardlight.settings');
       if (raw) Object.assign(this.settings, JSON.parse(raw));
     } catch { /* ignore */ }
+    this.settings.keys = { ...DEFAULT_KEYS, ...(this.settings.keys ?? {}) };
     this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
-  newGame(seed: number, name: string, scenario: Scenario = 'valley'): void {
-    this.bindState(scenario === 'valley' ? createGame(seed, name) : createScenario(seed, name, scenario));
+  newGame(seed: number, name: string, scenario: Scenario | 'daily' = 'valley'): void {
+    this.bindState(scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name) : createScenario(seed, name, scenario));
     this.audio.milestone();
   }
 
@@ -240,7 +244,7 @@ class Game {
     this.ui.refresh();
   }
 
-  private onAction(kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'error' | 'click', msg?: string): void {
+  private onAction(kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'terrain' | 'error' | 'click', msg?: string): void {
     switch (kind) {
       case 'road': this.audio.road(); break;
       case 'zone': this.audio.zone(); break;
@@ -251,6 +255,7 @@ class Game {
         break;
       }
       case 'bulldoze': this.audio.bulldoze(); break;
+      case 'terrain': this.audio.bulldoze(); this.renderer.invalidateAll(); break;
       case 'click': this.audio.click(); break;
       case 'error':
         this.audio.error();
@@ -265,18 +270,20 @@ class Game {
   }
 
   private onKey(k: string, e: KeyboardEvent): boolean {
-    switch (k) {
-      case ' ': this.paused = !this.paused; this.ui.refresh(); return true;
-      case ',': this.speed = Math.max(1, this.speed - 1); this.paused = false; this.ui.refresh(); return true;
-      case '.': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
-      case 'h': case '?': this.ui.toggleHelp(); return true;
-      case 'c': if (!e.ctrlKey && !e.metaKey) { this.ui.toggleChronicle(); return true; } return false;
-      case 'tab': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
-      case 'g': if (e.shiftKey) { this.view.showGrid = !this.view.showGrid; return true; } return false;
-      case 'f5': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
-      case 'z': if (e.ctrlKey || e.metaKey) { this.undo(); return true; } return false;
-      case 'f9': this.load(); return true;
-      case 'escape': {
+    if ((e.ctrlKey || e.metaKey) && k === 'z') { this.undo(); return true; }
+    if (e.shiftKey && k === 'g') { this.view.showGrid = !this.view.showGrid; return true; }
+    if (k === '?') { this.ui.toggleHelp(); return true; }
+    const action = e.ctrlKey || e.metaKey ? null : keyFor(this.settings.keys, k);
+    switch (action) {
+      case 'pause': this.paused = !this.paused; this.ui.refresh(); return true;
+      case 'slower': this.speed = Math.max(1, this.speed - 1); this.paused = false; this.ui.refresh(); return true;
+      case 'faster': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
+      case 'help': this.ui.toggleHelp(); return true;
+      case 'chronicle': this.ui.toggleChronicle(); return true;
+      case 'views': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
+      case 'save': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
+      case 'load': this.load(); return true;
+      case 'cancel': {
         let handled = false;
         for (const id of ['help', 'budget', 'menu']) {
           const el = document.getElementById(id)!;

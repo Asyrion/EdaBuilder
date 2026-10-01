@@ -135,6 +135,12 @@
   grant, and the Twin Beacons at 500 folk; two quests.
 - Touch controls: one finger for tools, two fingers to pan, pinch to zoom.
 
+## Done in iteration 19 (land, daily challenge, key bindings)
+
+- The Land tab: clear forest, plant glimwood, level hills, with undo.
+- Today's challenge on the title screen: one valley per UTC date, Market Town by day 60.
+- Remappable keys in the Menu, shared by the game and the tool layer.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -190,11 +196,9 @@ cameo events.
    and citizen sprites most.
 5. **Sound design pass.** Positional emitters (river, fire crackle, market chatter) and a
    simple generative melody for milestones.
-6. **Remappable keys.** The key table is centralised in the help overlay but not yet
-   configurable.
-7. **Terraforming** (drain a marsh, clear forest) and the ability to buy map sectors like
-   CS1's tile purchase, with the Gloam retreating as sectors are chartered.
-8. **Accessibility.** Colour-blind-safe overlay ramps, scalable UI, remappable keys.
+7. **Map sectors.** Buy map sectors like CS1's tile purchase, with the Gloam retreating
+   as sectors are chartered (terraforming itself is done).
+8. **Accessibility.** Screen-reader labels for the panels (ramps, scale and keys are done).
 9. **Mobile layout.** Touch gestures work; the panels still assume a desktop width.
-10. **Replays and challenge seeds.** The sim is deterministic; a command log would allow
-    replays and daily-seed challenges.
+10. **Replays.** The sim is deterministic; a command log would allow replays and a
+    shareable score for the daily challenge.

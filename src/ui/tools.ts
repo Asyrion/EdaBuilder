@@ -1,4 +1,6 @@
 /** Mouse/keyboard input → tool state → sim actions. */
+import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
+import { keyFor, type KeyAction } from './keys';
 import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY, isBuildingUnlocked } from '../sim/catalog';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
@@ -16,14 +18,16 @@ export type Tool =
   | { kind: 'district'; id: number }
   | { kind: 'wall' }
   | { kind: 'gate'; style: 2 | 3 }
-  | { kind: 'bulldoze' };
+  | { kind: 'bulldoze' }
+  | { kind: 'terrain'; op: TerraformOp };
 
 export interface ToolHost {
   state: GameState;
   view: ViewState;
   canvas: HTMLCanvasElement;
   camera: { screenToTile(sx: number, sy: number): [number, number]; pan(dx: number, dy: number): void; setZoom(z: number, ax?: number, ay?: number): void; zoom: number };
-  onAction: (kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'error' | 'click', msg?: string) => void;
+  onAction: (kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'terrain' | 'error' | 'click', msg?: string) => void;
+  keys: () => Record<KeyAction, string>;
   beforeAction: (label: string) => void; // undo snapshot hook
   onSelect: (b: Building | null) => void;
   onSelectNode?: (index: number) => void;
@@ -146,6 +150,11 @@ export class Tools {
         this.host.beforeAction('bulldoze');
         this.doBulldoze(t);
         break;
+      case 'terrain':
+        this.bulldozed.clear();
+        this.host.beforeAction('terrain');
+        this.doTerraform(t);
+        break;
       case 'build':
         this.doBuild(t);
         break;
@@ -176,6 +185,7 @@ export class Tools {
     const t = this.tileAt(e);
     this.host.view.hover = t;
     if (this.tool.kind === 'bulldoze' && this.dragButton === 0 && e.buttons & 1) this.doBulldoze(t);
+    if (this.tool.kind === 'terrain' && this.dragButton === 0 && e.buttons & 1) this.doTerraform(t);
     this.updatePreview();
   }
 
@@ -224,6 +234,16 @@ export class Tools {
   private roadTiles(a: [number, number], b: [number, number]): number[] {
     const vertical = Math.abs(b[1] - a[1]) > Math.abs(b[0] - a[0]);
     return roadPath(a[0], a[1], b[0], b[1], vertical);
+  }
+
+  private doTerraform(t: [number, number]): void {
+    if (this.tool.kind !== 'terrain' || !inBounds(t[0], t[1])) return;
+    const i = idx(t[0], t[1]);
+    if (this.bulldozed.has(i)) return;
+    this.bulldozed.add(i);
+    const r = terraform(this.host.state, this.tool.op, t[0], t[1]);
+    if (r.ok) this.host.onAction('terrain');
+    else if (r.reason) this.host.onAction('error', r.reason);
   }
 
   private doBulldoze(t: [number, number]): void {
@@ -320,21 +340,22 @@ export class Tools {
       e.preventDefault();
       return;
     }
-    switch (k) {
-      case 'escape':
+    const action = e.ctrlKey || e.metaKey ? null : keyFor(this.host.keys(), k);
+    switch (action ?? k) {
+      case 'cancel':
         this.cancel();
         break;
-      case 'x':
+      case 'select':
         this.setTool({ kind: 'select' });
         break;
-      case 'b':
+      case 'bulldoze':
         this.setTool({ kind: 'bulldoze' });
         break;
-      case 'r':
+      case 'road':
         if (this.tool.kind === 'road') this.setTool({ kind: 'road', type: (this.tool.type % 3) + 1 });
         else this.setTool({ kind: 'road', type: RoadType.Track });
         break;
-      case 'z':
+      case 'zone':
         if (this.tool.kind === 'zone') this.setTool({ kind: 'zone', zone: (this.tool.zone % 4) + 1 });
         else this.setTool({ kind: 'zone', zone: Zone.Hearth });
         break;
@@ -367,6 +388,7 @@ export function toolLabel(t: Tool): string {
     case 'wall': return 'Warding Wall';
     case 'gate': return t.style === 2 ? 'Belregi Gate' : 'Uzulim Gate';
     case 'bulldoze': return 'Bulldoze';
+    case 'terrain': return `Land: ${TERRAFORM[t.op].name}`;
   }
 }
 

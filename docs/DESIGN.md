@@ -585,6 +585,21 @@ quests carry it. `state.daughter` holds node, stake position, name, day and the 
 (synthesised mouse events); two fingers pan by their midpoint and pinch-zoom one step per
 30 % change in spread; the canvas has `touch-action: none`.
 
+### 4.40 Land, the daily challenge and key bindings (iteration 19)
+
+- **Land tab** (terraforming): *Clear forest* (40 crowns, forest to grass), *Plant glimwood*
+  (60, Thorp, grass or meadow to forest) and *Level hills* (220, Township, hills to grass),
+  one tile at a time, drag to paint, never under a building, road, wall or Gloam. Terrain
+  is part of the undo snapshot. `stats.terraformed` counts tiles.
+- **Today's challenge** (title screen): the open valley on a seed hashed from the UTC date
+  (FNV-1a of `YYYY-MM-DD`), so every player gets the same map on the same day;
+  `state.challenge` holds the date and a priority-0 quest asks for Market Town by day 60.
+- **Key bindings** (Menu → Key bindings): thirteen actions (pause, speeds, the four tool
+  keys, views, help, Chronicle, quick save and load, cancel) stored in settings and read by
+  both the game and the tool layer through `keyFor`; click a row and press a key; a key
+  taken from another action unbinds it; reset to defaults. Ctrl+Z, Shift+G and the view
+  number keys stay fixed.
+
 ### 4.28 Ambient music (iteration 9)
 - **Generative, procedural, no files.** A scheduler with a 300 ms look-ahead writes notes
   into WebAudio a bar ahead, so the music never stutters with the frame rate.
@@ -1035,3 +1050,5 @@ consistent with `EDA_LORE.md` §9.
   normal quest with priority 0, so the Ledger and the Chronicle already handle it.
 - *The daughter is a second stake, not a second state:* one treasury and one milestone
   ladder keep every system unchanged; the daughter is a place on the map plus a radius.
+- *The daily seed is a hash, not a lookup:* no server, no list, the date alone fixes the
+  valley, so the challenge works offline and in any time zone that agrees on UTC.
