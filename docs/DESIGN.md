@@ -1500,6 +1500,26 @@ capacity and land value (`roadAt` in `src/sim/roads.ts`, read at those four poin
 unlinked lantern-way is no longer a free upgrade. A glowvine lane never draws (it was charged
 a mana a tile by the old count).
 
+Balance, 150 days, against the iteration 44 table in brackets:
+
+| run | Free City / last gate | folk at day 150 | brownout at day 150 |
+|---|---|---|---|
+| Vellish seed 42 | 58 (67) | 3,039 (2,824) | 0 % |
+| Vellish seed 43 | never: Burgh 47 (47) | 1,196 (1,312) | 11 % |
+| Vellish seed 44 | 60 (60) | 3,032 (2,005) | 5 % |
+| Grimmen seed 42 | Deephold 74 (53) | 1,472 (1,342) | 61 % |
+| Veshari seed 42 | Weirhold 106 (71), Vesh's Court 133 (103) | 1,640 (2,107) | 34 % |
+| Tallowkin seed 42 | Beacon-Street 55, no Bright Town (41) | 865 (1,316) | 15 % |
+
+The Vellish bot is unharmed (two of three seeds gain), because the valley's founding node
+and the Fonts it builds carry it and its `linkNodes` reaches a second node. The three peoples'
+bots are not: they are poor (the Grimmen end with a few hundred crowns), so they neither buy
+the sector a far node lies in nor raise the Fonts that would replace the seeped half, and
+they sit in a brownout for the whole late game; the Grimmen's half-flow rule halves the seep
+too. A human Grimmen player raises Thrum Fonts on the hills (×2 there) and a Tallowkin player
+links the nodes along the lantern-ways; the bots will learn both in part 5. Recorded in
+NEXT_STEPS as the peoples' bots' purse.
+
 Water, mud, mine seams, Font flares, shared rivers, portal crossings and the Gloam that takes
 a dark building are part 1b, the next iteration.
 

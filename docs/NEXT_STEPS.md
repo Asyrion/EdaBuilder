@@ -370,6 +370,11 @@
 
 ## Known issues
 
+- **The peoples' bots under the ley's limits.** With an unlinked node seeping only half its
+  flow, the Grimmen, Veshari and Tallowkin bots end day 150 in a brownout (61 %, 34 %, 15 %)
+  and lose their last gate (no Bright Town on seed 42): they are too poor to buy a far node's
+  sector or raise Fonts. The Vellish bot is fine. M14 part 5 teaches the bots Fonts and
+  links on a budget; the peoples' gates are re-measured after part 1b.
 - **The bot after the sweep.** With the quest rewards it was never meant to have gone
   (+600 at day 20, +10,000 at Burgh), the Vellish bot reaches Free City on day 67 / never /
   60 (seeds 42/43/44; was 52/48/51) and raises no Lantern, so no Beacon. The table in
