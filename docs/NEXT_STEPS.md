@@ -227,6 +227,14 @@
 - The charter: 2,000 crowns at the council ends a rivalry for good.
 - Milestones M7–M11 recorded in DESIGN §7; M10 Walkers and M11 Peoples planned in §14.
 
+## Done in iteration 31
+
+- The walker framework: a job table, daily fielding from buildings, road patrols within a
+  radius, tile and meeting hooks, a capped bonus layer on coverage, sprites with a prop, a
+  Walkers row with a log in the building panel, a table-driven dev command.
+- The watchman: from Watch Posts and Houses, paints watch on the streets it walks, kills
+  hounds and lays the restless it meets, two of each a day. Quest.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -277,8 +285,9 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M10 Walkers** (DESIGN §14.1): the walker framework (iteration 31), then watchmen,
-   sextons, healers, wardens, scholars, tamers and pilgrims (32–33).
+0. **M10 Walkers, kinds** (DESIGN §14.1): the framework and the watchman are in (iteration
+   31); next the sextons, healers, wardens, scholars, tamers and pilgrims (32–33), each a
+   `WALKER_JOBS` entry with a prop sprite.
 
 0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
    Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.

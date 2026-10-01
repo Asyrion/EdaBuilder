@@ -4,6 +4,7 @@ import { AgentKind, MAP_W, TICKS_PER_DAY, type Agent, type Building, type GameSt
 import { findPath, roadTileOf } from './agents';
 import { effects } from './hazards';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf } from './world';
+import { stepRoad } from './walkers';
 
 /** Set `instant` to skip construction (tests, headless tools). */
 export const construction = { instant: false };
@@ -116,19 +117,11 @@ export function tickConstruction(s: GameState): void {
     assigned.set(best.id, (assigned.get(best.id) ?? 0) + 1);
   }
   // walk
-  const dt = 1 / 10;
   for (const a of crew) {
     if (a.phase !== 1) continue;
     if (a.pathIdx >= a.path.length) { a.phase = 2; continue; }
-    const t = a.path[a.pathIdx];
-    const tx = (t % MAP_W) + 0.5;
-    const ty = ((t / MAP_W) | 0) + 0.5;
-    const dx = tx - a.x;
-    const dy = ty - a.y;
-    const d = Math.hypot(dx, dy);
-    const sp = a.speed * 1.4 * dt;
-    if (d <= sp) { a.x = tx; a.y = ty; a.pathIdx++; if (a.pathIdx >= a.path.length) a.phase = 2; }
-    else { a.x += (dx / d) * sp; a.y += (dy / d) * sp; a.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3; }
+    stepRoad(a, 0.1, 1.1);
+    if (a.pathIdx >= a.path.length) a.phase = 2;
   }
   // work
   for (const b of list) {

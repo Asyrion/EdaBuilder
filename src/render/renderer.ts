@@ -539,7 +539,7 @@ export class Renderer {
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
       if (a.kind === AgentKind.Creature && a.species === 'skyray') raySeen++;
       if (a.kind === AgentKind.Creature && a.species === 'golem' && a.path.length) golemSeen++;
-      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature) continue; // resting inside a building
+      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature && a.kind !== AgentKind.Walker) continue; // resting inside a building
       const [wx, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
       if (a.kind === AgentKind.Creature) {
         const sp = a.species;
@@ -628,7 +628,8 @@ export class Renderer {
       if (a.kind === AgentKind.Builder) {
         name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : walkFrame % 2}`;
         if (a.phase === 2 && cam.zoom >= 2 && Math.random() < 0.08) this.particles.emit({ x: wx + 4, y: wy + 2, vx: (Math.random() - 0.5) * 12, vy: -8 - Math.random() * 6, maxLife: 0.4, size: 1, color: PAL.lampWarm, glow: true, kind: 'spark' });
-      } else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
+      } else if (a.kind === AgentKind.Walker) name = `walker_${a.job}_${a.variant % 3}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
+      else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${walkFrame}`;
       else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);

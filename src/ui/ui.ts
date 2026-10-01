@@ -9,6 +9,7 @@ import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, isChartered, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
+import { WALKER_JOBS, walkersOf } from '../sim/walkers';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
@@ -678,6 +679,7 @@ export class UI {
       rows.push(row('Growth', st >= 3 ? 'full-grown' : `stage ${st + 1} of 4, ${30 - (b.age % 30)} days to the next`));
       rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
     }
+    { const ws = walkersOf(s, b); if (ws.length) { const job = WALKER_JOBS[ws[0].job!]; rows.push(row('Walkers', `${ws.length} ${ws.length === 1 ? job.name : job.plural} on patrol`)); for (const line of ws.flatMap((w) => w.log ?? []).slice(-3)) rows.push(`<div class="fc good">✦ ${line}</div>`); } else if (Object.values(WALKER_JOBS).some((j) => j.from.includes(b.kind)) && b.state === 'ok') problems.push('No walker: the building needs a road at its door to send one out.'); }
     if (b.kind === 'ruindelve') {
       rows.push(row('Relics brought up', `${s.stats.relics} (a set piece every ${RELICS_PER_PIECE})`));
       for (const set of RELIC_SETS) rows.push(row(set.name, s.relics.complete.includes(set.id) ? `<span class="good">entire: ${set.bonus}</span>` : `${s.relics.pieces[set.id] ?? 0} of 3`));
@@ -989,6 +991,7 @@ export class UI {
             <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills; a <b>Golem Foundry</b> (Burgh) binds them into tireless labour that drinks mana. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
             <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura; rare goods build the <b>Marvels</b> tab; the Gloam's pressure rises with the dead and falls with faith.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
+            <li><b>Walkers</b>: Watch Houses send watchmen along the roads; the streets they walk count as watched, and they kill hounds and lay the restless they meet.</li>
             <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
           </ol>

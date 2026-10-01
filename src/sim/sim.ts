@@ -16,6 +16,7 @@ import { dailyTwinRoad } from './trade';
 import { dailyBreeding } from './breeding';
 import { dailyRelics } from './relics';
 import { dailyConstruction, tickConstruction } from './construction';
+import { dailyWalkers, tickWalkers } from './walkers';
 import { wardenDistricts } from './wyrmcraft';
 import { setFenNex } from './agents';
 import { updateMana, updateWater } from './networks';
@@ -51,6 +52,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   tickAgents(state);
   tickCreatures(state);
   tickConstruction(state);
+  tickWalkers(state);
   if (t % 10 === 0) trySpawnBuildings(state, 3);
   if (t % 50 === 20) updateCreatures(state);
   if (t % 50 === 30) checkQuests(state);
@@ -69,6 +71,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyEconomy(state);
     dailyTraffic(state);
     dailyAgents(state);
+    dailyWalkers(state);
     dailyFire(state);
     dailySurge(state);
     dailyDeath(state);

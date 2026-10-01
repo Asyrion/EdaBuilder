@@ -8,12 +8,13 @@ import { RELIC_SETS, grantRelicSet } from './relics';
 import { construction, dailyConstruction, sites, tickConstruction } from './construction';
 import { dailySurge, igniteBuilding, recomputeGloamDist } from './hazards';
 import { spawnCreature } from './creatures';
-import { spawnRestless } from './agents';
+import { roadTileOf, spawnRestless } from './agents';
+import { WALKER_JOBS, spawnWalker } from './walkers';
 import { startStorm } from './lore';
 import { wake, startFlyover } from './wyrm';
 import { checkMilestones } from './economy';
 import { run } from './sim';
-import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type DragonLine, type GameState } from './types';
+import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Building, type DragonLine, type GameState } from './types';
 import { BUILDING_BY_KEY } from './catalog';
 import { forEachBuilding, markAllDirty, markDirty, pushChronicle, pushMessage } from './world';
 import { Zone } from './types';
@@ -66,6 +67,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   { id: 'fire', group: 'Hazards', name: 'Fire in a random home', desc: 'Ignites one lit zone building.', run: (s) => { const list = s.buildings.filter((b) => b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone'); const b = list[Math.floor(list.length / 2)]; return b && igniteBuilding(s, b, 'Dev fire at') ? `Fire at (${b.x},${b.y}).` : 'Nothing to burn.'; } },
   { id: 'gloam', group: 'Hazards', name: 'Gloam pocket here', desc: 'Grey grass in a 7×7 at the camera centre.', run: (s, _a, at) => `${pocket(s, at, 3)} tiles greyed.` },
   { id: 'cleargloam', group: 'Hazards', name: 'Clear all Gloam', desc: 'Every grey tile burned back.', run: (s) => { let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { s.gloam[i] = 0; n++; } recomputeGloamDist(s); markAllDirty(s); return `${n} tiles cleared.`; } },
+  { id: 'walker', group: 'Hazards', name: 'Walker here', desc: 'A walker of the chosen job at the camera centre, anchored to the nearest building of its kind (or the Stake). Every job in the walker table is listed.', arg: { kind: 'select', options: Object.values(WALKER_JOBS).map((j) => [j.id, j.name]) }, run: (s, jobId, at) => { const job = WALKER_JOBS[jobId] ?? Object.values(WALKER_JOBS)[0]; let best: Building | null = null; let bd = Infinity; for (const b of s.buildings) { if (!b || b.state !== 'ok' || !(job.from.includes(b.kind) || b.kind === 'stake')) continue; const d = Math.abs(b.x - at.x) + Math.abs(b.y - at.y) + (b.kind === 'stake' ? 50 : 0); if (d < bd) { bd = d; best = b; } } if (!best) return 'No building of that kind and no Stake.'; const rt = s.road[idx(at.x, at.y)] ? idx(at.x, at.y) : roadTileOf(s, best); if (rt < 0) return 'No road here or at the building.'; const w = spawnWalker(s, job, best, rt); return `${w.id}: a ${job.name} from ${BUILDING_BY_KEY[best.kind].name} at (${best.x},${best.y}).`; } },
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
   // wyrms
   { id: 'egg', group: 'Wyrms', name: 'Lay an egg', desc: 'Of the chosen line, in a free cradle.', arg: { kind: 'select', options: ASPECTS.concat(['fen' as DragonLine]).map((l) => [l, LINE_INFO[l].name]) }, run: (s, line) => { const d = addEgg(s, line as DragonLine); return d ? `${d.name} laid.` : 'No free cradle.'; } },
