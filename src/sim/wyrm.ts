@@ -14,6 +14,14 @@ export const WYRM_WAKE_PER_SPIRE = 3; // waking points per lit spire per day
 export const WYRM_TRIBUTE_BASE = 1500;
 export const WYRM_TRIBUTE_GOODS = 150;
 export const WYRM_FLYOVER_FIRES = 4;
+/** A great wyrm (a trueblood at the wyrm stage) rises to meet a hostile flyover: half the fires, and the Vein-Wyrm sleeps deeper after. */
+export function greatWyrm(s: GameState): { name: string } | null {
+  const d = s.dragons.find((x) => x.stage >= 4);
+  return d ? { name: d.name } : null;
+}
+export function flyoverFireCap(s: GameState): number {
+  return greatWyrm(s) ? Math.ceil(WYRM_FLYOVER_FIRES / 2) : WYRM_FLYOVER_FIRES;
+}
 export const WYRM_VEIN_EGG_DAYS = DAYS_PER_SEASON;
 
 export function newWyrm(node: number): WyrmState {
@@ -151,6 +159,8 @@ export function startFlyover(s: GameState, hostile: boolean): void {
   effects.push({ x: n.x, y: n.y, kind: 'roar', tick: s.tick });
   redraw(s);
   s.stats.wyrmFlyovers++;
+  const gw = hostile ? greatWyrm(s) : null;
+  if (gw) { s.stats.wyrmDuels++; pushMessage(s, `${gw.name} rises from its cradle to meet the Vein-Wyrm over ${s.cityName}. Two shadows cross the valley; the old one turns first. Half the roofs it meant to burn are spared.`, 'milestone', true, { x: n.x, y: n.y }); return; }
   pushMessage(s, hostile ? `The wyrm takes wing over ${s.cityName}. Its shadow is the size of a district.` : `The bound wyrm circles ${s.cityName} once, as it does each season. Glimmoths scatter like sparks.`, hostile ? 'bad' : 'info', true, { x: n.x, y: n.y });
 }
 
@@ -160,7 +170,7 @@ export function endFlyover(s: GameState, hostile: boolean): void {
   redraw(s);
   if (hostile) {
     s.wyrm.state = 'sleeping';
-    s.wyrm.waking = 50;
+    s.wyrm.waking = greatWyrm(s) ? 20 : 50;
     s.wyrm.tributeDay = -1;
     redraw(s);
     pushMessage(s, `The wyrm settles back around its node and sleeps. ${s.wyrm.fires ? `${s.wyrm.fires} buildings burn in its wake.` : 'Nothing burned; the Veshari were quick.'} Spires near it will wake it again.`, 'warn', true);

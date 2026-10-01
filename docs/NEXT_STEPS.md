@@ -218,6 +218,15 @@
 - The brawl: two striking rivals fight on the square once per 60 days with four outcomes.
 - Two quests, tests.
 
+## Done in iteration 30
+
+- The duel: a great wyrm meets a hostile flyover, halves its fires and sends the Vein-Wyrm
+  to a deeper sleep.
+- The auction: the caravan bids above the Crown for loose relics, and a collector may buy
+  an uncatalogued piece.
+- The charter: 2,000 crowns at the council ends a rivalry for good.
+- Milestones M7–M11 recorded in DESIGN §7; M10 Walkers and M11 Peoples planned in §14.
+
 ## Known issues
 
 - **Software-rendered performance.** Under headless Chromium with SwiftShader a 500-building,
@@ -268,8 +277,11 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **Deep dive, phase 6** (DESIGN §13.12): a tale for the great wyrm, relic auctions between
-   the Crown and the caravans, and a guild charter that ends a rivalry for a price.
+0. **M10 Walkers** (DESIGN §14.1): the walker framework (iteration 31), then watchmen,
+   sextons, healers, wardens, scholars, tamers and pilgrims (32–33).
+
+0b. **M11 Peoples** (DESIGN §14.2): the faction scaffold (34), then the Grimmen of the
+   Underhill as proof of concept (35–37); the other peoples stay designed in §14.2.
 
 1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
    replacements through the atlas manifest would still lift the temple, the Lantern of Vell

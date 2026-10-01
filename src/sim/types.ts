@@ -380,6 +380,9 @@ export interface GameState {
     greatWyrms: number;
     relicsSold: number; // loose relics sold to the Crown
     guildWars: number;
+    wyrmDuels: number;
+    relicsAuctioned: number;
+    guildCharters: number;
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

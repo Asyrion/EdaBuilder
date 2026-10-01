@@ -4,7 +4,7 @@
  * They are ambient life with small mechanical hooks (glim-dust for Moth-Lofts, wisps as
  * the early warning for restless dead).
  */
-import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards } from './wyrm';
+import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards, flyoverFireCap } from './wyrm';
 import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { maybeSpawnTiger } from './lore';
@@ -633,7 +633,7 @@ export function tickCreatures(state: GameState): void {
         }
         if (a.phase === 2) {
           // hostile: set the roofs beneath it alight; bound: scatter the moths
-          if (hostile && state.wyrm.fires < WYRM_FLYOVER_FIRES && state.tick % 12 === 0) {
+          if (hostile && state.wyrm.fires < flyoverFireCap(state) && state.tick % 12 === 0) {
             const bi = state.bIndex[idx(Math.floor(a.x), Math.floor(a.y))];
             const b = bi >= 0 ? state.buildings[bi] : null;
             if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category !== 'special' && rng.chance(0.5) && igniteBuilding(state, b, 'Wyrmfire at')) state.wyrm.fires++;
