@@ -5,6 +5,7 @@ import { forEachBuilding, seasonOf } from './world';
 import { treeStage, worldTree } from './growth';
 import { wyrmGuards } from './wyrm';
 import { districtTiles } from './wyrmcraft';
+import { factionOf } from '../data/factions';
 
 export const ASPECT_RADIUS = 10;
 export const ASPECTS: DragonLine[] = ['ember', 'bone', 'glim', 'vein', 'sky', 'grey', 'tide', 'storm'];
@@ -128,7 +129,7 @@ export function pressureWord(p: number): string {
 
 // ---------- the river and the season ----------
 export function riverFrozen(s: GameState): boolean {
-  return seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5;
+  return factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5;
 }
 /** Torrent Mill output by season: the Thaw flood, the Hush freeze. */
 export function millFactor(s: GameState): number {

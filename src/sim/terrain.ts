@@ -10,7 +10,17 @@ export interface TerrainResult {
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean }
+export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean; riverside?: boolean }
+
+/** The shore rule: a land tile (not hills, not a node, not ruins) with water among its eight neighbours. */
+function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
+  const t = terrain[idx(x, y)];
+  if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) return false;
+  for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++)
+      if (inBounds(x + dx, y + dy) && isWater(terrain[idx(x + dx, y + dy)])) return true;
+  return false;
+}
 
 export function generateTerrain(seed: number, opts: TerrainOptions = {}): TerrainResult {
   const rng = new Rng(seed ^ 0x9e3779b9);
@@ -87,19 +97,7 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
   }
   // Shores next to water
   for (let y = 0; y < MAP_H; y++)
-    for (let x = 0; x < MAP_W; x++) {
-      const i = idx(x, y);
-      if (isWater(terrain[i])) continue;
-      let nearWater = false;
-      for (let dy = -1; dy <= 1 && !nearWater; dy++)
-        for (let dx = -1; dx <= 1; dx++) {
-          if (inBounds(x + dx, y + dy) && isWater(terrain[idx(x + dx, y + dy)])) {
-            nearWater = true;
-            break;
-          }
-        }
-      if (nearWater && terrain[i] !== Terrain.Hills) terrain[i] = Terrain.Shore;
-    }
+    for (let x = 0; x < MAP_W; x++) if (shoreTile(terrain, x, y)) terrain[idx(x, y)] = Terrain.Shore;
 
   // Ley nodes: one near centre (founding), 3-5 others spread out on buildable land.
   const nodes: { x: number; y: number }[] = [];
@@ -181,6 +179,36 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
     if (placed >= 6) break;
     // undo a too-small cluster
     for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (inBounds(x + dx, y + dy) && terrain[idx(x + dx, y + dy)] === Terrain.Ruins) terrain[idx(x + dx, y + dy)] = Terrain.Forest;
+  }
+
+  // The riverside: a people that lives on the water founds its city within six tiles of it. When the nearest river
+  // or lake water lies further, a two-wide channel is cut from it toward the founding, stopping at six (never into the
+  // clearing), with shore along its banks. No rng; the Vellish map is untouched.
+  if (opts.riverside) {
+    let wx = -1; let wy = -1; let wd = Infinity;
+    for (let y = 0; y < MAP_H; y++)
+      for (let x = 0; x < MAP_W; x++) {
+        if (terrain[idx(x, y)] !== Terrain.Water) continue;
+        const d = Math.max(Math.abs(x - fx), Math.abs(y - fy));
+        if (d < wd) { wd = d; wx = x; wy = y; }
+      }
+    if (wx >= 0 && wd > 6) {
+      const carved: [number, number][] = [];
+      const cut = (x: number, y: number) => {
+        if (!inBounds(x, y)) return;
+        const t = terrain[idx(x, y)];
+        if (t === Terrain.LeyNode || t === Terrain.Ruins || isWater(t)) return;
+        terrain[idx(x, y)] = Terrain.Water;
+        carved.push([x, y]);
+      };
+      let x = wx; let y = wy;
+      while (Math.max(Math.abs(x - fx), Math.abs(y - fy)) > 6) {
+        const ddx = fx - x; const ddy = fy - y;
+        if (Math.abs(ddx) >= Math.abs(ddy)) { x += Math.sign(ddx); cut(x, y); cut(x, y + 1); } else { y += Math.sign(ddy); cut(x, y); cut(x + 1, y); }
+      }
+      for (const [cx, cy] of carved)
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (inBounds(cx + dx, cy + dy) && shoreTile(terrain, cx + dx, cy + dy)) terrain[idx(cx + dx, cy + dy)] = Terrain.Shore;
+    }
   }
 
   // Gloam on the map rim, with noisy pockets.

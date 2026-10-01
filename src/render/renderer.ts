@@ -12,7 +12,7 @@ import { tileToWorld } from './iso';
 import { lightSprite } from './lights';
 import { PAL, ambientFor, nightFactor } from './palette';
 import { Particles } from './particles';
-import { TILE_H, TILE_W } from './sprites';
+import { TILE_H, TILE_W, ZONE_LOOKS } from './sprites';
 import { h2 } from './painter';
 import { DISTRICT_COLORS, OVERLAYS, type OverlayId } from './overlays';
 
@@ -333,7 +333,7 @@ export class Renderer {
 
   // ---------- main ----------
   render(state: GameState, view: ViewState, dt: number): void {
-    this.zoneSuffix = state.faction === 'grimmen' ? '_grimmen' : '';
+    this.zoneSuffix = ZONE_LOOKS.includes(state.faction) ? `_${state.faction}` : '';
     const t0 = performance.now();
     this.stats.drawn = 0;
     this.time += dt;

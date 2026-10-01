@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked, type BuildingDef, type Milestone } from '../sim/catalog';
 import { Terrain, idx, type GameState } from '../sim/types';
 
-export type FactionId = 'vellish' | 'grimmen';
+export type FactionId = 'vellish' | 'grimmen' | 'veshari';
 
 export interface FactionRules {
   hillLandValue: number; // land value added on Hills tiles
@@ -13,6 +13,10 @@ export interface FactionRules {
   hillMana: number; // × the mana made by a building that stands on hills
   nodeMana: number; // × the flow of the ley nodes
   startCrowns: number; // added to the starting treasury
+  waterLandValue: number; // × the land value the river gives its banks (services.ts)
+  dryPenalty: number; // land value taken off every tile more than 8 from water
+  riverFreezes: boolean; // false: the river runs through the Hush (barges sail, mills turn)
+  millMana: number; // × the mana a Torrent Mill makes
   milestoneGate?: (s: GameState, next: number) => boolean; // false holds the city at its milestone
 }
 
@@ -54,7 +58,30 @@ const GRIMMEN_TEXTS = [
 const SWAP: Record<string, string> = { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery', golemfoundry: 'forgetemple', lantern_wonder: 'underkingseat' };
 export const GRIMMEN_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: GRIMMEN_NAMES[i], text: GRIMMEN_TEXTS[i], unlocks: m.unlocks.map((k) => SWAP[k] ?? k) }));
 
-export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0 };
+/** Moorings: the buildings barges sail between. The Veshari's reach milestones count them. */
+export const MOORINGS = ['quay', 'landing'];
+export function moorings(s: GameState): number {
+  let n = 0;
+  for (const b of s.buildings) if (b && b.state === 'ok' && MOORINGS.includes(b.kind)) n++;
+  return n;
+}
+export const VESHARI_MOORINGS = [0, 1, 2, 3, 4, 5, 6, 8, 10];
+const VESHARI_NAMES = ['The Bank', 'Jetty', 'Quayside', 'Harbour', 'Haven', 'River-Market', 'Weirhold', "Vesh's Court", 'Sable Crown'];
+const VESHARI_TEXTS = [
+  'A camp on the Sable\'s bank. Sink a tide-well, lay the first landing, and let the river do the carrying.',
+  'A jetty on the water. The Crown sends cobbles, a sexton and a healer; the Veshari send for more rope.',
+  'A quayside with a name. Barges run between your landings, and the first Ward Lantern is yours to raise.',
+  "A harbour on the Crown's charts. Scholars, a proper Watch and the carters' guild follow the barges in.",
+  'A haven. The deep Veins may be tapped, the mills may turn in the current, and a Tide Pool dug for the water lines.',
+  'A river-market: barges from three valleys tie up at your moorings. The guilds petition for a hall.',
+  'A weirhold of a thousand souls. The Four Vigils ask for a temple with its feet in the water.',
+  "Vesh's Court: the Crown grants you the right to raise the Lantern of Vell on the water.",
+  'The Sable Crown. The river runs through the city and the city runs the river, and the Gloam has never crossed it.',
+];
+const VESHARI_SWAP: Record<string, string> = { well: 'tidewell', cradle: 'tidepool' };
+export const VESHARI_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: VESHARI_NAMES[i], text: VESHARI_TEXTS[i], unlocks: m.unlocks.map((k) => VESHARI_SWAP[k] ?? k) }));
+
+export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1 };
 
 export const FACTIONS: Record<string, FactionDef> = {
   vellish: {
@@ -66,7 +93,13 @@ export const FACTIONS: Record<string, FactionDef> = {
     id: 'grimmen', name: 'The Grimmen of the Underhill', people: 'Grimmen', playable: true,
     lore: 'Ash-grey stone folk the Gloam cannot touch. Hills are their best land and grass is poor; they drink from seeps, hold the grey with standing stones instead of lanterns, draw more from the hill than from the spires, and hatch only the stone lines. Their milestones are cut by depth: each needs stone quarried as well as folk.',
     milestones: GRIMMEN_MILESTONES, deny: [], replaces: { well: 'seep', wardlantern: 'stoneward', cradle: 'hatchery', golemfoundry: 'forgetemple', lantern: 'underkingseat' },
-    rules: { hillLandValue: 12, grassPenalty: 6, hillBuildable: true, wallWard: 2, lanternWard: 1, hillMana: 1.33, nodeMana: 0.67, startCrowns: 0, milestoneGate: (s, next) => stoneQuarried(s) >= GRIMMEN_STONE[next] },
+    rules: { ...NEUTRAL_RULES, hillLandValue: 12, grassPenalty: 6, hillBuildable: true, wallWard: 2, lanternWard: 1, hillMana: 1.33, nodeMana: 0.67, startCrowns: 0, milestoneGate: (s, next) => stoneQuarried(s) >= GRIMMEN_STONE[next] },
+  },
+  veshari: {
+    id: 'veshari', name: 'The Veshari of the Sable', people: 'Veshari', playable: true,
+    lore: 'The water-mages of Vesh and their river-kin, chartered on the Sable\'s bank. The riverbank is their best land and dry ground is poor; they drink from tide-wells, moor barges at landings where the Vellish send carts, draw more from the mills in the current than from the Veins, and the river never freezes for them. Their milestones are measured by reach: each needs moorings as well as folk.',
+    milestones: VESHARI_MILESTONES, deny: [], replaces: { well: 'tidewell', cradle: 'tidepool' },
+    rules: { ...NEUTRAL_RULES, waterLandValue: 2, dryPenalty: 6, riverFreezes: false, millMana: 1.33, nodeMana: 0.8, milestoneGate: (s, next) => moorings(s) >= VESHARI_MOORINGS[next] },
   },
 };
 

@@ -146,6 +146,12 @@ export const BUILDINGS: BuildingDef[] = [
     w: 1, h: 1, cost: 350, upkeep: 4, manaUse: 0, waterRadius: 6, nearHills: true, unlock: 0,
   },
   {
+    key: 'tidewell', name: 'Tide-Well', category: 'water', faction: ['veshari'],
+    desc: 'A stone shaft sunk at the water\'s edge, where the river fills it twice a day. Waters buildings within 10 tiles; must touch river or lake water. No mana.',
+    flavor: 'The water-mage does not need a coin. She can hear the river from here.',
+    w: 1, h: 1, cost: 400, upkeep: 4, manaUse: 0, waterRadius: 10, nearWater: true, unlock: 0,
+  },
+  {
     key: 'cistern', name: 'Cistern of Vesh', category: 'water',
     desc: 'A mana-driven cistern that lifts water uphill. Waters buildings within 12 tiles. Needs mana.',
     flavor: 'The water rises because it is asked nicely, and because eight mana a day are spent on the asking.',
@@ -426,6 +432,19 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'A stone landing on the river or lake. Each day a barge carries up to 40 goods from works within 8 tiles to the markets around another Quay, along the water. Two quays on the same water make a trade route that no road congestion touches.',
     flavor: 'The Veshari say the river was theirs first. The bargemen say the river was nobody\'s.',
     w: 1, h: 1, cost: 3200, upkeep: 25, manaUse: 0, unlock: 3, nearWater: true,
+  },
+  {
+    key: 'landing', name: 'Landing', category: 'service', faction: ['veshari'],
+    desc: 'A timber mooring on the bank. Barges sail between landings and quays: each day one carries up to 40 goods from works within 8 tiles to the markets around another mooring. Every landing counts toward the next reach.',
+    flavor: 'Three planks, a post, a bell. The Veshari call it a landing; everyone else calls it the place the river starts.',
+    w: 1, h: 1, cost: 900, upkeep: 10, manaUse: 0, unlock: 0, nearWater: true,
+  },
+  {
+    key: 'tidepool', name: 'Tide Pool', category: 'service', faction: ['veshari'],
+    desc: 'A walled pool open to the river, warmed by a spire. Takes only the water lines (Tide, Storm and Glim eggs); hatchlings grow with a tamer\'s visits. Must touch water and a ley node or spire within 6.',
+    flavor: 'The eggs sit on the bottom like river stones and the river stones sit on the eggs, and the Veshari swear they can tell them apart.',
+    w: 2, h: 2, cost: 3500, upkeep: 30, manaUse: 6, needsMana: true, unlock: 4, nearWater: true,
+    service: { type: 'leisure', radius: 5, strength: 0.3 },
   },
   {
     key: 'skydock', name: 'Sky-Dock', category: 'wonder',

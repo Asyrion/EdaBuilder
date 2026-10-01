@@ -1325,8 +1325,19 @@ function stoneSpec(spec: BuildingSpec, level: number, variant: number): Building
   return { ...spec, wall: walls[variant % 4], roof: roofs[variant % 4], roofH: Math.max(2, spec.roofH - 3), chimney: false, lanternPost: false, runeBand: level >= 2 || spec.runeBand, seed: (spec.seed ?? 0) + 500 };
 }
 
+/** The Veshari build in plank and reed: timber and washed walls, thatch and awnings, a lantern on every market post. */
+function reedSpec(spec: BuildingSpec, level: number, variant: number, zone: string): BuildingSpec {
+  const walls: Wall[] = ['timber', 'plaster', 'timber', 'bluewash'];
+  const roofs: Roof[] = level === 1 ? ['thatch', 'thatch', 'moss', 'thatch'] : level === 2 ? ['thatch', 'shingle', 'thatch', 'awning'] : ['tile', 'thatch', 'copper', 'slate'];
+  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], lanternPost: spec.lanternPost || zone === 'market', seed: (spec.seed ?? 0) + 700 };
+}
+
+/** Peoples with a zone look of their own: the atlas carries a `_people` copy of every zoned sprite. */
+export const ZONE_LOOKS = ['grimmen', 'veshari'];
+
 function zoneSpecs(zone: string, level: number, variant: number, people?: string): BuildingSpec {
   if (people === 'grimmen') return stoneSpec(zoneSpecs(zone, level, variant), level, variant);
+  if (people === 'veshari') return reedSpec(zoneSpecs(zone, level, variant), level, variant, zone);
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
@@ -1372,6 +1383,9 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   seep: { w: 1, h: 1, height: 3, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 9 },
   stoneward: { w: 1, h: 1, height: 12, roofH: 2, wall: 'darkstone', roof: 'flat', windows: 0, seed: 21, runeBand: true, standingStones: true },
   quarry: { w: 1, h: 1, height: 6, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 46, lanternPost: true, stonePile: true },
+  tidewell: { w: 1, h: 1, height: 4, roofH: 4, wall: 'stone', roof: 'thatch', windows: 0, seed: 48, lanternPost: true },
+  landing: { w: 1, h: 1, height: 3, roofH: 2, wall: 'timber', roof: 'none', windows: 0, seed: 49, lanternPost: true, banner: true },
+  tidepool: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'none', windows: 0, seed: 50, runeBand: true, leyLamps: true, wisps: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
   torrentmill: { w: 1, h: 1, height: 12, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
@@ -1688,7 +1702,7 @@ export function generateSprites(): SpriteDef[] {
   // zoned buildings
   for (const z of ['hearth', 'market', 'craft', 'arcane'])
     for (let lvl = 1; lvl <= 3; lvl++)
-      for (let v = 0; v < 4; v++) { push(`${z}_l${lvl}_v${v}`, drawBuilding(zoneSpecs(z, lvl, v))); push(`${z}_l${lvl}_v${v}_grimmen`, drawBuilding(zoneSpecs(z, lvl, v, 'grimmen'))); }
+      for (let v = 0; v < 4; v++) { push(`${z}_l${lvl}_v${v}`, drawBuilding(zoneSpecs(z, lvl, v))); for (const p of ZONE_LOOKS) push(`${z}_l${lvl}_v${v}_${p}`, drawBuilding(zoneSpecs(z, lvl, v, p))); }
   // ruin
   {
     const p = new Painter(34, 26);

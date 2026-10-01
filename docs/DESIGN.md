@@ -1094,6 +1094,67 @@ next iteration: a Grimmen town of 1,300 folk runs a brownout of a quarter (their
 is two thirds of the Vellish and the bot stops placing spires once demand nears supply), so
 their mana game, Crystal Mines and the Forge-Temple early, is the next balance item.
 
+### 4.70 The Veshari of the Sable, part 1: rules, buildings, the riverside start, the bot (iteration 39)
+
+M12 part 2 is the second people on the scaffold, to prove it holds twice. The lore has the
+Veshari as the water-mages of Vesh with river-kin in Gekiryu, and Vell as a kingdom of river
+valleys ruled from Vell-on-Sable, so the people is **the Veshari of the Sable**: a wardlight
+chartered by the water-mage order and their river-kin on the Sable's bank. (The faction id
+`veshari` and the building key `veshari`, the fire-brigade hall every people builds, are
+different namespaces; the atlas keeps `b_veshari` for the hall and `hearth_l1_v0_veshari` for
+the people's look.)
+
+**Rules** (four new fields on `FactionRules`, neutral by default, each read once):
+`waterLandValue` (× the river's land-value bonus; the Veshari 2, so a bank tile is worth up to
++25), `dryPenalty` (off every tile more than 8 from water; 6), `riverFreezes` (false: the river
+runs through the Hush, so barges sail and the mills keep turning), `millMana` (× a Torrent
+Mill's output; 1.33), plus `nodeMana 0.8`. Their reach milestones (The Bank, Jetty, Quayside,
+Harbour, Haven, River-Market, Weirhold, Vesh's Court, Sable Crown) are gated on **moorings**
+(quays and landings standing): 1, 2, 3, 4, 5, 6, 8, 10. ×1 and −0 are exact, so the Vellish
+and the Grimmen are bit-identical.
+
+**Buildings** (`faction: ['veshari']`): the **Tide-Well** replaces the well (must touch water,
+waters 10, no mana); the **Landing** (900 crowns, from the start) is a timber mooring that
+barges sail between: the existing barge code (`vehicles.ts`) now reads `MOORINGS = ['quay',
+'landing']`, so a Veshari town trades along the river from its first week; the **Tide Pool**
+replaces the Wyrm-Cradle and takes only the water lines: `HATCHERY_LINES` became
+`CRADLE_LINES`, a map from cradle kind to its lines (hatchery: bone, grey, ember; tide pool:
+tide, storm, glim), so a third people's cradle is a row. A `_veshari` zone look (plank and
+washed walls, thatch and awnings, a lantern on every market) joins the Grimmen stone through
+`ZONE_LOOKS`, which drives both the atlas copies and the renderer's suffix.
+
+**The riverside start.** Like the Grimmen's ridge, the people's start keeps its promise: when
+the nearest river or lake water is more than six tiles from the founding, `generateTerrain`
+cuts a two-wide channel from it toward the founding, stopping at six (never into the
+clearing), with shore along the banks. No rng is drawn and the Vellish map is untouched; the
+inline shore pass became a `shoreTile` rule used by both. On the way a latent bug surfaced:
+`waterDist` was never saved nor recomputed on load, so a loaded game kept the fresh Vellish
+valley's distances. `deserialize` now derives it from the saved terrain (identical for every
+existing save).
+
+**The bot.** `quarry()` returns for a people that neither builds on hills nor delves (the
+Veshari must never level hills for their gate). A `moor()` step lays a landing when the reach
+is short; when no bank lies beside a street it brings a track to the land beside the nearest
+free bank tile (never onto it) and widens the grid. `keepWatered` tries a water people's well
+within 14 before a cistern; `buyServices` raises Torrent Mills as the people's spires once the
+mana surplus thins. `scripts/balance.ts` logs moorings and barges for them.
+
+**Balance (150 days, riverside start):**
+
+| Veshari | Jetty | Quayside | Harbour | Haven | River-Market | Weirhold (1,000) | folk d150 | moorings | barges |
+|---|---|---|---|---|---|---|---|---|---|
+| seed 42 | 4 | 11 | 42 | 43 | 45 | 53 | 1,913 | 12 | 0 |
+| seed 43 | 3 | 9 | 12 | 21 | 30 | 53 | 1,190 | 8 | 114 |
+| seed 44 | 4 | 13 | 24 | 31 | 40 | 55 | 1,426 | 10 | 171 |
+
+All three reach Haven (the fifth milestone) by day 70, as the plan asked, and the Weirhold
+(1,000 folk) by day 55; Vellish and Grimmen seed 42 are bit-identical to main. Two findings
+for part 2: on seed 42 the bot sat at three moorings from day 11 to day 42 (the gate holds
+the grants back, so the purse stayed too thin for a landing until the clear-mode mooring
+was allowed), and on that seed its landings cluster at the centre where no works stand
+within reach, so no barge ever sailed; a landing placed for its trade, not only its count,
+is the bot's next lesson.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1168,8 +1229,10 @@ their mana game, Crystal Mines and the Forge-Temple early, is the next balance i
   one as proof of concept (the Grimmen of the Underhill), the rest designed (§14.2).
   ✅ (iterations 34–37)
 - **M12 Peoples II** — part 1, the Grimmen's deep game: the bot's bulldozer fixed, the
-  Delve, the Quarry, the Deep Cut (iteration 38, §4.69) ✅; part 2, a second people built
-  on the scaffold to prove it holds twice (the candidates are in §14.2).
+  Delve, the Quarry, the Deep Cut (iteration 38, §4.69) ✅; part 2a, the Veshari of the Sable
+  on the scaffold: rules, buildings, the riverside start, the bot (iteration 39, §4.70) ✅;
+  part 2b: the Hush flood, the Great Weir wonder, a chapter of eight, three tales with tide
+  and storm eggs, a bargeman walker.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1723,10 +1786,12 @@ picks it beside the scenario; the bot plays any of them.
   Grimmen plateau at 350–700 folk. *Iteration 38 (4.69)* found the plateau was mostly the
   bot bulldozing its own homes, and gave the Grimmen their deep game: the Delve, the Quarry
   and the Deep Cut.
-- **Designed, not built (ideas for the remaining peoples).** *Veshari river-folk:* the city
-  lives on the water: quays are hearths, barges are the roads, the river never freezes for
-  them but the Hush floods; mana from Torrent Mills; dragons of Tide and Storm only.
-  *Tallowkin candle-folk:* light is life: every building must be lit or it is abandoned in
+- **The second people: the Veshari of the Sable (iteration 39 ✅ as 4.70, part 1).** The
+  city lives on the water: tide-wells and landings, barges where the Vellish send carts,
+  Torrent Mills as spires, the river never freezes for them, reach milestones gated on
+  moorings, a Tide Pool for the water lines. Part 2 (the Hush flood, the Great Weir, the
+  chapter, the tales, the bargeman) is the next iteration.
+- **Designed, not built (ideas for the remaining peoples).** *Tallowkin candle-folk:* light is life: every building must be lit or it is abandoned in
   a day, spires reach 7 but cost double, the Hush vigil is mandatory and cheap, their wonder
   is the Lantern of Vell rebuilt. *Fen-Nex:* a trading people with no Craft zones at all,
   goods come by caravan and route, markets hold triple, Fen cat-dragons as wardens, their
@@ -1908,3 +1973,15 @@ picks it beside the scenario; the bot plays any of them.
 - *A people's op or edict is a field on the table (iteration 38):* terraform ops and edicts
   carry `faction` like buildings do; the table filters the UI, the action refuses, and the
   hot-path reads (`edictOn`) are gated once, so a second people adds rows, not branches.
+- *A people id and a building key share no namespace (iteration 39):* the Veshari Hall is
+  `veshari` in the catalog and the people is `veshari` in the factions; nothing joins the two
+  strings, and the atlas names (`b_veshari`, `hearth_l1_v0_veshari`) keep them apart.
+- *A multiplier where the neutral value is one (iteration 39):* the river's land-value bonus
+  became `× waterLandValue`, the Torrent Mill `× millMana`, the freeze `&& riverFreezes`: ×1,
+  −0 and `&& true` are exact identities, so adding a people never moves the others by a bit.
+- *A derived layer is derived from the save, not the seed (iteration 39):* `waterDist` was
+  rebuilt from a fresh map on load; now from the saved terrain. The Grimmen ridge got away
+  with it because hills are not water; the Veshari channel would not have.
+- *The start keeps the promise, again (iteration 39):* as the ridge for the Grimmen, a channel
+  brings the water within six tiles of a Veshari founding rather than teaching the bot and
+  the player to walk to it.

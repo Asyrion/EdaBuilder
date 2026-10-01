@@ -7,6 +7,7 @@ import { marketStockCap } from './agents';
 import { effects } from './hazards';
 import { riverFrozen } from './weave';
 import { seasonOf } from './world';
+import { MOORINGS } from '../data/factions';
 
 export const FLOAT_VARIANT = 3; // cart variant: hovers, ignores congestion, 1 mana while moving
 export const BARGE_VARIANT = 4; // cart variant: travels water between quays
@@ -88,9 +89,10 @@ export function waterTileOf(s: GameState, b: Building): number {
 }
 
 // ---------- barges ----------
+/** Every mooring a barge may sail from: quays, and the Veshari's landings. */
 export function quays(s: GameState): Building[] {
   const out: Building[] = [];
-  forEachBuilding(s, (b) => { if (b.kind === 'quay' && b.state === 'ok') out.push(b); });
+  forEachBuilding(s, (b) => { if (MOORINGS.includes(b.kind) && b.state === 'ok') out.push(b); });
   return out;
 }
 function near(s: GameState, q: Building, test: (b: Building) => boolean): Building[] {
