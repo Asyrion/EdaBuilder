@@ -1139,7 +1139,21 @@ free bank tile (never onto it) and widens the grid. `keepWatered` tries a water 
 within 14 before a cistern; `buyServices` raises Torrent Mills as the people's spires once the
 mana surplus thins. `scripts/balance.ts` logs moorings and barges for them.
 
-**Balance (150 days):** the three-seed table follows in the closing commit of this iteration.
+**Balance (150 days, riverside start):**
+
+| Veshari | Jetty | Quayside | Harbour | Haven | River-Market | Weirhold (1,000) | folk d150 | moorings | barges |
+|---|---|---|---|---|---|---|---|---|---|
+| seed 42 | 4 | 11 | 42 | 43 | 45 | 53 | 1,913 | 12 | 0 |
+| seed 43 | 3 | 9 | 12 | 21 | 30 | 53 | 1,190 | 8 | 114 |
+| seed 44 | 4 | 13 | 24 | 31 | 40 | 55 | 1,426 | 10 | 171 |
+
+All three reach Haven (the fifth milestone) by day 70, as the plan asked, and the Weirhold
+(1,000 folk) by day 55; Vellish and Grimmen seed 42 are bit-identical to main. Two findings
+for part 2: on seed 42 the bot sat at three moorings from day 11 to day 42 (the gate holds
+the grants back, so the purse stayed too thin for a landing until the clear-mode mooring
+was allowed), and on that seed its landings cluster at the centre where no works stand
+within reach, so no barge ever sailed; a landing placed for its trade, not only its count,
+is the bot's next lesson.
 
 ## 5. Art direction
 
