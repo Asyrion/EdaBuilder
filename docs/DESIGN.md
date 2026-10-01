@@ -951,6 +951,64 @@ envoy (1,500 crowns for +4 happiness, 30 goods for +2, or refuse for −4), a ga
 vein of true leystone, once (every mine +30 leystone and +3 scale, 2,500 crowns from the
 Crown, or `stats.trueVeins` for +10 node mana for ever).
 
+### 4.68 The Grimmen of the Underhill, part 3: the stone-sexton, the bot, balance (iteration 37)
+
+This closes M11's proof of concept (§14.2): the Grimmen walker, the bot playing the Grimmen,
+and balance on three seeds. The Vellish game is bit-identical to main.
+
+**The stone-sexton** (`WALKER_JOBS.stonesexton`, prop `salt`): one from every Stone Ward and
+one from the Forge-Temple, radius 10, cap 3. On the streets it walks it paints ward (+0.04,
+cap 0.15); when a tile beside its road is Gloam it cuts it back, two a day, with a ward flash
+and a log line ("Cut the grey back at (x,y) with salt and chisel"); the restless it meets it
+lays, three a day. `a.load` counts cuts × 10 + layings, like the watchman. The sprite is a
+grey hood with a salt bag at the hip and a chisel. The dev picker lists it by itself (eight
+jobs now).
+
+**An unlit ward burns.** `dailyGloam` only burned Gloam for *lit* wards, so the Stone Ward
+("asks no mana") held the grey but never cut it. The gate is now
+`!b.lit && (def.needsMana || def.manaUse > 0)`: a ward that draws no mana burns whether or
+not a spire reaches it. Every Vellish ward draws mana, so nothing moves for them.
+
+**The Underhill start.** Seeds 42 and 43 had no hills within reach of the founding node; the
+Grimmen bot zoned grass at a penalty, never cut a seep, and collapsed at the Camp (139 folk,
+−4,616 crowns by day 120). The people's own text promises a hill start, so `generateTerrain`
+takes an `underhill` option (set by `createGame` for the Grimmen): after the founding
+clearing, a ridge of hills five to nine tiles south of the node (Chebyshev distance ≥ 6, so
+the clearing itself stays open; grass, meadow and forest become hills, water and nodes do
+not). The Vellish map is untouched: the test builds both from one seed and checks that every
+differing tile is a ridge tile.
+
+**The bot plays the Grimmen** (`src/sim/bot.ts`):
+- `zoneByDemand` runs two passes when the people may build on hills: hill tiles first,
+  then the rest, so every hall quarries stone. `placeNear`'s clear mode allows hills the
+  same way.
+- `keepWatered` asks for the people's water key (`factionKey(s, 'well')`): a seep within
+  10 tiles of the dry home, then a cistern when it is unlocked and the mana flow allows.
+- A `quarry()` step runs every day. Before the Land tool (milestone 4) a stone gate sends a
+  track to the nearest hill tile within 45 and widens the zoning radius, so the halls climb
+  the ridge. From milestone 4, when folk are at 80 % of the next milestone's need and the
+  treasury holds 2,500, it levels up to three hill tiles a day on a spiral from the centre
+  with the real `terraform(s, 'level')`, paying for them.
+
+**The balance bot takes a people**: `npx tsx scripts/balance.ts <seed> <days> [treasury|-]
+[faction]`; milestone names come from `milestonesOf`, and a `stone` field joins the daily
+line for the Grimmen.
+
+**Balance (120 days, hill start):**
+
+| seed | Camp | Cut | Gallery | Hold | Deep Hold | Under-Market | folk d120 |
+|---|---|---|---|---|---|---|---|
+| 42 | 1 | 3 | 13 | 19 | 33 | 46 | 658 |
+| 43 | 1 | 3 | 10 | 20 | 51 | — | 343 |
+| 44 | 1 | 4 | 9 | 19 | 43 | 59 | 714 |
+
+All three reach Deep Hold (the fifth milestone) by day 70, as §14.2 asked. Vellish seed 42
+is identical to main (Burgh 42, Free City 66, Beacon 97). What the table also shows: the
+Grimmen plateau between 350 and 700 folk. Hills are their best land but the ridge is finite,
+grass is poor for them, and the bot levels hills only for stone, not for room, so the Deephold
+(1,000 folk) is out of its reach. That is the first item of the next iteration, not a fault of
+the people: a hill people needs a hill economy past the Under-Market.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1023,6 +1081,10 @@ Crown, or `stats.trueVeins` for +10 node mana for ever).
   wardens, scholars, tamers and pilgrims on the roads, each doing a visible job (§14.1). ✅
 - **M11 Peoples** — playable factions with their own buildings, progression and rules,
   one as proof of concept (the Grimmen of the Underhill), the rest designed (§14.2).
+  ✅ (iterations 34–37)
+- **M12 Peoples II (proposed)** — the Grimmen's deep game (a hill economy past the
+  Under-Market: stone as a good, the bot levelling for room) and a second people built on
+  the scaffold to prove it holds twice; the candidates are in §14.2.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -1559,7 +1621,7 @@ picks it beside the scenario; the bot plays any of them.
   with what the Grimmen need: terrain preferences (land value and buildability on hills),
   a ward source multiplier (walls, lanterns), a mana source multiplier (mines, nodes), a
   water rule (wells vs seeps), a dragon rule (cradles or foundries), and a starting kit.
-- **Proof of concept: the Grimmen of the Underhill (iterations 35–37; 35 ✅ as 4.66, 36 ✅ as 4.67).** Stone folk who dig.
+- **Proof of concept: the Grimmen of the Underhill (iterations 35–37; ✅ as 4.66, 4.67 and 4.68).** Stone folk who dig.
   Hearths are *Deep Halls* cut into hills (hills are their best land; grass is poor), water
   comes from *Seeps* in hills rather than wells by the river, the Gloam is held by stone:
   the Warding Wall wards double and the Ward Lantern is replaced by the *Stone Ward*, mana
@@ -1571,7 +1633,9 @@ picks it beside the scenario; the bot plays any of them.
   Stone Ward, the Underking's Seat as the wonder), a quest chapter of eight, three events
   (the Underking's envoy, a collapse, a vein of true leystone), and a Grimmen walker (the
   stone-sexton) once M10 exists. Verification: the bot reaches the fifth Grimmen milestone
-  by day 70 on three seeds; every Vellish test still passes untouched.
+  by day 70 on three seeds; every Vellish test still passes untouched. *Met in iteration 37*
+  (Deep Hold on days 33, 51 and 43; the Vellish run is bit-identical), with one finding: the
+  Grimmen plateau at 350–700 folk, so their deep game is the next step (M12).
 - **Designed, not built (ideas for the remaining peoples).** *Veshari river-folk:* the city
   lives on the water: quays are hearths, barges are the roads, the river never freezes for
   them but the Hush floods; mana from Torrent Mills; dragons of Tide and Storm only.
@@ -1733,3 +1797,10 @@ picks it beside the scenario; the bot plays any of them.
 - *A people's chapter is its own (iteration 36):* the quest checker pays any met goal, so
   the Underhill quests briefly paid the Vellish and moved their balance; quests now carry a
   `people` and the shared goals read through `factionKey`, so both peoples see one Ledger.
+- *A people's start keeps its promise (iteration 37):* the Grimmen text says they begin
+  beside the hills, but two of three seeds founded them on open grass and the bot collapsed;
+  the terrain now cuts a ridge for them rather than the bot learning to walk to the hills,
+  because the first hour should read as the people's own, and the Vellish map is unchanged.
+- *A description is a rule (iteration 37):* the Stone Ward "asks no mana" but only lit wards
+  burned Gloam; the gate now reads the catalog's mana fields instead of the lit flag, so a
+  building's text and its code cannot disagree about mana.

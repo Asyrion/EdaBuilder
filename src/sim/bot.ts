@@ -1,11 +1,11 @@
-import { canBuild, factionKey } from '../data/factions';
+import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried } from '../data/factions';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
  * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
  */
 import { buySector, canBuySector, sectorCost } from './sectors';
-import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath } from './actions';
+import { buildRoad, bulldoze, paintZone, placeBuilding, roadPath, terraform } from './actions';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, deepenNode, forEachBuilding } from './world';
@@ -40,6 +40,7 @@ export class Bot {
     this.ensureGrid();
     this.zoneByDemand();
     this.keepWatered();
+    this.quarry();
     this.keepLit();
     this.buyServices();
     // expand when zone tiles are mostly used and demand is positive
@@ -87,14 +88,17 @@ export class Bot {
     for (const [z, v] of cands) {
       if (v < (this.opts.aggressive ? 0 : 0.15)) continue;
       if (z === Zone.Arcane && s.milestone < 4) continue;
-      // find unzoned road-adjacent tiles inside the radius, paint a few strips (2 rows beside a street)
-      outer: for (let y = this.cy - r; y <= this.cy + r; y++) {
+      // find unzoned road-adjacent tiles inside the radius, paint a few strips (2 rows beside a street);
+      // a people that builds on hills takes the hill tiles first (stone for its milestones)
+      const hillOK = factionOf(s).rules.hillBuildable;
+      outer: for (const hillPass of hillOK ? [true, false] : [false]) for (let y = this.cy - r; y <= this.cy + r; y++) {
         for (let x = this.cx - r; x <= this.cx + r; x++) {
           if (!inBounds(x, y)) continue;
           const i = idx(x, y);
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
-          if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+          if (hillPass !== (t === Terrain.Hills && hillOK)) continue;
           const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
           if (!adj) continue;
           // craft away from the centre, hearth near
@@ -122,7 +126,8 @@ export class Bot {
     for (let k = 0; k < dry.length && placed < 3; k += Math.max(1, Math.floor(dry.length / 6))) {
       const d = dry[k];
       const key = factionKey(s, s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
-      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(factionKey(s, 'well'), d.x, d.y, 6, true)) placed++;
+      const well = factionKey(s, 'well');
+      if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(well, d.x, d.y, 6, true) || (well !== 'well' && (this.placeNear(well, d.x, d.y, 10) || (canBuild(s, 'cistern') && s.manaSupply - s.manaDemand > 10 && this.placeNear('cistern', d.x, d.y, 6))))) placed++;
     }
   }
 
@@ -179,6 +184,40 @@ export class Bot {
       const ty = Math.round(n.y + uy * (n.link - 0.5));
       this.placeNear('spire', tx, ty, 2, true);
     }
+  }
+
+  /** A people gated on stone levels hills when its folk have outrun its quarrying (needs the Land tool, milestone 4). */
+  private quarry(): void {
+    const s = this.s;
+    const gate = factionOf(s).rules.milestoneGate;
+    if (!gate || s.milestone + 1 >= milestonesOf(s).length) return;
+    const next = s.milestone + 1;
+    if (gate(s, next)) return;
+    if (s.milestone < 4) {
+      // no Land tool yet: reach the nearest hills with a road and widen the grid so the hill pass can zone them
+      let bx = -1; let by = -1; let bd = Infinity;
+      for (let y = 1; y < MAP_H - 1; y++) for (let x = 1; x < MAP_W - 1; x++) {
+        if (s.terrain[idx(x, y)] !== Terrain.Hills || s.bIndex[idx(x, y)] >= 0) continue;
+        const d = Math.abs(x - this.cx) + Math.abs(y - this.cy);
+        if (d < bd) { bd = d; bx = x; by = y; }
+      }
+      if (bx < 0 || bd > 45 || s.treasury < 600) return;
+      if (bd > this.radius) { this.radius = Math.min(40, Math.max(this.radius, bd + 2)); }
+      if (!s.road[idx(bx, by)]) buildRoad(s, RoadType.Track, roadPath(this.cx, this.cy, bx, by, false));
+      return;
+    }
+    if (s.treasury < 2500 || s.population < milestonesOf(s)[next].pop * 0.8) return;
+    let done = 0;
+    for (let r = 2; r <= this.radius + 8 && done < 3; r++)
+      for (let dy = -r; dy <= r && done < 3; dy++)
+        for (let dx = -r; dx <= r && done < 3; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = this.cx + dx;
+          const y = this.cy + dy;
+          if (!inBounds(x, y) || s.terrain[idx(x, y)] !== Terrain.Hills) continue;
+          if (terraform(s, 'level', x, y).ok) done++;
+        }
+    void GRIMMEN_STONE; void stoneQuarried;
   }
 
   private countKind(key: string): number {
@@ -331,7 +370,7 @@ export class Bot {
             for (let fx = 0; fx < def.w; fx++) {
               const i = idx(px + fx, py + fy);
               const t = s.terrain[i];
-              if (isWater(t) || t === Terrain.Hills || t === Terrain.LeyNode || t === Terrain.Ruins || s.road[i] || s.gloam[i]) {
+              if (isWater(t) || (t === Terrain.Hills && !factionOf(s).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || s.road[i] || s.gloam[i]) {
                 ok = false;
                 break;
               }

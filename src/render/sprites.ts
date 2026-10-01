@@ -1164,6 +1164,13 @@ function walker(prop: string, variant: number, frame: number): Painter {
       p.rect(7, 1, 1, 7, 'wood3');
       p.px(7, 0, 'fire1');
       break;
+    case 'salt': // a Grimmen stone-sexton: grey hood, a salt bag at the hip and a chisel
+      p.rect(2, 0, 4, 1, 'stone2');
+      p.px(2, 1, 'stone2'); p.px(5, 1, 'stone2');
+      p.rect(6, 5, 2, 2, 'bone');
+      p.rect(7, 1, 1, 3, 'stone3');
+      p.px(7, 0, 'outline');
+      break;
     case 'candle': // a Tallowkin warden: candle-eyed, a tallow candle held up
       p.px(3, 1, 'windowLit'); p.px(4, 1, 'windowLit');
       p.rect(7, 1, 1, 3, 'bone');
@@ -1714,7 +1721,7 @@ export function generateSprites(): SpriteDef[] {
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
-  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
+  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff'], ['stonesexton', 'salt']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {
     const p = cart(v);
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
