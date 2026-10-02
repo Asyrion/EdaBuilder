@@ -413,6 +413,9 @@ export class Renderer {
     }
     const ctx = this.ctx;
     ctx.imageSmoothingEnabled = false;
+    // every frame starts from a plain paint: a blend mode left over from the last frame's light pass turned the whole screen black (iteration 55)
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#0b0912';
     ctx.fillRect(0, 0, nw, nh);
 
@@ -1176,6 +1179,7 @@ export class Renderer {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(this.light, 0, 0, this.light.width, this.light.height, 0, 0, this.back.width, this.back.height);
     ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'source-over'; // before the early return: at dawn and dusk (night under 0.05, no emissive layer) it stayed 'multiply' into the next frame
     // the emissive layer (already in depth order, already cut out behind sprites), added twice: once soft (bloom) and once crisp
     if (!emissive || this.emitted === 0) return;
     if (!this.bloom) {
