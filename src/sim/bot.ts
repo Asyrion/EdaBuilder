@@ -1,4 +1,5 @@
 import { GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
+import { FISH_MARKET_REACH, SMOKE_REACH, bodyOf, ensureShoals, fishingWater, shoalCap } from './water';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones what it can light, keeps buildings lit and
@@ -50,6 +51,7 @@ export class Bot {
   private houndsSeen = 0; // the hound count when the bot last looked, and the day a pack last came (iteration 58)
   private houndDay = -99;
   quarryChanges = 0;
+  fishBuilt = 0; // huts and smokehouses the bot raised (iteration 60)
   private lastExpand = -99;
   /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
   goal: BotGoal | null = null;
@@ -91,6 +93,7 @@ export class Bot {
     this.setTaxes();
     this.setEdicts();
     this.hunt();
+    this.fish();
     this.goal = this.pickGoal();
     // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can
     this.reserve = this.goal && (this.goal.kind === 'hall' || s.brownout > 0.05) ? this.goal.cost : 0;
@@ -249,6 +252,40 @@ export class Bot {
     const cost = EDICT_BY_KEY.closeseason.costPerDay(s);
     if (low && s.ledger.net > cost * 3) setEdict(s, 'closeseason', true);
     else if (!low && s.edicts.closeseason && !edictLocked(s, 'closeseason') && s.treasury > 1000) setEdict(s, 'closeseason', false);
+  }
+
+  /**
+   * The water (iteration 60): one Fishers' Hut on water whose shoal is over half its cap, 24 water tiles in reach, a market within its reach,
+   * once the purse and the ledger allow; a Smokehouse beside it once a depot stands to sell the smoked fish, or the racks
+   * spoil. The bot builds no ford on purpose: its tracks over a narrow river are fords by the rule.
+   */
+  private fish(): void {
+    const s = this.s;
+    if (s.day < 15 || s.day % 3 !== 1) return;
+    const huts = s.buildings.filter((b) => b && b.kind === 'fishershut' && b.state === 'ok') as Building[];
+    const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok') as Building[];
+    if (!huts.length && canBuild(s, 'fishershut') && markets.length) {
+      const def = BUILDING_BY_KEY.fishershut;
+      if (this.spendable() > costOf(s, def) + 1000 && s.ledger.net - def.upkeep > 100) {
+        const w = ensureShoals(s);
+        const ok = (x: number, y: number) => {
+          const probe = { x, y, w: 1, h: 1 } as Building;
+          const body = bodyOf(s, probe);
+          // a full shoal with water enough in reach to land four a day (a pond of a few tiles is not worth a crew), and a market for the catch
+          return body >= 0 && s.water.fish[body] > shoalCap(w, body) * 0.5 && fishingWater(s, probe, body) >= 24 && markets.some((m) => Math.hypot(m.x - x, m.y - y) <= FISH_MARKET_REACH - 2);
+        };
+        if (this.placeNear('fishershut', this.cx, this.cy, this.radius + 4, false, ok)) this.fishBuilt++;
+      }
+      return;
+    }
+    const hut = huts[0];
+    if (!hut || s.buildings.some((b) => b && b.kind === 'smokehouse') || !canBuild(s, 'smokehouse')) return;
+    const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
+    if (!depot && (hut.spoiled ?? 0) < 2) return;
+    const def = BUILDING_BY_KEY.smokehouse;
+    if (this.spendable() > costOf(s, def) + 1000 && s.ledger.net - def.upkeep > 100) {
+      if (this.placeNear('smokehouse', hut.x, hut.y, SMOKE_REACH - 1, false, (x, y) => Math.hypot(x - hut.x, y - hut.y) <= SMOKE_REACH)) this.fishBuilt++;
+    }
   }
 
   /** The one large purchase worth saving for: the cheapest mana when the ley runs short, else the people's hall. */

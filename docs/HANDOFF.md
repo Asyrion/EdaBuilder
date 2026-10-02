@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 59 (every building faces its road). Iteration 58 (M16 part 1,
-the wild) and 57 (the donkey carts) were merged just before it; 56 and 55 came before. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 60 (M16 part 2, the water; M16 closed). Iterations 57 (the donkey
+carts), 58 (the wild) and 59 (buildings face their roads) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.89 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.91 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -21,27 +21,28 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
   above the buildings with labels and secondary reaches.
 - Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
   uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
-- **M16 the wild and the water** (DESIGN §16) is open. **Part 1, the wild**, is done (iteration 58,
-  DESIGN §4.89): herds, the lodge's quarry, meat on the shelves, wolves in the Hush, the Close
-  Season, two tales and the animal sheets. **Part 2, the water**, is the next item.
 - Iteration 59 (DESIGN §4.90), at the user's request after a playtest screenshot: every building
   turns toward its road by a mirror.
+- **M16 the wild and the water** (DESIGN §16) is closed. Part 1, the wild (iteration 58, §4.89):
+  herds, the lodge's quarry, meat on the shelves, wolves, the Close Season, two tales, the animal
+  sheets. Part 2, the water (iteration 60, §4.91): shoals, Fishers' Huts and boats, fish that spoil,
+  the Smokehouse, reeds and thatch, the lake's land and wells, the Water Garden, the ford and the
+  Weir, the spawning run.
+- No milestone is open. The rest of the list is items, not milestones.
 
 ## The next item
 
-M16 part 2, the water (DESIGN §16, and NEXT_STEPS item 1):
-- a Fishers' Hut on a bank or a lake shore, with boats on the water (walkers on water tiles,
-  `waterPath`);
-- fish as goods that spoil in two days unless a market or a smokehouse takes them;
-- reed-cutters on the marsh for thatch (there is no marsh terrain: Shore and the shallows are what
-  the wild's otters and herons use);
-- a water garden;
-- the lake's own land value and well bonus;
-- a weir pool and a ford.
+NEXT_STEPS item 1, **the bot's depot, the hunt and the fish**: five of the six bot cities stand no depot,
+so their hides, trophies and smoked fish are never sold (Vellish 42 smoked 424 fish in iteration 60 and
+sold none). The bot also never thatches, builds a Weir or bridges a ford.
+- The bot's levers are in `src/sim/bot.ts` (`hunt()`, `fish()`, `pickGoal()`; the depot is a growth
+  purchase).
+- The Gloam road's sale is `dailyTrade` in `src/sim/growth.ts`.
+- Item 2 (a balance measure that can see a change) should come with it or before it: without it, the
+  effect of a bot change on the six-run table cannot be told from luck (DESIGN §4.91). The order is the
+  user's to set.
 
-The wild's meat path (`dailyMeat`, `MARKET_MEAT_CAP`, `meatAt`) is the pattern for fish on the
-shelves, and the Gloam road's own prices (`HIDE_PRICE` and the rest in growth.ts) are the pattern
-for fish on the road. Plan it on the Plan panel first.
+Plan it on the Plan panel first.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
@@ -52,8 +53,10 @@ for fish on the road. Plan it on the Plan panel first.
   - **Loans:** both last gates ride on the Crown's loan, with 70,000 still owed at day 150.
   - **Breadth:** only the Veshari bot stands a cradle and a depot in the final table. Walls appear
     only where hounds came (Vellish 43). Breeding never happens.
-  - **Variance:** the runs swing a lot between passes. A wider table (three seeds a people) would
-    be a better measure than one seed.
+  - **Variance:** the runs swing a lot between passes. Iteration 60 measured it: one extra roll of
+    the main stream on day 10 sends Tallowkin 42 from 3,003 folk to 1,396, and Vellish 43 from 2,903
+    to 1,579, each losing two gates. A single-seed row cannot show a change of a tenth (NEXT_STEPS
+    item 2).
 - **The Grimmen fall in the Ember** (iterations 54 and 55): a third of the folk leave between days
   60 and 70 with no home abandoned (mana demand 340 to 218, happiness to 51). Worth a probe.
 - **Bugs fixed this session** that a future reader may meet in old notes:
@@ -69,15 +72,15 @@ for fish on the road. Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (62 files, 374 tests at this writing; `tests/iteration59.test.ts`
-  is iteration 59's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (63 files, 390 tests at this writing; `tests/iteration60.test.ts`
+  is iteration 60's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
   (actions, tick, recomputeAll, place, events, atlas, `wyrmcraft`, `beasts`, `vehicles`,
   `wyrm`, `maybeFireReturn`, and since iteration 54 `weave`, `economy`, `edicts`,
   `districts`, `events`, `scenario`, and since iteration 55 `save` {serialize, deserialize}, `dev`
-  {runDev} and `factions` {canBuild, specialLock}, and since iteration 59 `facing` {faceLeft}) are the hooks; a second game in one script starts
+  {runDev} and `factions` {canBuild, specialLock}, and since iteration 59 `facing` {faceLeft}, and since iteration 60 `water` (the whole module: `forgetWaters`, `watersOf`, `dailyFords`, …)) are the hooks; a second game in one script starts
   through `__game.newGame(seed, name, 'valley', people)` (`'daily'` for the challenge)
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
@@ -204,3 +207,22 @@ for fish on the road. Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 60 (not yet said elsewhere)
+
+- **The water is derived.**
+  - `watersOf(state)` in `src/sim/water.ts` works out the bodies, open water and lake distance from the
+    terrain, cached by the terrain array.
+  - A test or a playtest that paints water must call `forgetWaters(state)` and rebuild `state.waterDist`
+    (`distanceMap`), and should set `state.water.fish = []` so the shoals refill.
+  - Read `state.water.fish` only after `ensureShoals(state)`: a new map's shoals are filled on first use.
+    The spawning run's first version read them before, and never fired.
+- **Fords and paths.** A closed ford is skipped in the road A* (`fordClosed`), and `dailyFords` bumps
+  `roadVersion` when the set changes.
+- **A pending tale stops the sim.** `tick` returns at once while `state.pendingEvent` is set. A playtest
+  that runs days must answer tales (`__wardlight.resolveEvent(s, 0)`) or it runs one day.
+- **Killing background balance runs.** `pkill -f balance.ts` matches the shell running it and kills it
+  too. Use `ps -eo pid,args | grep "[b]alance.ts" | awk '{print $1}' | xargs kill`.
+- **Probing a run.** A `git worktree` per probe (`node_modules` symlinked), a `sed` on the one line the
+  probe changes, and the balance run from inside the worktree. A null probe (one extra `rngOf`/`commitRng`
+  draw on day 10) is the yardstick for the noise.

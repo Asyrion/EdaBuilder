@@ -109,6 +109,11 @@ export interface Building {
   tookSp?: string; // a lodge: what it brought in that day
   wolfDay?: number; // a hearth: the day the wolves took a hen (−6 happiness for five days)
   broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
+  fish?: number; // a Fishers' Hut: today's catch, fresh; a market: fish on the shelves (iteration 60)
+  fishOld?: number; // a Fishers' Hut: yesterday's catch, which spoils tonight unless a market or a smokehouse takes it
+  caught?: number; // a Fishers' Hut: what it caught today; a Reed-Cutters' hut: bundles cut today
+  spoiled?: number; // a Fishers' Hut: fish that spoiled last night
+  thatchUntil?: number; // a hearth: the day its thatch wears out (a level-1 home thatched by the reed-cutters)
 }
 
 /** The Lantern of the Cores is cracked after taking a surge: no light, no store, no ward until it heals (iteration 53). */
@@ -126,7 +131,7 @@ export const enum AgentKind {
 }
 
 export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 58)
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger' | WildSpecies;
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger' | 'boat' | WildSpecies;
 
 /** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 58). */
 export interface Herd {
@@ -150,6 +155,14 @@ export interface WildState {
   thriveUntil: number; // the white hart let run: herds breed half again as fast until this day
   hensDay: number; // the last day wolves took a hen, -99
   meatAt: number[]; // markets with meat on the shelves today, as x, y pairs (read by the hearths' happiness)
+}
+
+/** The water (M16 part 2, iteration 60): a shoal of fish for each body of water, by the body's index (water.ts). */
+export interface WaterState {
+  fish: number[]; // each body's shoal; the bodies come from the terrain, ordered by their first tile
+  spawnUntil: number; // the spawning run let go: shoals regrow twice as fast until this day
+  fishAt: number[]; // markets with fish on the shelves today, as x, y pairs
+  closed: number[]; // ford tiles closed by high water today
 }
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm' | 'fen';
@@ -394,8 +407,9 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number }; // today; the hunt's prices and sales since iteration 58
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
   wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
+  water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
@@ -524,6 +538,12 @@ export interface GameState {
     herdsHunted: number; // herds the hunters took to the last
     hensTaken: number; // hens the Hush wolves took from the hearths
     huntCrowns: number; // crowns the Gloam road paid for hides, meat and trophies
+    fishCaught: number; // fish the Fishers' Huts landed (iteration 60)
+    fishSpoiled: number; // fish no market or smokehouse took in two days
+    fishSmoked: number;
+    fishCrowns: number; // crowns the Gloam road paid for smoked fish
+    homesThatched: number; // level-1 homes the reed-cutters thatched
+    fordDaysClosed: number; // days a ford stood closed by high water
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
     tideTrips: number; // barges a Tide dragon swam (iteration 53)
     surgesAbsorbed: number; // surges the Lantern of the Cores took

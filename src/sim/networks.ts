@@ -1,4 +1,5 @@
 import { GREAT_CRADLE_MANA, isCradle } from './wyrmcraft';
+import { LAKE_WELL_CAP, LAKE_WELL_REACH, lakeDistAt } from './water';
 /** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
@@ -377,6 +378,14 @@ export const WATER_CAP: Record<string, number> = { well: 30, seep: 20, tidewell:
 export function waterCapOf(b: Building): number {
   return WATER_CAP[b.kind] ?? 30;
 }
+/** A water building's cap where it stands: half again by the lake (water.ts, iteration 60). */
+export function waterCapAt(state: GameState, b: Building): number {
+  return Math.round(waterCapOf(b) * (lakeFed(state, b) ? LAKE_WELL_CAP : 1));
+}
+/** A well within LAKE_WELL_REACH of the lake's open water: the lake feeds it. */
+export function lakeFed(state: GameState, b: Building): boolean {
+  return lakeDistAt(state, b.x, b.y) <= LAKE_WELL_REACH;
+}
 interface WaterSource { b: Building; cx: number; cy: number; r: number; cap: number; load: number; list: { t: Building; d: number }[] }
 
 export function updateWater(state: GameState): void {
@@ -395,7 +404,7 @@ export function updateWater(state: GameState): void {
     supply += r * r;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
-    srcs.push({ b, cx, cy, r, cap: waterCapOf(b), load: 0, list: [] });
+    srcs.push({ b, cx, cy, r, cap: waterCapAt(state, b), load: 0, list: [] });
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
         const x = Math.round(cx + dx);

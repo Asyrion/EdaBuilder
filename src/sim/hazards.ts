@@ -1,5 +1,6 @@
 /** Fire, wild surges, the Gloam, and the restless dead. */
 import { BUILDING_BY_KEY } from './catalog';
+import { THATCH_FIRE, thatched } from './water';
 import { MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
 import { distanceMap } from './terrain';
@@ -99,6 +100,7 @@ export function dailyFire(state: GameState): void {
     let p = 0.00025;
     if (def.zone === Zone.Craft) p *= 2.5;
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
+    if (thatched(state, b)) p *= THATCH_FIRE; // thatch burns (water.ts, iteration 60)
     if (def.key === 'font') p *= 6;
     if (def.key === 'drakemews' && state.happiness < 40) p *= 12; // spooked drakes
     const asp = aspectAt(state, b.x, b.y);

@@ -9,7 +9,8 @@ import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, cracked, idx, type Building, type GameState, type WildSpecies } from '../sim/types';
 import { CLOSE_FLOOR, HUNT_REACH, LODGE_MEAT_KEEP, MARKET_MEAT_CAP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntBlock, quarryOf, setQuarry } from '../sim/wild';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
-import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, seatWarmed, waterCapOf, wicksHalved } from '../sim/networks';
+import { PORTAL_CAP, PORTAL_MANA, isLeyMember, lakeFed, loadCapOf, priorityOf, seatWarmed, waterCapAt, wicksHalved } from '../sim/networks';
+import { FISH_HAPPY_REACH, FISH_MARKET_REACH, MARKET_FISH_CAP, SMOKE_KEEP, SMOKE_REACH, THATCH_FIRE, THATCH_HAPPY, WEIR_REACH, bodyOf, catchOf, ensureShoals, fishBlock, fishedOut, reedBeds, shoalCap, thatched } from '../sim/water';
 import { SEAM, SPENT_RATE } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
 import { mewsActive } from '../sim/beasts';
@@ -754,6 +755,8 @@ export class UI {
       { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
       if (def.zone === Zone.Market && ((b.meat ?? 0) > 0 || s.buildings.some((l) => l && l.kind === 'hunterslodge' && Math.hypot(l.x + 1 - b.x, l.y + 1 - b.y) <= MEAT_REACH))) rows.push(row('Meat on the shelves', `${Math.round(b.meat ?? 0)} / ${MARKET_MEAT_CAP}${(b.meat ?? 0) >= 1 ? ': hearths within 10 are happier' : ' (a lodge within 16 hunting game fills it)'}`));
+      if (def.zone === Zone.Market && ((b.fish ?? 0) > 0 || s.buildings.some((h) => h && (h.kind === 'fishershut' || h.kind === 'smokehouse') && Math.hypot(h.x - b.x, h.y - b.y) <= FISH_MARKET_REACH))) rows.push(row('Fish on the shelves', `${Math.round(b.fish ?? 0)} / ${MARKET_FISH_CAP}${(b.fish ?? 0) >= 1 ? `: hearths within ${FISH_HAPPY_REACH} are happier` : ` (a Fishers' Hut within ${FISH_MARKET_REACH} fills it)`}`));
+      if (def.zone === Zone.Hearth && b.level === 1) rows.push(row('Roof', thatched(s, b) ? `thatched for ${(b.thatchUntil ?? 0) - s.day} more days: +${THATCH_HAPPY} happiness, catches fire ×${THATCH_FIRE}` : 'sod and turf (Reed-Cutters within 10 would thatch it)'));
       if (def.zone === Zone.Market && theftAt(s, b)) problems.push(`Theft: a tenth of the shelves a night. Watch here ${Math.round((s.coverage.watch[i] / 255) * 100)} %, unrest ${Math.round(s.unrest * 100)} %: a Watch Post over the market, or less unrest, stops it.`);
       if (def.zone === Zone.Market && s.fenNex > 0 && s.district[i] === s.fenNex) rows.push(row('Fen-Nex quarter', 'no tithe, double shelves'));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
@@ -802,7 +805,7 @@ export class UI {
         const near = wr > 0 && def.waterNearBonus && s.waterDist[idx(b.x, b.y)] <= 3 ? def.waterNearBonus : 0;
         const why = wr === 0 ? ' (fouled by the flood)' : b.kind === 'well' && s.waterDist[idx(b.x, b.y)] > 8 ? ' (far from water: a Cistern lifts it further)' : b.kind === 'seep' && wr !== def.waterRadius ? (wr > def.waterRadius ? ' (the Thaw swells it)' : ' (the Ember shrinks it)') : near ? ' (dug near water)' : wr > def.waterRadius ? ' (Tide ley)' : '';
         rows.push(row('Waters', `${wr + near} tiles${why}`));
-        if (b.load !== undefined && wr > 0) { rows.push(row('Drawn', `${b.load} / ${waterCapOf(b)} levels of homes and works`)); if (b.load > waterCapOf(b)) problems.push('Overdrawn: its farthest homes are dry. Dig another well among them.'); }
+        if (b.load !== undefined && wr > 0) { rows.push(row('Drawn', `${b.load} / ${waterCapAt(s, b)} levels of homes and works${lakeFed(s, b) ? ' (the lake feeds it: half again)' : ''}`)); if (b.load > waterCapAt(s, b)) problems.push('Overdrawn: its farthest homes are dry. Dig another well among them.'); }
         if (wr === 0) problems.push('Fouled: the flood is in the shaft; it waters nothing until the river falls.');
       }
       if (b.kind === 'torrentmill' && b.load !== undefined) rows.push(row('Output', `${Math.round(b.load)} mana / day${s.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8) ? ' (shares the river with an older mill: ×0.6)' : ''}`));
@@ -862,6 +865,19 @@ export class UI {
       if (q !== 'hounds' && grounds.some((g) => g.sp === q && g.herds.some((h) => h.head < CLOSE_FLOOR)) && !s.edicts.closeseason) problems.push(`A ${WILD[q].group} in the grounds is under ${CLOSE_FLOOR} head: hunted to the last, it is gone for good. The Close Season edict keeps a floor.`);
       rows.push(row('Hides and pelts', `${s.stats.hides + s.stats.pelts} this charter · ${s.stats.trophies} trophies · ${s.stats.huntCrowns} crowns on the Gloam road`));
     }
+    if (b.kind === 'fishershut') {
+      const body = bodyOf(s, b);
+      const why = fishBlock(s, b);
+      const w = ensureShoals(s);
+      rows.push(row('Fishing', why ? `idle: ${why}` : `${(b.caught ?? 0)} landed today, about ${catchOf(s, b).toFixed(1)} a day as the shoal stands`));
+      rows.push(row('On the racks', `${Math.round(b.fish ?? 0)} fresh · ${Math.round(b.fishOld ?? 0)} a day old (spoils tonight) · ${Math.round(b.spoiled ?? 0)} spoiled last night`));
+      if (body >= 0) rows.push(row('The shoal', `${Math.round(s.water.fish[body])} / ${Math.round(shoalCap(w, body))} fish in this ${w.open.some((o, k) => o && w.body[k] === body) ? 'lake' : 'river'}${fishedOut(s, body) ? ' <span class="warn">(fished out)</span>' : ''}`));
+      if ((b.spoiled ?? 0) >= 2) problems.push(`Fish spoil on the racks: a market within ${FISH_MARKET_REACH} or a Smokehouse within ${SMOKE_REACH} would take them.`);
+      if (body >= 0 && fishedOut(s, body)) problems.push('The shoal is fished out: fewer huts on this water, a Weir, or the Close Season lets it recover.');
+    }
+    if (b.kind === 'smokehouse') rows.push(row('Smoked fish', `${Math.round(b.stock)} in the smoke-loft (over ${SMOKE_KEEP} goes down the Gloam road) · ${s.stats.fishSmoked} smoked this charter`));
+    if (b.kind === 'reedcutters') rows.push(row('Reeds', `${reedBeds(s, b)} reed beds in reach · ${Math.round(b.stock)} bundles · ${b.caught ?? 0} cut today${seasonOfState(s) === 3 ? ' (none cut in the Hush)' : ''} · ${s.stats.homesThatched} homes thatched this charter`));
+    if (b.kind === 'weir') rows.push(row('The pool', `fords within ${WEIR_REACH} stay open at high water; this water\'s shoal regrows twice as fast`));
     if (b.kind === 'mothloft') rows.push(row('Glim-dust', `${aspectAt(s, b.x, b.y) === 'glim' ? '0.6' : '0.3'} a day while lit${aspectAt(s, b.x, b.y) === 'glim' ? ' (Glim ley: doubled)' : ''}`));
     if (b.kind === 'wrightslodge') { rows.push(row('Store', `40 mana of Nexus store and a surge line of 1.4× while the guild is pleased`)); rows.push(row('Vent', (b.cooldown ?? 0) > 0 ? `ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'}` : 'ready: empties the store and resets the surge count (30-day cooldown)')); }
     if (b.kind === 'cartersyard') rows.push(row('Roads', `congestion within 10 tiles smoothed by a fifth while the guild is pleased`));
@@ -1283,6 +1299,7 @@ export class UI {
             <li><b>Weather</b> is written in the seed: Bloom rain (fewer fires, more craft, less miasma), an Ember drought (more fires, wells reach less, the gardens and the World Tree wait) and a Hush blizzard (hearths burn more mana, the hounds stay in). The top bar names it; the Observatory sees it coming.</li>
             <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: the Vellish need happiness 45 + 3 × the milestone, the Tallowkin must hold their light three days.</li>
             <li><b>The wild</b>: herds of deer and elk graze the meadows by day and bed down in the woods at night, and run from lit ground; boar keep the forests, goats the hills, otters and herons the banks. A herd breeds in Bloom and thins where the city builds within two tiles of its ground; a ward or a lit Glimhouse helps it recover. A <b>Hunters' Lodge</b> hunts the <b>quarry</b> its panel names within 16 tiles: hides, meat and trophies (antlers, tusks, plumes, wolf heads) for the Gloam road at their own prices, and meat for the markets within 16, where it makes the hearths within 10 happier. Hunters after game kill hounds at half the chance; a herd hunted to the last is gone. <b>The Close Season</b> edict closes the chase in Bloom and keeps six head in every herd. In the Hush <b>wolves</b> leave the forest at night to take hens from the dark, unwatched hearths at the edge.</li>
+            <li><b>The water</b>: every river and lake holds a shoal. A <b>Fishers' Hut</b> on the bank puts boats out and lands fish as the shoal allows; fish spoil in two days unless a market within 12 or a <b>Smokehouse</b> within 6 takes them, and a market with fish makes the hearths within 10 happier. Too many huts on one water fish it out; a <b>Weir</b> doubles its regrowth and keeps the fords near it open. <b>Reed-Cutters</b> on the shore thatch the level-1 homes (+3 happiness, but thatch burns). The <b>lake</b> (open water) lifts the land within 4, its wells serve half again, and the <b>Water Garden</b> stands on its shore. A Dirt Track over a narrow river is a <b>ford</b>: cheap, but under water in the Thaw's first ten days.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1493,6 +1510,7 @@ export class UI {
           <tr><td>Artifacts sold</td><td class="r good" data-k="artifacts"></td></tr>
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
           <tr><td>The hunt's goods sold today</td><td class="r good" data-k="hunt"></td></tr>
+          <tr><td>Smoked fish sold today</td><td class="r good" data-k="fish"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -1534,6 +1552,7 @@ export class UI {
     set('artifacts', `+${l.artifacts.toFixed(0)}`);
     set('trade', `+${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('hunt', st.trade.priceHides !== undefined ? `${st.trade.hidesSold ?? 0} hides at ${st.trade.priceHides} · ${st.trade.meatSold ?? 0} salted meat at ${st.trade.priceMeat} · ${st.trade.trophiesSold ?? 0} trophies at ${st.trade.priceTrophy}` : 'none');
+    set('fish', st.trade.priceFish !== undefined ? `${st.trade.fishSold ?? 0} at ${st.trade.priceFish}` : 'none');
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);

@@ -1,5 +1,6 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
 import { effects } from './hazards';
+import { fordClosed } from './water';
 import { marketQuarterAt } from './districts';
 import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
 import { fontOfQuieting } from './lore';
@@ -135,7 +136,7 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
       if (k < 4 && !ok[k]) continue;
       const j = nb[k];
       const rt = roadAt(state, j);
-      if (!rt) continue;
+      if (!rt || fordClosed(state, j)) continue; // a ford under high water (water.ts, iteration 60)
       const congestion = state.trafficSmooth[j] / 255;
       const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5 + (k >= 4 && portalBusy ? 1.5 : 0); // mud on a track; a busy arch costs like a jammed road
       const ng = gc + cost;

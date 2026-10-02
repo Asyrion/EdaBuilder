@@ -1,5 +1,6 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { RELIC_SETS } from './relics';
+import { FORD_COST, fordable } from './water';
 import { buildsFor, canBuild, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
@@ -27,7 +28,7 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (state.wall[i] === 1) return -1; // roads pass through gates, not walls
   if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1; // beyond the Charter
   let cost = def.cost;
-  if (t === Terrain.Water) cost *= 4; // bridge
+  if (t === Terrain.Water) cost *= type === RoadType.Track && fordable(state, i) ? FORD_COST : 4; // a track fords a narrow river (iteration 60); else a bridge
   if (t === Terrain.Hills) cost *= 3; // cut into rock
   if (t === Terrain.Forest) cost += 5;
   if (state.road[i] === type) return 0;

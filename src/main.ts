@@ -8,6 +8,7 @@ import * as districts from './sim/districts';
 import * as events from './sim/events';
 import * as scenario from './sim/scenario';
 import * as wild from './sim/wild';
+import * as water from './sim/water';
 import { lineNest, raiseCradle } from './sim/wyrmcraft';
 import * as wyrmcraft from './sim/wyrmcraft';
 import * as beasts from './sim/beasts';
@@ -378,7 +379,7 @@ class Game {
     let hint = `<b>${toolLabel(t)}</b> — `;
     switch (t.kind) {
       case 'select': hint += 'click a building for details. Pick a tool on the left.'; break;
-      case 'road': hint += 'drag to draw. Roads over shallow water become bridges (4× cost).'; break;
+      case 'road': hint += `drag to draw. Roads over shallow water become bridges (4× cost); a Dirt Track over a narrow river is a ford (1.5×), under water in the Thaw's first ten days after a Hush unless a Weir stands within 6${this.state.water.closed.length ? ` (${this.state.water.closed.length} ford${this.state.water.closed.length === 1 ? ' is' : 's are'} under water now)` : ''}.`; break;
       case 'zone': hint += 'drag a rectangle beside a road (a corner counts). Buildings grow when demand is high.'; break;
       case 'build': {
         const d = BUILDING_BY_KEY[t.key];
@@ -471,7 +472,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

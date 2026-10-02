@@ -1,5 +1,6 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY } from './catalog';
+import { bodyOf, ensureShoals, shoalCap } from './water';
 import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
@@ -136,7 +137,29 @@ export const EVENTS: EventDef[] = [
       { label: 'Let the wolves keep the deer', desc: 'The packs thin the deer instead: every herd of deer loses a fifth; unrest +3 % for 15 days.', apply: (s) => { for (const h of s.wild.herds) if (h.sp === 'deer') h.head *= 0.8; s.modifiers.push({ kind: 'unrest', value: 0.03, until: s.day + 15, label: 'The wolf winter' }); return 'The goodwives go home with their hen. The deer will pay for the winter.'; } },
     ],
   },
+  // ---- the water (M16 part 2, iteration 60) ----
+  {
+    id: 'spawnrun', title: 'The spawning run', once: true,
+    text: 'The fishers came up from the bank at dawn shouting. The water below the huts is silver from bank to bank: the spawning run, the whole year\'s fish in one place for three days. The net-master asks whether to take it.',
+    when: (s) => seasonOf(s) === 1 && s.day >= 30 && !!spawnHut(s),
+    choices: [
+      { label: 'Net the run', desc: '+300 crowns for the catch; the shoal of that water falls to two fifths of what it holds.', apply: (s) => { const h = spawnHut(s); s.treasury += 300; if (h) { const w = ensureShoals(s); const b = bodyOf(s, h); s.water.fish[b] = Math.min(s.water.fish[b], shoalCap(w, b) * 0.4); } return 'Every boat and every net in the city goes out. The racks are full for a week and the Gloam road buys the rest. Next year will be thinner.'; } },
+      { label: 'Let it spawn', desc: 'The shoals regrow twice as fast for 60 days; happiness +1 for 20 days.', apply: (s) => { s.water.spawnUntil = s.day + 60; s.modifiers.push({ kind: 'happiness', value: 1, until: s.day + 20, label: 'The spawning run' }); return 'The nets stay on the racks. Children line the bank to watch the water boil. The fishers say the river will remember.'; } },
+    ],
+  },
 ];
+
+/** A Fishers' Hut on a shoal at four fifths of its cap or more (the spawning run's condition). */
+function spawnHut(s: GameState): Building | null {
+  let out: Building | null = null;
+  const w = ensureShoals(s); // the shoals first: a new map's are filled on first use
+  forEachBuilding(s, (b) => {
+    if (out || b.kind !== 'fishershut' || b.state !== 'ok') return;
+    const body = bodyOf(s, b);
+    if (body >= 0 && s.water.fish[body] >= shoalCap(w, body) * 0.8) out = b;
+  });
+  return out;
+}
 
 /** True if event `id` was answered with choice `choice` at least `daysAgo` days ago. */
 export function chose(s: GameState, id: string, choice: number): boolean {

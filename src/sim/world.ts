@@ -8,6 +8,7 @@ import { initialSectors, inCharter } from './sectors';
 import { assignAspects, aspectAt, drought, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { seedWild } from './wild';
+import { lakeDistAt } from './water';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
@@ -111,6 +112,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     districtQuarters: {},
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     wild: { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] },
+    water: { fish: [], spawnUntil: -1, fishAt: [], closed: [] },
     dragons: [],
     nextDragonId: 1,
     materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
@@ -147,7 +149,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -279,12 +281,20 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
   if (def.maxCount && state.buildings.filter((b) => b && b.kind === key).length >= def.maxCount) return `Only ${def.maxCount} may stand`;
   if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
   if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
+  if (def.nearShore && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Shore || t === Terrain.Water)) return 'Must touch the shore or the water';
+  if (def.nearLake && !footprintNearLake(state, x, y, def.w, def.h)) return "Must stand on the lake's shore (within 3 of open water)";
   if (def.key === 'mothloft' || def.key === 'cradle' || def.key === 'hatchery' || def.key === 'tidepool') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
     if (!near) return def.key !== 'mothloft' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
   }
   return null;
+}
+
+/** A footprint tile within 3 of the lake's open water (water.ts, iteration 60). */
+function footprintNearLake(state: GameState, x: number, y: number, w: number, h: number): boolean {
+  for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) if (lakeDistAt(state, x + dx, y + dy) <= 3) return true;
+  return false;
 }
 
 export function touchesTerrain(state: GameState, x: number, y: number, w: number, h: number, test: (t: number) => boolean): boolean {

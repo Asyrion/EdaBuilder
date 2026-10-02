@@ -1,9 +1,10 @@
 /** Service coverage, miasma, land value. */
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
+import { LAKE_LAND, LAKE_LAND_REACH, lakeDistAt } from './water';
 import { roadAt } from './roads';
 import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
-import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, cracked, idx, inBounds, type Building, type GameState, type ServiceType } from './types';
+import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, cracked, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
@@ -243,6 +244,7 @@ export function landValueTerms(state: GameState, i: number, bonus: Float32Array)
   if (wd <= 5) add('water near', (5 - wd) * 2.5 * fr.waterLandValue);
   else if (wd > 8) add('dry land', -fr.dryPenalty);
   if (wd <= 1 && floodedAt(state, i % MAP_W, (i / MAP_W) | 0)) add('the flood', -10);
+  if (lakeDistAt(state, i % MAP_W, (i / MAP_W) | 0) <= LAKE_LAND_REACH && !isWater(state.terrain[i])) add('by the lake', LAKE_LAND); // the lake's own (iteration 60)
   const q = quarterAt(state, i);
   if (q === 'hearth') add('Hearth quarter', 6); else if (q === 'market') add('Market quarter', -4);
   add('leisure', (cov.leisure[i] / 255) * 16);
