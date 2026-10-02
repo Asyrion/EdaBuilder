@@ -1,71 +1,69 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 54 (M14 part 4, the world pushes back). Update this file
-whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 55 (M14 part 5, the bot plays it all, and the Annals), which
+closed M14. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.85 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.86 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
 ## Milestones
 
-- M1–M13 and M15 closed. M13 (the Tallowkin) closed in iteration 52; M15 (the painted set) in
-  iterations 50–51.
-- **M14 the depth pass** is open: parts 1 (supply has limits), 2 (services with staff and
-  stakes), 3 (wyrmcraft matured, iteration 53, DESIGN §4.84) and 4 (the world pushes back,
-  iteration 54, DESIGN §4.85) are done; **part 5, the bot plays it all and the Annals, is
-  the next item and the last of M14** (DESIGN §15, AUDIT.md §4 part 5).
-- M16 the wild and the water (DESIGN §16) comes after M14.
+- M1–M15 are closed. M14 (the depth pass) closed in iteration 55 with part 5 (DESIGN §4.86,
+  AUDIT.md §4 part 5); M13 (the Tallowkin) in iteration 52; M15 (the painted set) in 50–51.
+- **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
+  the next item.
 
 ## The next item
 
-M14 part 5: the bot plays it all, and the Annals. The bot learns taxes, edicts, walls, a
-depot, breeding, a warden and a greedy choice policy, and a purse that can afford its
-people's halls (the Hall of Wicks milestone, the Fonts, the sectors); it must also answer
-part 4 (the Vellish happiness gate it now stalls at, the Tallowkin's three-day hold it
-cannot keep, the charter it pays 80 crowns a day for); an Annals page for every counter;
-save migrations by version; five dev commands. Balance against the iteration 54 table
-(DESIGN §4.85), where every row moved. Plan it on the Plan panel first; AUDIT.md §4 part 5
-has the list.
+M16 part 1, the wild (DESIGN §16, "M16 The wild and the water", and NEXT_STEPS item 1):
+- herds of deer and elk on the meadows that flee lit ground; boar, otters, herons, goats, and
+  wolves in the Hush;
+- the Hunters' Lodge hunting a chosen quarry for hides, meat and trophies as goods with their own
+  prices on the Gloam road, and a Hearth happiness line for meat on the shelves;
+- herds that thin where the city spreads;
+- a Hunters' edict and two tales;
+- the animals folder's creature sheets through `npm run art`.
+
+Plan it on the Plan panel first. The bot now plays the levers (DESIGN §4.86), so it can learn the
+hunt in the same iteration if the plan says so.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
-- **The bot under the world's push** (iteration 54): the Vellish bot takes the Hamlet a
-  week late (a new town sits under the gate's 48 in its first days), sits at 52–59
-  happiness after, crosses the Burgh's 63 only on day 123, the day after the Thaw feast,
-  and never the Free City's 66; the Tallowkin bot's lit share hovers at 80–86 % around the
-  85 % gate for seventy days (Bright Town on day 105); every bot pays about 80 crowns a day
-  for its hearth charter and the Grimmen bot loses a third of its folk to the dark between
-  days 60 and 80 (Deephold on day 130). All of it is part 5's: the gates are the design.
-- The peoples' bots are too poor late: the Tallowkin bot never holds the 8,000 crowns for the
-  Hall of Wicks and its lit share falls back to 73 % as it zones faster than it lights (the
-  Hall of Wicks milestone is not reached by the bot; the player's game is whole). The Grimmen
-  and Veshari bots end in brownout. All of this is M14 part 5's.
-- **The bot holds no dragon.** In all six balance runs the storyteller never drew the
-  Crown's gift within 150 days (it fires three to seven random tales a run), so nothing of
-  M14 part 3 (lodge seats, feeding reach, hunger, the departed, odds, the sinks, the
-  wonders' rows, the Court, golem duties) reaches the bot: the balance table equals the
-  baseline bit for bit. Part 5 teaches it to keep a dragon, name a champion and use the
-  sinks; a dev command lays an egg for the player today.
-- The bot stands a Trade Depot on Vellish seed 42 (day 100, 8 goods exported) but not on the
-  other seeds; it digs wells late.
-- Seed 43 (Vellish) never reaches the Free City in 150 days; that is the seed, not a bug.
+- **The bot after part 5.**
+  - **Folk:** the light-first rule costs Vellish seeds 42 and 44 a third and half of their folk
+    against iteration 54 (1,942 and 1,280). In exchange all three Vellish seeds take the Burgh by
+    day 42, seed 43 lights the first Beacon, and the Tallowkin reach the Lantern of Wicks.
+  - **Loans:** both last gates ride on the Crown's loan, with 70,000 still owed at day 150.
+  - **Breadth:** only the Veshari bot stands a cradle and a depot in the final table. Walls appear
+    only where hounds came (Vellish 43). Breeding never happens.
+  - **Variance:** the runs swing a lot between passes. A wider table (three seeds a people) would
+    be a better measure than one seed.
+- **The Grimmen fall in the Ember** (iterations 54 and 55): a third of the folk leave between days
+  60 and 70 with no home abandoned (mana demand 340 to 218, happiness to 51). Worth a probe.
+- **Bugs fixed this session** that a future reader may meet in old notes:
+  - the screen that went black at dawn and dusk (hotfix PR #56, a blend mode left set by the light
+    pass);
+  - the Hall of Wicks the vigil never unlocked;
+  - tales refused in a city in debt ("0 crowns asked").
+- Seed 43 (Vellish) used to never reach the Free City; with the part 5 bot it does (day 123).
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (57 files, 319 tests at this writing; `tests/iteration54.test.ts`
-  is iteration 54's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (58 files, 342 tests at this writing; `tests/iteration55.test.ts`
+  is iteration 55's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
   (actions, tick, recomputeAll, place, events, atlas, `wyrmcraft`, `beasts`, `vehicles`,
   `wyrm`, `maybeFireReturn`, and since iteration 54 `weave`, `economy`, `edicts`,
-  `districts`, `events`, `scenario`) are the hooks; a second game in one script starts
+  `districts`, `events`, `scenario`, and since iteration 55 `save` {serialize, deserialize}, `dev`
+  {runDev} and `factions` {canBuild, specialLock}) are the hooks; a second game in one script starts
   through `__game.newGame(seed, name, 'valley', people)` (`'daily'` for the challenge)
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
@@ -104,3 +102,26 @@ has the list.
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 55 (not yet said elsewhere)
+
+- **The bot** (`src/sim/bot.ts`, tale policy in `src/sim/botPolicy.ts`):
+  - It spends in an order: essentials, then one goal (`pickGoal`: the people's hall, the first
+    cradle, the cheapest mana), then growth.
+  - The goal's price is a reserve only when urgent. Growth reads `spendable()`, streets read the
+    treasury.
+  - `balance.ts` prints a `bot:` line (taxes, edicts, tales off choice 0, loans, hounds and walls,
+    depot, Fonts, the charter, the goal, dragons, halls) and a `tales:` line, so a run explains
+    itself.
+  - The baseline bot grew its grid mostly through failed service placements. Expansion is now
+    explicit (a zone in demand short of lots), so watch the radius when changing what it buys.
+- **Saves:**
+  - `SAVE_VERSION` is 7. A new field gets its default from `createGame` through the fill.
+  - A field whose old saves need a different value gets `MIGRATIONS[7]` and a bump to 8.
+  - Tests that fake an old save must set `o.version = 6`.
+- **Dev commands** take `{kind:'number'}` arguments, lists that follow the state, and an `arg2`.
+  `devDefaultArg` gives the value the panel would pass.
+- **A brightness probe** catches render regressions the eye misses: sample the `#game` canvas after
+  each `renderer.render` into a 32×18 canvas, then look for frames under a quarter of the median.
+  `scripts/playtest55.mjs` renders dawn and dusk ticks for it.
+- **The light pass** must leave the context in `source-over`. Every frame now starts there anyway.

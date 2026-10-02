@@ -737,6 +737,7 @@ export function resolveEvent(s: GameState, choice: number, amount?: number): voi
     const f = s.firedEvents[k];
     if (f.endsWith(':?') && (f === `${def.id}:?` || f.startsWith(`${def.id}@`))) { s.firedEvents[k] = f.slice(0, -1) + ci; break; }
   }
-  const result = asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s, amount);
+  // only a named price is refused: a free choice in a city in debt was refused as "0 crowns asked" and its tale asked again every day (fixed in iteration 55)
+  const result = asked > 0 && asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s, amount);
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }

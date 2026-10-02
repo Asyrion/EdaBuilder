@@ -349,6 +349,39 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 55 (M14 part 5: the bot plays it all, and the Annals; M14 closed)
+
+- **The bot plays the levers.**
+  - A purse with one goal at a time: the people's hall, the first cradle once the ley can carry
+    it, then the cheapest mana. Its price is held back from growth only when urgent.
+  - The Crown's loan as a bridge to a hall, repaid first.
+  - An upkeep guard, and wells only when a fiftieth of the homes are dry.
+  - The light first: the Vellish hold their zoning in a brownout, the Tallowkin under their gate.
+    Lit, watered lots come first.
+  - A tax controller that moves the tithe off the hearths; the curfew, draughts, Scale-Mail and
+    imports on the advisor's lines; the charter only on a ledger of 800.
+  - A 21-tile wall arc every 30 hounds, a depot that finds its room, a cradle beside a market,
+    eggs lined, drakes as wardens, delvers or champions.
+  - A greedy tale policy that plays each choice on a copy of the state.
+  - The Crown's gift is a priority tale.
+- **The Annals** (N, top bar): all 85 counters by chapter, with a test that keeps every counter on
+  a page.
+- **Saves branch on their version** (7; the old block is step 6; a newer save is refused with its
+  reason).
+- **Five dev commands:** jump to day, flood or freeze the river, complete a task, set a standing,
+  reset the history.
+- **Fixed:**
+  - the Hall of Wicks that the vigil festival never unlocked;
+  - tales refused in a city in debt;
+  - the screen that went black at dawn and dusk (hotfix PR #56);
+  - the Chronicle that stopped refreshing at its cap;
+  - the top bar's buttons pushed off-screen.
+- **The six-run table** (DESIGN §4.86):
+  - The Vellish bot takes the Burgh on days 42/37/40 (was 123 on all three), and seed 43 reaches
+    the Free City and the first Beacon a bot has lit.
+  - The Tallowkin reach the Hall of Wicks milestone (day 60) and the Lantern of Wicks (day 114).
+  - Vellish 42 and 44 end with a third and a half fewer folk.
+
 ## Done in iteration 54 (M14 part 4: the world pushes back)
 
 - Weather written in the seed on a side stream (Bloom rain, an Ember drought, a Hush
@@ -503,43 +536,24 @@
 
 ## Known issues
 
-- **The bot digs wells late.** With wells serving a capacity, the Vellish bot reaches Free
-  City on day 68 / never / 83 (was 58 / never / 60): it digs only beside homes already dry,
-  three a day, so it lags its own growth. Mud is not the cause (seed 42 without mud: day
-  70). Part 5: dig ahead of the hearths, by levels in reach.
-- **The peoples' bots under the ley's limits.** With an unlinked node seeping only half its
-  flow, the Grimmen, Veshari and Tallowkin bots end day 150 in a brownout (61 %, 34 %, 15 %)
-  and lose their last gate (no Bright Town on seed 42): they are too poor to buy a far node's
-  sector or raise Fonts. The Vellish bot is fine. M14 part 5 teaches the bots Fonts and
-  links on a budget; the peoples' gates are re-measured after part 1b.
-- **The bot after the sweep.** With the quest rewards it was never meant to have gone
-  (+600 at day 20, +10,000 at Burgh), the Vellish bot reaches Free City on day 67 / never /
-  60 (seeds 42/43/44; was 52/48/51) and raises no Lantern, so no Beacon. The table in
-  DESIGN §4.75 is the new baseline; M14 part 5 (a depot, taxes, edicts, a Lantern once
-  rich) is where it earns it back. The Veshari bot's Harbour on seed 42 stalled to day 57.
-- **The bot never stands a Trade Depot** on most seeds. `want('depot', 1)` is in its list,
-  yet five balance seeds of six end day 150 with `depot 0` and no exports (Vellish 42
-  stands one on day 100 and exports 8 goods, iteration 53), so the Gloam road, the caravan
-  and the Twin Road are all but unplayed by the bot and their balance is unmeasured. Find
-  why the placement fails (a 2×2 beside its grid? the leisure radius?) in the depth pass.
-- **The bot under the world's push** (iteration 54). The Vellish gate (happiness 45 + 3 ×
-  milestone) delays the Hamlet a week (a new town sits under 48 in its first days) and
-  stalls the bot at the Burgh on every seed until the Thaw feast lifts it on day 123, and
-  no bot city reaches the Free City's 66; the Tallowkin bot's lit share hovers at
-  80–86 % around the Bright Town's 85 % for seventy days before it holds three days (day
-  105, was 42); the hearth charter costs every bot about 80 crowns a day and the Grimmen
-  bot, poorest, loses a third of its folk to the dark between days 60 and 75 (Deephold on
-  130, was 58). Part 5's levers: taxes, draughts, gardens and the Lantern for happiness;
-  towers ahead of the zoning for the hold; a charter only once the purse can carry it.
-- **The bot holds no dragon** (iteration 53). In all six balance runs the storyteller never
-  drew the Crown's gift within 150 days, so nothing of M14 part 3 reaches the bot and the
-  table is the baseline bit for bit; part 5 teaches it to keep a dragon, name a champion,
-  buy a wonder and use the sinks.
-- **The bot and its Hearth quarter.** With the bot chartering its hearth square, Free City
-  comes earlier on every Vellish seed, but seed 42 ends day 150 with 2,072 folk and no
-  Beacon where main had 3,094 and a Beacon on day 92, while seed 43 gains a third. The
-  charter is a plain gain for the hearths it covers, so this is the rng path diverging; worth
-  a look with the bot's late game (does the brightened square outgrow its mana?).
+- **The bot after M14 part 5** (iteration 55, DESIGN §4.86).
+  - **Folk:** the light-first rule costs Vellish seeds 42 and 44 a third and half of their folk
+    against iteration 54 (1,942 and 1,280 at day 150, from 3,060 and 2,739). They hold their
+    zoning through brownouts the old bot zoned through dark. Seed 44 ends in a 0.28 brownout with
+    two Fonts.
+  - **Loans:** seed 43's Beacon and the Tallowkin's Lantern of Wicks both ride on the Crown's loan,
+    with 70,000 still owed at day 150.
+  - **Breadth:** only the Veshari bot stands a cradle (and keeps a tide drake) and a depot in the
+    final table. Walls stand only on Vellish 43. Breeding never happens: it needs two grown dragons
+    of two lines in one attuned cradle.
+  - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
+    every later roll down another path, so a single seed per people is a thin measure. A wider
+    table (three seeds a people) would show the bot's levers better than any one run.
+- **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
+  of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
+  abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
+  (the season's craft or harvest rules, or the hill halls) empties homes without a message. Worth
+  a probe of its own.
 
 - **The flood's price.** With the Hush flood, Veshari seed 44 reaches the Weirhold on day
   82 instead of 55 and ends 220 folk smaller; the bot only answers the flood with bargemen
@@ -594,11 +608,6 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 5** (DESIGN §15, AUDIT.md §4 part 5): the bot plays it all (taxes, edicts,
-   walls, a depot, breeding, a warden, a greedy choice policy; a purse that can afford its
-   people's halls: the Hall of Wicks milestone, the Fonts, the sectors; the happiness gate,
-   the three-day hold and the charter's price of part 4) and the Annals (a page for every
-   counter), save migrations by version, five dev commands.
 1. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
    goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as goods;
    herds that thin where the city spreads; the animals folder's creature sheets re-skin the

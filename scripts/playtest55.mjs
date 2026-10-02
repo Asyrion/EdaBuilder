@@ -37,6 +37,19 @@ const one = await page.evaluate(() => {
 });
 await page.waitForTimeout(300);
 await page.screenshot({ path: 'shots/iter55_bottown.png' });
+// the hotfix of this session: the light pass left 'multiply' set at dawn and dusk and the next frames went black
+const dawn = await page.evaluate(() => {
+  const g = window.__game, s = g.state, r = g.renderer, out = {};
+  const c = document.createElement('canvas'); c.width = 32; c.height = 18; const x = c.getContext('2d', { willReadFrequently: true });
+  const lum = () => { x.drawImage(document.getElementById('game'), 0, 0, 32, 18); const d = x.getImageData(0, 0, 32, 18).data; let t = 0; for (let i = 0; i < d.length; i += 4) t += d[i] + d[i + 1] + d[i + 2]; return t / (d.length / 4) / 3; };
+  const tick0 = s.tick, day = Math.floor(s.tick / 900) * 900;
+  const ls = [];
+  for (const tk of [20, 26, 30, 33, 36, 40, 45, 50, 60, 340, 348, 352, 358, 365]) { s.tick = day + tk; r.render(s, g.view, 0.016); ls.push(lum()); }
+  s.tick = tick0;
+  const sorted = [...ls].sort((a, b) => a - b);
+  out.noBlackAtDawnOrDusk = sorted[0] > sorted[Math.floor(sorted.length / 2)] * 0.5;
+  return out;
+});
 await page.keyboard.press('n');
 await page.waitForTimeout(200);
 const two = await page.evaluate(() => {
@@ -132,7 +145,7 @@ const six = await page.evaluate(() => {
 });
 await page.screenshot({ path: 'shots/iter55_tallowkin.png' });
 
-const all = { ...one, ...two, ...three, ...four, ...five, ...six };
+const all = { ...one, ...dawn, ...two, ...three, ...four, ...five, ...six };
 console.log('checks:', JSON.stringify(all));
 const pass = Object.values(all).every((v) => v === true) && errors.length === 0 && warns.length === 0;
 console.log(pass ? 'PASS' : 'FAIL', 'errors', errors, 'warns', warns.slice(0, 5));

@@ -15,7 +15,6 @@ import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachB
 import { resolveEvent } from './events';
 import { districtMarkets, lineNest, setRole } from './wyrmcraft';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
-import { aspectAt } from './weave';
 import { chooseTale } from './botPolicy';
 
 /** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
@@ -155,8 +154,9 @@ export class Bot {
     const next = s.milestone + 1;
     if (s.faction === 'vellish' && next < MS.length) {
       const need = VELLISH_HAPPINESS(next);
-      if (s.happiness < need + 1 && s.population >= MS[next].pop * 0.8) h--;
-      else if (s.happiness > need + 5) h++;
+      // a cut only where it can bridge the gap: four points of tithe lift the mean about five
+      if (s.happiness < need + 1 && s.happiness >= need - 5 && s.population >= MS[next].pop * 0.8) h--;
+      else if (s.happiness > need + 5 || s.happiness < need - 5) h++;
       if (s.unrest > 0.25) h--;
     } else if (s.unrest > 0.25) h--;
     else if (s.unrest < 0.12) h++;
@@ -182,7 +182,7 @@ export class Bot {
       const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok').length;
       const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
       if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200) setEdict(s, 'imports', true);
-      else if (s.goodsShort === 0) off('imports');
+      else if (s.goodsShort === 0 || net < 0) off('imports');
     }
   }
 
@@ -195,9 +195,11 @@ export class Bot {
       if (key !== 'hallofwicks' && s.milestone < 7) continue;
       return { kind: 'hall', key, cost: costOf(s, BUILDING_BY_KEY[key]) + 500, mana: key === 'greatweir' };
     }
-    // the first cradle, once, from the Township: the Crown answers it with an egg
+    // the first cradle, once, when the ley and the ledger can carry it: the Crown answers it with an egg (a cradle in a brownout
+    // starved the town that raised it in the first draft, and a dragon that cannot be fed leaves and comes back for a tribute)
     const cradle = factionKey(s, 'cradle');
-    if (canBuild(s, cradle) && this.countKind(cradle) === 0 && (this.goalBlocked.cradle ?? -1) < s.day) return { kind: 'cradle', key: cradle, cost: costOf(s, BUILDING_BY_KEY[cradle]) + 200, mana: false };
+    const def = BUILDING_BY_KEY[cradle];
+    if (canBuild(s, cradle) && this.countKind(cradle) === 0 && (this.goalBlocked.cradle ?? -1) < s.day && s.manaSupply - s.manaDemand >= def.manaUse + 5 && s.ledger.net >= 300) return { kind: 'cradle', key: cradle, cost: costOf(s, def) + 200, mana: false };
     // then the cheapest mana when the ley runs short
     const short = s.brownout > 0.02 || s.manaDemand > s.manaSupply * 0.9;
     if (!short) return null;
@@ -303,13 +305,13 @@ export class Bot {
     const d = s.demand;
     // the light first, for the two peoples whose gate it is: the Vellish paint no new lots while the ley cannot carry them (a brownout
     // past a tenth, with a tenth of the zone buildings dark) unless their happiness clears the gate by four; the Tallowkin hold zoning
-    // while the lit share is under the next gate and three points. Homes dark for want of a spire in reach are keepLit's to fix.
+    // while the lit share is under the next gate and a point and a half. Homes dark for want of a spire in reach are keepLit's to fix.
     const { zone, dark } = zoneLight(s);
     const MS = milestonesOf(s);
     const next = s.milestone + 1;
     const cheerful = s.faction === 'vellish' && next < MS.length && s.happiness >= VELLISH_HAPPINESS(next) + 4;
     const tallowGate = factionOf(s).rules.gateHold ? TALLOW_LIGHT[next] : undefined;
-    this.zoningHeld = (s.faction === 'vellish' && zone >= 20 && dark > zone * 0.1 && s.brownout > 0.1 && !cheerful) || (zone >= 20 && tallowGate !== undefined && litShare(s) < tallowGate + 0.03);
+    this.zoningHeld = (s.faction === 'vellish' && zone >= 20 && dark > zone * 0.1 && s.brownout > 0.1 && !cheerful) || (zone >= 20 && tallowGate !== undefined && litShare(s) < tallowGate + 0.015);
     if (this.zoningHeld) return;
     // lots the light and a well already reach are painted first, so new homes start lit and watered
     const near = (i: number, layer: Uint8Array) => layer[i] || layer[i - 1] || layer[i + 1] || layer[i - MAP_W] || layer[i + MAP_W];
@@ -355,8 +357,12 @@ export class Bot {
       if (!b.watered && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') dry.push({ x: b.x, y: b.y });
     });
     if (!dry.length) return;
+    // a few dry homes wait for the next well; a well a day unless a twelfth are dry (iteration 55: seventy wells ate 280 a day on seed 44)
+    const zone = zoneLight(s).zone;
+    if (dry.length < Math.max(3, zone * 0.02)) return;
+    const most = dry.length > zone * 0.08 ? 3 : 1;
     let placed = 0;
-    for (let k = 0; k < dry.length && placed < 3; k += Math.max(1, Math.floor(dry.length / 6))) {
+    for (let k = 0; k < dry.length && placed < most; k += Math.max(1, Math.floor(dry.length / 6))) {
       const d = dry[k];
       const key = factionKey(s, s.milestone >= 2 && this.spendable() > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
       const well = factionKey(s, 'well');
@@ -635,7 +641,7 @@ export class Bot {
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
       if (this.spendable() < costOf(s, def) + buffer) return; // growth spends only what the goal leaves
-      if (s.day >= 30 && s.ledger.net < def.upkeep + 50) return; // and buys nothing it cannot run (iteration 55: upkeep outran income on seed 44)
+      if (s.day >= 30 && s.ledger.net - def.upkeep < 200) return; // and buys nothing that leaves the ledger under 200 a day (iteration 55: upkeep outran income on seed 44)
       if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply) return;
       if (!this.placeService(key, nearGloam) && !nearGloam && this.radius < 40 && !this.zoningHeld) this.radius += 5; // no room: grow the town
     };
@@ -693,11 +699,10 @@ export class Bot {
       return this.placeNear(key, Math.round(this.cx + ux * r), Math.round(this.cy + uy * r), 4);
     }
     const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tidepool' || key === 'tamerslodge' || key === 'hallofwicks' || key === 'lantern';
-    // a cradle on a node of its gift's line, so a later cross can breed there
+    // a cradle beside the markets that feed its dragons (within twelve tiles): a hungry dragon leaves
     if (def.key === factionKey(s, 'cradle')) {
-      const line = s.faction === 'veshari' ? 'tide' : 'ember';
-      const n = s.nodes.find((q) => q.aspect === line && Math.hypot(q.x - this.cx, q.y - this.cy) <= this.radius + 6);
-      if (n && this.placeNear(key, n.x, n.y, 5, false, (x, y) => aspectAt(s, x, y) === line)) return true;
+      const m = s.buildings.find((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok');
+      if (m && this.placeNear(key, m.x, m.y, 6, true)) return true;
     }
     // spread services: beside the zone buildings farthest from one of the same kind; with none standing, every distance ties,
     // so the outer ring is tried too (a 2×2 hall finds no room among the packed old homes: the depot of iteration 43)

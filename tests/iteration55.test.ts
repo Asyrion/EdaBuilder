@@ -6,7 +6,7 @@ import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { RoadType, SAVE_VERSION, TICKS_PER_DAY, idx, type GameState } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { ALL_EVENTS, descOf } from '../src/sim/events';
+import { ALL_EVENTS, descOf, resolveEvent } from '../src/sim/events';
 import { Bot } from '../src/sim/bot';
 import { chooseTale, worth } from '../src/sim/botPolicy';
 import { ANNALS, ANNALS_INTERNAL } from '../src/data/annals';
@@ -75,10 +75,11 @@ describe('The bot keeps a purse', () => {
     s.milestone = 4;
     const bot = new Bot(s);
     s.manaSupply = 100; s.manaDemand = 120; s.brownout = 0.2;
-    expect((bot as any).pickGoal().kind).toBe('cradle'); // the first cradle comes first, once
-    (bot as any).goalBlocked.cradle = 999;
     const g = (bot as any).pickGoal();
-    expect(g.kind).toBe('font');
+    expect(g.kind).toBe('font'); // in a brownout the first cradle waits: the ley must carry it
+    s.manaSupply = 200; s.manaDemand = 120; s.brownout = 0; s.ledger.net = 400;
+    expect((bot as any).pickGoal().kind).toBe('cradle'); // with mana to spare and a ledger of 300, it comes first, once
+    s.manaSupply = 100; s.manaDemand = 120; s.brownout = 0.2;
     (bot as any).goal = g; (bot as any).reserve = g.cost;
     for (let k = 0; k < 6; k++) placeBuildingRaw(s, 'hearth', s.founding.x - 8 + k, s.founding.y + 3);
     recomputeAll(s);
@@ -145,7 +146,7 @@ describe('The bot zones what it can light and moves the tithe', () => {
     (bot as any).zoneByDemand();
     expect(lots(s)).toBeGreaterThan(before);
   });
-  it('the Tallowkin hold zoning while the lit share is under the next gate and three points', () => {
+  it('the Tallowkin hold zoning while the lit share is under the next gate and a point and a half', () => {
     const s = town(55, 'tallowkin');
     const bot = new Bot(s);
     const f = s.founding;
@@ -329,6 +330,22 @@ describe('The Hall of Wicks is sworn at the vigil festival itself', () => {
     expect(specialLock(s, 'hallofwicks')).toMatch(/vigil/);
     s.firedEvents.push('vigil@0:0');
     expect(specialLock(s, 'hallofwicks')).toBeNull();
+  });
+});
+
+describe('A city in debt can still answer a tale', () => {
+  it('a choice with no price is never refused as "0 crowns asked"; a priced one still is', () => {
+    const s = town();
+    s.treasury = -500;
+    s.day = 40;
+    s.departed.push({ name: 'Pell', line: 'ember', stage: 2, x: s.founding.x, y: s.founding.y, day: 5, returned: false });
+    pend(s, 'dragon_returns');
+    resolveEvent(s, 0); // pay its tribute: the purse cannot, so the shelves pay
+    expect(s.departed[0].returned).toBe(true);
+    expect(s.messages[s.messages.length - 1].text).not.toMatch(/purse is too light/);
+    pend(s, 'council_carters');
+    resolveEvent(s, 1); // "Pay them off (400 crowns)"
+    expect(s.messages[s.messages.length - 1].text).toMatch(/400 crowns asked/);
   });
 });
 

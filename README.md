@@ -146,7 +146,11 @@ Charter as `.json`.
 ## Features
 
 - Deterministic, seeded, fixed-tick simulation separated from rendering (`src/sim`), with
-  a headless bot player for balance runs and a vitest suite.
+  a headless bot player for balance runs and a vitest suite. The bot plays the levers a player
+  has: it saves for one goal at a time (its people's hall, a cradle, the cheapest mana) and takes
+  the Crown's loan as a bridge to a hall. It zones what it can light, moves the tithe off the
+  hearths, and sets the curfew, draughts and imports. It walls the Gloam side, stands a depot and
+  a cradle, and answers each tale by playing every choice on a copy of the city.
 - Procedural terrain: river, lake, forests, meadows, hills, 4–6 ley nodes, Gloam rim.
 - Roads (3 tiers, bridges), 4 zone types, buildings that level up 1→3 with visibly
   different sprites, 20+ civic buildings, a wonder.
@@ -262,7 +266,13 @@ Charter as `.json`.
   mana of buildings and its farthest go dark over that (a Load row), every building has a
   brownout tier, and lantern-ways dim first when the ley runs short.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
-  result).
+  result): among them jump to a day, flood or freeze the river, complete a Charter task, set a
+  guild's standing or the Crown's favour, and reset the tales, the ledger history or the Chronicle.
+- The Annals (**N**, or the top bar): every counter the charter keeps, by chapter (riots and
+  levies, rain days and hound raids, bouts, relics, walkers' rounds), each with a note on what it
+  counts.
+- Saves carry their version and migrate step by step; a save from a newer Wardlight is refused
+  with the reason.
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
 - Crossed eggs from attuned cradles (two auras in one dragon) and trueblood eggs from two
