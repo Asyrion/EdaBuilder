@@ -2033,6 +2033,119 @@ bot's late game waits on its purse.
 - **Deployment.** GitHub Actions builds and deploys `dist/` to GitHub Pages;
   `vite.config.ts` uses a relative base so it works at any path.
 
+### 4.84 M14 part 3, wyrmcraft matured: auras that act, cradles with a ceiling, roles with a price, materials with sinks, wonders with a role, the Court after the binding (iteration 53)
+
+The audit's part 3 (AUDIT.md §4) in one iteration, under the depth pass's rule: a mechanic
+exists only if the player can see it, decide about it and lose by it. Eleven bullets, each
+with the audit's number; the bot is untouched (teaching it these is part 5).
+
+**Lines that do what they say.** Two auras were text. Ember now lifts Craft a tenth wherever
+`auraAt` says it reaches (8 around the cradle, 12 at a warden's district centroid, half again
+for a great wyrm), added to the Craft rate beside the node's own Ember +15 %. Sky, whose text
+described courier properties of a role that radiates nothing, speeds carts and couriers a
+quarter inside it (`agents.ts`, `creatures.ts`). A Tide drake radiating its aura swims one
+barge a day from the mooring nearest its cradle within 12 (`dailyTideBarges`): it ignores
+the bargemen's strike and the one-barge-per-mooring rule, needs two moorings like any barge,
+and counts in `bargeTrips` and a new `tideTrips`. Every building inside an aura now names
+it ("Dragon auras: Ember (Ashvel): Craft works within its aura make 10 % more"), so the
+seven auras that were already real (Bone, Grey, Tide, Glim, Vein, Storm, Fen) are shown
+where they land. The Crown's gift was already a tide egg for the Veshari and an ember egg
+for the rest; §8.6's "any egg, player's choice" is settled as the people's cradle line.
+
+**Cradles with a ceiling.** A cradle of any of the three kinds becomes a **Great Cradle** at
+level 2 from its panel at the people's sixth milestone for 4,000 crowns: four nests, four
+more mana, its own sprite for the Vellish cradle. A Tamer's Lodge within 10 **seats four**
+(`lodgeSeats`, filled in dragon-id order): a hatchling without a seat does not grow, as
+before; a drake or older without one grows at half pace and, trained hard, scorches its
+cradle thrice as often (0.06 a day instead of 0.02, the same rng roll). **Feeding reaches
+12 tiles** of the cradle ("markets near the cradle" is now true), a warden eats from the
+markets of its district at any distance, and the three-day warning says which. Unfed mood
+loss falls from 12 to 6 a day so that **ten unfed days** regress a drake or older a stage
+(a courier below wyvern loses the role) before mood 0 sends it into the Gloam. Every
+dragon that leaves (starved, trained wild, its cradle gone) is kept in `state.departed`
+and **returns after a season** as a tale of its own (`maybeFireReturn`, fired on its own
+terms like the wyrm's): pay its tribute (500 crowns a stage, or 60 goods a stage off the
+shelves when the purse cannot, so the bot's choice 0 always resolves), open a cradle (it
+comes home at mood 40, its stage kept) or refuse it, and it screams over its old cradle for
+a day as a rogue flyer (a wyvern agent, `dragonId −1`, phase 3) and sets up to its stage in
+dark, unwarded roofs within 12 alight. The Vein-Wyrm's flyover is not reused: it rewrites
+`state.wyrm`.
+
+**Roles with a price.** A delver halves the chance of waking a Concord Warden at its mine
+(the chance is multiplied, so the rng stream is unchanged and a run with a delver wakes a
+subset of the wardens a run without would). A courier records its last trip on the Dragon
+(`lastTrip`: from, to, goods delivered, day). The Ring shows a champion's **odds** before
+the bout (`boutOdds`, pure: the deterministic halves and the chance over the two rolls of
+40, a triangular difference) in the Wyrms panel, the Ring inspector and the forecast; the
+challenger's base is now the champion's stage × 20 + 20 (plus the season's 5 and the
+year's 8, capped at 16), so the stage cancels and a great wyrm at mood 70 wins 87.5 %, at
+mood 30 half, and by the second year's Ember 36 %: a champion is kept content and
+hard-trained, or it loses.
+
+**Materials with sinks.** **Scale-Mail** (an edict, Township, city-wide, no crowns): −5 %
+unrest while scale is in the vault, 0.05 scale a day. **Wyrmfire**: each lit Forge burns
+0.1 a day and is cold without (both of its Craft reads gated); the city's +15 % is now a
+toggle (`burnWyrmfire`, default on so old saves keep it) that burns 0.05 a day in place of
+the 0.02 leak; an ember drake breathes a jar a month and a wyvern one a fortnight, so one
+grown wyvern sustains the toggle and two the Forge. **Eggshell** lines a nest (+25 % hatch,
+one per egg) and the Font costs 3. **Glim-dust** is a tool on the Land tab: one unit on a
+track or cobbled tile lights it for a season (`dustLit`, a Uint16Array of end days): land
+value, the overlay and a warm glow where no spire reaches, but it conducts nothing and
+lights no building; bulldozing or re-tiering the road clears it. **The caravan** sells the
+share of the vault a slider sets (`resolveEvent` takes an amount; a choice may carry a
+`slider`; undefined still sells all, so the bot and the tests are unchanged). **Rays**
+remember the lure that sang to them (`anchorId`) and shed glim-dust over a Rayscale Mirror
+where a Beacon's school sheds rayscale.
+
+**Marvels and wonders with a role.** The Hall of Marvels exhibits each rare good in the
+vault for +2 happiness (up to +10, lit only) in place of a flat +8. The Lantern of the
+Cores takes the first 30 of a surge's overdraw and cracks for ten days (`broken`; while
+cracked it is not self-lit, stores nothing and wards nothing); a surge no bigger than that
+burns nothing (`surgesAbsorbed`). Every lit wonder hall (the Lantern of Vell, the Seat, the
+Weir, the Hall and Lantern of Wicks, the Court, the World Tree, the Sky-Dock) gives +5
+happiness and lifts the next grant a tenth (`litWonders`). The mana spread narrows: the
+Lantern of Vell draws 10 (was 20); the Great Weir makes 45 (was 90) with a **sluice** on its
+panel that opens to 90 and, in the Thaw from day 5, floods the bank within 30 of the Weir
+(`floodedAt` replaces the global `flooding` at the three bank reads: land value, happiness
+and the wells; the Hush flood stays city-wide and the standing Weir still holds it). The
+Underking's Seat warms every cradle within 30 for no mana (lit, drawing nothing, before the
+consumer pass). The Lantern of Wicks halves what lit spires within 30 carry (a spire draws
+nothing itself; its consumers' draw is halved when the member pass assigns them).
+
+**The Wyrm-Court after the binding; golems assigned.** The Court's gate was already closed
+(no Court without a woken wyrm); the toolbar tooltip now prints that reason. Lit, the Court
+halves the bound wyrm's appetite to 20; once a lit Court has stood after the binding
+(`courted`), a dark Court counts `courtDark` days and at two the wyrm sulks until the Court
+is lit again (feeding does not clear this sulk; the Court defaults to the essential
+brownout tier so a shortfall takes it last). Each bound Concord Warden is assigned from the
+foundry's panel: labour (12 hands city-wide, as before), guard (ward 0.6 within 6 of the
+foundry, holding the grey like a Stone Ward) or posted to a Craft works within 20 (12 hands
+at its bench, capped by the works' capacity); a surge clears the duty with the binding.
+
+Balance, 150 days, against §4.80 (and §4.83's Tallowkin row) in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 60 (60) | 3,067 (3,067) |
+| Vellish seed 43 | never: Burgh 40 (40) | 1,182 (1,182) |
+| Vellish seed 44 | 57 (57) | 3,266 (3,266) |
+| Grimmen seed 42 | Deephold 58 (58), Underking's Hall 145 (145) | 1,581 (1,581) |
+| Veshari seed 42 | Harbour 15 (15), Weirhold 60 (60), Vesh's Court 103 (103) | 2,137 (2,137) |
+| Tallowkin seed 42 | Bright Town 42 (§4.83 42), 73 % lit (73 %), purse +107 (+107) | 1,341 (1,341) |
+
+Every row is the baseline bit for bit, and that is the finding: in six runs of 150 days the
+storyteller drew three to seven tales and never the Crown's gift, so no bot city holds a
+dragon, none raises a wonder hall, a Forge, a Mirror or the Cores, and nothing in part 3
+reaches the bot. The first draft of this iteration was not bit-identical: capping a works'
+hands at its capacity (for the posted wardens) trimmed two goods on day 61 of Vellish 42,
+where the Free City's new halls shrink a works' capacity below the crew assigned the day
+before, and the runs drifted from there (2,881 folk and 97 fires against 3,067 and 68). The
+cap now applies to the posted hands only, so a works with no warden produces exactly what
+it did. The same comparison showed the Vellish bot standing a Trade Depot on day 100 of
+seed 42 (8 goods exported by day 150), so the iteration 47 note that it never does is true
+of the other seeds only. Teaching the bot to keep a dragon, name a champion, buy a
+wonder and use the sinks is part 5's; the player's game has all of part 3 today.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -2987,3 +3100,27 @@ playtest of a lakeside town.
   shows for everyone and the copies serve only the levels without one.
 - *A corner is a door (iteration 49):* the four-side rule was invisible and wrong at every
   road end and bend; a rule the player cannot see must at least be the generous one.
+- *An aura is a rule, or it is not an aura (iteration 53):* two of nine lines radiated text;
+  a line's calling has to change a number somewhere, and the building it changes has to say
+  so, or the Weave view paints a disc that means nothing.
+- *A ceiling is a seat (iteration 53):* "a lodge serves a cradle" was a boolean nobody could
+  run out of; four seats a lodge, filled in order, is a thing the player counts and a reason
+  for a second lodge.
+- *Hunger regresses before it kills (iteration 53):* the old −12 mood a day killed a dragon
+  in six days, so "ten unfed days regress a stage" would have been dead code; the number
+  that mattered was the mood loss, not the threshold.
+- *The departed come back as a tale, not a hazard (iteration 53):* reusing the Vein-Wyrm's
+  flyover would have put the wyrm to sleep and hidden its prop; a returned dragon is a
+  choice with three answers and its own agent, which is what the audit meant.
+- *The stage cancels in the Ring (iteration 53):* a challenger of the champion's own weight
+  makes the odds depend on mood, training and line, which the player controls, and the
+  season and the year, which they cannot; the odds are printed so a loss is never a surprise.
+- *A sink is a decision (iteration 53):* every rare good now has a use that competes with
+  the Marvels and the caravan (mail, fire, a lined nest, a dusted lane, a share sold), and
+  each use is a control the player sets, not a drain.
+- *The gift matches the cradle (iteration 53):* §8.6's "any egg, player's choice" would have
+  been a fourth choice on a three-choice tale; the people's cradle line is the gift, and the
+  promise is struck.
+- *Golems are labour, guards or hands at a bench (iteration 53):* the earlier rule "golems
+  are labour, not sprites" stands for the default; a warden with a post is a sprite that
+  stands somewhere for a reason.

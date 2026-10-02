@@ -332,7 +332,7 @@ export function dailyBuildings(state: GameState): void {
       let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (auraAt(state, 'ember', b.x, b.y) ? 0.1 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (forge ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
-      const hands = Math.min(capacityOf(b, state), b.workers + worksGolems(state, b) * GOLEM_LABOUR); // a posted Concord Warden works the bench for twelve
+      const hands = b.workers + Math.min(worksGolems(state, b) * GOLEM_LABOUR, Math.max(0, capacityOf(b, state) - b.workers)); // a posted Concord Warden works the bench for twelve, up to the works' capacity; with none posted the crew alone, exactly as before
       const made = Math.min(craftStockCap(b) - b.stock, hands * rate);
       b.stock += Math.max(0, made);
       state.goodsProduced += Math.max(0, made);

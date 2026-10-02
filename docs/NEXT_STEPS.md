@@ -493,10 +493,15 @@
   60 (seeds 42/43/44; was 52/48/51) and raises no Lantern, so no Beacon. The table in
   DESIGN §4.75 is the new baseline; M14 part 5 (a depot, taxes, edicts, a Lantern once
   rich) is where it earns it back. The Veshari bot's Harbour on seed 42 stalled to day 57.
-- **The bot never stands a Trade Depot.** `want('depot', 1)` is in its list, yet every
-  balance seed ends day 150 with `depot 0` and no exports, so the Gloam road, the caravan
-  and the Twin Road are unplayed by the bot and their balance is unmeasured. Find why the
-  placement fails (a 2×2 beside its grid? the leisure radius?) in the depth pass.
+- **The bot never stands a Trade Depot** on most seeds. `want('depot', 1)` is in its list,
+  yet five balance seeds of six end day 150 with `depot 0` and no exports (Vellish 42
+  stands one on day 100 and exports 8 goods, iteration 53), so the Gloam road, the caravan
+  and the Twin Road are all but unplayed by the bot and their balance is unmeasured. Find
+  why the placement fails (a 2×2 beside its grid? the leisure radius?) in the depth pass.
+- **The bot holds no dragon** (iteration 53). In all six balance runs the storyteller never
+  drew the Crown's gift within 150 days, so nothing of M14 part 3 reaches the bot and the
+  table is the baseline bit for bit; part 5 teaches it to keep a dragon, name a champion,
+  buy a wonder and use the sinks.
 - **The bot and its Hearth quarter.** With the bot chartering its hearth square, Free City
   comes earlier on every Vellish seed, but seed 42 ends day 150 with 2,072 folk and no
   Beacon where main had 3,094 and a Beacon on day 92, while seed 43 gains a third. The
