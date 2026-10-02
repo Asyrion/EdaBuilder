@@ -1,5 +1,5 @@
 /** Remappable key bindings. Stored in settings; the help overlay and menu read the same table. */
-export type KeyAction = 'pause' | 'slower' | 'faster' | 'help' | 'chronicle' | 'views' | 'save' | 'load' | 'select' | 'bulldoze' | 'road' | 'zone' | 'cancel';
+export type KeyAction = 'pause' | 'slower' | 'faster' | 'help' | 'chronicle' | 'annals' | 'views' | 'save' | 'load' | 'select' | 'bulldoze' | 'road' | 'zone' | 'cancel';
 
 export const KEY_ACTIONS: { id: KeyAction; name: string }[] = [
   { id: 'pause', name: 'Pause' },
@@ -12,13 +12,14 @@ export const KEY_ACTIONS: { id: KeyAction; name: string }[] = [
   { id: 'views', name: 'Info views list' },
   { id: 'help', name: 'Help' },
   { id: 'chronicle', name: 'Chronicle' },
+  { id: 'annals', name: 'Annals' },
   { id: 'save', name: 'Quick save' },
   { id: 'load', name: 'Quick load' },
   { id: 'cancel', name: 'Cancel / close' },
 ];
 
 export const DEFAULT_KEYS: Record<KeyAction, string> = {
-  pause: ' ', slower: ',', faster: '.', select: 'x', bulldoze: 'b', road: 'r', zone: 'z', views: 'tab', help: 'h', chronicle: 'c', save: 'f5', load: 'f9', cancel: 'escape',
+  pause: ' ', slower: ',', faster: '.', select: 'x', bulldoze: 'b', road: 'r', zone: 'z', views: 'tab', help: 'h', chronicle: 'c', annals: 'n', save: 'f5', load: 'f9', cancel: 'escape',
 };
 
 export function keyFor(keys: Record<KeyAction, string>, k: string): KeyAction | null {

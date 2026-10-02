@@ -177,7 +177,8 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
 export function specialLock(s: GameState, key: string): string | null {
   if (key === 'stormpeak' && !s.firedEvents.includes('stormcaller:0')) return 'Needs its caller: give the Huruhui storm caller the hills when they come (a Township of 300 folk).';
   if (key === 'wyrmcourt' && (s.wyrm.state === 'none' || s.wyrm.state === 'sleeping')) return 'Raised for a woken wyrm: there is none awake to court.';
-  if (key === 'hallofwicks' && !s.firedEvents.includes('vigil:0')) return 'Sworn at the Hush vigil: keep one first (the first night of the Hush).';
+  // the vigil is a festival, recorded `vigil@<year>:0` (a dev-fired one `vigil:0`): the plain test never matched in play (fixed in iteration 55)
+  if (key === 'hallofwicks' && !s.firedEvents.some((f) => f === 'vigil:0' || (f.startsWith('vigil@') && f.endsWith(':0')))) return 'Sworn at the Hush vigil: keep one first (the first night of the Hush).';
   return null;
 }
 export function canBuild(s: GameState, key: string): boolean {

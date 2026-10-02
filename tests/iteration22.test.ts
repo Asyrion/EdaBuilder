@@ -69,7 +69,7 @@ describe('Map sectors', () => {
 
   it('a save from before sectors owns the whole map', () => {
     const s = createGame(31, 'Old');
-    const o = JSON.parse(serialize(s));
+    const o = JSON.parse(serialize(s)); o.version = 6; // a save from before iteration 55 says 6
     delete o.sectors;
     const b = deserialize(JSON.stringify(o), (seed) => createGame(seed));
     expect(charteredCount(b)).toBe(b.sectors.length);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { DEV_COMMANDS, DEV_GROUPS, runDev } from '../src/sim/dev';
+import { DEV_COMMANDS, DEV_GROUPS, devDefaultArg, runDev } from '../src/sim/dev';
 import { AgentKind, idx } from '../src/sim/types';
 import { construction } from '../src/sim/construction';
 import { serialize, deserialize } from '../src/sim/save';
@@ -20,7 +20,7 @@ describe('Dev tools', () => {
     let n = 0;
     for (const c of DEV_COMMANDS) {
       if (c.id === 'day' || c.id === 'season') continue; // run separately below
-      const arg = c.arg ? c.arg.options[0][0] : '';
+      const arg = devDefaultArg(c, s); // a list's first option or a number's default (iteration 55)
       const out = runDev(s, c.id, arg, at);
       expect(typeof out).toBe('string');
       n++;

@@ -19,7 +19,7 @@ import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
 import { WALKER_JOBS, walkersOf } from '../sim/walkers';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
-import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
+import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
@@ -46,6 +46,7 @@ import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
+import { ANNALS, type AnnalRow } from '../data/annals';
 import { WYRM_EATS, WYRM_LAIR_RADIUS, describeWyrm, wyrmEats, wyrmNode, wyrmTribute } from '../sim/wyrm';
 import { forecast } from '../sim/forecast';
 import { describeBeasts, boundGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
@@ -168,6 +169,7 @@ export class UI {
         <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
         <button id="btn-wyrms" title="Dragons, eggs and materials">Wyrms</button>
         <button id="btn-chronicle" title="Chronicle: what has happened in the world (C)">Chronicle</button>
+        <button id="btn-annals" title="Annals: every counter the charter keeps (N)">Annals</button>
         <button id="btn-views" title="Info views (Tab)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -203,14 +205,16 @@ export class UI {
       <div id="wyrms" class="modal hidden"></div>
       <div id="event" class="modal hidden"></div>
       <div id="chronicle" class="modal hidden"></div>
+      <div id="annals" class="modal hidden"></div>
       <div id="dev" class="modal hidden" role="dialog" aria-label="Dev tools"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'annals', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-wyrms').onclick = () => this.toggleWyrms();
     this.q('#btn-chronicle').onclick = () => this.toggleChronicle();
+    this.q('#btn-annals').onclick = () => this.toggleAnnals();
     (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; this.refreshTasks(); };
     (this.q('#tasks .done') as HTMLButtonElement).onclick = () => { this.showDone = !this.showDone; this.lastQuestKey = ''; this.refreshTasks(); };
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
@@ -437,6 +441,7 @@ export class UI {
     this.refreshLog();
     this.refreshMinimap();
     this.refreshChronicle();
+    this.refreshAnnals();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
@@ -580,8 +585,10 @@ export class UI {
     const el = this.el.chronicle;
     if (el.classList.contains('hidden')) return;
     const s = this.host.state;
-    if (s.chronicle.length === this.lastChronicleLen) return;
-    this.lastChronicleLen = s.chronicle.length;
+    // keyed on the length and the newest line: at its 200-line cap the length stops changing (iteration 55)
+    const key = s.chronicle.length * 1000003 + (s.chronicle.length ? s.chronicle[s.chronicle.length - 1].day * 31 + s.chronicle[s.chronicle.length - 1].text.length : 0);
+    if (key === this.lastChronicleLen) return;
+    this.lastChronicleLen = key;
     const f = this.chronicleFilter;
     const entries = s.chronicle.filter((e) => f === 'all' || (f === 'bad' ? e.kind === 'bad' || e.kind === 'warn' : e.kind === f)).slice(-120).reverse();
     const filters: [typeof f, string][] = [['all', 'All'], ['milestone', 'Milestones'], ['good', 'Good tidings'], ['bad', 'Ill tidings']];
@@ -599,6 +606,34 @@ export class UI {
       (b as HTMLButtonElement).onclick = () => { const d = (b as HTMLElement).dataset; this.host.centerOn(Number(d.x), Number(d.y)); this.toggleChronicle(false); };
     });
     el.querySelector('#ch-close')!.addEventListener('click', () => this.toggleChronicle(false));
+  }
+
+  // ---------- the Annals (iteration 55) ----------
+  private lastAnnalsKey = '';
+
+  toggleAnnals(show?: boolean): void {
+    const el = this.el.annals;
+    const sh = show ?? el.classList.contains('hidden');
+    el.classList.toggle('hidden', !sh);
+    if (sh) { this.lastAnnalsKey = ''; this.refreshAnnals(); }
+  }
+
+  /** Every counter by chapter; refreshed once a day while open. */
+  refreshAnnals(): void {
+    const el = this.el.annals;
+    if (el.classList.contains('hidden')) return;
+    const s = this.host.state;
+    const key = `${s.day}:${s.stats.devUses}`;
+    if (key === this.lastAnnalsKey) return;
+    this.lastAnnalsKey = key;
+    const val = (r: AnnalRow) => (r.stat ? Math.round(s.stats[r.stat] as number).toLocaleString() : String(r.value!(s)));
+    el.innerHTML = `<div class="box panel annals">
+      <h2>The Annals of ${s.cityName}</h2>
+      <p class="muted">Every count the charter keeps, day ${s.day}. Hover a line for what it counts.</p>
+      <div class="chapters">${ANNALS.map((c) => `<section><h3>${c.chapter}</h3>${c.rows.map((r) => `<div class="arow" title="${r.note.replace(/"/g, '&quot;')}"><span class="al">${r.label}</span><span class="av">${val(r)}</span></div>`).join('')}</section>`).join('')}</div>
+      <div style="text-align:right"><button id="an-close">Close</button></div>
+    </div>`;
+    el.querySelector('#an-close')!.addEventListener('click', () => this.toggleAnnals(false));
   }
 
   private drawClock(): void {
@@ -1176,7 +1211,7 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>N</kbd> Annals · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
@@ -1194,7 +1229,7 @@ export class UI {
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
             <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
-            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there.</li>
+            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there. The <b>Annals</b> (top bar, <kbd>N</kbd>) keep every count of the charter by chapter: riots and levies, rain days and hound raids, bouts, relics, walkers' rounds.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
@@ -1728,7 +1763,9 @@ export class UI {
     const el = this.el.dev;
     const stand = GUILD_IDS.map((g) => `${GUILDS[g].name.replace('The ', '').split(' ')[0]} ${Math.round(s.guilds.standing[g])}`).join(' · ');
     const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · ${s.dragons.length} dragons · ${stand} · relics ${s.relics.complete.length}/4 · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
-    const groups = DEV_GROUPS.map((g) => `<h3>${g}</h3><div class="devgrid">${DEV_COMMANDS.filter((c) => c.group === g).map((c) => `<div class="devcmd"><button data-id="${c.id}" title="${c.desc}">${c.name}</button>${c.arg ? `<select data-arg="${c.id}">${c.arg.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>` : ''}</div>`).join('')}</div>`).join('');
+    // an argument is a list or a number (iteration 55); a second one rides beside the first and both go as `first:second`
+    const input = (a: DevArg | undefined, id: string, attr: string) => !a ? '' : a.kind === 'select' ? `<select ${attr}="${id}">${devOptions(a, s).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>` : `<input type="number" ${attr}="${id}" min="${a.min}" max="${a.max}" value="${devNumber(a, s)}">`;
+    const groups = DEV_GROUPS.map((g) => `<h3>${g}</h3><div class="devgrid">${DEV_COMMANDS.filter((c) => c.group === g).map((c) => `<div class="devcmd"><button data-id="${c.id}" title="${c.desc}">${c.name}</button>${input(c.arg, c.id, 'data-arg')}${input(c.arg2, c.id, 'data-arg2')}</div>`).join('')}</div>`).join('');
     el.innerHTML = `<div class="box panel" style="width:760px">
       <h2>Dev tools <span class="muted" style="font-size:12px">for playtesting; every use is counted and marks the daily result</span></h2>
       <p class="muted devstatus">${status}</p>
@@ -1736,7 +1773,7 @@ export class UI {
       ${groups}
       <div class="row"><button id="dev-dump">Copy state summary</button><button id="dev-close">Close</button></div>
     </div>`;
-    el.querySelectorAll('button[data-id]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const id = (b as HTMLElement).dataset.id!; const sel = el.querySelector(`select[data-arg="${id}"]`) as HTMLSelectElement | null; const out = this.host.dev(id, sel ? sel.value : ''); this.renderDev(`${(b as HTMLElement).textContent}: ${out}`); }; });
+    el.querySelectorAll('button[data-id]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const id = (b as HTMLElement).dataset.id!; const sel = el.querySelector(`[data-arg="${id}"]`) as HTMLInputElement | HTMLSelectElement | null; const sel2 = el.querySelector(`[data-arg2="${id}"]`) as HTMLInputElement | HTMLSelectElement | null; const out = this.host.dev(id, sel2 ? `${sel ? sel.value : ''}:${sel2.value}` : sel ? sel.value : ''); this.renderDev(`${(b as HTMLElement).textContent}: ${out}`); }; });
     (el.querySelector('#dev-dump') as HTMLButtonElement).onclick = () => { const line = `${s.cityName} seed ${s.seed} day ${s.day}: ${status}`; try { void navigator.clipboard.writeText(line); this.toast('<p>Summary copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
     (el.querySelector('#dev-close') as HTMLButtonElement).onclick = () => this.toggleDev(false);
   }

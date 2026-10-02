@@ -2286,6 +2286,210 @@ gate, comes out ahead on this path: Weirhold on 47, Vesh's Court on 84 and a Sab
 the Crown's side of this iteration is the player's for now. The player's game has all of
 part 4 today; the bot's answers are part 5.
 
+### 4.86 M14 part 5, the bot plays it all, and the Annals: a purse, the light first, taxes and edicts, walls, a depot, dragons, a greedy tale policy; every counter shown; saves by version; five dev commands (iteration 55)
+
+The audit's part 5 (AUDIT.md §4) closes M14. Part 4 made the world push back and the bot could
+not answer it. This iteration teaches the bot the levers a player has. Three probes on Vellish seed
+42 showed what held it back:
+
+- It zoned faster than it could light. On day 45, 219 of its 362 zone buildings were dark, which
+  costs 15 happiness points each against a lit home.
+- It spent every crown above about 1,500 the day it had it, so it never held the 8,000 for a
+  Thrum Font, a deepening or a hall.
+- It took choice 0 on every tale, so it granted every petition it paid for and declined every egg.
+
+The bot stays a test tool, not an AI (`src/sim/bot.ts`, `src/sim/botPolicy.ts`). Each behaviour is
+a few lines named after the lever it pulls. The numbers are the ones the balance passes settled on
+(*tuned*), and thirteen passes are recorded below.
+
+**A purse with a spending order.** Each day the bot spends in this order:
+
+1. Essentials: answer the tale, set taxes and edicts, light the dark, water the dry.
+2. One goal (`pickGoal`), in this order:
+   - the people's hall once it can be built: the Hall of Wicks once sworn, and the last gate's
+     wonder from the Free City;
+   - the first cradle, once, when the ley has its 8 mana and 5 to spare and the ledger makes
+     300 a day (*tuned*: a cradle in a brownout starved the town that raised it, and a dragon
+     that cannot be fed leaves and comes back for a tribute);
+   - when the ley runs short (a brownout over 2 %, or demand over nine tenths of supply), the
+     cheapest mana on offer: link a node (its sector first), a Font, the founding node's
+     deepening, or a Torrent Mill for the Veshari.
+3. Growth: services, sectors, walls and the depot.
+
+A goal it can pay for but cannot place is tried for five days and then left for twenty; the
+Veshari bot once held 5,400 for 120 days for a mill with no bank. The goal's price is a
+**reserve** held back from growth only when it is urgent (*tuned*): always for a hall, and for
+mana only in a brownout over 5 %. A ley that is merely tight still buys its Font when the purse
+allows. A reserve that always held starved services, and with them the failed placements that
+used to grow the grid. Streets are not held back: they grow when a zone with demand over 0.15
+has fewer than 20 free lots (*tuned*), never while the light holds the zoning, and after day
+30 only on a ledger in the black. From day 30 the bot buys no service that would leave the
+ledger under 200 a day. Wells come only once at least 2 % of the zone buildings (and at least
+three) are dry, and one a day unless more than 8 % are (*tuned*: on seed 44 seventy wells
+cost 280 a day). **The Crown's loan** is a bridge to a hall and nothing else (*tuned*): the hall
+must be more than ten days of the ledger away and the ledger must cover twice the interest.
+While the loan is out, the reserve holds it, and it is repaid first thing once the purse holds
+the loan plus 2,000 and nothing else is being saved for. The first draft also took the loan for
+Fonts. That sank Vellish seed 44 into debt: the cash bought upkeep, and the interest and then
+the debt's interest ate the ledger.
+
+**The light first.** The Vellish paint no new lots while the ley browns out past a tenth with
+over a tenth of the zone buildings dark, unless their happiness clears the next gate by four.
+The Tallowkin paint none while the lit share is under the next gate plus 1.5 points (*tuned*:
+at 3 points the 90 % gate held them at 1,200 folk). The other peoples zone as before. Homes
+that are dark only because no spire reaches them are no reason to stop: `keepLit` now tries the
+six dark buildings nearest the centre for a spire that links, not just the first one. Every
+people paints lots that are already lit and watered first, so new homes start lit and watered.
+
+**Taxes and edicts.** Every two days the hearth tithe moves between 6 and 10:
+
+- The Vellish cut it by a point while happiness sits within 5 under the next gate and the folk
+  are within 80 % of its count, and raise it once happiness clears the gate by 5 or falls out of
+  reach (a cut cannot bridge more than about 5).
+- Every people cuts it past 0.25 unrest.
+- No people cuts it on a ledger in the red.
+
+Markets, works and studios carry the difference (10 plus the cut, at most 13, and 10 while their
+own demand is negative): their tithe touches only their own happiness, while the hearths are
+about four fifths of the mean. The edicts follow the advisor's lines (`setEdict`; the bot checks
+unlock and people itself):
+
+- Night Curfew past 0.35 unrest, repealed under 0.15 once its ten days have run;
+- Free Healing Draughts while health is under 0.45 and the ledger covers three times their price;
+- Scale-Mail while three scale lie in the vault and unrest is over 0.1;
+- Import Goods while the markets run dry and a depot stands, repealed when they fill or the
+  ledger goes red.
+
+The hearth charter waits for a ledger of 800 and no goal: at a crown a building it was 80 a day
+for about +2 happiness.
+
+**Walls, a depot, dragons.**
+
+- **Walls:** every 30 hounds (three arcs at most) the bot walls 21 tiles centred on the Gloam's
+  bearing, two tiles past its grid (one when that lies outside the Charter), with a Belregi gate
+  on every road it crosses. It walls even a tight ley: the packs will not wait.
+- **The depot.** The iteration 43 finding is solved. `want()` tried the six zone buildings
+  farthest from one of the same kind. With none standing, every distance tied, so it tried the six
+  oldest homes in the packed centre and gave up. On Grimmen 42 there were 81 legal spots and 9,000
+  crowns. A hall of 2×2 and up now also tries the twelve outermost, and any service with nowhere
+  to stand tries near the Stake.
+- **Dragons.** The cradle stands beside a market. The tale policy keeps the egg. An egg is lined
+  when the vault holds eggshell. A drake wards the hearth quarter when it has markets, else delves
+  at a mine, else fights at the Ring. A wyvern carries goods, and the Ring keeps one champion.
+- **The Crown's gift is a priority tale** (*chosen*, a sim change). Its own text says the Crown
+  answers the cradle, yet it was one tale in a pool of thirty and no bot ever drew it in 150 days.
+  It still waits for the storyteller's spacing and its daily chance, so it arrives one to three
+  weeks after the first cradle, for the player too.
+
+**A greedy tale policy** (`chooseTale`). Each choice is played on a copy of the state
+(`structuredClone`, 2 ms on day 12; a slider at none and at all) and the copy is scored by
+`worth`:
+
+- the treasury (debt counted three times);
+- ten days of the ledger (`computeLedger` draws no rng, so an edict's upkeep counts);
+- each timed effect, value × days left × a weight for its kind (happiness at 0.02 crowns a folk
+  a point-day, three times that for the Vellish under their gate; unrest at −15 times that);
+- favour × 40, guild standings × 15, the educated share × 20,000;
+- 5,000 a dragon, rare goods at the caravan's prices;
+- 400 a standing roof and 3 a folk.
+
+The best gain wins, the lowest index on a tie. The live state and its rng are never touched, and
+`clearAuraCache()` runs after scoring because the aura cache is module-level. In the final table
+the bot strays from choice 0 on 0 to 2 tales a run. It keeps the silence at the Remembrance (+2
+happiness for ten days), blesses the pilgrims and sends them on, grants the Fen-Nex their quarter on
+Vellish seed 43, and keeps the Crown's egg on the one run that stood a cradle (Veshari). It pays the
+collector and takes in the refugees, as choice 0 did. In the passes it also turned down the Lantern
+Fair's 500 crowns, and in the tests it does not grant the spire-wrights 60 a day.
+
+**The Annals** (`src/data/annals.ts`, a modal on **N** and the top bar's Annals button). Thirteen
+chapters plus the dev count list all 85 counters in `stats`, twenty of which were written and
+never read, and the counters kept elsewhere: favour, the loan, the pleadings, the tales heard, the
+tasks done, the rare goods, the relics, the departed, the days in debt and in good order. Each row
+carries its note as a tooltip. Six fields are timers or streaks and sit in `ANNALS_INTERNAL` with
+their reasons. A test holds it: every key of `stats` is a row or an internal timer, so a new
+counter can no longer be write-only. The Chronicle's refresh is keyed on its newest line too (at
+its 200-line cap its length stopped changing), Esc closes both, and the top bar's title now gives
+way before the buttons do.
+
+**Saves by version.** `SAVE_VERSION` is 7. `deserialize` reads the raw version before anything
+else: a save from a newer game is refused with its reason (`SaveVersionError`, shown as a toast on
+load and import). Otherwise `MIGRATIONS[v]` runs from the save's version up. Every save written
+before this iteration says 6 whatever its age, because the version was written and never read, so
+step 6 is the whole old forward-compat block as one step, and a missing version counts as 6. Then
+a fill runs for every version: `stats` over a fresh game's, the ledger merged, the layers sized.
+That replaces the 85-name list. A new field gets its default from `createGame`, and needs a step
+of its own only when an old save must differ from a fresh game.
+
+**Five dev commands.** A command's argument may be a number, its list may follow the state, and a
+second argument rides beside the first (`a:b`):
+
+- **Jump to day:** forward only and at most a year. The tick, the season and the weather (its own
+  stream) follow; nothing is grown or levied in between.
+- **Flood or freeze the river:** ten days, through two new modifier kinds that `flooding()` and
+  `riverFrozen()` read; the Great Weir still holds a forced flood.
+- **Complete a task:** this people's open tasks, rewarded as `checkQuests` does.
+- **Set a standing:** a guild or the Crown's favour, 0 to 100.
+- **Reset the history:** the tales (keeping the records that unlock the Storm Peak and the Hall of
+  Wicks), the ledger history, or the Chronicle (keeping the dev mark). The dev count never resets.
+
+**Bugs found on the way.**
+
+- **The Hall of Wicks never unlocked in play.** `specialLock` looked for `vigil:0`, but the vigil
+  is a festival recorded as `vigil@<year>:0`. The tests pushed the plain form by hand, which hid
+  it. It now reads both forms.
+- **A city in debt could answer no tale.** `resolveEvent` refused any choice whose price exceeded
+  the treasury, and a choice with no price counted as 0 crowns, which exceeds a negative treasury.
+  So every answer was refused, and a returning dragon asked again every day. Only a named price is
+  refused now.
+- **The screen went black at dawn and dusk** (shipped as a hotfix mid-iteration, PR #56). The
+  light pass left the `multiply` blend set whenever it returned without an emissive layer: night
+  between 0.01 and 0.05, or nothing glowing in view. The next frame's clear then multiplied onto
+  the old one, about a second at 1×, twice a game day. In Playwright: 76 black frames in 60 s at 3×
+  before the fix, 0 after.
+
+Balance, 150 days, against §4.85 in brackets:
+
+| run | last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | Burgh 42 (123) | 1,942 (3,060) |
+| Vellish seed 43 | Burgh 37, Free City 123, **Beacon of Eda 145** (Burgh 123) | 2,343 (1,481) |
+| Vellish seed 44 | Burgh 40 (123) | 1,280 (2,739) |
+| Grimmen seed 42 | Deephold 123 (130) | 1,454 (1,217) |
+| Veshari seed 42 | Vesh's Court 86 (84), Sable Crown 135 (137) | 2,356 (2,271) |
+| Tallowkin seed 42 | Bright Town 33 (105), Hall of Wicks 60 (never), **Lantern of Wicks 114** (never) | 2,637 (1,392) |
+
+**What moved, and why.**
+
+- **The Vellish.** The bot now answers its gate. All three seeds take the Burgh 80 days or more
+  earlier, and seed 43 goes on to the Free City and to the first Beacon a bot has ever lit: it
+  saved for the Lantern of Vell and bridged the last 18,000 with the Crown's loan.
+- **The Tallowkin** reach both of their last gates for the first time: the Hall of Wicks milestone
+  on day 60 and the Lantern of Wicks on day 114, also on a loan. Both end with 70,000 still owed
+  (350 a day), seed 43's ledger at +225 and the Tallowkin's at 0. The loan is a real lever now,
+  and its price shows.
+- **Veshari** is level with the baseline and now keeps a tide drake from the Crown's gift, a depot
+  and the Great Weir.
+- **Grimmen** takes the Deephold a week earlier with a fifth more folk, but it still loses a third
+  of its folk in the Ember (964 on day 60, 665 on day 70). The baseline lost them too (923 to
+  628), and it is not this iteration's mechanic: no home is abandoned, mana demand falls from 340
+  to 218 and happiness dips to 51. The plan's bar "the Grimmen bot keeps its folk through days
+  60–80" is **not met**.
+- **The cost:** Vellish seeds 42 and 44 end with a third and a half fewer folk. The light-first
+  rule holds their zoning through brownouts the baseline zoned through dark, and their tithe sits
+  lower. Seed 44 ends in a brownout of 0.28 with two Fonts and a ledger of 273.
+- **Breadth:** a dragon reaches the bot for the first time. In the final table only the Veshari
+  bot stands a cradle and keeps the Crown's egg; in the passes the Vellish 43, Grimmen and
+  Tallowkin bots kept theirs too, then the cradle's gate moved to a ley with mana to spare. Walls stand only where the
+  packs came (Vellish 43, 17 tiles). Only the Veshari bot stands a depot, so most bots still trade
+  nothing. No run went bankrupt. The lowest treasuries were −919 (Grimmen, day 90), −217 and −78.
+
+**How the tuning went.** Thirteen passes; the first and last are worth recording:
+
+- **Pass 1** had the light-first rule for every people, on any darkness. It took the Tallowkin to
+  Bright Town on day 38, but starved the others: Vellish 42 at 975 folk, Vellish 44 stuck at 276
+  folk and −13,874 crowns.
+- **The final pass** limits the rule to the two peoples whose gate it is, and to real brownouts.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -2317,8 +2521,8 @@ part 4 today; the bot's answers are part 5.
   tales, the lamplighter, the Hall of Wicks and the late game (iteration 52, §4.83) ✅. M13 is
   closed.
 - **M14 The depth pass** — the audit's five parts (§15, docs/AUDIT.md): supply has limits ✅;
-  services with staff and stakes ✅; wyrmcraft matured; the world pushes back; the bot plays it
-  all. Preceded by the sweep of iteration 44 (§4.75).
+  services with staff and stakes ✅; wyrmcraft matured ✅; the world pushes back ✅; the bot plays
+  it all ✅. Preceded by the sweep of iteration 44 (§4.75). ✅ (iterations 45–55)
 - **M15 The painted set** — the reference paintings as sprites through the import pipeline
   (§4.80–4.82, §16): the ground, trees, bushes, mushrooms, the hero buildings, the zone levels,
   one look for every people, halls that grow, glimwood and Gloam trees; the nine sprite-less
@@ -2936,9 +3140,10 @@ this section is the table of contents and the order.
    gates and memory (the Vellish happiness gate, tales with an uncapped memory and three
    grown chains); edicts as commitments and charters with a price that spills; festivals
    seen; a daily challenge that can fail.
-5. **The bot plays it all, and the Annals** (next): taxes, edicts, walls, a depot, breeding, a
-   warden, a greedy choice policy; an Annals page for every counter; save migrations by
-   version; five dev commands.
+5. **The bot plays it all, and the Annals** ✅ (iteration 55, §4.86): a purse with one goal
+   and the Crown's loan as a bridge to a hall; the light first; taxes and edicts; walls, a depot,
+   a cradle and a warden; a greedy tale policy; an Annals page for every counter; save migrations
+   by version; five dev commands. **M14 is closed.**
 
 ## 16. M15 and M16: the painted set, the wild and the water
 
@@ -3277,3 +3482,26 @@ playtest of a lakeside town.
   grace week, so a big city with a fire a day never saw a tale; now only the hazards do.
 - *The challenge scores the days to spare (iteration 54):* the audit's "day + treasury/1,000"
   would have paid a slower win more; 61 − day + crowns/1,000 pays speed first.
+- *The bot answers a tale by scoring a copy (iteration 55):* a hand-written answer per tale would
+  be fifty tables to keep; playing each choice on a `structuredClone` and scoring purse, ledger,
+  timed effects, favour, standings, dragons and roofs is one function that also covers tales not
+  yet written. The live state and its rng are never touched, so runs stay deterministic.
+- *The bot keeps a purse, not a wish list (iteration 55):* one goal at a time, held back from
+  growth only when it is urgent (a hall, or a brownout past a twentieth). A reserve that always
+  held starved the services and, with them, the grid's growth; one that never held never bought
+  a Font.
+- *The loan bridges a hall, never the Fonts (iteration 55):* the first draft took the Crown's
+  loan for mana and sank Vellish seed 44: the cash bought upkeep, and the interest compounded with
+  the debt's. As a bridge to the Lantern of Vell or the Lantern of Wicks it earned the first Beacon
+  and the first Lantern of Wicks a bot has reached.
+- *The light first for two peoples only (iteration 55):* holding the zoning in any darkness
+  starved the Grimmen and Veshari, whose gates are stone and moorings; for the Vellish (happiness)
+  and the Tallowkin (the lit share) it is the gate itself. It costs Vellish seeds 42 and 44 a third
+  and a half of their folk, and that is recorded rather than hidden.
+- *The Crown's gift is a priority tale (iteration 55):* its text says the Crown answers the
+  cradle, and as one tale in thirty no bot ever drew it; the storyteller's spacing still applies.
+- *Saves branch on their version from 7 (iteration 55):* the version was written and never read,
+  so every older save says 6; the whole old block is step 6, and a fill from a fresh game replaces
+  the list of 85 counters.
+- *The Annals hold every counter by test (iteration 55):* like the sprite-for-every-building test,
+  a counter that is on no page fails the suite, so nothing the sim counts is write-only again.

@@ -99,7 +99,7 @@ describe('Guild charters', () => {
     expect(activeQuests(s, 100).some((q) => q.id === 'k_charter')).toBe(false);
     const r = deserialize(serialize(s), (seed) => createGame(seed));
     expect(r.guilds.charters).toEqual(['carters']);
-    const o = JSON.parse(serialize(s)); delete o.guilds.charters;
+    const o = JSON.parse(serialize(s)); o.version = 6; delete o.guilds.charters; // a save from before iteration 55 says 6
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).guilds.charters).toEqual([]);
   });
 });

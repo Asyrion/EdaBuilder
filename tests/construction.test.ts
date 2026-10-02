@@ -102,7 +102,7 @@ describe('Construction', () => {
     run(r, TICKS_PER_DAY * 2);
     expect(r.buildings.filter((b) => b && b.kind === 'hearth' && b.state === 'ok').length).toBeGreaterThan(0);
     // an old save with no work fields loads standing
-    const o = JSON.parse(serialize(s));
+    const o = JSON.parse(serialize(s)); o.version = 6; // a save from before iteration 55 says 6
     for (const b of o.buildings) if (b) { delete b.work; delete b.workTotal; }
     const old = deserialize(JSON.stringify(o), (seed) => createGame(seed));
     expect(old.buildings.every((b) => !b || typeof b.work === 'number')).toBe(true);

@@ -43,7 +43,9 @@ h3 { font-size: 13px; color: var(--gold); }
 .devgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; margin: 4px 0 8px; }
 .devcmd { display: flex; gap: 4px; align-items: center; }
 .devcmd button { flex: 1; text-align: left; }
-.devcmd select { max-width: 150px; }
+.devcmd select { max-width: 150px; min-width: 0; }
+.devcmd input[type=number] { width: 54px; min-width: 0; } /* the day and the standing (iteration 55) */
+.devcmd:has(input[data-arg2]) select { max-width: 96px; }
 .devstatus { font-size: 12px; }
 .bad { color: var(--bad); } .good { color: var(--good); } .warn { color: var(--warn); } .ley { color: var(--ley); } .gold { color: var(--gold); }
 
@@ -51,7 +53,8 @@ h3 { font-size: 13px; color: var(--gold); }
 #topbar .stat { display: flex; flex-direction: column; line-height: 1.05; min-width: 56px; flex-shrink: 0; }
 #topbar .stat .v { font-size: 14px; font-weight: 600; }
 #topbar .stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-#topbar .city { min-width: 150px; }
+#topbar .city { min-width: 120px; flex-shrink: 1; overflow: hidden; } /* the title and its next-gate line give way first, so the buttons always fit (iteration 55) */
+#topbar .city .v, #topbar .city .l { overflow: hidden; text-overflow: ellipsis; }
 #topbar .speed { display: flex; gap: 3px; flex-shrink: 0; }
 #topbar > button { flex-shrink: 0; padding: 3px 6px; }
 @media (max-width: 1500px) { #topbar .stat.opt { display: none; } }
@@ -181,6 +184,13 @@ h3 { font-size: 13px; color: var(--gold); }
 #tasks .q .h { line-height: 1.35; margin-top: 1px; }
 #tasks button.show { font-size: 11px; padding: 0 6px; margin-left: 4px; line-height: 1.5; }
 
+#annals .box { width: 780px; max-width: 94vw; }
+#annals .chapters { max-height: 64vh; overflow: auto; columns: 2; column-gap: 18px; font-size: 12px; }
+#annals section { break-inside: avoid; margin-bottom: 10px; }
+#annals h3 { margin: 4px 0; font-size: 13px; color: var(--gold); }
+#annals .arow { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+#annals .av { font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { #annals .chapters { columns: 1; } }
 #chronicle .box { width: 620px; }
 #chronicle .filters { display: flex; gap: 6px; margin: 6px 0 10px; }
 #chronicle .entries { max-height: 56vh; overflow: auto; font-size: 12px; }

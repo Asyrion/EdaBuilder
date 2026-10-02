@@ -322,7 +322,22 @@ already true and is held by a test; B17 and B26 are closed.
   The daily challenge fails at day 61 and is scored (day + treasury/1,000) with the people
   drawn from the date.
 
-### Part 5: the bot plays it all, and the Annals
+### Part 5: the bot plays it all, and the Annals ✅ (iteration 55, DESIGN §4.86)
+
+Done, with the bot's choices written down in §4.86. The audit's list became, in the bot:
+- a tax controller that moves the tithe off the hearths (under the Vellish gate, or unrest past 0.25);
+- the curfew and draughts on the advisor's lines, plus Scale-Mail and imports;
+- a 21-tile wall arc on the Gloam side every 30 hounds;
+- a depot that finds its room;
+- a cradle and the Crown's egg, a warden or a champion;
+- a greedy tale policy that scores every choice on a copy of the state.
+
+It also gained a purse: one goal saved for at a time (the cheapest mana, the people's hall, the first
+cradle), the Crown's loan as a bridge to a hall, and an upkeep guard. It zones what it can light. The Annals list
+all 85 counters by chapter, saves branch on their version (7, with the old forward-compat block as
+step 6), and the dev panel has the five commands. Two bugs found on the way are fixed: the Hall of Wicks
+lock that never matched the vigil festival's record, and tales refused in a city in debt.
+
 
 - The bot gets a tax controller (unrest under 0.25), turns curfew and draughts on when the
   advisor would, walls at 30 hounds, stands a depot (the iteration 43 finding), breeds,
