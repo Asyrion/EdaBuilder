@@ -1,6 +1,8 @@
-/** Headless balance run with the scripted bot. Usage: npx tsx scripts/balance.ts [seed] [days] [treasury] [faction] [null]
- *  `null` draws one extra roll of the main stream on day 10: the run's own yardstick for the noise (DESIGN 4.91, 4.92). */
-import { commitRng, createGame, rngOf } from '../src/sim/world';
+/** Headless balance run with the scripted bot. Usage: npx tsx scripts/balance.ts [seed] [days] [treasury] [faction] [roll=N|null]
+ *  `roll=N` draws N extra rolls of the main stream on day 10 (`null` is roll=1): the seed's draws, the noise a change must clear
+ *  (DESIGN 4.91–4.93). The last line, `json: {…}`, is what scripts/table.ts reads. */
+import { createGame } from '../src/sim/world';
+import { ROLL_DAY, extraRolls, rollsOf } from './rolls';
 import { isFordTile, waterCensus } from '../src/sim/water';
 import { run } from '../src/sim/sim';
 import { TICKS_PER_DAY } from '../src/sim/types';
@@ -12,7 +14,7 @@ import { litShare, milestonesOf, moorings, stoneQuarried, type FactionId } from 
 const seed = Number(process.argv[2] ?? 42);
 const days = Number(process.argv[3] ?? 120);
 const faction = (process.argv[5] ?? 'vellish') as FactionId;
-const nullRoll = process.argv[6] === 'null';
+const rolls = rollsOf(process.argv[6]);
 const state = createGame(seed, 'Botwick', 'valley', faction);
 if (process.argv[4] && process.argv[4] !== '-') state.treasury = Number(process.argv[4]);
 const bot = new Bot(state);
@@ -21,7 +23,7 @@ const milestoneDays: number[] = [];
 let roadCrowns = 0; // what the Gloam road paid over the run (iteration 61)
 run(state, TICKS_PER_DAY * days, {
   onDay: (s) => {
-    if (nullRoll && s.day === 10) { const r = rngOf(s); r.next(); commitRng(s, r); }
+    if (s.day === ROLL_DAY) extraRolls(s, rolls);
     bot.step();
     roadCrowns += s.tradeIncomeToday ?? 0;
     while (milestoneDays.length <= s.milestone) milestoneDays.push(s.day);
@@ -43,3 +45,9 @@ console.log('bot:', `tax H${state.taxRates.hearth}/M${state.taxRates.market}/C${
 { const c = waterCensus(state); console.log('water:', `bodies ${c.bodies} (lakes ${c.lakes}) shoals ${Math.round(c.shoal)}/${Math.round(c.cap)} fished out ${c.out}`, '| huts', state.buildings.filter((b) => b && b.kind === 'fishershut').length, 'smokehouses', state.buildings.filter((b) => b && b.kind === 'smokehouse').length, '| caught', state.stats.fishCaught, 'spoiled', state.stats.fishSpoiled, 'smoked', state.stats.fishSmoked, 'fish crowns', state.stats.fishCrowns, '| fish markets', state.water.fishAt.length / 2, '| thatched', state.stats.homesThatched, '| fords', (() => { let n = 0; for (let i = 0; i < state.road.length; i++) if (state.road[i] && isFordTile(state, i)) n++; return n; })(), 'ford days closed', state.stats.fordDaysClosed, '| bot built', bot.fishBuilt, 'cutters', bot.cuttersBuilt, 'weirs', bot.weirsBuilt, 'fords bridged', bot.fordsBridged); }
 console.log('tales:', state.firedEvents.join(' ') || 'none');
 console.log('last messages:\n' + state.messages.slice(-8).map((m) => `  [${m.kind}] ${m.text}`).join('\n'));
+// the machine line: scripts/table.ts reads this and nothing above it
+console.log('json: ' + JSON.stringify({
+  seed, people: faction, rolls, days, folk: state.population, milestone: state.milestone,
+  gates: milestoneDays.map((d, i) => ({ name: milestonesOf(state)[i].name, day: d })),
+  treasury: Math.round(state.treasury), loan: Math.round(state.loan), depotDay: bot.depotDay, roadCrowns: Math.round(roadCrowns), gameOver: !!state.gameOver,
+}));
