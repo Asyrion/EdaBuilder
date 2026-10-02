@@ -1,3 +1,4 @@
+import { wardBurnBudget } from '../src/sim/hazards';
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
@@ -57,7 +58,7 @@ describe('The stone-sexton', () => {
     expect(s.stats.walkerLayings).toBe(3);
   });
 
-  it('an unlit Stone Ward burns the Gloam; an unlit Ward Lantern does not', () => {
+  it('an unlit Stone Ward holds the Gloam (its stone-sexton cuts; the stone burns nothing); an unlit Ward Lantern does nothing', () => {
     const g = town();
     const v = town('vellish');
     const f = g.founding;
@@ -68,8 +69,11 @@ describe('The stone-sexton', () => {
     expect(wl.lit).toBe(false);
     const g0 = g.stats.gloamTiles;
     const v0 = v.stats.gloamTiles;
+    g.day = 1; v.day = 1; // not a creep day
     dailyGloam(g); dailyGloam(v);
-    expect(g.stats.gloamTiles).toBeLessThan(g0);
+    expect(g.stats.gloamTiles).toBe(g0); // the stone holds: it burns nothing itself
+    expect(wardBurnBudget(g, sw)).toBe(0);
+    expect(g.coverage.ward[idx(f.x + 12, f.y - 8)]).toBeGreaterThan(0); // and its ward keeps the creep off
     expect(v.stats.gloamTiles).toBeGreaterThanOrEqual(v0);
   });
 });

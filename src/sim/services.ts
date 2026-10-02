@@ -3,16 +3,27 @@ import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt } from './roads';
 import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
-import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type GameState, type ServiceType } from './types';
+import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
-import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, treeStage, worldTree } from './growth';
+import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree } from './growth';
+
+/** Land value lost within 4 tiles of any deathcare. */
+export const DEATHCARE_LV = 6;
 import { mewsActive } from './beasts';
 import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
 import { dragonAuras, nodesOfAspect, flooding } from './weave';
+
+/** A service with a crew radiates by how many of its hands are filled (never below 0.3); one without a crew radiates in full. */
+export function crewFactor(b: Building, state: GameState): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  if (!def.capacity || !def.service) return 1;
+  const cap = capacityOf(b, state);
+  return cap > 0 ? Math.max(0.3, Math.min(1, b.workers / cap)) : 1;
+}
 
 export function updateCoverage(state: GameState, type: ServiceType): void {
   const n = MAP_W * MAP_H;
@@ -22,8 +33,9 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (!def.service || def.service.type !== type) return;
     if (b.state !== 'ok') return;
     if (def.category === 'special' && b.kind !== 'stake' && !hallActive(state, b.kind)) return;
-    let strength = def.service.strength;
+    let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
+    if (b.kind === 'scaleward') strength *= b.plate ?? 1;
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
@@ -162,16 +174,16 @@ export function updateMiasma(state: GameState): void {
   for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12 * rain));
 }
 
-export function updateLandValue(state: GameState): void {
-  const fr = factionOf(state).rules;
-  const flood = flooding(state);
+/** The flat land-value bonus of every building (and the −6 of deathcare), summed per tile. */
+export function landBonusMap(state: GameState): Float32Array {
   const n = MAP_W * MAP_H;
-  const lv = state.landValue;
-  const cov = state.coverage;
-  // landValue bonuses from buildings with flat bonus
   const bonus = new Float32Array(n);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
+    if (def.service?.type === 'death' && b.state === 'ok') {
+      // nobody wants to live beside the dead: −6 within 4 of deathcare
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const x = b.x + dx; const y = b.y + dy; if (inBounds(x, y) && Math.hypot(dx, dy) <= 4) bonus[idx(x, y)] -= DEATHCARE_LV; }
+    }
     if (!def.landValue || b.state !== 'ok') return;
     const r = def.service ? def.service.radius : 6;
     const cx = b.x + (b.w - 1) / 2;
@@ -186,38 +198,55 @@ export function updateLandValue(state: GameState): void {
         bonus[idx(x, y)] += def.landValue * (1 - d / (r + 1));
       }
   });
-  for (let y = 0; y < MAP_H; y++)
-    for (let x = 0; x < MAP_W; x++) {
-      const i = idx(x, y);
-      let v = 18;
-      // nearest road tier (4-neighbourhood + self)
-      let road = 0;
-      for (const j of [i, i - 1, i + 1, i - MAP_W, i + MAP_W]) {
-        if (j < 0 || j >= n) continue;
-        const rj = roadAt(state, j); // an unlit lantern-way is cobble
-        if (rj > road) road = rj;
-      }
-      if (road) v += ROAD_BY_TYPE[road].landValue + 4;
-      const wd = state.waterDist[i];
-      if (wd <= 5) v += (5 - wd) * 2.5 * fr.waterLandValue;
-      else if (wd > 8) v -= fr.dryPenalty;
-      if (flood && wd <= 1) v -= 10;
-      const q = quarterAt(state, i);
-      if (q === 'hearth') v += 6; else if (q === 'market') v -= 4;
-      v += (cov.leisure[i] / 255) * 16;
-      v += (cov.faith[i] / 255) * 10;
-      v += (cov.watch[i] / 255) * 6;
-      v += (cov.health[i] / 255) * 6;
-      v += (cov.school[i] / 255) * 6;
-      v += bonus[i];
-      if (state.lit[i]) v += 6;
-      if (state.watered[i]) v += 6;
-      v -= (state.miasma[i] / 255) * 40;
-      const gd = state.gloamDist[i];
-      if (gd < 8) v -= (8 - gd) * 4;
-      v -= (state.trafficSmooth[i] / 255) * 12;
-      if (state.terrain[i] === Terrain.Forest) v += 3;
-      if (state.terrain[i] === Terrain.Hills) v += fr.hillLandValue; else v -= fr.grassPenalty;
-      lv[i] = Math.max(0, Math.min(100, Math.round(v)));
-    }
+  return bonus;
+}
+
+/** The terms of a tile's land value, in the order they are summed (the stored value is their rounded, clamped sum). */
+export function landValueTerms(state: GameState, i: number, bonus: Float32Array): { label: string; v: number }[] {
+  const fr = factionOf(state).rules;
+  const flood = flooding(state);
+  const n = MAP_W * MAP_H;
+  const cov = state.coverage;
+  const t: { label: string; v: number }[] = [{ label: 'base', v: 18 }];
+  const add = (label: string, v: number) => { if (v !== 0) t.push({ label, v }); };
+  // nearest road tier (4-neighbourhood + self)
+  let road = 0;
+  for (const j of [i, i - 1, i + 1, i - MAP_W, i + MAP_W]) {
+    if (j < 0 || j >= n) continue;
+    const rj = roadAt(state, j); // an unlit lantern-way is cobble
+    if (rj > road) road = rj;
+  }
+  if (road) add('the road', ROAD_BY_TYPE[road].landValue + 4);
+  const wd = state.waterDist[i];
+  if (wd <= 5) add('water near', (5 - wd) * 2.5 * fr.waterLandValue);
+  else if (wd > 8) add('dry land', -fr.dryPenalty);
+  if (flood && wd <= 1) add('the flood', -10);
+  const q = quarterAt(state, i);
+  if (q === 'hearth') add('Hearth quarter', 6); else if (q === 'market') add('Market quarter', -4);
+  add('leisure', (cov.leisure[i] / 255) * 16);
+  add('faith', (cov.faith[i] / 255) * 10);
+  add('watch', (cov.watch[i] / 255) * 6);
+  add('health', (cov.health[i] / 255) * 6);
+  add('schooling', (cov.school[i] / 255) * 6);
+  add(bonus[i] < 0 ? 'deathcare near' : 'fine buildings near', bonus[i]);
+  if (state.lit[i]) add('lit', 6);
+  if (state.watered[i]) add('watered', 6);
+  add('miasma', -(state.miasma[i] / 255) * 40);
+  const gd = state.gloamDist[i];
+  if (gd < 8) add('the Gloam near', -(8 - gd) * 4);
+  add('traffic', -(state.trafficSmooth[i] / 255) * 12);
+  if (state.terrain[i] === Terrain.Forest) add('the forest', 3);
+  if (state.terrain[i] === Terrain.Hills) add('the hills', fr.hillLandValue); else add('flat grass', -fr.grassPenalty);
+  return t;
+}
+
+export function updateLandValue(state: GameState): void {
+  const n = MAP_W * MAP_H;
+  const lv = state.landValue;
+  const bonus = landBonusMap(state);
+  for (let i = 0; i < n; i++) {
+    let v = 0;
+    for (const x of landValueTerms(state, i, bonus)) v += x.v;
+    lv[i] = Math.max(0, Math.min(100, Math.round(v)));
+  }
 }

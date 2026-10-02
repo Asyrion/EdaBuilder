@@ -349,6 +349,16 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 47 (M14 part 2a: services with staff and stakes)
+
+- Service buildings have crews filled from the city's hands and radiate by how many are
+  filled (Crew row, short-handed problem). Happiness and land value show their largest terms
+  each way; a zone building lists what its next level needs; the demand bars have reasons.
+  The dead line (today, quieted, capacity, waiting) in the Budget; land value −6 near
+  deathcare; the Chapel's two sextons; the Salt Font's relic. Wards burn 12 × strength grey
+  tiles a day, the nearest first; the Stone Ward holds; the Scale Ward's plating wears and is
+  re-plated for 2 scale.
+
 ## Done in iteration 46 (M14 part 1b: the ground has limits)
 
 - Wells serve a capacity of zone levels (Well 30, Seep 20, Tide-Well 45, Cistern 90), the
@@ -457,16 +467,16 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 2: services with staff and stakes** (DESIGN §15, AUDIT.md §4 part 2): crews
-   that scale coverage (Watch Post 4, House 10, Healer 4, Hospice 16, Academy 12, Boneyard
-   3, shrines 2; "Crew 7/10"); happiness and land value breakdowns in the panel and the
-   missing level-up condition; unrest with a riot and market theft; deathcare in the open
-   (a Ledger line, land value −6 near deathcare, the Sextons' Chapel's sextons, the Salt
-   Font's relics); wards with a burn budget (12 × strength tiles a day; the Stone Ward holds,
-   the Scale Ward's plating wears); halls with a difference (the Hospice's draughts, the
-   Temple's consecration, the fire hall's water, the Grand Academy's prices, the Academy's
-   kept relics); the smaller rows (Mews radius, pelts, dust, the petition countdown, the
-   Wrights' vent, the Carters' Yard). Balance against the iteration 46 table.
+0. **M14 part 2b: unrest with teeth, halls with a difference** (DESIGN §15, AUDIT.md §4
+   part 2): a Riot tale when unrest stays above 0.5 for five days (the least-watched market
+   burns unless its watch is 0.5, or the Crown is paid 600); markets under watch 0.3 lose a
+   tenth of their shelves a day to theft while unrest is over 0.3; idle scholars (educated
+   above 0.5 with few Arcane jobs) add unrest; the Hospice draws 2 goods a day and runs at
+   0.6 without; the Temple consecrates the shrines its pilgrims reach (+50 % radius); the
+   fire hall works at full strength only watered; the Grand Academy lifts artifact prices
+   5 % per 10 % educated above 0.4; a lit Academy spends a kept relic every 5 days for a
+   lasting educated floor; the smaller rows (pelts, dust per day, the petition countdown,
+   the Wrights' vent, the Carters' Yard's congestion). Balance against the iteration 47 table.
 1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge

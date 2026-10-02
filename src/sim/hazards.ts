@@ -4,6 +4,8 @@ import { MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameSta
 import { commitRng, forEachBuilding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
 import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
+import { crewFactor } from './services';
+import { factionOf } from '../data/factions';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
@@ -167,6 +169,27 @@ export function recomputeGloamDist(state: GameState): void {
   state.stats.gloamTiles = n;
 }
 
+/** A ward burns this many grey tiles a day at full strength and crew (times its strength and plating). */
+export const WARD_BURN = 12;
+export function wardBurnBudget(state: GameState, b: Building): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  if (!def.service || def.service.type !== 'ward') return 0;
+  if (b.kind === 'stoneward') return 0; // it holds; its sexton cuts
+  let strength = def.service.strength * crewFactor(b, state);
+  if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
+  if (b.kind === 'scaleward') strength *= b.plate ?? 1;
+  return Math.round(WARD_BURN * strength);
+}
+/** Grey tiles inside a ward's radius, for its panel. */
+export function greyInReach(state: GameState, b: Building): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  const r = def.service?.radius ?? 0;
+  const cx = b.x + (b.w - 1) / 2;
+  const cy = b.y + (b.h - 1) / 2;
+  let n = 0;
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = Math.round(cx + dx); const y = Math.round(cy + dy); if (inBounds(x, y) && dx * dx + dy * dy <= r * r && state.gloam[idx(x, y)]) n++; }
+  return n;
+}
 /** At this Gloam pressure the grey comes up to the door of a dark, unwarded building. */
 export const GLOAM_TAKES = 0.65;
 /** Days the grey stands at a dark building's door before it is taken. */
@@ -203,28 +226,33 @@ function gloamAtDoor(state: GameState, b: Building): boolean {
 export function dailyGloam(state: GameState): void {
   const rng = rngOf(state);
   let changed = false;
-  // 1. wards clear gloam in radius
+  // 1. wards burn the grey in their radius on a budget: WARD_BURN × strength tiles a day, the nearest first; a Stone Ward holds and burns nothing
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.service || def.service.type !== 'ward' || b.state !== 'ok') return;
-    if (!b.lit && (def.needsMana || def.manaUse > 0)) return; // a Stone Ward asks no mana and burns the grey unlit
+    if (!b.lit && (def.needsMana || def.manaUse > 0)) return;
+    let budget = wardBurnBudget(state, b);
+    if (budget <= 0) return;
     const r = def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        const x = Math.round(cx + dx);
-        const y = Math.round(cy + dy);
-        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
-        const i = idx(x, y);
-        if (state.gloam[i]) {
-          state.gloam[i] = 0;
-          state.stats.gloamBurned++;
-          markDirty(state, x, y);
-          changed = true;
-          if (rng.chance(0.15)) effects.push({ x, y, kind: 'ward', tick: state.tick });
+    for (let rr = 0; rr <= r && budget > 0; rr++)
+      for (let dy = -rr; dy <= rr && budget > 0; dy++)
+        for (let dx = -rr; dx <= rr && budget > 0; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rr || dx * dx + dy * dy > r * r) continue;
+          const x = Math.round(cx + dx);
+          const y = Math.round(cy + dy);
+          if (!inBounds(x, y)) continue;
+          const i = idx(x, y);
+          if (state.gloam[i]) {
+            state.gloam[i] = 0;
+            state.stats.gloamBurned++;
+            markDirty(state, x, y);
+            changed = true;
+            budget--;
+            if (rng.chance(0.15)) effects.push({ x, y, kind: 'ward', tick: state.tick });
+          }
         }
-      }
   });
   // 1b. the bound wyrm's lair burns the Gloam back for 30 tiles (a few tiles a day, from the inside out)
   if (wyrmGuards(state)) {
@@ -375,7 +403,11 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons')) * (relicDone(state, 'saltspoons') ? 1.1 : 1) * (BUILDING_BY_KEY[b.kind].category === 'special' && !hallActive(state, b.kind) ? 0 : 1);
+    if (b.kind === 'saltfont' && b.state === 'ok') {
+      // the font takes a loose relic every three days and quiets twice as many while it lasts
+      if ((b.cooldown ?? 0) <= 0 && state.relicStock >= 1) { state.relicStock--; b.cooldown = 3; }
+    }
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (b.kind === 'saltfont' && (b.cooldown ?? 0) > 0 ? 2 : 1) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons')) * (relicDone(state, 'saltspoons') ? 1.1 : 1) * (BUILDING_BY_KEY[b.kind].category === 'special' && !hallActive(state, b.kind) ? 0 : 1);
   });
   quietCap += wyrmBoneQuiet(state);
   if (fontOfQuieting(state)) quietCap *= 1.5;
@@ -387,6 +419,9 @@ export function dailyDeath(state: GameState): void {
   const fetched = Math.min(uncoveredBodies, leftover * 0.5);
   pool += uncoveredBodies - fetched;
   state.unquieted = pool;
+  state.quietCap = quietCap;
+  state.quietedToday = quieted + fetched;
+  state.waitingDead = pool;
   // restless rise
   let rose = 0;
   while (state.unquieted >= 20 && homes.length) {
