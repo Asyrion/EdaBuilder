@@ -357,6 +357,8 @@
   of Wicks (a 3×3 ley hall sworn at the vigil, from the castle painting), the bot's towers
   placed only where they link and its Hall raised at Beacon-Street, a dev command. M13 is
   closed; the Tallowkin reach Bright Town by day 54 on three seeds with the purse positive.
+  Still open for the bot: the Hall of Wicks milestone (the share falls back to 73 % as the bot
+  zones faster than it lights, and it never holds the Hall's 8,000 crowns): M14 part 5.
 
 ## Done in iteration 51 (M15 part 2: the zone levels, one look for every people, halls that grow)
 

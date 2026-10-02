@@ -1930,7 +1930,22 @@ lamplighters' round* relights every standing zone building for three days.
 
 Balance, 150 days, the Tallowkin against §4.72 and §4.80 in brackets:
 
-BALANCE_TABLE_52
+| seed | Bright Town | Hall of Wicks | folk at day 150 | lit at day 150 | purse at day 150 |
+|---|---|---|---|---|---|
+| 42 | day 42 (§4.72 42; §4.80 70) | not reached (not reached) | 1,341 (1,101; 950) | 73 % (86 %) | +107 (−866) |
+| 43 | day 37 (37) | not reached (day 54) | 1,335 (1,644) | 91 % (99 %) | +2,139 |
+| 44 | day 54 (38) | not reached (not reached) | 1,953 (1,120) | 73 % (86 %) | +680 |
+
+The Vellish control (seed 42) prints the iteration 49 line exactly: the lamplighter is the
+Tallowkin's alone. Bright Town comes by day 54 on all three seeds and the purse stays above
+zero, which was the iteration's goal; seed 42 gains two hundred folk and a thousand crowns
+over §4.80. The Hall of Wicks milestone is still not reached: the lamplighters light
+thousands of windows (5,660 rounds on seed 42 by day 150), but the bot zones faster than it
+lights, so the share that stood at 85 % at Bright Town falls back to 73 % as the city grows,
+and the Hall itself needs 8,000 crowns the bot never holds (the peoples' bots are too poor:
+the known issue that M14 part 5, the bot plays it all, owns). Seed 43 sits at 91 % lit with
+2,139 crowns: the gate is open and the Hall unaffordable. The player's game is whole; the
+bot's late game waits on its purse.
 
 ## 5. Art direction
 
