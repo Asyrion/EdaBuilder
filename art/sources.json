@@ -1,53 +1,630 @@
 {
-  "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs). Each entry: name (the atlas sprite it replaces), src, w/h (footprint in tiles), targetWidth (default (w+h)*16+2), colors, glow {minLum, warm} or false, white (background key), anchor {ax, ay} hand-set after --check, checked: true once judged by eye. islands: 'keep' keeps painted clouds and loose smoke (default: only the largest island survives).",
-  "sprites": [
-    {
-      "name": "b_stake_s0",
-      "src": "inspirations/founding_stakes/image_3(2).png",
-      "w": 2,
-      "h": 2,
-      "colors": 24,
-      "anchor": {
-        "ax": 33,
-        "ay": 40
-      },
-      "checked": true
-    },
-    {
-      "name": "b_stake_s1",
-      "src": "inspirations/founding_stakes/image_2(1).png",
-      "w": 2,
-      "h": 2,
-      "colors": 24,
-      "anchor": {
-        "ax": 33,
-        "ay": 38
-      },
-      "checked": true
-    },
-    {
-      "name": "b_stake_s2",
-      "src": "inspirations/founding_stakes/image_1(1).png",
-      "w": 2,
-      "h": 2,
-      "colors": 24,
-      "anchor": {
-        "ax": 33,
-        "ay": 17
-      },
-      "checked": true
-    },
-    {
-      "name": "b_stake_s3",
-      "src": "inspirations/founding_stakes/image_0(1).png",
-      "w": 2,
-      "h": 2,
-      "colors": 24,
-      "anchor": {
-        "ax": 33,
-        "ay": 47
-      },
-      "checked": true
-    }
-  ]
+ "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs; see its header for every key). kind: building (default), prop (trees, bushes, mushrooms: anchor at the trunk base, scaled by targetHeight) or ground (a square texture folded onto the 32x16 diamond; family shares a palette). island picks an item of a sheet by row-major index (node scripts/importSprites.mjs --islands <src>). anchor: 'auto' (footprint), 'centre' (a sprite narrower than its footprint), or {ax, ay} hand-set. checked: true once the --check sheet has been judged by eye.",
+ "sprites": [
+  {
+   "name": "b_stake_s0",
+   "src": "inspirations/founding_stakes/image_3(2).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "anchor": "auto",
+   "checked": true
+  },
+  {
+   "name": "b_stake_s1",
+   "src": "inspirations/founding_stakes/image_2(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "anchor": "auto",
+   "checked": true
+  },
+  {
+   "name": "b_stake_s2",
+   "src": "inspirations/founding_stakes/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "anchor": "auto",
+   "checked": true
+  },
+  {
+   "name": "b_stake_s3",
+   "src": "inspirations/founding_stakes/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "anchor": "auto",
+   "checked": true
+  },
+  {
+   "name": "grass_0",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 0,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "grass_1",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 0,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "grass_2",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 14,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "grass_3",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 14,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_0",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 1,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_1",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 10,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 1,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_0",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 2,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_1",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 10,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_2",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 13,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_0",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 3,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_1",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 2,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 13,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "shore_0",
+   "kind": "ground",
+   "family": "shore",
+   "src": "inspirations/grass_tiles/image_1.png",
+   "island": 3,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "shore_1",
+   "kind": "ground",
+   "family": "shore",
+   "src": "inspirations/grass_tiles/image_3.png",
+   "island": 14,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_0",
+   "kind": "prop",
+   "src": "inspirations/trees/image_0.png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_1",
+   "kind": "prop",
+   "src": "inspirations/trees/image_1.png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_2",
+   "kind": "prop",
+   "src": "inspirations/trees/image_2.png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_3",
+   "kind": "prop",
+   "src": "inspirations/trees/image_3.png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_4",
+   "kind": "prop",
+   "src": "inspirations/trees/image_0(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_5",
+   "kind": "prop",
+   "src": "inspirations/trees/image_1(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_6",
+   "kind": "prop",
+   "src": "inspirations/trees/image_2(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_7",
+   "kind": "prop",
+   "src": "inspirations/trees/image_3(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_8",
+   "kind": "prop",
+   "src": "inspirations/trees/image_0(1).png",
+   "targetHeight": 36,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_9",
+   "kind": "prop",
+   "src": "inspirations/trees/image_1(1).png",
+   "targetHeight": 36,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_10",
+   "kind": "prop",
+   "src": "inspirations/trees/image_2(1).png",
+   "targetHeight": 36,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "tree_11",
+   "kind": "prop",
+   "src": "inspirations/trees/image_3(1).png",
+   "targetHeight": 36,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_0",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 0,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_1",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 1,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_2",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 6,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_3",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 11,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_4",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_3.png",
+   "island": 8,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "bush_5",
+   "kind": "prop",
+   "src": "inspirations/bushes/image_3.png",
+   "island": 14,
+   "targetHeight": 12,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "mushroom_0",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 4,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "mushroom_1",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 8,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "mushroom_2",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 20,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "mushroom_3",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 9,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.45,
+    "warm": 30
+   },
+   "checked": true
+  },
+  {
+   "name": "mushroom_4",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 24,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.45,
+    "warm": 30
+   },
+   "checked": true
+  },
+  {
+   "name": "mushroom_5",
+   "kind": "prop",
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 14,
+   "targetHeight": 10,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_spire",
+   "src": "inspirations/ley_spires/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 64,
+   "anchor": "centre",
+   "colors": 24,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "b_nexus",
+   "src": "inspirations/ley_spires/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 90,
+   "anchor": "centre",
+   "colors": 24,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wicktower",
+   "src": "inspirations/ley_spires/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "anchor": "centre",
+   "colors": 24,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well",
+   "src": "inspirations/wells/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.5,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep",
+   "src": "inspirations/wells/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.5,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell",
+   "src": "inspirations/wells/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "colors": 20,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "b_cistern",
+   "src": "inspirations/wells/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "b_depot",
+   "src": "inspirations/trade_houses/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "checked": true
+  },
+  {
+   "name": "b_cartersyard",
+   "src": "inspirations/trade_houses/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "checked": true
+  },
+  {
+   "name": "b_ossuary",
+   "src": "inspirations/graveyards/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_sextonchapel",
+   "src": "inspirations/graveyards/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard",
+   "src": "inspirations/graveyards/image_3(2).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 60
+   },
+   "checked": true
+  },
+  {
+   "name": "b_lyceum",
+   "src": "inspirations/craft_houses/alchemists_house/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "colors": 24,
+   "checked": true
+  }
+ ]
 }

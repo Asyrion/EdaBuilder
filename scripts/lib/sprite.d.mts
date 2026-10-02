@@ -1,4 +1,5 @@
 import type { RgbaImage } from './png.mjs';
+export interface Island { x: number; y: number; w: number; h: number; n: number }
 export function blank(w: number, h: number): RgbaImage;
 export function keyBackground(img: RgbaImage, white?: number): RgbaImage;
 export function keepLargest(img: RgbaImage): RgbaImage;
@@ -6,7 +7,17 @@ export function crop(img: RgbaImage): { img: RgbaImage; x0: number; y0: number }
 export function boxScale(img: RgbaImage, targetW: number, targetH?: number): RgbaImage;
 export function quantize(img: RgbaImage, n?: number): RgbaImage;
 export function colourCount(img: RgbaImage): number;
-export function glowLayer(img: RgbaImage, opts?: { minLum?: number; warm?: number }): { img: RgbaImage; count: number };
+export function glowLayer(img: RgbaImage, opts?: { minLum?: number; warm?: number; hue?: 'warm' | 'cool' | 'any' }): { img: RgbaImage; count: number };
 export function autoAnchor(w: number, h: number, spriteH: number): { ax: number; ay: number };
 export function footprintDiamond(w: number, h: number): [number, number][];
-export function checkSheet(entries: { img: RgbaImage; w: number; h: number; ax: number; ay: number; w_t: number; h_t: number }[], zoom?: number, cell?: number): RgbaImage;
+export function islands(img: RgbaImage, opts?: { minPixels?: number; rowBand?: number }): Island[];
+export function cropRect(img: RgbaImage, rect: [number, number, number, number]): RgbaImage;
+export function propAnchor(img: RgbaImage, baseInset?: number): { ax: number; ay: number };
+export function centreAnchor(w: number, h: number, spriteW: number, spriteH: number): { ax: number; ay: number };
+export function groundDiamond(tex: RgbaImage, opts?: { W?: number; H?: number; sub?: number }): RgbaImage;
+export function quantizeShared(imgs: RgbaImage[], n?: number): RgbaImage[];
+export function meanMatch(img: RgbaImage, ref: RgbaImage, amount?: number): RgbaImage;
+export function checkSheet(entries: { kind?: string; img: RgbaImage; w: number; h: number; ax: number; ay: number; w_t: number; h_t: number }[], zoom?: number, cell?: number, cols?: number): RgbaImage;
+export function pad(img: RgbaImage, n?: number): RgbaImage;
+export function outline(img: RgbaImage, rgba?: number[]): RgbaImage;
+export function sharpen(img: RgbaImage, amount?: number): RgbaImage;

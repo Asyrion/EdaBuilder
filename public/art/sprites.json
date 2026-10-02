@@ -2,35 +2,415 @@
  "sprites": {
   "b_stake_s0": {
    "file": "sprites/b_stake_s0.png",
-   "w": 66,
-   "h": 73,
+   "w": 68,
+   "h": 75,
    "ax": 33,
-   "ay": 40,
+   "ay": 42,
    "glow": "sprites/b_stake_s0_glow.png"
   },
   "b_stake_s1": {
    "file": "sprites/b_stake_s1.png",
-   "w": 66,
-   "h": 71,
+   "w": 68,
+   "h": 73,
    "ax": 33,
-   "ay": 38,
+   "ay": 40,
    "glow": "sprites/b_stake_s1_glow.png"
   },
   "b_stake_s2": {
    "file": "sprites/b_stake_s2.png",
-   "w": 66,
-   "h": 50,
+   "w": 68,
+   "h": 52,
    "ax": 33,
-   "ay": 17,
+   "ay": 19,
    "glow": "sprites/b_stake_s2_glow.png"
   },
   "b_stake_s3": {
    "file": "sprites/b_stake_s3.png",
-   "w": 66,
-   "h": 80,
+   "w": 68,
+   "h": 82,
    "ax": 33,
-   "ay": 47,
+   "ay": 49,
    "glow": "sprites/b_stake_s3_glow.png"
+  },
+  "grass_0": {
+   "file": "sprites/grass_0.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "grass_1": {
+   "file": "sprites/grass_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "grass_2": {
+   "file": "sprites/grass_2.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "grass_3": {
+   "file": "sprites/grass_3.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_0": {
+   "file": "sprites/meadow_0.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_1": {
+   "file": "sprites/meadow_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_2": {
+   "file": "sprites/meadow_2.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_0": {
+   "file": "sprites/forest_0.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_1": {
+   "file": "sprites/forest_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_2": {
+   "file": "sprites/forest_2.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_0": {
+   "file": "sprites/hills_0.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_1": {
+   "file": "sprites/hills_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_2": {
+   "file": "sprites/hills_2.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "shore_0": {
+   "file": "sprites/shore_0.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "shore_1": {
+   "file": "sprites/shore_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "tree_0": {
+   "file": "sprites/tree_0.png",
+   "w": 33,
+   "h": 32,
+   "ax": 16,
+   "ay": 30
+  },
+  "tree_1": {
+   "file": "sprites/tree_1.png",
+   "w": 31,
+   "h": 32,
+   "ax": 16,
+   "ay": 30
+  },
+  "tree_2": {
+   "file": "sprites/tree_2.png",
+   "w": 32,
+   "h": 32,
+   "ax": 16,
+   "ay": 30
+  },
+  "tree_3": {
+   "file": "sprites/tree_3.png",
+   "w": 31,
+   "h": 32,
+   "ax": 15,
+   "ay": 30
+  },
+  "tree_4": {
+   "file": "sprites/tree_4.png",
+   "w": 25,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_5": {
+   "file": "sprites/tree_5.png",
+   "w": 26,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_6": {
+   "file": "sprites/tree_6.png",
+   "w": 20,
+   "h": 32,
+   "ax": 10,
+   "ay": 30
+  },
+  "tree_7": {
+   "file": "sprites/tree_7.png",
+   "w": 20,
+   "h": 32,
+   "ax": 11,
+   "ay": 30
+  },
+  "tree_8": {
+   "file": "sprites/tree_8.png",
+   "w": 25,
+   "h": 38,
+   "ax": 13,
+   "ay": 36
+  },
+  "tree_9": {
+   "file": "sprites/tree_9.png",
+   "w": 25,
+   "h": 38,
+   "ax": 13,
+   "ay": 36
+  },
+  "tree_10": {
+   "file": "sprites/tree_10.png",
+   "w": 25,
+   "h": 38,
+   "ax": 13,
+   "ay": 36
+  },
+  "tree_11": {
+   "file": "sprites/tree_11.png",
+   "w": 24,
+   "h": 38,
+   "ax": 12,
+   "ay": 36
+  },
+  "bush_0": {
+   "file": "sprites/bush_0.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_1": {
+   "file": "sprites/bush_1.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_2": {
+   "file": "sprites/bush_2.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_3": {
+   "file": "sprites/bush_3.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_4": {
+   "file": "sprites/bush_4.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_5": {
+   "file": "sprites/bush_5.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "mushroom_0": {
+   "file": "sprites/mushroom_0.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_1": {
+   "file": "sprites/mushroom_1.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_2": {
+   "file": "sprites/mushroom_2.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_3": {
+   "file": "sprites/mushroom_3.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/mushroom_3_glow.png"
+  },
+  "mushroom_4": {
+   "file": "sprites/mushroom_4.png",
+   "w": 10,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/mushroom_4_glow.png"
+  },
+  "mushroom_5": {
+   "file": "sprites/mushroom_5.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/mushroom_5_glow.png"
+  },
+  "b_spire": {
+   "file": "sprites/b_spire.png",
+   "w": 23,
+   "h": 66,
+   "ax": 12,
+   "ay": 49,
+   "glow": "sprites/b_spire_glow.png"
+  },
+  "b_nexus": {
+   "file": "sprites/b_nexus.png",
+   "w": 41,
+   "h": 92,
+   "ax": 21,
+   "ay": 59,
+   "glow": "sprites/b_nexus_glow.png"
+  },
+  "b_wicktower": {
+   "file": "sprites/b_wicktower.png",
+   "w": 28,
+   "h": 58,
+   "ax": 14,
+   "ay": 41,
+   "glow": "sprites/b_wicktower_glow.png"
+  },
+  "b_well": {
+   "file": "sprites/b_well.png",
+   "w": 36,
+   "h": 44,
+   "ax": 17,
+   "ay": 27,
+   "glow": "sprites/b_well_glow.png"
+  },
+  "b_seep": {
+   "file": "sprites/b_seep.png",
+   "w": 36,
+   "h": 42,
+   "ax": 17,
+   "ay": 25,
+   "glow": "sprites/b_seep_glow.png"
+  },
+  "b_tidewell": {
+   "file": "sprites/b_tidewell.png",
+   "w": 36,
+   "h": 46,
+   "ax": 17,
+   "ay": 29,
+   "glow": "sprites/b_tidewell_glow.png"
+  },
+  "b_cistern": {
+   "file": "sprites/b_cistern.png",
+   "w": 68,
+   "h": 86,
+   "ax": 33,
+   "ay": 53,
+   "glow": "sprites/b_cistern_glow.png"
+  },
+  "b_depot": {
+   "file": "sprites/b_depot.png",
+   "w": 68,
+   "h": 65,
+   "ax": 33,
+   "ay": 32,
+   "glow": "sprites/b_depot_glow.png"
+  },
+  "b_cartersyard": {
+   "file": "sprites/b_cartersyard.png",
+   "w": 68,
+   "h": 64,
+   "ax": 33,
+   "ay": 31,
+   "glow": "sprites/b_cartersyard_glow.png"
+  },
+  "b_ossuary": {
+   "file": "sprites/b_ossuary.png",
+   "w": 68,
+   "h": 68,
+   "ax": 33,
+   "ay": 35,
+   "glow": "sprites/b_ossuary_glow.png"
+  },
+  "b_sextonchapel": {
+   "file": "sprites/b_sextonchapel.png",
+   "w": 68,
+   "h": 67,
+   "ax": 33,
+   "ay": 34,
+   "glow": "sprites/b_sextonchapel_glow.png"
+  },
+  "b_boneyard": {
+   "file": "sprites/b_boneyard.png",
+   "w": 68,
+   "h": 70,
+   "ax": 33,
+   "ay": 37,
+   "glow": "sprites/b_boneyard_glow.png"
+  },
+  "b_lyceum": {
+   "file": "sprites/b_lyceum.png",
+   "w": 68,
+   "h": 76,
+   "ax": 33,
+   "ay": 43,
+   "glow": "sprites/b_lyceum_glow.png"
   }
  }
 }
