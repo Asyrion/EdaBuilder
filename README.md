@@ -174,6 +174,14 @@ Charter as `.json`.
   forest at night to take hens from the dark hearths at the edge. Two tales: the white hart and
   the wolf winter. The creatures are painted from the animal sheets where a painting reads at the
   game's scale.
+- The water: every river and lake holds a shoal. A Fishers' Hut on the bank puts boats out by day
+  (moored at night) and lands fish as the shoal allows; fish spoil in two days unless a market's
+  shelf within 12 or a Smokehouse within 6 takes them, and a market with fish makes the hearths near
+  it happier. Too many huts on one water fish it out; a Weir doubles its regrowth. Reed-cutters on
+  the shore thatch the level-1 homes (+3 happiness, but thatch burns). The lake's open water lifts
+  the land around it and feeds its wells half again, and the Water Garden stands on its shore. A
+  Dirt Track over a narrow river is a ford: a third of a bridge's price, but under water in the
+  Thaw's first ten days after a Hush unless a Weir holds it. One tale: the spawning run.
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
   eggs arrive through events; hatch and train them into drakes and wyverns, set them as
   district wardens (fed by their district), mine delvers (wardens wake half as often),

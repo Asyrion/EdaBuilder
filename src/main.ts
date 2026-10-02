@@ -379,7 +379,7 @@ class Game {
     let hint = `<b>${toolLabel(t)}</b> — `;
     switch (t.kind) {
       case 'select': hint += 'click a building for details. Pick a tool on the left.'; break;
-      case 'road': hint += 'drag to draw. Roads over shallow water become bridges (4× cost).'; break;
+      case 'road': hint += `drag to draw. Roads over shallow water become bridges (4× cost); a Dirt Track over a narrow river is a ford (1.5×), under water in the Thaw's first ten days after a Hush unless a Weir stands within 6${this.state.water.closed.length ? ` (${this.state.water.closed.length} ford${this.state.water.closed.length === 1 ? ' is' : 's are'} under water now)` : ''}.`; break;
       case 'zone': hint += 'drag a rectangle beside a road (a corner counts). Buildings grow when demand is high.'; break;
       case 'build': {
         const d = BUILDING_BY_KEY[t.key];
