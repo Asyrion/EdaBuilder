@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 60 (M16 part 2, the water; M16 closed). Iterations 57 (the donkey
-carts), 58 (the wild) and 59 (buildings face their roads) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 61 (the bot's depot, the hunt and the fish; DESIGN §4.92). Iteration 60
+(M16 part 2, the water; M16 closed) came just before it, and 57–59 before that. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.91 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.92 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,15 +32,12 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **the bot's depot, the hunt and the fish**: five of the six bot cities stand no depot,
-so their hides, trophies and smoked fish are never sold (Vellish 42 smoked 424 fish in iteration 60 and
-sold none). The bot also never thatches, builds a Weir or bridges a ford.
-- The bot's levers are in `src/sim/bot.ts` (`hunt()`, `fish()`, `pickGoal()`; the depot is a growth
-  purchase).
-- The Gloam road's sale is `dailyTrade` in `src/sim/growth.ts`.
-- Item 2 (a balance measure that can see a change) should come with it or before it: without it, the
-  effect of a bot change on the six-run table cannot be told from luck (DESIGN §4.91). The order is the
-  user's to set.
+NEXT_STEPS item 1, **a balance measure that can see a change**. On main, one extra roll of the main stream on day 10
+sends Vellish 42 from 2,622 folk to 1,288 (DESIGN §4.92), so a single run a seed cannot tell a tenth's cost from
+luck.
+- `balance.ts` has a `null` flag (the sixth argument) since iteration 61.
+- What is left: more seeds a people, and a script that runs the table and reports each row's spread.
+- Item 2 (the depot's road does not pay its upkeep) is a sim decision proposed for the user. Ask before taking it.
 
 Plan it on the Plan panel first.
 
@@ -51,7 +48,7 @@ Plan it on the Plan panel first.
     against iteration 54 (1,942 and 1,280). In exchange all three Vellish seeds take the Burgh by
     day 42, seed 43 lights the first Beacon, and the Tallowkin reach the Lantern of Wicks.
   - **Loans:** both last gates ride on the Crown's loan, with 70,000 still owed at day 150.
-  - **Breadth:** only the Veshari bot stands a cradle and a depot in the final table. Walls appear
+  - **Breadth:** since iteration 61, ten of twelve bot runs stand a depot (the Tallowkin none). Walls appear
     only where hounds came (Vellish 43). Breeding never happens.
   - **Variance:** the runs swing a lot between passes. Iteration 60 measured it: one extra roll of
     the main stream on day 10 sends Tallowkin 42 from 3,003 folk to 1,396, and Vellish 43 from 2,903
@@ -72,8 +69,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (63 files, 390 tests at this writing; `tests/iteration60.test.ts`
-  is iteration 60's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (64 files, 399 tests at this writing; `tests/iteration61.test.ts` is
+  iteration 61's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -207,6 +204,21 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 61 (not yet said elsewhere)
+
+- **A table with its own yardstick.** Run each seed four ways (main and branch, each plain and with `null`), from a
+  `git worktree` of `origin/main` with the branch's `balance.ts` copied in. Three runs at a time on this container's
+  four cores take about 25 minutes for twelve. A `runsix.sh` that pipes the six seeds through `xargs -P 3` is enough.
+- **The local `main` can be stale** (it stood at iteration 55's merge). Worktrees of main come from `origin/main` after
+  a `git fetch`.
+- **A goal probe** (a script that runs the bot and prints `bot.goal`, `bot.reserve`, the treasury and the ledger every
+  day) found both of this iteration's draft faults: a depot goal never paid from an unheld purse, and an imports bill.
+- **What reads the treasury, not the purse:** streets and bridges, the Tallowkin's Wick-Towers (`brighten`), the
+  spires (`keepLit`), the wells and the mine. A goal's reserve does not stop them.
+- **Playtests that start a game by `__game.newGame`** must hide `#title` and set `lessonsSeen = ['districts']`, or the
+  title screen and the lesson card cover the shots. `scripts/playtest61.mjs` drives the bot in the browser:
+  `new __wardlight.Bot(state)`, ticks, `bot.step()` on each new day.
 
 ## Learned in iteration 60 (not yet said elsewhere)
 

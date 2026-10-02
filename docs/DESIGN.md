@@ -3034,6 +3034,128 @@ null-calibrated table (each seed run twice, the second with one extra roll) is n
 - **Not met.** The plan's ford hover (there is no tile tooltip; the road hint and the message carry it). The bot
   does not thatch, build a Weir or stand a depot for its smoked fish (Vellish 42 smoked 424 and sold none).
 
+### 4.92 The bot's depot, the hunt and the fish (iteration 61)
+
+NEXT_STEPS item 1, from iterations 58 and 60. Five of six bot cities stood no depot, so their hides, trophies and
+smoked fish were never sold (Vellish 42 smoked 424 fish and sold none). The bot also never thatched, never built a Weir
+and never bridged a ford. Only the bot changes (`src/sim/bot.ts`). The sim's rules are as they were, except that the
+Weir's hold on a ford is now one function (`weirHolds` in `water.ts`, read by the high water and by the bot).
+
+**Why there was no depot.** A probe of Vellish 42 asked, every day after the bot's step, why the depot was not bought.
+- On 98 of the 139 days after its unlock the treasury lacked 2,200 plus the 1,500 buffer. On the other 41, the Font
+  goal's reserve held the price back.
+- It was never unplaceable and never stopped by the ledger.
+- The depot was `want('depot', 1)`, seventeenth in a service queue that never emptied.
+
+**The depot as a goal** (§4.86's purse):
+- `waitingForRoad()` prices what waits for the Gloam road at today's rates: hides, salted meat over the lodge's keep and
+  trophies on the lodges, smoked fish over the smokehouse's keep, full works over half their store (the share
+  `dailyTrade` sells), and loose relics over ten.
+- Once that reaches half the depot's price, with the ledger carrying its upkeep by 100, the depot is the goal. It comes
+  after the people's hall and the first cradle and before the cheapest mana.
+- Its price is held back from growth like a hall's. In the first draft it was not, and the Tallowkin wanted a depot for
+  forty days while growth spent the purse each morning.
+
+**The imports edict pays its bill.**
+- With the depot standing in more cities, the bot's old rule called the Import edict on any ledger over 200. The rule:
+  a third of the markets dry, with a depot.
+- In the first draft's Veshari 42, a brownout dried 37 markets and the edict ran a bill of 500–2,700 crowns a day for
+  ten days. The city lost the Sable Crown and 800 folk.
+- The bot now reckons the bill (the dry markets × 8 goods × twice the road's price) and calls the edict only when the
+  ledger carries it twice over.
+
+**Thatch.** A Reed-Cutters' Hut where ten reed beds lie within its reach and eight level-1 homes within its thatching
+reach, once the purse and the ledger allow (500, 5 a day). A second comes after day 90 for homes the first cannot
+reach. It is for every people.
+
+**The Weir.** One Weir on the hut's water once its shoal is fished under half its cap. Among the bank spots, it takes
+the one that holds the most unheld fords.
+
+**The fords.**
+- In the second half of a Hush, before the Thaw's high water, a bank spot that holds five unheld fords or more gets a
+  Weir, since five bridges cost what a Weir does.
+- Otherwise the crossing nearest the centre is cobbled into a bridge, one crossing a day.
+- A bridge is a street: it reads the treasury, as the grid does. The first draft read the purse, and the Font's reserve
+  held every bridge back.
+
+**A plan item not done.** The plan had a game lodge wait for a depot. It was dropped: the bot's lodges stand on hounds
+in every run (main and branch), so no game lodge was ever built for it to delay, and a lodge's hides are one of the
+things that call for a depot.
+
+**`balance.ts`.**
+- The `bot:` line prints the depot's day and the crowns the Gloam road paid over the run.
+- The `water:` line prints the cutters, the Weirs and the ford tiles bridged.
+- A sixth argument, `null`, draws one extra roll of the main stream on day 10. It is the yardstick of §4.91, now a flag.
+
+**The six-run table.** Every seed was run four times: main, main with one extra roll on day 10, the branch, and the
+branch with the same roll. Folk at day 150 (last gate and its day):
+
+| run | main | main + roll | branch | branch + roll |
+|---|---|---|---|---|
+| Vellish 42 | 2,622 (Free City 135) | 1,288 (Burgh 51) | 2,249 (Free City 129) | 1,624 (Burgh 51) |
+| Vellish 43 | 1,118 (Burgh 41) | 1,396 (Burgh 34) | 1,366 (Burgh 41) | 1,464 (Burgh 43) |
+| Vellish 44 | 1,309 (Burgh 36) | 1,343 (Burgh 41) | 1,318 (Burgh 35) | 1,620 (Free City 136) |
+| Grimmen 42 | 1,398 (Deephold 124) | 1,436 (Deephold 60) | 1,343 (Deephold 126) | 1,450 (Deephold 59) |
+| Veshari 42 | 2,746 (Sable Crown 121) | 2,852 (Sable Crown 131) | 2,953 (Sable Crown 122) | 2,566 (Sable Crown 116) |
+| Tallowkin 42 | 1,505 (Bright Town 37) | 1,196 (Bright Town 41) | 1,428 (Bright Town 40) | 1,166 (Bright Town 40) |
+| **sum** | 10,698 | 9,511 | 10,657 | 9,890 |
+
+What the bot did, on the branch and on the branch with the extra roll:
+
+| run | depot (day) | road crowns | smoked-fish crowns | homes thatched | ford tiles bridged (days a ford stood closed) |
+|---|---|---|---|---|---|
+| Vellish 42 | 48 / 73 | 1,683 / 1,102 | 769 / 0 | 79 / 40 | 10 (0) / 10 (0) |
+| Vellish 43 | 41 / 58 | 1,336 / 1,128 | 0 / 0 | 44 / 23 | 10 (10) / 12 (0) |
+| Vellish 44 | 46 / a service | 1,126 / 1,184 | 0 / 0 | 91 / 73 | 8 (0) / 8 (0) |
+| Grimmen 42 | 125 / 58 | 460 / 1,765 | 0 / 0 | 37 / 36 | 0 (10) / 4 (10) |
+| Veshari 42 | 62 / 84 | 952 / 836 | 0 / 0 | 93 / 94 | 10 (0) / 0 (35) |
+| Tallowkin 42 | none / none | 0 / 0 | 0 / 0 | 40 / 70 | 3 (10) / 0 (10) |
+
+On main, two runs in twelve stood a depot, both as a service (Veshari 42, and Vellish 44 with the extra roll). On the
+branch, ten of twelve did.
+
+**The reading.**
+- Every branch row lies inside the spread its own seed shows on main, or above it.
+- The branch sums sit at main's (10,657 against 10,698; 9,890 against 9,511).
+- The largest single move (Vellish 42) is the seed whose main row is the lucky one: main with one roll lands at 1,288.
+- So the levers cost nothing measurable. Whether they gain anything cannot be told at this noise (NEXT_STEPS item 2).
+
+**What the runs show that a table of folk does not.**
+- **The depot does not pay its way on the road.** The road paid 460–1,765 crowns over the 65–105 days the depot
+  stood, against 25 a day of upkeep (1,600–2,600) and its 2,200 price.
+  - The road carries 8 goods a day a depot, at 2–3 crowns (hides 2.5–4). That is 16–32 crowns, about its upkeep.
+  - Only trophies (30–40, two a day, outside the carts) and relics (60) pay more, and the bot's lodges hunt hounds, not
+    game.
+  - A player who stands a depot for the hunt or the fish loses a little by it. That is a sim question, not the bot's,
+    and it is the next item.
+- **Smoked fish sold only on Vellish 42** (769 crowns). Elsewhere the smokehouse's stock went to the shelves first, or
+  the city had no smokehouse.
+- **No Weir was built.** No bot hut fished its shoal under half its cap: one hut holds its water (§4.91), and the bot
+  stands one. No five fords lay within one Weir's reach. The rules are held by tests, not by these runs.
+- **The Tallowkin never stand a depot.** They want one from day 55 to day 95 and hold its price back. Their Wick-Towers
+  and spires read the treasury, not the purse (their gate is light, and their light comes first), and they spend
+  the morning's crowns before it reaches 2,500. Changing that would change the light-first rule of §4.86, so it stays.
+- **Thatch on every map:** 23–166 homes thatched a run. No run shows a fire spike that could be told from noise.
+
+**Verified.**
+- `npx tsc --noEmit -p .`, and 64 test files with 399 tests.
+- The new `tests/iteration61.test.ts` (9 tests) covers:
+  - the depot goal on hides, trophies, smoked fish and relics, and none on an empty road or a thin ledger;
+  - the depot placed from the purse, and its price held back;
+  - the cutters where the beds and homes are, and none for five homes;
+  - a Weir on a fished-down shoal;
+  - the late Hush bridging the unheld crossing and leaving the one a Weir holds, and a Weir raised over five fords
+    instead of bridges;
+  - the imports bill against the ledger.
+- `npm run build`.
+- `scripts/playtest61.mjs`: the bot plays Vellish 42 in the browser to day 125.
+  - The depot stands from day 48, and its panel and the Budget's Gloam-road rows read right.
+  - Two cutters' huts have thatched 42 homes.
+  - It bridged four ford tiles. In the second year's Thaw a cobbled bridge stands open beside six fords under water.
+  - The dawn and dusk probe is clean; no errors and no missing sprites.
+- **Not met.** No Weir in any run (above). The Tallowkin's depot. The playtest's city bridged four ford tiles of ten
+  before high water: a crossing a day, only on mornings when the treasury held its price and 800.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4087,3 +4209,9 @@ playtest of a lakeside town.
   and goes under at high water; better roads bridge. High water follows a Hush, so the charter's first Thaw is dry.
 - *Shoals regrow at 0.10 (iteration 60):* the plan's 0.05 let one hut empty any lake under about 160 tiles, and the
   player cannot set a hut's crew; at 0.10 one hut holds its water and two take it down.
+- *The bot's depot is a goal, not a service (iteration 61):* in the service queue it came seventeenth and was never
+  reached. As a goal it waits for goods worth half its price on the Gloam road, and its price is held back like a hall's.
+- *The bot imports only what the ledger carries twice over (iteration 61):* a depot in more cities made the old rule (a
+  ledger over 200) run bills of 2,700 a day in a brownout.
+- *A bridge is a street (iteration 61):* the bot's bridges read the treasury, as its grid does, not the purse a goal
+  leaves; a Weir instead where it would hold five fords.
