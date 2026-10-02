@@ -7,7 +7,7 @@ import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, waterCapOf } from '../sim/networks';
 import { SEAM, SPENT_RATE } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
@@ -711,7 +711,7 @@ export class UI {
       if (def.zone === Zone.Hearth && s.employed < workforceOf(s) * 0.85) problems.push('Not enough jobs in the city.');
     } else {
       rows.push(row('Upkeep', `${def.upkeep} c/day`));
-      if (b.kind === 'stake') rows.push(row('Hall', `${stakeHallName(s)} (grows with the city)`));
+      if (GROWING_HALLS.includes(b.kind)) rows.push(row('Hall', `${stakeHallName(s)} (grows with the city)`));
       if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
       if (def.waterRadius) {

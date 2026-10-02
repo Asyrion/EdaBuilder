@@ -7,7 +7,8 @@ import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
-import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius, kinReach, stakeSpriteName, stakeStage } from '../sim/world';
+import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, influenceRadius, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
+import { zoneSpriteName } from './atlas';
 import { roadTileOf } from '../sim/agents';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
@@ -93,6 +94,8 @@ export class Renderer {
     this.treeCount = Math.max(1, atlas.countVariants('tree_'));
     this.bushCount = Math.max(1, atlas.countVariants('bush_'));
     this.mushroomCount = Math.max(1, atlas.countVariants('mushroom_'));
+    this.glimwoodCount = Math.max(1, atlas.countVariants('glimwood_'));
+    this.gloamTreeCount = Math.max(1, atlas.countVariants('gloamtree_'));
   }
 
   resize(): void {
@@ -300,7 +303,7 @@ export class Renderer {
         const [wx, wy] = tileToWorld(x, y);
         if (state.gloam[i]) {
           const r = h2(x, y, 11);
-          if (r < 0.22) cache.props.push({ name: `gloamtree_${Math.floor(h2(x, y, 14) * 2)}`, wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
+          if (r < 0.22) cache.props.push({ name: `gloamtree_${Math.floor(h2(x, y, 14) * this.gloamTreeCount)}`, wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
           else if (r < 0.3) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 12) - 0.5) * 14, wy: wy + 8 + (h2(x, y, 13) - 0.5) * 6, d: x + y, sway: 0 });
           continue;
         }
@@ -312,7 +315,7 @@ export class Renderer {
             const v = Math.floor(h2(x, y, 21 + k) * this.treeCount);
             const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
             const glim = nearNode && h2(x, y, 33 + k) < 0.6;
-            cache.props.push({ name: glim ? `glimwood_${v % 2}` : h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
+            cache.props.push({ name: glim ? `glimwood_${v % this.glimwoodCount}` : h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
           }
           if (h2(x, y, 44) < 0.12) {
             // six imported mushrooms: three woodland, three that glow (near a node, like glimwood); fewer: any of them
@@ -720,7 +723,7 @@ export class Renderer {
       const g = view.ghost;
       const def = BUILDING_BY_KEY[g.key];
       const [wx, wy] = tileToWorld(g.x, g.y);
-      const s = this.atlas.get(def.category === 'zone' ? `${g.key}_l1_v0${this.zoneSuffix}` : `b_${g.key}`);
+      const s = this.atlas.get(def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : `b_${g.key}`);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
     // warding wall inlays glow, under everything
@@ -854,14 +857,16 @@ export class Renderer {
   private treeCount = 4;
   private bushCount = 1;
   private mushroomCount = 2;
+  private glimwoodCount = 2;
+  private gloamTreeCount = 2;
   private stakeStage = 0;
 
   private spriteNameFor(b: Building): string {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
-    if (def.category === 'zone') return `${b.kind}_l${b.level}_v${b.variant % 4}${this.zoneSuffix}`;
+    if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant, this.zoneSuffix);
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
-    if (b.kind === 'stake') return stakeSpriteName(this.stakeStage, (n) => this.atlas.has(n));
+    if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
     return `b_${b.kind}`;
   }
 

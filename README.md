@@ -217,8 +217,10 @@ Charter as `.json`.
   its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
 - The painted set: the ground, the trees, bushes and mushrooms, the spire, the wells, the
-  Depot, the chapels and more are imported from the reference paintings, sharpened and
-  outlined to sit beside the procedural set; every building has a sprite.
+  Depot, the chapels, the homes, works, shops and markets of the zones are imported from
+  the reference paintings, sharpened and outlined to sit beside the procedural set; one
+  painting is the look for every people; the Stake, the Guildhall and the Temple grow with
+  the city; every building has a sprite.
 - A road at a building's corner counts as its door; the zone preview hatches the tiles that
   would never grow. Districts and charters open in steps from the Hamlet to the Burgh, with
   a three-step lesson card when they arrive. The demand bars carry a zero line, a word under

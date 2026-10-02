@@ -1461,6 +1461,11 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   sextonchapel: { w: 2, h: 2, height: 12, roofH: 8, wall: 'darkstone', roof: 'slate', windows: 1, windowRows: 2, door: true, spire: true, wisps: true, glowWindows: true, seed: 69 },
   wrightslodge: { w: 2, h: 2, height: 14, roofH: 8, wall: 'bluewash', roof: 'slate', windows: 2, windowRows: 2, door: true, chimney: true, overhang: true, sign: true, glowWindows: true, runeBand: true, seed: 66 },
   wyrmcourt: { w: 3, h: 3, height: 2, roofH: 1, wall: 'stone', roof: 'none', standingStones: true, runeBand: true, seed: 61 },
+  // halls that grow with the city (iteration 51): stage 1 from the Village, stage 2 from the Burgh
+  guildhall_s1: { w: 2, h: 2, height: 22, roofH: 9, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true },
+  guildhall_s2: { w: 2, h: 2, height: 26, roofH: 10, wall: 'stone', roof: 'copper', windows: 4, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true, glassDome: true, crystal: true },
+  temple_s1: { w: 3, h: 3, height: 26, roofH: 13, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 4, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true, banner: true, bellTower: true },
+  temple_s2: { w: 3, h: 3, height: 32, roofH: 14, wall: 'whitewash', roof: 'dome', windows: 4, windowRows: 5, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true, banner: true, bellTower: true, crystal: true, glassDome: true },
 };
 
 function drawSpire(): { p: Painter; glow: Painter; ax: number; ay: number } {
