@@ -1628,6 +1628,23 @@ a day (the text is true now). The Scale Ward's plating wears a tenth a season
 panel for 2 scale (`replate` on the host): the second sink for scale. The panel of every
 ward shows "Burns 12 grey tiles a day" and "Grey in reach: 41".
 
+Balance, 150 days, against the iteration 46 table in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 61 (68) | 2,939 (2,625) |
+| Vellish seed 43 | never: Burgh 36 (50) | 1,277 (1,174) |
+| Vellish seed 44 | 68 (83) | 3,006 (2,672) |
+| Grimmen seed 42 | Deephold 59 (107) | 1,352 (1,262) |
+| Veshari seed 42 | Weirhold 86 (54), Vesh's Court 135 (93) | 1,686 (1,936) |
+| Tallowkin seed 42 | Bright Town 64 (134) | 996 (1,051) |
+
+Five of six runs gain, two of them by weeks: the crews are jobs, and a city with more work
+has less idle unrest and happier hearths, which outweighs the hands the works lose; the slower
+wards did not cost the bot (its Gloam counts are within a few hundred tiles of before). The
+Veshari's Harbour stalls again on seed 42 (day 56), the bot's second landing on a poor early
+purse, as recorded in §4.75.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
