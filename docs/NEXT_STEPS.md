@@ -380,6 +380,10 @@
 
 ## Known issues
 
+- **The bot digs wells late.** With wells serving a capacity, the Vellish bot reaches Free
+  City on day 68 / never / 83 (was 58 / never / 60): it digs only beside homes already dry,
+  three a day, so it lags its own growth. Mud is not the cause (seed 42 without mud: day
+  70). Part 5: dig ahead of the hearths, by levels in reach.
 - **The peoples' bots under the ley's limits.** With an unlinked node seeping only half its
   flow, the Grimmen, Veshari and Tallowkin bots end day 150 in a brownout (61 %, 34 %, 15 %)
   and lose their last gate (no Bright Town on seed 42): they are too poor to buy a far node's

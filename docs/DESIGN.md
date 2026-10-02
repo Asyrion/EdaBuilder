@@ -1570,6 +1570,25 @@ grey (`GREY_DAYS = 3`). Lit or warded again, the count resets. The swallow code 
 found unreachable in normal play now has a path to it, and the brownout tiers of part 1a
 have a reason: a Dim building at the grey edge is the one the Gloam takes.
 
+Balance, 150 days, against the iteration 45 table in brackets:
+
+| run | Free City / last gate | folk at day 150 | brownout |
+|---|---|---|---|
+| Vellish seed 42 | 68 (58) | 2,625 (3,039) | 13 % |
+| Vellish seed 43 | never: Burgh 50 (47) | 1,174 (1,196) | 17 % |
+| Vellish seed 44 | 83 (60) | 2,672 (3,032) | 0 % |
+| Grimmen seed 42 | Deephold 107 (74) | 1,262 (1,472) | 62 % |
+| Veshari seed 42 | Weirhold 54 (106), Vesh's Court 93 (133) | 1,936 (1,640) | 40 % |
+| Tallowkin seed 42 | Bright Town 134 (none) | 1,051 (865) | 3 % |
+
+The Veshari and the Tallowkin gain (their bots had been starved of water the wells now
+serve by capacity, so the dry homes they dug for are the ones that count); the Vellish and
+the Grimmen bots lose two to three weeks to Free City. A seed-42 run with mud switched off
+reaches Free City on day 70, so mud is not the cause: it is the wells' capacity, which the
+bot meets only after a home has gone dry (three wells a day, beside the dry ones), so a
+capacity-limited town lags its own growth. Part 5 teaches the bot to dig ahead of its
+hearths. Recorded in NEXT_STEPS.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
