@@ -349,6 +349,22 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 60 (M16 part 2: the water; M16 closed)
+
+- **Shoals and the Fishers' Hut.** Every river and lake holds a shoal that regrows by the season. A hut on the bank
+  puts boats out by day and lands fish as the shoal allows; too many huts on one water fish it out, and a Weir
+  doubles the regrowth.
+- **Fish spoil in two days** unless a market within 12 (a shelf of 6) or a Smokehouse within 6 takes them. Smoked
+  fish keeps and goes down the Gloam road. A market with fish gives the hearths within 10 +3.
+- **Reeds and thatch.** Reed-cutters on the shore thatch the level-1 homes for 60 days: +3 happiness, and a roof that
+  catches fire 1.5× as easily.
+- **The lake** (open water) lifts the land within 4 (+6) and its wells serve half again; the Water Garden stands on
+  its shore.
+- **The ford.** A Dirt Track over a narrow river costs a third of a bridge and goes under for the first ten days of a
+  Thaw after a Hush, unless a Weir within 6 holds it.
+- The spawning run (a tale), three quests, the Annals' rows, the Ledger's smoked-fish row, reach rings, and the bot's
+  hut and smokehouse. DESIGN §4.91 has the six-run table and the probes that read it.
+
 ## Done in iteration 59 (every building faces its road)
 
 - **Buildings turn to their road.** A building whose road runs past its left side is drawn
@@ -649,6 +665,10 @@
   arcane level 2) keep their front to the viewer, so on a road behind them (their upper edges) they
   still show their front to the empty side. Only new paintings, three-quarter views of the same
   houses, would turn them.
+- **The bot's runs are too noisy to measure a change** (iteration 60). A single extra roll on day 10 sends
+  Tallowkin 42 from 3,003 folk to 1,396 and Vellish 43 from 2,903 to 1,579, each losing two gates. The §4.89
+  rows for those seeds were lucky paths, and this iteration's table cannot show whether the water costs the
+  bot about a tenth or nothing (DESIGN §4.91).
 - **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
   of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
   abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
@@ -708,12 +728,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **M16 part 2, the water** (DESIGN §16): a Fishers' Hut on a bank or a lake shore with boats
-   on the water, fish as goods that spoil in two days unless a market or a smokehouse takes them,
-   reed-cutters on the marsh for thatch, a water garden, the lake's own land value and well bonus,
-   a weir pool and a ford. Part 1, the wild, is done (iteration 58).
-2. **The bot's depot and the hunt** (from iteration 58): five of the six bot cities stand no depot,
-   so their hides and trophies are never sold; the hunt pays only where a depot stands.
+1. **The bot's depot, the hunt and the fish** (from iterations 58 and 60): five of the six bot cities
+   stand no depot, so their hides, trophies and smoked fish are never sold (Vellish 42 smoked 424 fish
+   and sold none); the hunt and the smokehouse pay only where a depot stands. The bot also never
+   thatches, builds a Weir or bridges a ford.
+2. **A balance measure that can see a change** (from iteration 60): one extra roll of the main stream
+   on day 10 moves a seed by up to half its folk and two gates (DESIGN §4.91), so the six-run table
+   cannot tell a tenth's cost from luck. Run each seed twice (the second with one extra roll) and
+   more seeds a people, and report the spread.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

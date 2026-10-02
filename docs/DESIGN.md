@@ -2889,6 +2889,151 @@ building faces the same way while placing as once built.
 - Render only: the control seed (Vellish 42, 150 days) is bit-identical to main after §4.89 (1,618
   folk at day 150).
 
+### 4.91 M16 part 2, the water: shoals, the Fishers' Hut and its boats, fish that spoil, the Smokehouse, reeds and thatch, the lake's land and wells, the Water Garden, the ford and the Weir, the spawning run (iteration 60)
+
+Part 2 of M16 (§16), and the milestone closes with it. Before it, the water was a mill's flow, a barge's road, a
+well's bonus and a flood. §15's rule holds: the player sees the boats and the shelves, chooses where the huts go and
+which roads ford the river, and can lose by it. A shoal can be fished out, fish spoil on the racks, thatch burns,
+and a ford cuts the city in two for ten days a year.
+
+**The waters** (`src/sim/water.ts`). Worked out from the terrain, once per map (the water never changes in play):
+- **bodies**, the 4-connected stretches of water and deep water, each with a **shoal** of fish
+  (`state.water.fish`, one number a body, by the body's first tile, so the order is stable);
+- **open water**, a water tile whose 5×5 block is all water: the lake has it, the 2–3-wide river does not
+  (a wide bend of the river can, and then counts as lake there);
+- **the lake shore**, land within 3 of open water.
+
+There is no marsh terrain, so the reeds grow on the Shore, as the wild's otters and herons already use it.
+
+**Fish.**
+- **A shoal** holds 0.6 a water tile (1.0 a deep one). It regrows logistically: 0.10 of itself a day by its room,
+  0.15 in Bloom (the spawn), nothing in the Hush. A Weir on its water doubles that. Each otter of a holt beside it
+  eats 0.3 a day, so a lodge hunting otters guards the catch (the wild, §4.89).
+- **The Fishers' Hut** (Hamlet, 600 crowns, 8 a day, a crew of 4; must touch river or lake water and a road)
+  lands crew × 1.2 × the shoal's share a day, at most a sixth of its water within 8, half in the Hush, none on a
+  frozen river. The catch draws from a side stream (`seed:day:fish`), so a city with no hut adds no roll to the
+  main stream.
+- **Fished out.** Under a fifth of its cap a shoal is fished out: the catch falls with it, and the hut's panel and
+  its problem line say so. One hut with a full crew holds a shoal of 100 at about half its cap; two huts on it take
+  it down. A test holds a lone hut's lake above two fifths for 300 days, and fishes a 2-wide river out with two
+  huts in under 120. The plan's 0.05 a day was raised to 0.10 for this: at 0.05 one hut emptied any lake under
+  about 160 tiles, and the player cannot set a hut's crew, so it was no decision.
+- **Spoilage.** A hut keeps two lots: today's catch and yesterday's. Each day the markets within 12 take fish onto a
+  shelf of 6 (each sells 2 a day), nearest first and the older lot first; then a Smokehouse within 6 takes what is
+  left, up to 10 a day; then yesterday's lot spoils. Fish caught today can be sold tomorrow or the day after, not
+  later. The Annals count fish spoiled; the panel shows last night's.
+- **The Smokehouse** (Thorp, 700, 6 a day, a crew of 2) keeps what it smokes. Smoked fish fills what room the
+  shelves have left, and over 10 goes down the Gloam road at 2 / 2 / 2.5 / 3 by season, inside the carts' budget of
+  8 a depot, beside the hides and the salted meat.
+- **On the shelves.** A hearth within 10 of a market with fish gets **+3 "fish on the shelves"**, beside the
+  meat's +4; a market with both feeds both lines.
+- **Boats.** A crewed hut puts one boat on its water (two at a full crew) by day; a boat rows to a spot within 8,
+  lies there with its nets out for a few minutes, and rows on; at dusk it comes back to the hut's mooring. Boats
+  are creature agents on the wild's side stream; the sprite is procedural (a clinker hull, a fisher, an oar that
+  strokes, a bow lamp at night) and faces the way it rows.
+
+**Reeds and thatch.**
+- **The Reed-Cutters' Hut** (Hamlet, 500, 5 a day, a crew of 3; must touch the shore or the water) cuts the reed
+  beds, open shore within 6: min(crew, beds ÷ 5) bundles a day in the Thaw, Bloom and Ember, none in the Hush.
+- **Thatch.** Each bundle thatches the nearest level-1 home within 10 whose thatch is missing or has under ten
+  days left, for 60 days: **+3 "a new thatch"**, and a thatched roof catches fire 1.5× as easily. A home that grows
+  to level 2 has a proper roof and the thatch no longer counts.
+- **A deviation from §16.** §16 asked for thatch as "a cheaper wall material for level-1 hearths". Homes cost no
+  crowns and no upkeep in this game, so a cheaper material would change nothing. Thatch is comfort with a fire
+  price instead, and the Veshari Hall is the answer to it.
+
+**The lake.**
+- **Land.** A tile within 4 of open water has **"by the lake" +6** land value, on top of the old "water near".
+- **Wells.** A water building within 3 of open water serves **1.5× its cap** ("the lake feeds it"): a well 45
+  levels instead of 30. The well's panel says so.
+- **The Water Garden** (Market Town, 1,800, 18 a day; 2×2; leisure 10 at 0.8, land value 15) must stand within 3
+  of open water: the river is too narrow for it.
+
+**The ford and the Weir.**
+- **The ford.** A Dirt Track over a narrow river tile (land within 2 on both opposite sides) is a ford and costs
+  1.5× a track instead of a bridge's 4×. A cobbled road or better over water is a bridge, as before, and so is a
+  track over the lake.
+- **High water.** A ford is under water for the first ten days of every Thaw that follows a Hush (so not the
+  charter's first), and wherever the Hush flood or the Great Weir's sluice reaches it. A frozen river is open.
+  While a ford is under water the road A* treats it as no road, the paths are worked again, carts and folk on it
+  turn back, the ground draws it under the river, and a message names the answer.
+- **The Weir** (Thorp, 900, 6 a day; must touch the water) holds the fords within 6 open at high water, and the
+  pool below it doubles its body's shoal regrowth.
+- The road tool's hint says all this, with the count of fords under water today. There is no tile tooltip in the
+  game, so the plan's "a ford's hover says open or closed" became the hint and the message.
+
+**The Close Season** (the wild's edict, §4.89) now covers the fishery too: no fishing in Bloom, and no hut takes a
+shoal under a third of its cap.
+
+**A tale: the spawning run** (once, in Bloom, with a hut on a shoal at four fifths of its cap or more):
+- net the run: +300 crowns, and the shoal falls to two fifths;
+- or let it spawn: the shoals regrow twice as fast for 60 days, and +1 happiness for 20.
+
+**Quests:** fish on a market's shelf (400), ten homes thatched (400), ford the river (300). **The Annals:** fish
+landed, spoiled and smoked, crowns from smoked fish, homes thatched, ford days under water. **The Ledger** has a
+row for smoked fish sold, and the Gloam road's note gives the price. **Reach rings:** the hut's fishing water and
+markets, the smokehouse's huts, the reed beds and the thatched homes, the Weir's fords.
+
+**The bot learns the water.** One Fishers' Hut on water whose shoal is over half its cap, with 24 water tiles in
+reach (the first version took a pond of a few tiles and landed two fish in 150 days) and a market within 10, once
+the purse and the ledger allow; a Smokehouse beside it once a depot stands, or when its racks spoil. It builds no
+reed-cutters, no Weir and no ford on purpose; its tracks over a narrow river are fords by the rule.
+`balance.ts` prints a `water:` line.
+
+**Art.** Procedural sprites for the five buildings (new spec features: a fish rack and an upturned boat, sheaves of
+reed, a smoking rack, a lily pond with stepping stones, a weir sill with white water) and for the boat. The
+`inspirations/` folders have no paintings of these.
+
+**The six-run table** (against §4.89 in brackets):
+
+| run | last gate | folk at day 150 | the water at day 150 |
+|---|---|---|---|
+| Vellish seed 42 | Burgh 43, Free City 135 (Burgh 42) | 2,622 (1,618) | 2 huts, a smokehouse; 790 landed, 424 smoked, 144 spoiled; no depot |
+| Vellish seed 43 | Burgh 41 (37, Free City 126, Beacon of Eda 133) | 1,118 (2,903) | a hut; 395 landed, none spoiled |
+| Vellish seed 44 | Burgh 36 (40) | 1,309 (1,280) | no hut (no water in reach with a market) |
+| Grimmen seed 42 | Deephold 124 (125) | 1,398 (1,227) | a hut; 100 landed |
+| Veshari seed 42 | Weirhold 40, Vesh's Court 72, Sable Crown 121 (48, 82, 126) | 2,746 (2,728) | a hut, a smokehouse; 435 landed |
+| Tallowkin seed 42 | Bright Town 37 (34, Hall of Wicks 59, Lantern of Wicks 79) | 1,505 (3,003) | a hut; 407 landed |
+
+Every map's bot roads ford the river 8 to 12 times; the fords stood under water 10 days (the second year's Thaw).
+No bot city thatches, and only Vellish 42 and the Veshari stand a smokehouse.
+
+**What moved the rows, and what did not.** Two rows fell hard (Vellish 43 lost two gates, the Tallowkin two halls),
+two rose (Vellish 42 reached the Free City, the Grimmen 171 folk), two held. Probes tell the water's effect apart from
+the runs' variance:
+- **The fords are not it.** The four worst seeds run with fords that never close (Vellish 43 and 45, Tallowkin 42
+  and 43) land within 2–7 % of the full branch.
+- **The bot's hut is not it.** The same seeds with the bot's fishing switched off swing both ways (Tallowkin 42
+  2,546, Tallowkin 43 1,349).
+- **One roll moves a run this much.** The same four seeds on the code before this iteration, changed only by one
+  extra roll of the main stream on day 10, land at 1,396 (Tallowkin 42, both halls lost), 1,891, 1,579 (Vellish 43,
+  Free City and Beacon lost) and 1,990. So the §4.89 rows for Tallowkin 42 and Vellish 43 were lucky paths: one roll
+  sends main down the same road this iteration's rows took.
+- **A wider table.** On three more seeds (Tallowkin 43 and 44, Vellish 45) the branch lands at 1,623, 1,888 and
+  1,578 against main's 2,098, 1,812 and 2,203; against the one-roll main of the same seeds it is −268, (not run)
+  and −412.
+
+The honest reading: the runs cannot show a cost of the water, and cannot rule out a modest one either (about a tenth,
+if the wider seeds are not noise). The single-seed table is too noisy to measure a change of this size, and a
+null-calibrated table (each seed run twice, the second with one extra roll) is now in the known issues.
+
+**Verified.**
+- 63 test files, 390 tests; the new `tests/iteration60.test.ts` (16 tests) covers the bodies, the open water and
+  the lake shore; the Water Garden's placement; the lake's land and wells; the shoal's regrowth by season and under
+  a Weir; a lone hut holding its lake and two huts fishing a river out; spoilage on the third day; the market's
+  shelf and the hearth's line; the smokehouse and the depot's sale; the Close Season; the boats on their water;
+  thatch and the Hush; the ford's cost, its high water after a Hush, the paths round it and the Weir; the spawning
+  run; a save from before the water; sprites; and the same water twice.
+- `scripts/playtest60.mjs`, a lakeside town painted on seed 60:
+  - two huts, a smokehouse, reed-cutters, a market, twelve homes and a water garden;
+  - after eight days of the Ember: 28 fish landed, 8 smoked, none spoiled, fish on a market's shelf, 12 homes
+    thatched, both quests done;
+  - two boats on the lake at noon, both moored at midnight;
+  - the hut, market and home panels; the ford under water in the second year's Thaw beside an open bridge;
+  - a dawn and dusk probe; no errors, no missing sprites.
+- **Not met.** The plan's ford hover (there is no tile tooltip; the road hint and the message carry it). The bot
+  does not thatch, build a Weir or stand a depot for its smoked fish (Vellish 42 smoked 424 and sold none).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -2928,8 +3073,8 @@ building faces the same way while placing as once built.
   buildings drawn. ✅ (iterations 50–51)
 - **M16 The wild and the water** — creatures as resources and the water put to use (§16):
   herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
-  fishing from a bank or a lake shore, boats, reed-cutters, a water garden. Part 1, the wild ✅
-  (iteration 58, §4.89); part 2, the water, next.
+  fishing from a bank or a lake shore, boats, reed-cutters, a water garden. ✅ Part 1, the wild
+  (iteration 58, §4.89); part 2, the water (iteration 60, §4.91).
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -3576,7 +3721,7 @@ Guildhall and the Temple by milestone like the Stake. Verified by a contact shee
 imported sprite over its diamond, day and night screenshots, and the balance table unchanged
 (art only).
 
-**M16 The wild and the water.** Two iterations. Part 1, the wild (✅ iteration 58, §4.89; the animal sheets painted the wild, the hounds, the Warden, the thrumhare, the wisp, the skyray and eight drake lines): herds of deer and elk on
+**M16 The wild and the water** ✅ (iterations 58 and 60, §4.89 and §4.91). Two iterations. Part 1, the wild (✅ iteration 58, §4.89; the animal sheets painted the wild, the hounds, the Warden, the thrumhare, the wisp, the skyray and eight drake lines): herds of deer and elk on
 the meadows (day, flee lit ground, return at night), boar in the woods, otters on the banks,
 herons in the marsh, goats on the hills, wolves in the Hush that take a hare or a hen and
 frighten a hearth; the Hunters' Lodge hunts by a chosen quarry (a panel choice) and brings
@@ -3933,3 +4078,12 @@ playtest of a lakeside town.
   its left side, reading the visible front edges before the back ones. The light on a mirrored
   building comes from the other side, which is the price of a street that faces its road. Head-on
   paintings keep their front to the viewer; only new paintings could turn them to a road behind.
+- *The water from the terrain, not a new terrain (iteration 60):* bodies, open water and the lake shore are worked out
+  from the map's water; reeds grow on the Shore. A marsh type would have touched the map generator, the renderer and
+  every placement rule for one building.
+- *Thatch is comfort with a fire price (iteration 60):* §16's "cheaper wall material" had nothing to bite on, since
+  homes cost no crowns or upkeep.
+- *A ford is a track's choice (iteration 60):* a Dirt Track over a narrow river fords it at a third of a bridge's price
+  and goes under at high water; better roads bridge. High water follows a Hush, so the charter's first Thaw is dry.
+- *Shoals regrow at 0.10 (iteration 60):* the plan's 0.05 let one hut empty any lake under about 160 tiles, and the
+  player cannot set a hut's crew; at 0.10 one hut holds its water and two take it down.
