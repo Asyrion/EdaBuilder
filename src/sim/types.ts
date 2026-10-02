@@ -8,7 +8,7 @@ export const MAP_W = 128;
 export const MAP_H = 128;
 export const TICKS_PER_SEC = 10;
 export const TICKS_PER_DAY = 900; // 90 s of game time at 1x
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7; // 7: saves branch on their version (iteration 55); every save before says 6
 export const MAX_DISTRICTS = 8;
 export const DISTRICT_NAMES = ['Hearthside', 'Stillward', 'Spirefield', 'Lanternrow', 'Greywall', 'Marketcross', 'Candlerow', 'Boneward'];
 export const DAYS_PER_SEASON = 30;
@@ -268,7 +268,7 @@ export interface Weather {
 export const CHALLENGE_DAYS = 60;
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights' | 'flood' | 'freeze'; // flood/freeze: forced from the dev panel (iteration 55)
   value: number;
   until: number; // day
   label: string;

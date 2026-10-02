@@ -283,7 +283,7 @@ function eggChoices(line: DragonLine, sell: number): EventDef['choices'] {
 
 const EGGS: EventDef[] = [
   {
-    id: 'egg_first', title: "The Crown's gift", once: true,
+    id: 'egg_first', title: "The Crown's gift", once: true, priority: true, // the Crown heard of the cradle: it answers, not the luck of the draw (iteration 55)
     text: 'A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg "so that the valley may learn what it is to keep a dragon".',
     when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
     choices: [

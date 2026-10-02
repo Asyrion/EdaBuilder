@@ -201,7 +201,10 @@ describe('The bot on the Sable', () => {
     (bot as any).moor();
     expect(s.buildings.some((b) => b && b.kind === 'landing' && Math.abs(b.x - c.x) <= 8 && Math.abs(b.y - c.y) <= 8)).toBe(true);
     s.milestone = 7; s.treasury = 60000;
-    (bot as any).buyServices();
+    // since iteration 55 the Weir is the goal the bot saves for, not a service it buys on the side
+    (bot as any).goal = (bot as any).pickGoal();
+    expect((bot as any).goal.key).toBe('greatweir');
+    (bot as any).pursueGoal();
     expect(count(s, 'greatweir')).toBe(1);
   });
   it('keeps the river for twenty days', () => {

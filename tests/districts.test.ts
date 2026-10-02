@@ -123,11 +123,18 @@ describe('District charters', () => {
     expect(chapter[2].done(s)).toBe(true);
   });
 
-  it('the bot paints and charters two districts at the Village', () => {
+  it('the bot paints and charters its hearth square from the Village, once the ledger carries a crown a building', () => {
     const s = createGame(42, 'Botwick');
     const bot = new Bot(s);
     run(s, TICKS_PER_DAY * 20, { onDay: () => bot.step() });
     expect(s.milestone).toBeGreaterThanOrEqual(3);
+    // since iteration 55 the charter waits for a net of 800 a day and no goal being saved for
+    s.ledger.net = 500; (bot as any).goal = null;
+    (bot as any).charterDistricts();
+    expect(s.districtQuarters[1]).toBeUndefined();
+    s.ledger.net = 900;
+    (bot as any).charterDistricts();
+    run(s, TICKS_PER_DAY, { onDay: () => bot.step() });
     expect(s.districtQuarters[1]).toBe('hearth');
     let d1 = 0;
     for (let i = 0; i < s.district.length; i++) if (s.district[i] === 1) d1++;

@@ -56,6 +56,10 @@ export function nodesOfAspect(s: GameState, a: DragonLine): { x: number; y: numb
 // ---------- dragon auras ----------
 export interface Aura { x: number; y: number; r: number; line: DragonLine; name: string }
 let auraCache: { tick: number; list: Aura[] } | null = null;
+/** Forget the cached auras: a copy of the state scored by the bot's tale policy may have filled the cache with its own dragons (iteration 55). */
+export function clearAuraCache(): void {
+  auraCache = null;
+}
 /** Drakes and wyverns at stage 2+ with no role or a warden post radiate their line's aura. Cached per 50 ticks. */
 export function dragonAuras(s: GameState): Aura[] {
   const stamp = Math.floor(s.tick / 50) * 1000003 + s.dragons.length * 7919 + (s.seed % 1000003);
@@ -141,11 +145,11 @@ export function pressureWord(p: number): string {
 
 // ---------- the river and the season ----------
 export function riverFrozen(s: GameState): boolean {
-  return factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5;
+  return (factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5) || modifierSum(s, 'freeze') > 0; // or forced from the dev panel (iteration 55)
 }
-/** The Hush flood: a people whose river never freezes sees it rise instead, from the fifth day, unless a Great Weir stands. */
+/** The Hush flood: a people whose river never freezes sees it rise instead, from the fifth day, unless a Great Weir stands (a forced flood too). */
 export function flooding(s: GameState): boolean {
-  return !factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5 && !hasMarvel(s, 'greatweir');
+  return ((!factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5) || modifierSum(s, 'flood') > 0) && !hasMarvel(s, 'greatweir');
 }
 /** Buildings the flood does not touch: moorings, tide-wells, mills and the Weir live on the water. */
 export const FLOODPROOF = [...MOORINGS, 'tidewell', 'torrentmill', 'greatweir'];

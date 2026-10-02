@@ -122,7 +122,7 @@ describe('The walker framework', () => {
     expect(r.agents.filter((a) => a.kind === AgentKind.Walker && a.job === 'watchman').length).toBe(2);
     run(r, TICKS_PER_DAY);
     expect(r.agents.filter((a) => a.kind === AgentKind.Walker).length).toBe(2);
-    const o = JSON.parse(serialize(s));
+    const o = JSON.parse(serialize(s)); o.version = 6; // a save from before iteration 55 says 6
     for (const a of o.agents) if (a.kind === 5) delete a.job;
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).agents.some((a) => a.kind === AgentKind.Walker)).toBe(false);
     const out = runDev(s, 'walker', 'watchman', { x: f.x + 8, y: f.y + 2 });

@@ -1,18 +1,22 @@
-import { GRIMMEN_STONE, canBuild, factionKey, factionOf, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
+import { GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
- * It expands a street grid from the Founding Stake, zones by demand, keeps buildings lit and
- * watered, and buys services as they unlock. Deliberately simple; it is a test tool, not AI.
+ * It expands a street grid from the Founding Stake, zones what it can light, keeps buildings lit and
+ * watered, saves for one large purchase at a time, sets its taxes and edicts, answers tales greedily and
+ * buys services as they unlock. Deliberately simple; it is a test tool, not AI (DESIGN 4.86).
  */
 import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
-import { TERRAFORM, buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, roadPath, terraform } from './actions';
+import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewWall, roadPath, setTax, terraform, wallTileCost } from './actions';
 import { setQuarter } from './districts';
-import { EDICT_BY_KEY } from './edicts';
-import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
+import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
+import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_MANA, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
+import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
 import { resolveEvent } from './events';
-import { setRole } from './wyrmcraft';
+import { districtMarkets, lineNest, setRole } from './wyrmcraft';
+import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
+import { aspectAt } from './weave';
+import { chooseTale } from './botPolicy';
 
 /** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
  *  the next road would go, so the planner keeps its lots on the sides (iteration 49). */
@@ -22,12 +26,41 @@ function roadOnSide(s: GameState, x: number, y: number): boolean {
 
 export interface BotOptions {
   aggressive?: boolean; // zone more than demand asks
+  choiceZero?: boolean; // answer every tale with choice 0, as the bot did before iteration 55 (for comparisons)
+}
+
+/** The one large purchase the bot is saving for: its price is held back from growth until it is bought. */
+export interface BotGoal { kind: 'link' | 'font' | 'deepen' | 'mill' | 'hall'; key: string; cost: number; mana: boolean }
+
+/** Zone buildings standing, and how many of them are dark. */
+function zoneLight(s: GameState): { zone: number; dark: number } {
+  let zone = 0;
+  let dark = 0;
+  forEachBuilding(s, (b) => {
+    if (b.state !== 'ok' || BUILDING_BY_KEY[b.kind].category !== 'zone') return;
+    zone++;
+    if (!b.lit) dark++;
+  });
+  return { zone, dark };
 }
 
 export class Bot {
   radius = 8; // half-size of the developed square around the stake
   private districted = false;
   private lastExpand = -99;
+  /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
+  goal: BotGoal | null = null;
+  reserve = 0;
+  /** A goal the bot could pay for but not place: tried five days, then left for twenty (a mill with no bank, a font with no room). */
+  /** The light holds the zoning today (zoneByDemand): no new lots, and no new streets for them either. */
+  zoningHeld = false;
+  private goalTries: Record<string, number> = {};
+  private goalBlocked: Record<string, number> = {};
+  /** Tales answered, and how many of them not with choice 0; loans taken; wall arcs raised. */
+  tales = 0;
+  talesOff0 = 0;
+  loans = 0;
+  wallArcs = 0;
   constructor(private s: GameState, private opts: BotOptions = {}) {}
 
   private get cx(): number {
@@ -36,16 +69,31 @@ export class Bot {
   private get cy(): number {
     return this.s.founding.y + 1;
   }
+  /** The crowns growth may spend: the treasury less what is held back for the goal. */
+  private spendable(): number {
+    return this.s.treasury - this.reserve;
+  }
 
   /** Call once per day. */
   step(): void {
     const s = this.s;
     if (s.gameOver) return;
-    if (s.pendingEvent) resolveEvent(s, 0);
-    for (const d of s.dragons) {
-      if (d.stage >= 3 && d.role !== 'courier') setRole(s, d.id, 'courier');
-      else if (d.stage === 2 && d.role === 'none') { const mine = s.buildings.find((b) => b && b.kind === 'mine'); if (mine) setRole(s, d.id, 'delver', mine.id); else if (s.buildings.some((b) => b && b.kind === 'ring')) setRole(s, d.id, 'champion'); }
+    if (s.pendingEvent) {
+      const a = this.opts.choiceZero ? { choice: 0, amount: undefined } : chooseTale(s);
+      resolveEvent(s, a.choice, a.amount);
+      this.tales++;
+      if (a.choice !== 0) this.talesOff0++;
     }
+    this.tendDragons();
+    this.setTaxes();
+    this.setEdicts();
+    this.goal = this.pickGoal();
+    // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can
+    this.reserve = this.goal && (this.goal.kind === 'hall' || s.brownout > 0.05) ? this.goal.cost : 0;
+    this.pursueGoal();
+    // the Crown's loan goes back once the purse can carry it and nothing is being saved for; while it is out, growth waits for that
+    if (s.loan > 0 && !this.goal && s.treasury >= s.loan + 2000) repayLoan(s);
+    if (s.loan > 0) this.reserve = Math.max(this.reserve, s.loan);
     this.ensureGrid();
     this.charterDistricts();
     this.zoneByDemand();
@@ -55,27 +103,181 @@ export class Bot {
     this.brighten();
     this.keepLit();
     this.linkNodes();
+    this.raiseWalls();
     this.buyServices();
-    // expand when zone tiles are mostly used and demand is positive
+    // expand when zone tiles are mostly used and demand is positive, or when a zone in demand has run out of lots (iteration 55:
+    // lots of a zone nobody wants never fill, and with the purse holding back services the failed placements no longer grew the town)
     const free = this.freeZoneTiles();
     const wantMore = s.demand.hearth > 0.2 || s.demand.market > 0.3 || s.demand.craft > 0.3 || s.demand.arcane > 0.3;
-    if (free < 12 && wantMore && s.day - this.lastExpand >= 4 && s.treasury > 800 && this.radius < 40) {
+    const hungry = ([[Zone.Hearth, s.demand.hearth], [Zone.Market, s.demand.market], [Zone.Craft, s.demand.craft]] as [Zone, number][]).some(([z, v]) => v > 0.15 && this.freeZoneTiles(z) < 20);
+    if (!this.zoningHeld && (free < 12 && wantMore || hungry) && s.day - this.lastExpand >= 4 && s.treasury > 800 + Math.max(0, s.loan) && this.radius < 40) { // streets are growth the goal does not hold back; none while the light holds the zoning
       this.radius += 5;
       this.lastExpand = s.day;
     }
     // extend the Charter when the purse allows and the grid is pressing on its edge
-    if (s.milestone >= 1 && s.treasury > 9000 && s.day % 5 === 0) {
+    if (s.milestone >= 1 && this.spendable() > 9000 && s.day % 5 === 0) {
       let best = -1;
       let bc = Infinity;
       for (let k = 0; k < s.sectors.length; k++) if (!s.sectors[k] && canBuySector(s, k) === null && sectorCost(s, k) < bc) { bc = sectorCost(s, k); best = k; }
-      if (best >= 0 && bc < s.treasury * 0.5) buySector(s, best);
+      if (best >= 0 && bc < this.spendable() * 0.5) buySector(s, best);
     }
   }
 
-  private freeZoneTiles(): number {
+  /** Dragons kept: an egg lined with eggshell; a drake wards the hearth quarter, else delves, else fights; a wyvern carries; the Ring keeps one champion. */
+  private tendDragons(): void {
+    const s = this.s;
+    const ring = s.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok');
+    let champ = s.dragons.find((d) => d.role === 'champion') ?? null;
+    if (ring && !champ) {
+      const grown = s.dragons.filter((d) => d.stage >= 2).sort((a, b) => b.stage - a.stage || a.id - b.id);
+      if (grown.length && !setRole(s, grown[0].id, 'champion')) champ = grown[0];
+    }
+    const wardOf = this.districted && districtMarkets(s, 1).length ? 1 : 0;
+    for (const d of s.dragons) {
+      if (d.stage === 0 && !d.lined && s.materials.eggshell >= 1) lineNest(s, d.id);
+      if (d === champ) continue;
+      if (d.stage >= 3 && d.role !== 'courier') setRole(s, d.id, 'courier');
+      else if (d.stage === 2 && d.role === 'none') {
+        const mine = s.buildings.find((b) => b && b.kind === 'mine');
+        if (wardOf) setRole(s, d.id, 'warden', wardOf);
+        else if (mine) setRole(s, d.id, 'delver', mine.id);
+        else if (ring && !champ) { setRole(s, d.id, 'champion'); champ = d; }
+      }
+    }
+  }
+
+  /** The tithe moves off the hearths when the Vellish gate or unrest asks; the works, shops and studios carry the difference. */
+  private setTaxes(): void {
+    const s = this.s;
+    if (s.day % 2) return;
+    let h = s.taxRates.hearth;
+    const MS = milestonesOf(s);
+    const next = s.milestone + 1;
+    if (s.faction === 'vellish' && next < MS.length) {
+      const need = VELLISH_HAPPINESS(next);
+      if (s.happiness < need + 1 && s.population >= MS[next].pop * 0.8) h--;
+      else if (s.happiness > need + 5) h++;
+      if (s.unrest > 0.25) h--;
+    } else if (s.unrest > 0.25) h--;
+    else if (s.unrest < 0.12) h++;
+    if (s.ledger.net < 0 || s.treasury < 0) h = s.taxRates.hearth + 1; // a tithe cut cannot buy cheer on a ledger in the red
+    h = Math.max(6, Math.min(10, h));
+    setTax(s, 'hearth', h);
+    const shift = Math.min(3, 10 - h);
+    setTax(s, 'market', s.demand.market < 0 ? 10 : 10 + shift);
+    setTax(s, 'craft', s.demand.craft < 0 ? 10 : 10 + shift);
+    setTax(s, 'arcane', s.demand.arcane < 0 ? 10 : 10 + shift);
+  }
+
+  /** Edicts as the advisor would: the curfew past 0.35 unrest, draughts for a sick city that can pay, mail while scale lasts, imports for empty shelves. */
+  private setEdicts(): void {
+    const s = this.s;
+    const has = (k: string) => !!EDICT_BY_KEY[k] && s.milestone >= EDICT_BY_KEY[k].unlock && edictsFor(s).some((e) => e.key === k);
+    const off = (k: string) => { if (s.edicts[k] && !edictLocked(s, k) && s.treasury > 1000) setEdict(s, k, false); };
+    const net = s.ledger.net;
+    if (has('curfew')) { if (s.unrest > 0.35) setEdict(s, 'curfew', true); else if (s.unrest < 0.15) off('curfew'); }
+    if (has('draughts')) { const cost = EDICT_BY_KEY.draughts.costPerDay(s); if (s.health < 0.45 && net > cost * 3) setEdict(s, 'draughts', true); else if (s.health > 0.6 || net < cost) off('draughts'); }
+    if (has('scalemail') && s.materials.scale >= 3 && s.unrest > 0.1) setEdict(s, 'scalemail', true);
+    if (has('imports')) {
+      const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok').length;
+      const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
+      if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200) setEdict(s, 'imports', true);
+      else if (s.goodsShort === 0) off('imports');
+    }
+  }
+
+  /** The one large purchase worth saving for: the cheapest mana when the ley runs short, else the people's hall. */
+  private pickGoal(): BotGoal | null {
+    const s = this.s;
+    // the people's hall first, once: the Hall of Wicks once sworn, and the wonder of the last gate (the Lantern of Vell names the Beacon)
+    for (const key of ['hallofwicks', factionKey(s, 'lantern')]) {
+      if (!canBuild(s, key) || this.countKind(key) > 0 || (this.goalBlocked[key] ?? -1) >= s.day) continue;
+      if (key !== 'hallofwicks' && s.milestone < 7) continue;
+      return { kind: 'hall', key, cost: costOf(s, BUILDING_BY_KEY[key]) + 500, mana: key === 'greatweir' };
+    }
+    // then the cheapest mana when the ley runs short
+    const short = s.brownout > 0.02 || s.manaDemand > s.manaSupply * 0.9;
+    if (!short) return null;
+    const opts: BotGoal[] = [];
+    const node = this.linkCandidate();
+    if (node >= 0) {
+      const n = s.nodes[node];
+      const sec = sectorOf(n.x, n.y);
+      opts.push({ kind: 'link', key: 'spire', cost: (s.sectors[sec] ? 0 : Math.round(sectorCost(s, sec) * 1.3)) + 2000, mana: true });
+    }
+    if (canBuild(s, 'font')) opts.push({ kind: 'font', key: 'font', cost: costOf(s, BUILDING_BY_KEY.font) + 200, mana: true });
+    const f = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y);
+    if (f >= 0 && s.milestone >= 6 && (s.nodes[f].depth ?? 0) < NODE_DEEPEN_COST.length && (!s.nodeLinked.length || s.nodeLinked[f])) opts.push({ kind: 'deepen', key: 'node', cost: NODE_DEEPEN_COST[s.nodes[f].depth ?? 0], mana: true });
+    if (factionOf(s).rules.millMana > 1 && canBuild(s, 'torrentmill')) opts.push({ kind: 'mill', key: 'torrentmill', cost: costOf(s, BUILDING_BY_KEY.torrentmill) + 200, mana: true });
+    const open = opts.filter((g) => (this.goalBlocked[g.kind] ?? -1) < s.day);
+    return open.length ? open.sort((a, b) => a.cost - b.cost)[0] : null;
+  }
+
+  /** Buy the goal once the purse holds it; for a goal far off, the Crown's loan brings it forward when the ledger can carry the interest. */
+  private pursueGoal(): void {
+    const s = this.s;
+    const g = this.goal;
+    if (!g) return;
+    if (g.kind === 'hall' && s.treasury < g.cost && s.loan <= 0 && s.milestone >= 1) {
+      // a bridge to a people's hall, not a habit: the hall ten days of the ledger away, and the ledger carrying twice the interest
+      // (a loan for the Fonts sank Vellish seed 44 into debt in the first draft: the cash bought upkeep, the interest ate the ledger)
+      const net = s.ledger.net;
+      const interest = loanLimit(s) * LOAN_INTEREST;
+      if (g.cost - s.treasury > net * 10 && net > interest * 2 && !takeLoan(s)) this.loans++;
+    }
+    if (s.treasury < g.cost) return;
+    let done = false;
+    if (g.kind === 'link') return; // linkNodes buys the sector and raises the spire
+    if (g.kind === 'font' || g.kind === 'hall') done = g.key === 'greatweir' ? this.placeNear(g.key, this.cx, this.cy, this.radius) : this.placeService(g.key);
+    else if (g.kind === 'deepen') { const f = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y); done = f >= 0 && !canDeepenNode(s, f) && !deepenNode(s, f); }
+    else if (g.kind === 'mill') done = this.placeNear('torrentmill', this.cx, this.cy, this.radius);
+    const tag = g.kind === 'hall' ? g.key : g.kind;
+    if (done) { this.goal = null; this.reserve = 0; this.goalTries[tag] = 0; return; }
+    this.goalTries[tag] = (this.goalTries[tag] ?? 0) + 1;
+    if (this.goalTries[tag] >= 5) { this.goalBlocked[tag] = s.day + 20; this.goalTries[tag] = 0; this.goal = null; this.reserve = 0; }
+  }
+
+  /** Walls at 30 hounds: an arc on the side of the nearest Gloam, two tiles past the grid, a Belregi gate where a road crosses; again each 30 more, three at most. */
+  private raiseWalls(): void {
+    const s = this.s;
+    if (s.milestone < WALL_UNLOCK || this.wallArcs >= 3 || s.stats.houndsTotal < 30 * (this.wallArcs + 1)) return;
+    let gx = -1;
+    let gy = -1;
+    let bd = Infinity;
+    for (let i = 0; i < s.gloam.length; i++) {
+      if (!s.gloam[i]) continue;
+      const x = i % MAP_W;
+      const y = (i / MAP_W) | 0;
+      const d = Math.hypot(x - this.cx, y - this.cy);
+      if (d < bd) { bd = d; gx = x; gy = y; }
+    }
+    if (gx < 0) return;
+    const alongX = Math.abs(gy - this.cy) >= Math.abs(gx - this.cx); // the Gloam lies north or south: the wall runs east-west
+    const lineAt = (off: number) => {
+      const line: number[] = [];
+      for (let k = -off; k <= off; k++) {
+        const x = alongX ? this.cx + k : this.cx + Math.sign(gx - this.cx) * off;
+        const y = alongX ? this.cy + Math.sign(gy - this.cy) * off : this.cy + k;
+        if (inBounds(x, y)) line.push(idx(x, y));
+      }
+      return line;
+    };
+    // two tiles past the grid, or its own last row when that lies beyond the Charter or in the grey; a side with no room waits
+    let line = lineAt(this.radius + 2);
+    if (line.filter((i) => wallTileCost(s, i) > 0).length < 6) line = lineAt(this.radius + 1);
+    const tiles = line.filter((i) => wallTileCost(s, i) > 0);
+    const roads = s.milestone >= GATE_UNLOCK ? line.filter((i) => s.road[i] && !s.wall[i]) : [];
+    if (tiles.length < 6) return;
+    const cost = previewWall(s, tiles).cost + roads.length * GATE_COST[2];
+    if (this.spendable() < cost + 1500 || s.manaSupply - s.manaDemand < tiles.length * WALL_MANA + 5) return;
+    if (!buildWall(s, tiles).ok) return;
+    for (const i of roads) placeGate(s, 2, i % MAP_W, (i / MAP_W) | 0);
+    this.wallArcs++;
+  }
+  private freeZoneTiles(z?: Zone): number {
     let n = 0;
     const s = this.s;
-    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0) n++;
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0 && (z === undefined || s.zone[i] === z)) n++;
     return n;
   }
 
@@ -94,6 +296,19 @@ export class Bot {
     const s = this.s;
     const r = this.radius;
     const d = s.demand;
+    // the light first, for the two peoples whose gate it is: the Vellish paint no new lots while the ley cannot carry them (a brownout
+    // past a tenth, with a tenth of the zone buildings dark) unless their happiness clears the gate by four; the Tallowkin hold zoning
+    // while the lit share is under the next gate and three points. Homes dark for want of a spire in reach are keepLit's to fix.
+    const { zone, dark } = zoneLight(s);
+    const MS = milestonesOf(s);
+    const next = s.milestone + 1;
+    const cheerful = s.faction === 'vellish' && next < MS.length && s.happiness >= VELLISH_HAPPINESS(next) + 4;
+    const tallowGate = factionOf(s).rules.gateHold ? TALLOW_LIGHT[next] : undefined;
+    this.zoningHeld = (s.faction === 'vellish' && zone >= 20 && dark > zone * 0.1 && s.brownout > 0.1 && !cheerful) || (zone >= 20 && tallowGate !== undefined && litShare(s) < tallowGate + 0.03);
+    if (this.zoningHeld) return;
+    // lots the light and a well already reach are painted first, so new homes start lit and watered
+    const near = (i: number, layer: Uint8Array) => layer[i] || layer[i - 1] || layer[i + 1] || layer[i - MAP_W] || layer[i + MAP_W];
+    const tier = (i: number) => (near(i, s.lit) ? 0 : 2) + (s.watered[i] ? 0 : 1);
     // pick the zone with the highest demand above a threshold
     const cands: [Zone, number][] = [[Zone.Hearth, d.hearth], [Zone.Market, d.market], [Zone.Craft, d.craft], [Zone.Arcane, d.arcane]];
     cands.sort((a, b) => b[1] - a[1]);
@@ -104,10 +319,11 @@ export class Bot {
       // find unzoned road-adjacent tiles inside the radius, paint a few strips (2 rows beside a street);
       // a people that builds on hills takes the hill tiles first (stone for its milestones)
       const hillOK = factionOf(s).rules.hillBuildable;
-      outer: for (const hillPass of hillOK ? [true, false] : [false]) for (let y = this.cy - r; y <= this.cy + r; y++) {
+      outer: for (const hillPass of hillOK ? [true, false] : [false]) for (const want of [0, 1, 2, 3]) for (let y = this.cy - r; y <= this.cy + r; y++) {
         for (let x = this.cx - r; x <= this.cx + r; x++) {
           if (!inBounds(x, y)) continue;
           const i = idx(x, y);
+          if (tier(i) !== want) continue;
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
           if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
@@ -137,7 +353,7 @@ export class Bot {
     let placed = 0;
     for (let k = 0; k < dry.length && placed < 3; k += Math.max(1, Math.floor(dry.length / 6))) {
       const d = dry[k];
-      const key = factionKey(s, s.milestone >= 2 && s.treasury > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
+      const key = factionKey(s, s.milestone >= 2 && this.spendable() > 4000 && s.manaSupply - s.manaDemand > 12 ? 'cistern' : 'well');
       const well = factionKey(s, 'well');
       if (this.placeNear(key, d.x, d.y, 4) || this.placeNear(well, d.x, d.y, 6, true) || (well !== 'well' && (this.placeNear(well, d.x, d.y, 10) || (BUILDING_BY_KEY[well].nearWater && this.placeNear(well, d.x, d.y, 14)) || (canBuild(s, 'cistern') && s.manaSupply - s.manaDemand > 10 && this.placeNear('cistern', d.x, d.y, 6))))) placed++;
     }
@@ -168,9 +384,10 @@ export class Bot {
   }
 
   /** A node's flow counts only while a spire links it: when the ley runs short, link the nearest unlinked node in reach (never a sleeping wyrm's). */
-  private linkNodes(): void {
+  /** The nearest unlinked node in reach that is not a sleeping wyrm's, or −1. */
+  private linkCandidate(): number {
     const s = this.s;
-    if (!s.nodeLinked.length || s.manaDemand < s.manaSupply * 0.85) return;
+    if (!s.nodeLinked.length) return -1;
     const f = s.founding;
     let best = -1;
     let bd = Infinity;
@@ -180,6 +397,13 @@ export class Bot {
       const d = Math.hypot(n.x - f.x, n.y - f.y);
       if (d <= this.radius + 16 && d < bd) { bd = d; best = k; }
     });
+    return best;
+  }
+
+  private linkNodes(): void {
+    const s = this.s;
+    if (!s.nodeLinked.length || s.manaDemand < s.manaSupply * 0.85) return;
+    const best = this.linkCandidate();
     if (best < 0) return;
     const n = s.nodes[best];
     // beyond the Charter: buy the node's sector first when the purse can bear it
@@ -197,13 +421,21 @@ export class Bot {
   /** Place spires near unlit buildings, chained to the lit network. */
   private keepLit(): void {
     const s = this.s;
-    let dark: { x: number; y: number } | null = null;
-    forEachBuilding(s, (b) => {
-      if (!dark && !b.lit && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') dark = { x: b.x, y: b.y };
-    });
-    if (!dark) return;
     if (s.manaDemand > s.manaSupply * 0.95) return; // no point lighting more
-    const d = dark as { x: number; y: number };
+    // the dark zone buildings nearest the centre first; up to six are tried for a spire that links (iteration 55: the first alone often had none)
+    const darks: { x: number; y: number; r: number }[] = [];
+    forEachBuilding(s, (b) => {
+      if (!b.lit && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') darks.push({ x: b.x, y: b.y, r: Math.abs(b.x - this.cx) + Math.abs(b.y - this.cy) });
+    });
+    if (!darks.length) return;
+    darks.sort((a, b) => a.r - b.r);
+    for (const d of darks.slice(0, 6)) if (this.lightNear(d)) return;
+    this.lightNear(darks[0], true);
+  }
+
+  /** A spire within 5 of the dark building that links to the lit network; with `relay`, a spire chained toward it from the nearest lit source. */
+  private lightNear(d: { x: number; y: number }, relay = false): boolean {
+    const s = this.s;
     // candidate spots within 5 of the dark building that are within 6 of a lit spire/node
     const reach = 6 + factionOf(s).rules.spireReach;
     const lit: { x: number; y: number; link: number }[] = s.nodes.map((n) => ({ x: n.x, y: n.y, link: reach }));
@@ -228,8 +460,9 @@ export class Bot {
         });
         if (!best || score > best.score) best = { x, y, score };
       }
-    if (best) placeBuilding(s, 'spire', (best as { x: number }).x, (best as { y: number }).y);
-    else {
+    if (best) return placeBuilding(s, 'spire', (best as { x: number }).x, (best as { y: number }).y).ok;
+    if (!relay) return false;
+    {
       // no linkable spot: chain a relay spire toward the dark building from the nearest lit source
       let near: { x: number; y: number; link: number } | null = null;
       let nd = Infinity;
@@ -240,13 +473,13 @@ export class Bot {
           near = l;
         }
       }
-      if (!near) return;
+      if (!near) return false;
       const n = near as { x: number; y: number; link: number };
       const ux = (d.x - n.x) / nd;
       const uy = (d.y - n.y) / nd;
       const tx = Math.round(n.x + ux * (n.link - 0.5));
       const ty = Math.round(n.y + uy * (n.link - 0.5));
-      this.placeNear('spire', tx, ty, 2, true);
+      return this.placeNear('spire', tx, ty, 2, true);
     }
   }
 
@@ -255,6 +488,7 @@ export class Bot {
   private charterDistricts(): void {
     const s = this.s;
     if (this.districted || s.milestone < 3) return;
+    if (s.ledger.net < 800 || this.goal) return; // a crown a building a day: only once the ledger carries it and nothing is being saved for
     this.districted = true;
     paintDistrict(s, 1, this.cx - 7, this.cy - 7, this.cx + 7, this.cy + 7);
     setQuarter(s, 1, 'hearth');
@@ -395,46 +629,9 @@ export class Bot {
       if (!canBuild(s, key)) return;
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
-      if (s.treasury < costOf(s, def) + buffer) return;
+      if (this.spendable() < costOf(s, def) + buffer) return; // growth spends only what the goal leaves
       if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply) return;
-      if (nearGloam) {
-        // place toward the nearest gloam tile from the city centre
-        let best = -1;
-        let bd = Infinity;
-        for (let i = 0; i < s.gloam.length; i++) {
-          if (!s.gloam[i]) continue;
-          const x = i % MAP_W;
-          const y = (i / MAP_W) | 0;
-          const dd = Math.hypot(x - this.cx, y - this.cy);
-          if (dd < bd) {
-            bd = dd;
-            best = i;
-          }
-        }
-        if (best < 0) return;
-        const gx = best % MAP_W;
-        const gy = (best / MAP_W) | 0;
-        // spot on the city edge toward the gloam
-        const ux = (gx - this.cx) / bd;
-        const uy = (gy - this.cy) / bd;
-        const r = Math.min(this.radius, bd - 6);
-        this.placeNear(key, Math.round(this.cx + ux * r), Math.round(this.cy + uy * r), 4);
-        return;
-      }
-      // spread services: place near a random zone building far from existing same-kind
-      const spots: { x: number; y: number; d: number }[] = [];
-      forEachBuilding(s, (b) => {
-        if (BUILDING_BY_KEY[b.kind].category !== 'zone') return;
-        let dmin = Infinity;
-        forEachBuilding(s, (o) => {
-          if (o.kind === key) dmin = Math.min(dmin, Math.hypot(o.x - b.x, o.y - b.y));
-        });
-        spots.push({ x: b.x, y: b.y, d: dmin });
-      });
-      spots.sort((a, b) => b.d - a.d);
-      const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tidepool' || key === 'tamerslodge';
-      for (const sp of spots.slice(0, 6)) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return;
-      if (this.radius < 40) this.radius += 5; // no room: grow the town
+      if (!this.placeService(key, nearGloam) && !nearGloam && this.radius < 40 && !this.zoningHeld) this.radius += 5; // no room: grow the town
     };
     want('watchpost', 1 + Math.floor(buildings / 60));
     want('shrine', 1 + Math.floor(buildings / 80));
@@ -454,23 +651,64 @@ export class Bot {
     want('ring', 1);
     want('tamerslodge', this.countKind(factionKey(s, 'cradle')));
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
-    // deepen the founding Wellspring when mana runs short
-    if (s.milestone >= 6 && s.manaDemand > s.manaSupply * 0.9 && s.treasury > 12000) {
-      const i = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y && (n.depth ?? 0) < 2); // the founding node only: deepening the wyrm's wakes it
-      if (i >= 0) deepenNode(s, i);
-    }
     want('nexus', Math.floor(buildings / 220));
-    if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && s.treasury > 4500) this.buildMine();
+    if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && this.spendable() > 4500) this.buildMine();
     want('temple', 1);
     want('grandacademy', 1);
-    want('font', s.manaDemand > s.manaSupply * 0.85 ? 1 + this.countKind('font') : 0);
-    if (s.milestone >= 5 && s.treasury > 8000 && canBuild(s, 'hallofwicks')) want('hallofwicks', 1);
-    if (s.milestone >= 7 && s.treasury > 30000) want('lantern', 1);
-    // a people that draws on the current: Torrent Mills are its spires
-    if (factionOf(s).rules.millMana > 1 && canBuild(s, 'torrentmill') && s.manaSupply - s.manaDemand < 20 && s.treasury > 7000) this.placeNear('torrentmill', this.cx, this.cy, this.radius);
-    // the Weir must touch water, so the home-side search of want() rarely finds it a place
-    if (s.milestone >= 7 && s.treasury > 30000 && canBuild(s, 'greatweir') && this.countKind('greatweir') === 0) this.placeNear('greatweir', this.cx, this.cy, this.radius);
+    // the Fonts, the deepening, the mills and the halls are the goal's (pickGoal), bought from a purse saved for them
     void MILESTONES;
+  }
+
+  /** Place a service: toward the Gloam for a ward, else beside the zone buildings farthest from one of its kind; a cradle on a node of its gift's line first. */
+  private placeService(key: string, nearGloam = false): boolean {
+    const s = this.s;
+    const def = BUILDING_BY_KEY[key];
+    if (nearGloam) {
+      // place toward the nearest gloam tile from the city centre
+      let best = -1;
+      let bd = Infinity;
+      for (let i = 0; i < s.gloam.length; i++) {
+        if (!s.gloam[i]) continue;
+        const x = i % MAP_W;
+        const y = (i / MAP_W) | 0;
+        const dd = Math.hypot(x - this.cx, y - this.cy);
+        if (dd < bd) {
+          bd = dd;
+          best = i;
+        }
+      }
+      if (best < 0) return false;
+      const gx = best % MAP_W;
+      const gy = (best / MAP_W) | 0;
+      // spot on the city edge toward the gloam
+      const ux = (gx - this.cx) / bd;
+      const uy = (gy - this.cy) / bd;
+      const r = Math.min(this.radius, bd - 6);
+      return this.placeNear(key, Math.round(this.cx + ux * r), Math.round(this.cy + uy * r), 4);
+    }
+    const clear = key === 'font' || key === 'nexus' || key === 'academy' || key === 'boneyard' || key === 'veshari' || key === 'cradle' || key === 'hatchery' || key === 'tidepool' || key === 'tamerslodge' || key === 'hallofwicks' || key === 'lantern';
+    // a cradle on a node of its gift's line, so a later cross can breed there
+    if (def.key === factionKey(s, 'cradle')) {
+      const line = s.faction === 'veshari' ? 'tide' : 'ember';
+      const n = s.nodes.find((q) => q.aspect === line && Math.hypot(q.x - this.cx, q.y - this.cy) <= this.radius + 6);
+      if (n && this.placeNear(key, n.x, n.y, 5, false, (x, y) => aspectAt(s, x, y) === line)) return true;
+    }
+    // spread services: beside the zone buildings farthest from one of the same kind; with none standing, every distance ties,
+    // so the outer ring is tried too (a 2×2 hall finds no room among the packed old homes: the depot of iteration 43)
+    const spots: { x: number; y: number; d: number; r: number }[] = [];
+    forEachBuilding(s, (b) => {
+      if (BUILDING_BY_KEY[b.kind].category !== 'zone') return;
+      let dmin = Infinity;
+      forEachBuilding(s, (o) => {
+        if (o.kind === key) dmin = Math.min(dmin, Math.hypot(o.x - b.x, o.y - b.y));
+      });
+      spots.push({ x: b.x, y: b.y, d: dmin, r: Math.max(Math.abs(b.x - this.cx), Math.abs(b.y - this.cy)) });
+    });
+    spots.sort((a, b) => b.d - a.d);
+    const tries = spots.slice(0, 6);
+    if (def.w >= 2) for (const sp of [...spots].sort((a, b) => b.d - a.d || b.r - a.r).slice(0, 12)) if (!tries.includes(sp)) tries.push(sp);
+    for (const sp of tries) if (this.placeNear(key, sp.x, sp.y, 4, clear)) return true;
+    return this.placeNear(key, this.cx, this.cy, Math.min(this.radius, 12)); // no homes to stand beside yet: anywhere near the stake
   }
 
   /** Find hills near the town, connect them by road and dig a mine. */

@@ -14,7 +14,7 @@ import * as vehicles from './sim/vehicles';
 import { setGolemDuty } from './sim/beasts';
 import { scatterDust, toggleSluice } from './sim/actions';
 import { maybeFireReturn } from './sim/events';
-import { costOf } from './data/factions';
+import { canBuild, costOf, specialLock } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
 import { Renderer, type ViewState } from './render/renderer';
@@ -30,7 +30,7 @@ import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
 import { tick, recomputeAll } from './sim/sim';
-import { serialize, deserialize } from './sim/save';
+import { SaveVersionError, serialize, deserialize } from './sim/save';
 import { TICKS_PER_SEC, Zone, type Building, type GameState } from './sim/types';
 import { Tools, toolLabel, type Tool } from './ui/tools';
 import { UI } from './ui/ui';
@@ -234,7 +234,7 @@ class Game {
       return true;
     } catch (e) {
       console.warn('load failed', e);
-      this.ui.toast(`<p class="bad">Could not load the saved Charter.</p>`);
+      this.ui.toast(`<p class="bad">${e instanceof SaveVersionError ? e.message : 'Could not load the saved Charter.'}</p>`, 6000);
       return false;
     }
   }
@@ -254,7 +254,7 @@ class Game {
         this.bindState(deserialize(json, (seed) => createGame(seed)));
         this.ui.toast('<p>Charter imported.</p>', 2500);
       } catch (e) {
-        this.ui.toast(`<p class="bad">That file is not a Wardlight Charter.</p>`);
+        this.ui.toast(`<p class="bad">${e instanceof SaveVersionError ? e.message : 'That file is not a Wardlight Charter.'}</p>`, 6000);
       }
     });
   }
@@ -337,12 +337,13 @@ class Game {
       case 'faster': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
       case 'help': this.ui.toggleHelp(); return true;
       case 'chronicle': this.ui.toggleChronicle(); return true;
+      case 'annals': this.ui.toggleAnnals(); return true;
       case 'views': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
       case 'save': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
       case 'load': this.load(); return true;
       case 'cancel': {
         let handled = false;
-        for (const id of ['help', 'budget', 'menu']) {
+        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle']) {
           const el = document.getElementById(id)!;
           if (!el.classList.contains('hidden')) { el.classList.add('hidden'); handled = true; }
         }
@@ -468,7 +469,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock } };
   const game = new Game(atlas);
   (window as any).__game = game;
 }
