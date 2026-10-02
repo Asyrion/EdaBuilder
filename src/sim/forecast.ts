@@ -2,6 +2,7 @@
 import { DAYS_PER_SEASON, SEASON_NAMES, type GameState } from './types';
 import { seasonOf } from './world';
 import { fontsRunHot } from './hazards';
+import { RIOT_DAYS } from './events';
 import { spiresAtWyrm, WYRM_WAKE_PER_SPIRE, WYRM_EATS, WYRM_SULK_AFTER } from './wyrm';
 import { pressureWord } from './weave';
 
@@ -28,6 +29,7 @@ export function forecast(s: GameState): ForecastLine[] {
     const d = 5 - s.overdrawDays;
     out.push({ text: d <= 0 ? 'A wild surge breaks loose today.' : `A wild surge in ${d} day${d === 1 ? '' : 's'} unless mana demand falls below 1.25× the flow or a Nexus store holds.`, kind: 'bad' });
   } else if (s.manaDemand > s.manaSupply * 0.95) out.push({ text: 'Mana demand is at the edge of the flow; a brownout is one building away.', kind: 'warn' });
+  if (s.unrestHigh >= 3 && s.unrestHigh < RIOT_DAYS) out.push({ text: `Unrest has stood above half for ${s.unrestHigh} days: a riot in the least-watched market in ${RIOT_DAYS - s.unrestHigh} unless it falls.`, kind: 'bad' });
   if (fontsRunHot(s)) out.push({ text: 'The Fonts run hot: past nine tenths of the flow a lit Thrum Font may flare (one chance in fifty a day each): fire at the shaft and ten days of smoke.', kind: 'warn' });
   if (s.stats.gloamTiles > 0 && s.day >= 6) {
     const hush = season === 3;

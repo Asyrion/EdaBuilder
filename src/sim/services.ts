@@ -36,10 +36,13 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
     if (b.kind === 'scaleward') strength *= b.plate ?? 1;
+    if (b.kind === 'hospice' && b.stock <= 0) strength *= 0.6; // no draughts on the shelf
+    if (b.kind === 'veshari' && !b.watered) strength *= 0.5; // a dry fire hall
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
-    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : def.service.radius;
+    const consecrated = (b.kind === 'shrine' || b.kind === 'candleshrine') && (b.blessed ?? -1) >= state.day;
+    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)

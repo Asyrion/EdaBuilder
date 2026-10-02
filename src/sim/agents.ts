@@ -6,6 +6,9 @@ import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
 import { PORTAL_CAP } from './networks';
+import { hallActive } from './guilds';
+/** Congestion within 10 of an active Carters' Yard is smoothed at this share. */
+export const CARTERS_EASE = 0.8;
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
@@ -512,12 +515,15 @@ export function tickAgents(state: GameState): void {
 
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
+  // an active Carters' Yard eases the roads within 10 of it by a fifth
+  const yards = hallActive(state, 'cartersyard') ? state.buildings.filter((b) => b && b.kind === 'cartersyard' && b.state === 'ok') as Building[] : [];
   for (let i = 0; i < state.traffic.length; i++) {
     const rt = roadAt(state, i);
     let v = 0;
     if (rt) {
       const cap = ROAD_BY_TYPE[rt].capacity;
       v = Math.min(255, Math.round((state.traffic[i] / cap) * 255));
+      if (v > 0 && yards.length) { const x = i % MAP_W; const y = (i / MAP_W) | 0; if (yards.some((yd) => Math.abs(yd.x - x) <= 10 && Math.abs(yd.y - y) <= 10)) v = Math.round(v * CARTERS_EASE); }
     }
     state.trafficSmooth[i] = Math.round(state.trafficSmooth[i] * 0.5 + v * 0.5);
     state.traffic[i] = 0;

@@ -2,7 +2,7 @@ import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, typ
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
-import { capacityOf, computeBuildingHappiness, demandReasons, happinessTerms, levelUpNeeds, workforceOf, type Term } from '../sim/growth';
+import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, demandReasons, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
@@ -90,6 +90,7 @@ export interface UiHost {
   setTraining(id: number, t: Training): void;
   callRain(buildingId: number): void;
   replate(buildingId: number): void;
+  vent(buildingId: number): void;
   setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
@@ -673,6 +674,7 @@ export class UI {
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
       { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
+      if (def.zone === Zone.Market && theftAt(s, b)) problems.push(`Theft: a tenth of the shelves a night. Watch here ${Math.round((s.coverage.watch[i] / 255) * 100)} %, unrest ${Math.round(s.unrest * 100)} %: a Watch Post over the market, or less unrest, stops it.`);
       if (def.zone === Zone.Market && s.fenNex > 0 && s.district[i] === s.fenNex) rows.push(row('Fen-Nex quarter', 'no tithe, double shelves'));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
       if (def.zone === Zone.Craft && seasonOfState(s) === 3) rows.push(row('The Hush', glimhouseNear(s, b) ? 'warmed by a Glimhouse' : `output ×${HUSH_CRAFT}`));
@@ -740,9 +742,19 @@ export class UI {
       for (const set of RELIC_SETS) rows.push(row(set.name, s.relics.complete.includes(set.id) ? `<span class="good">entire: ${set.bonus}</span>` : `${s.relics.pieces[set.id] ?? 0} of 3`));
       if (s.relics.uncatalogued > 0) (hasAcademy(s) ? rows : problems).push(hasAcademy(s) ? row('Awaiting the Academy', `${s.relics.uncatalogued} piece(s)`) : `${s.relics.uncatalogued} piece(s) lie uncatalogued: an Academy would name them.`);
     }
+    if (b.kind === 'hospice') { rows.push(row('Draughts', `${Math.round(b.stock)} / ${HOSPICE_DRAUGHTS} (2 goods a day from the fullest market within 16)`)); if (b.stock <= 0) problems.push('No draughts: with no goods on the shelf it heals at six tenths. A market within 16 tiles.'); }
+    if (b.kind === 'shrine' || b.kind === 'candleshrine') rows.push(row('Consecrated', (b.blessed ?? -1) >= s.day ? `${b.blessed! - s.day} day${b.blessed! - s.day === 1 ? '' : 's'}: reaches half again as far` : 'no: a pilgrim of this shrine who prays at a Temple consecrates it for 10 days'));
+    if (b.kind === 'temple') rows.push(row('Consecrates', 'the shrines whose pilgrims pray here reach half again as far for 10 days'));
+    if (b.kind === 'veshari' && !b.watered) problems.push('Dry: a fire hall without water fights at half strength. A well within reach.');
+    if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relics studied', `${Math.round(b.progress)} here · educated floor +${Math.round(s.educatedFloor * 100)} % (a loose relic every 5 days while lit, up to ${EDUCATED_FLOOR_CAP * 100} %)`));
+    if (b.kind === 'grandacademy') rows.push(row('Artifact prices', `${grandAcademyBonus(s) > 1 ? `+${Math.round((grandAcademyBonus(s) - 1) * 100)} %` : 'no bonus yet'} (+5 % per tenth of the city educated above four tenths; educated ${Math.round(s.educated * 100)} %)`));
+    if (b.kind === 'hunterslodge') rows.push(row('Pelts', `${Math.round(b.stock)} awaiting the carts (the Gloam road sells them) · ${s.stats.pelts} this charter`));
+    if (b.kind === 'mothloft') rows.push(row('Glim-dust', `${aspectAt(s, b.x, b.y) === 'glim' ? '0.6' : '0.3'} a day while lit${aspectAt(s, b.x, b.y) === 'glim' ? ' (Glim ley: doubled)' : ''}`));
+    if (b.kind === 'wrightslodge') { rows.push(row('Store', `40 mana of Nexus store and a surge line of 1.4× while the guild is pleased`)); rows.push(row('Vent', (b.cooldown ?? 0) > 0 ? `ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'}` : 'ready: empties the store and resets the surge count (30-day cooldown)')); }
+    if (b.kind === 'cartersyard') rows.push(row('Roads', `congestion within 10 tiles smoothed by a fifth while the guild is pleased`));
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relic sets', s.relics.complete.length ? s.relics.complete.map((id) => RELIC_SETS.find((r) => r.id === id)!.name).join(', ') : 'none catalogued yet'));
     { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
-    if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); }
+    if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else { rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); const low = [...GUILD_IDS].sort((p, q) => s.guilds.standing[p] - s.guilds.standing[q])[0]; const inDays = Math.max(0, COUNCIL_SPACING - (s.day - s.guilds.lastCouncil)); rows.push(row('Next petition', `in ${inDays} day${inDays === 1 ? '' : 's'}, from the ${GUILDS[low].name} (standing ${Math.round(s.guilds.standing[low])})${s.guilds.standing[low] >= 60 ? ': content, so none' : ''}`)); } }
     if (b.kind === 'depot') {
       const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
       const due = caravanDue(s);
@@ -785,6 +797,14 @@ export class UI {
       btn.disabled = b.cooldown > 0;
       btn.style.width = '100%';
       btn.onclick = () => this.host.callRain(b.id);
+      el.appendChild(btn);
+    }
+    if (b.kind === 'wrightslodge') {
+      const btn = document.createElement('button');
+      btn.textContent = (b.cooldown ?? 0) > 0 ? `Vent the store (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Vent the store: empty it, reset the surge count';
+      btn.disabled = (b.cooldown ?? 0) > 0;
+      btn.style.width = '100%';
+      btn.onclick = () => { this.host.vent(b.id); this.refreshInfo(); };
       el.appendChild(btn);
     }
     if (b.kind === 'scaleward') {
@@ -1066,6 +1086,7 @@ export class UI {
             <li><b>Walkers</b>: Watch Houses send watchmen, Boneyards sextons, Healer's Shrines healers, spires Tallowkin wardens (under their edict), Academies scholars to the delve, Tamer's Lodges tamers to the cradles, and shrines pilgrims to the temple. The streets they walk count as covered, and each does its job where it goes.</li>
             <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
+            <li><b>Unrest</b> above half for five days brings a riot to the least-watched market (the Watch holds it at half coverage, or pay the Crown 600); an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1315,7 +1336,7 @@ export class UI {
     net.innerHTML = `<b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b>`;
     net.className = `r ${l.net >= 0 ? 'good' : 'bad'}`;
     set('treasury', `${Math.round(st.treasury)}`);
-    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.`);
+    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.${idleScholars(st) ? ' Idle scholars: more than half the city is schooled with little Arcane work, +5 unrest.' : ''}${st.unrestHigh > 0 ? ` Unrest above half for ${st.unrestHigh} day${st.unrestHigh === 1 ? '' : 's'} (a riot at 5).` : ''}${st.stats.goodsStolen > 0 ? ` Stolen from unwatched shelves: ${Math.round(st.stats.goodsStolen)} goods.` : ''}`);
     set('history', `Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}`);
     const routes = tradeRoutes(st);
     const rEl = this.el.budget.querySelector('[data-k="routes"]') as HTMLElement;

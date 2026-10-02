@@ -208,6 +208,11 @@ Charter as `.json`.
 - Services have crews filled from the city's hands and watch, heal, teach and quiet by how
   many are filled; every happiness and land value shows its largest terms; a home lists what
   its next level needs; wards burn the grey on a daily budget, the nearest first.
+- Unrest has teeth: five days above half brings a riot to the least-watched market, and an
+  unwatched market loses a tenth of its shelves a night while the city is unquiet. The
+  Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
+  its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
+  well or a hall draws the reach of the ones already standing.
 - The ground has limits: wells serve a capacity of homes (the nearest first), a far-from-water
   well reaches less, the Seep follows the season, mud slows tracks in the wet seasons, mine
   seams run out, a hot Font may flare, mills share a river, portal crossings jam, and the

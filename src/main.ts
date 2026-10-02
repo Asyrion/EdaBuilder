@@ -25,7 +25,7 @@ import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
-import { resolveEvent, maybeFireEvent, ALL_EVENTS } from './sim/events';
+import { resolveEvent, maybeFireEvent, maybeFireRiot, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
@@ -123,6 +123,7 @@ class Game {
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
       setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
+      vent: (id) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b && b.kind === 'wrightslodge' && (b.cooldown ?? 0) <= 0) { this.state.manaStorage = 0; this.state.overdrawDays = -4; this.state.stats.brownoutOpen = 0; b.cooldown = 30; recomputeAll(this.state); this.audio.spire(); } },
       replate: (id) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b && b.kind === 'scaleward' && this.state.materials.scale >= 2 && (b.plate ?? 1) < 1) { this.state.materials.scale -= 2; b.plate = 1; recomputeAll(this.state); this.audio.spire(); } },
       callRain: (id) => { const r = callRain(this.state, id); if (r.ok) { recomputeAll(this.state); this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
       setRole: (id, role, target) => { const why = setRole(this.state, id, role, target); if (!why) { recomputeAll(this.state); this.audio.spire(); } return why; },
@@ -442,7 +443,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

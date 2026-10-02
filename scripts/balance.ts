@@ -30,5 +30,5 @@ run(state, TICKS_PER_DAY * days, {
 const ms = Date.now() - t0;
 console.log(`\n${days} days simulated in ${ms} ms (${(ms / (days * TICKS_PER_DAY)).toFixed(3)} ms/tick)`);
 console.log('milestones:', milestoneDays.map((d, i) => `${milestonesOf(state)[i].name}@d${d}`).join(', '));
-console.log('gameOver:', state.gameOver, '| fires', state.stats.firesTotal, 'surges', state.stats.surgesTotal, 'restless', state.stats.restlessTotal);
+console.log('gameOver:', state.gameOver, '| fires', state.stats.firesTotal, 'surges', state.stats.surgesTotal, 'restless', state.stats.restlessTotal, 'riots', state.stats.riots, 'stolen', Math.round(state.stats.goodsStolen), 'pelts', state.stats.pelts);
 console.log('last messages:\n' + state.messages.slice(-8).map((m) => `  [${m.kind}] ${m.text}`).join('\n'));

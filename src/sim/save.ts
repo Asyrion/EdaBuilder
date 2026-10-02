@@ -81,6 +81,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.materials.glimdust = state.materials.glimdust ?? 0;
   state.gloamPressure = state.gloamPressure ?? 0.3;
   state.lastBadDay = state.lastBadDay ?? -30;
+  state.unrestHigh = state.unrestHigh ?? 0;
+  state.educatedFloor = state.educatedFloor ?? 0;
   assignAspects(state.nodes, state.founding, (() => { let k = 0; return () => (k++ * 5 + 3); })());
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
@@ -91,7 +93,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays', 'riots', 'goodsStolen', 'pelts'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.stats.stoneCut = state.stats.stoneCut ?? state.stats.terraformed; // before iteration 38 every terraform op counted as stone
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();

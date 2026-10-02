@@ -7,7 +7,7 @@ import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
-import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius } from '../sim/world';
+import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius, kinReach } from '../sim/world';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -1012,6 +1012,8 @@ export class Renderer {
           const [wx, wy] = tileToWorld(g.x + dx, g.y + dy);
           this.draw(this.atlas.get(g.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
         }
+      // the reach of the ones already standing, so the player sees where a new spire links or where a service has gaps
+      if (g.radius > 0 || def.key === 'wicktower') { const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key); for (const k of kinReach(state, def)) this.ring(k.cx, k.cy, k.r, ley ? 'rgba(120,220,255,0.03)' : 'rgba(255,220,120,0.04)', ley ? 'rgba(120,220,255,0.3)' : 'rgba(255,220,120,0.3)'); }
       if (g.radius > 0) this.ring(g.x + (def.w - 1) / 2, g.y + (def.h - 1) / 2, g.radius, 'rgba(120,220,255,0.12)', 'rgba(120,220,255,0.5)');
     } else if (view.selected) {
       // the selected building shows what it reaches: its service, its water or its light

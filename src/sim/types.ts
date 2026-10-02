@@ -99,6 +99,7 @@ export interface Building {
   greyDays?: number; // days the Gloam has stood at the door of this dark, unwarded building
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
   plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
+  blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
 }
 
 export const enum AgentKind {
@@ -291,6 +292,8 @@ export interface GameState {
   happiness: number; // 0..100
   health: number; // 0..1
   unrest: number; // 0..1
+  unrestHigh: number; // days in a row unrest has stood above half (a riot at five)
+  educatedFloor: number; // the Academy's studied relics: a lasting floor under the educated share
   // mana
   manaSupply: number;
   manaDemand: number;
@@ -420,6 +423,9 @@ export interface GameState {
     floodsWeathered: number; // Hushes a water people came through with the river in flood
     bargemanRounds: number; // flooded homes bailed by bargemen
     quarterDays: number; // days with at least one chartered district
+    riots: number;
+    goodsStolen: number; // goods taken from unwatched shelves
+    pelts: number; // hound pelts the lodges brought in
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

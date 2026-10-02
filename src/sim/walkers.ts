@@ -1,5 +1,7 @@
 /** Walkers: NPC kinds that embody a service by doing a visible job on the roads around their building. See DESIGN.md 4.62 and 14.1. */
 import { BUILDING_BY_KEY } from './catalog';
+/** A shrine whose pilgrim prayed at the Temple reaches half again as far for this many days. */
+export const CONSECRATED_DAYS = 10;
 import { mewsActive } from './beasts';
 import { findPath, roadTileOf } from './agents';
 import { effects, recomputeGloamDist } from './hazards';
@@ -170,7 +172,14 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     onArrive: (s, a, i) => {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
       const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'candleshrine' || b.kind === 'stake');
-      if (h) { s.stats.pilgrimPrayers++; logLine(a, `Prayed at the ${BUILDING_BY_KEY[h.kind].name} at (${h.x},${h.y}).`); }
+      if (h) {
+        s.stats.pilgrimPrayers++;
+        logLine(a, `Prayed at the ${BUILDING_BY_KEY[h.kind].name} at (${h.x},${h.y}).`);
+        if (h.kind === 'temple') {
+          const home = s.buildings.find((b) => b && b.id === a.anchorId);
+          if (home && (home.kind === 'shrine' || home.kind === 'candleshrine')) { home.blessed = s.day + CONSECRATED_DAYS; logLine(a, `Brought the Temple's blessing home: the shrine is consecrated for ${CONSECRATED_DAYS} days.`); }
+        }
+      }
       a.phase = 1;
     },
   },
