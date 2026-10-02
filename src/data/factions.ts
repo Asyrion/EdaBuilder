@@ -102,7 +102,7 @@ const TALLOW_TEXTS = [
   'A lantern town. The deep Veins may be tapped and a Wyrm-Cradle warmed under the spires.',
   'A beacon-street: carts from three valleys steer by your light. The guilds petition for a hall.',
   'A bright town of a thousand souls. The Four Vigils ask for a temple with a lamp in every niche.',
-  'The Hall of Wicks: the Crown grants you the right to raise the Lantern of Wicks.',
+  'The Hall of Wicks stands and the city is nine tenths lit: the Crown grants you the right to raise the Lantern of Wicks.',
   'The Lantern of Wicks. Every window in the city burns, and the Gloam has nowhere to stand.',
 ];
 const TALLOW_SWAP: Record<string, string> = { shrine: 'candleshrine', lantern_wonder: 'lanternofwicks' };
@@ -138,7 +138,10 @@ export const FACTIONS: Record<string, FactionDef> = {
 
 /** What a building costs this people: the Ley Spire's price is a rule, everything else is the catalog's. */
 export function costOf(s: GameState, def: BuildingDef): number {
-  return def.key === 'spire' ? Math.round(def.cost * factionOf(s).rules.spireCost) : def.cost;
+  const base = def.key === 'spire' ? def.cost * factionOf(s).rules.spireCost : def.cost;
+  // the spire-wrights' strike (a Tallowkin tale): spires and Wick-Towers cost half again while it lasts
+  const strike = def.key === 'spire' || def.key === 'wicktower' ? s.modifiers.filter((m) => m.kind === 'wrights' && m.until > s.day).reduce((a, m) => a + m.value, 0) : 0;
+  return Math.round(base * (1 + strike));
 }
 
 export function factionOf(s: GameState): FactionDef {
@@ -167,6 +170,7 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
 export function specialLock(s: GameState, key: string): string | null {
   if (key === 'stormpeak' && !s.firedEvents.includes('stormcaller:0')) return 'Needs its caller: give the Huruhui storm caller the hills when they come (a Township of 300 folk).';
   if (key === 'wyrmcourt' && (s.wyrm.state === 'none' || s.wyrm.state === 'sleeping')) return 'Raised for a woken wyrm: there is none awake to court.';
+  if (key === 'hallofwicks' && !s.firedEvents.includes('vigil:0')) return 'Sworn at the Hush vigil: keep one first (the first night of the Hush).';
   return null;
 }
 export function canBuild(s: GameState, key: string): boolean {

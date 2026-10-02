@@ -349,6 +349,17 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 52 (M13 part 2: the Tallowkin's light)
+
+- The Wick chapter (eight quests), three tales (the spire-wrights' strike, a surge in the
+  wickhouses, the candle-eyed child), the lamplighter walker (from Wick-Towers and the Hall
+  of Wicks: relights a dark home by candle for the day, honoured by the ley pass), the Hall
+  of Wicks (a 3×3 ley hall sworn at the vigil, from the castle painting), the bot's towers
+  placed only where they link and its Hall raised at Beacon-Street, a dev command. M13 is
+  closed; the Tallowkin reach Bright Town by day 54 on three seeds with the purse positive.
+  Still open for the bot: the Hall of Wicks milestone (the share falls back to 73 % as the bot
+  zones faster than it lights, and it never holds the Hall's 8,000 crowns): M14 part 5.
+
 ## Done in iteration 51 (M15 part 2: the zone levels, one look for every people, halls that grow)
 
 - Twenty-four zone sprites from the paintings (hearth 2, craft 1–3, arcane 2, market 3, four
@@ -527,12 +538,6 @@ cameo events.
    goods; herds that thin where the city spreads); part 2 the water (a Fishers' Hut with
    boats, fish that spoil, reed-cutters for thatch, a water garden, the lake's own land
    value and well bonus, a weir pool and a ford).
-2. **M13 part 2: the Tallowkin's light** (the castle painting, ley_spires image_0, as the Hall of Wicks) (DESIGN §4.72): a chapter of eight (the first
-   spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
-   Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
-   warps the wickhouses, a candle-eyed child who reads the Veins), the lamplighter walker
-   (from Wick-Towers and spires: relights a dark home for a day, paints ward), a people's
-   dev command, and the late game on three seeds (Bright Town by day 120).
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

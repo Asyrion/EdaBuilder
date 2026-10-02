@@ -380,6 +380,13 @@ export const BUILDINGS: BuildingDef[] = [
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
   {
+    key: 'hallofwicks', name: 'Hall of Wicks', category: 'wonder', faction: ['tallowkin'],
+    desc: 'The lamplighters\' hall, sworn at the Hush vigil: lights itself and nine tiles around it, relays the ley like a Nexus with two hundred of load, holds 40 mana against the surge, and sends three lamplighters down the streets each day to light the dark homes by candle.',
+    flavor: '"Every wick in the city is cut in this hall. Every one. Ask the warden how many; she knows."',
+    w: 3, h: 3, cost: 6000, upkeep: 40, manaUse: 0, manaStorage: 40, selfLit: true,
+    service: { type: 'ward', radius: 12, strength: 0.6 }, landValue: 10, unlock: 5, wonder: true,
+  },
+  {
     key: 'lanternofwicks', name: 'Lantern of Wicks', category: 'wonder', faction: ['tallowkin'],
     desc: 'The Lantern of Vell rebuilt by the spire-wrights: a leystone lighthouse of ten thousand wicks. Wards 30 tiles, relays the ley like a Nexus, lights itself and the street around it, and marks the Tallowkin a true people of the light.',
     flavor: 'They say you can read by it from the next valley. They say a lot of things in the next valley.',
@@ -672,7 +679,7 @@ export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
 /** Great halls that relay the ley like a Nexus and light like the Lantern: one row per people's wonder. */
-export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir', 'lanternofwicks'];
+export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir', 'lanternofwicks', 'hallofwicks'];
 
 export const WALL_COST = 60;
 export const WALL_UPKEEP = 0.4;

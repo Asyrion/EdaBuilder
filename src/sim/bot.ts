@@ -154,11 +154,16 @@ export class Bot {
     const lit: { x: number; y: number }[] = s.nodes.map((n) => ({ x: n.x, y: n.y }));
     forEachBuilding(s, (b) => { if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake')) lit.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 }); });
     let done = 0;
+    // never more than two towers standing unlit: a tower that cannot link is upkeep for nothing (iteration 52)
+    let unlitTowers = 0;
+    forEachBuilding(s, (b) => { if (b.kind === 'wicktower' && b.state === 'ok' && !b.lit) unlitTowers++; });
     forEachBuilding(s, (b) => {
       if (done >= 3 || b.lit || b.state !== 'ok' || BUILDING_BY_KEY[b.kind].category !== 'zone') return;
       if (s.treasury < BUILDING_BY_KEY.wicktower.cost + 400) return;
       const near = lit.some((l) => Math.hypot(l.x - b.x, l.y - b.y) <= reach + 2);
-      if (near ? this.placeNear('wicktower', b.x, b.y, 3) : this.placeNear('spire', b.x, b.y, 3)) done++;
+      // a tower only where it will link: a lit source within reach of the tower's own tile
+      const links = (x: number, y: number) => lit.some((l) => Math.hypot(l.x - x, l.y - y) <= reach - 0.5);
+      if (near && unlitTowers < 2 ? this.placeNear('wicktower', b.x, b.y, 3, false, links) : !near ? this.placeNear('spire', b.x, b.y, 3) : false) done++;
     });
   }
 
@@ -459,6 +464,7 @@ export class Bot {
     want('temple', 1);
     want('grandacademy', 1);
     want('font', s.manaDemand > s.manaSupply * 0.85 ? 1 + this.countKind('font') : 0);
+    if (s.milestone >= 5 && s.treasury > 8000 && canBuild(s, 'hallofwicks')) want('hallofwicks', 1);
     if (s.milestone >= 7 && s.treasury > 30000) want('lantern', 1);
     // a people that draws on the current: Torrent Mills are its spires
     if (factionOf(s).rules.millMana > 1 && canBuild(s, 'torrentmill') && s.manaSupply - s.manaDemand < 20 && s.treasury > 7000) this.placeNear('torrentmill', this.cx, this.cy, this.radius);
@@ -499,7 +505,7 @@ export class Bot {
   }
 
   /** Try to place a building near (x,y) within a search radius. */
-  private placeNear(key: string, x: number, y: number, r: number, allowClear = false): boolean {
+  private placeNear(key: string, x: number, y: number, r: number, allowClear = false, ok?: (x: number, y: number) => boolean): boolean {
     const s = this.s;
     const def = BUILDING_BY_KEY[key];
     if (s.treasury < costOf(s, def)) return false;
@@ -510,6 +516,7 @@ export class Bot {
         const py = y + dy;
         if (!inBounds(px, py) || px < 1 || py < 1 || px >= MAP_W - 3 || py >= MAP_H - 3) continue;
         if (canPlaceBuilding(s, key, px, py)) continue;
+        if (ok && !ok(px, py)) continue;
         const d = Math.hypot(dx, dy);
         if (!best || d < best.d) best = { x: px, y: py, d };
       }

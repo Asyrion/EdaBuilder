@@ -324,6 +324,8 @@ export function updateMana(state: GameState): void {
     const b = state.buildings[s];
     if (b && !litB[s]) b.lit = false;
   }
+  // a lamplighter's candle: a zone building relit today is lit until the day ends, drawing nothing from the ley (iteration 52)
+  forEachBuilding(state, (b) => { if (!b.lit && b.state === 'ok' && (b.relit ?? -1) >= state.day && BUILDING_BY_KEY[b.kind].category === 'zone') b.lit = true; });
   // lit tiles for overlay: also mark building tiles as lit if building lit
   forEachBuilding(state, (b) => {
     if (!b.lit) return;

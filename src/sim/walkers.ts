@@ -321,6 +321,40 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       }
     },
   },
+  lamplighter: {
+    id: 'lamplighter', name: 'lamplighter', plural: 'lamplighters', prop: 'lamp',
+    desc: "Walks from a lit Wick-Tower (one) or the Hall of Wicks (three): the streets it walks count as ward, and a dark home, shop or works it reaches is lit by its candle until the day ends (eight a day). A Tallowkin city's light where the ley does not reach.",
+    from: ['wicktower', 'hallofwicks'],
+    count: (_s, b) => (b.state !== 'ok' ? 0 : b.kind === 'hallofwicks' ? 3 : b.lit ? 1 : 0),
+    radius: () => 10,
+    cap: 8,
+    target: (s, a, anchor) => {
+      let best: Building | null = null;
+      let bd = Infinity;
+      forEachBuilding(s, (b) => {
+        if (b.state !== 'ok' || b.lit || BUILDING_BY_KEY[b.kind].category !== 'zone') return;
+        if (Math.abs(b.x - anchor.x) > 10 || Math.abs(b.y - anchor.y) > 10 || (b.relit ?? -1) >= s.day) return;
+        const d = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+        if (d < bd) { bd = d; best = b; }
+      });
+      if (!best) return null;
+      const rt = roadTileOf(s, best);
+      return rt >= 0 ? rt : null;
+    },
+    onTile: (s, _a, i) => paintBonus(s, 'ward', i, 0.02, 0.08),
+    onArrive: (s, a, i) => {
+      if (a.load >= 8) return;
+      for (const b of buildingsAt(s, i)) {
+        if (BUILDING_BY_KEY[b.kind].category !== 'zone' || b.state !== 'ok' || b.lit || (b.relit ?? -1) >= s.day) continue;
+        b.relit = s.day + 1;
+        b.lit = true; // until updateMana's next pass, which honours relit
+        a.load += 1;
+        s.stats.lamplighterRounds++;
+        logLine(a, `Lit the candles at (${b.x},${b.y}).`);
+        break;
+      }
+    },
+  },
   watchman: {
     id: 'watchman', name: 'watchman', plural: 'watchmen', prop: 'rod',
     desc: 'Patrols the streets around its Watch House: the tiles it walks count as watched, and it kills hounds and lays the restless it meets, two of each a day.',

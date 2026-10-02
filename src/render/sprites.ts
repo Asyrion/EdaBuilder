@@ -1190,6 +1190,12 @@ function walker(prop: string, variant: number, frame: number): Painter {
       p.rect(7, 0, 1, 10, 'wood1');
       p.px(7, 9, 'ironDark');
       break;
+    case 'lamp': // a Tallowkin lamplighter: candle-eyed, a pole with a lit lantern over the shoulder
+      p.px(3, 1, 'windowLit'); p.px(4, 1, 'windowLit');
+      p.rect(7, 0, 1, 6, 'wood2');
+      p.rect(6, 0, 3, 2, 'gold');
+      p.px(7, 1, 'fire1');
+      break;
     case 'candle': // a Tallowkin warden: candle-eyed, a tallow candle held up
       p.px(3, 1, 'windowLit'); p.px(4, 1, 'windowLit');
       p.rect(7, 1, 1, 3, 'bone');
@@ -1461,6 +1467,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   sextonchapel: { w: 2, h: 2, height: 12, roofH: 8, wall: 'darkstone', roof: 'slate', windows: 1, windowRows: 2, door: true, spire: true, wisps: true, glowWindows: true, seed: 69 },
   wrightslodge: { w: 2, h: 2, height: 14, roofH: 8, wall: 'bluewash', roof: 'slate', windows: 2, windowRows: 2, door: true, chimney: true, overhang: true, sign: true, glowWindows: true, runeBand: true, seed: 66 },
   wyrmcourt: { w: 3, h: 3, height: 2, roofH: 1, wall: 'stone', roof: 'none', standingStones: true, runeBand: true, seed: 61 },
+  hallofwicks: { w: 3, h: 3, height: 24, roofH: 10, wall: 'stone', roof: 'cone', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, crystal: true, runeBand: true, banner: true, lanternPost: true, seed: 70 },
   // halls that grow with the city (iteration 51): stage 1 from the Village, stage 2 from the Burgh
   guildhall_s1: { w: 2, h: 2, height: 22, roofH: 9, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true },
   guildhall_s2: { w: 2, h: 2, height: 26, roofH: 10, wall: 'stone', roof: 'copper', windows: 4, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true, glassDome: true, crystal: true },
@@ -1789,7 +1796,7 @@ export function generateSprites(): SpriteDef[] {
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
-  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff'], ['stonesexton', 'salt'], ['bargeman', 'pole']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
+  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff'], ['stonesexton', 'salt'], ['bargeman', 'pole'], ['lamplighter', 'lamp']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {
     const p = cart(v);
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }

@@ -216,6 +216,8 @@ Charter as `.json`.
   Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
   its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
+- The Tallowkin's light: the Wick chapter, three tales, lamplighters who light dark homes by
+  candle, and the Hall of Wicks sworn at the Hush vigil.
 - The painted set: the ground, the trees, bushes and mushrooms, the spire, the wells, the
   Depot, the chapels, the homes, works, shops and markets of the zones are imported from
   the reference paintings, sharpened and outlined to sit beside the procedural set; one

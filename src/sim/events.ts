@@ -539,6 +539,37 @@ export const VESHARI: EventDef[] = [
   },
 ];
 
+/** The Tallowkin's tales (iteration 52). */
+export const TALLOWKIN: EventDef[] = [
+  {
+    id: 'wrights_strike', title: "The spire-wrights' strike",
+    text: 'The spire-wrights have downed their chalk. Four spires stand on your light, they say, and every one was priced by the Crown and paid by the Tallowkin; the wrights want chalk-money of their own before another shard is set.',
+    when: (s) => s.faction === 'tallowkin' && s.buildings.filter((b) => b && b.kind === 'spire' && b.state === 'ok').length >= 4,
+    choices: [
+      { label: 'Pay the chalk-money (700 crowns)', desc: '700 crowns; the chalk is back on the walls by dawn.', apply: (s) => { s.treasury -= 700; return 'The purse goes round the lodge. By dawn there is blue chalk on every wall again. 700 crowns.'; } },
+      { label: 'Let them sit', desc: 'Spires and Wick-Towers cost half again for ten days.', apply: (s) => { s.modifiers.push({ kind: 'wrights', value: 0.5, until: s.day + 10, label: "The spire-wrights' strike" }); return 'They sit. Whoever sets a shard in the next ten days pays a stranger to do it, and strangers charge.'; } },
+    ],
+  },
+  {
+    id: 'surge_wickhouses', title: 'A surge in the wickhouses', once: true,
+    text: 'The wild surge ran down the lantern-ways and into the hearths: every candle in the wickhouses burns a hand high and blue, and the candle-eyed children will not sleep. The spire-wrights say it will pass. The mothers say snuff them.',
+    when: (s) => s.faction === 'tallowkin' && s.stats.surgesTotal >= 1 && s.buildings.filter((b) => b && b.kind === 'hearth' && b.state === 'ok' && b.lit).length >= 10,
+    choices: [
+      { label: 'Snuff and relight (300 crowns)', desc: '300 crowns of tallow; +4 happiness for six days.', apply: (s) => { s.treasury -= 300; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 6, label: 'The candles relit' }); return 'The sextons go door to door with snuffers and new tallow. The city sleeps. 300 crowns.'; } },
+      { label: 'Let them burn bright', desc: '+15 % mana flow for six days; two hearths catch fire.', apply: (s) => { s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 6, label: 'The candles burn blue' }); const lit = s.buildings.filter((b) => b && b.kind === 'hearth' && b.state === 'ok' && b.lit) as Building[]; const rng = rngOf(s); for (let k = 0; k < 2 && lit.length; k++) { const b = lit.splice(rng.int(lit.length), 1)[0]; igniteBuilding(s, b); } commitRng(s, rng); return 'They burn. For six days the ley runs high and blue through every wick; two houses burn with it.'; } },
+    ],
+  },
+  {
+    id: 'candle_child', title: 'The candle-eyed child', once: true,
+    text: 'A child of the wickhouses, her eyes two steady flames, has been found at the node at midnight, three nights running, reading the Veins aloud in a voice that is not hers. The spire-wrights want her at the node. Her mother wants her at the shrine.',
+    when: (s) => s.faction === 'tallowkin' && s.milestone >= 3,
+    choices: [
+      { label: 'Let her read the Veins', desc: 'A true vein: +10 mana at every node, for good.', apply: (s) => { s.stats.trueVeins++; return 'She reads. The Veins answer with a flow the spire-wrights have no chalk for. Every node gives ten more, for good.'; } },
+      { label: 'Send her to the Candle-Shrine', desc: 'The shrine schools her: the educated floor rises 2 %.', apply: (s) => { s.educatedFloor = Math.min(0.2, s.educatedFloor + 0.02); return 'She reads at the shrine instead, where the words are older and the fire smaller. The children who sit with her learn.'; } },
+    ],
+  },
+];
+
 /** Unrest above RIOT_UNREST for this many days in a row brings a riot to the least-watched market. */
 export const RIOT_DAYS = 5;
 function leastWatchedMarket(s: GameState): Building | null {
@@ -564,7 +595,7 @@ export function maybeFireRiot(s: GameState): void {
 }
 void RIOT_UNREST;
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT];
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -638,7 +669,7 @@ export function maybeFireEvent(s: GameState): void {
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
   // the caravan keeps its own rhythm (maybeFireCaravan) and is never drawn here
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = pool.find((x) => x.priority) ?? rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };

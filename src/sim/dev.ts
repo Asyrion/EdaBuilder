@@ -51,6 +51,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   // purse
   { id: 'crowns', group: 'Purse', name: '+10,000 crowns', desc: 'Into the treasury.', run: (s) => { s.treasury += 10000; return 'The Crown sends a chest.'; } },
   { id: 'materials', group: 'Purse', name: '+10 of every rare good', desc: 'Scale, wyrmfire, eggshell, rayscale, glim-dust.', run: (s) => { for (const k of Object.keys(s.materials) as (keyof typeof s.materials)[]) s.materials[k] += 10; return 'The vaults fill.'; } },
+  { id: 'lamplight', group: 'Purse', name: "The lamplighters' round", desc: 'Every standing home, shop and works relit by candle for three days (the Tallowkin way).', run: (s) => { let n = 0; for (const b of s.buildings) if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone') { b.relit = s.day + 3; b.lit = true; n++; } return `${n} candles lit for three days.`; } },
   { id: 'milestone', group: 'Purse', name: 'Next milestone', desc: 'Raises the milestone by one (unlocks follow).', run: (s) => { const MS = milestonesOf(s); s.milestone = Math.min(MS.length - 1, s.milestone + 1); return `Now ${MS[s.milestone].name}.`; } },
   { id: 'population', group: 'Purse', name: 'Fill every home', desc: 'Residents and workers to capacity for one day.', run: (s) => { let n = 0; forEachBuilding(s, (b) => { const d = BUILDING_BY_KEY[b.kind]; if (d.zone === Zone.Hearth && b.state === 'ok') { b.residents = 8 * b.level; n += b.residents; } }); s.population = Math.max(s.population, n); checkMilestones(s); return `${n} folk housed.`; } },
   // time

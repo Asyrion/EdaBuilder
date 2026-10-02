@@ -1888,6 +1888,65 @@ birches into `glimwood_0..3` (pale ley blue, a glow on the leaf tips) and the fo
 castle on the hill (ley_spires image_0) matches no building yet and waits for the Hall of
 Wicks (M13 part 2).
 
+### 4.83 M13 part 2, the Tallowkin's light: the Wick chapter, three tales, the lamplighter, the Hall of Wicks, the late game (iteration 52)
+
+M13 closes, eleven iterations after part 1 (§4.72). The Tallowkin were a people with rules
+and buildings but no story and no late game: the bot settled at 86 % lit, four points short
+of the Hall of Wicks gate, paying for Wick-Towers it could not link until its purse went
+under.
+
+**The Wick.** Eight quests with `people: 'tallowkin'`: the first spire lit, a Wick-Tower, a
+Candle-Shrine, half of twenty buildings lit (`litShare`), the Hush vigil kept (`chose(s,
+'vigil', 0)`), a Nexus, the Hall of Wicks, the Lantern of Wicks (5,000, priority 70).
+
+**Three tales** (`TALLOWKIN` in events.ts). *The spire-wrights' strike* (four spires): pay 700
+or let them sit, and spires and Wick-Towers cost half again for ten days (a `wrights`
+modifier read in `costOf`). *A surge in the wickhouses* (once, after a surge with ten lit
+hearths): snuff and relight (300 crowns, +4 happiness for six days) or let them burn bright
+(+15 % mana flow for six days, two hearths catch fire). *The candle-eyed child* (once, from
+the Lamp): let her read the Veins (a true vein, +10 node mana for good) or send her to the
+shrine (the educated floor +2 %).
+
+**The lamplighter.** A walker from every lit Wick-Tower (one) and the Hall of Wicks (three):
+it seeks the nearest dark home, shop or works within 10 that no candle has reached today,
+and lights it by candle until the day ends (`Building.relit`, saved; eight a day; the
+streets it walks count as ward). `updateMana` honours `relit` after its reach, load and
+brownout passes, so a candle holds through the ley's eighteen daily recomputes and draws
+nothing from it: the dark-abandon rule and the lit-share gate both read `b.lit`, so a
+lamplighter keeps a home and lifts the gate. The panel's Mana row says "lit by a
+lamplighter's candle today".
+
+**The Hall of Wicks.** A 3×3 Tallowkin wonder (6,000 crowns, 40 a day) from Beacon-Street,
+sworn at the Hush vigil (`specialLock`: the vigil must have been kept), self-lit with a
+40-mana store, a ley hall (`WONDER_HALLS`: it relays and lights nine tiles and carries two
+hundred of load), a ward of 12, and three lamplighters a day. Drawn from the castle
+painting (`b_hallofwicks`, the last of the ley_spires folder). Milestone 7's text now says
+the Hall stands and the city is nine tenths lit before the Lantern may rise.
+
+**The late game.** The bot places a Wick-Tower only on a tile a lit spire, Nexus, Stake, hall
+or node can reach (`placeNear` takes a filter), and never while two towers stand unlit; it
+raises the Hall of Wicks at Beacon-Street with 8,000 crowns. The dev command *The
+lamplighters' round* relights every standing zone building for three days.
+
+Balance, 150 days, the Tallowkin against §4.72 and §4.80 in brackets:
+
+| seed | Bright Town | Hall of Wicks | folk at day 150 | lit at day 150 | purse at day 150 |
+|---|---|---|---|---|---|
+| 42 | day 42 (§4.72 42; §4.80 70) | not reached (not reached) | 1,341 (1,101; 950) | 73 % (86 %) | +107 (−866) |
+| 43 | day 37 (37) | not reached (day 54) | 1,335 (1,644) | 91 % (99 %) | +2,139 |
+| 44 | day 54 (38) | not reached (not reached) | 1,953 (1,120) | 73 % (86 %) | +680 |
+
+The Vellish control (seed 42) prints the iteration 49 line exactly: the lamplighter is the
+Tallowkin's alone. Bright Town comes by day 54 on all three seeds and the purse stays above
+zero, which was the iteration's goal; seed 42 gains two hundred folk and a thousand crowns
+over §4.80. The Hall of Wicks milestone is still not reached: the lamplighters light
+thousands of windows (5,660 rounds on seed 42 by day 150), but the bot zones faster than it
+lights, so the share that stood at 85 % at Bright Town falls back to 73 % as the city grows,
+and the Hall itself needs 8,000 crowns the bot never holds (the peoples' bots are too poor:
+the known issue that M14 part 5, the bot plays it all, owns). Seed 43 sits at 91 % lit with
+2,139 crowns: the gate is open and the Hall unaffordable. The player's game is whole; the
+bot's late game waits on its purse.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2002,7 +2061,8 @@ Wicks (M13 part 2).
   scaffold held twice.
 - **M13 The third people** — the Tallowkin of the Wick: part 1, rules, buildings, the
   twin-node start, the look, the bot (iteration 41, §4.72) ✅; part 2, the chapter, the
-  tales, the lamplighter and the late game.
+  tales, the lamplighter, the Hall of Wicks and the late game (iteration 52, §4.83) ✅. M13 is
+  closed.
 - **M14 The depth pass** — the audit's five parts (§15, docs/AUDIT.md): supply has limits ✅;
   services with staff and stakes ✅; wyrmcraft matured; the world pushes back; the bot plays it
   all. Preceded by the sweep of iteration 44 (§4.75).
@@ -2915,6 +2975,13 @@ playtest of a lakeside town.
 - *Outline everything (iteration 50):* the procedural set's dark edge is the thing that made
   the imported stakes look pasted on; the same edge, and a sharpen pass, make a painting
   and a procedural sprite one set.
+- *A gate the bot cannot pass is a bug in the gate or the bot (iteration 52):* the Tallowkin
+  sat at 86 % lit for eleven iterations because the bot's towers could not link and nothing
+  lit the corners the ley does not reach; the lamplighter is the answer the people were
+  always going to have, and the balance table is where the bug showed.
+- *Finish the oldest milestone first (iteration 52):* M13 part 2 slid behind M14 and M15
+  without a decision; a milestone open for ten iterations is a smell, and the order of the
+  list is itself a decision to be written down.
 - *One painting is the look for every people (iteration 51):* a people's copy of a sprite
   exists to restyle a procedural look; a painting already is a look, so an imported base
   shows for everyone and the copies serve only the levels without one.
