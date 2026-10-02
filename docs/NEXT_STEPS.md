@@ -349,6 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 49 (the playtest batch: road corners, districts in steps, the demand explained, the Stake that grows)
+
+- A road at a diagonal corner counts for zone tiles, doors and halls; the zone preview hatches
+  the tiles that would never grow and the hint counts them; "No road at its door" problem and
+  icon. Districts open in steps (two at the Hamlet, four at the Village, six at the Market
+  Town, eight at the Burgh) and charters too (Hearth and Craft, then Market, Scholars',
+  Temple); the milestone toast says what opened; a lesson card at the Hamlet with three
+  Show-me steps; the Ledger pins the Districts chapter while it stands. The demand bars have a
+  zero line, a word under each bar, a tooltip in words (sign, verdict, numbers, advice) and a
+  "?" explanation. The Founding Stake's hall grows through four stages by milestone, drawn
+  from the founding_stakes paintings through the new import pipeline (`npm run art`,
+  `art/sources.json`, `public/art/sprites.json`, merged over the procedural atlas at boot),
+  each with a hand-set footprint offset and a derived night glow. M15 (the painted set) and
+  M16 (the wild and the water) designed and slotted (DESIGN §16).
+
 ## Done in iteration 48 (M14 part 2b: unrest with teeth, halls with a difference)
 
 - Unrest above half for five days brings a riot: the least-watched market burns unless its
@@ -481,22 +496,35 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
+0. **M15 The painted set** (DESIGN §16, §5 style guide, §4.80 pipeline): the remaining
+   inspiration folders through `npm run art` with a hand-set offset and a checked glow each
+   (spires lit and unlit and the Nexus; wells by reach; the graveyard chapel as the Ossuary
+   and the Sextons' Chapel; forge, brickmaker, alchemist and general craft as the Craft
+   levels and the Lyceum; trade houses as Market 3 and the Depot; wooden houses as the
+   Hearth levels); the nine sprite-less buildings drawn; the procedural set restyled by the
+   guide; the Guildhall and the Temple growing with the city like the Stake. A contact
+   sheet of every imported sprite over its diamond; day and night screenshots.
+1. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
    what they say (each line's aura a real, shown effect); the Great Cradle; lodges with a
    capacity; feeding reach; departed dragons that return; roles with a price; champions who
    can lose a bout; materials with sinks; marvels and wonders with a role of their own; the
    Wyrm-Court after the binding; golems assigned to a works. Balance against the iteration
-   48 table.
-1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
+   49 table.
+2. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters,
+   herons, goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as
+   goods; herds that thin where the city spreads); part 2 the water (a Fishers' Hut with
+   boats, fish that spoil, reed-cutters for thatch, a water garden, the lake's own land
+   value and well bonus, a weir pool and a ford).
+3. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
    warps the wickhouses, a candle-eyed child who reads the Veins), the lamplighter walker
    (from Wick-Towers and spires: relights a dark home for a day, paints ward), a people's
    dev command, and the late game on three seeds (Bright Town by day 120).
 
-1. **Hand-made art pass.** The procedural set now has a fantasy silhouette; hand-drawn
-   replacements through the atlas manifest would still lift the temple, the Lantern of Vell
-   and citizen sprites most.
+4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
+   the citizen sprites would still gain most from drawn art; the per-sprite override
+   (`public/art/sprites.json`) takes any PNG with an anchor, painted or imported.
 8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
    ramps, scale and keys are done).
 10. **Replays.** The sim is deterministic; a command log would allow replays (the daily

@@ -1,0 +1,12 @@
+import type { RgbaImage } from './png.mjs';
+export function blank(w: number, h: number): RgbaImage;
+export function keyBackground(img: RgbaImage, white?: number): RgbaImage;
+export function keepLargest(img: RgbaImage): RgbaImage;
+export function crop(img: RgbaImage): { img: RgbaImage; x0: number; y0: number };
+export function boxScale(img: RgbaImage, targetW: number, targetH?: number): RgbaImage;
+export function quantize(img: RgbaImage, n?: number): RgbaImage;
+export function colourCount(img: RgbaImage): number;
+export function glowLayer(img: RgbaImage, opts?: { minLum?: number; warm?: number }): { img: RgbaImage; count: number };
+export function autoAnchor(w: number, h: number, spriteH: number): { ax: number; ay: number };
+export function footprintDiamond(w: number, h: number): [number, number][];
+export function checkSheet(entries: { img: RgbaImage; w: number; h: number; ax: number; ay: number; w_t: number; h_t: number }[], zoom?: number, cell?: number): RgbaImage;

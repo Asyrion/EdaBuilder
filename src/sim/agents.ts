@@ -160,6 +160,7 @@ export function marketStockCap(b: Building): number {
   return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1) * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
 }
 
+/** The door: the first road tile on a side of the footprint, else a corner (a corner counts since iteration 49; the sides come first so every older door stays where it was). */
 export function roadTileOf(state: GameState, b: Building): number {
   for (let dy = -1; dy <= b.h; dy++)
     for (let dx = -1; dx <= b.w; dx++) {
@@ -170,6 +171,11 @@ export function roadTileOf(state: GameState, b: Building): number {
       const y = b.y + dy;
       if (inBounds(x, y) && state.road[idx(x, y)]) return idx(x, y);
     }
+  for (const [dx, dy] of [[-1, -1], [b.w, -1], [-1, b.h], [b.w, b.h]]) {
+    const x = b.x + dx;
+    const y = b.y + dy;
+    if (inBounds(x, y) && state.road[idx(x, y)]) return idx(x, y);
+  }
   return -1;
 }
 

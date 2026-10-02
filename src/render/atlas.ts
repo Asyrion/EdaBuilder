@@ -70,19 +70,71 @@ export class SpriteAtlas {
   manifest(): AtlasManifest {
     return { image: 'atlas.png', sprites: this.sprites };
   }
+
+  /**
+   * Per-sprite overrides (iteration 49): public/art/sprites.json lists PNGs made by scripts/importSprites.mjs
+   * ({ sprites: { name: { file, glow?, w, h, ax, ay } } }). Each is packed below the current atlas and replaces the
+   * sprite of that name; a file that fails to load leaves the generated sprite in place. Resolves to the count merged.
+   */
+  async mergeOverrides(base: string): Promise<number> {
+    let manifest: ImportManifest;
+    try {
+      const res = await fetch(`${base}art/sprites.json`, { cache: 'no-cache' });
+      if (!res.ok) return 0;
+      manifest = (await res.json()) as ImportManifest;
+    } catch {
+      return 0;
+    }
+    const loaded: { name: string; img: HTMLImageElement; glow: HTMLImageElement | null; e: ImportEntry }[] = [];
+    for (const [name, e] of Object.entries(manifest.sprites ?? {})) {
+      try {
+        const img = await loadImage(`${base}art/${e.file}`);
+        const glow = e.glow ? await loadImage(`${base}art/${e.glow}`).catch(() => null) : null;
+        loaded.push({ name, img, glow, e });
+      } catch {
+        console.warn('imported sprite failed to load', name);
+      }
+    }
+    if (!loaded.length) return 0;
+    const items: { w: number; h: number }[] = [];
+    for (const l of loaded) { items.push({ w: l.img.width, h: l.img.height }); if (l.glow) items.push({ w: l.glow.width, h: l.glow.height }); }
+    const startY = this.image.height + 1;
+    const { pos, height } = shelfPack(items, 1024, startY);
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(this.image, 0, 0);
+    let k = 0;
+    for (const l of loaded) {
+      const p = pos[k++];
+      ctx.drawImage(l.img, p.x, p.y);
+      const rect: SpriteRect = { x: p.x, y: p.y, w: l.img.width, h: l.img.height, ax: l.e.ax, ay: l.e.ay };
+      if (l.glow) { const g = pos[k++]; ctx.drawImage(l.glow, g.x, g.y); rect.glow = { x: g.x, y: g.y }; }
+      this.sprites[l.name] = rect;
+      this.missing.delete(l.name);
+    }
+    this.image = canvas;
+    return loaded.length;
+  }
 }
 
-function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<string, SpriteRect> } {
-  // shelf packing sorted by height
-  const items: { def: SpriteDef; w: number; h: number; glow: boolean }[] = [];
-  for (const d of defs) {
-    items.push({ def: d, w: d.p.w, h: d.p.h, glow: false });
-    if (d.glow) items.push({ def: d, w: d.glow.w, h: d.glow.h, glow: true });
-  }
-  items.sort((a, b) => b.h - a.h);
-  const W = 1024;
+export interface ImportEntry { file: string; glow?: string; w: number; h: number; ax: number; ay: number }
+export interface ImportManifest { sprites: Record<string, ImportEntry> }
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`failed ${src}`));
+    img.src = src;
+  });
+}
+
+/** Shelf packing in the given order, from startY down, 1 px gutters. Pure, so a test can hold it to no overlaps. */
+export function shelfPack(items: { w: number; h: number }[], W = 1024, startY = 0): { pos: { x: number; y: number }[]; height: number } {
   let x = 0;
-  let y = 0;
+  let y = startY;
   let shelf = 0;
   const pos: { x: number; y: number }[] = [];
   for (const it of items) {
@@ -95,7 +147,19 @@ function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<str
     x += it.w + 1;
     shelf = Math.max(shelf, it.h);
   }
-  const H = y + shelf + 1;
+  return { pos, height: y + shelf + 1 };
+}
+
+function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<string, SpriteRect> } {
+  // shelf packing sorted by height
+  const items: { def: SpriteDef; w: number; h: number; glow: boolean }[] = [];
+  for (const d of defs) {
+    items.push({ def: d, w: d.p.w, h: d.p.h, glow: false });
+    if (d.glow) items.push({ def: d, w: d.glow.w, h: d.glow.h, glow: true });
+  }
+  items.sort((a, b) => b.h - a.h);
+  const W = 1024;
+  const { pos, height: H } = shelfPack(items, W, 0);
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;

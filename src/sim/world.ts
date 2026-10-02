@@ -1,6 +1,6 @@
 import { initGuilds } from './guilds';
 import { initRelics } from './relics';
-import { FACTIONS, factionOf, type FactionId } from '../data/factions';
+import { FACTIONS, factionOf, type FactionId, milestonesOf } from '../data/factions';
 import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
@@ -128,6 +128,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     pendingEvent: null,
     lastEventDay: 0,
     firedEvents: [],
+    lessonsSeen: [],
     goodsProduced: 0,
     goodsSold: 0,
     goodsShort: 0,
@@ -255,7 +256,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
       if (state.gloam[i]) return 'The Gloam holds this ground';
       if (!inCharter(state, tx, ty)) return 'Beyond the Charter: buy this sector first';
     }
-  if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road';
+  if (def.category !== 'zone' && def.key !== 'stake' && !touchesRoad(state, x, y, def.w, def.h)) return 'Must touch a road (a corner counts)';
   if (def.maxCount && state.buildings.filter((b) => b && b.kind === key).length >= def.maxCount) return `Only ${def.maxCount} may stand`;
   if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
   if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
@@ -279,18 +280,22 @@ export function touchesTerrain(state: GameState, x: number, y: number, w: number
   return false;
 }
 
+/** A road anywhere in the 8-ring around the footprint: a corner counts (iteration 49). */
 export function touchesRoad(state: GameState, x: number, y: number, w: number, h: number): boolean {
   for (let dy = -1; dy <= h; dy++)
     for (let dx = -1; dx <= w; dx++) {
       const edge = dx === -1 || dy === -1 || dx === w || dy === h;
       if (!edge) continue;
-      const corner = (dx === -1 || dx === w) && (dy === -1 || dy === h);
-      if (corner) continue;
       const tx = x + dx;
       const ty = y + dy;
       if (inBounds(tx, ty) && state.road[idx(tx, ty)]) return true;
     }
   return false;
+}
+
+/** The 1×1 case: a zone tile grows with a road on any of its eight neighbours. */
+export function roadInRing(state: GameState, x: number, y: number): boolean {
+  return touchesRoad(state, x, y, 1, 1);
 }
 
 export function placeBuildingRaw(state: GameState, key: string, x: number, y: number, level = 1, construct = false): Building {
@@ -440,6 +445,24 @@ export function kinReach(state: GameState, def: BuildingDef): { cx: number; cy: 
     });
   }
   return out;
+}
+
+/** The Founding Stake's hall grows with the city (iteration 49): the milestone index at which each stage begins. */
+export const STAKE_STAGE_AT = [0, 3, 6, 7];
+export function stakeStage(state: GameState): number {
+  let st = 0;
+  for (let k = 0; k < STAKE_STAGE_AT.length; k++) if (state.milestone >= STAKE_STAGE_AT[k]) st = k;
+  return st;
+}
+/** The sprite for a stage, or the procedural hall when no imported sprite of that stage is in the atlas. */
+export function stakeSpriteName(stage: number, has: (name: string) => boolean): string {
+  const n = `b_stake_s${stage}`;
+  return has(n) ? n : 'b_stake';
+}
+/** "the Burgh's hall": the name of the hall at this stage, from the people's own milestone names. */
+export function stakeHallName(state: GameState): string {
+  const st = stakeStage(state);
+  return st === 0 ? 'the founding hall' : `the ${milestonesOf(state)[STAKE_STAGE_AT[st]].name}'s hall`;
 }
 
 export function districtName(state: GameState, d: number): string {

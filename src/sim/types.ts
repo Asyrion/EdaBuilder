@@ -348,6 +348,8 @@ export interface GameState {
   pendingEvent: PendingEvent | null;
   lastEventDay: number;
   firedEvents: string[];
+  /** Lessons the player has closed (the districts card at the Hamlet). */
+  lessonsSeen: string[];
   goodsProduced: number; // per day, for UI
   goodsSold: number;
   goodsShort: number; // markets that ran dry today

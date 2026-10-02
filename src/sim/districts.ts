@@ -1,9 +1,42 @@
 /** District charters ("quarters"): what a painted district is for. One effect and one cost each, read at the hooks
  *  the systems already have (land value, happiness, output, shelves, tithe, upkeep, coverage, miasma). See DESIGN.md 4.73. */
-import { idx, type Building, type GameState } from './types';
+import { MAX_DISTRICTS, idx, type Building, type GameState } from './types';
+import { milestonesOf } from '../data/factions';
 
 /** Districts open at the Hamlet: the first minutes are roads and homes. */
 export const DISTRICT_UNLOCK = 1;
+
+/** Districts open in steps (iteration 49): [milestone, districts open]. Two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh. */
+export const DISTRICT_SLOTS: [number, number][] = [[1, 2], [3, 4], [5, 6], [6, 8]];
+
+/** How many district numbers the city may paint at its milestone (0 below the Hamlet). */
+export function districtSlots(s: GameState): number {
+  let n = 0;
+  for (const [ms, slots] of DISTRICT_SLOTS) if (s.milestone >= ms) n = slots;
+  return n;
+}
+
+/** The milestone index that opens district number d. */
+export function districtOpenAt(d: number): number {
+  for (const [ms, slots] of DISTRICT_SLOTS) if (d <= slots) return ms;
+  return DISTRICT_SLOTS[DISTRICT_SLOTS.length - 1][0];
+}
+
+/** A district with paint on the map (an old save may hold more than the slots allow; what is painted stays). */
+export function districtInUse(s: GameState, d: number): boolean {
+  for (let i = 0; i < s.district.length; i++) if (s.district[i] === d) return true;
+  return false;
+}
+
+/** The lines a milestone adds about districts and charters, for the toast and the Chronicle. */
+export function districtUnlockNotes(milestone: number): string[] {
+  const out: string[] = [];
+  const step = DISTRICT_SLOTS.find(([ms]) => ms === milestone);
+  if (step && milestone > DISTRICT_UNLOCK) out.push(step[1] >= MAX_DISTRICTS ? 'The last two districts open.' : `Two more districts open: ${['', '', 'two', '', 'four', '', 'six'][step[1]] ?? step[1]} of eight.`);
+  const charters = QUARTERS.filter((q) => q.charterUnlock === milestone && milestone > DISTRICT_UNLOCK).map((q) => q.name.replace(' quarter', ''));
+  for (const c of charters) out.push(`The ${c} charter is yours.`);
+  return out;
+}
 
 export type QuarterId = 'hearth' | 'craft' | 'market' | 'scholars' | 'temple';
 export interface QuarterDef {
@@ -12,15 +45,22 @@ export interface QuarterDef {
   effect: string; // what it gives
   cost: string; // what it takes
   flavor: string;
+  charterUnlock: number; // the milestone that opens the charter (iteration 49)
 }
 
 export const QUARTERS: QuarterDef[] = [
-  { id: 'hearth', name: 'Hearth quarter', effect: 'Land value +6 and hearths +3 happiness.', cost: 'Craft works here make a fifth less.', flavor: 'Washing on every line and nobody hammering after dusk.' },
-  { id: 'craft', name: 'Craft quarter', effect: 'Craft works make a fifth more.', cost: 'Hearths here lose 4 happiness, and the works smoke a third more.', flavor: 'The kilns never cool. The sparrows have soot on them.' },
-  { id: 'market', name: 'Market quarter', effect: 'Markets hold half again as many goods and pay a tenth more tithe.', cost: 'Land value −4: the carts never stop.', flavor: 'Three languages before breakfast and a fourth for the prices.' },
-  { id: 'scholars', name: "Scholars' quarter", effect: 'Arcane works make a fifth more and schooling counts a quarter more.', cost: 'Every building here costs a tenth more upkeep.', flavor: 'Ink, leystone dust and arguments about both.' },
-  { id: 'temple', name: 'Temple quarter', effect: 'Faith counts half again as much and hearths +2 happiness.', cost: 'Markets here pay no tithe: the Vigils take it.', flavor: 'Bells at every hour and bread on every sill.' },
+  { id: 'hearth', name: 'Hearth quarter', effect: 'Land value +6 and hearths +3 happiness.', cost: 'Craft works here make a fifth less.', flavor: 'Washing on every line and nobody hammering after dusk.', charterUnlock: 1 },
+  { id: 'craft', name: 'Craft quarter', effect: 'Craft works make a fifth more.', cost: 'Hearths here lose 4 happiness, and the works smoke a third more.', flavor: 'The kilns never cool. The sparrows have soot on them.', charterUnlock: 1 },
+  { id: 'market', name: 'Market quarter', effect: 'Markets hold half again as many goods and pay a tenth more tithe.', cost: 'Land value −4: the carts never stop.', flavor: 'Three languages before breakfast and a fourth for the prices.', charterUnlock: 3 },
+  { id: 'scholars', name: "Scholars' quarter", effect: 'Arcane works make a fifth more and schooling counts a quarter more.', cost: 'Every building here costs a tenth more upkeep.', flavor: 'Ink, leystone dust and arguments about both.', charterUnlock: 4 },
+  { id: 'temple', name: 'Temple quarter', effect: 'Faith counts half again as much and hearths +2 happiness.', cost: 'Markets here pay no tithe: the Vigils take it.', flavor: 'Bells at every hour and bread on every sill.', charterUnlock: 5 },
 ];
+
+/** Why a charter cannot be chosen yet, or null. */
+export function charterLocked(s: GameState, q: QuarterId): string | null {
+  const def = QUARTER_BY_ID[q];
+  return s.milestone < def.charterUnlock ? `Opens at the ${milestonesOf(s)[def.charterUnlock].name}` : null;
+}
 export const QUARTER_BY_ID: Record<QuarterId, QuarterDef> = Object.fromEntries(QUARTERS.map((q) => [q.id, q])) as Record<QuarterId, QuarterDef>;
 
 /** The quarter of a tile: its district's charter, or null. */
@@ -31,9 +71,14 @@ export function quarterAt(s: GameState, i: number): QuarterId | null {
 export function quarterOf(s: GameState, b: Building): QuarterId | null {
   return quarterAt(s, idx(b.x, b.y));
 }
-export function setQuarter(s: GameState, district: number, q: QuarterId | null): void {
-  if (q) s.districtQuarters[district] = q;
-  else delete s.districtQuarters[district];
+/** Give a district its charter (or none). Returns the reason when the charter is not yet open. */
+export function setQuarter(s: GameState, district: number, q: QuarterId | null): string | null {
+  if (q) {
+    const why = charterLocked(s, q);
+    if (why) return why;
+    s.districtQuarters[district] = q;
+  } else delete s.districtQuarters[district];
+  return null;
 }
 /** A district's buildings, standing. */
 export function districtBuildings(s: GameState, d: number): Building[] {

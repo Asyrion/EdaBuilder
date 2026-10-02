@@ -1,13 +1,12 @@
 /** Mouse/keyboard input → tool state → sim actions. */
 import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
-import { DISTRICT_UNLOCK } from '../sim/districts';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
 import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { canBuild, costOf, factionOf, milestonesOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
-import { buildingAt, canPlaceBuilding, influenceRadius } from '../sim/world';
+import { buildingAt, canPlaceBuilding, influenceRadius, roadInRing } from '../sim/world';
 import { bumpRoadVersion } from '../sim/agents';
 import type { ViewState } from '../render/renderer';
 import type { OverlayId } from '../render/overlays';
@@ -184,7 +183,6 @@ export class Tools {
       if (r.ok) this.host.onAction('zone');
       else this.host.onAction('error', r.reason);
     } else if (this.tool.kind === 'district') {
-      if (s.milestone < DISTRICT_UNLOCK) { this.host.onAction('error', `Districts open at the ${milestonesOf(s)[DISTRICT_UNLOCK].name}`); return; }
       this.host.beforeAction('district');
       const r = paintDistrict(s, this.tool.id, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('district', String(this.tool.id));
@@ -262,12 +260,17 @@ export class Tools {
       const y0 = Math.min(start[1], hover[1]);
       const y1 = Math.max(start[1], hover[1]);
       v.previewZone = this.tool.zone;
+      let noRoad = 0;
       for (let y = y0; y <= y1; y++)
         for (let x = x0; x <= x1; x++) {
           if (!inBounds(x, y)) continue;
           const i = idx(x, y);
-          v.previewTiles.push({ i, ok: !s.road[i] && s.bIndex[i] < 0 && roadTileCost(s, RoadType.Track, i) >= 0 });
+          const ground = !s.road[i] && s.bIndex[i] < 0 && roadTileCost(s, RoadType.Track, i) >= 0;
+          const road = roadInRing(s, x, y);
+          if (ground && !road) noRoad++;
+          v.previewTiles.push({ i, ok: ground && road });
         }
+      this.previewReason = noRoad > 0 ? `${noRoad} tile${noRoad === 1 ? ' has' : 's have'} no road at the door and will never grow: zone beside a road (a corner counts).` : null;
     } else if (this.tool.kind === 'wall') {
       const start = this.dragStart ?? hover;
       const tiles = this.roadTiles(start, hover);

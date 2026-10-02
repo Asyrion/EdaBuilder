@@ -19,6 +19,7 @@ function town(seed = 51) {
   for (let x = f.x - 13; x <= f.x - 2; x++) { const b = placeBuildingRaw(s, 'hearth', x, f.y + 4, 2); b.residents = 8; west.push(b); }
   for (let x = f.x + 2; x <= f.x + 13; x++) { const b = placeBuildingRaw(s, 'hearth', x, f.y + 4, 2); b.residents = 8; east.push(b); }
   s.population = 24 * 8;
+  s.milestone = 3; // districts open in steps (iteration 49): four at the Village
   recomputeAll(s);
   s.sectors.fill(1); // this test is about edicts, not the Charter line
   return { s, west, east, f };

@@ -14,6 +14,12 @@ import { canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from '.
 import { resolveEvent } from './events';
 import { setRole } from './wyrmcraft';
 
+/** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
+ *  the next road would go, so the planner keeps its lots on the sides (iteration 49). */
+function roadOnSide(s: GameState, x: number, y: number): boolean {
+  return [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
+}
+
 export interface BotOptions {
   aggressive?: boolean; // zone more than demand asks
 }
@@ -106,8 +112,7 @@ export class Bot {
           const t = s.terrain[i];
           if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
           if (hillPass !== (t === Terrain.Hills && hillOK)) continue;
-          const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
-          if (!adj) continue;
+          if (!roadOnSide(s, x, y)) continue;
           // craft away from the centre, hearth near
           const dist = Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy));
           if (z === Zone.Craft && dist < 8) continue;
@@ -349,8 +354,7 @@ export class Bot {
           const i = idx(x, y);
           const t = s.terrain[i];
           if ((t !== Terrain.Grass && t !== Terrain.Meadow) || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
-          const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
-          if (!adj) continue;
+          if (!roadOnSide(s, x, y)) continue;
           cands.push({ x, y, d: Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy)) });
         }
       cands.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);

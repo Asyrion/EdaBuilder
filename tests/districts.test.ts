@@ -80,7 +80,7 @@ describe('District charters', () => {
   });
 
   it("a Scholars' quarter speeds the enchanters and raises upkeep; a Temple quarter takes the market tithe", () => {
-    const s = town();
+    const s = town(); s.milestone = 5; // the Scholars' charter opens at the Township, the Temple's at the Market Town (iteration 49)
     const f = split(s);
     const aIn = placeBuildingRaw(s, 'arcane', f.x + 6, f.y + 1); aIn.workers = 4; aIn.stock = 20; aIn.lit = true;
     const aOut = placeBuildingRaw(s, 'arcane', f.x - 6, f.y + 1); aOut.workers = 4; aOut.stock = 20; aOut.lit = true;

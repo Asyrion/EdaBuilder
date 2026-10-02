@@ -118,7 +118,8 @@ class Game {
       canDeepenNode: (i) => canDeepenNode(this.state, i),
       canFoundDaughter: (i) => canFoundDaughter(this.state, i),
       foundDaughter: (i, name) => { const why = foundDaughter(this.state, i, name); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
-      setQuarter: (d, q) => { setQuarter(this.state, d, q); recomputeAll(this.state); this.renderer.overlayVersion++; this.audio.click(); },
+      setQuarter: (d, q) => { const why = setQuarter(this.state, d, q); if (!why) { recomputeAll(this.state); this.renderer.overlayVersion++; this.audio.click(); } return why; },
+      seeLesson: (id) => { if (!this.state.lessonsSeen.includes(id)) this.state.lessonsSeen.push(id); },
       setPriority: (id, p) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b) { b.priority = p; b.lit = true; /* a changed tier is judged afresh: the brownout darkens the already-dark first */ recomputeAll(this.state); this.audio.click(); } },
       renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
@@ -352,7 +353,7 @@ class Game {
     switch (t.kind) {
       case 'select': hint += 'click a building for details. Pick a tool on the left.'; break;
       case 'road': hint += 'drag to draw. Roads over shallow water become bridges (4× cost).'; break;
-      case 'zone': hint += 'drag a rectangle beside a road. Buildings grow when demand is high.'; break;
+      case 'zone': hint += 'drag a rectangle beside a road (a corner counts). Buildings grow when demand is high.'; break;
       case 'build': {
         const d = BUILDING_BY_KEY[t.key];
         hint += `${costOf(this.state, d)} crowns. ${d.desc}`;
@@ -431,8 +432,8 @@ class Game {
         this.ui.refreshBudget();
         if (!document.getElementById('wyrms')!.classList.contains('hidden') && this.state.tick % 300 === 0) this.ui.refreshWyrms();
         if ((this.tools.tool.kind === 'road' || this.tools.tool.kind === 'wall') && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
-        else if (this.tools.tool.kind === 'build' && this.tools.previewReason) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — <span class="warn">${this.tools.previewReason}</span>`);
-        else if (this.tools.tool.kind === 'build') this.updateHint();
+        else if ((this.tools.tool.kind === 'build' || this.tools.tool.kind === 'zone') && this.tools.previewReason) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — <span class="warn">${this.tools.previewReason}</span>`);
+        else if (this.tools.tool.kind === 'build' || this.tools.tool.kind === 'zone') this.updateHint();
       }
     }
     requestAnimationFrame((t) => this.loop(t));
@@ -443,6 +444,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
+  await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
   (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
   const game = new Game(atlas);
   (window as any).__game = game;

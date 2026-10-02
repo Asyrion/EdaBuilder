@@ -1,9 +1,11 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
 import { RELIC_SETS } from './relics';
-import { buildsFor, canBuild, factionOf, type FactionId, costOf } from '../data/factions';
+import { buildsFor, canBuild, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
+import { canPlaceBuilding, districtName, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
+import { districtInUse, districtOpenAt, districtSlots } from './districts';
+import { MAX_DISTRICTS } from './types';
 import { inCharter } from './sectors';
 import { aspectAt } from './weave';
 import { effects } from './hazards';
@@ -195,6 +197,9 @@ export function setTax(state: GameState, zone: keyof GameState['taxRates'], rate
 
 /** Paint (or clear with 0) a district over a rectangle. Districts cover any land tile. */
 export function paintDistrict(state: GameState, district: number, x0: number, y0: number, x1: number, y1: number): ActionResult {
+  if (district > MAX_DISTRICTS) return { ok: false, reason: 'No such district' };
+  // districts open in steps; a district already painted (an older save) may still be extended
+  if (district > districtSlots(state) && !districtInUse(state, district)) return { ok: false, reason: `${districtName(state, district)} opens at the ${milestonesOf(state)[districtOpenAt(district)].name}` };
   const ax = Math.min(x0, x1);
   const bx = Math.max(x0, x1);
   const ay = Math.min(y0, y1);

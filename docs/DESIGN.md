@@ -1712,6 +1712,100 @@ seed. The draughts, the consecration and the Academy's relics do not move the bo
 which builds its Hospice and its Academy late and holds no loose relics; the player will
 feel them first. Riots, theft and pelts are now in the balance script's summary line.
 
+### 4.80 The road at the corner, districts in steps, the demand explained, the Stake that grows (iteration 49)
+
+Your playtest notes, the first batch: four things a new player trips on, and the first use of
+the reference paintings in `inspirations/`.
+
+**The road at the corner.** `touchesRoad` takes the whole 8-ring: a zone tile, a hall or a
+door with a road at a diagonal corner counts as connected, where before only the four sides
+did and a lot past a road's end, or on the outer corner of a bend, silently never grew.
+`roadTileOf` tries the sides first and the corners after, so every door that existed keeps
+its tile and older saves replay unchanged. The bot keeps zoning beside a road's sides
+(`roadOnSide` in bot.ts): a corner lot is the player's door, but in the bot's grid it sits
+where the next road would go, and letting the planner take corners cost it a fifth of its
+folk on five seeds of six before the rule was kept to the sides.
+What the player sees: the zone preview hatches the tiles with no road in their ring and the
+hint counts them ("3 tiles have no road at the door and will never grow"); a building whose
+road is bulldozed shows "No road at its door" and the `icon_noroad` glyph; the placement
+reason reads "Must touch a road (a corner counts)". Lighting still spreads by the four
+sides: that is the network, not the door.
+
+**Districts in steps.** `DISTRICT_SLOTS` = [[1, 2], [3, 4], [5, 6], [6, 8]]: two districts at
+the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh
+(`districtSlots`); `paintDistrict` refuses a number past the slots unless that district is
+already painted (an older save keeps and may extend what it has), the toolbar greys the rest
+with "at the Village", and the daughter wardlight takes the next open slot. Charters open the
+same way (`charterUnlock`: Hearth and Craft at the Hamlet, Market at the Village, Scholars'
+at the Township, Temple at the Market Town; `setQuarter` returns the reason and the Edicts
+panel greys the locked rows). `districtUnlockNotes` adds the lines to the milestone toast and
+the Chronicle ("Two more districts open: four of eight." / "The Market charter is yours.").
+The lesson: at the Hamlet a card ("Districts are yours") stands under the milestone toast
+with three steps, paint, charter, rule, each with a Show me that sets the tool or opens the
+Edicts panel on the first painted district; closing it records `lessonsSeen` (saved), and
+while it stands the Ledger pins the Districts chapter first (`activeQuests(s, max, chapter)`).
+A city loaded past the Hamlet with districts painted is marked as having seen it.
+
+**The demand bars explained.** `demandExplain(state, zone)` turns the facts `updateDemand`
+keeps (`lastDemandFacts`) into a sign, a verdict, the numbers and an advice line: "Hearths
++62 %: folk want more homes." / "140 jobs for 96 hands (work to spare) · happiness 58 ·
+unrest 4 %" / "New hearths grow where you zone them beside a road."; a bar within ±5 % is
+"about even"; a negative bar says what will not grow and why ("Markets −30 %: more shops than
+the folk can fill. New markets will not grow; wait for folk or let the works sell."; Arcane
+below a fifth schooled: "an Academy"). The panel draws a zero line, a word under each bar
+(▲ more / ▼ fewer / – even in the bar's colour), the game's own tooltip on hover, and a "?"
+that toasts what the bars mean. `demandReasons()` keeps its four lines for the Budget.
+
+**The Stake that grows.** `STAKE_STAGE_AT` = [0, 3, 6, 7]: the founding hall up to the
+Thorp, the Village's hall from the Village (so the first change comes in the first
+fortnight), the Burgh's hall, the Free City's hall (`stakeStage`, by milestone index so every
+people's ladder maps; `stakeHallName` names it from the people's milestones). The renderer
+names the Stake `b_stake_s{stage}` and falls back to the procedural `b_stake`
+(`stakeSpriteName`); `checkMilestones` pushes "The hall at the Founding Stake is raised
+anew" when the stage changes; the panel's Hall row says which hall stands. The four stages
+are the four founding_stakes paintings: the half-timber hall, the stone hall with the bell
+tower, the brick hall with its lawn, the clock-tower hall.
+
+**The art import pipeline.** `npm run art` (`scripts/importSprites.mjs`) reads
+`art/sources.json` and, per entry, decodes the painting (`scripts/lib/png.mjs`, a
+dependency-free codec on Node's zlib), keys the white ground by flood fill from the corners
+(a white window inside the walls survives), keeps the largest island (painted clouds and
+loose smoke go), crops, box-scales to the footprint width ((w+h)×16+2, so a 2×2 is 66 px)
+with hard alpha, median-cuts to 24 colours, derives the night glow from the warm bright
+pixels of the unquantized scale, and writes `public/art/sprites/<name>.png`, `<name>_glow.png`
+and `public/art/sprites.json`. **Every entry carries a hand-set footprint offset**: the
+script proposes the procedural convention (`autoAnchor`: the diamond's top corner, the last
+row on the diamond's bottom point) and `npm run art:check` renders every sprite over its
+footprint diamond at 4× into `shots/import_check.png`; the offset is set and the entry marked
+`checked` once judged by eye (the four stakes sit on the auto anchor after the island cut).
+At boot `SpriteAtlas.mergeOverrides` fetches the manifest, packs each PNG and its glow below
+the procedural atlas (`shelfPack`, now a pure function) and replaces the sprite of that name;
+a file that fails to load leaves the generated sprite; the whole-atlas override still works.
+The outputs are committed so the Pages build ships them. The paintings themselves are a
+loose 3/4 view, not the strict 2:1 grid, so each sits on its tiles as a painted hall does on
+a stage: close enough at 2×, judged per sprite.
+
+Balance, 150 days, against the iteration 48 table in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 60 (61) | 3,067 (2,939) |
+| Vellish seed 43 | never: Burgh 40 (36) | 1,182 (1,285) |
+| Vellish seed 44 | 57 (68) | 3,266 (3,006) |
+| Grimmen seed 42 | Deephold 58 (59), Underking's Hall 145 (never) | 1,581 (1,352) |
+| Veshari seed 42 | Harbour 15 (56), Weirhold 60 (86), Vesh's Court 103 (135) | 2,137 (1,686) |
+| Tallowkin seed 42 | Bright Town 70 (64) | 950 (996) |
+
+Four of six gain, two of them by a lot: a hall may now stand with a road at its corner, so
+the bot's placement search finds a spot sooner, and the Veshari's moorings most of all: the
+Harbour that stalled on seed 42 from day 11 to day 56 in every table since §4.75 now comes on
+day 15, and the Court forty days earlier. Seed 43 and the Tallowkin lose a few score folk
+(the Tallowkin's purse dips below zero at day 150 on a net of +60: a watch item for M13 part
+2). The district slots and charter steps cost the bot nothing: it charters its Hearth quarter
+at the Village, which opens four. Without the bot's side rule the same code lost a fifth of
+the folk on five seeds (Vellish 42 at 2,333, Grimmen 42 at 1,100 with Deephold on day 126):
+the corner lots the planner took sat where its roads would go.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1743,6 +1837,37 @@ feel them first. Riots, theft and pelts are now in the balance script's summary 
 - **Readability first:** roads and zones have flat, high-contrast colours; overlays
   desaturate the scene and tint tiles; hovered tiles and drag rectangles are always
   outlined.
+- **Reference paintings (iteration 49):** `inspirations/` holds forty 1024² paintings in
+  nine folders (founding stakes, ley spires, wells, graveyards, trade houses, wooden houses,
+  and craft houses: forge, brickmaker, alchemist, general craft), used two ways. **As
+  sprites:** `npm run art` turns a chosen painting into a game sprite with a hand-set
+  footprint offset and a derived night glow (§4.80), merged over the procedural atlas by
+  name; the Founding Stake's four halls are the first, M15 (§16) takes the rest. **As the
+  style guide** for every procedural sprite touched from now on:
+  - *Founding stakes:* civic halls that grow: half-timber with a flag on the ridge, then
+    fieldstone with a bell tower, then brick with a lawn and a sign over the door, then a
+    clock tower; always a sign, a flag, steps to the door.
+  - *Ley spires:* tall blue-crystal towers with a spiral rib or stair, ringed balconies, rune
+    bands, a glowing crystal tip and lesser crystals on the buttresses; grey stone bases.
+  - *Wells:* a stone ring with a pitched roof on two posts, a windlass with rope and bucket,
+    runes on the arch, moss, flowers and a lantern at the posts; the water glows blue.
+  - *Graveyards:* a dark gothic chapel with violet or teal windows, iron fences, headstones,
+    dead trees, wisps; a sexton's lamp at the gate.
+  - *Trade houses:* half-timber over stone with a hanging sign, striped awnings, stalls,
+    barrels and crates, flags on the gables, a cart at the door.
+  - *Wooden houses:* log or plank walls, a stone chimney with smoke, a porch with a lantern,
+    flower boxes, a small garden fence.
+  - *Forge:* an open smithy side with the hearth glowing orange, the anvil, tools on the
+    wall, black smoke from a stone chimney, coal and iron by the door.
+  - *Brickmaker:* brick walls, a beehive kiln glowing, brick stacks and barrows, a striped
+    awning.
+  - *Alchemist:* a tower with a conical roof and a crescent weathervane, copper pipes,
+    bottles in the windows, a cauldron and a flask sign, ivy.
+  - *General craft:* a timber shop with a "Craft House" sign, a balcony, tools over the door,
+    plants on the sill.
+  The palette of the paintings is warmer and broader than `palette.ts`; imported sprites keep
+  their own 24 colours, procedural sprites keep the palette, and the two sit together because
+  both are drawn at the same pixel scale with hard edges.
 
 ## 6. Technical choices
 
@@ -1794,9 +1919,16 @@ feel them first. Riots, theft and pelts are now in the balance script's summary 
 - **M13 The third people** — the Tallowkin of the Wick: part 1, rules, buildings, the
   twin-node start, the look, the bot (iteration 41, §4.72) ✅; part 2, the chapter, the
   tales, the lamplighter and the late game.
-- **M14 The depth pass** — the audit's five parts (§15, docs/AUDIT.md): supply has limits;
-  services with staff and stakes; wyrmcraft matured; the world pushes back; the bot plays it
+- **M14 The depth pass** — the audit's five parts (§15, docs/AUDIT.md): supply has limits ✅;
+  services with staff and stakes ✅; wyrmcraft matured; the world pushes back; the bot plays it
   all. Preceded by the sweep of iteration 44 (§4.75).
+- **M15 The painted set** — the reference paintings as sprites through the import pipeline
+  (§4.80, §16): spires, wells, the graveyard chapel, the craft houses, the trade houses, the
+  wooden houses; the nine sprite-less buildings drawn; the procedural set restyled by the
+  guide (§5); more halls that grow with the city.
+- **M16 The wild and the water** — creatures as resources and the water put to use (§16):
+  herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
+  fishing from a bank or a lake shore, boats, reed-cutters, a water garden.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -2411,6 +2543,43 @@ this section is the table of contents and the order.
    warden, a greedy choice policy; an Annals page for every counter; save migrations by
    version; five dev commands.
 
+## 16. M15 and M16: the painted set, the wild and the water
+
+Two milestones from the playtest notes of iteration 49, slotted after it: M15 first (the
+paintings are in hand and the pipeline is built), then M14 part 3, then M16, then M14 parts
+4–5 and M13 part 2.
+
+**M15 The painted set.** One iteration, perhaps two. (1) The pipeline over every folder, a
+hand-set offset and a checked glow per sprite: the ley spires as the spire's lit and unlit
+pair and the Nexus; the wells by water reach (the plain well, the Seep, the Tide-Well, the
+Cistern); the graveyard chapel as the Ossuary and the Sextons' Chapel; the forge, the
+brickmaker, the alchemist and the general craft as the three Craft levels and the Alchemists'
+Lyceum; the trade houses as Market level 3 and the Trade Depot; the wooden houses as the
+Hearth levels. Where a painting's view fights the grid (a front elevation), it is a hero
+sprite for a 3×3 hall or is left out; a sprite that does not read at 2× is left out. (2) The
+nine sprite-less buildings (Carters' Yard, Chart-Room, Core Lantern, House-Hall, Lyceum, Salt
+Font, Sextons' Chapel, Wrights' Lodge, Wyrm-Court) drawn, procedurally by the guide or
+imported. (3) The procedural generator restyled by the guide in §5: hanging signs, awnings,
+smithy sides, kilns, windlass wells, rune bands. (4) More halls that grow with the city: the
+Guildhall and the Temple by milestone like the Stake. Verified by a contact sheet of every
+imported sprite over its diamond, day and night screenshots, and the balance table unchanged
+(art only).
+
+**M16 The wild and the water.** Two iterations. Part 1, the wild: herds of deer and elk on
+the meadows (day, flee lit ground, return at night), boar in the woods, otters on the banks,
+herons in the marsh, goats on the hills, wolves in the Hush that take a hare or a hen and
+frighten a hearth; the Hunters' Lodge hunts by a chosen quarry (a panel choice) and brings
+hides, meat and trophies as goods with their own prices on the Gloam road and a Hearth
+happiness line for meat on the shelves; herds thin where the city spreads and recover where
+a Glimhouse or a ward holds the ground; a Hunters' edict and two tales. Part 2, the water: a
+Fishers' Hut on a bank or a lake shore with boats on the water (walkers on water tiles,
+`waterPath`), fish as goods that spoil in two days unless a market or a smokehouse takes
+them; reed-cutters on the marsh for thatch (a cheaper wall material for level-1 hearths); a
+water garden as leisure on a lake shore; the lake's own land value and well bonus; the river
+as a resource beyond mills and barges (a weir pool, a ford). Verified by the creatures' tests
+(spawn, flee, hunt, goods), a balance table with fish and hides on the depot's ledger, and a
+playtest of a lakeside town.
+
 ## 12. Decision log
 
 - *Game name "Wardlight":* a wardlight is what the lore calls a chartered city; the
@@ -2638,3 +2807,13 @@ this section is the table of contents and the order.
   reach it must touch; drawing every standing node's and spire's ring while the ghost is
   held turns "did that link?" into a thing seen before the crowns are spent. The same for
   wells and halls: the gaps are the plan.
+- *A reference painting is a sprite, not a mood (iteration 49):* a painting that is keyed,
+  cut to its largest island, scaled to its footprint, reduced to a palette and given a glow
+  is a sprite the game can draw tonight; a painting kept as "inspiration" changes nothing.
+  The offset onto the tiles is set by hand per sprite, because the paintings are not on the
+  grid and no formula knows where a painted hall's feet are.
+- *Open things in steps, and say so (iteration 49):* eight districts and five charters at
+  the Hamlet were a wall of choices nobody explained; two districts and two charters, a card
+  with three steps, and a line in each later milestone toast make the same system a path.
+- *A corner is a door (iteration 49):* the four-side rule was invisible and wrong at every
+  road end and bend; a rule the player cannot see must at least be the generous one.

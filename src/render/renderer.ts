@@ -7,7 +7,8 @@ import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
-import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius, kinReach } from '../sim/world';
+import { CHUNK, CHUNKS_X, CHUNKS_Y, timeOfDay, influenceRadius, kinReach, stakeSpriteName, stakeStage } from '../sim/world';
+import { roadTileOf } from '../sim/agents';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -383,6 +384,7 @@ export class Renderer {
   // ---------- main ----------
   render(state: GameState, view: ViewState, dt: number): void {
     this.zoneSuffix = ZONE_LOOKS.includes(state.faction) ? `_${state.faction}` : '';
+    this.stakeStage = stakeStage(state);
     const t0 = performance.now();
     this.stats.drawn = 0;
     this.time += dt;
@@ -555,6 +557,7 @@ export class Renderer {
         else if (!b.watered && b.problemDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_nowater' });
         else if (b.happiness < 25 && b.unhappyDays >= 2) icons.push({ x: wx, y: wy - 10, name: 'icon_unhappy' });
         else if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) icons.push({ x: wx, y: wy - 10, name: 'icon_nogoods' });
+        else if (b.age > 1 && roadTileOf(state, b) < 0) icons.push({ x: wx, y: wy - 10, name: 'icon_noroad' });
       }
       if (abandoned) icons.push({ x: wx, y: wy - 10, name: 'icon_abandoned' });
       else if (b.greyDays) icons.push({ x: wx, y: wy - 10, name: 'icon_gloam' }); // the grey is at the door
@@ -840,12 +843,14 @@ export class Renderer {
   }
 
   private zoneSuffix = '';
+  private stakeStage = 0;
 
   private spriteNameFor(b: Building): string {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
     if (def.category === 'zone') return `${b.kind}_l${b.level}_v${b.variant % 4}${this.zoneSuffix}`;
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
+    if (b.kind === 'stake') return stakeSpriteName(this.stakeStage, (n) => this.atlas.has(n));
     return `b_${b.kind}`;
   }
 

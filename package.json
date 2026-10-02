@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "headless": "tsx scripts/headless.ts"
+    "headless": "tsx scripts/headless.ts",
+    "art": "node scripts/importSprites.mjs",
+    "art:check": "node scripts/importSprites.mjs --check"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

@@ -8,10 +8,11 @@ export function questsFor(s: GameState): QuestDef[] {
   return QUESTS.filter((q) => !q.people || q.people === s.faction);
 }
 
-export function activeQuests(s: GameState, max = 3): QuestDef[] {
+export function activeQuests(s: GameState, max = 3, pinChapter?: string): QuestDef[] {
   const done = new Set(s.questsDone);
-  // A quest whose goal is already met is hidden at once; the next check pays it.
-  return questsFor(s).filter((q) => !done.has(q.id) && q.when(s) && !q.done(s)).sort((a, b) => a.priority - b.priority).slice(0, max);
+  // A quest whose goal is already met is hidden at once; the next check pays it. A pinned chapter (a lesson in progress) sorts first.
+  const pin = (q: QuestDef) => (pinChapter && q.chapter === pinChapter ? 0 : 1);
+  return questsFor(s).filter((q) => !done.has(q.id) && q.when(s) && !q.done(s)).sort((a, b) => pin(a) - pin(b) || a.priority - b.priority).slice(0, max);
 }
 
 /** Every 50 ticks: complete quests whose condition holds (active or not, so nothing is missed). One ticker line per batch. */
