@@ -37,6 +37,8 @@ export interface BuildingDef {
   onHills?: boolean; // footprint must be hills
   nearHills?: boolean; // a hills tile must touch the footprint
   nearWater?: boolean; // a river/lake tile must touch the footprint
+  nearShore?: boolean; // a shore or water tile must touch the footprint (the reed-cutters, iteration 60)
+  nearLake?: boolean; // a footprint tile within 3 of the lake's open water (the Water Garden, iteration 60)
   selfLit?: boolean; // lights itself and its neighbours without mana
   goodsRate?: number; // goods produced per day, carted like a Craft works
   onRuins?: boolean; // footprint must be Ruins tiles
@@ -136,6 +138,39 @@ export const BUILDINGS: BuildingDef[] = [
     desc: 'One of a pair of leystone arches. Carts and folk that pass a lit arch step out of the other, anywhere on the map. Both must be lit; 12 mana each and a tenth more per crossing; past 60 crossings a day the jump jams like a crowded road. Only two may stand.',
     flavor: 'The first carter through came out the far side a moment before he went in, and refused to discuss it.',
     w: 1, h: 1, cost: 4000, upkeep: 30, manaUse: 12, unlock: 5, needsMana: true, maxCount: 2,
+  },
+
+  // ---- the water (M16 part 2, iteration 60) ----
+  {
+    key: 'fishershut', name: "Fishers' Hut", category: 'water',
+    desc: 'Nets and two boats on the bank. Fishes the water of its river or lake within 8 tiles: up to 4.8 fish a day as the shoal allows, none on a frozen river. Fish spoil in two days unless a market within 12 or a Smokehouse within 6 takes them; a hearth within 10 of a market with fish is happier (+3). Two huts on one small lake can fish it out. Must touch river or lake water and a road.',
+    flavor: 'The first catch of the year goes back into the water. Nobody remembers why, and nobody stops doing it.',
+    w: 1, h: 1, cost: 600, capacity: [4], upkeep: 8, manaUse: 0, unlock: 1, nearWater: true,
+  },
+  {
+    key: 'smokehouse', name: 'Smokehouse', category: 'water',
+    desc: 'Alder smoke over racks of fish. Takes up to 10 fish a day from the Fishers\' Huts within 6 before they spoil; smoked fish keeps, goes to the markets\' shelves when they have room, and over 10 goes down the Gloam road at a depot.',
+    flavor: 'The smoke-master can tell you the day\'s wind from the colour of the trout.',
+    w: 1, h: 1, cost: 700, capacity: [2], upkeep: 6, manaUse: 0, unlock: 2,
+  },
+  {
+    key: 'reedcutters', name: "Reed-Cutters' Hut", category: 'water',
+    desc: 'Sickles and boats on the shore. Cuts the reed beds (open shore within 6) into thatch in the Thaw, Bloom and Ember, and thatches the level-1 homes within 10 for 60 days: +3 happiness, but a thatched roof catches fire half again as easily. Must touch the shore or the water.',
+    flavor: 'A good thatch sheds rain for twenty years. A bad one sheds thatch.',
+    w: 1, h: 1, cost: 500, capacity: [3], upkeep: 5, manaUse: 0, unlock: 1, nearShore: true,
+  },
+  {
+    key: 'weir', name: 'Weir', category: 'water',
+    desc: 'A low stone weir across the river. Within 6 tiles the fords stay open at high water, and the pool below it doubles the shoal\'s regrowth for its whole river or lake. Must touch river or lake water.',
+    flavor: 'The eels come up it anyway. The eels have opinions about weirs.',
+    w: 1, h: 1, cost: 900, upkeep: 6, manaUse: 0, unlock: 2, nearWater: true,
+  },
+  {
+    key: 'watergarden', name: 'Water Garden', category: 'leisure',
+    desc: 'Lilies, stepping stones and a pavilion on the lake shore. Leisure within 10 tiles, and finer land nearby. Must stand within 3 tiles of the lake\'s open water (a river is too narrow).',
+    flavor: 'The carp are older than the city. The city is told so, often, by the carp-keeper.',
+    w: 2, h: 2, cost: 1800, upkeep: 18, manaUse: 1, unlock: 5, nearLake: true,
+    service: { type: 'leisure', radius: 10, strength: 0.8 }, landValue: 15,
   },
 
   // ---- water ----
@@ -641,15 +676,15 @@ export interface Milestone {
 export const MILESTONES: Milestone[] = [
   { name: 'Founding Stake', pop: 0, grant: 0, unlocks: ['track', 'hearth', 'market', 'craft', 'well', 'spire', 'watchpost', 'shrine'],
     text: 'The Charter is nailed to the door. Light it, hold it, and make it pay.' },
-  { name: 'Hamlet', pop: 40, grant: 2000, unlocks: ['cobble', 'boneyard', 'healer', 'garden'],
+  { name: 'Hamlet', pop: 40, grant: 2000, unlocks: ['cobble', 'boneyard', 'healer', 'garden', 'fishershut', 'reedcutters'],
     text: 'Forty souls under your light. The Crown sends cobbles, a sexton and a healer, and grants you two districts: paint one and charter it a Hearth or Craft quarter.' },
-  { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern', 'mothloft'],
+  { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern', 'mothloft', 'smokehouse', 'weir'],
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
   { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot'],
     text: 'A village with a name on the Crown\'s maps. Scholars, a proper Watch and the carters\' guild follow.' },
   { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font', 'mine', 'cradle', 'tamerslodge'],
     text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },
-  { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall'],
+  { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall', 'watergarden'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
   { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'golemfoundry', 'leybeacon', 'drakemews'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },

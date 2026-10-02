@@ -4,6 +4,7 @@
  * read from the constant the sim itself uses, so a ring can never disagree with what the building does.
  */
 import { BUILDING_BY_KEY, WONDER_HALLS, type BuildingDef } from './catalog';
+import { FISH_MARKET_REACH, FISH_REACH, REED_REACH, SMOKE_REACH, THATCH_REACH, WEIR_REACH } from './water';
 import { influenceRadius, waterReachOf } from './world';
 import { FEED_REACH, LODGE_REACH } from './wyrmcraft';
 import { FOUNDRY_RADIUS, FORGE_WAKE_RADIUS } from './beasts';
@@ -45,6 +46,10 @@ export const SECONDARY_REACH: Record<string, { r: number; label: string; square?
   torrentmill: [{ r: MILL_SHARE_REACH, label: 'shares the river', square: true }],
   glimhouse: [{ r: GLIMHOUSE_REACH, label: 'Hush works', square: true }],
   hunterslodge: [{ r: HOUND_REACH, label: 'hounds' }, { r: HUNT_REACH, label: 'hunt and meat' }], // the grounds it hunts game in and carts meat across (iteration 57)
+  fishershut: [{ r: FISH_REACH, label: 'fishes' }, { r: FISH_MARKET_REACH, label: 'fish to markets' }], // the water (iteration 60)
+  smokehouse: [{ r: SMOKE_REACH, label: 'takes the huts\' fish' }],
+  reedcutters: [{ r: REED_REACH, label: 'reed beds' }, { r: THATCH_REACH, label: 'thatches homes' }],
+  weir: [{ r: WEIR_REACH, label: 'holds the fords' }],
 };
 
 /** The word for a building's primary reach. */

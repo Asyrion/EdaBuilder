@@ -15,10 +15,11 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4, deer: 0, elk: 0, boar: 0, otter: 0, heron: 0, goat: 0, wolf: 0 }; // the wild keeps its own numbers (wild.ts)
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4, boat: 0, deer: 0, elk: 0, boar: 0, otter: 0, heron: 0, goat: 0, wolf: 0 }; // the wild keeps its own numbers (wild.ts)
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 import { marketStockCap } from './agents';
 import { HOUND_REACH, houndChance, isWild, tickWildAgent } from './wild';
+import { tickBoat } from './water';
 import { Rng } from '../core/rng';
 
 export function creatureCount(state: GameState, species?: Species): number {
@@ -257,6 +258,11 @@ export function tickCreatures(state: GameState): void {
     if (isWild(a.species)) {
       if (!wr) wr = new Rng((Math.imul(state.seed ^ 0x9e3779b9, 31) + Math.imul(state.tick, 2654435761)) >>> 0);
       tickWildAgent(state, a, wr, night, dt);
+      continue;
+    }
+    if (a.species === 'boat') { // the fishers' boats row on the same side stream (water.ts, iteration 60)
+      if (!wr) wr = new Rng((Math.imul(state.seed ^ 0x9e3779b9, 31) + Math.imul(state.tick, 2654435761)) >>> 0);
+      tickBoat(state, a, wr, night, dt);
       continue;
     }
     const ax = a.ax ?? a.x;

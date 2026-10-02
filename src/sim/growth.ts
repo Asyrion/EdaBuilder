@@ -21,6 +21,7 @@ import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
+import { FISH_HAPPY, FISH_PRICE, SMOKE_KEEP, THATCH_HAPPY, fishNear, thatched } from './water';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, labourGolems, raysLured, worksGolems } from './beasts';
 import { aspectAt, auraAt, drought, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, raining, FLOODPROOF } from './weave';
@@ -166,6 +167,8 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   if (def.zone === Zone.Hearth) {
     if (meatNear(state, b.x, b.y)) add('meat on the shelves', MEAT_HAPPY); // a market within 10 with game from a lodge (iteration 58)
     if (b.wolfDay !== undefined && state.day - b.wolfDay < HEN_DAYS) add('the wolves took a hen', HEN_HAPPY);
+    if (fishNear(state, b.x, b.y)) add('fish on the shelves', FISH_HAPPY); // a market within 10 with the huts' catch (iteration 60)
+    if (thatched(state, b)) add('a new thatch', THATCH_HAPPY);
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
     add('no work', -unemployment * 20);
     add('health of the city', (state.health - 0.5) * 15);
@@ -636,6 +639,8 @@ export function dailyTrade(state: GameState): void {
   t.hidesSold = 0;
   t.meatSold = 0;
   t.trophiesSold = 0;
+  t.priceFish = FISH_PRICE[season]; // smoked fish (iteration 60)
+  t.fishSold = 0;
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
@@ -650,10 +655,11 @@ export function dailyTrade(state: GameState): void {
   const full: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)))) full.push(b); // hides and salted meat go too (iteration 58)
+    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)) || (b.kind === 'smokehouse' && b.stock >= SMOKE_KEEP + 1))) full.push(b); // hides and salted meat go too (iteration 58), smoked fish (60)
   });
   full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
   let hunt = 0;
+  let fish = 0;
   for (const b of full) {
     if (budget <= 0) break;
     if (b.kind === 'hunterslodge') {
@@ -668,6 +674,16 @@ export function dailyTrade(state: GameState): void {
       t.hidesSold! += hides;
       t.meatSold! += meat;
       hunt += hides * t.priceHides + meat * t.priceMeat;
+      continue;
+    }
+    if (b.kind === 'smokehouse') {
+      const n = Math.min(Math.floor(b.stock - SMOKE_KEEP), budget);
+      if (n <= 0) continue;
+      b.stock -= n;
+      budget -= n;
+      t.exported += n;
+      t.fishSold! += n;
+      fish += n * t.priceFish;
       continue;
     }
     const sell = Math.min(b.stock - craftStockCap(b) * 0.5, budget);
@@ -687,8 +703,9 @@ export function dailyTrade(state: GameState): void {
     t.trophiesSold! += n;
     hunt += n * t.priceTrophy!;
   });
-  crowns += hunt;
+  crowns += hunt + fish;
   state.stats.huntCrowns += Math.round(hunt * (hasMarvel(state, 'chartroom') ? 1.15 : 1));
+  state.stats.fishCrowns += Math.round(fish * (hasMarvel(state, 'chartroom') ? 1.15 : 1));
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;

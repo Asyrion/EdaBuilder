@@ -205,6 +205,11 @@ export interface BuildingSpec {
   waterWheel?: boolean; // a mill wheel on the left face
   vines?: boolean; // glowing vines down the walls
   stonePile?: boolean; // cut blocks stepped beside the right face and a windlass post over them (the Quarry)
+  fishRack?: boolean; // a drying rack hung with fish and an upturned boat by the right face (the Fishers' Hut, iteration 60)
+  reedBundles?: boolean; // sheaves of cut reed leaning on the right face (the Reed-Cutters)
+  smokeRack?: boolean; // a smoking rack of fish under a little roof by the right face (the Smokehouse)
+  lilyPond?: boolean; // a pond with lilies and stepping stones in front (the Water Garden)
+  weirStones?: boolean; // a low stone sill with white water over it (the Weir)
 }
 
 const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
@@ -580,6 +585,56 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
     p.line(x + 8, y - 11, x + 2, y - 11, 'wood1');
     p.rect(x + 2, y - 10, 1, 3, 'ironDark');
     p.px(x + 3, y - 7, 'ironDark');
+  }
+  if (spec.fishRack) {
+    // a drying rack: two posts, a bar, four fish hanging; and an upturned boat on the ground before it
+    const x = R[0] - 11;
+    const y = R[1] - 1;
+    p.rect(x, y - 9, 1, 8, 'wood2');
+    p.rect(x + 7, y - 9, 1, 8, 'wood2');
+    p.line(x, y - 9, x + 7, y - 9, 'wood1');
+    for (let k = 0; k < 4; k++) { p.rect(x + 1 + k * 2, y - 8, 1, 3, k % 2 ? 'stone3' : 'whitewash2'); p.px(x + 1 + k * 2, y - 5, 'water2'); }
+    p.rect(x - 1, y - 2, 9, 2, 'wood1');
+    p.rect(x, y - 3, 7, 1, 'wood3');
+  }
+  if (spec.reedBundles) {
+    // four sheaves of reed leaning on the right face, tied in the middle
+    const x = R[0] - 12;
+    const y = R[1] - 1;
+    for (let k = 0; k < 4; k++) {
+      const bx = x + k * 3;
+      p.rect(bx, y - 9, 2, 9, k % 2 ? 'thatch1' : 'thatch2');
+      p.px(bx, y - 10, 'thatch1');
+      p.px(bx + 1, y - 5, 'wood1');
+    }
+  }
+  if (spec.smokeRack) {
+    // a rack of fish under a small lean-to roof, and smoke curling over it
+    const x = R[0] - 11;
+    const y = R[1] - 1;
+    p.rect(x, y - 7, 8, 1, 'wood1');
+    p.line(x - 1, y - 9, x + 8, y - 8, 'thatch2');
+    for (let k = 0; k < 3; k++) p.rect(x + 1 + k * 2, y - 6, 1, 3, 'copper');
+    p.rect(x, y - 2, 8, 2, 'stone1');
+    p.px(x + 3, y - 3, 'ember');
+    glow.px(x + 3, y - 3, 'ember', 200);
+    for (let k = 0; k < 3; k++) p.px(x + 4 + k, y - 11 - k * 2, 'smoke');
+  }
+  if (spec.lilyPond) {
+    // a pond across the front of the footprint, lilies on it and stepping stones over it
+    const cx = B[0];
+    const cy = B[1] - 5;
+    for (let dy = -3; dy <= 3; dy++) for (let dx = -10; dx <= 10; dx++) if ((dx * dx) / 100 + (dy * dy) / 9 <= 1) p.px(cx + dx, cy + dy, dy < 0 ? 'water2' : 'water1');
+    for (const [dx, dy] of [[-6, 0], [5, -1], [1, 2]]) { p.px(cx + dx, cy + dy, 'leaf2'); p.px(cx + dx + 1, cy + dy, 'leaf1'); p.px(cx + dx, cy + dy - 1, 'flower1'); }
+    for (let k = -8; k <= 8; k += 4) p.rect(cx + k, cy + (k > 0 ? 1 : 0), 2, 1, 'stone3');
+    p.px(cx - 2, cy - 1, 'waterHi');
+  }
+  if (spec.weirStones) {
+    // a low sill of dressed stone and white water spilling over it
+    const x = L[0] + 2;
+    const y = L[1] + 2;
+    for (let k = 0; k < 12; k++) p.px(x + k, y - Math.floor(k / 2), k % 3 ? 'stone2' : 'stone3');
+    for (let k = 0; k < 12; k += 2) { p.px(x + k, y + 1 - Math.floor(k / 2), 'waterHi'); p.px(x + k + 1, y + 2 - Math.floor(k / 2), 'water2'); }
   }
   if (spec.alembic) {
     // copper still with a green glass bulb on the roof
@@ -1457,6 +1512,12 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
   lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
+  // the water (iteration 60)
+  fishershut: { w: 1, h: 1, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 71, fishRack: true, lanternPost: true, glowWindows: true },
+  smokehouse: { w: 1, h: 1, height: 10, roofH: 6, wall: 'stone', roof: 'shingle', windows: 0, door: true, chimney: true, seed: 72, smokeRack: true },
+  reedcutters: { w: 1, h: 1, height: 8, roofH: 8, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 73, reedBundles: true },
+  weir: { w: 1, h: 1, height: 4, roofH: 2, wall: 'stone', roof: 'flat', windows: 0, seed: 74, weirStones: true, lanternPost: true },
+  watergarden: { w: 2, h: 2, height: 7, roofH: 6, wall: 'plaster', roof: 'copper', windows: 0, seed: 75, lilyPond: true, ridgeOrnament: true, lanternPost: true },
   greatweir: { w: 2, h: 2, height: 10, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 51, runeBand: true, leyLamps: true, waterWheel: true, lanternPost: true, crystal: true },
   // the nine that drew nothing until iteration 50 (the Carters' Yard, the Lyceum and the Sextons' Chapel also have paintings)
   cartersyard: { w: 2, h: 2, height: 8, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, lanternPost: true, seed: 67 },
@@ -1999,6 +2060,19 @@ export function generateSprites(): SpriteDef[] {
     if (f === 0) { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(4, 8, 1, 6, 'gold'); } else { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(5, 8, 1, 5, 'gold'); }
     hn.outline('outline');
     out.push({ name: `heron_${f}`, p: hn, ax: 4, ay: 14 });
+    // a fishers' boat (iteration 60): a clinker hull, a fisher with a hat, an oar dipping on the stroke; the bow faces right
+    const bt = new Painter(16, 10);
+    bt.poly([[0, 5], [15, 5], [13, 8], [2, 8]], 'wood2');
+    bt.rect(1, 5, 14, 1, 'wood1');
+    bt.rect(2, 7, 11, 1, 'wood3');
+    bt.px(15, 4, 'wood2');
+    bt.rect(6, 1, 3, 4, 'cloth3');
+    bt.rect(6, 0, 3, 1, 'thatch1');
+    bt.px(7, 1, 'skin');
+    if (f === 0) bt.line(5, 3, 1, 8, 'wood1'); else bt.line(9, 3, 13, 9, 'wood1');
+    bt.rect(10, 4, 3, 1, 'stone3'); // the catch
+    bt.outline('outline');
+    out.push({ name: `boat_${f}`, p: bt, ax: 8, ay: 8 });
   }
   // Concord Warden: a squat stone giant with a rune-lit chest
   for (let f = 0; f < 2; f++) {

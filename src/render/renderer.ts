@@ -14,6 +14,7 @@ import { zoneSpriteName } from './atlas';
 import { cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { faceLeft } from './facing';
+import { fordClosed, isFordTile } from '../sim/water';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -281,7 +282,25 @@ export class Renderer {
           const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : r === RoadType.Glowvine ? 'glowvine' : 'lantern';
           s = this.atlas.get(`road_${key}_${this.roadMask(state, x, y)}`);
           if (s) {
-            if (isWater(t)) {
+            const ford = isWater(t) && isFordTile(state, i); // a track over a narrow river (iteration 60): stepping stones, under water at high water
+            if (ford) {
+              ctx.fillStyle = PAL.stone2;
+              for (const [ox, oy] of [[-8, 9], [-2, 6], [4, 10], [9, 8], [0, 13], [-6, 12]]) ctx.fillRect(dx + ox, dy + oy, 3, 2);
+              ctx.globalAlpha = 0.7;
+              ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
+              ctx.globalAlpha = 1;
+              if (fordClosed(state, i)) {
+                ctx.fillStyle = PAL.water2;
+                ctx.globalAlpha = 0.75;
+                ctx.beginPath();
+                ctx.moveTo(dx, dy + 1);
+                ctx.lineTo(dx + 16, dy + 9);
+                ctx.lineTo(dx, dy + 17);
+                ctx.lineTo(dx - 16, dy + 9);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+              }
+            } else if (isWater(t)) {
               // bridge: draw plank base
               ctx.fillStyle = PAL.wood1;
               ctx.beginPath();
@@ -291,7 +310,7 @@ export class Renderer {
               ctx.lineTo(dx - 16, dy + 9);
               ctx.fill();
             }
-            ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
+            if (!ford) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
           }
         } else if (state.wall[i] === 1) {
           let m = 0;
@@ -656,6 +675,13 @@ export class Renderer {
           const s = this.atlas.get(`${sp}_${moving ? Math.floor(this.time * (a.load === 1 ? 12 : 6) + a.id) % 2 : 0}`);
           const left = a.dir === 2;
           items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8, left), occ: s ? { s, x: wx, y: wy + 8 } : undefined });
+        } else if (sp === 'boat') {
+          // a fishers' boat (iteration 60): the oar strokes while it rows, a lamp in the bow at night
+          const moving = a.path.length > 0 && a.timer <= 0;
+          const s = this.atlas.get(`boat_${moving ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
+          const bob = Math.sin(this.time * 2 + a.id) * 0.8;
+          items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8 + bob, a.dir === 2) });
+          if (night > 0.2) lights.push({ x: wx + (a.dir === 2 ? -6 : 6), y: wy + 4, r: 12, c: PAL.lampWarm, i: 0.5 });
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });

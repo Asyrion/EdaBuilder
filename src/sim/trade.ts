@@ -47,7 +47,7 @@ export function twinDepots(s: GameState): [Building, Building] | null {
 export function tradeRoutes(s: GameState): TradeRoute[] {
   const out: TradeRoute[] = [];
   const depots = okOf(s, 'depot').concat(hallActive(s, 'cartersyard') ? okOf(s, 'cartersyard') : []);
-  if (depots.length) out.push({ kind: 'road', name: 'The Gloam road', at: depots[0], to: null, note: `${depots.length} depot${depots.length > 1 ? 's' : ''}: surplus sold to the Crown at ${s.trade.priceGoods.toFixed(1)} a good${s.trade.priceHides !== undefined ? `, hides at ${s.trade.priceHides}, salted meat at ${s.trade.priceMeat}, trophies at ${s.trade.priceTrophy}` : ''}${s.stats.relicsSold ? `; ${s.stats.relicsSold} relics sold` : ''}${s.relicStock > 10 ? `; ${s.relicStock} loose relics in the camp` : ''}`, open: true });
+  if (depots.length) out.push({ kind: 'road', name: 'The Gloam road', at: depots[0], to: null, note: `${depots.length} depot${depots.length > 1 ? 's' : ''}: surplus sold to the Crown at ${s.trade.priceGoods.toFixed(1)} a good${s.trade.priceHides !== undefined ? `, hides at ${s.trade.priceHides}, salted meat at ${s.trade.priceMeat}, trophies at ${s.trade.priceTrophy}` : ''}${s.trade.priceFish !== undefined ? `, smoked fish at ${s.trade.priceFish}` : ''}${s.stats.relicsSold ? `; ${s.stats.relicsSold} relics sold` : ''}${s.relicStock > 10 ? `; ${s.relicStock} loose relics in the camp` : ''}`, open: true });
   const quays = MOORINGS.flatMap((k) => okOf(s, k));
   if (quays.length) {
     const open = quays.length >= 2 && !riverFrozen(s);

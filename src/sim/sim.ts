@@ -11,6 +11,7 @@ import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
 import { dailyStorms, dailyTigers } from './lore';
 import { dailyWild } from './wild';
+import { dailyWater } from './water';
 import { dailyDaughter } from './charter';
 import { dailyWeather, dailyWeave, hasMarvel } from './weave';
 import { dailyGuilds } from './guilds';
@@ -93,6 +94,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyStorms(state);
     dailyTigers(state, wardenDistricts(state));
     dailyWild(state); // the herds, the wolves and the hunt for game (iteration 58)
+    dailyWater(state); // the shoals, the fish, the reeds and the fords (iteration 60)
     dailyDaughter(state);
     dailyWeave(state);
     dailyGuilds(state);

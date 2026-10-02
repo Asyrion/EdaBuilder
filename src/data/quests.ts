@@ -1,4 +1,5 @@
 import { isCradle } from '../sim/wyrmcraft';
+import { isFordTile } from '../sim/water';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, Terrain, Zone, idx, type GameState } from '../sim/types';
 import { BUILDING_BY_KEY } from '../sim/catalog';
@@ -122,6 +123,10 @@ export const QUESTS: QuestDef[] = [
   { id: 'q_rider', chapter: 'Beasts', title: 'A drake rider lays a restless down', hint: 'Riders fly out from a lit Drake Mews to the restless and to fires.', when: (s) => has(s, 'drakemews'), done: (s) => s.stats.riderRescues > 0, focus: { build: 'drakemews' }, reward: 800, priority: 57 },
   { id: 'q_airship', chapter: 'The Crown', title: 'Launch the airship', hint: 'Leisure tab, Beacon of Eda: the Sky-Dock. The ship leaves on day 3 of each season with your surplus.', when: (s) => s.milestone >= 8, done: (s) => s.stats.airshipVoyages > 0, focus: { build: 'skydock' }, reward: 3000, priority: 69 },
   { id: 'w_meat', chapter: 'Beasts', title: 'Put game on a market\'s shelves', hint: "A Hunters' Lodge's panel names its quarry: choose the deer or the boar in its grounds, with a market within 16. The hearths within 10 of that market are happier.", when: (s) => s.milestone >= 2 && s.wild.herds.length > 0, done: (s) => s.wild.meatAt.length > 0, focus: { build: 'hunterslodge' }, reward: 600, priority: 57 },
+  // the water (iteration 60)
+  { id: 'w_fish', chapter: 'Goods', title: 'Put fish on a market\'s shelves', hint: "Water tab: a Fishers' Hut touching river or lake water, a market within 12. Fish spoil in two days; the hearths within 10 of that market are happier.", when: (s) => s.milestone >= 1, done: (s) => s.water.fishAt.length > 0, focus: { build: 'fishershut' }, reward: 400, priority: 57 },
+  { id: 'w_thatch', chapter: 'Goods', title: 'Thatch ten homes', hint: "Water tab: Reed-Cutters' Hut on the shore. It thatches the level-1 homes within 10: +3 happiness, but thatch burns.", when: (s) => s.milestone >= 1, done: (s) => s.stats.homesThatched >= 10, focus: { build: 'reedcutters' }, reward: 400, priority: 58 },
+  { id: 'w_ford', chapter: 'Goods', title: 'Ford the river', hint: 'A Dirt Track over a narrow river is a ford: a third of a bridge\'s price, but under water in the Thaw\'s first ten days (a Weir within 6 holds it).', when: (s) => s.milestone >= 1 && s.day >= 5, done: (s) => { for (let i = 0; i < s.road.length; i++) if (s.road[i] && isFordTile(s, i)) return true; return false; }, focus: { tool: 'road' }, reward: 300, priority: 58 },
   // Longwood and the Fen-Nex
   { id: 'n_tiger', chapter: 'Beasts', title: 'Bring down a war-tiger', hint: "Hunters' Lodges within 12, Watch Houses at full strength, or a warden drake's district.", when: (s) => s.stats.tigersTotal > 0, done: (s) => s.stats.tigersKilled > 0, focus: { build: 'hunterslodge' }, reward: 1200, priority: 58 },
   { id: 'n_font', chapter: 'The dead', title: 'Raise the Font of Quieting', hint: 'Services tab, Free City. Deathcare +50% and the restless lie down easily.', when: (s) => s.milestone >= 7, done: (s) => has(s, 'fontquieting'), focus: { build: 'fontquieting' }, reward: 1500, priority: 59 },
