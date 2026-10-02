@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 58 (every building faces its road). Iteration 57 (the donkey
-carts), 56 (the playtest batch) and 55 (M14 closed) came before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 59 (every building faces its road). Iteration 58 (M16 part 1,
+the wild) and 57 (the donkey carts) were merged just before it; 56 and 55 came before. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
@@ -19,24 +19,29 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 - Iteration 56 (DESIGN §4.87) was a playtest batch between milestones: the painted heroes
   scaled to their procedural twins, nine left-fronted paintings mirrored, and reach rings drawn
   above the buildings with labels and secondary reaches.
-- Iterations 57 and 58 (DESIGN §4.88–4.89) were batches between milestones, at the user's request:
-  the uploaded donkey-cart sheets became the road carts, and every building turns to its road.
-- **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
-  the next item.
+- Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
+  uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
+- **M16 the wild and the water** (DESIGN §16) is open. **Part 1, the wild**, is done (iteration 58,
+  DESIGN §4.89): herds, the lodge's quarry, meat on the shelves, wolves in the Hush, the Close
+  Season, two tales and the animal sheets. **Part 2, the water**, is the next item.
+- Iteration 59 (DESIGN §4.90), at the user's request after a playtest screenshot: every building
+  turns toward its road by a mirror.
 
 ## The next item
 
-M16 part 1, the wild (DESIGN §16, "M16 The wild and the water", and NEXT_STEPS item 1):
-- herds of deer and elk on the meadows that flee lit ground; boar, otters, herons, goats, and
-  wolves in the Hush;
-- the Hunters' Lodge hunting a chosen quarry for hides, meat and trophies as goods with their own
-  prices on the Gloam road, and a Hearth happiness line for meat on the shelves;
-- herds that thin where the city spreads;
-- a Hunters' edict and two tales;
-- the animals folder's creature sheets through `npm run art`.
+M16 part 2, the water (DESIGN §16, and NEXT_STEPS item 1):
+- a Fishers' Hut on a bank or a lake shore, with boats on the water (walkers on water tiles,
+  `waterPath`);
+- fish as goods that spoil in two days unless a market or a smokehouse takes them;
+- reed-cutters on the marsh for thatch (there is no marsh terrain: Shore and the shallows are what
+  the wild's otters and herons use);
+- a water garden;
+- the lake's own land value and well bonus;
+- a weir pool and a ford.
 
-Plan it on the Plan panel first. The bot now plays the levers (DESIGN §4.86), so it can learn the
-hunt in the same iteration if the plan says so.
+The wild's meat path (`dailyMeat`, `MARKET_MEAT_CAP`, `meatAt`) is the pattern for fish on the
+shelves, and the Gloam road's own prices (`HIDE_PRICE` and the rest in growth.ts) are the pattern
+for fish on the road. Plan it on the Plan panel first.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
@@ -57,22 +62,22 @@ hunt in the same iteration if the plan says so.
   - the Hall of Wicks the vigil never unlocked;
   - tales refused in a city in debt ("0 crowns asked").
 - Seed 43 (Vellish) used to never reach the Free City; with the part 5 bot it does (day 123).
-- **Head-on paintings and a road behind** (iteration 58). Every building turns toward its road
+- **Head-on paintings and a road behind** (iteration 59). Every building turns toward its road
   by a mirror, but the painted houses drawn head-on (most level-2 hearths, the craft levels, the
   arcane level 2, the last Stake stage) cannot turn their front to a road behind them. Only new
   three-quarter paintings would fix that.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (61 files, 356 tests at this writing; `tests/iteration58.test.ts`
-  is iteration 58's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (62 files, 374 tests at this writing; `tests/iteration59.test.ts`
+  is iteration 59's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
   (actions, tick, recomputeAll, place, events, atlas, `wyrmcraft`, `beasts`, `vehicles`,
   `wyrm`, `maybeFireReturn`, and since iteration 54 `weave`, `economy`, `edicts`,
   `districts`, `events`, `scenario`, and since iteration 55 `save` {serialize, deserialize}, `dev`
-  {runDev} and `factions` {canBuild, specialLock}, and since iteration 58 `facing` {faceLeft}) are the hooks; a second game in one script starts
+  {runDev} and `factions` {canBuild, specialLock}, and since iteration 59 `facing` {faceLeft}) are the hooks; a second game in one script starts
   through `__game.newGame(seed, name, 'valley', people)` (`'daily'` for the challenge)
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
@@ -118,6 +123,21 @@ hunt in the same iteration if the plan says so.
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 58 (not yet said elsewhere)
+
+- **The wild is on side streams** (`src/sim/wild.ts`: `sideRng` by seed, day and tag, and a
+  per-tick stream for the steps in `tickCreatures`). A city whose bot buys no game lodge and loses
+  no hen is bit-identical (Vellish 44). Keep new wild rolls there.
+- **Wild agents** carry `herdId`; `syncWildAgents` keeps them in step with the head counts daily.
+  A save without `wild` resets to an unseeded wild in `deserialize` and seeds on the next day.
+- **The bot's hunt pays little:** five of six bot cities have no depot. Hides pile up unsold, and
+  only one city in six has meat on a shelf at day 150 (DESIGN §4.89).
+- **`window.__wardlight.wild`** is the wild module, for playtests (`dailyMeat`, `dailyWolves`,
+  `setQuarry`).
+- **The importer's `hop` key:** a creature painting serves as both frames, the second a pixel
+  higher.
+- **Tests:** 61 files, 369 tests.
 
 ## Learned in iteration 55 (not yet said elsewhere)
 
@@ -172,7 +192,7 @@ hunt in the same iteration if the plan says so.
   places agents by hand must give them `timer: 0`. A hand-built town fills carts only once its
   works have `stock >= 4`; `scripts/playtest57.mjs` tops the stock up each tick.
 
-## Learned in iteration 58 (not yet said elsewhere)
+## Learned in iteration 59 (not yet said elsewhere)
 
 - **Facing:** `src/render/facing.ts` `faceLeft(state, footprint)` is the one rule; the renderer
   draws `atlas.mirrored(name)` when it is true. A `SpriteRect` may carry `src` (the mirrored
@@ -181,6 +201,6 @@ hunt in the same iteration if the plan says so.
   write (the bot, dev commands, undo), so anything keyed on it can go stale.
 - **A before build beside the after:** a `git worktree` at the previous commit, `node_modules`
   symlinked, `vite build --outDir <dir>`, and `vite preview --outDir <dir> --port 4174`;
-  `OLD_PORT=4174 node scripts/playtest58.mjs` shoots both.
+  `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.

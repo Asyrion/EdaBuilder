@@ -1,4 +1,4 @@
-/** Iteration 58 (every building faces its road): a building whose road runs past its left face is drawn mirrored, the
+/** Iteration 59 (every building faces its road): a building whose road runs past its left face is drawn mirrored, the
  *  visible front edges before the back ones; the mirrored rect is the sprite's mirror image about its anchor. */
 import { describe, expect, it } from 'vitest';
 import { faceLeft } from '../src/render/facing';

@@ -7,6 +7,7 @@ import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
 import { assignAspects, aspectAt, drought, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
+import { seedWild } from './wild';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
@@ -109,6 +110,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     districtNames: {},
     districtQuarters: {},
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
+    wild: { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] },
     dragons: [],
     nextDragonId: 1,
     materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
@@ -145,7 +147,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -167,6 +169,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
   pushMessage(state, `The Charter of ${state.cityName} is signed. Draw a road from the Founding Stake and zone some hearths.`, 'milestone');
   assignAspects(state.nodes, state.founding, () => rng.int(1000));
   commitRng(state, rng);
+  seedWild(state); // the herds on the land from the first hour (side streams only: the main stream is untouched)
   return state;
 }
 

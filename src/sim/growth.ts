@@ -20,6 +20,7 @@ import { seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
+import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, labourGolems, raysLured, worksGolems } from './beasts';
 import { aspectAt, auraAt, drought, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, raining, FLOODPROOF } from './weave';
@@ -136,6 +137,8 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
       if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
     } else if (a.kind === 3 && a.species === 'golem' && a.load === 0) {
       if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 10;
+    } else if (a.kind === 3 && a.species === 'wolf') {
+      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
     } else if (a.kind === 3 && a.species === 'tiger') {
       if (Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) < 5) fear -= 12;
     }
@@ -161,6 +164,8 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
   if (seasonOf(state) === 1) add('Bloom', 2);
   if (def.zone === Zone.Hearth) {
+    if (meatNear(state, b.x, b.y)) add('meat on the shelves', MEAT_HAPPY); // a market within 10 with game from a lodge (iteration 58)
+    if (b.wolfDay !== undefined && state.day - b.wolfDay < HEN_DAYS) add('the wolves took a hen', HEN_HAPPY);
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
     add('no work', -unemployment * 20);
     add('health of the city', (state.health - 0.5) * 15);
@@ -611,6 +616,10 @@ export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: nu
 
 /** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. */
 export const RELIC_PRICE = 60;
+/** The hunt's prices on the Gloam road by season (Thaw, Bloom, Ember, Hush; iteration 58). */
+export const HIDE_PRICE = [3, 2.5, 3, 4];
+export const MEAT_PRICE = [1.5, 1.5, 2, 2.5];
+export const TROPHY_PRICE = [30, 30, 40, 30];
 export const RELIC_KEEP = 10;
 export const RELICS_PER_DAY = 2;
 
@@ -620,6 +629,13 @@ export function dailyTrade(state: GameState): void {
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
   t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
   t.priceLeystone = [3, 4, 3, 2.5][season];
+  // the hunt's goods (iteration 58): hides dear in the Hush, salted meat cheap, trophies dear in the Ember (the lords' hunting season)
+  t.priceHides = HIDE_PRICE[season];
+  t.priceMeat = MEAT_PRICE[season];
+  t.priceTrophy = TROPHY_PRICE[season];
+  t.hidesSold = 0;
+  t.meatSold = 0;
+  t.trophiesSold = 0;
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
@@ -634,12 +650,27 @@ export function dailyTrade(state: GameState): void {
   const full: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && b.stock >= 1))) full.push(b); // pelts go too
+    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)))) full.push(b); // hides and salted meat go too (iteration 58)
   });
   full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
+  let hunt = 0;
   for (const b of full) {
     if (budget <= 0) break;
-    const sell = Math.min(b.kind === 'hunterslodge' ? b.stock : b.stock - craftStockCap(b) * 0.5, budget);
+    if (b.kind === 'hunterslodge') {
+      // hides at their own price, then the salted meat over what the shelves want
+      const hides = Math.min(b.stock, budget);
+      b.stock -= hides;
+      budget -= hides;
+      const meat = Math.min(Math.max(0, Math.floor((b.meat ?? 0) - LODGE_MEAT_KEEP)), budget);
+      b.meat = (b.meat ?? 0) - meat;
+      budget -= meat;
+      t.exported += hides + meat;
+      t.hidesSold! += hides;
+      t.meatSold! += meat;
+      hunt += hides * t.priceHides + meat * t.priceMeat;
+      continue;
+    }
+    const sell = Math.min(b.stock - craftStockCap(b) * 0.5, budget);
     if (sell > 0) {
       b.stock -= sell;
       budget -= sell;
@@ -647,6 +678,17 @@ export function dailyTrade(state: GameState): void {
       crowns += sell * t.priceGoods;
     }
   }
+  // trophies: the Crown's buyers take two a day, outside the carts' budget (like the relics)
+  forEachBuilding(state, (b) => {
+    if (b.kind !== 'hunterslodge' || b.state !== 'ok' || (b.trophies ?? 0) < 1) return;
+    const n = Math.min(b.trophies ?? 0, TROPHIES_PER_DAY - t.trophiesSold!);
+    if (n <= 0) return;
+    b.trophies = (b.trophies ?? 0) - n;
+    t.trophiesSold! += n;
+    hunt += n * t.priceTrophy!;
+  });
+  crowns += hunt;
+  state.stats.huntCrowns += Math.round(hunt * (hasMarvel(state, 'chartroom') ? 1.15 : 1));
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;

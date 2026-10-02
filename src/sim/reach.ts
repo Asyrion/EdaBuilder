@@ -12,6 +12,7 @@ import { GLIMHOUSE_REACH, HOSPICE_REACH } from './growth';
 import { CARTERS_REACH } from './agents';
 import { GLOWVINE_REACH, MILL_SHARE_REACH, SEAT_WARMTH, WICKS_REACH } from './networks';
 import { SLUICE_FLOOD_REACH } from './weave';
+import { HOUND_REACH, HUNT_REACH } from './wild';
 import type { Building, GameState } from './types';
 
 export interface Reach {
@@ -43,6 +44,7 @@ export const SECONDARY_REACH: Record<string, { r: number; label: string; square?
   underkingseat: [{ r: SEAT_WARMTH, label: 'warms cradles' }],
   torrentmill: [{ r: MILL_SHARE_REACH, label: 'shares the river', square: true }],
   glimhouse: [{ r: GLIMHOUSE_REACH, label: 'Hush works', square: true }],
+  hunterslodge: [{ r: HOUND_REACH, label: 'hounds' }, { r: HUNT_REACH, label: 'hunt and meat' }], // the grounds it hunts game in and carts meat across (iteration 57)
 };
 
 /** The word for a building's primary reach. */

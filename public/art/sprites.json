@@ -1103,6 +1103,342 @@
    "h": 12,
    "ax": 9,
    "ay": 11
+  },
+  "deer_0": {
+   "file": "sprites/deer_0.png",
+   "w": 12,
+   "h": 16,
+   "ax": 5,
+   "ay": 16
+  },
+  "deer_1": {
+   "file": "sprites/deer_0.png",
+   "w": 12,
+   "h": 16,
+   "ax": 5,
+   "ay": 17
+  },
+  "elk_0": {
+   "file": "sprites/elk_0.png",
+   "w": 13,
+   "h": 19,
+   "ax": 6,
+   "ay": 19
+  },
+  "elk_1": {
+   "file": "sprites/elk_0.png",
+   "w": 13,
+   "h": 19,
+   "ax": 6,
+   "ay": 20
+  },
+  "wolf_0": {
+   "file": "sprites/wolf_0.png",
+   "w": 16,
+   "h": 13,
+   "ax": 9,
+   "ay": 13
+  },
+  "wolf_1": {
+   "file": "sprites/wolf_0.png",
+   "w": 16,
+   "h": 13,
+   "ax": 9,
+   "ay": 14
+  },
+  "hound_0": {
+   "file": "sprites/hound_0.png",
+   "w": 16,
+   "h": 13,
+   "ax": 10,
+   "ay": 13
+  },
+  "hound_1": {
+   "file": "sprites/hound_0.png",
+   "w": 16,
+   "h": 13,
+   "ax": 10,
+   "ay": 14
+  },
+  "golem_0": {
+   "file": "sprites/golem_0.png",
+   "w": 25,
+   "h": 24,
+   "ax": 12,
+   "ay": 24
+  },
+  "golem_1": {
+   "file": "sprites/golem_0.png",
+   "w": 25,
+   "h": 24,
+   "ax": 12,
+   "ay": 25
+  },
+  "thrumhare_0": {
+   "file": "sprites/thrumhare_0.png",
+   "w": 9,
+   "h": 10,
+   "ax": 2,
+   "ay": 10
+  },
+  "thrumhare_1": {
+   "file": "sprites/thrumhare_0.png",
+   "w": 9,
+   "h": 10,
+   "ax": 2,
+   "ay": 11
+  },
+  "wisp_0": {
+   "file": "sprites/wisp_0.png",
+   "w": 11,
+   "h": 12,
+   "ax": 5,
+   "ay": 12
+  },
+  "wisp_1": {
+   "file": "sprites/wisp_0.png",
+   "w": 11,
+   "h": 12,
+   "ax": 5,
+   "ay": 13
+  },
+  "skyray_0": {
+   "file": "sprites/skyray_0.png",
+   "w": 22,
+   "h": 18,
+   "ax": 11,
+   "ay": 18
+  },
+  "skyray_1": {
+   "file": "sprites/skyray_0.png",
+   "w": 22,
+   "h": 18,
+   "ax": 11,
+   "ay": 19
+  },
+  "dragon_0_1_0": {
+   "file": "sprites/dragon_0_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 7,
+   "ay": 13
+  },
+  "dragon_0_1_1": {
+   "file": "sprites/dragon_0_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 7,
+   "ay": 14
+  },
+  "dragon_0_2_0": {
+   "file": "sprites/dragon_0_2_0.png",
+   "w": 17,
+   "h": 18,
+   "ax": 9,
+   "ay": 18
+  },
+  "dragon_0_2_1": {
+   "file": "sprites/dragon_0_2_0.png",
+   "w": 17,
+   "h": 18,
+   "ax": 9,
+   "ay": 19
+  },
+  "dragon_1_1_0": {
+   "file": "sprites/dragon_1_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 7,
+   "ay": 13
+  },
+  "dragon_1_1_1": {
+   "file": "sprites/dragon_1_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 7,
+   "ay": 14
+  },
+  "dragon_1_2_0": {
+   "file": "sprites/dragon_1_2_0.png",
+   "w": 17,
+   "h": 18,
+   "ax": 9,
+   "ay": 18
+  },
+  "dragon_1_2_1": {
+   "file": "sprites/dragon_1_2_0.png",
+   "w": 17,
+   "h": 18,
+   "ax": 9,
+   "ay": 19
+  },
+  "dragon_2_1_0": {
+   "file": "sprites/dragon_2_1_0.png",
+   "w": 14,
+   "h": 13,
+   "ax": 6,
+   "ay": 13
+  },
+  "dragon_2_1_1": {
+   "file": "sprites/dragon_2_1_0.png",
+   "w": 14,
+   "h": 13,
+   "ax": 6,
+   "ay": 14
+  },
+  "dragon_2_2_0": {
+   "file": "sprites/dragon_2_2_0.png",
+   "w": 19,
+   "h": 18,
+   "ax": 9,
+   "ay": 18
+  },
+  "dragon_2_2_1": {
+   "file": "sprites/dragon_2_2_0.png",
+   "w": 19,
+   "h": 18,
+   "ax": 9,
+   "ay": 19
+  },
+  "dragon_3_1_0": {
+   "file": "sprites/dragon_3_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 7,
+   "ay": 13
+  },
+  "dragon_3_1_1": {
+   "file": "sprites/dragon_3_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 7,
+   "ay": 14
+  },
+  "dragon_3_2_0": {
+   "file": "sprites/dragon_3_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 11,
+   "ay": 18
+  },
+  "dragon_3_2_1": {
+   "file": "sprites/dragon_3_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 11,
+   "ay": 19
+  },
+  "dragon_4_1_0": {
+   "file": "sprites/dragon_4_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 7,
+   "ay": 13
+  },
+  "dragon_4_1_1": {
+   "file": "sprites/dragon_4_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 7,
+   "ay": 14
+  },
+  "dragon_4_2_0": {
+   "file": "sprites/dragon_4_2_0.png",
+   "w": 16,
+   "h": 18,
+   "ax": 9,
+   "ay": 18
+  },
+  "dragon_4_2_1": {
+   "file": "sprites/dragon_4_2_0.png",
+   "w": 16,
+   "h": 18,
+   "ax": 9,
+   "ay": 19
+  },
+  "dragon_6_1_0": {
+   "file": "sprites/dragon_6_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 8,
+   "ay": 13
+  },
+  "dragon_6_1_1": {
+   "file": "sprites/dragon_6_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 8,
+   "ay": 14
+  },
+  "dragon_6_2_0": {
+   "file": "sprites/dragon_6_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 13,
+   "ay": 18
+  },
+  "dragon_6_2_1": {
+   "file": "sprites/dragon_6_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 13,
+   "ay": 19
+  },
+  "dragon_7_1_0": {
+   "file": "sprites/dragon_7_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 5,
+   "ay": 13
+  },
+  "dragon_7_1_1": {
+   "file": "sprites/dragon_7_1_0.png",
+   "w": 13,
+   "h": 13,
+   "ax": 5,
+   "ay": 14
+  },
+  "dragon_7_2_0": {
+   "file": "sprites/dragon_7_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 8,
+   "ay": 18
+  },
+  "dragon_7_2_1": {
+   "file": "sprites/dragon_7_2_0.png",
+   "w": 18,
+   "h": 18,
+   "ax": 8,
+   "ay": 19
+  },
+  "dragon_8_1_0": {
+   "file": "sprites/dragon_8_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 4,
+   "ay": 13
+  },
+  "dragon_8_1_1": {
+   "file": "sprites/dragon_8_1_0.png",
+   "w": 12,
+   "h": 13,
+   "ax": 4,
+   "ay": 14
+  },
+  "dragon_8_2_0": {
+   "file": "sprites/dragon_8_2_0.png",
+   "w": 16,
+   "h": 18,
+   "ax": 5,
+   "ay": 18
+  },
+  "dragon_8_2_1": {
+   "file": "sprites/dragon_8_2_0.png",
+   "w": 16,
+   "h": 18,
+   "ax": 5,
+   "ay": 19
   }
  }
 }

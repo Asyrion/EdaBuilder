@@ -2641,7 +2641,200 @@ carts. The in-game help's goods line and the README say so.
 **Not done.** The carts show no difference between going out loaded and coming back empty, and the
 covered wagons look the same in every season; both would need painted variants.
 
-### 4.89 Every building faces its road (iteration 58)
+### 4.89 M16 part 1, the wild: herds that thin where the city spreads, deer that run from the light, a lodge that hunts a chosen quarry, meat on the shelves, wolves in the Hush, the Close Season, two tales, the animal sheets (iteration 58)
+
+Part 1 of M16 (§16). Before it, the only wild thing with a use was the Gloam-hound, hunted for pelts.
+§15's rule holds: the player sees the herds, chooses the quarry, and can lose by it. A herd can be
+hunted out for good. Hounds raid while the hunters are after deer. Wolves come to a dark edge in the
+Hush.
+
+**Herds** (`src/sim/wild.ts`).
+- **State.** `state.wild` holds the herds. A herd has a species, a home tile, a head count (a
+  fraction: the young come in by the day) and a cap.
+- **The cap** is the habitat within 6 tiles of home, divided by a number of tiles a head and capped
+  by species (habitat in the table below).
+  - A habitat tile has no Gloam, no road, and no building within 2 tiles. That last rule is the
+    one that makes the city thin its herds: build over a meadow and the cap falls.
+  - A herd over its cap loses a tenth of the excess a day, at least 0.2.
+  - A herd under one head is gone, with a message. It "left the ground: the city stands where they
+    grazed", or "the hunters took the last".
+
+| kind | ground | most head | meat, hides a head | trophy |
+|---|---|---|---|---|
+| deer | Meadow, Grass | 8 | 2, 1 | – |
+| elk | the woods' edge | 5 | 4, 2 | antlers, 1 in 5 |
+| boar | Forest | 4 | 3, 1 | tusks, 1 in 10 |
+| goats | Hills | 5 | 2, 1 | – |
+| otters | Shore by water, the shallows | 2 | 0, 2 | – |
+| herons | Shore, the shallows | 2 | 1, 0 | plumes, 3 in 10 |
+| wolves | Forest | 5 | 0, 2 | a wolf head, 1 in 4 |
+
+- **Breeding.** Herds breed logistically: 0.03 a day in the Thaw and the Ember, 0.06 in Bloom (the
+  young), none in the Hush.
+  - The rate doubles where a ward covers the home or a lit Glimhouse stands within 8 (§16: "recover
+    where a Glimhouse or a ward holds the ground").
+  - The Close Season adds a quarter, and the white hart let run adds half.
+- **Seeding.** A new map is seeded with full herds: up to 7 of deer, 3 of elk, 4 of boar, 3 each of
+  goats, otters, herons and wolf packs, where the land holds them. Each season a pair wanders in
+  wherever the land holds more.
+- **Side streams.** Everything wild draws from streams keyed by the seed: seeding, hunting, wolves,
+  and the animals' steps. The main stream never sees the wild, only what it does: goods, happiness
+  and a hen taken. Vellish 44 is the proof: its bot buys no lodge and loses no hen, and its row is
+  bit-identical to §4.86's.
+- **What the player sees.** Each herd shows up to six animals.
+  - Deer and elk graze within 5 of home by day.
+  - On lit ground, or within 2 of it, they run from the light at a run's pace.
+  - At dusk they walk to their bed, the nearest forest within 8, and at dawn they come back.
+  - Boar root in the woods, goats keep the hills, otters swim the shore line, and herons stand in
+    the shallows for minutes at a time.
+  - The animals face the way they walk.
+
+**The hunt.**
+- **The quarry.** A Hunters' Lodge's panel names its quarry: hounds (the default, and old saves
+  keep it), or any game in its grounds (16 tiles).
+  - A lodge on game takes one head a day from the fullest herd of its quarry in reach, with a chance
+    of 0.5 (0.35 for elk and wolves, 0.4–0.45 for the rest), scaled by its crew.
+  - Hides go into its store (the old pelts are hides), meat into the salting shed (30 at most) and
+    trophies onto a shelf.
+  - Its hunters are out: hounds within 12 die at 0.4 instead of 0.8.
+  - A lodge that kills a war-tiger keeps its head as a trophy.
+- **The Gloam road** buys at the hunt's own prices:
+  - hides 3 / 2.5 / 3 / 4 by season, dear in the Hush;
+  - salted meat, the shed's meat over 20, at 1.5 / 1.5 / 2 / 2.5;
+  - trophies at 30, or 40 in the Ember (the lords' hunting season).
+  - Hides and meat ride in the carts' budget of 8 a depot, so they compete with the works' surplus.
+  - Trophies go like relics, two a day outside the budget.
+  - The Ledger has a row for the hunt's sales; the route note gives the prices; the Annals count the
+    crowns.
+- **Meat on the shelves.**
+  - A lodge carts its meat to the markets within 16, up to 8 on a shelf, and a market sells one a
+    day.
+  - A hearth within 10 of a market with meat gets **+4 "meat on the shelves"**, a term as large as a
+    lit home's.
+  - Meat is the reason to put a lodge between the meadows and the market, and the reason to keep
+    hunting.
+- **The Close Season** (an edict; 10 crowns, plus 10 a lodge, a day):
+  - no game is taken in Bloom, and the hunters guard against hounds instead;
+  - no lodge takes a herd below 6 head;
+  - herds breed a quarter faster.
+  - It is the answer to a herd hunted out. The Hunters' Bounty stays as it was.
+
+**Wolves in the Hush.**
+- **The packs** lie up in the forest. In the Hush each pack:
+  - thins the nearest deer, elk or goats within 12 (0.15 head a day);
+  - takes a thrumhare near its den;
+  - stalks the nearest level-1 hearth within 14 that has residents, no Watch at 90 and no ward.
+- **The hen.** A dark hearth loses a hen one night in two, a lit one one night in five: −6
+  happiness for five days, "the wolves took a hen", and a warning that names the answers.
+- **Fear.** A wolf within 3 frightens a hearth (−5), as a hound does.
+- **The answers.** Watch, a ward, a lodge hunting wolves, or the wolf winter's lamps.
+
+**Two tales.**
+- **The white hart** (once, from day 20, a deer herd of 6 within 25 of the stake):
+  - hunt it for 400 crowns, a trophy, two head from every deer herd and an ill omen (−3 happiness,
+    20 days);
+  - or let it run: the herds breed half again as fast for 60 days, and +2 happiness for 20.
+- **The wolf winter** (the Hush, two packs, a hen taken in the last ten days):
+  - a winter hunt (300 crowns) halves every pack within 30 of the stake, and its hides go to a lodge;
+  - lamps on the folds (150) stop the hens for 30 days;
+  - or let the wolves keep the deer: deer −20 %, unrest +3 % for 15 days.
+
+**The bot learns the hunt.**
+- **The game lodge.** With no lodge free for game, it raises one at the city's edge facing the
+  nearest herd of 4 or more, and only where a market lies within the meat's reach. It does this
+  once the purse and the ledger allow.
+- **The quarry.** The first lodge stays on hounds while a pack came in the last 15 days. The others
+  hunt the most valuable game in their grounds, but only herds above half their cap, so the bot
+  does not hunt a herd out.
+- **The Close Season** goes on when the herds a lodge hunts fall under half their cap.
+- `balance.ts` prints a `wild:` line: the herds and head by kind, the herds lost and hunted out,
+  the hides, meat and trophies taken, the hunt's crowns, the hens, and each lodge's quarry.
+
+**The animal sheets** (`npm run art`; judged by eye at 5× and in the game at 3×).
+- **Painted.** The deer (the flower-antlered deer), the elk (the gold-antlered stag), the wolf (the
+  white howling wolf), the Gloam-hound (the rune-marked shadow wolf), the Concord Warden (the stone
+  golem), the thrumhare (the moon hare), the wisp (the glowing jellyfish) and the skyray (the star
+  whale) are painted.
+- **The drakes.** Eight of the nine drake lines are painted at the hatchling and drake sizes:
+  - ember from the fire salamander;
+  - bone from the black dragon;
+  - glim and fen from the two green dragons;
+  - vein from the golden drake;
+  - sky from the blue dragon;
+  - tide from the sea serpent;
+  - storm from the ice dragon.
+- **Two frames from one painting.** The importer's new `hop` key lets a painting serve as both
+  frames, the second a pixel higher: a gait bob.
+- **Procedural, and why:**
+  - the boar, the goat (the crystal ram) and the otter were blobs at 7–12 px;
+  - the lynx and the panther are not a copper war-tiger;
+  - no sheet has a heron or a grey drake;
+  - the wyverns stay procedural, because the painted dragons stand and the wyverns fly.
+- **Fallbacks.** All seven wild kinds have new procedural sprites as fallbacks, and a test holds
+  every creature to two frames.
+
+**The six-run table** (against §4.86 in brackets):
+
+| run | last gate | folk at day 150 | the wild at day 150 |
+|---|---|---|---|
+| Vellish seed 42 | Burgh 42 (42) | 1,618 (1,942) | 12 hides, 3 trophies; no depot, none sold; 0 hens |
+| Vellish seed 43 | Burgh 37, Free City 126, Beacon of Eda 133 (37, 123, 145) | 2,903 (2,343) | 6 hides; 11 hens |
+| Vellish seed 44 | Burgh 40 (40) | 1,280 (1,280), bit-identical | no lodge; 0 hens |
+| Grimmen seed 42 | Deephold 125 (123) | 1,227 (1,454) | 14 hides, 3 trophies; 7 hens |
+| Veshari seed 42 | Weirhold 48, Vesh's Court 82, Sable Crown 126 (Weirhold not listed, 86, 135) | 2,728 (2,356) | 10 hides, 1 trophy; 9 hens |
+| Tallowkin seed 42 | Bright Town 34, Hall of Wicks 59, Lantern of Wicks 79 (33, 60, 114) | 3,003 (2,637) | 17 hides, 2 trophies, 120 crowns; 4 hens |
+
+**What moved the rows.** Seed 44, untouched, shows the side streams hold. Every other row moved
+because the bot now buys a game lodge (1,300 crowns and 24 a day), quests and tales changed (the meat
+quest's 600, the wolf winter, the white hart), and wolves took hens in the Hush. From the first such
+purchase each run follows another path.
+
+A probe isolates the bot's hunt: Vellish 42 run with the bot's `hunt()` switched off is
+bit-identical to §4.86 (1,942 folk). So the wild itself costs that city nothing. The 324 folk it
+lost come from the one game lodge the bot raised beside a market and the different path
+the run took from there. The lodge brought in 12 hides and 24 meat, and the city has no depot to
+sell the hides. This is the single-seed variance named in the known issues as much as a cost. The
+rule was tightened anyway (a game lodge only with a market within the meat's reach), and the
+six-run table came back identical.
+
+**What the hunt is worth to the bot.**
+- It is worth little.
+- Five of six bot cities stand no depot, so their hides and trophies are never sold. Only the
+  Tallowkin's 120 crowns came back.
+- The bot's lodges sit at the edge facing the herds. At day 150 one city in six has meat on a
+  shelf.
+- The herds the bot hunts hold up: none was hunted out, because the bot leaves half the cap. The 2
+  to 7 herds lost a run were the city's spread, the wolves and the winter.
+- A player who puts a lodge between the meadows and a market, and stands a depot, gets the
+  shelves' +4 and the Gloam road's coin. That is the design; the bot does not do it yet.
+
+**Verified.**
+- 61 test files. The new `tests/iteration58.test.ts` (18 tests) covers:
+  - seeding on habitat;
+  - a herd built over and lost;
+  - breeding by the season;
+  - a deer running from the light, and bedding at night;
+  - the lodge's take and yields, and an elk's antlers;
+  - the hound chance;
+  - the Close Season's Bloom and floor;
+  - the depot's prices;
+  - meat to a market and the hearth's line;
+  - the hens and the folds;
+  - both tales;
+  - a save from before the wild;
+  - two frames for every creature;
+  - a wild that is the same twice.
+- `scripts/playtest58.mjs`:
+  - a herd at noon;
+  - six deer leave lit ground;
+  - the lodge's panel with its grounds and quarry buttons, and the quarry chosen by a click;
+  - meat on a market's shelf and the hearth's happiness line;
+  - a hen taken and the pack out on a Hush night;
+  - the dawn and dusk probe;
+  - a contact sheet of every creature, painted over procedural;
+  - no errors, no missing sprites.
+- **Not met.** The wolves at night in the forest are hard to see under the trees at 4×.
+### 4.90 Every building faces its road (iteration 59)
 
 The user's night screenshot of a grown city showed houses turning their sides and backs to the
 street, and asked to fix every building. Iteration 56 (§4.87) gave the set one facing, lower-right,
@@ -2682,17 +2875,19 @@ building faces the same way while placing as once built.
 
 **Verified.**
 
-- 61 test files and 356 tests; the new `tests/iteration58.test.ts` covers the rule on a 1×1 and a
+- 62 test files and 374 tests (after merging iteration 58, the wild); the new
+  `tests/iteration59.test.ts` covers the rule on a 1×1 and a
   2×2 building (each edge, both fronts, both backs, the corners), the mirrored rect, and square
   footprints.
-- `scripts/playtest58.mjs` builds a crossroads with 36 zone buildings (hearth 1–3, craft 1–3,
+- `scripts/playtest59.mjs` builds a crossroads with 36 zone buildings (hearth 1–3, craft 1–3,
   market 2–3, arcane 2) on all four sides of two roads, and four 2×2 services:
   - every building faces its road's side (0 wrong of 40);
   - one frame draws exactly the 20 left-facing buildings from the mirrored sheet;
   - the ghost turns to the road north of the x-road and east of the y-road;
   - day and night shots at 2× and 4×, before (the previous build served beside it) and after;
   - a dusk probe shows no dark frame; no errors and no missing sprites.
-- Render only: the control seed (Vellish 42, 150 days) is bit-identical to §4.88.
+- Render only: the control seed (Vellish 42, 150 days) is bit-identical to main after §4.89 (1,618
+  folk at day 150).
 
 ## 7. Milestone plan
 
@@ -2733,7 +2928,8 @@ building faces the same way while placing as once built.
   buildings drawn. ✅ (iterations 50–51)
 - **M16 The wild and the water** — creatures as resources and the water put to use (§16):
   herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
-  fishing from a bank or a lake shore, boats, reed-cutters, a water garden.
+  fishing from a bank or a lake shore, boats, reed-cutters, a water garden. Part 1, the wild ✅
+  (iteration 58, §4.89); part 2, the water, next.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -3380,7 +3576,7 @@ Guildhall and the Temple by milestone like the Stake. Verified by a contact shee
 imported sprite over its diamond, day and night screenshots, and the balance table unchanged
 (art only).
 
-**M16 The wild and the water.** Two iterations. Part 1, the wild: herds of deer and elk on
+**M16 The wild and the water.** Two iterations. Part 1, the wild (✅ iteration 58, §4.89; the animal sheets painted the wild, the hounds, the Warden, the thrumhare, the wisp, the skyray and eight drake lines): herds of deer and elk on
 the meadows (day, flee lit ground, return at night), boar in the woods, otters on the banks,
 herons in the marsh, goats on the hills, wolves in the Hush that take a hare or a hen and
 frighten a hearth; the Hunters' Lodge hunts by a chosen quarry (a panel choice) and brings
@@ -3724,7 +3920,16 @@ playtest of a lakeside town.
   different heights keep one animal; each cart faces right at import and gets a mirrored twin, and
   the renderer picks the twin from the sim's heading. A cart's look is chosen by its id, so the art
   never touches the sim.
-- *Buildings turn to their road (iteration 58):* the renderer mirrors a building whose road runs past
+- *The wild on side streams (iteration 58):* herds, hunts and wolves draw from streams keyed by the
+  seed, so the wild adds no roll to the main stream and a city that does not hunt or lose a hen is
+  bit-identical; the city feels the wild only through what it does.
+- *A herd is a cap, not a census (iteration 58):* a herd's head follows the habitat within 6 tiles
+  that no building stands within 2 of, so the city's spread thins it without a separate rule, and
+  a ward or a Glimhouse helps it back; the animals on the map are a view of the head count.
+- *Painted creatures only where they read (iteration 58):* a painting at 7–12 px that reads as a
+  blob stays procedural (the boar, the goat, the otter); a painting of another beast does not stand
+  in for a lore creature (the lynx and the panther for the copper war-tiger).
+- *Buildings turn to their road (iteration 59):* the renderer mirrors a building whose road runs past
   its left side, reading the visible front edges before the back ones. The light on a mirrored
   building comes from the other side, which is the price of a street that faces its road. Head-on
   paintings keep their front to the viewer; only new paintings could turn them to a road behind.

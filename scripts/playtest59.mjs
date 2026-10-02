@@ -1,4 +1,4 @@
-// Iteration 58 (every building faces its road): a crossroads with houses, works, shops and services on all four sides of
+// Iteration 59 (every building faces its road): a crossroads with houses, works, shops and services on all four sides of
 // two roads, by day and by night, at 2× and 4×, after (port 4173) and before (OLD_PORT, the previous build, if served);
 // each building's facing against the side of its road; the mirrored sprites are the ones drawn; the ghost turns to its
 // road while placing; a dusk brightness probe; no errors, no missing sprites.
@@ -54,10 +54,10 @@ async function shots(page, tag) {
   for (const [tick, when] of [[180, 'day'], [630, 'night']]) {
     await page.evaluate(SCENE, tick);
     await page.waitForTimeout(400);
-    await page.screenshot({ path: `shots/iter58_${tag}_${when}_2x.png` });
+    await page.screenshot({ path: `shots/iter59_${tag}_${when}_2x.png` });
     await page.evaluate(() => { const g = window.__game, f = g.state.founding; g.renderer.camera.setZoom(4); g.renderer.camera.centerOnTile(f.x + 6, f.y + 6); });
     await page.waitForTimeout(300);
-    await page.screenshot({ path: `shots/iter58_${tag}_${when}_4x.png` });
+    await page.screenshot({ path: `shots/iter59_${tag}_${when}_4x.png` });
   }
 }
 
