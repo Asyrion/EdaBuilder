@@ -9,7 +9,7 @@ import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
 import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewWall, roadPath, setTax, terraform, wallTileCost } from './actions';
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
-import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_MANA, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
+import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
 import { resolveEvent } from './events';
@@ -30,7 +30,7 @@ export interface BotOptions {
 }
 
 /** The one large purchase the bot is saving for: its price is held back from growth until it is bought. */
-export interface BotGoal { kind: 'link' | 'font' | 'deepen' | 'mill' | 'hall'; key: string; cost: number; mana: boolean }
+export interface BotGoal { kind: 'link' | 'font' | 'deepen' | 'mill' | 'hall' | 'cradle'; key: string; cost: number; mana: boolean }
 
 /** Zone buildings standing, and how many of them are dark. */
 function zoneLight(s: GameState): { zone: number; dark: number } {
@@ -110,7 +110,7 @@ export class Bot {
     const free = this.freeZoneTiles();
     const wantMore = s.demand.hearth > 0.2 || s.demand.market > 0.3 || s.demand.craft > 0.3 || s.demand.arcane > 0.3;
     const hungry = ([[Zone.Hearth, s.demand.hearth], [Zone.Market, s.demand.market], [Zone.Craft, s.demand.craft]] as [Zone, number][]).some(([z, v]) => v > 0.15 && this.freeZoneTiles(z) < 20);
-    if (!this.zoningHeld && (free < 12 && wantMore || hungry) && s.day - this.lastExpand >= 4 && s.treasury > 800 + Math.max(0, s.loan) && this.radius < 40) { // streets are growth the goal does not hold back; none while the light holds the zoning
+    if (!this.zoningHeld && (free < 12 && wantMore || hungry) && s.day - this.lastExpand >= 4 && s.treasury > 800 + Math.max(0, s.loan) && (s.day < 30 || s.ledger.net > 0) && this.radius < 40) { // streets are growth the goal does not hold back; none while the light holds the zoning
       this.radius += 5;
       this.lastExpand = s.day;
     }
@@ -195,6 +195,9 @@ export class Bot {
       if (key !== 'hallofwicks' && s.milestone < 7) continue;
       return { kind: 'hall', key, cost: costOf(s, BUILDING_BY_KEY[key]) + 500, mana: key === 'greatweir' };
     }
+    // the first cradle, once, from the Township: the Crown answers it with an egg
+    const cradle = factionKey(s, 'cradle');
+    if (canBuild(s, cradle) && this.countKind(cradle) === 0 && (this.goalBlocked.cradle ?? -1) < s.day) return { kind: 'cradle', key: cradle, cost: costOf(s, BUILDING_BY_KEY[cradle]) + 200, mana: false };
     // then the cheapest mana when the ley runs short
     const short = s.brownout > 0.02 || s.manaDemand > s.manaSupply * 0.9;
     if (!short) return null;
@@ -228,7 +231,7 @@ export class Bot {
     if (s.treasury < g.cost) return;
     let done = false;
     if (g.kind === 'link') return; // linkNodes buys the sector and raises the spire
-    if (g.kind === 'font' || g.kind === 'hall') done = g.key === 'greatweir' ? this.placeNear(g.key, this.cx, this.cy, this.radius) : this.placeService(g.key);
+    if (g.kind === 'font' || g.kind === 'hall' || g.kind === 'cradle') done = g.key === 'greatweir' ? this.placeNear(g.key, this.cx, this.cy, this.radius) : this.placeService(g.key);
     else if (g.kind === 'deepen') { const f = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y); done = f >= 0 && !canDeepenNode(s, f) && !deepenNode(s, f); }
     else if (g.kind === 'mill') done = this.placeNear('torrentmill', this.cx, this.cy, this.radius);
     const tag = g.kind === 'hall' ? g.key : g.kind;
@@ -253,9 +256,11 @@ export class Bot {
     }
     if (gx < 0) return;
     const alongX = Math.abs(gy - this.cy) >= Math.abs(gx - this.cx); // the Gloam lies north or south: the wall runs east-west
+    // 21 tiles centred on the Gloam's bearing: the stretch the packs come over, not the whole side (half a mana a tile)
+    const mid = alongX ? Math.max(-this.radius, Math.min(this.radius, gx - this.cx)) : Math.max(-this.radius, Math.min(this.radius, gy - this.cy));
     const lineAt = (off: number) => {
       const line: number[] = [];
-      for (let k = -off; k <= off; k++) {
+      for (let k = mid - 10; k <= mid + 10; k++) {
         const x = alongX ? this.cx + k : this.cx + Math.sign(gx - this.cx) * off;
         const y = alongX ? this.cy + Math.sign(gy - this.cy) * off : this.cy + k;
         if (inBounds(x, y)) line.push(idx(x, y));
@@ -269,7 +274,7 @@ export class Bot {
     const roads = s.milestone >= GATE_UNLOCK ? line.filter((i) => s.road[i] && !s.wall[i]) : [];
     if (tiles.length < 6) return;
     const cost = previewWall(s, tiles).cost + roads.length * GATE_COST[2];
-    if (this.spendable() < cost + 1500 || s.manaSupply - s.manaDemand < tiles.length * WALL_MANA + 5) return;
+    if (this.spendable() < cost + 1500) return; // a wall draws WALL_MANA a tile: the bot walls even a tight ley, as the packs will not wait
     if (!buildWall(s, tiles).ok) return;
     for (const i of roads) placeGate(s, 2, i % MAP_W, (i / MAP_W) | 0);
     this.wallArcs++;
@@ -630,6 +635,7 @@ export class Bot {
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
       if (this.spendable() < costOf(s, def) + buffer) return; // growth spends only what the goal leaves
+      if (s.day >= 30 && s.ledger.net < def.upkeep + 50) return; // and buys nothing it cannot run (iteration 55: upkeep outran income on seed 44)
       if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply) return;
       if (!this.placeService(key, nearGloam) && !nearGloam && this.radius < 40 && !this.zoningHeld) this.radius += 5; // no room: grow the town
     };
@@ -638,6 +644,8 @@ export class Bot {
     want('boneyard', 1 + Math.floor(s.population / 700));
     want('healer', 1 + Math.floor(buildings / 90));
     want('garden', 1 + Math.floor(buildings / 50));
+    want('cradle', 1); // a cradle early: the Crown answers the first one with an egg (iteration 55)
+    want('tamerslodge', this.countKind(factionKey(s, 'cradle')));
     want('veshari', 1 + Math.floor(buildings / 120));
     want('wardlantern', 1 + Math.floor(s.day / 30), true);
     want('academy', 1 + Math.floor(buildings / 200));
@@ -647,9 +655,7 @@ export class Bot {
     want('hospice', Math.floor(buildings / 250));
     want('guildhall', 1);
     want('depot', 1);
-    want('cradle', 1);
     want('ring', 1);
-    want('tamerslodge', this.countKind(factionKey(s, 'cradle')));
     want('hunterslodge', 1 + Math.floor(s.stats.houndsTotal / 30), true);
     want('nexus', Math.floor(buildings / 220));
     if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && this.spendable() > 4500) this.buildMine();

@@ -75,6 +75,8 @@ describe('The bot keeps a purse', () => {
     s.milestone = 4;
     const bot = new Bot(s);
     s.manaSupply = 100; s.manaDemand = 120; s.brownout = 0.2;
+    expect((bot as any).pickGoal().kind).toBe('cradle'); // the first cradle comes first, once
+    (bot as any).goalBlocked.cradle = 999;
     const g = (bot as any).pickGoal();
     expect(g.kind).toBe('font');
     (bot as any).goal = g; (bot as any).reserve = g.cost;
@@ -94,6 +96,7 @@ describe('The bot keeps a purse', () => {
     s.milestone = 5;
     s.firedEvents.push('vigil@0:0');
     const bot = new Bot(s);
+    (bot as any).goalBlocked.cradle = 999; // no cradle goal in the way of the repayment below
     s.treasury = 500;
     (bot as any).goal = { kind: 'font', key: 'font', cost: 6700, mana: true };
     s.ledger.net = 600;
