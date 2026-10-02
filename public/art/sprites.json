@@ -669,6 +669,440 @@
    "ax": 33,
    "ay": 37,
    "glow": "sprites/b_hallofwicks_glow.png"
+  },
+  "cartp_goods_0": {
+   "file": "sprites/cartp_goods_0.png",
+   "w": 23,
+   "h": 13,
+   "ax": 12,
+   "ay": 12
+  },
+  "cartp_goods_0_l": {
+   "file": "sprites/cartp_goods_0_l.png",
+   "w": 23,
+   "h": 13,
+   "ax": 11,
+   "ay": 12
+  },
+  "cartp_goods_1": {
+   "file": "sprites/cartp_goods_1.png",
+   "w": 23,
+   "h": 16,
+   "ax": 12,
+   "ay": 15
+  },
+  "cartp_goods_1_l": {
+   "file": "sprites/cartp_goods_1_l.png",
+   "w": 23,
+   "h": 16,
+   "ax": 11,
+   "ay": 15
+  },
+  "cartp_goods_2": {
+   "file": "sprites/cartp_goods_2.png",
+   "w": 23,
+   "h": 16,
+   "ax": 12,
+   "ay": 15
+  },
+  "cartp_goods_2_l": {
+   "file": "sprites/cartp_goods_2_l.png",
+   "w": 23,
+   "h": 16,
+   "ax": 11,
+   "ay": 15
+  },
+  "cartp_goods_3": {
+   "file": "sprites/cartp_goods_3.png",
+   "w": 23,
+   "h": 13,
+   "ax": 12,
+   "ay": 12
+  },
+  "cartp_goods_3_l": {
+   "file": "sprites/cartp_goods_3_l.png",
+   "w": 23,
+   "h": 13,
+   "ax": 11,
+   "ay": 12
+  },
+  "cartp_goods_4": {
+   "file": "sprites/cartp_goods_4.png",
+   "w": 23,
+   "h": 16,
+   "ax": 12,
+   "ay": 15
+  },
+  "cartp_goods_4_l": {
+   "file": "sprites/cartp_goods_4_l.png",
+   "w": 23,
+   "h": 16,
+   "ax": 11,
+   "ay": 15
+  },
+  "cartp_goods_5": {
+   "file": "sprites/cartp_goods_5.png",
+   "w": 24,
+   "h": 14,
+   "ax": 12,
+   "ay": 13
+  },
+  "cartp_goods_5_l": {
+   "file": "sprites/cartp_goods_5_l.png",
+   "w": 24,
+   "h": 14,
+   "ax": 12,
+   "ay": 13
+  },
+  "cartp_goods_6": {
+   "file": "sprites/cartp_goods_6.png",
+   "w": 23,
+   "h": 15,
+   "ax": 12,
+   "ay": 14
+  },
+  "cartp_goods_6_l": {
+   "file": "sprites/cartp_goods_6_l.png",
+   "w": 23,
+   "h": 15,
+   "ax": 11,
+   "ay": 14
+  },
+  "cartp_goods_7": {
+   "file": "sprites/cartp_goods_7.png",
+   "w": 23,
+   "h": 15,
+   "ax": 12,
+   "ay": 14
+  },
+  "cartp_goods_7_l": {
+   "file": "sprites/cartp_goods_7_l.png",
+   "w": 23,
+   "h": 15,
+   "ax": 11,
+   "ay": 14
+  },
+  "cartp_goods_8": {
+   "file": "sprites/cartp_goods_8.png",
+   "w": 18,
+   "h": 11,
+   "ax": 9,
+   "ay": 10
+  },
+  "cartp_goods_8_l": {
+   "file": "sprites/cartp_goods_8_l.png",
+   "w": 18,
+   "h": 11,
+   "ax": 9,
+   "ay": 10
+  },
+  "cartp_goods_9": {
+   "file": "sprites/cartp_goods_9.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_9_l": {
+   "file": "sprites/cartp_goods_9_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_10": {
+   "file": "sprites/cartp_goods_10.png",
+   "w": 19,
+   "h": 15,
+   "ax": 10,
+   "ay": 14
+  },
+  "cartp_goods_10_l": {
+   "file": "sprites/cartp_goods_10_l.png",
+   "w": 19,
+   "h": 15,
+   "ax": 9,
+   "ay": 14
+  },
+  "cartp_goods_11": {
+   "file": "sprites/cartp_goods_11.png",
+   "w": 19,
+   "h": 15,
+   "ax": 10,
+   "ay": 14
+  },
+  "cartp_goods_11_l": {
+   "file": "sprites/cartp_goods_11_l.png",
+   "w": 19,
+   "h": 15,
+   "ax": 9,
+   "ay": 14
+  },
+  "cartp_goods_12": {
+   "file": "sprites/cartp_goods_12.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_12_l": {
+   "file": "sprites/cartp_goods_12_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_13": {
+   "file": "sprites/cartp_goods_13.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_13_l": {
+   "file": "sprites/cartp_goods_13_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_14": {
+   "file": "sprites/cartp_goods_14.png",
+   "w": 18,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_14_l": {
+   "file": "sprites/cartp_goods_14_l.png",
+   "w": 18,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_15": {
+   "file": "sprites/cartp_goods_15.png",
+   "w": 18,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_15_l": {
+   "file": "sprites/cartp_goods_15_l.png",
+   "w": 18,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_16": {
+   "file": "sprites/cartp_goods_16.png",
+   "w": 19,
+   "h": 13,
+   "ax": 10,
+   "ay": 12
+  },
+  "cartp_goods_16_l": {
+   "file": "sprites/cartp_goods_16_l.png",
+   "w": 19,
+   "h": 13,
+   "ax": 9,
+   "ay": 12
+  },
+  "cartp_goods_17": {
+   "file": "sprites/cartp_goods_17.png",
+   "w": 20,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "cartp_goods_17_l": {
+   "file": "sprites/cartp_goods_17_l.png",
+   "w": 20,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "cartp_goods_18": {
+   "file": "sprites/cartp_goods_18.png",
+   "w": 19,
+   "h": 13,
+   "ax": 10,
+   "ay": 12
+  },
+  "cartp_goods_18_l": {
+   "file": "sprites/cartp_goods_18_l.png",
+   "w": 19,
+   "h": 13,
+   "ax": 9,
+   "ay": 12
+  },
+  "cartp_goods_19": {
+   "file": "sprites/cartp_goods_19.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_19_l": {
+   "file": "sprites/cartp_goods_19_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_20": {
+   "file": "sprites/cartp_goods_20.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_20_l": {
+   "file": "sprites/cartp_goods_20_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_21": {
+   "file": "sprites/cartp_goods_21.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_21_l": {
+   "file": "sprites/cartp_goods_21_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_22": {
+   "file": "sprites/cartp_goods_22.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "cartp_goods_22_l": {
+   "file": "sprites/cartp_goods_22_l.png",
+   "w": 19,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "cartp_goods_23": {
+   "file": "sprites/cartp_goods_23.png",
+   "w": 19,
+   "h": 13,
+   "ax": 10,
+   "ay": 12
+  },
+  "cartp_goods_23_l": {
+   "file": "sprites/cartp_goods_23_l.png",
+   "w": 19,
+   "h": 13,
+   "ax": 9,
+   "ay": 12
+  },
+  "cartp_goods_24": {
+   "file": "sprites/cartp_goods_24.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_goods_24_l": {
+   "file": "sprites/cartp_goods_24_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_goods_25": {
+   "file": "sprites/cartp_goods_25.png",
+   "w": 19,
+   "h": 13,
+   "ax": 10,
+   "ay": 12
+  },
+  "cartp_goods_25_l": {
+   "file": "sprites/cartp_goods_25_l.png",
+   "w": 19,
+   "h": 13,
+   "ax": 9,
+   "ay": 12
+  },
+  "cartp_goods_26": {
+   "file": "sprites/cartp_goods_26.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "cartp_goods_26_l": {
+   "file": "sprites/cartp_goods_26_l.png",
+   "w": 19,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "cartp_stone_0": {
+   "file": "sprites/cartp_stone_0.png",
+   "w": 24,
+   "h": 14,
+   "ax": 12,
+   "ay": 13
+  },
+  "cartp_stone_0_l": {
+   "file": "sprites/cartp_stone_0_l.png",
+   "w": 24,
+   "h": 14,
+   "ax": 12,
+   "ay": 13
+  },
+  "cartp_stone_1": {
+   "file": "sprites/cartp_stone_1.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_stone_1_l": {
+   "file": "sprites/cartp_stone_1_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_stone_2": {
+   "file": "sprites/cartp_stone_2.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_stone_2_l": {
+   "file": "sprites/cartp_stone_2_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
+  },
+  "cartp_stone_3": {
+   "file": "sprites/cartp_stone_3.png",
+   "w": 19,
+   "h": 12,
+   "ax": 10,
+   "ay": 11
+  },
+  "cartp_stone_3_l": {
+   "file": "sprites/cartp_stone_3_l.png",
+   "w": 19,
+   "h": 12,
+   "ax": 9,
+   "ay": 11
   }
  }
 }

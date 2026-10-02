@@ -349,6 +349,20 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 57 (the donkey carts)
+
+- **The donkey carts.** The four uploaded sheets of painted donkey carts are the road carts: 27
+  goods carts and 4 stone carts for the mines' leystone, through `npm run art` (a new `vehicle`
+  kind scaled per sheet so every donkey is a citizen's height; a `rect` is now keyed after it is
+  cut, so a gridded sheet imports). The carts are 11–16 px tall and 18–24 px wide, about the old
+  cart's size.
+- **They face the way they drive.** Each painting faces right and has a mirrored `_l` twin; the
+  renderer picks it from the sim's heading. A cart keeps one painting for life (chosen by its id).
+  Floating carts and barges stay procedural.
+- **See the first cart deliver** has a Show me that moves the camera to a cart on its way to a
+  market, at 2×.
+- Art and UI only. The control seed (Vellish 42) is bit-identical (DESIGN §4.88).
+
 ## Done in iteration 56 (the playtest batch: painted buildings at the procedural scale, one facing, reach rings you can see)
 
 - **The painted heroes stand at the procedural scale.** Each hero sprite is scaled to its

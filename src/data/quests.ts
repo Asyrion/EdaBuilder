@@ -12,7 +12,7 @@ export type Focus =
   | { build: string }
   | { panel: 'edicts' | 'wyrms' | 'budget' | 'views' | 'chronicle' }
   | { overlay: string }
-  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' | 'ruins' };
+  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' | 'ruins' | 'cart' };
 
 export interface QuestDef {
   id: string;
@@ -69,7 +69,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'g_hounds', chapter: 'The grey edge', title: 'Kill 10 Gloam-hounds', hint: "A Hunters' Lodge hunts within 12 tiles each night.", when: (s) => s.stats.houndsTotal > 0, done: (s) => s.stats.houndsKilled >= 10, focus: { build: 'hunterslodge' }, reward: 700, priority: 16 },
   { id: 'g_gate', chapter: 'The grey edge', title: 'Raise a gate of the Pass', hint: 'A Belregi or Uzulim gate lets roads through the wall and wards the ground around it.', when: (s) => walls(s) >= 10 && s.milestone >= 3, done: (s) => gates(s), focus: { tool: 'gateBelregi' }, reward: 600, priority: 17 },
   // Goods
-  { id: 'o_cart', chapter: 'Goods', title: 'See the first cart deliver', hint: 'Carts carry potions from the works to the markets by road.', when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { overlay: 'goods' }, reward: 200, priority: 18 },
+  { id: 'o_cart', chapter: 'Goods', title: 'See the first cart deliver', hint: 'Donkey carts carry potions from the works to the markets by road. Show me finds one on the way.', when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
   { id: 'o_full', chapter: 'Goods', title: 'No market short for five days', hint: 'Goods view (o). Zone works near the markets, or build a Trade Depot and import.', when: (s) => s.goodsShort > 0, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
   { id: 'o_depot', chapter: 'Goods', title: 'Build a Trade Depot', hint: 'Sells surplus goods at seasonal prices; caravans stop there.', when: (s) => s.milestone >= 3, done: (s) => has(s, 'depot'), focus: { build: 'depot' }, reward: 700, priority: 20 },
   { id: 'o_caravan', chapter: 'Goods', title: 'Sell 200 goods to a Belerial caravan', hint: 'A caravan halts at the depot every 12 days (the depot panel counts them down); choose Trade to sell every works\' surplus above 10 goods. Works fill when the markets are already stocked.', when: (s) => has(s, 'depot'), done: (s) => s.stats.caravanGoods >= 200, reward: 900, priority: 21 },
