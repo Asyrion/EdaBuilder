@@ -177,8 +177,8 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
   sexton: {
     id: 'sexton', name: 'sexton', plural: 'sextons', prop: 'spoon',
     desc: 'Walks the lanes around its Boneyard or Ossuary with a spoon of salt: the streets it walks count as tended by deathcare, and it lays the restless it meets and quiets one of the dead for each, three a day.',
-    from: ['boneyard', 'ossuary'],
-    count: (_s, b) => (b.kind === 'ossuary' ? 2 : 1),
+    from: ['boneyard', 'ossuary', 'sextonchapel'],
+    count: (_s, b) => (b.kind === 'ossuary' || b.kind === 'sextonchapel' ? 2 : 1),
     radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 12,
     onTile: (s, _a, i) => paintBonus(s, 'death', i, 0.06, 0.25),
     meets: [AgentKind.Restless],

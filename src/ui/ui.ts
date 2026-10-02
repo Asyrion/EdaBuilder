@@ -2,7 +2,9 @@ import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, typ
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
-import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth';
+import { capacityOf, computeBuildingHappiness, demandReasons, happinessTerms, levelUpNeeds, workforceOf, type Term } from '../sim/growth';
+import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
+import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
@@ -87,6 +89,7 @@ export interface UiHost {
   undoLabel: string | null;
   setTraining(id: number, t: Training): void;
   callRain(buildingId: number): void;
+  replate(buildingId: number): void;
   setRole(id: number, role: DragonRole, target: number): string | null;
   resolveEvent(choice: number): void;
   centerOn(x: number, y: number): void;
@@ -600,6 +603,7 @@ export class UI {
       el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand</div></div>` + bars.map(([l, , c]) => `<div class="col"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div></div>`).join('');
       el.title = 'Zone demand: Hearth (homes), Market, Craft, Arcane. Paint zones where the bars are high.';
     }
+    { const why = demandReasons(); if (why.length) el.title = `Zone demand: paint zones where the bars are high.\n${why.join('\n')}`; }
     const fills = el.querySelectorAll('.bar div');
     bars.forEach(([, v], i) => {
       const f = fills[i] as HTMLElement;
@@ -623,6 +627,13 @@ export class UI {
     (this.el.log.querySelector('.lines') as HTMLElement).innerHTML = last.map((m) => `<div class="m ${m.kind}"><span class="d">d${Math.floor(m.tick / 900)}</span>${m.text}</div>`).join('');
   }
 
+  private lvBonus: { day: number; n: number; map: Float32Array } | null = null;
+  /** The land-value bonus map, recomputed once a day (and when the building count changes). */
+  private landBonus(s: GameState): Float32Array {
+    const n = s.buildings.length;
+    if (!this.lvBonus || this.lvBonus.day !== s.day || this.lvBonus.n !== n) this.lvBonus = { day: s.day, n, map: landBonusMap(s) };
+    return this.lvBonus.map;
+  }
   private refreshInfo(): void {
     const b = this.host.selected;
     const el = this.el.info;
@@ -656,8 +667,11 @@ export class UI {
       else rows.push(row('Workers', `${b.workers} / ${cap}`));
       const hp = b.state === 'ok' ? computeBuildingHappiness(s, b) : 0;
       rows.push(row('Happiness', `${Math.round(hp)}`));
+      if (b.state === 'ok') rows.push(`<div class="why muted">${whyLine(happinessTerms(s, b))}</div>`);
       rows.push(row('Land value', `${s.landValue[i]}`));
+      rows.push(`<div class="why muted">${whyLine(landValueTerms(s, i, this.landBonus(s)))}</div>`);
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
+      { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
       if (def.zone === Zone.Market && s.fenNex > 0 && s.district[i] === s.fenNex) rows.push(row('Fen-Nex quarter', 'no tithe, double shelves'));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
@@ -690,7 +704,16 @@ export class UI {
       if (b.kind === 'torrentmill' && b.load !== undefined) rows.push(row('Output', `${Math.round(b.load)} mana / day${s.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8) ? ' (shares the river with an older mill: ×0.6)' : ''}`));
       if (b.kind === 'font' && (b.flare ?? 0) > 0) problems.push(`Bore flare: the yard smokes for ${b.flare} more day${b.flare === 1 ? '' : 's'} (miasma 6 within 4).`);
       if (b.kind === 'font' && fontsRunHot(s)) problems.push('Running hot: past nine tenths of the flow a Font may flare (one chance in fifty a day). Raise the flow or cut consumers.');
-      if (def.capacity) rows.push(row('Workers', `${b.workers} / ${capacityOf(b, s)}`));
+      if (def.capacity) {
+        rows.push(row(def.service ? 'Crew' : 'Workers', `${b.workers} / ${capacityOf(b, s)}`));
+        if (def.service && crewFactor(b, s) < 0.8) problems.push(`Short-handed: its coverage is at ${Math.round(crewFactor(b, s) * 100)} %. More folk, or fewer works competing for them.`);
+      }
+      if (def.service?.type === 'ward') {
+        rows.push(row('Burns', b.kind === 'stoneward' ? 'nothing: it holds the grey; its stone-sexton cuts two a day' : `${wardBurnBudget(s, b)} grey tiles a day, the nearest first`));
+        rows.push(row('Grey in reach', `${greyInReach(s, b)} tiles`));
+        if (b.kind === 'scaleward') rows.push(row('Plating', `${Math.round((b.plate ?? 1) * 100)} % (wears a tenth a season)`));
+      }
+      if (b.kind === 'saltfont') rows.push(row('Relic in the font', (b.cooldown ?? 0) > 0 ? `${b.cooldown} day${b.cooldown === 1 ? '' : 's'} left: quiets twice as many` : s.relicStock >= 1 ? 'a loose relic goes in tomorrow' : 'none: no loose relic in the camp'));
       if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
       if (b.kind === 'spire' && !b.lit) problems.push('Not linked: a spire must be within 6 tiles of a ley node or a lit spire.');
@@ -762,6 +785,15 @@ export class UI {
       btn.disabled = b.cooldown > 0;
       btn.style.width = '100%';
       btn.onclick = () => this.host.callRain(b.id);
+      el.appendChild(btn);
+    }
+    if (b.kind === 'scaleward') {
+      const btn = document.createElement('button');
+      const worn = (b.plate ?? 1) < 1;
+      btn.textContent = `Re-plate (2 scale; ${Math.round(s.materials.scale)} in the vault)`;
+      btn.disabled = !worn || s.materials.scale < 2;
+      btn.style.width = '100%';
+      btn.onclick = () => { this.host.replate(b.id); this.refreshInfo(); };
       el.appendChild(btn);
     }
     el.querySelectorAll('button[data-prio]').forEach((pb) => { (pb as HTMLButtonElement).onclick = () => { this.host.setPriority(b.id, Number((pb as HTMLElement).dataset.prio) as 0 | 1 | 2); this.refreshInfo(); }; });
@@ -1283,7 +1315,7 @@ export class UI {
     net.innerHTML = `<b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b>`;
     net.className = `r ${l.net >= 0 ? 'good' : 'bad'}`;
     set('treasury', `${Math.round(st.treasury)}`);
-    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}.`);
+    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.`);
     set('history', `Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}`);
     const routes = tradeRoutes(st);
     const rEl = this.el.budget.querySelector('[data-k="routes"]') as HTMLElement;
@@ -1547,6 +1579,14 @@ export class UI {
   }
 }
 
+/** The three largest terms each way, for a panel's why-line. */
+function whyLine(terms: Term[]): string {
+  const t = terms.filter((x) => x.label !== 'base');
+  const plus = t.filter((x) => x.v > 0).sort((a, b) => b.v - a.v).slice(0, 3);
+  const minus = t.filter((x) => x.v < 0).sort((a, b) => a.v - b.v).slice(0, 3);
+  const f = (x: Term) => `${x.v > 0 ? '+' : ''}${Math.round(x.v)} ${x.label}`;
+  return `${plus.map(f).join(' · ') || 'nothing for it'}${minus.length ? ` <span class="warn">| ${minus.map(f).join(' · ')}</span>` : ''}`;
+}
 function row(k: string, v: string): string {
   return `<div class="row"><span class="muted">${k}</span><span>${v}</span></div>`;
 }

@@ -61,7 +61,13 @@ describe('gloam', () => {
     const gy = (gi / s.w) | 0;
     const b = placeBuildingRaw(s, 'wardlantern', Math.min(s.w - 2, gx + 1), Math.min(s.h - 2, gy + 1));
     b.lit = true;
+    s.gloam[idx(b.x, b.y)] = 0;
+    const count = () => { let n = 0; for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) { const x = b.x + dx, y = b.y + dy; if (x >= 0 && y >= 0 && x < s.w && y < s.h && dx * dx + dy * dy <= 36) n += s.gloam[idx(x, y)]; } return n; };
+    const n0 = count();
+    s.day = 101; // not a creep day
     dailyGloam(s);
+    expect(n0 - count()).toBe(Math.min(n0, 12)); // twelve a day, the nearest first
+    for (let d = 0; d < 30; d++) { s.day += 1; if (s.day % 4 === 0) s.day++; dailyGloam(s); }
     let near = 0;
     for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) {
       const x = b.x + dx, y = b.y + dy;

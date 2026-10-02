@@ -143,8 +143,9 @@ describe('Guild halls', () => {
     c.stock = 60;
     dailyTrade(s);
     expect(s.trade.exported).toBe(16);
-    // the chapel quiets 15 a day; locked on strike
+    // the chapel quiets 15 a day with its crew of three; locked on strike
     recomputeAll(s);
+    chapel.workers = 3;
     s.unquieted = 30; s.deathsToday = 0;
     dailyDeath(s);
     const quietedOpen = 30 - s.unquieted;

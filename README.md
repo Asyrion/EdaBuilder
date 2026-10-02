@@ -205,6 +205,9 @@ Charter as `.json`.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
   Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
   still be set per district. A selected building shows its reach.
+- Services have crews filled from the city's hands and watch, heal, teach and quiet by how
+  many are filled; every happiness and land value shows its largest terms; a home lists what
+  its next level needs; wards burn the grey on a daily budget, the nearest first.
 - The ground has limits: wells serve a capacity of homes (the nearest first), a far-from-water
   well reaches less, the Seep follows the season, mud slows tracks in the wet seasons, mine
   seams run out, a hot Font may flare, mills share a river, portal crossings jam, and the

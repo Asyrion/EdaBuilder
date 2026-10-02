@@ -1589,6 +1589,45 @@ bot meets only after a home has gone dry (three wells a day, beside the dry ones
 capacity-limited town lags its own growth. Part 5 teaches the bot to dig ahead of its
 hearths. Recorded in NEXT_STEPS.
 
+### 4.78 M14 part 2a, services with staff and stakes: crews, the breakdowns, deathcare in the open, wards with a budget (iteration 47)
+
+The audit's part 2 begins with the services, which employed nobody, whose strength was
+cosmetic, and whose reasons the player could not read. The first half:
+
+**Crews.** A service building has a crew (`capacity` on the def: Watch Post 4, Watch House
+10, Healer 4, Hospice 16, the fire hall 8, shrines 2, Temple 6, Academy 12, Grand Academy
+20, Boneyard 3, Ossuary 8, the Chapel 3, the Salt Font 3, Hunters' Lodge 6, Guildhall 4);
+wards, wells, leisure and wonders need none. The `extraJobs` path that already staffed the
+Quarry fills them from the city's hands, so services compete with the works for folk, and a
+service radiates `strength × max(0.3, workers / crew)` (`crewFactor`, read in
+`updateCoverage` and in deathcare's quieting). The panel shows "Crew 7 / 10" and a
+short-handed problem under eight tenths.
+
+**The breakdowns.** `computeBuildingHappiness` is now the clamped sum of `happinessTerms`,
+each term labelled ("lit +6", "the Gloam near −12", "unrest −9", "no work −4"); the panel's
+Happiness row carries a why-line with the three largest terms each way. Land value the same:
+`landValueTerms` per tile (the building-bonus map computed once in `landBonusMap`), and
+`updateLandValue` sums them. `levelUpNeeds` lists what the next level needs with a tick or a
+cross ("land value 62 (55 now) ✗ · lit ✓ · schooling ✗"). The demand bars' tooltip carries
+`demandReasons`, one line per bar from the numbers `updateDemand` just used.
+
+**Deathcare in the open.** `dailyDeath` records `quietCap`, `quietedToday` and
+`waitingDead`, and the Budget's social line reads "Dead today 7 · quieted 6 / capacity 12 ·
+waiting 3". Land value is 6 lower within 4 tiles of any deathcare (`DEATHCARE_LV`, a negative
+entry in the bonus map), so the dead compete with good homes for ground. The Sextons' Chapel
+fields two sextons like an Ossuary. The Salt Font takes a loose relic every three days and
+quiets twice as many while it lasts (`b.cooldown` as the days the relic holds; the panel says
+so), the first sink for loose relics outside the Crown's purse.
+
+**Wards with a budget.** A ward burns at most `round(12 × strength × crew × plating)` grey
+tiles a day, the nearest first (`wardBurnBudget`, the wyrm's budget rule), instead of its
+whole radius; its coverage still keeps the creep out of its reach, so a ward holds a circle
+and clears it slowly. The Stone Ward burns nothing: it holds, and its stone-sexton cuts two
+a day (the text is true now). The Scale Ward's plating wears a tenth a season
+(`Building.plate`, floor 0.3), multiplies its ward and its burn, and is re-plated from the
+panel for 2 scale (`replate` on the host): the second sink for scale. The panel of every
+ward shows "Burns 12 grey tiles a day" and "Grey in reach: 41".
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2271,11 +2310,11 @@ this section is the table of contents and the order.
    cistern 90) and the dry-land reason for the cistern; roads that need their light; mine
    seams (2,400), Font bore flares, mills that share a river, portal crossings; the Gloam
    that takes an unlit, unwarded building after two days' warning.
-2. **Services with staff and stakes**: crews that scale coverage; happiness and land value
-   breakdowns and the missing level-up condition; unrest with a riot and theft; deathcare
+2. **Services with staff and stakes**: 2a ✅ (iteration 47, §4.78) crews that scale coverage; happiness and land value
+   breakdowns and the missing level-up condition; deathcare
    in the open with a land-value price; wards with a burn budget (strength matters; Stone
-   and Scale Wards stop dominating); halls with a difference (draughts, consecration, the
-   fire hall's water, the Grand Academy's prices, the Academy's kept relics).
+   and Scale Wards stop dominating); 2b next: unrest with a riot and theft; halls with a difference (draughts, consecration, the
+   fire hall's water, the Grand Academy's prices, the Academy's kept relics); the smaller rows.
 3. **Wyrmcraft matured**: lines that do what they say; the Great Cradle; lodges with
    capacity; feeding reach; departed dragons return; roles with a price; champions who can
    lose; materials with sinks; marvels and wonders with a role; the Wyrm-Court after the
@@ -2501,3 +2540,9 @@ this section is the table of contents and the order.
 - *The ground answers the season (iteration 46):* a well, a track and a seep that read the
   calendar give the four seasons a hand in the city's supply, where before only the Hush's
   mana did; a limit that moves with the year is a limit the player plans around.
+- *A service is people (iteration 47):* a Watch House with nobody in it watches nothing;
+  giving every service a crew that the works compete for turns "build one and forget it"
+  into a labour decision, and the crew row is where the player reads it.
+- *Show the terms, not the number (iteration 47):* a happiness of 42 is a verdict; "+6 lit
+  · −12 the Gloam near · −9 unrest" is advice. Every summed figure the player is asked to
+  raise should be able to list its terms.

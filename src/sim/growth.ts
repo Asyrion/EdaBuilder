@@ -97,37 +97,43 @@ export function trySpawnBuildings(state: GameState, attempts = 5): void {
 }
 
 /** Per-building happiness 0..100. */
-export function computeBuildingHappiness(state: GameState, b: Building): number {
+export interface Term { label: string; v: number }
+/** The terms of a building's happiness, in the order they are summed; computeBuildingHappiness is their sum, clamped to 0..100. */
+export function happinessTerms(state: GameState, b: Building): Term[] {
   const def = BUILDING_BY_KEY[b.kind];
   const i = idx(b.x, b.y);
   const cov = state.coverage;
-  let h = 50;
-  h += (state.landValue[i] - 30) * 0.3;
-  h += (cov.faith[i] / 255) * 8 + (cov.leisure[i] / 255) * 8 + (cov.health[i] / 255) * 6 + (cov.watch[i] / 255) * 5;
-  if (b.lit) h += 6;
-  else h -= 9;
-  if ((b.tended ?? -1) >= state.day) h += 4;
-  if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') h += 3; else if (q === 'craft') h -= 4; else if (q === 'temple') h += 2; }
-  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && flooding(state)) h -= 10; // the Sable in flood
-  if (b.watered) h += 6;
-  else h -= 11;
-  h -= (state.miasma[i] / 255) * 30;
+  const t: Term[] = [{ label: 'base', v: 50 }];
+  const add = (label: string, v: number) => { if (v !== 0) t.push({ label, v }); };
+  add('land value', (state.landValue[i] - 30) * 0.3);
+  add('faith', (cov.faith[i] / 255) * 8);
+  add('leisure', (cov.leisure[i] / 255) * 8);
+  add('health', (cov.health[i] / 255) * 6);
+  add('watch', (cov.watch[i] / 255) * 5);
+  add(b.lit ? 'lit' : 'unlit', b.lit ? 6 : -9);
+  if ((b.tended ?? -1) >= state.day) add('tended by a healer', 4);
+  if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') add('Hearth quarter', 3); else if (q === 'craft') add('Craft quarter', -4); else if (q === 'temple') add('Temple quarter', 2); }
+  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && flooding(state)) add('the flood', -10); // the Sable in flood
+  add(b.watered ? 'watered' : 'dry', b.watered ? 6 : -11);
+  add('miasma', -(state.miasma[i] / 255) * 30);
   const gd = state.gloamDist[i];
-  if (gd < 7) h -= (7 - gd) * 3 * (1 - cov.ward[i] / 255);
-  h -= (state.trafficSmooth[i] / 255) * 10;
-  h -= state.unrest * 15;
+  if (gd < 7) add('the Gloam near', -(7 - gd) * 3 * (1 - cov.ward[i] / 255));
+  add('traffic', -(state.trafficSmooth[i] / 255) * 10);
+  add('unrest', -state.unrest * 15);
   // the restless and Gloam-hounds nearby frighten everyone
+  let fear = 0;
   for (const a of state.agents) {
     if (a.kind === 2) {
-      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 8;
+      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 8;
     } else if (a.kind === 3 && a.species === 'hound') {
-      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) h -= 5;
+      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
     } else if (a.kind === 3 && a.species === 'golem' && a.load === 0) {
-      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) h -= 10;
+      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 10;
     } else if (a.kind === 3 && a.species === 'tiger') {
-      if (Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) < 5) h -= 12;
+      if (Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) < 5) fear -= 12;
     }
   }
+  add('the restless and beasts near', fear);
   let tax = 10;
   switch (def.zone) {
     case Zone.Hearth: tax = state.taxRates.hearth; break;
@@ -135,39 +141,63 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
     case Zone.Craft: tax = state.taxRates.craft; break;
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
-  h -= (tax - 10) * 1.6;
-  h += modifierSumAt(state, 'happiness', state.district[i]);
-  if (wyrmGuards(state)) h += 10;
+  add('the tithe', -(tax - 10) * 1.6);
+  add('effects', modifierSumAt(state, 'happiness', state.district[i]));
+  if (wyrmGuards(state)) add('the bound wyrm', 10);
   const tree = worldTree(state);
-  if (tree) h += treeStage(tree);
-  if (raysLured(state)) h += 3;
-  if (hasMarvel(state, 'hallofmarvels')) h += 8;
-  if (state.buildings.some((o) => o && o.kind === 'lantern' && o.state === 'ok' && o.lit)) h += 5; // the Lantern of Vell delights the whole city
-  if (relicDone(state, 'ninehouses')) h += 3;
-  if (hasMarvel(state, 'househall')) h += 2;
-  if (edictOn(state, 'curfew', b)) h -= 4;
-  if (seasonOf(state) === 1) h += 2; // Bloom
+  if (tree) add('the World Tree', treeStage(tree));
+  if (raysLured(state)) add('skyrays overhead', 3);
+  if (hasMarvel(state, 'hallofmarvels')) add('the Hall of Marvels', 8);
+  if (state.buildings.some((o) => o && o.kind === 'lantern' && o.state === 'ok' && o.lit)) add('the Lantern of Vell', 5); // the Lantern of Vell delights the whole city
+  if (relicDone(state, 'ninehouses')) add('the Nine Houses', 3);
+  if (hasMarvel(state, 'househall')) add('the House-Hall', 2);
+  if (edictOn(state, 'curfew', b)) add('the curfew', -4);
+  if (seasonOf(state) === 1) add('Bloom', 2);
   if (def.zone === Zone.Hearth) {
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
-    h -= unemployment * 20;
-    h += (state.health - 0.5) * 15;
+    add('no work', -unemployment * 20);
+    add('health of the city', (state.health - 0.5) * 15);
   } else if (def.zone === Zone.Market) {
     // markets like customers, leisure and full shelves
-    h += (cov.leisure[i] / 255) * 6;
-    if (state.population < 20) h -= 8;
+    add('leisure for the trade', (cov.leisure[i] / 255) * 6);
+    if (state.population < 20) add('no customers', -8);
     const fill = b.stock / marketStockCap(b);
-    if (fill <= 0.05) h -= 14;
-    else if (fill > 0.5) h += 5;
-    if (edictOn(state, 'lanternlevy', b)) h -= 6;
+    if (fill <= 0.05) add('empty shelves', -14);
+    else if (fill > 0.5) add('full shelves', 5);
+    if (edictOn(state, 'lanternlevy', b)) add('the Lantern Levy', -6);
   } else if (def.zone === Zone.Craft) {
-    h += 4; // industry tolerates more
-    if (b.stock >= craftStockCap(b) * 0.95) h -= 10; // nobody is buying
+    add('industry tolerates', 4); // industry tolerates more
+    if (b.stock >= craftStockCap(b) * 0.95) add('nobody is buying', -10); // nobody is buying
   } else if (def.zone === Zone.Arcane) {
-    h += (cov.school[i] / 255) * 10 - 6;
-    if (b.stock <= 0.5 && b.age > 3) h -= 10; // no leystone to enchant
-    else if (b.stock > 5) h += 4;
+    add('schooling', (cov.school[i] / 255) * 10 - 6);
+    if (b.stock <= 0.5 && b.age > 3) add('no leystone', -10); // no leystone to enchant
+    else if (b.stock > 5) add('leystone in store', 4);
   }
+  return t;
+}
+
+export function computeBuildingHappiness(state: GameState, b: Building): number {
+  let h = 0;
+  for (const x of happinessTerms(state, b)) h += x.v;
   return Math.max(0, Math.min(100, h));
+}
+
+/** What the next level needs, each with whether it is met today (for the panel). */
+export function levelUpNeeds(state: GameState, b: Building): { text: string; met: boolean }[] {
+  const def = BUILDING_BY_KEY[b.kind];
+  if (def.category !== 'zone' || b.level >= 3) return [];
+  const i = idx(b.x, b.y);
+  const lv = state.landValue[i];
+  const need = b.level === 1 ? 38 : 62;
+  const out = [
+    { text: `land value ${need} (${lv} now)`, met: lv >= need },
+    { text: 'lit', met: b.lit },
+    { text: 'watered', met: b.watered },
+    { text: 'happiness above 45', met: b.happiness > 45 },
+  ];
+  if (b.level === 2) out.push({ text: 'schooling: a quarter of the city educated, a school near, or the Deep Cut', met: state.educated > 0.25 || state.coverage.school[i] > 100 || (def.zone === Zone.Hearth && deepCut(state, b)) });
+  if (b.level === 2 && def.zone === Zone.Arcane) out.push({ text: 'educated 35 %', met: state.educated >= 0.35 });
+  return out;
 }
 
 export function craftStockCap(b: Building): number {
@@ -346,6 +376,7 @@ export function dailyBuildings(state: GameState): void {
     if (b.kind === 'mothloft') b.stock = 0; // last night's moths were counted by the works today; the next night counts afresh
     if (b.kind === 'portalarch') { if ((b.load ?? 0) > PORTAL_CAP) bumpRoadVersion(); b.load = 0; } // a new day's crossings
     if (b.flare && b.flare > 0) b.flare--;
+    if (b.kind === 'scaleward' && b.state === 'ok' && state.day % 30 === 0 && state.day > 0) b.plate = Math.max(0.3, (b.plate ?? 1) - 0.1); // the plating wears a tenth a season
   });
   state.population = pop;
   state.jobs = jobs;
@@ -356,6 +387,12 @@ export function dailyBuildings(state: GameState): void {
 }
 
 /** Demand bars in [-1,1]. Recomputed every few seconds. */
+let lastDemandWhy: string[] = [];
+/** One line per demand bar, from the last updateDemand (for the bars' tooltip). */
+export function demandReasons(): string[] {
+  return lastDemandWhy;
+}
+
 export function updateDemand(state: GameState): void {
   const pop = state.population;
   const workforce = workforceOf(state);
@@ -413,6 +450,12 @@ export function updateDemand(state: GameState): void {
     arcane -= (state.taxRates.arcane - 10) * 0.04;
     if (state.educated < 0.2) arcane = -0.5;
   }
+  lastDemandWhy = [
+    `Hearth: ${jobs} jobs for ${workforce} hands${jobSurplus > 0 ? ' (work to spare: folk want homes)' : ' (no work: nobody comes)'} · happiness ${Math.round(state.happiness)} · unrest ${Math.round(state.unrest * 100)} %${hearthCap - hearthRes > Math.max(8, pop * 0.25) ? ' · many homes stand empty' : ''}`,
+    `Market: ${marketJobs} market jobs, ${Math.round(marketWant)} wanted for ${pop} folk${craftN > 0 && craftFull > 0 ? ` · ${craftFull} of ${craftN} works cannot sell` : ''}`,
+    `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
+    `Arcane: ${arcaneJobs} arcane jobs${state.educated < 0.2 ? ` · educated ${Math.round(state.educated * 100)} % (needs 20 %)` : ` · educated ${Math.round(state.educated * 100)} %`}`,
+  ];
   const clamp = (v: number) => Math.max(-1, Math.min(1, v));
   // smooth
   const s = state.demand;

@@ -98,6 +98,7 @@ export interface Building {
   flare?: number; // days a Thrum Font's bore flare still smokes
   greyDays?: number; // days the Gloam has stood at the door of this dark, unwarded building
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
+  plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
 }
 
 export const enum AgentKind {
@@ -305,6 +306,9 @@ export interface GameState {
   // deathcare
   unquieted: number;
   deathsToday: number;
+  quietCap: number; // deathcare capacity today (transient)
+  quietedToday: number; // dead laid to rest today (transient)
+  waitingDead: number; // bodies left waiting after today's quieting (transient)
   // hazards
   demand: Demand;
   milestone: number;
