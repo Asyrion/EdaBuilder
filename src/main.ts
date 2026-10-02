@@ -17,6 +17,7 @@ import { maybeFireReturn } from './sim/events';
 import { canBuild, costOf, specialLock } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
+import { faceLeft } from './render/facing';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, districtName, timeOfDay } from './sim/world';
 import { createScenario } from './sim/scenario';
@@ -469,7 +470,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

@@ -253,7 +253,8 @@ Charter as `.json`.
   painting is the look for every people; the Stake, the Guildhall and the Temple grow with
   the city; every building has a sprite. The painted heroes stand at the height of their
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
-  the whole set faces lower-right.
+  the whole set faces lower-right; every building then turns toward its road (a mirror when the
+  road runs past its left side), and the placement ghost turns with it.
 - The donkey carts: 31 painted carts (barrels, sacks, hay, stalls, covered wagons, and stone for
   the mines' leystone) drive the roads at the folk's scale, each facing the way it goes; the
   first-cart quest's Show me finds one on its way to market.

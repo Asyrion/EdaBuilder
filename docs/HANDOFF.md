@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 57 (the donkey carts: the user's painted cart sheets on the roads).
-Iteration 56 (the playtest batch) and 55 (M14 closed) came before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 58 (every building faces its road). Iteration 57 (the donkey
+carts), 56 (the playtest batch) and 55 (M14 closed) came before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.88 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.89 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -19,8 +19,8 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 - Iteration 56 (DESIGN §4.87) was a playtest batch between milestones: the painted heroes
   scaled to their procedural twins, nine left-fronted paintings mirrored, and reach rings drawn
   above the buildings with labels and secondary reaches.
-- Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
-  uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
+- Iterations 57 and 58 (DESIGN §4.88–4.89) were batches between milestones, at the user's request:
+  the uploaded donkey-cart sheets became the road carts, and every building turns to its road.
 - **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
   the next item.
 
@@ -57,22 +57,22 @@ hunt in the same iteration if the plan says so.
   - the Hall of Wicks the vigil never unlocked;
   - tales refused in a city in debt ("0 crowns asked").
 - Seed 43 (Vellish) used to never reach the Free City; with the part 5 bot it does (day 123).
-- **Painted buildings face one way** (iteration 56). The set faces lower-right, but a building
-  does not turn toward its own road, and the paintings drawn head-on (most zone houses, the last
-  Stake stage) cannot be turned by a mirror. A road-facing mirror at render time is a possible
-  later item; the user has not asked for it yet.
+- **Head-on paintings and a road behind** (iteration 58). Every building turns toward its road
+  by a mirror, but the painted houses drawn head-on (most level-2 hearths, the craft levels, the
+  arcane level 2, the last Stake stage) cannot turn their front to a road behind them. Only new
+  three-quarter paintings would fix that.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (60 files, 351 tests at this writing; `tests/iteration57.test.ts`
-  is iteration 57's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (61 files, 356 tests at this writing; `tests/iteration58.test.ts`
+  is iteration 58's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
   (actions, tick, recomputeAll, place, events, atlas, `wyrmcraft`, `beasts`, `vehicles`,
   `wyrm`, `maybeFireReturn`, and since iteration 54 `weave`, `economy`, `edicts`,
   `districts`, `events`, `scenario`, and since iteration 55 `save` {serialize, deserialize}, `dev`
-  {runDev} and `factions` {canBuild, specialLock}) are the hooks; a second game in one script starts
+  {runDev} and `factions` {canBuild, specialLock}, and since iteration 58 `facing` {faceLeft}) are the hooks; a second game in one script starts
   through `__game.newGame(seed, name, 'valley', people)` (`'daily'` for the challenge)
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
@@ -171,3 +171,16 @@ hunt in the same iteration if the plan says so.
 - **Agents with `timer > 0` are not drawn** (resting inside a building), so a playtest that
   places agents by hand must give them `timer: 0`. A hand-built town fills carts only once its
   works have `stock >= 4`; `scripts/playtest57.mjs` tops the stock up each tick.
+
+## Learned in iteration 58 (not yet said elsewhere)
+
+- **Facing:** `src/render/facing.ts` `faceLeft(state, footprint)` is the one rule; the renderer
+  draws `atlas.mirrored(name)` when it is true. A `SpriteRect` may carry `src` (the mirrored
+  sheet); every draw path reads `s.src ?? atlas.image`, so a new draw path must too.
+- **No facing cache:** `roadVersion` is bumped by the UI tools and the portals, not by every road
+  write (the bot, dev commands, undo), so anything keyed on it can go stale.
+- **A before build beside the after:** a `git worktree` at the previous commit, `node_modules`
+  symlinked, `vite build --outDir <dir>`, and `vite preview --outDir <dir> --port 4174`;
+  `OLD_PORT=4174 node scripts/playtest58.mjs` shoots both.
+- **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
+  read as left-fronted, which they are not.
