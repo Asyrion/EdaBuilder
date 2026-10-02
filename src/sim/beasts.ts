@@ -5,6 +5,8 @@ import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Agent, type Build
 import { commitRng, forEachBuilding, pushMessage, rngOf, seasonOf } from './world';
 import { effects } from './hazards';
 import { SEAM } from './growth';
+import { delverAt } from './wyrmcraft';
+import { Zone } from './types';
 
 export const GOLEM_LABOUR = 12; // jobs' worth of work per bound golem
 export const GOLEM_MANA = 10; // mana a day per bound golem at the foundry
@@ -28,6 +30,52 @@ export function wildGolems(s: GameState): number {
   let n = 0;
   for (const a of s.agents) if (isGolem(a) && a.load === 0) n++;
   return n;
+}
+/** Bound golems on labour duty (the city-wide 12 hands each); guards and posted wardens are not counted (iteration 53). */
+export function labourGolems(s: GameState): number {
+  let n = 0;
+  for (const a of s.agents) if (isGolem(a) && a.load > 0 && !a.duty) n++;
+  return n;
+}
+export function guardGolems(s: GameState): Agent[] {
+  return s.agents.filter((a) => isGolem(a) && a.load > 0 && a.duty === 'guard');
+}
+/** Wardens posted to this works: 12 hands each at its bench. */
+export function worksGolems(s: GameState, b: Building): number {
+  let n = 0;
+  for (const a of s.agents) if (isGolem(a) && a.load > 0 && a.duty === 'works' && a.targetId === b.id) n++;
+  return n;
+}
+export const GOLEM_GUARD_RADIUS = 6;
+export const GOLEM_GUARD_STRENGTH = 0.6;
+export const GOLEM_POST_REACH = 20;
+/** Set a bound warden's duty: labour (the default), guard at its foundry (ward 6 there) or posted to a Craft works within 20 of the foundry. The reason it cannot, or null. */
+export function setGolemDuty(s: GameState, agentId: number, duty: 'labour' | 'guard' | 'works', targetId = -1): string | null {
+  const a = s.agents.find((x) => x.id === agentId && isGolem(x));
+  if (!a) return 'No such warden';
+  if (a.load === 0) return 'A wild warden takes no orders';
+  const home = s.buildings.find((b) => b && b.id === a.homeId) ?? null;
+  if (duty === 'works') {
+    const b = s.buildings.find((x) => x && x.id === targetId && BUILDING_BY_KEY[x.kind].zone === Zone.Craft && x.state === 'ok');
+    if (!b) return 'Pick a Craft works';
+    if (home && Math.hypot(b.x - home.x, b.y - home.y) > GOLEM_POST_REACH) return `Too far: a warden is posted within ${GOLEM_POST_REACH} of its foundry`;
+    a.duty = 'works';
+    a.targetId = b.id;
+    a.ax = b.x + (b.w - 1) / 2 + 0.5;
+    a.ay = b.y + b.h + 0.5;
+  } else {
+    a.duty = duty === 'guard' ? 'guard' : undefined;
+    a.targetId = -1;
+    if (home) { a.ax = home.x + 1; a.ay = home.y + 2.5; }
+  }
+  a.path = [];
+  return null;
+}
+/** Craft works a foundry's wardens may be posted to. */
+export function postableWorks(s: GameState, foundry: Building): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].zone === Zone.Craft && b.state === 'ok' && Math.hypot(b.x - foundry.x, b.y - foundry.y) <= GOLEM_POST_REACH) out.push(b); });
+  return out;
 }
 /** Buildings that bind Wardens: the Vellish Golem Foundry and the Grimmen Forge-Temple. */
 export const GOLEM_HOUSES = ['golemfoundry', 'forgetemple'];
@@ -60,7 +108,7 @@ export function dailyBeasts(s: GameState): void {
   if (creatureN(s, 'golem') < GOLEM_CAP) {
     forEachBuilding(s, (b) => {
       if (b.kind !== 'mine' || b.state !== 'ok' || b.age < 5) return;
-      if (!rng.chance(GOLEM_WAKE_CHANCE * ((b.seam ?? SEAM) <= 0 ? 3 : 1))) return; // an empty shaft wakes the deep three times as often
+      if (!rng.chance(GOLEM_WAKE_CHANCE * ((b.seam ?? SEAM) <= 0 ? 3 : 1) * (delverAt(s, b) ? 0.5 : 1))) return; // an empty shaft wakes the deep three times as often; a delver drake halves it
       for (let k = 0; k < 20; k++) {
         const x = b.x + rng.int(13) - 6;
         const y = b.y + rng.int(13) - 6;
@@ -113,11 +161,21 @@ export function dailyBeasts(s: GameState): void {
     s.stats.skyraySchools++;
     pushMessage(s, `A school of skyrays rides the high ley over the valley, manta-shadows sliding across the roofs. A lit Ley Beacon would keep them.`, 'info', true);
   }
-  // 4. lured rays shed rayscale
-  const lured = s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'skyray' && a.phase === 1).length;
-  if (lured > 0) {
-    s.materials.rayscale += RAYSCALE_PER_DAY * Math.min(1, lured / 3);
-    s.stats.rayscaleTotal += RAYSCALE_PER_DAY * Math.min(1, lured / 3);
+  // 4. lured rays shed rayscale over a Beacon, glim-dust over a Rayscale Mirror (iteration 53)
+  let beaconRays = 0;
+  let mirrorRays = 0;
+  for (const a of s.agents) {
+    if (a.kind !== AgentKind.Creature || a.species !== 'skyray' || a.phase !== 1) continue;
+    const lure = ((a.anchorId ?? -1) >= 0 ? s.buildings.find((b) => b && b.id === a.anchorId) : null) ?? beacon(s);
+    if (lure && lure.kind === 'raymirror') mirrorRays++; else beaconRays++;
+  }
+  if (beaconRays > 0) {
+    s.materials.rayscale += RAYSCALE_PER_DAY * Math.min(1, beaconRays / 3);
+    s.stats.rayscaleTotal += RAYSCALE_PER_DAY * Math.min(1, beaconRays / 3);
+  }
+  if (mirrorRays > 0) {
+    s.materials.glimdust += RAYSCALE_PER_DAY * Math.min(1, mirrorRays / 3);
+    s.stats.glimdustTotal += RAYSCALE_PER_DAY * Math.min(1, mirrorRays / 3);
   }
   if (s.materials.rayscale > 0) s.materials.rayscale = Math.max(0, s.materials.rayscale - 0.15); // enchanters use it
   commitRng(s, rng);
@@ -132,7 +190,7 @@ function creatureN(s: GameState, species: string): number {
 /** A wild surge sends bound golems mad again. */
 export function surgeMaddensGolems(s: GameState): number {
   let n = 0;
-  for (const a of s.agents) if (isGolem(a) && a.load > 0) { a.load = 0; a.homeId = -1; n++; }
+  for (const a of s.agents) if (isGolem(a) && a.load > 0) { a.load = 0; a.homeId = -1; a.duty = undefined; a.targetId = -1; n++; }
   if (n) pushMessage(s, `${n} bound Concord Warden${n > 1 ? 's' : ''} break their binding in the surge and walk loose.`, 'bad', true);
   return n;
 }
@@ -159,8 +217,8 @@ export function describeBeasts(s: GameState): string {
   const b = boundGolems(s);
   const r = creatureN(s, 'skyray');
   const bits: string[] = [];
-  if (w || b) bits.push(`Concord Wardens: ${b} bound (${b * GOLEM_LABOUR} hands, ${Math.round(foundryMana(s))} mana), ${w} wild`);
-  if (r) bits.push(raysLured(s) ? `${r} skyrays circle the Beacon` : `${r} skyrays are crossing the valley`);
+  if (w || b) { const g = guardGolems(s).length; const l = labourGolems(s); bits.push(`Concord Wardens: ${b} bound (${l * GOLEM_LABOUR} hands of labour${g ? `, ${g} on guard` : ''}${b - l - g ? `, ${b - l - g} posted to works` : ''}, ${Math.round(foundryMana(s))} mana), ${w} wild`); }
+  if (r) { const mirror = s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'skyray' && a.phase === 1 && (a.anchorId ?? -1) >= 0 && s.buildings.find((b) => b && b.id === a.anchorId)?.kind === 'raymirror'); bits.push(raysLured(s) ? (mirror ? `${r} skyrays circle the Mirror, shedding glim-dust` : `${r} skyrays circle the Beacon`) : `${r} skyrays are crossing the valley`); }
   if (s.materials.rayscale > 0) bits.push(`rayscale ${s.materials.rayscale.toFixed(1)} (artifacts +10%)`);
   return bits.join(' · ') || 'No wardens woken, no skyrays in sight.';
 }

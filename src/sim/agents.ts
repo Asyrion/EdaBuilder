@@ -12,6 +12,7 @@ export const CARTERS_EASE = 0.8;
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
+import { auraAt } from './weave';
 
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
@@ -464,7 +465,7 @@ export function tickAgents(state: GameState): void {
     const congestion = state.trafficSmooth[t] / 255;
     const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
     const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
-    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
+    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * (auraAt(state, 'sky', a.x, a.y) ? 1.25 : 1) * dt; // a Sky dragon's aura speeds the carts in it (iteration 53)
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;

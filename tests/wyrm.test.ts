@@ -139,8 +139,9 @@ describe('The Sleeping Wyrm', () => {
     // eats
     const g0 = marketGoods(s);
     dailyWyrm(s);
-    expect(g0 - marketGoods(s)).toBeCloseTo(WYRM_EATS, 5);
+    expect(g0 - marketGoods(s)).toBeCloseTo(WYRM_EATS / 2, 5); // the lit Court halves its appetite (iteration 53)
     expect(s.wyrm.fedDays).toBe(1);
+    expect(s.wyrm.courted).toBe(true);
   });
 
   it('starved it sulks, then dies; its bones quiet the dead', () => {

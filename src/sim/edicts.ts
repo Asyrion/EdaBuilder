@@ -34,6 +34,12 @@ export const EDICTS: EdictDef[] = [
     costPerDay: () => 80, unlock: 5, cityOnly: true,
   },
   {
+    key: 'scalemail', name: 'Scale-Mail',
+    desc: 'The Watch wears dragon scale: unrest −5 % while scale is in the vault, and the mail wears 0.05 scale a day. No crowns; the vault pays.',
+    flavor: 'It turns a knife. It also turns heads, which the Warden-Reeve counts as the point.',
+    costPerDay: () => 0, unlock: 4, cityOnly: true,
+  },
+  {
     key: 'curfew', name: 'Night Curfew',
     desc: 'The Watch clears the streets after dark. Unrest −10, restless cleared faster; happiness −4.',
     flavor: '"Halt. Are you living? Then go home."',

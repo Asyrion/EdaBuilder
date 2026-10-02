@@ -3,7 +3,7 @@ import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt } from './roads';
 import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
-import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, type Building, type GameState, type ServiceType } from './types';
+import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, cracked, idx, inBounds, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
@@ -12,10 +12,10 @@ import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree
 
 /** Land value lost within 4 tiles of any deathcare. */
 export const DEATHCARE_LV = 6;
-import { mewsActive } from './beasts';
+import { GOLEM_GUARD_RADIUS, GOLEM_GUARD_STRENGTH, guardGolems, mewsActive } from './beasts';
 import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
-import { dragonAuras, nodesOfAspect, flooding } from './weave';
+import { dragonAuras, nodesOfAspect, floodedAt } from './weave';
 
 /** A service with a crew radiates by how many of its hands are filled (never below 0.3); one without a crew radiates in full. */
 export function crewFactor(b: Building, state: GameState): number {
@@ -36,6 +36,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
     if (b.kind === 'scaleward') strength *= b.plate ?? 1;
+    if (cracked(b)) strength = 0; // the Lantern of the Cores wards nothing while cracked
     if (b.kind === 'hospice' && b.stock <= 0) strength *= 0.6; // no draughts on the shelf
     if (b.kind === 'veshari' && !b.watered) strength *= 0.5; // a dry fire hall
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
@@ -88,6 +89,19 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         const y = Math.round(au.y + dy);
         if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
         acc[idx(x, y)] += str * (1 - Math.hypot(dx, dy) / r * 0.6);
+      }
+  }
+  // Concord Wardens on guard hold the grey six tiles around their post (iteration 53)
+  if (type === 'ward') for (const g of guardGolems(state)) {
+    const r = GOLEM_GUARD_RADIUS;
+    const gx = g.ax ?? g.x;
+    const gy = g.ay ?? g.y;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        const x = Math.round(gx + dx);
+        const y = Math.round(gy + dy);
+        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
+        acc[idx(x, y)] += GOLEM_GUARD_STRENGTH * (1 - (Math.hypot(dx, dy) / r) * 0.6);
       }
   }
   if (type === 'ward') for (const g of nodesOfAspect(state, 'grey')) {
@@ -207,7 +221,6 @@ export function landBonusMap(state: GameState): Float32Array {
 /** The terms of a tile's land value, in the order they are summed (the stored value is their rounded, clamped sum). */
 export function landValueTerms(state: GameState, i: number, bonus: Float32Array): { label: string; v: number }[] {
   const fr = factionOf(state).rules;
-  const flood = flooding(state);
   const n = MAP_W * MAP_H;
   const cov = state.coverage;
   const t: { label: string; v: number }[] = [{ label: 'base', v: 18 }];
@@ -223,7 +236,7 @@ export function landValueTerms(state: GameState, i: number, bonus: Float32Array)
   const wd = state.waterDist[i];
   if (wd <= 5) add('water near', (5 - wd) * 2.5 * fr.waterLandValue);
   else if (wd > 8) add('dry land', -fr.dryPenalty);
-  if (flood && wd <= 1) add('the flood', -10);
+  if (wd <= 1 && floodedAt(state, i % MAP_W, (i / MAP_W) | 0)) add('the flood', -10);
   const q = quarterAt(state, i);
   if (q === 'hearth') add('Hearth quarter', 6); else if (q === 'market') add('Market quarter', -4);
   add('leisure', (cov.leisure[i] / 255) * 16);

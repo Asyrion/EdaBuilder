@@ -91,6 +91,7 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
     if (state.road[i] === type) continue;
     state.road[i] = type;
     state.zone[i] = Zone.None;
+    state.dustLit[i] = 0; // a re-tiered road loses its glim-dust
     built++;
     markDirtyAround(state, i % state.w, (i / state.w) | 0);
   }
@@ -173,6 +174,7 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
   }
   if (state.road[i]) {
     state.road[i] = RoadType.None;
+    state.dustLit[i] = 0;
     state.treasury -= BULLDOZE_COST;
     markDirtyAround(state, x, y);
     return { ok: true, cost: BULLDOZE_COST };
@@ -189,6 +191,29 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     return { ok: true, cost: 0 };
   }
   return { ok: false };
+}
+
+/** Glim-dust scattered on a track or cobbled tile lights it for a season: land value, the overlay and a glow, but no ley (iteration 53). */
+export const DUST_DAYS = 30;
+export function scatterDust(state: GameState, x: number, y: number): ActionResult {
+  if (!inBounds(x, y)) return { ok: false };
+  const i = idx(x, y);
+  if (state.road[i] !== RoadType.Track && state.road[i] !== RoadType.Cobble) return { ok: false, reason: 'Glim-dust goes on a track or a cobbled road' };
+  if (state.dustLit[i] > state.day) return { ok: false, reason: `Already dusted (${state.dustLit[i] - state.day} days left)` };
+  if (state.materials.glimdust < 1) return { ok: false, reason: 'Needs 1 glim-dust (Moth-Lofts gather it)' };
+  state.materials.glimdust -= 1;
+  state.dustLit[i] = state.day + DUST_DAYS;
+  markDirtyAround(state, x, y);
+  return { ok: true, cost: 0 };
+}
+
+/** The Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw. The reason it cannot be worked, or null. */
+export function toggleSluice(state: GameState, id: number): string | null {
+  const b = state.buildings.find((x) => x && x.id === id);
+  if (!b || b.kind !== 'greatweir') return 'No weir here';
+  if (b.state !== 'ok') return 'Finish it first';
+  b.sluice = !b.sluice;
+  return null;
 }
 
 export function setTax(state: GameState, zone: keyof GameState['taxRates'], rate: number): void {

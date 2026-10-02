@@ -71,7 +71,7 @@ for the depth pass because the fix is a design.
 | B33 | Stone Ward | "holds" the Gloam; it burns it like a lantern, unlit, for no mana. | M14 (hold-only, the sexton cuts) |
 | B34 | Wyrmfire Forge | says +25 %; gives +35 % (it counts as a Glimhouse too). | 44 (text) |
 | B35 | Storm-Caller's Peak | "rain over the district", no fee named; the rain is city-wide and costs 300. | 44 (text) |
-| B36 | Wyrm-Court | "if a wyrm has woken": buildable with no wyrm; does nothing after the binding. | 44 (gate) / M14 (a use) |
+| B36 | Wyrm-Court | "if a wyrm has woken": buildable with no wyrm; does nothing after the binding. | 44 (gate) / 53 (lit, it halves the appetite; dark, the wyrm sulks) |
 | B37 | Hall of Marvels | works unlit. | 44 |
 | B38 | Wyrms panel | "caravans buy them": wyrmfire and eggshell cannot be sold. | 44 (500 / 200 crowns) |
 | B39 | The Sleeping Wyrm | "half again as much each time": tribute grows linearly. | 44 (text) |
@@ -147,16 +147,16 @@ total, bargeman rounds, daughters, relics auctioned. M14 part 5 gives them an An
 | Hunters' Lodge / Moth-Loft | 3 | kills unseen; moths unchecked | 44 (B32) + M14.2 |
 | Quarry | 2 | workers ignored | 44 (B63) |
 | Trade Depot / Carters' Yard | 3 | second depot adds nothing | 44 (B62, B64) |
-| Lantern of Vell and the wonder halls | 1–2 | "delights" missing; mana spread ±90 | 44 (B31) + M14.3 |
-| Cradle / Hatchery / Tide Pool | 3 | fixed 2 slots; faction swaps | M14.3 |
-| Tamer's Lodge | 2 | needed 20 days | M14.3 |
-| Wyrm-Ring | 2 | no panel rows; old champions always win | M14.3 |
-| Scale Ward / Wyrmfire Forge / Eggshell Font / Rayscale Mirror / Hall of Marvels | 1–2 | two unbuildable; two dominate | 44 (B37, B65) + M14.3 |
-| Lantern of the Cores / House-Hall / Chart-Room / Salt Font (relic builds) | 1–2 | passive | M14.3 |
-| Wyrm-Court | 2 | nothing after the binding | M14.3 |
+| Lantern of Vell and the wonder halls | 1–2 | "delights" missing; mana spread ±90 | 44 (B31) + 53 (every lit hall +5 and a tenth on the grant; Lantern 10, Weir 45/90 by sluice) |
+| Cradle / Hatchery / Tide Pool | 3 | fixed 2 slots; faction swaps | 53 (the Great Cradle, feeding reach 12, hunger regresses, the departed return) |
+| Tamer's Lodge | 2 | needed 20 days | 53 (four seats; no seat halves growth and triples a hard scorch) |
+| Wyrm-Ring | 2 | no panel rows; old champions always win | 53 (odds shown; a challenger of the champion's weight) |
+| Scale Ward / Wyrmfire Forge / Eggshell Font / Rayscale Mirror / Hall of Marvels | 1–2 | two unbuildable; two dominate | 44 (B37, B65) + 53 (sinks: Scale-Mail, the Forge's burn, the Font at 3, the Mirror's dust, exhibits) |
+| Lantern of the Cores / House-Hall / Chart-Room / Salt Font (relic builds) | 1–2 | passive | 53 (the Cores absorb a surge and crack); the rest M14.4 |
+| Wyrm-Court | 2 | nothing after the binding | 53 |
 | Glimhouse / Observatory / Hanging Gardens / World Tree | 2–3 | no failure modes | M14.4 weather |
 | Ruin Delve | 4 | fine | — |
-| Golem Foundry / Forge-Temple | 3 | no choice per golem | M14.3 |
+| Golem Foundry / Forge-Temple | 3 | no choice per golem | 53 (labour, guard or a works bench) |
 | Ley Beacon / Drake Mews / Sky-Dock / Quay / Landing | 3 | fine; small rows | 44 (B48) |
 | Storm-Caller's Peak | 2 | perma-rain for 100 a day | M14.4 |
 | Font of Quieting | 2 | flat multiplier | M14.2 |
@@ -257,7 +257,7 @@ the three-seed rule (§14.1) settle them.
   (dump the store, reset the overdraw count, 30-day cooldown); the Carters' Yard cuts
   congestion 20 % within 10.
 
-### Part 3: wyrmcraft matured
+### Part 3: wyrmcraft matured ✅ (iteration 53, DESIGN §4.84)
 
 - **Lines that do what they say.** Ember: +10 % Craft within 8 of its cradle (the aura
   that is text now). Tide: a crewless barge trip a day from the nearest mooring. The

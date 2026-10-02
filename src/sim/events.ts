@@ -3,7 +3,7 @@ import { BUILDING_BY_KEY } from './catalog';
 import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
-import { LINE_INFO, addEgg, freeCradle, isCradle } from './wyrmcraft';
+import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
 import { hasAcademy } from './relics';
 import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
 import { capacityOf } from './growth';
@@ -22,7 +22,7 @@ export interface EventDef {
   when: (s: GameState) => boolean;
   once?: boolean; // never repeats
   priority?: boolean; // drawn before any other tale while it is eligible (a tale something else depends on)
-  choices: { label: string; desc: string | ((s: GameState) => string); apply: (s: GameState) => string }[];
+  choices: { label: string; desc: string | ((s: GameState) => string); apply: (s: GameState, amount?: number) => string; slider?: { max: number; label: string } }[];
 }
 /** A choice's description for this city (a people may change the numbers). */
 export function descOf(c: { desc: string | ((s: GameState) => string) }, s: GameState): string {
@@ -394,7 +394,7 @@ const VISITORS: EventDef[] = [
     when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
     choices: [
       { label: 'Trade', desc: (s) => `Sell every works' surplus above 10 goods at 1.5x the season price (${caravanSurplus(s)} goods on the shelves now).`, apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } sold = Math.round(sold); const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; s.stats.caravanGoods += sold; return sold > 0 ? `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.` : 'The works have nothing to spare above ten goods a shelf. The riders buy bread and water the striders.'; } },
-      { label: 'Sell rare goods', desc: 'Scale 400, wyrmfire 500, eggshell 200, rayscale 300, glim-dust 150 crowns each; the Plains pay well for what they cannot breed.', apply: (s) => { const m = s.materials; const crowns = Math.round(m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150); const line = `${Math.round(m.scale)} scale, ${m.wyrmfire.toFixed(1)} wyrmfire, ${m.eggshell.toFixed(1)} eggshell, ${m.rayscale.toFixed(1)} rayscale and ${m.glimdust.toFixed(1)} glim-dust`; m.scale = 0; m.wyrmfire = 0; m.eggshell = 0; m.rayscale = 0; m.glimdust = 0; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns.` : 'The jars are empty. The riders shrug and water the striders.'; } },
+      { label: 'Sell rare goods', desc: (s) => { const m = s.materials; return `Scale 400, wyrmfire 500, eggshell 200, rayscale 300, glim-dust 150 crowns each (${Math.round(m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150)} crowns for the whole vault); the slider sets the share sold.`; }, slider: { max: 100, label: 'share of the vault sold' }, apply: (s, amount) => { const share = amount === undefined ? 1 : Math.max(0, Math.min(100, amount)) / 100; const m = s.materials; const sold = { scale: m.scale * share, wyrmfire: m.wyrmfire * share, eggshell: m.eggshell * share, rayscale: m.rayscale * share, glimdust: m.glimdust * share }; const crowns = Math.round(sold.scale * 400 + sold.wyrmfire * 500 + sold.eggshell * 200 + sold.rayscale * 300 + sold.glimdust * 150); const line = `${Math.round(sold.scale)} scale, ${sold.wyrmfire.toFixed(1)} wyrmfire, ${sold.eggshell.toFixed(1)} eggshell, ${sold.rayscale.toFixed(1)} rayscale and ${sold.glimdust.toFixed(1)} glim-dust`; m.scale -= sold.scale; m.wyrmfire -= sold.wyrmfire; m.eggshell -= sold.eggshell; m.rayscale -= sold.rayscale; m.glimdust -= sold.glimdust; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns${share < 1 ? `; the rest stays in the vault` : ''}.` : 'The jars are empty. The riders shrug and water the striders.'; } },
       { label: 'Buy striders (2,000 crowns)', desc: 'Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days.', apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
       { label: 'Auction the loose relics', desc: 'The caravan bids 100 to 140 crowns a relic, above the Crown; one collector in three buys an uncatalogued piece for 2,500. Sextons −5.', apply: (s) => { if (s.relicStock < 1) return 'There are no loose relics to auction. The riders look at the empty table and laugh.'; const rng = rngOf(s); const price = 100 + rng.int(41); const n = s.relicStock; let out = `${n} relics go under the hammer at ${price} each: ${n * price} crowns.`; s.treasury += n * price; s.relicStock = 0; s.stats.relicsSold += n; s.stats.relicsAuctioned += n; if (s.relics.uncatalogued > 0 && rng.chance(0.34)) { s.relics.uncatalogued--; s.treasury += 2500; out += ' A Belerial collector in a striped coat pays 2,500 for a piece nobody has named yet.'; } commitRng(s, rng); s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return out; } },
       { label: 'Send them on', desc: 'No effect.', apply: () => 'They water the striders and ride for the next wardlight before noon.' },
@@ -595,7 +595,26 @@ export function maybeFireRiot(s: GameState): void {
 }
 void RIOT_UNREST;
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT];
+/** A departed dragon returns after a season, wild, and asks a tribute (iteration 53). Fired by maybeFireReturn on its own terms. */
+export const DRAGON_RETURNS: EventDef = {
+  id: 'dragon_returns', title: 'A shadow over the cradle',
+  text: 'A dragon that left this city circles its old cradle at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.',
+  when: (s) => dueReturn(s) !== null,
+  choices: [
+    { label: 'Pay its tribute', desc: (s) => { const e = dueReturn(s); return e ? `${RETURN_TRIBUTE * Math.max(1, e.stage)} crowns, or ${RETURN_GOODS * Math.max(1, e.stage)} goods off the market shelves if the purse cannot; it leaves for good.` : 'It leaves for good.'; }, apply: (s) => { const e = dueReturn(s); return e ? payReturn(s, e) : 'Nothing changes.'; } },
+    { label: 'Open a cradle', desc: (s) => { const e = dueReturn(s); return e && freeCradle(s, e.line) ? `It comes home a ${STAGE_NAMES[e.stage]}, sullen (mood 40), and eats from the markets again.` : `No cradle takes a ${e ? LINE_INFO[e.line].name : ''} dragon now: refused, it burns.`; }, apply: (s) => { const e = dueReturn(s); if (!e) return 'Nothing changes.'; return homeReturn(s, e) ?? refuseReturn(s, e); } },
+    { label: 'Refuse it', desc: (s) => { const e = dueReturn(s); return `It circles the old cradle all day and sets up to ${e ? Math.max(1, e.stage) : 1} dark, unwarded roof${e && e.stage > 1 ? 's' : ''} within 12 tiles alight.`; }, apply: (s) => { const e = dueReturn(s); return e ? refuseReturn(s, e) : 'Nothing changes.'; } },
+  ],
+};
+export function maybeFireReturn(s: GameState): void {
+  if (s.pendingEvent || s.gameOver) return;
+  const e = dueReturn(s);
+  if (!e) return;
+  const def = DRAGON_RETURNS;
+  s.pendingEvent = { id: def.id, title: `${e.name} returns`, text: `${e.name} the ${LINE_INFO[e.line].name} ${STAGE_NAMES[e.stage]}, which left ${s.cityName} ${s.day - e.day} days ago, circles its old cradle at (${e.x},${e.y}) at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.`, choices: def.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+  s.firedEvents.push(`${def.id}:?`);
+}
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT, DRAGON_RETURNS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -650,7 +669,7 @@ export function maybeFireCaravan(s: GameState): void {
   if (s.stats.lastCaravanDay < 0) s.stats.lastCaravanDay = s.day - CARAVAN_EVERY / 2;
   if (s.day - s.stats.lastCaravanDay < CARAVAN_EVERY) return;
   const e = ALL_EVENTS.find((x) => x.id === 'caravan')!;
-  s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+  s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s), slider: c.slider })) };
   s.firedEvents.push(`${e.id}:?`);
   s.stats.lastCaravanDay = s.day;
 }
@@ -679,7 +698,7 @@ export function maybeFireEvent(s: GameState): void {
   commitRng(s, rng);
 }
 
-export function resolveEvent(s: GameState, choice: number): void {
+export function resolveEvent(s: GameState, choice: number, amount?: number): void {
   const pe = s.pendingEvent;
   if (!pe) return;
   const def = ALL_EVENTS.find((e) => e.id === pe.id);
@@ -694,6 +713,6 @@ export function resolveEvent(s: GameState, choice: number): void {
     const f = s.firedEvents[k];
     if (f.endsWith(':?') && (f === `${def.id}:?` || f.startsWith(`${def.id}@`))) { s.firedEvents[k] = f.slice(0, -1) + ci; break; }
   }
-  const result = asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s);
+  const result = asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s, amount);
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }

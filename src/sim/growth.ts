@@ -18,8 +18,8 @@ import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
-import { GOLEM_LABOUR, boundGolems, raysLured } from './beasts';
-import { aspectAt, hasMarvel, marvelNear, FLOODPROOF, flooding } from './weave';
+import { GOLEM_LABOUR, labourGolems, raysLured, worksGolems } from './beasts';
+import { aspectAt, auraAt, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, FLOODPROOF } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -46,7 +46,7 @@ export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
-import { delverBonus, wyrmfireBonus } from './wyrmcraft';
+import { SCALEMAIL_UNREST, delverBonus, forgeHot, scaleMailOn, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
@@ -117,7 +117,7 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   add(b.lit ? 'lit' : 'unlit', b.lit ? 6 : -9);
   if ((b.tended ?? -1) >= state.day) add('tended by a healer', 4);
   if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') add('Hearth quarter', 3); else if (q === 'craft') add('Craft quarter', -4); else if (q === 'temple') add('Temple quarter', 2); }
-  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && flooding(state)) add('the flood', -10); // the Sable in flood
+  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && floodedAt(state, b.x, b.y)) add('the flood', -10); // the Sable in flood, or the Weir's open sluice
   add(b.watered ? 'watered' : 'dry', b.watered ? 6 : -11);
   add('miasma', -(state.miasma[i] / 255) * 30);
   const gd = state.gloamDist[i];
@@ -151,8 +151,8 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   const tree = worldTree(state);
   if (tree) add('the World Tree', treeStage(tree));
   if (raysLured(state)) add('skyrays overhead', 3);
-  if (hasMarvel(state, 'hallofmarvels')) add('the Hall of Marvels', 8);
-  if (state.buildings.some((o) => o && o.kind === 'lantern' && o.state === 'ok' && o.lit)) add('the Lantern of Vell', 5); // the Lantern of Vell delights the whole city
+  { const ex = marvelExhibits(state); if (ex > 0) add(`the Hall of Marvels (${ex} exhibit${ex === 1 ? '' : 's'})`, ex * 2); } // +2 a rare good on show, lit (iteration 53)
+  for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
   if (relicDone(state, 'ninehouses')) add('the Nine Houses', 3);
   if (hasMarvel(state, 'househall')) add('the House-Hall', 2);
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
@@ -209,7 +209,7 @@ export function craftStockCap(b: Building): number {
 }
 
 export function workforceOf(state: GameState): number {
-  return Math.round(state.population * 0.62) + boundGolems(state) * GOLEM_LABOUR;
+  return Math.round(state.population * 0.62) + labourGolems(state) * GOLEM_LABOUR;
 }
 
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
@@ -326,12 +326,14 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      const glim = glimhouseNear(state, b) || marvelNear(state, 'wyrmforge', b);
+      const forge = marvelNear(state, 'wyrmforge', b) && forgeHot(state); // a Forge with no wyrmfire is cold (iteration 53)
+      const glim = glimhouseNear(state, b) || forge;
       const asp = aspectAt(state, b.x, b.y);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (marvelNear(state, 'wyrmforge', b) ? 0.25 : 0));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (auraAt(state, 'ember', b.x, b.y) ? 0.1 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (forge ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
-      const made = Math.min(craftStockCap(b) - b.stock, b.workers * rate);
+      const hands = b.workers + Math.min(worksGolems(state, b) * GOLEM_LABOUR, Math.max(0, capacityOf(b, state) - b.workers)); // a posted Concord Warden works the bench for twelve, up to the works' capacity; with none posted the crew alone, exactly as before
+      const made = Math.min(craftStockCap(b) - b.stock, hands * rate);
       b.stock += Math.max(0, made);
       state.goodsProduced += Math.max(0, made);
     } else if (def.zone === Zone.Market) {
@@ -565,7 +567,7 @@ export function updateSocial(state: GameState): void {
   for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest') + uzulim * 0.02),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') - (scaleMailOn(state) ? SCALEMAIL_UNREST : 0) + modifierSum(state, 'unrest') + uzulim * 0.02),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
   state.unrestHigh = state.unrest > RIOT_UNREST ? state.unrestHigh + 1 : 0;

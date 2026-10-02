@@ -776,6 +776,10 @@ export class Renderer {
           } else if (state.road[i] === RoadType.Glowvine && state.lit[i]) {
             const [wx, wy] = tileToWorld(x, y);
             lights.push({ x: wx, y: wy + 8, r: 18, c: PAL.glimleaf, i: 0.45 + 0.1 * Math.sin(this.time * 1.5 + x * 0.7 + y) });
+          } else if (state.dustLit[i] > state.day && state.road[i]) {
+            // a road tile scattered with glim-dust glows warm gold for a season (iteration 53)
+            const [wx, wy] = tileToWorld(x, y);
+            lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.lampWarm, i: 0.4 + 0.08 * Math.sin(this.time * 2.1 + x * 1.3 + y * 0.7) });
           }
         }
     }
@@ -867,6 +871,7 @@ export class Renderer {
     if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant, this.zoneSuffix);
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
+    if (b.kind === 'cradle' && b.level >= 2 && this.atlas.has('b_greatcradle')) return 'b_greatcradle'; // the Great Cradle (iteration 53)
     return `b_${b.kind}`;
   }
 

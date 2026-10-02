@@ -2,7 +2,7 @@
 import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
-import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost } from '../sim/actions';
+import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost, scatterDust } from '../sim/actions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { canBuild, costOf, factionOf, milestonesOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
@@ -21,7 +21,8 @@ export type Tool =
   | { kind: 'wall' }
   | { kind: 'gate'; style: 2 | 3 }
   | { kind: 'bulldoze' }
-  | { kind: 'terrain'; op: TerraformOp };
+  | { kind: 'terrain'; op: TerraformOp }
+  | { kind: 'dust' }; // scatter glim-dust on a road tile (iteration 53)
 
 export interface ToolHost {
   state: GameState;
@@ -120,6 +121,11 @@ export class Tools {
         this.host.beforeAction('terrain');
         this.doTerraform(t);
         break;
+      case 'dust': {
+        const r = scatterDust(this.host.state, t[0], t[1]);
+        if (r.ok) this.host.onAction('terrain'); else this.host.onAction('error', r.reason);
+        break;
+      }
       case 'build':
         this.doBuild(t);
         break;
@@ -360,6 +366,7 @@ export function toolLabel(t: Tool): string {
     case 'gate': return t.style === 2 ? 'Belregi Gate' : 'Uzulim Gate';
     case 'bulldoze': return 'Bulldoze';
     case 'terrain': return `Land: ${TERRAFORM[t.op].name}`;
+    case 'dust': return 'Land: scatter glim-dust';
   }
 }
 

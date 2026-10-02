@@ -90,7 +90,13 @@ describe('The Great Weir', () => {
     const before = s.manaSupply;
     expect(placeBuilding(s, 'greatweir', f.x + 6, f.y + 7).ok).toBe(true);
     updateMana(s);
+    expect(s.manaSupply - before).toBeCloseTo(45, 5); // the sluice closed (iteration 53); open it makes 90
+    const weir = s.buildings.find((b) => b && b.kind === 'greatweir')!;
+    weir.sluice = true;
+    updateMana(s);
     expect(s.manaSupply - before).toBeCloseTo(90, 5);
+    weir.sluice = false;
+    updateMana(s);
     recomputeAll(s);
     expect(s.coverage.ward[idx(f.x + 6, f.y - 10)]).toBeGreaterThan(0);
     expect(WONDER_HALLS).toContain('greatweir');
