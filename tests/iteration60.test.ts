@@ -234,18 +234,21 @@ describe('The ford and the weir', () => {
     for (let x = river - 3; x <= river + 4; x++) s.road[idx(x, y)] = RoadType.Track;
     bumpRoadVersion();
     expect(isFordTile(s, idx(river, y))).toBe(true);
-    s.day = 3; // the Thaw
+    s.day = 3; // the charter's first Thaw: no Hush came before it, no high water
+    dailyFords(s);
+    expect(fordClosed(s, idx(river, y))).toBe(false);
+    s.day = 122; // the second year's Thaw
     dailyFords(s);
     expect(fordClosed(s, idx(river, y))).toBe(true);
     expect(findPath(s, idx(river - 3, y), idx(river + 4, y))).toBeNull();
     expect(s.stats.fordDaysClosed).toBe(1);
-    s.day = 12;
+    s.day = 132;
     dailyFords(s);
     expect(fordClosed(s, idx(river, y))).toBe(false);
     expect(findPath(s, idx(river - 3, y), idx(river + 4, y))).not.toBeNull();
     const weir = placeBuildingRaw(s, 'weir', river + 2, y + 3);
     weir.state = 'ok';
-    s.day = 123; // the next Thaw, day 3
+    s.day = 243; // the next Thaw, day 3
     dailyFords(s);
     expect(fordClosed(s, idx(river, y))).toBe(false);
   });

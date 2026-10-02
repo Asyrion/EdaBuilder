@@ -365,9 +365,9 @@ export function fordable(state: GameState, i: number): boolean {
   return across(1, 0) || across(0, 1);
 }
 
-/** High water: the Thaw's first days. */
+/** High water: the Thaw's first days, when the Hush's snow comes down the river (so not in the charter's first Thaw, which no Hush came before). */
 export function highWater(state: GameState): boolean {
-  return seasonOf(state) === 0 && state.day % DAYS_PER_SEASON < HIGH_WATER_DAYS;
+  return seasonOf(state) === 0 && state.day >= DAYS_PER_SEASON * 4 && state.day % DAYS_PER_SEASON < HIGH_WATER_DAYS;
 }
 
 /** Whether a ford tile is under water today: high water or a flood reaches it, the river is not frozen, and no Weir holds it. */
