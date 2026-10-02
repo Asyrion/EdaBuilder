@@ -1532,6 +1532,276 @@
    "mirrored": true,
    "flip": true,
    "checked": true
+  },
+  {
+   "name": "deer_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_2(1).png",
+   "targetHeight": 14,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "elk_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (4).png",
+   "targetHeight": 17,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "wolf_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (3).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 46,
+   "checked": true
+  },
+  {
+   "name": "hound_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0(1).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "golem_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0(1).png",
+   "targetHeight": 22,
+   "colors": 20,
+   "glow": {
+    "minLum": 0.6
+   },
+   "hop": true,
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "thrumhare_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_1(1).png",
+   "targetHeight": 8,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "wisp_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (3).png",
+   "targetHeight": 10,
+   "colors": 20,
+   "glow": {
+    "minLum": 0.4
+   },
+   "hop": true,
+   "island": 57,
+   "checked": true
+  },
+  {
+   "name": "skyray_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (1).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": {
+    "minLum": 0.6
+   },
+   "hop": true,
+   "island": 69,
+   "checked": true
+  },
+  {
+   "name": "dragon_0_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_3.png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 30,
+   "checked": true
+  },
+  {
+   "name": "dragon_0_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_3.png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 30,
+   "checked": true
+  },
+  {
+   "name": "dragon_1_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (4).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "dragon_1_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (4).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "dragon_2_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_1(1).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "dragon_2_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_1(1).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "dragon_3_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0.png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 59,
+   "checked": true
+  },
+  {
+   "name": "dragon_3_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0.png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 59,
+   "checked": true
+  },
+  {
+   "name": "dragon_4_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (2).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "dragon_4_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/images_1 (2).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "dragon_6_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_1(1).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "dragon_6_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_1(1).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "dragon_7_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0(1).png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "dragon_7_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_0(1).png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "dragon_8_1_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_3.png",
+   "targetHeight": 11,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 32,
+   "checked": true
+  },
+  {
+   "name": "dragon_8_2_0",
+   "kind": "prop",
+   "src": "inspirations/animals/image_3.png",
+   "targetHeight": 16,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "island": 32,
+   "checked": true
   }
  ]
 }

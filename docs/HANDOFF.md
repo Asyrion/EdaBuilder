@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 57 (the donkey carts: the user's painted cart sheets on the roads).
-Iteration 56 (the playtest batch) and 55 (M14 closed) came before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 58 (M16 part 1, the wild). Iteration 57 (the donkey carts) was
+merged by another session while 58 was under way; 56 and 55 came before. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.88 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.89 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -21,22 +21,25 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
   above the buildings with labels and secondary reaches.
 - Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
   uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
-- **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
-  the next item.
+- **M16 the wild and the water** (DESIGN §16) is open. **Part 1, the wild**, is done (iteration 58,
+  DESIGN §4.89): herds, the lodge's quarry, meat on the shelves, wolves in the Hush, the Close
+  Season, two tales and the animal sheets. **Part 2, the water**, is the next item.
 
 ## The next item
 
-M16 part 1, the wild (DESIGN §16, "M16 The wild and the water", and NEXT_STEPS item 1):
-- herds of deer and elk on the meadows that flee lit ground; boar, otters, herons, goats, and
-  wolves in the Hush;
-- the Hunters' Lodge hunting a chosen quarry for hides, meat and trophies as goods with their own
-  prices on the Gloam road, and a Hearth happiness line for meat on the shelves;
-- herds that thin where the city spreads;
-- a Hunters' edict and two tales;
-- the animals folder's creature sheets through `npm run art`.
+M16 part 2, the water (DESIGN §16, and NEXT_STEPS item 1):
+- a Fishers' Hut on a bank or a lake shore, with boats on the water (walkers on water tiles,
+  `waterPath`);
+- fish as goods that spoil in two days unless a market or a smokehouse takes them;
+- reed-cutters on the marsh for thatch (there is no marsh terrain: Shore and the shallows are what
+  the wild's otters and herons use);
+- a water garden;
+- the lake's own land value and well bonus;
+- a weir pool and a ford.
 
-Plan it on the Plan panel first. The bot now plays the levers (DESIGN §4.86), so it can learn the
-hunt in the same iteration if the plan says so.
+The wild's meat path (`dailyMeat`, `MARKET_MEAT_CAP`, `meatAt`) is the pattern for fish on the
+shelves, and the Gloam road's own prices (`HIDE_PRICE` and the rest in growth.ts) are the pattern
+for fish on the road. Plan it on the Plan panel first.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
@@ -64,8 +67,8 @@ hunt in the same iteration if the plan says so.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (60 files, 351 tests at this writing; `tests/iteration57.test.ts`
-  is iteration 57's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (61 files, 369 tests at this writing; `tests/iteration58.test.ts`
+  is iteration 58's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -118,6 +121,21 @@ hunt in the same iteration if the plan says so.
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 58 (not yet said elsewhere)
+
+- **The wild is on side streams** (`src/sim/wild.ts`: `sideRng` by seed, day and tag, and a
+  per-tick stream for the steps in `tickCreatures`). A city whose bot buys no game lodge and loses
+  no hen is bit-identical (Vellish 44). Keep new wild rolls there.
+- **Wild agents** carry `herdId`; `syncWildAgents` keeps them in step with the head counts daily.
+  A save without `wild` resets to an unseeded wild in `deserialize` and seeds on the next day.
+- **The bot's hunt pays little:** five of six bot cities have no depot. Hides pile up unsold, and
+  only one city in six has meat on a shelf at day 150 (DESIGN §4.89).
+- **`window.__wardlight.wild`** is the wild module, for playtests (`dailyMeat`, `dailyWolves`,
+  `setQuarry`).
+- **The importer's `hop` key:** a creature painting serves as both frames, the second a pixel
+  higher.
+- **Tests:** 61 files, 369 tests.
 
 ## Learned in iteration 55 (not yet said elsewhere)
 

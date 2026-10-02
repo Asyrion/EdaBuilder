@@ -6,7 +6,8 @@ import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappin
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
-import { AgentKind, RoadType, Zone, cracked, idx, type Building, type GameState } from '../sim/types';
+import { AgentKind, RoadType, Zone, cracked, idx, type Building, type GameState, type WildSpecies } from '../sim/types';
+import { CLOSE_FLOOR, HUNT_REACH, LODGE_MEAT_KEEP, MARKET_MEAT_CAP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntBlock, quarryOf, setQuarry } from '../sim/wild';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, seatWarmed, waterCapOf, wicksHalved } from '../sim/networks';
 import { SEAM, SPENT_RATE } from '../sim/growth';
@@ -752,6 +753,7 @@ export class UI {
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
       { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
+      if (def.zone === Zone.Market && ((b.meat ?? 0) > 0 || s.buildings.some((l) => l && l.kind === 'hunterslodge' && Math.hypot(l.x + 1 - b.x, l.y + 1 - b.y) <= MEAT_REACH))) rows.push(row('Meat on the shelves', `${Math.round(b.meat ?? 0)} / ${MARKET_MEAT_CAP}${(b.meat ?? 0) >= 1 ? ': hearths within 10 are happier' : ' (a lodge within 16 hunting game fills it)'}`));
       if (def.zone === Zone.Market && theftAt(s, b)) problems.push(`Theft: a tenth of the shelves a night. Watch here ${Math.round((s.coverage.watch[i] / 255) * 100)} %, unrest ${Math.round(s.unrest * 100)} %: a Watch Post over the market, or less unrest, stops it.`);
       if (def.zone === Zone.Market && s.fenNex > 0 && s.district[i] === s.fenNex) rows.push(row('Fen-Nex quarter', 'no tithe, double shelves'));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
@@ -849,7 +851,17 @@ export class UI {
     if (b.kind === 'veshari' && !b.watered) problems.push('Dry: a fire hall without water fights at half strength. A well within reach.');
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relics studied', `${Math.round(b.progress)} here · educated floor +${Math.round(s.educatedFloor * 100)} % (a loose relic every 5 days while lit, up to ${EDUCATED_FLOOR_CAP * 100} %)`));
     if (b.kind === 'grandacademy') rows.push(row('Artifact prices', `${grandAcademyBonus(s) > 1 ? `+${Math.round((grandAcademyBonus(s) - 1) * 100)} %` : 'no bonus yet'} (+5 % per tenth of the city educated above four tenths; educated ${Math.round(s.educated * 100)} %)`));
-    if (b.kind === 'hunterslodge') rows.push(row('Pelts', `${Math.round(b.stock)} awaiting the carts (the Gloam road sells them) · ${s.stats.pelts} this charter`));
+    if (b.kind === 'hunterslodge') {
+      const q = quarryOf(b);
+      const why = huntBlock(s, b);
+      rows.push(row('Quarry', q === 'hounds' ? 'Gloam-hounds within 12 (24 under the Bounty)' : why ? `${WILD[q].plural}: idle, ${why}` : `${WILD[q].plural} within ${HUNT_REACH}; hounds at half the chance while the hunters are out`));
+      rows.push(row('In the salting shed', `${Math.round(b.stock)} hides · ${Math.round(b.meat ?? 0)} meat (over ${LODGE_MEAT_KEEP} goes salted to the Gloam road) · ${b.trophies ?? 0} trophies`));
+      if (b.took !== undefined && b.tookSp) rows.push(row('Last kill', `${s.day - b.took === 0 ? 'today' : `${s.day - b.took} day${s.day - b.took === 1 ? '' : 's'} ago`}: a ${WILD[b.tookSp as WildSpecies]?.name ?? b.tookSp}`));
+      const grounds = WILD_SPECIES.map((sp) => ({ sp, herds: herdsInGrounds(s, b, sp) })).filter((g) => g.herds.length);
+      rows.push(row('The grounds', grounds.length ? grounds.map((g) => { const head = g.herds.reduce((a, h) => a + h.head, 0); const cap = g.herds.reduce((a, h) => a + h.cap, 0); return `${WILD[g.sp].plural} ${g.herds.length} ${WILD[g.sp].group}${g.herds.length === 1 ? '' : 's'}, ${Math.floor(head)} head${head < cap * 0.5 ? ' <span class="warn">(thin)</span>' : ''}`; }).join(' · ') : `no game within ${HUNT_REACH} tiles`));
+      if (q !== 'hounds' && grounds.some((g) => g.sp === q && g.herds.some((h) => h.head < CLOSE_FLOOR)) && !s.edicts.closeseason) problems.push(`A ${WILD[q].group} in the grounds is under ${CLOSE_FLOOR} head: hunted to the last, it is gone for good. The Close Season edict keeps a floor.`);
+      rows.push(row('Hides and pelts', `${s.stats.hides + s.stats.pelts} this charter · ${s.stats.trophies} trophies · ${s.stats.huntCrowns} crowns on the Gloam road`));
+    }
     if (b.kind === 'mothloft') rows.push(row('Glim-dust', `${aspectAt(s, b.x, b.y) === 'glim' ? '0.6' : '0.3'} a day while lit${aspectAt(s, b.x, b.y) === 'glim' ? ' (Glim ley: doubled)' : ''}`));
     if (b.kind === 'wrightslodge') { rows.push(row('Store', `40 mana of Nexus store and a surge line of 1.4× while the guild is pleased`)); rows.push(row('Vent', (b.cooldown ?? 0) > 0 ? `ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'}` : 'ready: empties the store and resets the surge count (30-day cooldown)')); }
     if (b.kind === 'cartersyard') rows.push(row('Roads', `congestion within 10 tiles smoothed by a fifth while the guild is pleased`));
@@ -925,6 +937,22 @@ export class UI {
       btn.style.width = '100%';
       btn.onclick = () => { const why = this.host.raiseCradle(b.id); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshInfo(); };
       el.appendChild(btn);
+    }
+    if (b.kind === 'hunterslodge' && b.state === 'ok') {
+      // the quarry: hounds, or any game in the grounds (iteration 58)
+      const bar = document.createElement('div');
+      bar.className = 'quarry';
+      const opts: ('hounds' | WildSpecies)[] = ['hounds', ...WILD_SPECIES.filter((sp) => herdsInGrounds(s, b, sp).length > 0)];
+      for (const q of opts) {
+        const btn = document.createElement('button');
+        btn.textContent = q === 'hounds' ? 'Hounds' : WILD[q].plural[0].toUpperCase() + WILD[q].plural.slice(1);
+        btn.dataset.quarry = q;
+        btn.disabled = quarryOf(b) === q;
+        btn.title = q === 'hounds' ? 'Guard the edge: hounds at full chance' : `${WILD[q].meat} meat, ${WILD[q].hides} hides a head${WILD[q].trophy ? `, ${WILD[q].trophyName} now and then` : ''}`;
+        btn.onclick = () => { setQuarry(s, b, q); this.refreshInfo(); };
+        bar.appendChild(btn);
+      }
+      el.appendChild(bar);
     }
     if (b.kind === 'greatweir' && b.state === 'ok') {
       const btn = document.createElement('button');
@@ -1254,6 +1282,7 @@ export class UI {
             <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A charter costs a crown a building a day and holds ${CHARTER_LOCK_DAYS} days; a Craft quarter's smoke drifts four tiles past its edge, a Temple quarter takes a tenth of the city's market tithe. An <b>edict</b> holds ${EDICT_MIN_DAYS} days and costs ${EDICT_REPEAL} crowns to repeal. A road at a building's corner counts as its door.</li>
             <li><b>Weather</b> is written in the seed: Bloom rain (fewer fires, more craft, less miasma), an Ember drought (more fires, wells reach less, the gardens and the World Tree wait) and a Hush blizzard (hearths burn more mana, the hounds stay in). The top bar names it; the Observatory sees it coming.</li>
             <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: the Vellish need happiness 45 + 3 × the milestone, the Tallowkin must hold their light three days.</li>
+            <li><b>The wild</b>: herds of deer and elk graze the meadows by day and bed down in the woods at night, and run from lit ground; boar keep the forests, goats the hills, otters and herons the banks. A herd breeds in Bloom and thins where the city builds within two tiles of its ground; a ward or a lit Glimhouse helps it recover. A <b>Hunters' Lodge</b> hunts the <b>quarry</b> its panel names within 16 tiles: hides, meat and trophies (antlers, tusks, plumes, wolf heads) for the Gloam road at their own prices, and meat for the markets within 16, where it makes the hearths within 10 happier. Hunters after game kill hounds at half the chance; a herd hunted to the last is gone. <b>The Close Season</b> edict closes the chase in Bloom and keeps six head in every herd. In the Hush <b>wolves</b> leave the forest at night to take hens from the dark, unwatched hearths at the edge.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1463,6 +1492,7 @@ export class UI {
           <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
           <tr><td>Artifacts sold</td><td class="r good" data-k="artifacts"></td></tr>
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
+          <tr><td>The hunt's goods sold today</td><td class="r good" data-k="hunt"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -1503,6 +1533,7 @@ export class UI {
     set('taxArcane', `+${l.taxArcane.toFixed(0)}`);
     set('artifacts', `+${l.artifacts.toFixed(0)}`);
     set('trade', `+${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
+    set('hunt', st.trade.priceHides !== undefined ? `${st.trade.hidesSold ?? 0} hides at ${st.trade.priceHides} · ${st.trade.meatSold ?? 0} salted meat at ${st.trade.priceMeat} · ${st.trade.trophiesSold ?? 0} trophies at ${st.trade.priceTrophy}` : 'none');
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);

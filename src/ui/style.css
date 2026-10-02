@@ -219,3 +219,8 @@ h3 { font-size: 13px; color: var(--gold); }
 .prio button { padding: 1px 7px; font-size: 11px; }
 .prio button.active { background: #3a3150; border-color: #a890e0; color: #f0e8ff; }
 #info .why { font-size: 11px; line-height: 1.35; margin: -2px 0 4px; }
+
+/* a Hunters' Lodge's quarry (iteration 58) */
+.quarry { display: flex; flex-wrap: wrap; gap: 3px; margin: 4px 0; }
+.quarry button { flex: 1 1 auto; }
+.quarry button:disabled { opacity: 1; outline: 1px solid var(--gold, #d8b45a); }

@@ -349,6 +349,48 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 58 (M16 part 1: the wild)
+
+- **Herds on the land.**
+  - Deer and elk on the meadows, boar in the forests, goats on the hills, otters and herons on the
+    banks, and wolf packs in the woods (`src/sim/wild.ts`).
+  - Each herd has a home, a head count and a cap: the habitat within 6 tiles that has no building
+    within 2.
+  - Herds breed in Bloom, a little in the Thaw and the Ember, and not in the Hush. They breed twice
+    as fast where a ward or a lit Glimhouse holds the ground.
+  - Where the city builds over a herd's ground, the herd thins and leaves, with a message.
+  - Deer and elk run from lit ground and bed down in the woods at night.
+  - Everything wild draws from side streams: a city with no lodge on game and no hen taken is
+    bit-identical (Vellish 44).
+- **The Hunters' Lodge hunts a quarry.** The panel offers hounds or any game in the lodge's
+  grounds (16 tiles).
+  - It brings in hides, meat and trophies (antlers, tusks, plumes, wolf heads; a war-tiger's head
+    too).
+  - These have their own prices on the Gloam road: hides 3 / 2.5 / 3 / 4 by season, salted meat
+    1.5–2.5, trophies 30, or 40 in the Ember.
+  - Meat goes to the markets within 16. The hearths within 10 of a market with meat get +4 "meat
+    on the shelves".
+  - Hunters out after game kill hounds at half the chance, and a herd hunted to the last is gone.
+- **The Close Season** edict closes the chase in Bloom, keeps 6 head in every herd and lets the
+  herds breed a quarter faster.
+- **Wolves in the Hush** thin the deer, take a thrumhare, and take hens from dark, unwatched
+  level-1 hearths at the edge: −6 happiness for five days.
+- **Two tales:** the white hart and the wolf winter.
+- **One quest:** put game on a market's shelves.
+- **Seven Annals counters.**
+- **The ledger:** a row for the hunt's sales, and the Gloam road's prices in the route note.
+- **The bot learns the hunt.**
+  - A game lodge at the city's edge facing the nearest good herd, only with a market in reach.
+  - It picks the quarry, leaves herds above half their cap, and calls the Close Season when its
+    herds thin.
+  - `balance.ts` prints a `wild:` line.
+- **The animal sheets through `npm run art`.**
+  - Deer, elk, wolf, the Gloam-hound, the Concord Warden, the thrumhare, the wisp, the skyray, and
+    eight of the nine drake lines are painted. Each painting is one frame; the importer's new `hop`
+    key makes the second frame a pixel higher.
+  - The boar, goat, otter and tiger paintings did not read at the game's scale, and no sheet has a
+    heron or a grey drake, so these stay procedural (new procedural sprites for all seven wild kinds).
+- DESIGN §4.89 (`tests/iteration58.test.ts`, `scripts/playtest58.mjs`).
 ## Done in iteration 57 (the donkey carts)
 
 - **The donkey carts.** The four uploaded sheets of painted donkey carts are the road carts: 27
@@ -587,6 +629,10 @@
   - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
     every later roll down another path, so a single seed per people is a thin measure. A wider
     table (three seeds a people) would show the bot's levers better than any one run.
+- **The bot's hunt** (iteration 58). Vellish 42 ends with 1,618 folk against 1,942. With the bot's
+  hunt switched off it is bit-identical to §4.86, so the change is the one game lodge it raised and
+  the path the run took from there. Five of six bot cities have no depot, so their hides are never
+  sold (DESIGN §4.89).
 - **Painted buildings face one way.** Iteration 56 mirrored the paintings fronted on the left
   face so the set faces lower-right. A building does not turn toward its own road, and the
   paintings drawn head-on cannot be turned by a mirror. A per-placement, road-facing mirror at
@@ -651,12 +697,12 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
-   goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as goods;
-   herds that thin where the city spreads; the animals folder's creature sheets re-skin the
-   hounds, drakes, golems, skyrays, tigers and wisps); part 2 the water (a Fishers' Hut with
-   boats, fish that spoil, reed-cutters for thatch, a water garden, the lake's own land
-   value and well bonus, a weir pool and a ford).
+1. **M16 part 2, the water** (DESIGN §16): a Fishers' Hut on a bank or a lake shore with boats
+   on the water, fish as goods that spoil in two days unless a market or a smokehouse takes them,
+   reed-cutters on the marsh for thatch, a water garden, the lake's own land value and well bonus,
+   a weir pool and a ford. Part 1, the wild, is done (iteration 58).
+2. **The bot's depot and the hunt** (from iteration 58): five of the six bot cities stand no depot,
+   so their hides and trophies are never sold; the hunt pays only where a depot stands.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

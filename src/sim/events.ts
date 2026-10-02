@@ -5,7 +5,7 @@ import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type Gam
 import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
 import { hasAcademy } from './relics';
-import { canPlaceBuilding, commitRng, forEachBuilding, illTiding, placeBuildingRaw, pushMessage, rngOf } from './world';
+import { canPlaceBuilding, commitRng, forEachBuilding, illTiding, placeBuildingRaw, pushMessage, rngOf, seasonOf } from './world';
 import { addFavour } from './economy';
 import { Rng, hashString } from '../core/rng';
 import { capacityOf } from './growth';
@@ -114,6 +114,26 @@ export const EVENTS: EventDef[] = [
     choices: [
       { label: 'Pay the tenth', desc: '−10% of the treasury; the Crown\'s favour +5.', apply: (s) => { const t = Math.round(s.treasury * 0.1); s.treasury -= t; addFavour(s, 5); return `${t} crowns ride back to Vell-on-Sable under guard. The collector writes "prompt" in the margin.`; } },
       { label: 'Plead the Gloam', desc: (s) => `Keep the crowns; the Crown's favour −10, and the audit is harsher each time: ${s.pleadings === 0 ? 'tithe income −15% for 15 days' : s.pleadings === 1 ? 'tithe income −25% for 15 days' : 'a levy of a fifth of the treasury at once'} (pleaded ${s.pleadings} time${s.pleadings === 1 ? '' : 's'} before).`, apply: (s) => { addFavour(s, -10); s.pleadings++; if (s.pleadings === 1) { s.modifiers.push({ kind: 'tithe', value: -0.15, until: s.day + 15, label: 'Crown audit' }); return 'The collector leaves with a thin smile and a thick ledger.'; } if (s.pleadings === 2) { s.modifiers.push({ kind: 'tithe', value: -0.25, until: s.day + 15, label: 'Crown audit, the second' }); return 'The collector has heard of the Gloam. He audits every shelf in the city for a fortnight.'; } const t = Math.round(s.treasury * 0.2); s.treasury -= t; s.stats.levies++; s.stats.levied += t; return `The collector has heard this before. ${t} crowns, a fifth of the treasury, are counted out on the Stake's steps under guard.`; } },
+    ],
+  },
+  // ---- the wild (M16 part 1, iteration 58) ----
+  {
+    id: 'whitehart', title: 'The white hart', once: true,
+    text: 'The watch on the stake saw it at first light: a white hart grazing with the deer on the meadow, its antlers like frost on a branch. By noon half the city has climbed something to look. The lodge\'s master asks whether the Warden-Reeve wants its head.',
+    when: (s) => s.day >= 20 && s.wild.herds.some((h) => h.sp === 'deer' && h.head >= 6 && Math.hypot(h.x - s.founding.x, h.y - s.founding.y) <= 25),
+    choices: [
+      { label: 'Hunt it', desc: '+400 crowns for its head (a trophy); every herd of deer loses 2 head; the folk call it an ill omen: happiness −3 for 20 days.', apply: (s) => { s.treasury += 400; s.stats.trophies++; for (const h of s.wild.herds) if (h.sp === 'deer') h.head = Math.max(0.5, h.head - 2); s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 20, label: 'The white hart killed' }); return 'The hart\'s head goes to Vell-on-Sable in a cart lined with straw. The deer keep to the far meadows after.'; } },
+      { label: 'Let it run', desc: 'The herds breed half again as fast for 60 days; happiness +2 for 20 days.', apply: (s) => { s.wild.thriveUntil = s.day + 60; s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 20, label: 'The white hart seen' }); return 'The hart walks into the forest at dusk. The children draw it on every wall in the low streets.'; } },
+    ],
+  },
+  {
+    id: 'wolfwinter', title: 'The wolf winter',
+    text: 'The wolves are bold this Hush. They have taken hens from the hearths at the forest edge and their howling keeps the low streets awake. A deputation of goodwives waits on the stake\'s steps with a dead hen.',
+    when: (s) => seasonOf(s) === 3 && s.wild.herds.filter((h) => h.sp === 'wolf' && h.head >= 2).length >= 2 && s.day - s.wild.hensDay <= 10,
+    choices: [
+      { label: 'Call a winter hunt (300 crowns)', desc: 'Every pack within 30 of the stake loses half its head; their hides go to the nearest lodge.', apply: (s) => { s.treasury -= 300; let hides = 0; for (const h of s.wild.herds) if (h.sp === 'wolf' && Math.hypot(h.x - s.founding.x, h.y - s.founding.y) <= 30) { const k = Math.floor(h.head / 2); h.head -= k; hides += 2 * k; } const lodge = s.buildings.find((b) => b && b.kind === 'hunterslodge' && b.state === 'ok'); if (lodge) lodge.stock += hides; s.stats.hides += hides; return `The hunt goes out with torches and hound-spears. ${hides / 2} wolves do not come back to the forest${lodge ? '' : ', and with no lodge to cure them the hides rot in a shed'}.`; } },
+      { label: 'Lamps on the folds (150 crowns)', desc: 'Lanterns over every hen-house for 30 days: the wolves take no hens.', apply: (s) => { s.treasury -= 150; s.wild.foldsUntil = s.day + 30; return 'Every fold in the low streets gets a lamp on a pole. The wolves sit at the forest edge and watch them.'; } },
+      { label: 'Let the wolves keep the deer', desc: 'The packs thin the deer instead: every herd of deer loses a fifth; unrest +3 % for 15 days.', apply: (s) => { for (const h of s.wild.herds) if (h.sp === 'deer') h.head *= 0.8; s.modifiers.push({ kind: 'unrest', value: 0.03, until: s.day + 15, label: 'The wolf winter' }); return 'The goodwives go home with their hen. The deer will pay for the winter.'; } },
     ],
   },
 ];

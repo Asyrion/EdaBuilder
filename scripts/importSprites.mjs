@@ -7,7 +7,7 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58).
 // A vehicle (the donkey carts, iteration 57) is scaled by scale (a fraction of the painting's pixels, set per sheet so every
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
@@ -108,6 +108,7 @@ for (const r of results) {
   }
   manifest.sprites[e.name] = entry;
   for (const a of e.aliases ?? []) manifest.sprites[a] = { ...entry };
+  if (e.hop) manifest.sprites[e.name.replace(/_0$/, '_1')] = { ...entry, ay: entry.ay + 1 }; // a painting is one frame: the second stands a pixel higher, a gait bob (iteration 58)
   if (e.mirrored) { // the left-facing twin: the same pixels mirrored, the anchor mirrored with them (w − ax)
     const twin = { file: `sprites/${e.name}_l.png`, w: sprite.w, h: sprite.h, ax: sprite.w - anchor.ax, ay: anchor.ay };
     writeFileSync(`public/art/${twin.file}`, encodePng(mirror(sprite)));

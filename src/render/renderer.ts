@@ -1,4 +1,5 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
+import { isWild } from '../sim/wild';
 import { treeStage } from '../sim/growth';
 import { factionOf } from '../data/factions';
 import { QUARTER_BY_ID } from '../sim/districts';
@@ -136,6 +137,21 @@ export class Renderer {
     if (alpha !== 1) ctx.globalAlpha = alpha;
     ctx.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
     if (alpha !== 1) ctx.globalAlpha = 1;
+    this.stats.drawn++;
+  }
+  /** Draw a sprite mirrored about its anchor when it faces left (the wild walks both ways; iteration 58). */
+  private drawFacing(s: SpriteRect | null, wx: number, wy: number, left: boolean): void {
+    if (!s) return;
+    if (!left) { this.draw(s, wx, wy); return; }
+    const ctx = this.ctx;
+    const x = Math.round(wx - this.camera.left);
+    const y = Math.round(wy - s.ay - this.camera.top);
+    if (x + s.w < 0 || y + s.h < 0 || x - s.w > this.back.width || y > this.back.height) return;
+    ctx.save();
+    ctx.translate(x, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, -s.ax, y, s.w, s.h);
+    ctx.restore();
     this.stats.drawn++;
   }
   private drawGlow(s: SpriteRect | null, wx: number, wy: number, alpha: number): void {
@@ -633,6 +649,12 @@ export class Renderer {
           const bob = Math.sin(this.time * 4 + a.id) * 2 - 14;
           items.push({ d: a.x + a.y + 0.6, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob), g: s ? { s, x: wx, y: wy + 8 + bob, a: 0.9 } : undefined });
           if (night > 0.2 && Math.random() < 0.03) this.particles.emit({ x: wx, y: wy + 8 + bob, vx: (Math.random() - 0.5) * 3, vy: 2, maxLife: 1.5, size: 1, color: PAL.glimleaf, glow: true, kind: 'spark' });
+        } else if (isWild(sp)) {
+          // the wild: a stride while moving (quicker on the run), mirrored when it heads left; a heron stands still most of the day
+          const moving = a.path.length > 0 && a.timer <= 0;
+          const s = this.atlas.get(`${sp}_${moving ? Math.floor(this.time * (a.load === 1 ? 12 : 6) + a.id) % 2 : 0}`);
+          const left = a.dir === 2;
+          items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8, left), occ: s ? { s, x: wx, y: wy + 8 } : undefined });
         } else if (sp === 'thrumhare') {
           const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
           items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
