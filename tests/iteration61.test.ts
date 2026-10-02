@@ -189,3 +189,32 @@ describe('The bot\'s Weir and bridges', () => {
     for (const dy of [0, 2, 4]) expect(weirHolds(s, idx(river, y + dy))).toBe(true);
   });
 });
+
+describe('The bot imports only what the ledger can carry', () => {
+  it('leaves the Import edict off when the dry markets\' bill is over half the ledger, and calls it when it is not', () => {
+    const { s } = valley(68);
+    const f = s.founding;
+    raw(s, 'depot', f.x + 6, f.y + 3);
+    for (let k = 0; k < 6; k++) raw(s, 'market', f.x - 6 + k, f.y + 5);
+    recomputeAll(s);
+    dailyTrade(s);
+    const b = bot(s);
+    s.goodsShort = 6; // 6 × 8 goods × twice the price: about 200 a day
+    s.ledger.net = 300;
+    (b as any).setEdicts();
+    expect(!!s.edicts.imports).toBe(false);
+    s.ledger.net = 1000;
+    (b as any).setEdicts();
+    expect(!!s.edicts.imports).toBe(true);
+  });
+  it('holds the depot\'s price back from growth while it is the goal', () => {
+    const { s } = valley(69);
+    dailyTrade(s);
+    const b = bot(s);
+    s.relicStock = 40;
+    s.treasury = 1000;
+    b.step();
+    expect(b.goal?.kind).toBe('depot');
+    expect(b.reserve).toBe(b.goal!.cost);
+  });
+});

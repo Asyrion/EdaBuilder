@@ -103,8 +103,9 @@ export class Bot {
     this.thatch();
     this.fords();
     this.goal = this.pickGoal();
-    // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can
-    this.reserve = this.goal && (this.goal.kind === 'hall' || s.brownout > 0.05) ? this.goal.cost : 0;
+    // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can.
+    // A depot is held back too (iteration 61): unheld, the Tallowkin wanted one for forty days and growth spent the purse every morning
+    this.reserve = this.goal && (this.goal.kind === 'hall' || this.goal.kind === 'depot' || s.brownout > 0.05) ? this.goal.cost : 0;
     this.pursueGoal();
     // the Crown's loan goes back once the purse can carry it and nothing is being saved for; while it is out, growth waits for that
     if (s.loan > 0 && !this.goal && s.treasury >= s.loan + 2000) repayLoan(s);
@@ -197,7 +198,10 @@ export class Bot {
     if (has('imports')) {
       const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok').length;
       const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
-      if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200) setEdict(s, 'imports', true);
+      // the bill: up to 8 goods for each dry market at twice the road's price; on only while the ledger carries it twice over (iteration 61:
+      // with the depot standing in more cities, a brownout that dried 37 markets ran a bill of 2,700 a day against a ledger of 480)
+      const bill = s.goodsShort * 8 * s.trade.priceGoods * 2;
+      if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200 && bill <= net / 2) setEdict(s, 'imports', true);
       else if (s.goodsShort === 0 || net < 0) off('imports');
     }
   }
