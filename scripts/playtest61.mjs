@@ -15,7 +15,7 @@ await page.waitForTimeout(600);
 await page.evaluate(() => {
   const g = window.__game;
   g.newGame(42, 'Botwick', 'valley', 'vellish');
-  document.getElementById('help')?.classList.add('hidden');
+  for (const id of ['help', 'title']) document.getElementById(id)?.classList.add('hidden');
   g.paused = true;
   window.__bot = new window.__wardlight.Bot(g.state);
   window.__road = 0;
