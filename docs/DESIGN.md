@@ -2146,6 +2146,146 @@ seed 42 (8 goods exported by day 150), so the iteration 47 note that it never do
 of the other seeds only. Teaching the bot to keep a dragon, name a champion, buy a
 wonder and use the sinks is part 5's; the player's game has all of part 3 today.
 
+### 4.85 M14 part 4, the world pushes back: weather of its own, the Crown that wants, gates and memory, edicts as commitments, charters with a price, festivals seen, a challenge that can be lost (iteration 54)
+
+The audit's part 4 (AUDIT.md §4) in one iteration, under the depth pass's rule: a mechanic
+exists only if the player can see it, decide about it and lose by it. Five bullets, each
+with the audit's number unless marked *chosen*; the bot is untouched (teaching it to answer
+is part 5), and for the first time in M14 the table moves on every row, because the world
+now pushes on the bot too.
+
+**Weather of its own.** The audit said "`dailyWeave` rolls it"; it is written in the seed
+instead (*chosen*). `seasonWeather(seed, seasonIndex)` draws a season's spells once from
+`new Rng(hashString(seed:season:weather))`, a stream of its own, so the main stream is
+untouched (every run before this iteration keeps its rolls), the forecast can read five
+days ahead exactly, and every player of a daily challenge gets the same sky. Bloom: each
+day a 15 % chance that a two-day **rain** begins (none while one runs); Ember: a 10 %
+chance of a five-day **drought**, its first day drawn from 3 to 22; Hush: a 20 % chance of
+a three-day **blizzard**; the Thaw is dry. `dailyWeather` runs first in the daily block,
+sets `state.weather` (`{kind, until}`, saved, `null` by default) and writes a Chronicle line
+when a spell begins ('info' rain, 'warn' the others). `raining` is the sky's rain or the
+Storm-Caller's `rain` modifier (the sure version of the same): fire ×0.4 beside the Ember
+×1.3, Craft +15 % as the node's Ember does, miasma ×0.3 (the two existing reads, switched).
+A drought: fire ×2, every well two tiles shorter (`waterRadiusOf`, floor 2), the Hanging
+Gardens at half unless `watered`, and the World Tree's age pauses (the stage message fires
+only when the age moved). A blizzard: hearths draw a tenth more mana in the consumer pass
+(hearths only, so the works and halls are unchanged) and no new hound pack comes out of the
+Gloam (the spawn gate; the forecast's hound line says so). The top bar's date carries the
+word, the forecast lists today's spell and the next within five days ("Rain in 2 days, 2
+days of it"), the freeze, the flood and the Weir's open sluice; the Annals count the days.
+
+**The Crown that wants.** `crownFavour` (0–100) starts at 50, neutral (*chosen*, so sector
+prices and the bot's runs start unchanged): +5 when the collector is paid, +3 when an egg
+or a relic goes to the Crown's assessor, −10 a pleading. Each point from 50 is −0.3 % on
+the Thaw levy and on sector prices (`favourFactor` in `sectorCost`): 100 is −15 %, 0 is
++15 %. Under 20 the next milestone grant is withheld, through `grantFor(state, grant)`,
+which the sim, the toast and the Budget share (the toast showed the table's grant before,
+wrong since iteration 53's halls lifted it). **The levy**: on the first day of each Thaw
+(day 120, 240…) the Crown takes 5 % of the treasury above 10,000, times the favour factor
+(`crownLevy`, a 'warn' line, a `levy` ledger row and `stats.levies/levied`); the Budget
+shows what the next one would take as the treasury stands and in how many days. **Debt and
+loans**: under zero the treasury pays 1 % of the debt a day (`interest` row); a Crown loan
+of 10,000 × the milestone (at least one) at 0.5 % a day, one at a time, taken and repaid in
+full from the Budget (`takeLoan`/`repayLoan`, `state.loan`). The bankruptcy line is
+−8,000 × (1 + milestone/2) (`debtLine`; the three "−8,000" texts follow it). **Trade joins
+the history** (B17 closed): `ledgerHistory` records net + trade, the top bar's per-day
+figure and the Budget's "last 10 days" include it; new Budget rows: grants today, the levy,
+interest, charters, the Temple's share, favour with its reasons, the loan with its button.
+
+**Gates and memory.** The Vellish gate is mean happiness ≥ 45 + 3 × the milestone reached
+(Hamlet 48 … Burgh 63, Free City 66, Beacon 69; `VELLISH_HAPPINESS`). The Tallowkin's lit
+share must hold the next gate three days running (`litHeld`, counted in `checkMilestones`
+through `rules.gateHold`, reset after a step). The top bar names the next gate under the
+milestone ("next Burgh: 1,000 folk, happiness 63"; "42 stone quarried"; "6 moorings";
+"85 % lit for 3 days"; the Beacon adds "the Lantern of Vell lit") and turns warn-coloured
+while the people's own condition is not met (`nextGate`, `gateMet`). **Three chains**:
+welcomed pilgrims (`pilgrimsDay`) come back 30 to 40 days on as a priority tale and ask for
+a shrine of Aume (raise it among the hearths for 600, give them the Stake's hall on holy
+days, or refuse them: −4 happiness for 10 days); each pleading with the collector is
+counted (`pleadings`) and the plea's text names the next price: −15 % tithe for 15 days,
+then −25 %, then a fifth of the treasury at once, −10 favour every time; a Fen-Nex quarter
+is audited every season on a coin of its own (`foxAudit`, +2,000 or −1,000, a side-stream
+`Rng` from the seed and the day, so the main stream keeps its rolls). B16 (the fired-tales
+list is never trimmed) was already true since iteration 44 and is now held by a test.
+**Ill tidings**: `pushMessage` no longer stamps `lastBadDay` on every 'bad' line; the
+explicit `illTiding(state)` is called at the hazards (a bore flare, a surge, a hound raid,
+the wyrm waking or a hostile flyover, tigers loose, the restless rising, the Gloam taking a
+building, a riot, golems loosed), so a burnt roof or a starved drake no longer silences
+the storyteller for six days in a city of a thousand roofs.
+
+**Edicts as commitments, charters with a price.** `setEdict(s, key, on, district)` in the
+sim: an edict is stamped with its day (`edictSince`, keyed like `districtEdicts`), runs at
+least 10 days and costs 200 crowns to repeal (refused while it runs or when the purse
+cannot pay; the panel's toast says which, each row reads "runs N more days" or "repeal
+200 c"); a granted petition and the bot's deep-cut stamp the day; an edict with no stamp
+(an old save) may be repealed at once. A charter is stamped too (`quarterSince`): changing
+or clearing it is locked 30 days ("The charter holds N more days", the quarter buttons
+disabled meanwhile, the "opens at" reason still first); it costs **a crown a building a
+day** (`charterUpkeep`, a Budget row; the district line says what this district pays); and
+its price spills: a Craft quarter's smoke reaches four tiles past its district's edge
+(`updateMiasma` carries each works' emission beyond its radius into tiles of other
+districts, fading over the spill), and a Temple quarter takes a tenth of the city's market
+tithe (`charterTithe`, once, while any Temple quarter stands; the in-district exemption
+stays), so a works-only or a markets-free district no longer dodges the price.
+
+**Festivals seen, the daily challenge.** The forecast builds its festival lines from
+`CALENDAR` and shows only those the city is eligible for today (the Lantern Fair included,
+with its Guildhall); the Thaw feast names the districts whose markets fed it; the vigil
+names its hold-until day; the Remembrance's stirred dead are counted (`remembranceDead`)
+and the restless that rise from them say so in the Chronicle (a score of the dead a
+walker). The daily challenge **fails on day 61** (`challengeDay = −2`, a 'bad' line, the
+Ledger reads "Failed" with the copy button) and is **scored**: the days to spare (61 − the
+day) plus a point a thousand crowns (*chosen*: the audit's "day + treasury/1,000" would
+have scored a later day higher); the people is drawn from the date
+(`challengeSeed % 4` over the four playable peoples), named on the Ledger line and in the
+Chronicle's first line.
+
+Balance, 150 days, against §4.84 (= §4.80) in brackets:
+
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | never: Burgh 123 (Free City 60) | 3,060 (3,067) |
+| Vellish seed 43 | never: Burgh 123 (Burgh 40) | 1,481 (1,182) |
+| Vellish seed 44 | never: Burgh 123 (Free City 57) | 2,739 (3,266) |
+| Grimmen seed 42 | Deephold 130 (58), no Underking's Hall (145) | 1,217 (1,581) |
+| Veshari seed 42 | Harbour 15 (15), Weirhold 47 (60), Vesh's Court 84 (103), Sable Crown 137 (never) | 2,271 (2,137) |
+| Tallowkin seed 42 | Bright Town 105 (42), 90 % lit (73 %), purse +386 (+107) | 1,392 (1,341) |
+
+Every row moves, and each for a reason the new rules name (the baseline's day lines were
+re-run from `main` to compare). **The Vellish gate stalls the bot** on every seed, as the
+plan said it would, and it bites earlier than the Burgh: a new town's happiness falls to
+30 in its first days and climbs back past the Hamlet's 48 only in the second week, so the
+Hamlet and its grant come on day 11, 7 and 16 on the three seeds (seed 42 had it on day 4),
+and seed 42 stands at −264 crowns on day 10 where it had 1,450. From day 40 the bot's cities
+sit at 52–59 happiness, under the Burgh's 63 (the baseline's seed 42 was at 63–64 from day
+20 and took the Burgh on day 38); all three cross it on day 123, the day after the Thaw
+feast (+3 for 15 days, +5 in the fed districts) lifts them over, and the Free City's 66 is
+never met, so seeds 42 and 44 lose their Free City (60 and 57) and seed 43 gains a late
+Burgh. The top bar says why ("next Burgh: 1,000 folk, happiness 63", warn-coloured); the
+bot's levers (taxes, draughts, gardens, the Lantern's delight) are part 5's. **The
+Tallowkin hold** does what the audit asked and the bot cannot keep it: its share hovers at
+80–86 % around the Bright Town's 85 % from day 30 to day 100 (the baseline passed on day 42
+on a single day at 85 % and then fell to 73 %), resetting the three-day count each time it
+dips, and the gate falls on day 105 when a run of towers takes the share to 94 %; forced to
+keep lighting, the bot ends better lit (90 % against 73 %) and richer (+1,714 against
++107). **The charter's price** reaches every run: the bot charters its hearth square at the
+Village and pays about 80 crowns a day for it from day 30 on, a quarter to a half of its
+net on the poorer seeds, so it stands fewer spires and wells; the Grimmen bot, poorest of
+the four, is the one it hurts, falling from 923 folk on day 60 to 628 on day 70 at 39 % lit
+(the baseline held 1,012 at day 100 where this run has 739) and reaching the Deephold on
+day 130 instead of 58, with no Underking's Hall. **The rain** is a smaller hand (10 rain
+days on seed 42's Bloom, 6 and 8 on 43 and 44, a drought of 5 on seed 44's Ember, a
+blizzard of 3 on seed 42's Hush): the Tallowkin's fires fall from 24 to 11, the Grimmen's
+stay at 24, and the larger Vellish 42 burns more (86 against 68) because it is a different
+city by then. **The ill tiding** moves every run from its first week: a fire on day 6 or an
+abandoned hearth used to stamp the storyteller's grace week, now a tale may fire there, and
+every later roll differs. The Veshari bot, whose gates are moorings and happiness is no
+gate, comes out ahead on this path: Weirhold on 47, Vesh's Court on 84 and a Sable Crown on
+137 that the baseline never saw. No run went bankrupt, none paid a levy (no bot holds
+10,000 at a Thaw), none pleaded, none took a loan, none built a Fen-Nex or Temple quarter:
+the Crown's side of this iteration is the player's for now. The player's game has all of
+part 4 today; the bot's answers are part 5.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -2792,11 +2932,11 @@ this section is the table of contents and the order.
    Cradle; lodges with capacity; feeding reach; departed dragons return; roles with a
    price; champions who can lose; materials with sinks; marvels and wonders with a role;
    the Wyrm-Court after the binding; golems assigned.
-4. **The world pushes back** (next): weather of its own; the Crown's levy, favour, debt and loans;
+4. **The world pushes back** ✅ (iteration 54, §4.85): weather of its own; the Crown's levy, favour, debt and loans;
    gates and memory (the Vellish happiness gate, tales with an uncapped memory and three
    grown chains); edicts as commitments and charters with a price that spills; festivals
    seen; a daily challenge that can fail.
-5. **The bot plays it all, and the Annals**: taxes, edicts, walls, a depot, breeding, a
+5. **The bot plays it all, and the Annals** (next): taxes, edicts, walls, a depot, breeding, a
    warden, a greedy choice policy; an Annals page for every counter; save migrations by
    version; five dev commands.
 
@@ -3124,3 +3264,16 @@ playtest of a lakeside town.
 - *Golems are labour, guards or hands at a bench (iteration 53):* the earlier rule "golems
   are labour, not sprites" stands for the default; a warden with a post is a sprite that
   stands somewhere for a reason.
+- *The weather is written in the seed (iteration 54):* the audit had `dailyWeave` roll it on
+  the main stream; a side stream keyed by seed and season keeps every earlier run's rolls,
+  lets the forecast read five days ahead exactly, and gives every player of a daily
+  challenge the same sky. The Storm-Caller's rain stays the sure version of the same.
+- *Favour starts neutral (iteration 54):* 50 of 100, so sector prices and the levy begin
+  unchanged and the player moves it both ways; the audit gave the range, not the start.
+- *The Vellish gate stands though the bot stalls (iteration 54):* the audit's 45 + 3 ×
+  milestone is kept and the bot loses its Free City on every seed; the bot's levers are
+  part 5's, and a gate the bot cannot pass today is the point of a gate.
+- *Ill tidings are hazards (iteration 54):* every 'bad' line used to stamp the storyteller's
+  grace week, so a big city with a fire a day never saw a tale; now only the hazards do.
+- *The challenge scores the days to spare (iteration 54):* the audit's "day + treasury/1,000"
+  would have paid a slower win more; 61 − day + crowns/1,000 pays speed first.

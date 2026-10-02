@@ -349,6 +349,30 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 54 (M14 part 4: the world pushes back)
+
+- Weather written in the seed on a side stream (Bloom rain, an Ember drought, a Hush
+  blizzard) with its effects on fire, craft, miasma, wells, the gardens, the World Tree,
+  hearth mana and the hounds; the top bar names it, the forecast reads it five days ahead
+  with the freeze, the flood and the sluice.
+- The Crown that wants: a Thaw levy of 5 % above 10,000; favour (50 neutral) from relics
+  sold, the collector paid or pleaded with, moving sector prices and the levy 0.3 % a point
+  and withholding grants under 20; 1 % a day on a debt; a loan of 10,000 × milestone at
+  0.5 % a day from the Budget; the bankruptcy line −8,000 × (1 + milestone/2); trade in the
+  history; Budget rows for all of it.
+- Gates and memory: the Vellish happiness gate (45 + 3 × milestone), the Tallowkin's
+  three-day hold, the next gate named under the milestone; the pilgrims' shrine, the
+  collector's harsher audits, the Fen-Nex fox audit; only hazards are ill tidings.
+- Edicts run ten days and cost 200 to repeal; charters hold thirty days, cost a crown a
+  building a day, a Craft quarter's smoke spills four tiles past its edge and a Temple
+  quarter takes a tenth of the market tithe.
+- The forecast's festivals from the calendar (the Lantern Fair included), the feast's
+  districts and the vigil's day named, the Remembrance's dead traced; the daily challenge
+  draws its people from the date, fails on day 61 and is scored. M14 part 4 is closed; the
+  six-run table moves on every row (DESIGN §4.85): the Vellish bot stalls at the Burgh
+  until the Thaw feast lifts it on day 123, the Tallowkin bot holds Bright Town on day 105,
+  the Grimmen bot pays for its charter.
+
 ## Done in iteration 53 (M14 part 3: wyrmcraft matured)
 
 - Lines that do what they say: an Ember drake's aura lifts Craft a tenth, a Sky dragon's
@@ -498,6 +522,15 @@
   stands one on day 100 and exports 8 goods, iteration 53), so the Gloam road, the caravan
   and the Twin Road are all but unplayed by the bot and their balance is unmeasured. Find
   why the placement fails (a 2×2 beside its grid? the leisure radius?) in the depth pass.
+- **The bot under the world's push** (iteration 54). The Vellish gate (happiness 45 + 3 ×
+  milestone) delays the Hamlet a week (a new town sits under 48 in its first days) and
+  stalls the bot at the Burgh on every seed until the Thaw feast lifts it on day 123, and
+  no bot city reaches the Free City's 66; the Tallowkin bot's lit share hovers at
+  80–86 % around the Bright Town's 85 % for seventy days before it holds three days (day
+  105, was 42); the hearth charter costs every bot about 80 crowns a day and the Grimmen
+  bot, poorest, loses a third of its folk to the dark between days 60 and 75 (Deephold on
+  130, was 58). Part 5's levers: taxes, draughts, gardens and the Lantern for happiness;
+  towers ahead of the zoning for the hold; a charter only once the purse can carry it.
 - **The bot holds no dragon** (iteration 53). In all six balance runs the storyteller never
   drew the Crown's gift within 150 days, so nothing of M14 part 3 reaches the bot and the
   table is the baseline bit for bit; part 5 teaches it to keep a dragon, name a champion,
@@ -561,11 +594,11 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 parts 4 and 5** (DESIGN §15): the world pushes back (weather, the Crown's levy and
-   debt, gates and memory, edicts as commitments, festivals seen, a daily challenge); the
-   bot plays it all (taxes, edicts, walls, a depot, breeding, a warden, a purse that can
-   afford its people's halls: the Hall of Wicks milestone, the Fonts, the sectors) and the
-   Annals.
+0. **M14 part 5** (DESIGN §15, AUDIT.md §4 part 5): the bot plays it all (taxes, edicts,
+   walls, a depot, breeding, a warden, a greedy choice policy; a purse that can afford its
+   people's halls: the Hall of Wicks milestone, the Fonts, the sectors; the happiness gate,
+   the three-day hold and the charter's price of part 4) and the Annals (a page for every
+   counter), save migrations by version, five dev commands.
 1. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
    goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as goods;
    herds that thin where the city spreads; the animals folder's creature sheets re-skin the
