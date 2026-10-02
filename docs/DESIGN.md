@@ -3150,11 +3150,14 @@ branch, ten of twelve did.
 - `npm run build`.
 - `scripts/playtest61.mjs`: the bot plays Vellish 42 in the browser to day 125.
   - The depot stands from day 48, and its panel and the Budget's Gloam-road rows read right.
-  - Two cutters' huts have thatched 42 homes.
-  - It bridged four ford tiles. In the second year's Thaw a cobbled bridge stands open beside six fords under water.
+  - Two cutters' huts have thatched 67 homes.
+  - It bridged all ten of its ford tiles before high water: in the second year's Thaw no ford stands under water, and
+    the cobbled bridges are open.
+  - 1,510 folk at day 125.
   - The dawn and dusk probe is clean; no errors and no missing sprites.
-- **Not met.** No Weir in any run (above). The Tallowkin's depot. The playtest's city bridged four ford tiles of ten
-  before high water: a crossing a day, only on mornings when the treasury held its price and 800.
+- **Not met.** No Weir in any run (above). The Tallowkin's depot. Two of the twelve balance runs (Vellish 43 and
+  Grimmen 42 on the plain seed) still had a ford closed at high water: a crossing a day, only on mornings when the
+  treasury held its price and 800.
 
 ## 7. Milestone plan
 
