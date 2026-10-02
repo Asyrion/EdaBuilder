@@ -1,10 +1,10 @@
 import { factionOf, milestonesOf } from '../data/factions';
 /** Daily tithe: taxes and upkeep. */
 import { inFenNex } from './lore';
-import { quarterOf } from './districts';
+import { districtUnlockNotes, quarterOf } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type Building, type GameState } from './types';
-import { forEachBuilding, pushMessage } from './world';
+import { forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
 
@@ -84,12 +84,18 @@ export function checkMilestones(state: GameState): void {
   const gate = factionOf(state).rules.milestoneGate;
   // the Vellish Beacon of Eda needs the Lantern of Vell standing and lit: the Crown names no Beacon without one
   const beaconLit = () => state.faction !== 'vellish' || state.buildings.some((b) => b && b.kind === 'lantern' && b.state === 'ok' && b.lit);
+  const stage0 = stakeStage(state);
   while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1)) && (state.milestone + 1 < MS.length - 1 || beaconLit())) {
     state.milestone++;
     const m = MS[state.milestone];
     state.treasury += m.grant;
     state.ledger.grants += m.grant;
     pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${m.grant} crowns)`, 'milestone');
+    for (const line of districtUnlockNotes(state.milestone)) pushMessage(state, line, 'milestone');
+  }
+  if (stakeStage(state) !== stage0) {
+    forEachBuilding(state, (b) => { if (b.kind === 'stake') markDirtyAround(state, b.x, b.y); });
+    pushMessage(state, `The hall at the Founding Stake is raised anew: ${stakeHallName(state)}.`, 'info');
   }
 }
 

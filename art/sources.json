@@ -1,0 +1,53 @@
+{
+  "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs). Each entry: name (the atlas sprite it replaces), src, w/h (footprint in tiles), targetWidth (default (w+h)*16+2), colors, glow {minLum, warm} or false, white (background key), anchor {ax, ay} hand-set after --check, checked: true once judged by eye. islands: 'keep' keeps painted clouds and loose smoke (default: only the largest island survives).",
+  "sprites": [
+    {
+      "name": "b_stake_s0",
+      "src": "inspirations/founding_stakes/image_3(2).png",
+      "w": 2,
+      "h": 2,
+      "colors": 24,
+      "anchor": {
+        "ax": 33,
+        "ay": 40
+      },
+      "checked": true
+    },
+    {
+      "name": "b_stake_s1",
+      "src": "inspirations/founding_stakes/image_2(1).png",
+      "w": 2,
+      "h": 2,
+      "colors": 24,
+      "anchor": {
+        "ax": 33,
+        "ay": 38
+      },
+      "checked": true
+    },
+    {
+      "name": "b_stake_s2",
+      "src": "inspirations/founding_stakes/image_1(1).png",
+      "w": 2,
+      "h": 2,
+      "colors": 24,
+      "anchor": {
+        "ax": 33,
+        "ay": 17
+      },
+      "checked": true
+    },
+    {
+      "name": "b_stake_s3",
+      "src": "inspirations/founding_stakes/image_0(1).png",
+      "w": 2,
+      "h": 2,
+      "colors": 24,
+      "anchor": {
+        "ax": 33,
+        "ay": 47
+      },
+      "checked": true
+    }
+  ]
+}

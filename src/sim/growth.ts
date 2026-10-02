@@ -411,6 +411,51 @@ export function demandReasons(): string[] {
   return lastDemandWhy;
 }
 
+export type DemandZone = 'hearth' | 'market' | 'craft' | 'arcane';
+interface DemandFacts {
+  jobs: number; workforce: number; jobSurplus: number; happiness: number; unrest: number; emptyHomes: boolean;
+  marketJobs: number; marketWant: number; pop: number; craftFull: number; craftN: number;
+  craftJobs: number; craftWant: number; goodsShort: number; unemployment: number;
+  arcaneJobs: number; educated: number; arcaneOpen: boolean;
+}
+let lastDemandFacts: DemandFacts | null = null;
+export const DEMAND_EVEN = 0.05;
+const DEMAND_NAMES: Record<DemandZone, string> = { hearth: 'Hearths', market: 'Markets', craft: 'Craft works', arcane: 'Arcane shops' };
+
+/** What a demand bar means, in words (iteration 49): its sign, the verdict, the numbers behind it and what to do. */
+export function demandExplain(state: GameState, zone: DemandZone): { sign: '+' | '−' | '0'; pct: number; headline: string; detail: string; advice: string } {
+  const v = state.demand[zone];
+  const pct = Math.round(Math.abs(v) * 100);
+  const sign: '+' | '−' | '0' = v > DEMAND_EVEN ? '+' : v < -DEMAND_EVEN ? '−' : '0';
+  const name = DEMAND_NAMES[zone];
+  const f = lastDemandFacts;
+  const lead = sign === '0' ? `${name} about even:` : `${name} ${sign}${pct} %:`;
+  let verdict = '';
+  let detail = f ? '' : 'no reckoning yet.';
+  let advice = '';
+  const grow = (what: string) => `New ${what} grow where you zone them beside a road.`;
+  const even = 'Zoned lots fill slowly; the bar must rise above the line to grow.';
+  if (zone === 'hearth') {
+    verdict = sign === '+' ? 'folk want more homes.' : sign === '−' ? 'nobody is coming.' : 'homes and folk match.';
+    if (f) detail = `${f.jobs} jobs for ${f.workforce} hands${f.jobSurplus > 0 ? ' (work to spare)' : ' (no work)'} · happiness ${Math.round(f.happiness)} · unrest ${Math.round(f.unrest * 100)} %${f.emptyHomes ? ' · many homes stand empty' : ''}`;
+    advice = sign === '+' ? grow('hearths') : sign === '−' ? 'New hearths will not grow; more jobs, happier folk or a lower tithe bring them.' : even;
+  } else if (zone === 'market') {
+    verdict = sign === '+' ? 'the folk want more shops.' : sign === '−' ? 'more shops than the folk can fill.' : 'shops and folk match.';
+    if (f) detail = `${f.marketJobs} market jobs, ${Math.round(f.marketWant)} wanted for ${f.pop} folk${f.craftN > 0 && f.craftFull > 0 ? ` · ${f.craftFull} of ${f.craftN} works cannot sell` : ''}`;
+    advice = sign === '+' ? grow('markets') : sign === '−' ? 'New markets will not grow; wait for folk or let the works sell.' : even;
+  } else if (zone === 'craft') {
+    verdict = sign === '+' ? 'the shelves want more goods.' : sign === '−' ? 'more works than the markets can sell for.' : 'works and shelves match.';
+    if (f) detail = `${f.craftJobs} craft jobs, ${Math.round(f.craftWant)} wanted${f.goodsShort > 0 ? ` · ${f.goodsShort} markets ran dry` : ''}${f.unemployment > 0 ? ` · ${Math.round(f.unemployment * 100)} % idle hands` : ''}`;
+    advice = sign === '+' ? grow('works') : sign === '−' ? 'New works will not grow; more folk, or markets that run dry, call for them.' : even;
+  } else {
+    const unschooled = !f || f.educated < 0.2;
+    verdict = !f || !f.arcaneOpen ? 'not yet unlocked.' : sign === '+' ? 'the schooled want enchanting work.' : sign === '−' ? (unschooled ? 'too few schooled folk.' : 'more shops than the schooled can fill.') : 'shops and scholars match.';
+    if (f) detail = `${f.arcaneJobs} arcane jobs · educated ${Math.round(f.educated * 100)} %${unschooled ? ' (needs 20 %)' : ''}`;
+    advice = !f || !f.arcaneOpen ? 'Arcane shops open at the Township.' : sign === '+' ? grow('shops') : sign === '−' ? (unschooled ? 'Nothing grows here until a fifth of the folk are schooled: an Academy.' : 'New shops will not grow; more schooled folk call for them.') : even;
+  }
+  return { sign, pct, headline: `${lead} ${verdict}`, detail, advice };
+}
+
 export function updateDemand(state: GameState): void {
   const pop = state.population;
   const workforce = workforceOf(state);
@@ -468,6 +513,7 @@ export function updateDemand(state: GameState): void {
     arcane -= (state.taxRates.arcane - 10) * 0.04;
     if (state.educated < 0.2) arcane = -0.5;
   }
+  lastDemandFacts = { jobs, workforce, jobSurplus, happiness: state.happiness, unrest: state.unrest, emptyHomes: hearthCap - hearthRes > Math.max(8, pop * 0.25), marketJobs, marketWant, pop, craftFull, craftN, craftJobs, craftWant, goodsShort: state.goodsShort, unemployment, arcaneJobs, educated: state.educated, arcaneOpen: isZoneUnlocked(state.milestone, Zone.Arcane) };
   lastDemandWhy = [
     `Hearth: ${jobs} jobs for ${workforce} hands${jobSurplus > 0 ? ' (work to spare: folk want homes)' : ' (no work: nobody comes)'} · happiness ${Math.round(state.happiness)} · unrest ${Math.round(state.unrest * 100)} %${hearthCap - hearthRes > Math.max(8, pop * 0.25) ? ' · many homes stand empty' : ''}`,
     `Market: ${marketJobs} market jobs, ${Math.round(marketWant)} wanted for ${pop} folk${craftN > 0 && craftFull > 0 ? ` · ${craftFull} of ${craftN} works cannot sell` : ''}`,

@@ -1311,6 +1311,13 @@ function icon(kind: string): Painter {
       p.rect(2, 4, 5, 3, 'outline');
       p.line(0, 8, 8, 0, 'fire2');
       break;
+    case 'noroad': // a strip of road with no way to it
+      p.rect(0, 3, 9, 4, 'stone1');
+      p.px(2, 5, 'stone2');
+      p.px(4, 5, 'stone2');
+      p.px(6, 5, 'stone2');
+      p.line(0, 8, 8, 0, 'fire2');
+      break;
     case 'nojobs':
       p.rect(1, 3, 7, 5, 'wood2');
       p.rect(3, 1, 3, 2, 'wood1');
@@ -1939,7 +1946,7 @@ export function generateSprites(): SpriteDef[] {
     out.push({ name: `skyray_${f}`, p, glow, ax: 15, ay: 10 });
   }
   // icons
-  for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });
+  for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods', 'noroad']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });
   // flame sprite frames
   for (let f = 0; f < 3; f++) {
     const p = new Painter(10, 14);

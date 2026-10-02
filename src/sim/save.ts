@@ -70,6 +70,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.pendingEvent = state.pendingEvent ?? null;
   state.lastEventDay = state.lastEventDay ?? 0;
   state.firedEvents = state.firedEvents ?? [];
+  state.lessonsSeen = state.lessonsSeen ?? [];
   state.districtEdicts = state.districtEdicts ?? {};
   state.districtNames = state.districtNames ?? {};
   state.districtQuarters = state.districtQuarters ?? {};

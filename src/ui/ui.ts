@@ -2,12 +2,12 @@ import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, typ
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
-import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, demandReasons, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term } from '../sim/growth';
+import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, demandReasons, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
-import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
+import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName } from '../sim/world';
 import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, waterCapOf } from '../sim/networks';
 import { SEAM, SPENT_RATE } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
@@ -24,11 +24,11 @@ import { tradeRoutes } from '../sim/trade';
 import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
-import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId } from '../sim/districts';
+import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterLocked, districtOpenAt } from '../sim/districts';
 import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, isCradle, stageCap } from '../sim/wyrmcraft';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
-import { marketStockCap } from '../sim/agents';
+import { marketStockCap, roadTileOf } from '../sim/agents';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
@@ -73,7 +73,8 @@ export interface UiHost {
   setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
   setEdict(key: string, on: boolean, district: number): void;
-  setQuarter(district: number, q: QuarterId | null): void;
+  setQuarter(district: number, q: QuarterId | null): string | null;
+  seeLesson(id: string): void;
   setPriority(id: number, p: 0 | 1 | 2): void;
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> };
   setSetting(key: 'colorBlind' | 'uiScale' | 'keys', value: boolean | number | Record<KeyAction, string>): void;
@@ -183,6 +184,7 @@ export class UI {
       <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
       <div id="toast" class="panel hidden"></div>
+      <div id="lesson" class="panel hidden"></div>
       <div id="title" class="modal"></div>
       <div id="help" class="modal hidden"></div>
       <div id="budget" class="modal hidden"></div>
@@ -194,7 +196,7 @@ export class UI {
       <div id="chronicle" class="modal hidden"></div>
       <div id="dev" class="modal hidden" role="dialog" aria-label="Dev tools"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap', 'dev']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'wyrms', 'chronicle', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
@@ -286,11 +288,13 @@ export class UI {
         add(d.name, `${d.cost}c/tile`, locked, t.kind === 'terrain' && t.op === op, () => this.host.setTool({ kind: 'terrain', op }), () => `<div class="t">${d.name}</div>${d.desc}${locked ? `<br><span class="muted">Unlocks at ${this.ms()[d.unlock].name}</span>` : ''}`);
       }
     } else if (this.category === 'districts') {
-      const dLocked = s.milestone < DISTRICT_UNLOCK;
+      const slots = districtSlots(s);
       for (let d = 1; d <= MAX_DISTRICTS; d++) {
         const name = districtName(s, d);
         const q = s.districtQuarters[d];
-        add(`<span style="color:${DISTRICT_COLORS[d - 1]}">■</span> ${name}${q ? ` <span class="muted">· ${QUARTER_BY_ID[q].name}</span>` : ''}`, '', dLocked, t.kind === 'district' && t.id === d, () => this.host.setTool({ kind: 'district', id: d }), () => `<div class="t">${name}${q ? ` · ${QUARTER_BY_ID[q].name}` : ''}</div>Drag a rectangle to paint this district over part of the city, then give it a <b>charter</b> in the Edicts panel (<b>E</b>): a Hearth, Craft, Market, Scholars' or Temple quarter, each with a gift and a price for the buildings inside it. Edicts can also be set for one district alone. Press <b>i</b> for the district view.${q ? `<br><span class="muted">${QUARTER_BY_ID[q].effect} ${QUARTER_BY_ID[q].cost}</span>` : ''}${dLocked ? `<br><span class="muted">Unlocks at ${this.ms()[DISTRICT_UNLOCK].name}</span>` : ''}`);
+        const dLocked = d > slots && !districtInUse(s, d);
+        const opensAt = this.ms()[districtOpenAt(d)].name;
+        add(`<span style="color:${DISTRICT_COLORS[d - 1]}">■</span> ${name}${q ? ` <span class="muted">· ${QUARTER_BY_ID[q].name}</span>` : ''}`, dLocked ? `at the ${opensAt}` : '', dLocked, t.kind === 'district' && t.id === d, () => this.host.setTool({ kind: 'district', id: d }), () => `<div class="t">${name}${q ? ` · ${QUARTER_BY_ID[q].name}` : ''}</div>Drag a rectangle to paint this district over part of the city, then give it a <b>charter</b> in the Edicts panel (<b>E</b>): a Hearth, Craft, Market, Scholars' or Temple quarter, each with a gift and a price for the buildings inside it. Edicts can also be set for one district alone. Press <b>i</b> for the district view.${q ? `<br><span class="muted">${QUARTER_BY_ID[q].effect} ${QUARTER_BY_ID[q].cost}</span>` : ''}${dLocked ? `<br><span class="muted">Unlocks at ${this.ms()[DISTRICT_UNLOCK].name}</span>` : ''}`);
       }
       add('Clear district', '', false, t.kind === 'district' && t.id === 0, () => this.host.setTool({ kind: 'district', id: 0 }), () => `<div class="t">Clear</div>Removes district paint from the area.`);
     } else {
@@ -412,13 +416,14 @@ export class UI {
     this.drawClock();
     this.refreshTasks();
     this.refreshDemand();
+    this.refreshLesson();
     this.refreshLog();
     this.refreshMinimap();
     this.refreshChronicle();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
-      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p><p class="muted">Grant: +${this.ms()[s.milestone].grant} crowns. New buildings unlocked in the toolbar.</p>`, 9000);
+      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p>${districtUnlockNotes(s.milestone).map((l) => `<p>${l}</p>`).join('')}<p class="muted">Grant: +${this.ms()[s.milestone].grant} crowns. New buildings unlocked in the toolbar.</p>`, 9000);
       this.lastMilestone = s.milestone;
       this.refreshItems();
     }
@@ -457,7 +462,7 @@ export class UI {
       (el.querySelector('.forecast') as HTMLElement).classList.add('hidden');
       return;
     }
-    const quests = activeQuests(s, 3);
+    const quests = activeQuests(s, 3, this.lessonOpen ? 'Districts' : undefined);
     list.innerHTML = quests.length
       ? quests.map((q, i) => `<div class="q ${i === 0 ? 'now' : ''}"><div class="t"><span class="ch">${q.chapter}</span> ${q.title}${q.reward ? ` <span class="rw">+${q.reward}</span>` : ''}</div><div class="h">${q.hint}${q.focus ? ` <button class="show" data-q="${q.id}">Show me</button>` : ''}</div></div>`).join('')
       : '<div class="flavor">The Ledger is complete. Vell remembers your name.</div>';
@@ -597,16 +602,24 @@ export class UI {
   }
 
   private refreshDemand(): void {
-    const d = this.host.state.demand;
-    const bars: [string, number, string][] = [['H', d.hearth, '#5ee36f'], ['M', d.market, '#5aa8ff'], ['C', d.craft, '#ffb347'], ['A', d.arcane, '#c58cff']];
+    const s = this.host.state;
+    const d = s.demand;
+    const bars: [string, number, string, DemandZone][] = [['H', d.hearth, '#5ee36f', 'hearth'], ['M', d.market, '#5aa8ff', 'market'], ['C', d.craft, '#ffb347', 'craft'], ['A', d.arcane, '#c58cff', 'arcane']];
     const el = this.el.demand;
     if (!el.children.length) {
-      el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand</div></div>` + bars.map(([l, , c]) => `<div class="col"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div></div>`).join('');
-      el.title = 'Zone demand: Hearth (homes), Market, Craft, Arcane. Paint zones where the bars are high.';
+      el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand <button class="help" id="demand-help" title="What the bars mean">?</button></div></div>` + bars.map(([l, , c, z]) => `<div class="col" data-zone="${z}"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div><div class="sign muted">–</div></div>`).join('');
+      el.querySelectorAll('.col[data-zone]').forEach((col) => {
+        const zone = (col as HTMLElement).dataset.zone as DemandZone;
+        const tip = () => { const x = demandExplain(s, zone); return `<div class="t">${x.headline}</div>${x.detail}<br><span class="muted">${x.advice}</span>`; };
+        (col as HTMLElement).onmouseenter = (e) => this.showTooltip(tip(), e.clientX, e.clientY);
+        (col as HTMLElement).onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY);
+        (col as HTMLElement).onmouseleave = () => this.hideTooltip();
+      });
+      (el.querySelector('#demand-help') as HTMLButtonElement).onclick = () => this.toast('<h2>The demand bars</h2><p>Each bar is how much the folk want more of a zone: Hearths (homes), Markets, Craft works, Arcane shops. A bar above the line means zoned lots of that kind will grow; at or below it, nothing of that kind grows, however much you paint. Hover a bar for the numbers behind it and what to do.</p>', 12000);
     }
-    { const why = demandReasons(); if (why.length) el.title = `Zone demand: paint zones where the bars are high.\n${why.join('\n')}`; }
     const fills = el.querySelectorAll('.bar div');
-    bars.forEach(([, v], i) => {
+    const signs = el.querySelectorAll('.sign');
+    bars.forEach(([, v, , zone], i) => {
       const f = fills[i] as HTMLElement;
       if (v >= 0) {
         f.style.top = `${30 - v * 30}px`;
@@ -615,6 +628,10 @@ export class UI {
         f.style.top = '30px';
         f.style.bottom = `${30 + v * 30}px`;
       }
+      const sg = signs[i] as HTMLElement;
+      const x = demandExplain(s, zone);
+      const word = x.sign === '+' ? '▲ more' : x.sign === '−' ? '▼ fewer' : '– even';
+      if (sg.textContent !== word) { sg.textContent = word; sg.className = `sign ${x.sign === '+' ? 'good' : x.sign === '−' ? 'bad' : 'muted'}`; }
     });
   }
 
@@ -678,6 +695,7 @@ export class UI {
       if (def.zone === Zone.Market && s.fenNex > 0 && s.district[i] === s.fenNex) rows.push(row('Fen-Nex quarter', 'no tithe, double shelves'));
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
       if (def.zone === Zone.Craft && seasonOfState(s) === 3) rows.push(row('The Hush', glimhouseNear(s, b) ? 'warmed by a Glimhouse' : `output ×${HUSH_CRAFT}`));
+      if (roadTileOf(s, b) < 0) problems.push('No road at its door: draw a road beside it (a corner counts); nobody can come or go.');
       if (!b.lit) problems.push('No mana: build a Ley Spire within 5 tiles or next to a lit building.');
       if (!b.watered) problems.push(b.dryBy === 'overdrawn' ? 'No water: the nearest well is overdrawn. Dig another well nearby.' : 'No water: build a Well or Cistern nearby.');
       if (b.greyDays) problems.push(`The grey is at the door: light it or ward it, ${Math.max(0, GREY_DAYS - b.greyDays)} day${GREY_DAYS - b.greyDays === 1 ? '' : 's'} left before the Gloam takes it.`);
@@ -693,6 +711,7 @@ export class UI {
       if (def.zone === Zone.Hearth && s.employed < workforceOf(s) * 0.85) problems.push('Not enough jobs in the city.');
     } else {
       rows.push(row('Upkeep', `${def.upkeep} c/day`));
+      if (b.kind === 'stake') rows.push(row('Hall', `${stakeHallName(s)} (grows with the city)`));
       if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
       if (def.waterRadius) {
@@ -1028,6 +1047,45 @@ export class UI {
     });
   }
 
+  /** The districts lesson: a card at the Hamlet, once, until closed; its three steps each have a Show me. */
+  private lessonOpen = false;
+  private lessonDrawn = false;
+  refreshLesson(): void {
+    const s = this.host.state;
+    const el = this.el.lesson;
+    const seen = s.lessonsSeen.includes('districts');
+    const due = s.milestone >= DISTRICT_UNLOCK && !seen;
+    if (due && districtsInUse(s).length > 0 && s.milestone > DISTRICT_UNLOCK) { this.host.seeLesson('districts'); } // an older city already past it
+    const open = due && !(districtsInUse(s).length > 0 && s.milestone > DISTRICT_UNLOCK);
+    if (open !== this.lessonOpen) { this.lessonOpen = open; this.lastQuestKey = ''; this.refreshTasks(); }
+    if (!open) { el.classList.add('hidden'); this.lessonDrawn = false; return; }
+    const painted = districtsInUse(s).length > 0;
+    const chartered = Object.values(s.districtQuarters).some(Boolean);
+    const ruled = Object.values(s.districtEdicts).some(Boolean);
+    const step = (n: number, done: boolean, title: string, text: string, id: string) => `<div class="step ${done ? 'done' : ''}"><b>${done ? '✓' : n}. ${title}</b> ${text} <button class="show" data-step="${id}">Show me</button></div>`;
+    const html = `<h2>Districts are yours</h2><p class="muted">Two districts open at the Hamlet, more as the city grows. A district is a place you can charter and rule apart.</p>
+      ${step(1, painted, 'Paint one', 'Districts tab: drag a rectangle over part of the city.', 'paint')}
+      ${step(2, chartered, 'Charter it', 'Edicts panel: a Hearth or Craft quarter, each a gift and a price.', 'charter')}
+      ${step(3, ruled, 'Rule it', 'Edicts panel: set an edict for that district alone.', 'rule')}
+      <div style="text-align:right"><button id="lesson-close">${painted && chartered ? 'Done' : 'Close'}</button></div>`;
+    if (!this.lessonDrawn || el.dataset.state !== `${painted}${chartered}${ruled}`) {
+      el.innerHTML = html;
+      el.dataset.state = `${painted}${chartered}${ruled}`;
+      this.lessonDrawn = true;
+      el.querySelectorAll('button[data-step]').forEach((b) => { (b as HTMLButtonElement).onclick = () => this.lessonStep((b as HTMLElement).dataset.step!); });
+      el.querySelector('#lesson-close')!.addEventListener('click', () => { this.host.seeLesson('districts'); this.refreshLesson(); });
+    }
+    el.classList.remove('hidden');
+  }
+  private lessonStep(id: string): void {
+    const s = this.host.state;
+    if (id === 'paint') { this.focus({ tool: 'district' }); return; }
+    const d = districtsInUse(s)[0];
+    if (!d) { this.toast('<p>Paint a district first: Districts tab, drag a rectangle.</p>', 2500); this.focus({ tool: 'district' }); return; }
+    this.edictScope = d;
+    this.toggleEdicts(true);
+  }
+
   toast(html: string, ms = 6000): void {
     const t = this.el.toast;
     t.innerHTML = html;
@@ -1065,7 +1123,7 @@ export class UI {
           <h3>The loop</h3>
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
-            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) where the demand bars ask.</li>
+            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why).</li>
             <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
@@ -1087,6 +1145,7 @@ export class UI {
             <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
             <li><b>Unrest</b> above half for five days brings a riot to the least-watched market (the Watch holds it at half coverage, or pay the Crown 600); an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are.</li>
+            <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A road at a building's corner counts as its door.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1472,7 +1531,7 @@ export class UI {
         income += occ * (def.tax ?? 0) * (1 + (b.level - 1) * 0.35) * (0.6 + (b.happiness / 100) * 0.6);
       }
       const cur = st.districtQuarters[d];
-      const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}" title="${q.effect} ${q.cost}">${q.name}</button>`).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" title="No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost}</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : '<div class="muted">A charter gives every building in the district a gift and a price. Pick one.</div>'}</div>`;
+      const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => { const lock = charterLocked(st, q.id); return `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}${lock ? ' locked' : ''}" ${lock ? 'disabled' : ''} title="${lock ? `${lock}. ` : ''}${q.effect} ${q.cost}">${q.name}${lock ? ` <span class="muted">(${lock.toLowerCase()})</span>` : ''}</button>`; }).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" title="No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost}</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : '<div class="muted">A charter gives every building in the district a gift and a price. Pick one.</div>'}</div>`;
       stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>${quarters}`;
     }
     const rows = edictsFor(st).filter((e) => !this.edictScope || !e.cityOnly).map((e) => {
@@ -1508,7 +1567,7 @@ export class UI {
       this.refreshEdicts();
     };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
-    this.el.edicts.querySelectorAll('button[data-quarter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { this.host.setQuarter(this.edictScope, ((b as HTMLElement).dataset.quarter || null) as QuarterId | null); this.refreshEdicts(); this.refresh(); }; });
+    this.el.edicts.querySelectorAll('button[data-quarter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.setQuarter(this.edictScope, ((b as HTMLElement).dataset.quarter || null) as QuarterId | null); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); this.refresh(); }; });
     this.el.edicts.querySelectorAll('button[data-charter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.charterGuilds((b as HTMLElement).dataset.charter as GuildId); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); }; });
   }
 

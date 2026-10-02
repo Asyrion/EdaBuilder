@@ -92,8 +92,11 @@ h3 { font-size: 13px; color: var(--gold); }
 #demand { position: absolute; left: 8px; bottom: 8px; padding: 8px 10px; display: flex; gap: 10px; align-items: flex-end; }
 #demand .bar { width: 22px; height: 60px; background: #0b0912; border: 1px solid var(--border); position: relative; }
 #demand .bar div { position: absolute; left: 0; right: 0; }
+#demand .bar::after { content: ''; position: absolute; left: 0; right: 0; top: 30px; border-top: 1px solid #7a7590; pointer-events: none; }
 #demand .lbl { text-align: center; font-size: 11px; margin-top: 3px; }
+#demand .sign { font-size: 9px; line-height: 10px; }
 #demand .col { text-align: center; }
+#demand .help { font-size: 10px; padding: 0 4px; margin-left: 2px; line-height: 12px; }
 
 #log { position: absolute; right: 8px; bottom: 8px; width: 380px; max-height: 190px; overflow: hidden; padding: 6px 10px; font-size: 12px; }
 #log .m { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -125,6 +128,11 @@ h3 { font-size: 13px; color: var(--gold); }
 
 #toast { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); padding: 12px 22px; text-align: center; max-width: 620px; border-color: var(--gold); transition: opacity 0.5s; }
 #toast h2 { font-size: 20px; }
+#lesson { position: absolute; top: 215px; left: 50%; transform: translateX(-50%); padding: 12px 18px; max-width: 560px; border-color: var(--gold); }
+#lesson h2 { font-size: 18px; margin-bottom: 4px; }
+#lesson .step { margin: 6px 0; }
+#lesson .step.done { opacity: 0.6; }
+#lesson button.show { margin-left: 6px; font-size: 11px; padding: 1px 6px; }
 
 #help .box { width: 680px; }
 #help .cols { display: flex; gap: 24px; }

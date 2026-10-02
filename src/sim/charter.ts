@@ -2,6 +2,7 @@
 import { BUILDING_BY_KEY } from './catalog';
 import { buildRoad, paintDistrict, roadPath } from './actions';
 import { districtsInUse } from './edicts';
+import { districtSlots } from './districts';
 import { MAX_DISTRICTS, RoadType, Terrain, Zone, idx, inBounds, type GameState } from './types';
 import { canPlaceBuilding, forEachBuilding, markDirtyAround, placeBuildingRaw, pushMessage } from './world';
 import { wyrmNode } from './wyrm';
@@ -62,7 +63,7 @@ export function foundDaughter(s: GameState, ni: number, name: string): string | 
   // a district around it, the next free name
   const used = new Set(districtsInUse(s));
   let d = 0;
-  for (let k = 1; k <= MAX_DISTRICTS; k++) if (!used.has(k)) { d = k; break; }
+  for (let k = 1; k <= Math.min(MAX_DISTRICTS, districtSlots(s)); k++) if (!used.has(k)) { d = k; break; }
   if (d) {
     paintDistrict(s, d, x - 6, y - 6, x + 7, y + 7);
     s.districtNames[d] = name.slice(0, 18);

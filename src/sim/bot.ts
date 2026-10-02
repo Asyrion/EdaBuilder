@@ -10,7 +10,7 @@ import { setQuarter } from './districts';
 import { EDICT_BY_KEY } from './edicts';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
-import { canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
+import { canPlaceBuilding, deepenNode, forEachBuilding, roadInRing, touchesTerrain } from './world';
 import { resolveEvent } from './events';
 import { setRole } from './wyrmcraft';
 
@@ -106,8 +106,7 @@ export class Bot {
           const t = s.terrain[i];
           if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
           if (hillPass !== (t === Terrain.Hills && hillOK)) continue;
-          const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
-          if (!adj) continue;
+          if (!roadInRing(s, x, y)) continue;
           // craft away from the centre, hearth near
           const dist = Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy));
           if (z === Zone.Craft && dist < 8) continue;
@@ -349,8 +348,7 @@ export class Bot {
           const i = idx(x, y);
           const t = s.terrain[i];
           if ((t !== Terrain.Grass && t !== Terrain.Meadow) || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
-          const adj = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < s.road.length && s.road[j]);
-          if (!adj) continue;
+          if (!roadInRing(s, x, y)) continue;
           cands.push({ x, y, d: Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy)) });
         }
       cands.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);

@@ -1,0 +1,36 @@
+{
+ "sprites": {
+  "b_stake_s0": {
+   "file": "sprites/b_stake_s0.png",
+   "w": 66,
+   "h": 73,
+   "ax": 33,
+   "ay": 40,
+   "glow": "sprites/b_stake_s0_glow.png"
+  },
+  "b_stake_s1": {
+   "file": "sprites/b_stake_s1.png",
+   "w": 66,
+   "h": 71,
+   "ax": 33,
+   "ay": 38,
+   "glow": "sprites/b_stake_s1_glow.png"
+  },
+  "b_stake_s2": {
+   "file": "sprites/b_stake_s2.png",
+   "w": 66,
+   "h": 50,
+   "ax": 33,
+   "ay": 17,
+   "glow": "sprites/b_stake_s2_glow.png"
+  },
+  "b_stake_s3": {
+   "file": "sprites/b_stake_s3.png",
+   "w": 66,
+   "h": 80,
+   "ax": 33,
+   "ay": 47,
+   "glow": "sprites/b_stake_s3_glow.png"
+  }
+ }
+}

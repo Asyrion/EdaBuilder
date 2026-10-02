@@ -20,6 +20,8 @@ npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
 npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
+npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
+npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 ```
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
@@ -213,6 +215,12 @@ Charter as `.json`.
   Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
   its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
+- A road at a building's corner counts as its door; the zone preview hatches the tiles that
+  would never grow. Districts and charters open in steps from the Hamlet to the Burgh, with
+  a three-step lesson card when they arrive. The demand bars carry a zero line, a word under
+  each bar and a tooltip that says the sign, the numbers and what to do. The Founding
+  Stake's hall grows through four stages with the city, drawn from the reference paintings
+  in `inspirations/` through the art import pipeline.
 - The ground has limits: wells serve a capacity of homes (the nearest first), a far-from-water
   well reaches less, the Seep follows the season, mud slows tracks in the wet seasons, mine
   seams run out, a hot Font may flare, mills share a river, portal crossings jam, and the
@@ -255,9 +263,11 @@ Charter as `.json`.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles
   (smoke, sparks, fireflies, leaves, embers, gloam motes), animated water, tree sway.
-- Sprites are generated at startup into an atlas with a manifest. Drop
-  `public/art/atlas.png` + `atlas.json` (same manifest format) to replace them with
-  hand-made art without code changes.
+- Sprites are generated at startup into an atlas with a manifest. `public/art/sprites.json`
+  lists per-sprite PNG overrides (with a footprint anchor and an optional glow) that are
+  merged over the procedural atlas by name; `npm run art` makes them from the reference
+  paintings in `inspirations/` as `art/sources.json` says. Drop `public/art/atlas.png` +
+  `atlas.json` to replace the whole set instead.
 - Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (hounds
   howl, the wyrm roars, barges ring, skyrays sing) panned by where they happen, and
   generative ambient music that follows day, night, season and danger (Menu to toggle).
@@ -281,5 +291,9 @@ src/ui        style.css, tools (input), ui (DOM panels)
 src/audio     procedural WebAudio
 src/data      flavor text, tips and the quest list
 tests         vitest suites
-scripts       headless balance run, Playwright screenshot/perf/playtest harnesses
+scripts       headless balance run, Playwright screenshot/perf/playtest harnesses,
+              importSprites (the art pipeline) and its lib (png codec, sprite steps)
+art           sources.json: which paintings become which sprites, with hand-set anchors
+public/art    the imported sprites and their manifest (shipped with the build)
+inspirations  reference paintings by building type (the style guide, DESIGN §5)
 ```
