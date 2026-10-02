@@ -10,9 +10,16 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + 
 await page.goto('http://localhost:4173/');
 await page.waitForFunction(() => window.__game);
 
+let started = false;
 async function newGame(people, seed) {
-  await page.evaluate((p) => { const sel = document.querySelector('#t-people, #t-faction, select[name=faction], select[name=people]'); if (sel) { sel.value = p; sel.dispatchEvent(new Event('change', { bubbles: true })); } }, people);
-  await page.fill('#t-seed', String(seed)); await page.click('#t-new'); await page.waitForTimeout(300);
+  if (!started) {
+    await page.evaluate((p) => { const sel = document.querySelector('#t-people, #t-faction, select[name=faction], select[name=people]'); if (sel) { sel.value = p; sel.dispatchEvent(new Event('change', { bubbles: true })); } }, people);
+    await page.fill('#t-seed', String(seed)); await page.click('#t-new'); await page.waitForTimeout(300);
+    started = true;
+  } else {
+    await page.evaluate(([p, sd]) => { window.__game.newGame(sd, 'Playtest', 'valley', p); }, [people, seed]);
+    await page.waitForTimeout(300);
+  }
   await page.evaluate((p) => { document.getElementById('help').classList.add('hidden'); window.__game.paused = true; const s = window.__game.state; if (s.faction !== p) s.faction = p; }, people);
 }
 

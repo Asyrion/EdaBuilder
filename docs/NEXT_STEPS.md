@@ -349,6 +349,35 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 53 (M14 part 3: wyrmcraft matured)
+
+- Lines that do what they say: an Ember drake's aura lifts Craft a tenth, a Sky dragon's
+  speeds carts and couriers, a Tide drake swims a barge a day from the mooring nearest its
+  cradle (strike or no strike), and every building inside an aura names it in its panel.
+- Cradles with a ceiling: the Great Cradle (four nests, +4 mana, raised from the cradle's
+  panel at the people's sixth milestone for 4,000); a Tamer's Lodge seats four (no seat:
+  a hatchling does not grow, a drake grows at half pace and scorches thrice as often under
+  hard training); feeding reaches 12 tiles (a warden eats from its district); ten unfed
+  days cost a stage; a dragon that leaves returns after a season to ask a tribute (pay,
+  open a cradle, or refuse and it burns the dark roofs near its old cradle).
+- Roles with a price: a delver halves the golem-wake chance at its mine; a courier shows
+  its last trip; the Ring shows a champion's odds (panel, inspector, forecast) and sends a
+  challenger of the champion's own weight, so a great wyrm can lose.
+- Materials with sinks: the Scale-Mail edict (−5 % unrest, 0.05 scale a day); the Forge
+  burns 0.1 wyrmfire a day and goes cold; a "burn it" toggle for the Craft +15 %; an
+  eggshell lines a nest (+25 % hatch) and the Font costs 3; glim-dust scattered on a
+  track or cobble from the Land tab lights it a season; the caravan sells the share a
+  slider sets; rays over a Rayscale Mirror shed glim-dust.
+- Marvels and wonders with a role: the Hall of Marvels exhibits each rare good for +2;
+  the Lantern of the Cores takes the first 30 of a surge and cracks for ten days; every
+  lit wonder hall gives +5 happiness and a tenth more on the next grant; the Lantern draws
+  10 and the Weir makes 45, or 90 with a sluice that floods the bank within 30 in the Thaw;
+  the Underking's Seat warms hatcheries within 30 for nothing; the Lantern of Wicks halves
+  what lit spires within 30 carry.
+- The Wyrm-Court after the binding: lit, it halves the bound wyrm's appetite to 20; dark
+  two days, the wyrm sulks until it is lit again. Golems assigned from the foundry's panel:
+  labour, guard (ward 6 at the foundry) or posted to a Craft bench (12 hands there).
+
 ## Done in iteration 52 (M13 part 2: the Tallowkin's light)
 
 - The Wick chapter (eight quests), three tales (the spire-wrights' strike, a surge in the
@@ -527,18 +556,12 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
-   what they say (each line's aura a real, shown effect); the Great Cradle; lodges with a
-   capacity; feeding reach; departed dragons that return; roles with a price; champions who
-   can lose a bout; materials with sinks; marvels and wonders with a role of their own; the
-   Wyrm-Court after the binding; golems assigned to a works. Balance against the iteration
-   49 table.
-1. **M14 parts 4 and 5** (DESIGN §15): the world pushes back (weather, the Crown's levy and
+0. **M14 parts 4 and 5** (DESIGN §15): the world pushes back (weather, the Crown's levy and
    debt, gates and memory, edicts as commitments, festivals seen, a daily challenge); the
    bot plays it all (taxes, edicts, walls, a depot, breeding, a warden, a purse that can
    afford its people's halls: the Hall of Wicks milestone, the Fonts, the sectors) and the
    Annals.
-2. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
+1. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
    goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as goods;
    herds that thin where the city spreads; the animals folder's creature sheets re-skin the
    hounds, drakes, golems, skyrays, tigers and wisps); part 2 the water (a Fishers' Hut with

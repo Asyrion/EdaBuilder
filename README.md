@@ -160,17 +160,24 @@ Charter as `.json`.
   over boneyards when the dead are restless; a Moth-Loft harvests glim-dust. Gloam-hounds
   hunt at the edge of the light, bolder in the Hush: raise a Hunters' Lodge or draw a
   Warding Wall (Services tab) that hounds and the Gloam cannot cross.
-- Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge; dragon eggs arrive
-  through events; hatch and train them into drakes and wyverns, set them as district
-  wardens, mine delvers, flying couriers or champions of the Wyrm-Ring, and collect scale
-  and wyrmfire in the Wyrms panel.
+- Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
+  eggs arrive through events; hatch and train them into drakes and wyverns, set them as
+  district wardens (fed by their district), mine delvers (wardens wake half as often),
+  flying couriers (their last trip shown) or champions of the Wyrm-Ring (the odds shown
+  before each bout, against a challenger of their own weight), and collect scale and
+  wyrmfire in the Wyrms panel. Dragons eat from markets within 12 of the cradle; ten unfed
+  days cost a stage; one that leaves returns after a season to ask a tribute. A cradle
+  becomes a Great Cradle (four nests) from the Burgh; an eggshell lines a nest. Every
+  building inside a dragon's aura names it: an Ember drake lifts Craft a tenth, a Sky
+  wyvern speeds the carts, a Tide drake swims a barge a day.
 - Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
   caravans (every twelve days at a Trade Depot; the depot panel counts them down) and the
   Wandering Merchant.
 - The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
 - The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
-  or is bound at the Wyrm-Court as the city's guardian.
+  or is bound at the Wyrm-Court as the city's guardian: lit, the Court halves its appetite;
+  dark two days, the wyrm sulks.
 - Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
   the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
@@ -179,8 +186,16 @@ Charter as `.json`.
 - The ley-weave: every node has an aspect that changes the rules around it (Ember works,
   Bone deathcare, Glim moths, Vein mana, Sky couriers, Grey stillness, Tide water, Storm
   calm); cradles attune to matching eggs; grown dragons radiate their line's aura; rare
-  goods build the Marvels tab or sell to caravans; the Gloam presses harder as the dead go
-  unquieted and eases under faith; the river freezes in the Hush.
+  goods build the Marvels tab, sell to caravans by a slider, and have sinks of their own
+  (the Scale-Mail edict, a Wyrmfire Forge that burns 0.1 a day and goes cold, a burn
+  toggle for the Craft bonus, glim-dust scattered on a dark lane from the Land tab, rays
+  over a Rayscale Mirror shedding dust); the Hall of Marvels exhibits each one for +2;
+  every lit wonder hall delights the city and lifts the next grant a tenth; the Lantern of
+  the Cores takes the first 30 of a surge and cracks for ten days; the Great Weir's sluice
+  trades a flooded bank for double mana; the Underking's Seat warms hatcheries; the
+  Lantern of Wicks halves its spires' draw; a bound Concord Warden labours, guards its
+  foundry or works a Craft bench; the Gloam presses harder as the dead go unquieted and
+  eases under faith; the river freezes in the Hush.
 - The guild council: a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
   who petition for edicts every 20 days and pay boons or strike; festivals spend the city
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the

@@ -2675,11 +2675,11 @@ this section is the table of contents and the order.
    in the open with a land-value price; wards with a burn budget (strength matters; Stone
    and Scale Wards stop dominating); 2b ✅ (iteration 48, §4.79): unrest with a riot and theft; halls with a difference (draughts, consecration, the
    fire hall's water, the Grand Academy's prices, the Academy's kept relics); the smaller rows; the kin rings while placing.
-3. **Wyrmcraft matured** (next): lines that do what they say; the Great Cradle; lodges with
-   capacity; feeding reach; departed dragons return; roles with a price; champions who can
-   lose; materials with sinks; marvels and wonders with a role; the Wyrm-Court after the
-   binding; golems assigned.
-4. **The world pushes back**: weather of its own; the Crown's levy, favour, debt and loans;
+3. **Wyrmcraft matured** ✅ (iteration 53, §4.84): lines that do what they say; the Great
+   Cradle; lodges with capacity; feeding reach; departed dragons return; roles with a
+   price; champions who can lose; materials with sinks; marvels and wonders with a role;
+   the Wyrm-Court after the binding; golems assigned.
+4. **The world pushes back** (next): weather of its own; the Crown's levy, favour, debt and loans;
    gates and memory (the Vellish happiness gate, tales with an uncapped memory and three
    grown chains); edicts as commitments and charters with a price that spills; festivals
    seen; a daily challenge that can fail.
