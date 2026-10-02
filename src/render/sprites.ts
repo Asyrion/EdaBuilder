@@ -1932,6 +1932,74 @@ export function generateSprites(): SpriteDef[] {
     p.outline('outline');
     out.push({ name: `hound_${f}`, p, glow, ax: 6, ay: 8 });
   }
+  // the wild (iteration 57): deer, elk, boar, goats, wolves, otters and herons, two stride frames each, facing right
+  const beast = (w: number, h: number, body: string, belly: string, f: number, o: { bodyX: number; bodyY: number; bodyW: number; bodyH: number; legH: number; headX: number; headY: number; headW: number; headH: number; neck?: boolean; tail?: [number, number][] }) => {
+    const p = new Painter(w, h);
+    const { bodyX, bodyY, bodyW, bodyH, legH, headX, headY, headW, headH } = o;
+    p.rect(bodyX, bodyY, bodyW, bodyH, body);
+    p.rect(bodyX + 1, bodyY + bodyH - 1, bodyW - 2, 1, belly);
+    if (o.neck) p.rect(headX - 1, headY + headH - 1, 2, bodyY - headY - headH + 2, body);
+    p.rect(headX, headY, headW, headH, body);
+    p.px(headX + headW - 1, headY + 1, 'outline'); // the eye
+    for (const [tx, ty] of o.tail ?? []) p.px(tx, ty, body);
+    const ly = bodyY + bodyH;
+    const legs = f === 0 ? [bodyX, bodyX + 2, bodyX + bodyW - 3, bodyX + bodyW - 1] : [bodyX + 1, bodyX + 2, bodyX + bodyW - 2, bodyX + bodyW - 2];
+    legs.forEach((lx, k) => p.rect(lx, ly, 1, legH - (f === 1 && k % 2 ? 1 : 0), belly));
+    return p;
+  };
+  for (let f = 0; f < 2; f++) {
+    // deer: tawny, white rump, a small rack
+    const d = beast(12, 12, 'leafAutumn', 'sand2', f, { bodyX: 2, bodyY: 5, bodyW: 7, bodyH: 3, legH: 4, headX: 9, headY: 2, headW: 2, headH: 2, neck: true, tail: [[1, 5]] });
+    d.px(2, 6, 'whitewash');
+    d.px(9, 1, 'wood1'); d.px(10, 0, 'wood1'); d.px(11, 1, 'wood1');
+    d.outline('outline');
+    out.push({ name: `deer_${f}`, p: d, ax: 6, ay: 12 });
+    // elk: bigger, darker, a broad rack
+    const e = beast(16, 15, 'wood2', 'wood1', f, { bodyX: 2, bodyY: 6, bodyW: 9, bodyH: 4, legH: 5, headX: 12, headY: 3, headW: 3, headH: 2, neck: true, tail: [[1, 6]] });
+    e.rect(3, 6, 7, 1, 'sand2');
+    for (const [x, y] of [[11, 2], [12, 1], [13, 0], [14, 1], [15, 0], [12, 0], [11, 0]]) e.px(x, y, 'parchment');
+    e.outline('outline');
+    out.push({ name: `elk_${f}`, p: e, ax: 8, ay: 15 });
+    // boar: low, dark, bristled, white tusks
+    const b = beast(12, 8, 'dirt3', 'dirt1', f, { bodyX: 1, bodyY: 2, bodyW: 8, bodyH: 4, legH: 2, headX: 9, headY: 3, headW: 3, headH: 3 });
+    for (let x = 2; x < 8; x += 2) b.px(x, 1, 'dirt1');
+    b.px(11, 5, 'bone');
+    b.outline('outline');
+    out.push({ name: `boar_${f}`, p: b, ax: 6, ay: 8 });
+    // goat: pale, a beard and curled horns
+    const g = beast(11, 11, 'whitewash2', 'stone3', f, { bodyX: 2, bodyY: 4, bodyW: 6, bodyH: 3, legH: 4, headX: 8, headY: 2, headW: 2, headH: 2, neck: true, tail: [[1, 4]] });
+    g.px(7, 1, 'stone1'); g.px(7, 0, 'stone1'); g.px(6, 0, 'stone1');
+    g.px(9, 4, 'stone2');
+    g.outline('outline');
+    out.push({ name: `goat_${f}`, p: g, ax: 5, ay: 11 });
+    // wolf: grey, long tail, pricked ears
+    const w = beast(13, 9, 'stone2', 'stone3', f, { bodyX: 2, bodyY: 3, bodyW: 8, bodyH: 3, legH: 3, headX: 10, headY: 2, headW: 3, headH: 2, tail: [[1, 3], [0, 4], [0, 5]] });
+    w.px(10, 1, 'stone1'); w.px(12, 1, 'stone1');
+    w.rect(3, 3, 6, 1, 'stone1');
+    w.outline('outline');
+    out.push({ name: `wolf_${f}`, p: w, ax: 6, ay: 9 });
+    // otter: long and low, a sleek brown body and a thick tail
+    const ot = new Painter(12, 5);
+    ot.rect(2, 1, 7, 3, 'wood2');
+    ot.rect(3, 3, 5, 1, 'sand2');
+    ot.rect(9, 1, 2, 2, 'wood2');
+    ot.px(10, 1, 'outline');
+    ot.rect(0, f === 0 ? 2 : 3, 2, 1, 'wood1');
+    ot.outline('outline');
+    out.push({ name: `otter_${f}`, p: ot, ax: 6, ay: 5 });
+    // heron: grey-blue, long legs and neck, a dagger bill
+    const hn = new Painter(9, 14);
+    hn.rect(2, 5, 4, 3, 'bluewash2');
+    hn.rect(1, 6, 1, 2, 'stone1');
+    hn.rect(5, 2, 1, 4, 'bluewash');
+    hn.rect(5, 1, 2, 2, 'whitewash');
+    hn.px(6, 1, 'outline');
+    hn.rect(7, 2, 2, 1, 'gold');
+    hn.px(4, 1, 'stone1');
+    if (f === 0) { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(4, 8, 1, 6, 'gold'); } else { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(5, 8, 1, 5, 'gold'); }
+    hn.outline('outline');
+    out.push({ name: `heron_${f}`, p: hn, ax: 4, ay: 14 });
+  }
   // Concord Warden: a squat stone giant with a rune-lit chest
   for (let f = 0; f < 2; f++) {
     const p = new Painter(16, 22);

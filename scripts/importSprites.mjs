@@ -7,7 +7,7 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
@@ -98,6 +98,7 @@ for (const r of results) {
   }
   manifest.sprites[e.name] = entry;
   for (const a of e.aliases ?? []) manifest.sprites[a] = { ...entry };
+  if (e.hop) manifest.sprites[e.name.replace(/_0$/, '_1')] = { ...entry, ay: entry.ay + 1 }; // a painting is one frame: the second stands a pixel higher, a gait bob (iteration 57)
   sheet.push({ kind, img: sprite, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay, w_t: e.w ?? 1, h_t: e.h ?? 1 });
   const autoText = r.auto ? ` (auto ${r.auto.ax},${r.auto.ay})` : '';
   console.log(`${e.name.padEnd(16)} ${kind.padEnd(8)} ${String(sprite.w).padStart(3)}×${String(sprite.h).padEnd(3)} anchor ${anchor.ax},${anchor.ay}${autoText} colours ${colourCount(sprite)} glow px ${glowCount}${e.checked ? '' : ' (unchecked)'}`);

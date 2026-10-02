@@ -102,6 +102,12 @@ export interface Building {
   plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
   blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
   sluice?: boolean; // the Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw (iteration 53)
+  quarry?: 'hounds' | WildSpecies; // a Hunters' Lodge's chosen quarry; unset = hounds (iteration 57)
+  meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 57)
+  trophies?: number; // a lodge's trophies awaiting the Gloam road
+  took?: number; // a lodge: the day it last brought in game
+  tookSp?: string; // a lodge: what it brought in that day
+  wolfDay?: number; // a hearth: the day the wolves took a hen (−6 happiness for five days)
   broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
 }
 
@@ -119,7 +125,32 @@ export const enum AgentKind {
   Walker = 5,
 }
 
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger';
+export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 57)
+export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger' | WildSpecies;
+
+/** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 57). */
+export interface Herd {
+  id: number;
+  sp: WildSpecies;
+  x: number;
+  y: number;
+  head: number;
+  cap: number; // the head its land holds today (habitat within HERD_RANGE)
+  bx: number; // where it beds down at night (deer and elk: the nearest forest), else its home
+  by: number;
+  taken: number; // the last day a lodge took one of it, -1
+  prey: number; // a wolf pack: the hearth it stalks tonight (building id), -1
+}
+
+export interface WildState {
+  herds: Herd[];
+  nextId: number;
+  seeded: boolean;
+  foldsUntil: number; // the wolf winter's lamps on the folds: no hen is taken before this day
+  thriveUntil: number; // the white hart let run: herds breed half again as fast until this day
+  hensDay: number; // the last day wolves took a hen, -99
+  meatAt: number[]; // markets with meat on the shelves today, as x, y pairs (read by the hearths' happiness)
+}
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm' | 'fen';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
@@ -209,6 +240,7 @@ export interface Agent {
   ay?: number;
   job?: string; // walkers: key into WALKER_JOBS
   log?: string[]; // walkers: what it did today, last three lines
+  herdId?: number; // a wild animal's herd (iteration 57)
   duty?: 'guard' | 'works'; // a bound golem's post: guard (ward 6 at its foundry) or works (12 hands at targetId); unset = labour (iteration 53)
 }
 
@@ -362,7 +394,8 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number }; // today
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number }; // today; the hunt's prices and sales since iteration 57
+  wild: WildState; // herds, packs and the hunt (wild.ts, iteration 57)
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
@@ -484,6 +517,13 @@ export interface GameState {
     levies: number; // the Crown's Thaw levies taken
     levied: number; // crowns they took
     foxAudits: number; // the Fen-Nex quarter's seasonal audits
+    hides: number; // hides the lodges brought in from game (iteration 57)
+    meat: number; // meat the lodges brought in
+    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a tiger, a white hart)
+    herdsLost: number; // herds the city's spread drove off
+    herdsHunted: number; // herds the hunters took to the last
+    hensTaken: number; // hens the Hush wolves took from the hearths
+    huntCrowns: number; // crowns the Gloam road paid for hides, meat and trophies
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
     tideTrips: number; // barges a Tide dragon swam (iteration 53)
     surgesAbsorbed: number; // surges the Lantern of the Cores took

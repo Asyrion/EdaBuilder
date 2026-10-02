@@ -9,8 +9,9 @@ import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
 import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewWall, roadPath, setTax, terraform, wallTileCost } from './actions';
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
+import { HUNT_REACH, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
 import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
-import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
+import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
 import { resolveEvent } from './events';
 import { districtMarkets, lineNest, setRole } from './wyrmcraft';
@@ -46,6 +47,9 @@ function zoneLight(s: GameState): { zone: number; dark: number } {
 export class Bot {
   radius = 8; // half-size of the developed square around the stake
   private districted = false;
+  private houndsSeen = 0; // the hound count when the bot last looked, and the day a pack last came (iteration 57)
+  private houndDay = -99;
+  quarryChanges = 0;
   private lastExpand = -99;
   /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
   goal: BotGoal | null = null;
@@ -86,6 +90,7 @@ export class Bot {
     this.tendDragons();
     this.setTaxes();
     this.setEdicts();
+    this.hunt();
     this.goal = this.pickGoal();
     // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can
     this.reserve = this.goal && (this.goal.kind === 'hall' || s.brownout > 0.05) ? this.goal.cost : 0;
@@ -184,6 +189,66 @@ export class Bot {
       if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200) setEdict(s, 'imports', true);
       else if (s.goodsShort === 0 || net < 0) off('imports');
     }
+  }
+
+  /**
+   * The hunt (iteration 57): the first lodge stays on hounds while a pack came within 15 days; the others hunt the most
+   * valuable game in their grounds, but only herds above half their cap (and the Close Season's floor), so the bot does not
+   * hunt a herd out. The Close Season goes on when the herds a lodge hunts fall under half their cap and the ledger can pay.
+   */
+  private hunt(): void {
+    const s = this.s;
+    if (s.stats.houndsTotal > this.houndsSeen) { this.houndsSeen = s.stats.houndsTotal; this.houndDay = s.day; }
+    const lodges = (s.buildings.filter((b) => b && b.kind === 'hunterslodge' && b.state === 'ok') as Building[]).sort((a, b) => a.id - b.id);
+    const floor = huntFloor(s);
+    let low = false;
+    lodges.forEach((l, k) => {
+      let pick: 'hounds' | WildSpecies = 'hounds';
+      if (!(k === 0 && s.day - this.houndDay <= 15)) {
+        let bv = 0;
+        for (const sp of WILD_SPECIES) {
+          const d = WILD[sp];
+          if (!herdsInGrounds(s, l, sp).some((h) => h.head >= Math.max(floor + 1, h.cap * 0.5, 2))) continue;
+          const v = d.take * (d.meat * 2 + d.hides * 3 + d.trophy * 35);
+          if (v > bv) { bv = v; pick = sp; }
+        }
+      }
+      if (quarryOf(l) !== pick) { setQuarry(s, l, pick); this.quarryChanges++; }
+      if (pick !== 'hounds') {
+        let head = 0;
+        let cap = 0;
+        for (const h of herdsInGrounds(s, l, pick)) { head += h.head; cap += h.cap; }
+        if (cap > 0 && head < cap * 0.5) low = true;
+      }
+    });
+    // a lodge for game: one, at the city's edge facing the nearest good herd, once the purse and the ledger allow it
+    if (lodges.length <= (s.day - this.houndDay <= 15 ? 1 : 0) && canBuild(s, 'hunterslodge') && s.day >= 20 && s.day % 3 === 0) {
+      const def = BUILDING_BY_KEY.hunterslodge;
+      if (this.spendable() > costOf(s, def) + 1500 && s.ledger.net - def.upkeep > 200) {
+        let herd: { x: number; y: number } | null = null;
+        let hd = this.radius + HUNT_REACH - 2;
+        for (const h of s.wild.herds) {
+          if ((h.sp !== 'deer' && h.sp !== 'elk' && h.sp !== 'boar' && h.sp !== 'goat') || h.head < 4) continue;
+          const d = Math.hypot(h.x - this.cx, h.y - this.cy);
+          if (d < hd) { hd = d; herd = h; }
+        }
+        if (herd) {
+          const h = herd;
+          const t = Math.max(0, Math.min(this.radius, hd - 6)) / Math.max(1, hd);
+          const px = Math.round(this.cx + (h.x - this.cx) * t);
+          const py = Math.round(this.cy + (h.y - this.cy) * t);
+          // within the herd's reach, and a market within the meat's reach (the shelves are the point)
+          const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok') as Building[];
+          const inReach = (x: number, y: number) => Math.hypot(x + 1 - h.x, y + 1 - h.y) <= HUNT_REACH - 2;
+          // only there: a game lodge with no market in reach brings in hides a city with no depot cannot sell (iteration 57: it cost Vellish 42 a sixth of its folk)
+          this.placeNear('hunterslodge', px, py, 8, false, (x, y) => inReach(x, y) && markets.some((m) => Math.hypot(m.x - x - 1, m.y - y - 1) <= MEAT_REACH - 4));
+        }
+      }
+    }
+    if (!(EDICT_BY_KEY.closeseason && s.milestone >= EDICT_BY_KEY.closeseason.unlock)) return;
+    const cost = EDICT_BY_KEY.closeseason.costPerDay(s);
+    if (low && s.ledger.net > cost * 3) setEdict(s, 'closeseason', true);
+    else if (!low && s.edicts.closeseason && !edictLocked(s, 'closeseason') && s.treasury > 1000) setEdict(s, 'closeseason', false);
   }
 
   /** The one large purchase worth saving for: the cheapest mana when the ley runs short, else the people's hall. */

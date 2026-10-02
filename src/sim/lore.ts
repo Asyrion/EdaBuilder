@@ -131,7 +131,8 @@ export function dailyTigers(s: GameState, wardenDistricts: Set<number>): number 
   s.agents = s.agents.filter((a) => {
     if (a.kind !== AgentKind.Creature || a.species !== 'tiger') return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    if (lodges.some((l) => Math.hypot(l.x - a.x, l.y - a.y) <= (edictOn(s, 'bounty') ? 20 : 12)) && rng.chance(0.35)) { killed++; return false; }
+    const lodge = lodges.find((l) => Math.hypot(l.x - a.x, l.y - a.y) <= (edictOn(s, 'bounty') ? 20 : 12));
+    if (lodge && rng.chance(0.35)) { killed++; lodge.trophies = (lodge.trophies ?? 0) + 1; s.stats.trophies++; return false; } // a tiger's head is a trophy (iteration 57)
     if (s.coverage.watch[i] > 160 && rng.chance(0.25)) { killed++; return false; }
     if (s.district[i] && wardenDistricts.has(s.district[i]) && rng.chance(0.5)) { killed++; return false; }
     // it takes someone from a hearth it lies beside

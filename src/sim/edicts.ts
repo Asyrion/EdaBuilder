@@ -28,6 +28,12 @@ export const EDICTS: EdictDef[] = [
     costPerDay: (s) => 20 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 15, unlock: 2, cityOnly: true,
   },
   {
+    key: 'closeseason', name: 'The Close Season',
+    desc: 'Wardens of the chase: no lodge takes game in Bloom while the herds drop their young (its hunters guard against hounds instead), no lodge takes a herd below 6 head, and the herds breed a quarter faster. 10 crowns a day and 10 a lodge.',
+    flavor: 'The hart is the Crown\'s in Bloom and the cook\'s in Ember. The wardens of the chase keep the calendar.',
+    costPerDay: (s) => 10 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 10, unlock: 2, cityOnly: true,
+  },
+  {
     key: 'wyrmpeace', name: 'Wyrm-Peace',
     desc: 'A standing offering at the wyrm\'s node: tribute is halved, and so is the ward of a bound wyrm\'s lair. 80 crowns/day.',
     flavor: 'Half a hoard buys half a guardian. The wyrm can count.',

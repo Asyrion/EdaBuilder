@@ -15,9 +15,11 @@ import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
 import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
-const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4 };
+const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4, deer: 0, elk: 0, boar: 0, otter: 0, heron: 0, goat: 0, wolf: 0 }; // the wild keeps its own numbers (wild.ts)
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
 import { marketStockCap } from './agents';
+import { HOUND_REACH, houndChance, isWild, tickWildAgent } from './wild';
+import { Rng } from '../core/rng';
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -248,8 +250,15 @@ export function tickCreatures(state: GameState): void {
   const rng = rngOf(state);
   const dt = 1 / TICKS_PER_SEC;
   const t = state.tick * dt;
+  let wr: Rng | null = null; // the wild moves on a stream of its own (wild.ts), so herds add no roll to the main one
+  const night = isNight(state);
   for (const a of state.agents) {
     if (a.kind !== AgentKind.Creature) continue;
+    if (isWild(a.species)) {
+      if (!wr) wr = new Rng((Math.imul(state.seed ^ 0x9e3779b9, 31) + Math.imul(state.tick, 2654435761)) >>> 0);
+      tickWildAgent(state, a, wr, night, dt);
+      continue;
+    }
     const ax = a.ax ?? a.x;
     const ay = a.ay ?? a.y;
     switch (a.species) {
@@ -801,7 +810,7 @@ export function dailyHunt(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Creature || a.species !== 'hound') return true;
     const bounty = edictOn(state, 'bounty');
-    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= (bounty ? 24 : 12) && rng.chance(0.8)) { killed++; l.stock += 1; state.stats.pelts++; return false; } // a pelt for the Gloam road
+    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= (bounty ? 2 * HOUND_REACH : HOUND_REACH) && rng.chance(houndChance(state, l))) { killed++; l.stock += 1; state.stats.pelts++; return false; } // a pelt (a hide) for the Gloam road; half the chance while the hunters are out after game (iteration 57)
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
     if (state.coverage.watch[i] > 120 && rng.chance(bounty ? 0.6 : 0.3)) { killed++; return false; }
     return true;

@@ -164,6 +164,16 @@ Charter as `.json`.
   over boneyards when the dead are restless; a Moth-Loft harvests glim-dust. Gloam-hounds
   hunt at the edge of the light, bolder in the Hush: raise a Hunters' Lodge or draw a
   Warding Wall (Services tab) that hounds and the Gloam cannot cross.
+- The wild: herds of deer and elk graze the meadows by day, run from lit ground and bed down in
+  the woods at night; boar keep the forests, goats the hills, otters and herons the banks. Herds
+  breed in Bloom and thin where the city builds over their ground (a ward or a lit Glimhouse helps
+  them recover). A Hunters' Lodge hunts the quarry its panel names within 16 tiles: hides, meat and
+  trophies with their own prices on the Gloam road, and meat for the markets in reach, which makes
+  the hearths near them happier. Hunters out after game kill hounds at half the chance, and a herd
+  hunted to the last is gone; the Close Season edict keeps a floor. In the Hush, wolves leave the
+  forest at night to take hens from the dark hearths at the edge. Two tales: the white hart and
+  the wolf winter. The creatures are painted from the animal sheets where a painting reads at the
+  game's scale.
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
   eggs arrive through events; hatch and train them into drakes and wyverns, set them as
   district wardens (fed by their district), mine delvers (wardens wake half as often),
