@@ -3,11 +3,15 @@
 //   node scripts/importSprites.mjs           writes the sprites and the manifest
 //   node scripts/importSprites.mjs --check   also renders shots/import_check.png (every sprite at 4×)
 //   node scripts/importSprites.mjs --islands <src> [white]   lists a sheet's islands, row-major, for picking by index
-// Entries (art/sources.json "sprites"): name, src, kind ('building' | 'prop' | 'ground'), w/h (footprint in tiles, buildings),
+// Entries (art/sources.json "sprites"): name, src, kind ('building' | 'prop' | 'ground' | 'vehicle'), w/h (footprint in tiles, buildings),
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
 // recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
+// A vehicle (the donkey carts, iteration 57) is scaled by scale (a fraction of the painting's pixels, set per sheet so every
+// donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
+// writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
+// stop the background key.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
@@ -42,9 +46,8 @@ const results = [];
 
 for (const e of sources.sprites) {
   const kind = e.kind ?? 'building';
-  let img = keyBackground(load(e.src), e.white ?? 235);
-  if (e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
-  else if (e.rect) img = cropRect(img, e.rect);
+  let img = e.rect ? keyBackground(cropRect(load(e.src), e.rect), e.white ?? 235) : keyBackground(load(e.src), e.white ?? 235);
+  if (!e.rect && e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
   if (kind !== 'ground') img = crop(e.islands === 'keep' ? img : keepLargest(img)).img;
   if (e.flip) img = mirror(img); // a painting whose front is on its left face is mirrored, so the set faces lower-right with the procedural buildings (iteration 56)
   if (kind === 'ground') {
@@ -59,6 +62,12 @@ for (const e of sources.sprites) {
     const th = e.targetHeight ?? 24;
     const small = boxScale(img, Math.max(1, Math.round((img.w * th) / img.h)), th);
     results.push({ e, kind, img: sharpen(e.recolour ? recolour(small, e.recolour) : small, e.sharpen ?? 0.6) });
+    continue;
+  }
+  if (kind === 'vehicle') {
+    const scale = e.scale ?? 0.06;
+    const small = boxScale(img, Math.max(1, Math.round(img.w * scale)), Math.max(1, Math.round(img.h * scale)));
+    results.push({ e, kind, img: sharpen(small, e.sharpen ?? 0.6) });
     continue;
   }
   const targetW = e.targetWidth ?? (e.targetHeight ? Math.max(1, Math.round((img.w * e.targetHeight) / img.h)) : (e.w + e.h) * 16 + 2);
@@ -81,6 +90,7 @@ for (const r of results) {
   if (kind !== 'ground' && e.outline !== false) r.img = pad(r.img, 1); // the glow source keeps the same frame
   let anchor;
   if (kind === 'ground') anchor = { ax: 16, ay: 0 };
+  else if (kind === 'vehicle') anchor = { ax: Math.round(sprite.w / 2), ay: sprite.h - 1 }; // wheels and hooves on the agent's point
   else if (kind === 'prop') { const auto = propAnchor(sprite, e.baseInset ?? 0); anchor = e.anchor && typeof e.anchor === 'object' ? e.anchor : auto; r.auto = auto; }
   else {
     const auto = e.anchor === 'centre' ? centreAnchor(e.w, e.h, sprite.w, sprite.h) : autoAnchor(e.w, e.h, sprite.h);
@@ -92,13 +102,18 @@ for (const r of results) {
   const entry = { file: `sprites/${e.name}.png`, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay };
   writeFileSync(`public/art/${entry.file}`, encodePng(sprite));
   let glowCount = 0;
-  if (e.glow !== false && kind !== 'ground') {
+  if (e.glow !== false && kind !== 'ground' && kind !== 'vehicle') {
     const glow = e.glowSrc ? { img: e.flip ? mirror(decodePng(readFileSync(e.glowSrc))) : decodePng(readFileSync(e.glowSrc)), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
     if (glow.count > 0) { entry.glow = `sprites/${e.name}_glow.png`; writeFileSync(`public/art/${entry.glow}`, encodePng(glow.img)); glowCount = glow.count; }
   }
   manifest.sprites[e.name] = entry;
   for (const a of e.aliases ?? []) manifest.sprites[a] = { ...entry };
-  sheet.push({ kind, img: sprite, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay, w_t: e.w ?? 1, h_t: e.h ?? 1 });
+  if (e.mirrored) { // the left-facing twin: the same pixels mirrored, the anchor mirrored with them (w − ax)
+    const twin = { file: `sprites/${e.name}_l.png`, w: sprite.w, h: sprite.h, ax: sprite.w - anchor.ax, ay: anchor.ay };
+    writeFileSync(`public/art/${twin.file}`, encodePng(mirror(sprite)));
+    manifest.sprites[`${e.name}_l`] = twin;
+  }
+  sheet.push({ kind: kind === 'vehicle' ? 'prop' : kind, img: sprite, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay, w_t: e.w ?? 1, h_t: e.h ?? 1 });
   const autoText = r.auto ? ` (auto ${r.auto.ax},${r.auto.ay})` : '';
   console.log(`${e.name.padEnd(16)} ${kind.padEnd(8)} ${String(sprite.w).padStart(3)}×${String(sprite.h).padEnd(3)} anchor ${anchor.ax},${anchor.ay}${autoText} colours ${colourCount(sprite)} glow px ${glowCount}${e.checked ? '' : ' (unchecked)'}`);
 }

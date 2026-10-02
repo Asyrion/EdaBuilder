@@ -1,15 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 56 (the playtest batch: painted buildings at the procedural
-scale, one facing for the set, reach rings you can see). Iteration 55 closed M14 in the same
-session. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 57 (the donkey carts: the user's painted cart sheets on the roads).
+Iteration 56 (the playtest batch) and 55 (M14 closed) came before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.87 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.88 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -20,6 +19,8 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 - Iteration 56 (DESIGN §4.87) was a playtest batch between milestones: the painted heroes
   scaled to their procedural twins, nine left-fronted paintings mirrored, and reach rings drawn
   above the buildings with labels and secondary reaches.
+- Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
+  uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
 - **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
   the next item.
 
@@ -63,8 +64,8 @@ hunt in the same iteration if the plan says so.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (59 files, 347 tests at this writing; `tests/iteration56.test.ts`
-  is iteration 56's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (60 files, 351 tests at this writing; `tests/iteration57.test.ts`
+  is iteration 57's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -153,3 +154,20 @@ hunt in the same iteration if the plan says so.
   With `OLD_ART=<dir>` it serves an older `public/art` for a before shot.
 - **Ring pixels in a playtest:** the back buffer (`renderer.back`) after `renderer.render` is
   what to count. A mask of the houses comes from rendering with and without them.
+
+## Learned in iteration 57 (not yet said elsewhere)
+
+- **Vehicles in the importer:** `kind: 'vehicle'` scales by `scale` (a fraction of the painting),
+  not a target height, so one sheet's carts share one donkey size; measure the animal per sheet
+  and set the factor from it. `mirrored: true` writes the `_l` twin. A new cart sheet goes in the
+  same way; the pools are counted at render time (`countVariants('cartp_goods_')`), so adding
+  carts needs no code.
+- **Gridded sheets:** `keyBackground` floods from the four corners only, so a sheet drawn in a
+  grid keys only its outer margin. A `rect` entry is now cut first and keyed after; use it for
+  any gridded sheet, with the cell inset past the lines (find them by counting non-white pixels
+  per row and column).
+- **Uploaded images** arrive as webp; ImageMagick's `convert` turns them into the png the
+  importer reads.
+- **Agents with `timer > 0` are not drawn** (resting inside a building), so a playtest that
+  places agents by hand must give them `timer: 0`. A hand-built town fills carts only once its
+  works have `stock >= 4`; `scripts/playtest57.mjs` tops the stock up each tick.

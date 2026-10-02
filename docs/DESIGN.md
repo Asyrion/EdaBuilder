@@ -2577,6 +2577,70 @@ objects, under every house and tree, and before the night's light pass multiplie
   - the screenshot's scene is shown before (the old sprites served from git) and after;
   - no errors.
 
+### 4.88 The donkey carts: painted carts on the roads at the folk's scale, facing the way they drive, and a Show me that finds one (iteration 57)
+
+The user sent four sheets of painted donkey carts (45 side views) to be the carts that carry the
+goods, "not too big" in the game, so that the quest *See the first cart deliver* is something the
+player sees. Until now a road cart was a procedural 18×12 mule-and-box (`cart()` in
+`src/render/sprites.ts`) that never turned. Art and UI only; the sim is untouched.
+
+**The import.** The sheets are `inspirations/carts/sheet_1..4.png` (converted from the uploads).
+
+- Sheets 2 and 3 split into islands. Sheets 1 and 4 are drawn in a grid, and its lines kept the
+  background key (a flood from the corners) out of every cell, so a `rect` is now cut from the raw
+  sheet and keyed after the cut. No entry used `rect` before.
+- **31 carts are used:** 27 goods carts (barrels, sacks, hay, crates, market stalls, covered and
+  painted wagons, firewood, pottery, a festival cart) and 4 stone and ore carts for the mines'
+  leystone. Left out: sheet 3's two green tool carts, which read as modern machines, and the
+  near-duplicates in sheet 3's last row and sheet 4.
+- **A new `kind: 'vehicle'`** in the importer: scaled by `scale` (a fraction of the painting's
+  pixels), set per sheet from the height of its donkeys (140, 182, 181 and 135 px), so **every
+  donkey stands about 10 px plus the outline** and a covered wagon is taller than a flat cart,
+  where a target height would have shrunk the wagons' donkeys. Anchored at the bottom centre
+  (wheels and hooves on the agent's point); no glow; sharpened and outlined like the set.
+- **One facing, and a twin.** Sheet 1 faces right; sheets 2–4 are flipped so every cart faces
+  right. `mirrored: true` also writes `<name>_l`, the left-facing twin, its anchor at `w − ax`.
+
+**The scale.** Measured in the browser's atlas: a citizen is 7×11 opaque, the old cart 18×12, the
+painted carts 11–16 px tall and 18–24 px wide (the stone carts 19–24 × 11–14). A donkey is a
+citizen's height, as it is in life; a covered wagon stands about a head over the folk. A test
+holds every cart to ≤ 1.5 citizens tall and ≤ 28 px wide.
+
+**On the road** (`src/render/carts.ts`, `cartSpriteName`):
+
+- a goods cart (variants 1–2) draws a painting from the goods pool, a leystone cart (0) from the
+  stone pool, picked by the agent's id (a multiplicative hash), so a cart keeps its look for life
+  with no rng;
+- it faces the way it drives, from the sim's `dir`: +x and −y go right on the screen, +y and −x
+  left, and a left-going cart draws its `_l` twin. Up- and down-screen roads use the same side
+  views (a side-view painting has no back);
+- the floating carts and the barges stay procedural, and without the paintings (`sprites.json`
+  missing) every cart falls back to its procedural `cart_<variant>`.
+
+**The Show me.** `Focus` gains `{ center: 'cart' }`: the camera goes to a cart carrying goods to a
+market (else any road cart) and zooms to 2× if it is further out; with no cart on the road yet, the
+goods view opens as before. *See the first cart deliver* uses it, and its hint names the donkey
+carts. The in-game help's goods line and the README say so.
+
+**Verified.**
+
+- 60 test files and 351 tests; the new `tests/iteration57.test.ts` covers every cart's twin (anchor
+  and pixels mirrored), the scale bounds, the pick by id and heading, the procedural fallbacks and
+  the quest's focus. `tests/iteration56.test.ts`'s pinned flip list now counts buildings only.
+- The cart sheet judged by eye at 6× (`npm run art:check` and a montage); then `checked: true`.
+- `scripts/playtest57.mjs`:
+  - a noon street with works, markets and folk, carts placed going both ways on two roads, shot at
+    2× and 4×: the donkeys stand a citizen's height and face their way;
+  - a live run where works fill carts: the first delivery at tick 1264 (12 goods), then the
+    quest's Show me lands the camera 9 world px from a cart, at 2×;
+  - without the paintings the procedural carts draw; a dusk probe shows no dark frame;
+  - no errors and no missing sprites.
+- Art and UI only: the control seed (Vellish 42, 150 days) is **bit-identical** to the code before
+  this iteration, line for line (1,942 folk at day 150, as in §4.86 and §4.87).
+
+**Not done.** The carts show no difference between going out loaded and coming back empty, and the
+covered wagons look the same in every season; both would need painted variants.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -3602,3 +3666,8 @@ playtest of a lakeside town.
 - *Rings on top (iteration 56):* a reach is a thing to see, so its outline is drawn after the light
   pass, above the buildings, with a label; and every reach a building has is read from the sim's own
   constant, so a ring never disagrees with the rule.
+- *Painted carts scale by the donkey (iteration 57):* a vehicle painting is scaled by a per-sheet
+  factor that makes every donkey the same height (a citizen's), not by a target height, so loads of
+  different heights keep one animal; each cart faces right at import and gets a mirrored twin, and
+  the renderer picks the twin from the sim's heading. A cart's look is chosen by its id, so the art
+  never touches the sim.

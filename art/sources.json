@@ -1,5 +1,5 @@
 {
- "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs; see its header for every key). kind: building (default), prop (trees, bushes, mushrooms: anchor at the trunk base, scaled by targetHeight) or ground (a square texture folded onto the 32x16 diamond; family shares a palette). island picks an item of a sheet by row-major index (node scripts/importSprites.mjs --islands <src>). anchor: 'auto' (footprint), 'centre' (a sprite narrower than its footprint), or {ax, ay} hand-set. checked: true once the --check sheet has been judged by eye. flip: true mirrors a painting left to right, so its front sits on the right face like the procedural set's (iteration 56). A building's targetHeight is its procedural twin's height × 1.15 (towers × 1.3), with the centre anchor (iteration 56).",
+ "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs; see its header for every key). kind: building (default), prop (trees, bushes, mushrooms: anchor at the trunk base, scaled by targetHeight) or ground (a square texture folded onto the 32x16 diamond; family shares a palette). island picks an item of a sheet by row-major index (node scripts/importSprites.mjs --islands <src>). anchor: 'auto' (footprint), 'centre' (a sprite narrower than its footprint), or {ax, ay} hand-set. checked: true once the --check sheet has been judged by eye. flip: true mirrors a painting left to right, so its front sits on the right face like the procedural set's (iteration 56). A building's targetHeight is its procedural twin's height × 1.15 (towers × 1.3), with the centre anchor (iteration 56). kind 'vehicle' (the donkey carts, iteration 57): scale is a fraction of the painting's pixels, set per sheet so every donkey stands the same height; the cart faces right after any flip; mirrored: true also writes <name>_l, the left-facing twin.",
  "sprites": [
   {
    "name": "b_stake_s0",
@@ -1089,6 +1089,449 @@
    "checked": true,
    "targetHeight": 84,
    "anchor": "centre"
+  },
+  {
+   "name": "cartp_goods_0",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    0,
+    0,
+    339,
+    253
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_1",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    345,
+    0,
+    335,
+    253
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_2",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    0,
+    260,
+    339,
+    249
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_3",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    345,
+    260,
+    335,
+    249
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_4",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    686,
+    260,
+    338,
+    249
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_5",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    345,
+    516,
+    335,
+    249
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_6",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    0,
+    772,
+    339,
+    252
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_7",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    686,
+    772,
+    338,
+    252
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_8",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 0,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_9",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 1,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_10",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 2,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_11",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 5,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_12",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 6,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_13",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 7,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_14",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 8,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_15",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 1,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_16",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 2,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_17",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 4,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_18",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 5,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_19",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 8,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_20",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    259,
+    0,
+    250,
+    254
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_21",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    516,
+    0,
+    250,
+    254
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_22",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    772,
+    0,
+    252,
+    254
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_23",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    516,
+    260,
+    250,
+    250
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_24",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    259,
+    516,
+    250,
+    249
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_25",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    772,
+    516,
+    252,
+    249
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_goods_26",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_4.png",
+   "rect": [
+    259,
+    772,
+    250,
+    252
+   ],
+   "scale": 0.074,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_stone_0",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_1.png",
+   "rect": [
+    686,
+    516,
+    338,
+    249
+   ],
+   "scale": 0.0714,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_stone_1",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_2.png",
+   "island": 4,
+   "scale": 0.055,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_stone_2",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 3,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "cartp_stone_3",
+   "kind": "vehicle",
+   "src": "inspirations/carts/sheet_3.png",
+   "island": 9,
+   "scale": 0.0552,
+   "colors": 20,
+   "glow": false,
+   "mirrored": true,
+   "flip": true,
+   "checked": true
   }
  ]
 }
