@@ -3155,9 +3155,9 @@ branch, ten of twelve did.
     the cobbled bridges are open.
   - 1,510 folk at day 125.
   - The dawn and dusk probe is clean; no errors and no missing sprites.
-- **Not met.** No Weir in any run (above). The Tallowkin's depot. Two of the twelve balance runs (Vellish 43 and
-  Grimmen 42 on the plain seed) still had a ford closed at high water: a crossing a day, only on mornings when the
-  treasury held its price and 800.
+- **Not met.** No Weir in any run (above). The Tallowkin's depot. Six of the twelve balance runs still had a ford closed
+  at high water (the Grimmen and Tallowkin rows, Vellish 43 on the plain seed, and the Veshari's flood with the extra
+  roll): a crossing a day, only on mornings when the treasury holds its price and 800, is not always enough.
 
 ## 7. Milestone plan
 
