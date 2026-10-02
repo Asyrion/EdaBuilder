@@ -349,7 +349,7 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
-## Done in iteration 57 (M16 part 1: the wild)
+## Done in iteration 58 (M16 part 1: the wild)
 
 - **Herds on the land.**
   - Deer and elk on the meadows, boar in the forests, goats on the hills, otters and herons on the
@@ -390,7 +390,20 @@
     key makes the second frame a pixel higher.
   - The boar, goat, otter and tiger paintings did not read at the game's scale, and no sheet has a
     heron or a grey drake, so these stay procedural (new procedural sprites for all seven wild kinds).
-- DESIGN §4.88.
+- DESIGN §4.89 (`tests/iteration58.test.ts`, `scripts/playtest58.mjs`).
+## Done in iteration 57 (the donkey carts)
+
+- **The donkey carts.** The four uploaded sheets of painted donkey carts are the road carts: 27
+  goods carts and 4 stone carts for the mines' leystone, through `npm run art` (a new `vehicle`
+  kind scaled per sheet so every donkey is a citizen's height; a `rect` is now keyed after it is
+  cut, so a gridded sheet imports). The carts are 11–16 px tall and 18–24 px wide, about the old
+  cart's size.
+- **They face the way they drive.** Each painting faces right and has a mirrored `_l` twin; the
+  renderer picks it from the sim's heading. A cart keeps one painting for life (chosen by its id).
+  Floating carts and barges stay procedural.
+- **See the first cart deliver** has a Show me that moves the camera to a cart on its way to a
+  market, at 2×.
+- Art and UI only. The control seed (Vellish 42) is bit-identical (DESIGN §4.88).
 
 ## Done in iteration 56 (the playtest batch: painted buildings at the procedural scale, one facing, reach rings you can see)
 
@@ -616,10 +629,10 @@
   - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
     every later roll down another path, so a single seed per people is a thin measure. A wider
     table (three seeds a people) would show the bot's levers better than any one run.
-- **The bot's hunt** (iteration 57). Vellish 42 ends with 1,618 folk against 1,942. With the bot's
+- **The bot's hunt** (iteration 58). Vellish 42 ends with 1,618 folk against 1,942. With the bot's
   hunt switched off it is bit-identical to §4.86, so the change is the one game lodge it raised and
   the path the run took from there. Five of six bot cities have no depot, so their hides are never
-  sold (DESIGN §4.88).
+  sold (DESIGN §4.89).
 - **Painted buildings face one way.** Iteration 56 mirrored the paintings fronted on the left
   face so the set faces lower-right. A building does not turn toward its own road, and the
   paintings drawn head-on cannot be turned by a mirror. A per-placement, road-facing mirror at
@@ -687,8 +700,8 @@ cameo events.
 1. **M16 part 2, the water** (DESIGN §16): a Fishers' Hut on a bank or a lake shore with boats
    on the water, fish as goods that spoil in two days unless a market or a smokehouse takes them,
    reed-cutters on the marsh for thatch, a water garden, the lake's own land value and well bonus,
-   a weir pool and a ford. Part 1, the wild, is done (iteration 57).
-2. **The bot's depot and the hunt** (from iteration 57): five of the six bot cities stand no depot,
+   a weir pool and a ford. Part 1, the wild, is done (iteration 58).
+2. **The bot's depot and the hunt** (from iteration 58): five of the six bot cities stand no depot,
    so their hides and trophies are never sold; the hunt pays only where a depot stands.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and

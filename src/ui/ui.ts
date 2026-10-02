@@ -27,7 +27,7 @@ import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
 import { FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
-import { TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
+import { BARGE_VARIANT, FLOAT_VARIANT, TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
@@ -562,7 +562,13 @@ export class UI {
       else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && isCradle(b.kind)); if (c) this.host.centerOn(c.x, c.y); }
       else if (f.center === 'wyrm') { const n = wyrmNode(s); if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'ruins') { for (let i = 0; i < s.terrain.length; i++) if (s.terrain[i] === 8) { this.host.centerOn(i % s.w, (i / s.w) | 0); break; } }
-      else if (f.center === 'gloam') {
+      else if (f.center === 'cart') {
+        // A donkey cart on the road (iteration 57): one carrying goods to a market if any, else any road cart; with none yet, the goods view.
+        const road = s.agents.filter((a) => a.kind === AgentKind.Cart && a.variant !== FLOAT_VARIANT && a.variant !== BARGE_VARIANT);
+        const c = road.find((a) => a.load > 0 && a.targetId !== -1) ?? road[0];
+        if (c) { if (this.host.camera.zoom < 2) this.host.camera.setZoom(2); this.host.centerOn(Math.floor(c.x), Math.floor(c.y)); }
+        else { this.host.setOverlay('goods'); this.el.views.classList.remove('hidden'); }
+      } else if (f.center === 'gloam') {
         // Nearest Gloam tile to the founding stake.
         let best = -1, bd = 1e9;
         for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { const x = i % s.w, y = (i / s.w) | 0; const d = Math.abs(x - s.founding.x) + Math.abs(y - s.founding.y); if (d < bd) { bd = d; best = i; } }
@@ -933,7 +939,7 @@ export class UI {
       el.appendChild(btn);
     }
     if (b.kind === 'hunterslodge' && b.state === 'ok') {
-      // the quarry: hounds, or any game in the grounds (iteration 57)
+      // the quarry: hounds, or any game in the grounds (iteration 58)
       const bar = document.createElement('div');
       bar.className = 'quarry';
       const opts: ('hounds' | WildSpecies)[] = ['hounds', ...WILD_SPECIES.filter((sp) => herdsInGrounds(s, b, sp).length > 0)];
@@ -1256,7 +1262,7 @@ export class UI {
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
-            <li><b>Goods</b>: Craft works fill carts; carts feed Markets by road. Empty shelves and idle stills both hurt.</li>
+            <li><b>Goods</b>: Craft works fill donkey carts; the carts feed Markets by road (the mines' carts carry leystone). Empty shelves and idle stills both hurt.</li>
             <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there. The <b>Annals</b> (top bar, <kbd>N</kbd>) keep every count of the charter by chapter: riots and levies, rain days and hound raids, bouts, relics, walkers' rounds.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>

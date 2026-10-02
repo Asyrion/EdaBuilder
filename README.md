@@ -62,7 +62,7 @@ main node.
    Gloam), Garden and Market Square (land value).
 6. **Tithe** — taxes are collected daily per zone (Budget button). 10% is what folk
    expect. Upkeep is per building and per road tile. Milestones pay grants.
-7. **Goods** — Craft works fill carts; carts feed Markets by road. Empty shelves and
+7. **Goods** — Craft works fill donkey carts; the carts feed Markets by road. Empty shelves and
    idle stills both hurt, and shortages push the demand bars. From Township, Crystal
    Mines dug into hills send leystone to Arcane districts, which sell artifacts.
 8. **Districts, edicts and events** — paint districts from the toolbar; the *Edicts*
@@ -264,6 +264,9 @@ Charter as `.json`.
   the city; every building has a sprite. The painted heroes stand at the height of their
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
   the whole set faces lower-right.
+- The donkey carts: 31 painted carts (barrels, sacks, hay, stalls, covered wagons, and stone for
+  the mines' leystone) drive the roads at the folk's scale, each facing the way it goes; the
+  first-cart quest's Show me finds one on its way to market.
 - Reach rings: placing or selecting a building draws every reach it has above the buildings,
   labelled ("water 4", "watch 14", "fed from markets 12"), with its kin's reach faintly around
   it; square reaches draw as squares, and a well's ring is the water it really gives.

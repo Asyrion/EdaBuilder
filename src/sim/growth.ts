@@ -164,7 +164,7 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
   if (seasonOf(state) === 1) add('Bloom', 2);
   if (def.zone === Zone.Hearth) {
-    if (meatNear(state, b.x, b.y)) add('meat on the shelves', MEAT_HAPPY); // a market within 10 with game from a lodge (iteration 57)
+    if (meatNear(state, b.x, b.y)) add('meat on the shelves', MEAT_HAPPY); // a market within 10 with game from a lodge (iteration 58)
     if (b.wolfDay !== undefined && state.day - b.wolfDay < HEN_DAYS) add('the wolves took a hen', HEN_HAPPY);
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
     add('no work', -unemployment * 20);
@@ -616,7 +616,7 @@ export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: nu
 
 /** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. */
 export const RELIC_PRICE = 60;
-/** The hunt's prices on the Gloam road by season (Thaw, Bloom, Ember, Hush; iteration 57). */
+/** The hunt's prices on the Gloam road by season (Thaw, Bloom, Ember, Hush; iteration 58). */
 export const HIDE_PRICE = [3, 2.5, 3, 4];
 export const MEAT_PRICE = [1.5, 1.5, 2, 2.5];
 export const TROPHY_PRICE = [30, 30, 40, 30];
@@ -629,7 +629,7 @@ export function dailyTrade(state: GameState): void {
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
   t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
   t.priceLeystone = [3, 4, 3, 2.5][season];
-  // the hunt's goods (iteration 57): hides dear in the Hush, salted meat cheap, trophies dear in the Ember (the lords' hunting season)
+  // the hunt's goods (iteration 58): hides dear in the Hush, salted meat cheap, trophies dear in the Ember (the lords' hunting season)
   t.priceHides = HIDE_PRICE[season];
   t.priceMeat = MEAT_PRICE[season];
   t.priceTrophy = TROPHY_PRICE[season];
@@ -650,7 +650,7 @@ export function dailyTrade(state: GameState): void {
   const full: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)))) full.push(b); // hides and salted meat go too (iteration 57)
+    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)))) full.push(b); // hides and salted meat go too (iteration 58)
   });
   full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
   let hunt = 0;

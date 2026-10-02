@@ -47,7 +47,7 @@ function zoneLight(s: GameState): { zone: number; dark: number } {
 export class Bot {
   radius = 8; // half-size of the developed square around the stake
   private districted = false;
-  private houndsSeen = 0; // the hound count when the bot last looked, and the day a pack last came (iteration 57)
+  private houndsSeen = 0; // the hound count when the bot last looked, and the day a pack last came (iteration 58)
   private houndDay = -99;
   quarryChanges = 0;
   private lastExpand = -99;
@@ -192,7 +192,7 @@ export class Bot {
   }
 
   /**
-   * The hunt (iteration 57): the first lodge stays on hounds while a pack came within 15 days; the others hunt the most
+   * The hunt (iteration 58): the first lodge stays on hounds while a pack came within 15 days; the others hunt the most
    * valuable game in their grounds, but only herds above half their cap (and the Close Season's floor), so the bot does not
    * hunt a herd out. The Close Season goes on when the herds a lodge hunts fall under half their cap and the ledger can pay.
    */

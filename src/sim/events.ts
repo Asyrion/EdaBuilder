@@ -116,7 +116,7 @@ export const EVENTS: EventDef[] = [
       { label: 'Plead the Gloam', desc: (s) => `Keep the crowns; the Crown's favour −10, and the audit is harsher each time: ${s.pleadings === 0 ? 'tithe income −15% for 15 days' : s.pleadings === 1 ? 'tithe income −25% for 15 days' : 'a levy of a fifth of the treasury at once'} (pleaded ${s.pleadings} time${s.pleadings === 1 ? '' : 's'} before).`, apply: (s) => { addFavour(s, -10); s.pleadings++; if (s.pleadings === 1) { s.modifiers.push({ kind: 'tithe', value: -0.15, until: s.day + 15, label: 'Crown audit' }); return 'The collector leaves with a thin smile and a thick ledger.'; } if (s.pleadings === 2) { s.modifiers.push({ kind: 'tithe', value: -0.25, until: s.day + 15, label: 'Crown audit, the second' }); return 'The collector has heard of the Gloam. He audits every shelf in the city for a fortnight.'; } const t = Math.round(s.treasury * 0.2); s.treasury -= t; s.stats.levies++; s.stats.levied += t; return `The collector has heard this before. ${t} crowns, a fifth of the treasury, are counted out on the Stake's steps under guard.`; } },
     ],
   },
-  // ---- the wild (M16 part 1, iteration 57) ----
+  // ---- the wild (M16 part 1, iteration 58) ----
   {
     id: 'whitehart', title: 'The white hart', once: true,
     text: 'The watch on the stake saw it at first light: a white hart grazing with the deer on the meadow, its antlers like frost on a branch. By noon half the city has climbed something to look. The lodge\'s master asks whether the Warden-Reeve wants its head.',

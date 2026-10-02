@@ -85,7 +85,7 @@ export const ANNALS: AnnalChapter[] = [
       { label: 'Hound raids', stat: 'houndRaids', note: 'Hounds that reached a building and harried it.' },
       { label: 'Hounds killed', stat: 'houndsKilled', note: 'Hounds the Watch, the lodges and the dragons brought down.' },
       { label: 'Pelts', stat: 'pelts', note: "Hound pelts from the Hunters' Lodges, sold on the Gloam road." },
-      { label: 'Hides from game', stat: 'hides', note: "Hides of deer, elk, boar, goats, otters and wolves the lodges brought in (iteration 57)." },
+      { label: 'Hides from game', stat: 'hides', note: "Hides of deer, elk, boar, goats, otters and wolves the lodges brought in (iteration 58)." },
       { label: 'Meat brought in', stat: 'meat', note: 'Meat for the markets\' shelves; what the shelves cannot take is salted for the Gloam road.' },
       { label: 'Trophies', stat: 'trophies', note: 'Antlers, tusks, plumes, wolf heads, a war-tiger or a white hart.' },
       { label: 'Crowns from the hunt', stat: 'huntCrowns', note: 'What the Gloam road paid for hides, salted meat and trophies.' },

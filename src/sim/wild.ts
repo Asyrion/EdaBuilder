@@ -1,5 +1,5 @@
 /**
- * The wild (M16 part 1, iteration 57; DESIGN §16 and §4.88). Herds of deer and elk on the meadows, boar in the woods,
+ * The wild (M16 part 1, iteration 58; DESIGN §16 and §4.89). Herds of deer and elk on the meadows, boar in the woods,
  * otters and herons on the banks, goats on the hills and wolves that come out of the forest in the Hush. A herd has a
  * home, a head count and a cap: the habitat within HERD_RANGE of its home that the city has not taken. Herds breed by
  * the season, thin where the city spreads, and recover where a Glimhouse or a ward holds the ground. A Hunters' Lodge

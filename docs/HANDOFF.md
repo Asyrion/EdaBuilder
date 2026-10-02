@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 57 (M16 part 1, the wild). Iterations 55 and 56 came before it
-in an earlier session. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 58 (M16 part 1, the wild). Iteration 57 (the donkey carts) was
+merged by another session while 58 was under way; 56 and 55 came before. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.88 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.89 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -19,8 +19,10 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 - Iteration 56 (DESIGN §4.87) was a playtest batch between milestones: the painted heroes
   scaled to their procedural twins, nine left-fronted paintings mirrored, and reach rings drawn
   above the buildings with labels and secondary reaches.
-- **M16 the wild and the water** (DESIGN §16) is open. **Part 1, the wild**, is done (iteration 57,
-  DESIGN §4.88): herds, the lodge's quarry, meat on the shelves, wolves in the Hush, the Close
+- Iteration 57 (DESIGN §4.88) was another batch between milestones, at the user's request: the
+  uploaded donkey-cart sheets became the road carts, and the first-cart quest's Show me finds one.
+- **M16 the wild and the water** (DESIGN §16) is open. **Part 1, the wild**, is done (iteration 58,
+  DESIGN §4.89): herds, the lodge's quarry, meat on the shelves, wolves in the Hush, the Close
   Season, two tales and the animal sheets. **Part 2, the water**, is the next item.
 
 ## The next item
@@ -65,8 +67,8 @@ for fish on the road. Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (60 files, 365 tests at this writing; `tests/iteration57.test.ts`
-  is iteration 57's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (61 files, 369 tests at this writing; `tests/iteration58.test.ts`
+  is iteration 58's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -120,7 +122,7 @@ for fish on the road. Plan it on the Plan panel first.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
 
-## Learned in iteration 57 (not yet said elsewhere)
+## Learned in iteration 58 (not yet said elsewhere)
 
 - **The wild is on side streams** (`src/sim/wild.ts`: `sideRng` by seed, day and tag, and a
   per-tick stream for the steps in `tickCreatures`). A city whose bot buys no game lodge and loses
@@ -128,12 +130,12 @@ for fish on the road. Plan it on the Plan panel first.
 - **Wild agents** carry `herdId`; `syncWildAgents` keeps them in step with the head counts daily.
   A save without `wild` resets to an unseeded wild in `deserialize` and seeds on the next day.
 - **The bot's hunt pays little:** five of six bot cities have no depot. Hides pile up unsold, and
-  only one city in six has meat on a shelf at day 150 (DESIGN §4.88).
+  only one city in six has meat on a shelf at day 150 (DESIGN §4.89).
 - **`window.__wardlight.wild`** is the wild module, for playtests (`dailyMeat`, `dailyWolves`,
   `setQuarry`).
 - **The importer's `hop` key:** a creature painting serves as both frames, the second a pixel
   higher.
-- **Tests:** 60 files, 365 tests.
+- **Tests:** 61 files, 369 tests.
 
 ## Learned in iteration 55 (not yet said elsewhere)
 
@@ -170,3 +172,20 @@ for fish on the road. Plan it on the Plan panel first.
   With `OLD_ART=<dir>` it serves an older `public/art` for a before shot.
 - **Ring pixels in a playtest:** the back buffer (`renderer.back`) after `renderer.render` is
   what to count. A mask of the houses comes from rendering with and without them.
+
+## Learned in iteration 57 (not yet said elsewhere)
+
+- **Vehicles in the importer:** `kind: 'vehicle'` scales by `scale` (a fraction of the painting),
+  not a target height, so one sheet's carts share one donkey size; measure the animal per sheet
+  and set the factor from it. `mirrored: true` writes the `_l` twin. A new cart sheet goes in the
+  same way; the pools are counted at render time (`countVariants('cartp_goods_')`), so adding
+  carts needs no code.
+- **Gridded sheets:** `keyBackground` floods from the four corners only, so a sheet drawn in a
+  grid keys only its outer margin. A `rect` entry is now cut first and keyed after; use it for
+  any gridded sheet, with the cell inset past the lines (find them by counting non-white pixels
+  per row and column).
+- **Uploaded images** arrive as webp; ImageMagick's `convert` turns them into the png the
+  importer reads.
+- **Agents with `timer > 0` are not drawn** (resting inside a building), so a playtest that
+  places agents by hand must give them `timer: 0`. A hand-built town fills carts only once its
+  works have `stock >= 4`; `scripts/playtest57.mjs` tops the stock up each tick.

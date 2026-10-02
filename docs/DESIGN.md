@@ -2577,7 +2577,71 @@ objects, under every house and tree, and before the night's light pass multiplie
   - the screenshot's scene is shown before (the old sprites served from git) and after;
   - no errors.
 
-### 4.88 M16 part 1, the wild: herds that thin where the city spreads, deer that run from the light, a lodge that hunts a chosen quarry, meat on the shelves, wolves in the Hush, the Close Season, two tales, the animal sheets (iteration 57)
+### 4.88 The donkey carts: painted carts on the roads at the folk's scale, facing the way they drive, and a Show me that finds one (iteration 57)
+
+The user sent four sheets of painted donkey carts (45 side views) to be the carts that carry the
+goods, "not too big" in the game, so that the quest *See the first cart deliver* is something the
+player sees. Until now a road cart was a procedural 18×12 mule-and-box (`cart()` in
+`src/render/sprites.ts`) that never turned. Art and UI only; the sim is untouched.
+
+**The import.** The sheets are `inspirations/carts/sheet_1..4.png` (converted from the uploads).
+
+- Sheets 2 and 3 split into islands. Sheets 1 and 4 are drawn in a grid, and its lines kept the
+  background key (a flood from the corners) out of every cell, so a `rect` is now cut from the raw
+  sheet and keyed after the cut. No entry used `rect` before.
+- **31 carts are used:** 27 goods carts (barrels, sacks, hay, crates, market stalls, covered and
+  painted wagons, firewood, pottery, a festival cart) and 4 stone and ore carts for the mines'
+  leystone. Left out: sheet 3's two green tool carts, which read as modern machines, and the
+  near-duplicates in sheet 3's last row and sheet 4.
+- **A new `kind: 'vehicle'`** in the importer: scaled by `scale` (a fraction of the painting's
+  pixels), set per sheet from the height of its donkeys (140, 182, 181 and 135 px), so **every
+  donkey stands about 10 px plus the outline** and a covered wagon is taller than a flat cart,
+  where a target height would have shrunk the wagons' donkeys. Anchored at the bottom centre
+  (wheels and hooves on the agent's point); no glow; sharpened and outlined like the set.
+- **One facing, and a twin.** Sheet 1 faces right; sheets 2–4 are flipped so every cart faces
+  right. `mirrored: true` also writes `<name>_l`, the left-facing twin, its anchor at `w − ax`.
+
+**The scale.** Measured in the browser's atlas: a citizen is 7×11 opaque, the old cart 18×12, the
+painted carts 11–16 px tall and 18–24 px wide (the stone carts 19–24 × 11–14). A donkey is a
+citizen's height, as it is in life; a covered wagon stands about a head over the folk. A test
+holds every cart to ≤ 1.5 citizens tall and ≤ 28 px wide.
+
+**On the road** (`src/render/carts.ts`, `cartSpriteName`):
+
+- a goods cart (variants 1–2) draws a painting from the goods pool, a leystone cart (0) from the
+  stone pool, picked by the agent's id (a multiplicative hash), so a cart keeps its look for life
+  with no rng;
+- it faces the way it drives, from the sim's `dir`: +x and −y go right on the screen, +y and −x
+  left, and a left-going cart draws its `_l` twin. Up- and down-screen roads use the same side
+  views (a side-view painting has no back);
+- the floating carts and the barges stay procedural, and without the paintings (`sprites.json`
+  missing) every cart falls back to its procedural `cart_<variant>`.
+
+**The Show me.** `Focus` gains `{ center: 'cart' }`: the camera goes to a cart carrying goods to a
+market (else any road cart) and zooms to 2× if it is further out; with no cart on the road yet, the
+goods view opens as before. *See the first cart deliver* uses it, and its hint names the donkey
+carts. The in-game help's goods line and the README say so.
+
+**Verified.**
+
+- 60 test files and 351 tests; the new `tests/iteration57.test.ts` covers every cart's twin (anchor
+  and pixels mirrored), the scale bounds, the pick by id and heading, the procedural fallbacks and
+  the quest's focus. `tests/iteration56.test.ts`'s pinned flip list now counts buildings only.
+- The cart sheet judged by eye at 6× (`npm run art:check` and a montage); then `checked: true`.
+- `scripts/playtest57.mjs`:
+  - a noon street with works, markets and folk, carts placed going both ways on two roads, shot at
+    2× and 4×: the donkeys stand a citizen's height and face their way;
+  - a live run where works fill carts: the first delivery at tick 1264 (12 goods), then the
+    quest's Show me lands the camera 9 world px from a cart, at 2×;
+  - without the paintings the procedural carts draw; a dusk probe shows no dark frame;
+  - no errors and no missing sprites.
+- Art and UI only: the control seed (Vellish 42, 150 days) is **bit-identical** to the code before
+  this iteration, line for line (1,942 folk at day 150, as in §4.86 and §4.87).
+
+**Not done.** The carts show no difference between going out loaded and coming back empty, and the
+covered wagons look the same in every season; both would need painted variants.
+
+### 4.89 M16 part 1, the wild: herds that thin where the city spreads, deer that run from the light, a lodge that hunts a chosen quarry, meat on the shelves, wolves in the Hush, the Close Season, two tales, the animal sheets (iteration 58)
 
 Part 1 of M16 (§16). Before it, the only wild thing with a use was the Gloam-hound, hunted for pelts.
 §15's rule holds: the player sees the herds, chooses the quarry, and can lose by it. A herd can be
@@ -2745,7 +2809,7 @@ six-run table came back identical.
   shelves' +4 and the Gloam road's coin. That is the design; the bot does not do it yet.
 
 **Verified.**
-- 60 test files. The new `tests/iteration57.test.ts` (18 tests) covers:
+- 61 test files. The new `tests/iteration58.test.ts` (18 tests) covers:
   - seeding on habitat;
   - a herd built over and lost;
   - breeding by the season;
@@ -2760,7 +2824,7 @@ six-run table came back identical.
   - a save from before the wild;
   - two frames for every creature;
   - a wild that is the same twice.
-- `scripts/playtest57.mjs`:
+- `scripts/playtest58.mjs`:
   - a herd at noon;
   - six deer leave lit ground;
   - the lodge's panel with its grounds and quarry buttons, and the quarry chosen by a click;
@@ -2811,7 +2875,7 @@ six-run table came back identical.
 - **M16 The wild and the water** — creatures as resources and the water put to use (§16):
   herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
   fishing from a bank or a lake shore, boats, reed-cutters, a water garden. Part 1, the wild ✅
-  (iteration 57, §4.88); part 2, the water, next.
+  (iteration 58, §4.89); part 2, the water, next.
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -3458,7 +3522,7 @@ Guildhall and the Temple by milestone like the Stake. Verified by a contact shee
 imported sprite over its diamond, day and night screenshots, and the balance table unchanged
 (art only).
 
-**M16 The wild and the water.** Two iterations. Part 1, the wild (✅ iteration 57, §4.88; the animal sheets painted the wild, the hounds, the Warden, the thrumhare, the wisp, the skyray and eight drake lines): herds of deer and elk on
+**M16 The wild and the water.** Two iterations. Part 1, the wild (✅ iteration 58, §4.89; the animal sheets painted the wild, the hounds, the Warden, the thrumhare, the wisp, the skyray and eight drake lines): herds of deer and elk on
 the meadows (day, flee lit ground, return at night), boar in the woods, otters on the banks,
 herons in the marsh, goats on the hills, wolves in the Hush that take a hare or a hen and
 frighten a hearth; the Hunters' Lodge hunts by a chosen quarry (a panel choice) and brings
@@ -3797,12 +3861,17 @@ playtest of a lakeside town.
 - *Rings on top (iteration 56):* a reach is a thing to see, so its outline is drawn after the light
   pass, above the buildings, with a label; and every reach a building has is read from the sim's own
   constant, so a ring never disagrees with the rule.
-- *The wild on side streams (iteration 57):* herds, hunts and wolves draw from streams keyed by the
+- *Painted carts scale by the donkey (iteration 57):* a vehicle painting is scaled by a per-sheet
+  factor that makes every donkey the same height (a citizen's), not by a target height, so loads of
+  different heights keep one animal; each cart faces right at import and gets a mirrored twin, and
+  the renderer picks the twin from the sim's heading. A cart's look is chosen by its id, so the art
+  never touches the sim.
+- *The wild on side streams (iteration 58):* herds, hunts and wolves draw from streams keyed by the
   seed, so the wild adds no roll to the main stream and a city that does not hunt or lose a hen is
   bit-identical; the city feels the wild only through what it does.
-- *A herd is a cap, not a census (iteration 57):* a herd's head follows the habitat within 6 tiles
+- *A herd is a cap, not a census (iteration 58):* a herd's head follows the habitat within 6 tiles
   that no building stands within 2 of, so the city's spread thins it without a separate rule, and
   a ward or a Glimhouse helps it back; the animals on the map are a view of the head count.
-- *Painted creatures only where they read (iteration 57):* a painting at 7–12 px that reads as a
+- *Painted creatures only where they read (iteration 58):* a painting at 7–12 px that reads as a
   blob stays procedural (the boar, the goat, the otter); a painting of another beast does not stand
   in for a lore creature (the lynx and the panther for the copper war-tiger).

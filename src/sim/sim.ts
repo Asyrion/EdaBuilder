@@ -92,7 +92,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyEconomy(state);
     dailyStorms(state);
     dailyTigers(state, wardenDistricts(state));
-    dailyWild(state); // the herds, the wolves and the hunt for game (iteration 57)
+    dailyWild(state); // the herds, the wolves and the hunt for game (iteration 58)
     dailyDaughter(state);
     dailyWeave(state);
     dailyGuilds(state);

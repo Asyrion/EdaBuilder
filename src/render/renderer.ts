@@ -11,6 +11,7 @@ import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, 
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
 import { reachesOf, type Reach } from '../sim/reach';
 import { zoneSpriteName } from './atlas';
+import { cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
@@ -138,7 +139,7 @@ export class Renderer {
     if (alpha !== 1) ctx.globalAlpha = 1;
     this.stats.drawn++;
   }
-  /** Draw a sprite mirrored about its anchor when it faces left (the wild walks both ways; iteration 57). */
+  /** Draw a sprite mirrored about its anchor when it faces left (the wild walks both ways; iteration 58). */
   private drawFacing(s: SpriteRect | null, wx: number, wy: number, left: boolean): void {
     if (!s) return;
     if (!left) { this.draw(s, wx, wy); return; }
@@ -628,6 +629,8 @@ export class Renderer {
     this.inView.ley = Math.min(1, leySeen / 6);
     this.inView.water = Math.min(1, waterSeen / Math.max(6, visible.length * 0.5));
     // agents
+    const cartPools = new Map<string, number>(); // the donkey-cart pools, counted once a frame (the paintings merge in after boot)
+    const cartCount = (prefix: string): number => { let n = cartPools.get(prefix); if (n === undefined) { n = this.atlas.countVariants(prefix); cartPools.set(prefix, n); } return n; };
     for (const a of state.agents) {
       // each walker keeps its own pace (its speed and its id), so a crowd on one road does not march in step
       const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;
@@ -728,7 +731,7 @@ export class Renderer {
         if (a.phase === 2 && cam.zoom >= 2 && Math.random() < 0.08) this.particles.emit({ x: wx + 4, y: wy + 2, vx: (Math.random() - 0.5) * 12, vy: -8 - Math.random() * 6, maxLife: 0.4, size: 1, color: PAL.lampWarm, glow: true, kind: 'spark' });
       } else if (a.kind === AgentKind.Walker) name = `walker_${a.job}_${a.variant % 3}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
       else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
-      else if (a.kind === AgentKind.Cart) name = `cart_${a.variant}`;
+      else if (a.kind === AgentKind.Cart) name = cartSpriteName(a, cartCount);
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);
       const floating = a.kind === AgentKind.Cart && a.variant === 3;

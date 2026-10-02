@@ -102,8 +102,8 @@ export interface Building {
   plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
   blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
   sluice?: boolean; // the Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw (iteration 53)
-  quarry?: 'hounds' | WildSpecies; // a Hunters' Lodge's chosen quarry; unset = hounds (iteration 57)
-  meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 57)
+  quarry?: 'hounds' | WildSpecies; // a Hunters' Lodge's chosen quarry; unset = hounds (iteration 58)
+  meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 58)
   trophies?: number; // a lodge's trophies awaiting the Gloam road
   took?: number; // a lodge: the day it last brought in game
   tookSp?: string; // a lodge: what it brought in that day
@@ -125,10 +125,10 @@ export const enum AgentKind {
   Walker = 5,
 }
 
-export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 57)
+export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 58)
 export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger' | WildSpecies;
 
-/** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 57). */
+/** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 58). */
 export interface Herd {
   id: number;
   sp: WildSpecies;
@@ -240,7 +240,7 @@ export interface Agent {
   ay?: number;
   job?: string; // walkers: key into WALKER_JOBS
   log?: string[]; // walkers: what it did today, last three lines
-  herdId?: number; // a wild animal's herd (iteration 57)
+  herdId?: number; // a wild animal's herd (iteration 58)
   duty?: 'guard' | 'works'; // a bound golem's post: guard (ward 6 at its foundry) or works (12 hands at targetId); unset = labour (iteration 53)
 }
 
@@ -394,8 +394,8 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number }; // today; the hunt's prices and sales since iteration 57
-  wild: WildState; // herds, packs and the hunt (wild.ts, iteration 57)
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number }; // today; the hunt's prices and sales since iteration 58
+  wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
@@ -517,7 +517,7 @@ export interface GameState {
     levies: number; // the Crown's Thaw levies taken
     levied: number; // crowns they took
     foxAudits: number; // the Fen-Nex quarter's seasonal audits
-    hides: number; // hides the lodges brought in from game (iteration 57)
+    hides: number; // hides the lodges brought in from game (iteration 58)
     meat: number; // meat the lodges brought in
     trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a tiger, a white hart)
     herdsLost: number; // herds the city's spread drove off

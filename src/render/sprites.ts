@@ -1932,7 +1932,7 @@ export function generateSprites(): SpriteDef[] {
     p.outline('outline');
     out.push({ name: `hound_${f}`, p, glow, ax: 6, ay: 8 });
   }
-  // the wild (iteration 57): deer, elk, boar, goats, wolves, otters and herons, two stride frames each, facing right
+  // the wild (iteration 58): deer, elk, boar, goats, wolves, otters and herons, two stride frames each, facing right
   const beast = (w: number, h: number, body: string, belly: string, f: number, o: { bodyX: number; bodyY: number; bodyW: number; bodyH: number; legH: number; headX: number; headY: number; headW: number; headH: number; neck?: boolean; tail?: [number, number][] }) => {
     const p = new Painter(w, h);
     const { bodyX, bodyY, bodyW, bodyH, legH, headX, headY, headW, headH } = o;
