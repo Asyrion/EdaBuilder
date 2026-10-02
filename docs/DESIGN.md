@@ -1857,6 +1857,37 @@ Lodge and the Wyrm-Court (a 3×3 ring of standing stones), which had no sprite a
 renderer asked for `b_<key>` and drew nothing, ghost, construction bar and glow included.
 `tests/sprites.test.ts` holds the line: every non-zone catalog key has a sprite.
 
+### 4.82 M15 part 2, the painted set: the zone levels, one look for every people, halls that grow, glimwood from the birches (iteration 51)
+
+M15 closes. Art only again: the one-seed balance check prints the iteration 49 line.
+
+**The zone levels.** Twenty-four paintings at the 1×1 size (34 px, 36 with the outline),
+four variants each: `hearth_l2` from the wooden houses, `craft_l1` from the general craft
+houses, `craft_l2` from the brickmakers, `craft_l3` from the forges, `arcane_l2` from the
+alchemists' houses, `market_l3` from the trade houses; the other levels stay procedural (a
+painted cottage is a level-2 home; a sod hut and a stone townhouse are not in the folders).
+All four variants of a level share one `targetHeight`, so a street does not jump in size;
+`sharpen 0.8` and 20 colours, because fewer colours read better at 34 px.
+
+**One look for every people.** `SpriteAtlas.imported` records what the manifest merged, and
+`zoneSpriteName` (atlas.ts) returns the base name when it was imported and the people's
+copy (`_grimmen`, `_veshari`, `_tallowkin`) otherwise, for the buildings and the placement
+ghost alike: one painting is the look for everyone, and the procedural people copies serve
+the levels without a painting.
+
+**Halls that grow.** `stagedSpriteName(kind, stage, has)` generalises the Stake's rule
+(`b_<kind>_s<stage>`, falling back to the highest lower stage, then the plain sprite) for
+`GROWING_HALLS` = the Stake, the Guildhall and the Temple; `guildhall_s1/s2` and
+`temple_s1/s2` are procedural specs that gain a window row and the bell tower, then a
+crystal, a glass dome and banners. The panel's Hall row appears on all three; the milestone
+message names them.
+
+**Glimwood and Gloam trees.** `recolour` (an HSL shift over the opaque pixels) turns the four
+birches into `glimwood_0..3` (pale ley blue, a glow on the leaf tips) and the four oaks into
+`gloamtree_0..3` (dark violet); the renderer reads their counts like the trees'. The
+castle on the hill (ley_spires image_0) matches no building yet and waits for the Hall of
+Wicks (M13 part 2).
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1976,9 +2007,9 @@ renderer asked for `b_<key>` and drew nothing, ghost, construction bar and glow 
   services with staff and stakes ✅; wyrmcraft matured; the world pushes back; the bot plays it
   all. Preceded by the sweep of iteration 44 (§4.75).
 - **M15 The painted set** — the reference paintings as sprites through the import pipeline
-  (§4.80, §16): spires, wells, the graveyard chapel, the craft houses, the trade houses, the
-  wooden houses; the nine sprite-less buildings drawn; the procedural set restyled by the
-  guide (§5); more halls that grow with the city.
+  (§4.80–4.82, §16): the ground, trees, bushes, mushrooms, the hero buildings, the zone levels,
+  one look for every people, halls that grow, glimwood and Gloam trees; the nine sprite-less
+  buildings drawn. ✅ (iterations 50–51)
 - **M16 The wild and the water** — creatures as resources and the water put to use (§16):
   herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
   fishing from a bank or a lake shore, boats, reed-cutters, a water garden.
@@ -2602,7 +2633,7 @@ Two milestones from the playtest notes of iteration 49, slotted after it: M15 fi
 paintings are in hand and the pipeline is built), then M14 part 3, then M16, then M14 parts
 4–5 and M13 part 2.
 
-**M15 The painted set.** Part 1 ✅ (iteration 50, §4.81): the pipeline's sheet, prop and
+**M15 The painted set** ✅ (iterations 50–51, §4.81–4.82). Part 1 (iteration 50, §4.81): the pipeline's sheet, prop and
 ground modes, the sharpen and outline pass, the ground, the trees, the bushes and mushrooms,
 the hero buildings (spire, Nexus, Wick-Tower, the four wells, the Depot, the Carters' Yard,
 the Ossuary, the Sextons' Chapel, the Boneyard, the Lyceum), and a procedural sprite for the
@@ -2884,5 +2915,8 @@ playtest of a lakeside town.
 - *Outline everything (iteration 50):* the procedural set's dark edge is the thing that made
   the imported stakes look pasted on; the same edge, and a sharpen pass, make a painting
   and a procedural sprite one set.
+- *One painting is the look for every people (iteration 51):* a people's copy of a sprite
+  exists to restyle a procedural look; a painting already is a look, so an imported base
+  shows for everyone and the copies serve only the levels without one.
 - *A corner is a door (iteration 49):* the four-side rule was invisible and wrong at every
   road end and bend; a rule the player cannot see must at least be the generous one.

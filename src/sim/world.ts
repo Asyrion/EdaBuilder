@@ -454,11 +454,16 @@ export function stakeStage(state: GameState): number {
   for (let k = 0; k < STAKE_STAGE_AT.length; k++) if (state.milestone >= STAKE_STAGE_AT[k]) st = k;
   return st;
 }
-/** The sprite for a stage, or the procedural hall when no imported sprite of that stage is in the atlas. */
-export function stakeSpriteName(stage: number, has: (name: string) => boolean): string {
-  const n = `b_stake_s${stage}`;
-  return has(n) ? n : 'b_stake';
+/** A hall that grows with the city: `b_<kind>_s<stage>`, else the highest lower stage the atlas holds, else the plain sprite. */
+export function stagedSpriteName(kind: string, stage: number, has: (name: string) => boolean): string {
+  for (let st = stage; st >= 0; st--) { const n = `b_${kind}_s${st}`; if (has(n)) return n; }
+  return `b_${kind}`;
 }
+export function stakeSpriteName(stage: number, has: (name: string) => boolean): string {
+  return stagedSpriteName('stake', stage, has);
+}
+/** The halls that grow with the city (iteration 51): the Stake, the Guildhall and the Temple. */
+export const GROWING_HALLS = ['stake', 'guildhall', 'temple'];
 /** "the Burgh's hall": the name of the hall at this stage, from the people's own milestone names. */
 export function stakeHallName(state: GameState): string {
   const st = stakeStage(state);

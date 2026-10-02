@@ -625,6 +625,422 @@
    "h": 2,
    "colors": 24,
    "checked": true
+  },
+  {
+   "name": "hearth_l2_v0",
+   "src": "inspirations/wooden_houses/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 34,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "hearth_l2_v1",
+   "src": "inspirations/wooden_houses/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 34,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "hearth_l2_v2",
+   "src": "inspirations/wooden_houses/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 34,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "hearth_l2_v3",
+   "src": "inspirations/wooden_houses/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 34,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l1_v0",
+   "src": "inspirations/craft_houses/general_craft/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 32,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l1_v1",
+   "src": "inspirations/craft_houses/general_craft/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 32,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l1_v2",
+   "src": "inspirations/craft_houses/general_craft/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 32,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l1_v3",
+   "src": "inspirations/craft_houses/general_craft/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 32,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l2_v0",
+   "src": "inspirations/craft_houses/brickmaker/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 36,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l2_v1",
+   "src": "inspirations/craft_houses/brickmaker/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 36,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l2_v2",
+   "src": "inspirations/craft_houses/brickmaker/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 36,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l2_v3",
+   "src": "inspirations/craft_houses/brickmaker/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 36,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l3_v0",
+   "src": "inspirations/craft_houses/forge/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 40,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l3_v1",
+   "src": "inspirations/craft_houses/forge/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 40,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l3_v2",
+   "src": "inspirations/craft_houses/forge/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 40,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "craft_l3_v3",
+   "src": "inspirations/craft_houses/forge/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 40,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "arcane_l2_v0",
+   "src": "inspirations/craft_houses/alchemists_house/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "arcane_l2_v1",
+   "src": "inspirations/craft_houses/alchemists_house/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "arcane_l2_v2",
+   "src": "inspirations/craft_houses/alchemists_house/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "arcane_l2_v3",
+   "src": "inspirations/craft_houses/alchemists_house/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "market_l3_v0",
+   "src": "inspirations/trade_houses/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "market_l3_v1",
+   "src": "inspirations/trade_houses/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "market_l3_v2",
+   "src": "inspirations/trade_houses/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "market_l3_v3",
+   "src": "inspirations/trade_houses/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetWidth": 34,
+   "targetHeight": 44,
+   "colors": 20,
+   "sharpen": 0.8,
+   "checked": true
+  },
+  {
+   "name": "glimwood_0",
+   "kind": "prop",
+   "src": "inspirations/trees/image_0(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 16,
+   "recolour": {
+    "hue": 90,
+    "sat": -0.12,
+    "light": 0.2
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.7,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "glimwood_1",
+   "kind": "prop",
+   "src": "inspirations/trees/image_1(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 16,
+   "recolour": {
+    "hue": 90,
+    "sat": -0.12,
+    "light": 0.2
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.7,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "glimwood_2",
+   "kind": "prop",
+   "src": "inspirations/trees/image_2(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 16,
+   "recolour": {
+    "hue": 90,
+    "sat": -0.12,
+    "light": 0.2
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.7,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "glimwood_3",
+   "kind": "prop",
+   "src": "inspirations/trees/image_3(2).png",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 16,
+   "recolour": {
+    "hue": 90,
+    "sat": -0.12,
+    "light": 0.2
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.7,
+    "warm": 40
+   },
+   "checked": true
+  },
+  {
+   "name": "gloamtree_0",
+   "kind": "prop",
+   "src": "inspirations/trees/image_0.png",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "checked": true
+  },
+  {
+   "name": "gloamtree_1",
+   "kind": "prop",
+   "src": "inspirations/trees/image_1.png",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "checked": true
+  },
+  {
+   "name": "gloamtree_2",
+   "kind": "prop",
+   "src": "inspirations/trees/image_2.png",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "checked": true
+  },
+  {
+   "name": "gloamtree_3",
+   "kind": "prop",
+   "src": "inspirations/trees/image_3.png",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "checked": true
   }
  ]
 }

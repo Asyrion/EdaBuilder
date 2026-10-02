@@ -32,3 +32,39 @@ describe('the sprite set', () => {
     expect(names.has('bush_0')).toBe(true);
   });
 });
+
+import { zoneSpriteName } from '../src/render/atlas';
+import { stagedSpriteName, GROWING_HALLS } from '../src/sim/world';
+import { recolour } from '../scripts/lib/sprite.mjs';
+import { readFileSync } from 'node:fs';
+
+describe('the painted set, part 2', () => {
+  it('an imported base is the look for every people; the levels without a painting keep the people copy', () => {
+    const atlas = { imported: new Set(['hearth_l2_v0']) };
+    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_grimmen')).toBe('hearth_l2_v0');
+    expect(zoneSpriteName(atlas, 'hearth', 2, 4, '_grimmen')).toBe('hearth_l2_v0');
+    expect(zoneSpriteName(atlas, 'hearth', 1, 0, '_grimmen')).toBe('hearth_l1_v0_grimmen');
+    expect(zoneSpriteName(atlas, 'hearth', 1, 0, '')).toBe('hearth_l1_v0');
+  });
+
+  it('a hall that grows falls back to the highest lower stage, then the plain sprite', () => {
+    const has = (n: string) => ['b_guildhall_s1', 'b_guildhall_s2', 'b_temple_s1'].includes(n);
+    expect(stagedSpriteName('guildhall', 0, has)).toBe('b_guildhall');
+    expect(stagedSpriteName('guildhall', 1, has)).toBe('b_guildhall_s1');
+    expect(stagedSpriteName('guildhall', 3, has)).toBe('b_guildhall_s2');
+    expect(stagedSpriteName('temple', 3, has)).toBe('b_temple_s1');
+    expect(GROWING_HALLS).toEqual(['stake', 'guildhall', 'temple']);
+    for (const n of ['b_guildhall_s1', 'b_guildhall_s2', 'b_temple_s1', 'b_temple_s2']) expect(names.has(n)).toBe(true);
+  });
+
+  it('recolour shifts the hue and keeps alpha; the manifest holds the zone levels at 36 px and the glimwood', () => {
+    const img = { w: 2, h: 1, data: new Uint8ClampedArray([40, 200, 40, 255, 0, 0, 0, 0]) };
+    const out = recolour(img, { hue: 120 });
+    expect(out.data[2]).toBeGreaterThan(out.data[0]); // green turned blue
+    expect(out.data[3]).toBe(255);
+    expect(out.data[7]).toBe(0);
+    const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8'));
+    for (const n of ['hearth_l2_v0', 'craft_l1_v0', 'craft_l2_v0', 'craft_l3_v0', 'arcane_l2_v0', 'market_l3_v0']) expect(manifest.sprites[n].w).toBe(36);
+    expect(manifest.sprites.glimwood_0.glow).toBeDefined();
+  });
+});

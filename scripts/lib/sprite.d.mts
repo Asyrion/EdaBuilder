@@ -21,3 +21,4 @@ export function checkSheet(entries: { kind?: string; img: RgbaImage; w: number; 
 export function pad(img: RgbaImage, n?: number): RgbaImage;
 export function outline(img: RgbaImage, rgba?: number[]): RgbaImage;
 export function sharpen(img: RgbaImage, amount?: number): RgbaImage;
+export function recolour(img: RgbaImage, opts?: { hue?: number; sat?: number; light?: number }): RgbaImage;

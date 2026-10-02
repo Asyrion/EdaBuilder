@@ -4,7 +4,7 @@ import { inFenNex } from './lore';
 import { districtUnlockNotes, quarterOf } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
 import { Zone, type Building, type GameState } from './types';
-import { forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
+import { GROWING_HALLS, forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
 
@@ -94,8 +94,8 @@ export function checkMilestones(state: GameState): void {
     for (const line of districtUnlockNotes(state.milestone)) pushMessage(state, line, 'milestone');
   }
   if (stakeStage(state) !== stage0) {
-    forEachBuilding(state, (b) => { if (b.kind === 'stake') markDirtyAround(state, b.x, b.y); });
-    pushMessage(state, `The hall at the Founding Stake is raised anew: ${stakeHallName(state)}.`, 'info');
+    forEachBuilding(state, (b) => { if (GROWING_HALLS.includes(b.kind)) markDirtyAround(state, b.x, b.y); });
+    pushMessage(state, `The halls are raised anew: the Founding Stake, the Guildhall and the Temple become ${stakeHallName(state).replace(/^the /, '')}s of their kind.`, 'info');
   }
 }
 

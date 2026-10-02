@@ -305,6 +305,34 @@ export function sharpen(img, amount = 0.5) {
   return out;
 }
 
+
+/** An HSL shift over the opaque pixels: hue in degrees, sat and light as additive fractions (−1..1). Alpha is kept. */
+export function recolour(img, { hue = 0, sat = 0, light = 0 } = {}) {
+  const { w, h, data } = img;
+  const out = { w, h, data: new Uint8ClampedArray(data) };
+  for (let i = 0; i < w * h; i++) {
+    const o = i * 4;
+    if (data[o + 3] === 0) continue;
+    const r = data[o] / 255, g = data[o + 1] / 255, b = data[o + 2] / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+    let hh = 0, ss = 0;
+    if (max !== min) {
+      const d = max - min;
+      ss = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      hh = max === r ? ((g - b) / d + (g < b ? 6 : 0)) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      hh *= 60;
+    }
+    hh = (((hh + hue) % 360) + 360) % 360;
+    ss = Math.max(0, Math.min(1, ss + sat));
+    const ll = Math.max(0, Math.min(1, l + light));
+    const c = (1 - Math.abs(2 * ll - 1)) * ss, x = c * (1 - Math.abs(((hh / 60) % 2) - 1)), m = ll - c / 2;
+    const k = Math.floor(hh / 60) % 6;
+    const [rr, gg, bb] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][k];
+    out.data[o] = Math.round((rr + m) * 255); out.data[o + 1] = Math.round((gg + m) * 255); out.data[o + 2] = Math.round((bb + m) * 255);
+  }
+  return out;
+}
+
 function blit(sheet, img, sx, sy, zoom) {
   for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
     const o = (y * img.w + x) * 4; if (img.data[o + 3] === 0) continue;

@@ -7,10 +7,10 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
-import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, sharpen } from './lib/sprite.mjs';
+import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
 const args = process.argv.slice(2);
 const check = args.includes('--check');
@@ -47,11 +47,12 @@ for (const e of sources.sprites) {
   if (kind === 'prop') {
     const th = e.targetHeight ?? 24;
     const small = boxScale(img, Math.max(1, Math.round((img.w * th) / img.h)), th);
-    results.push({ e, kind, img: sharpen(small, e.sharpen ?? 0.6) });
+    results.push({ e, kind, img: sharpen(e.recolour ? recolour(small, e.recolour) : small, e.sharpen ?? 0.6) });
     continue;
   }
   const targetW = e.targetWidth ?? (e.targetHeight ? Math.max(1, Math.round((img.w * e.targetHeight) / img.h)) : (e.w + e.h) * 16 + 2);
-  results.push({ e, kind, img: sharpen(boxScale(img, targetW, e.targetHeight ?? 0), e.sharpen ?? 0.6) });
+  const scaled = boxScale(img, targetW, e.targetHeight ?? 0);
+  results.push({ e, kind, img: sharpen(e.recolour ? recolour(scaled, e.recolour) : scaled, e.sharpen ?? 0.6) });
 }
 
 // ground families: one palette and one mean colour per family

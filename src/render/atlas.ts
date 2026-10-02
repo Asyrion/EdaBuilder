@@ -24,6 +24,8 @@ export interface AtlasManifest {
 export class SpriteAtlas {
   image!: HTMLCanvasElement | HTMLImageElement;
   sprites: Record<string, SpriteRect> = {};
+  /** Names that came from public/art/sprites.json: an imported painting is the look for every people (iteration 51). */
+  imported = new Set<string>();
   private missing = new Set<string>();
 
   get(name: string): SpriteRect | null {
@@ -119,6 +121,7 @@ export class SpriteAtlas {
       const rect: SpriteRect = { x: p.x, y: p.y, w: l.img.width, h: l.img.height, ax: l.e.ax, ay: l.e.ay };
       if (l.glow) { const g = pos[k++]; ctx.drawImage(l.glow, g.x, g.y); rect.glow = { x: g.x, y: g.y }; }
       this.sprites[l.name] = rect;
+      this.imported.add(l.name);
       this.missing.delete(l.name);
     }
     this.image = canvas;
@@ -139,6 +142,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 /** Shelf packing in the given order, from startY down, 1 px gutters. Pure, so a test can hold it to no overlaps. */
+/** A zone building's sprite: the people's copy, unless the base was imported (one painting is the look for everyone). */
+export function zoneSpriteName(atlas: { imported: Set<string> }, kind: string, level: number, variant: number, suffix: string): string {
+  const base = `${kind}_l${level}_v${variant % 4}`;
+  return suffix && !atlas.imported.has(base) ? `${base}${suffix}` : base;
+}
+
 export function shelfPack(items: { w: number; h: number }[], W = 1024, startY = 0): { pos: { x: number; y: number }[]; height: number } {
   let x = 0;
   let y = startY;

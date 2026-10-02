@@ -349,6 +349,14 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 51 (M15 part 2: the zone levels, one look for every people, halls that grow)
+
+- Twenty-four zone sprites from the paintings (hearth 2, craft 1–3, arcane 2, market 3, four
+  variants each) at the 1×1 size; an imported base sprite is the look for every people; the
+  Guildhall and the Temple grow with the city like the Stake (two procedural stages each);
+  glimwood and Gloam trees recoloured from the birches and oaks through a new `recolour`
+  step. M15 closed. The castle painting waits for the Hall of Wicks (M13 part 2).
+
 ## Done in iteration 50 (M15 part 1: the painted set, the ground, trees, bushes, mushrooms, hero buildings)
 
 - The import pipeline slices sheets into islands, imports props (trunk-base anchors) and
@@ -508,25 +516,18 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M15 part 2: the painted set, the zone levels** (DESIGN §16, §4.81): the wooden houses
-   as the Hearth levels, forge, brickmaker, general craft and the alchemist as the Craft and
-   Arcane levels, the trade houses as Market 3, all 1×1 at 34 px with a readability check
-   on the sheet; an imported base sprite shown for every people (the renderer prefers an
-   imported base over the procedural people copy); the Guildhall and the Temple growing with
-   the city like the Stake; glimwood and Gloam trees recoloured from the birches; the
-   procedural restyle by the guide (signs, awnings, smithy sides, kilns, windlass wells).
-1. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
+0. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
    what they say (each line's aura a real, shown effect); the Great Cradle; lodges with a
    capacity; feeding reach; departed dragons that return; roles with a price; champions who
    can lose a bout; materials with sinks; marvels and wonders with a role of their own; the
    Wyrm-Court after the binding; golems assigned to a works. Balance against the iteration
    49 table.
-2. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters,
+1. **M16 The wild and the water** (DESIGN §16; the animals folder's creature sheets re-skin the hounds, drakes, golems, skyrays, tigers and wisps here): part 1 the wild (herds, boar, otters,
    herons, goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as
    goods; herds that thin where the city spreads); part 2 the water (a Fishers' Hut with
    boats, fish that spoil, reed-cutters for thatch, a water garden, the lake's own land
    value and well bonus, a weir pool and a ford).
-3. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
+2. **M13 part 2: the Tallowkin's light** (the castle painting, ley_spires image_0, as the Hall of Wicks) (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
    warps the wickhouses, a candle-eyed child who reads the Veins), the lamplighter walker
