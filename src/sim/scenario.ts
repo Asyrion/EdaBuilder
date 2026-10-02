@@ -5,7 +5,8 @@ import { createGame, pushMessage } from './world';
 import { run, recomputeAll } from './sim';
 import { spawnRestless } from './agents';
 import { markDirty } from './world';
-import { type GameState, type Scenario } from './types';
+import { CHALLENGE_DAYS, type GameState, type Scenario } from './types';
+import { debtLine } from './economy';
 
 export interface ScenarioDef {
   id: Scenario;
@@ -60,11 +61,20 @@ function inherit(s: GameState): void {
   s.messages = [];
   s.chronicle = [];
   recomputeAll(s);
-  pushMessage(s, `${s.cityName} is yours by default. The last Warden-Reeve left ${-s.treasury} crowns of debt, ${ruined} ruins, ${s.unquieted} unquieted dead and a surge two days out. Five days below −8,000 ends the Charter.`, 'bad', true);
+  pushMessage(s, `${s.cityName} is yours by default. The last Warden-Reeve left ${-s.treasury} crowns of debt, ${ruined} ruins, ${s.unquieted} unquieted dead and a surge two days out. Five days below ${Math.round(debtLine(s)).toLocaleString()} ends the Charter.`, 'bad', true);
 }
 
-/** The daily challenge: the open valley on a seed made from today's date; the goal is Market Town by day 60. */
-export const CHALLENGE_DAYS = 60;
+/** The daily challenge: the open valley on a seed made from today's date, the people drawn from it too; the goal is Market Town by day 60, failed at day 61 and scored. */
+export { CHALLENGE_DAYS };
+export const CHALLENGE_PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+export function challengePeople(key: string): FactionId {
+  return CHALLENGE_PEOPLES[challengeSeed(key) % CHALLENGE_PEOPLES.length];
+}
+/** The score: the days to spare and a point a thousand crowns; 0 when the challenge was failed. */
+export function challengeScore(s: GameState): number {
+  if (s.challengeDay < 0) return 0;
+  return Math.max(0, CHALLENGE_DAYS + 1 - s.challengeDay) + Math.round(s.treasury / 1000);
+}
 export function todayKey(d = new Date()): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
@@ -74,9 +84,10 @@ export function challengeSeed(key: string): number {
   return h % 1000000;
 }
 export function createChallenge(name: string, key = todayKey()): GameState {
-  const s = createGame(challengeSeed(key), name, 'valley');
+  const people = challengePeople(key);
+  const s = createGame(challengeSeed(key), name, 'valley', people);
   s.challenge = key;
-  pushMessage(s, `The daily challenge of ${key}: every Warden-Reeve in Eda plays this valley today. Reach Market Town by day ${CHALLENGE_DAYS}.`, 'milestone', true);
+  pushMessage(s, `The daily challenge of ${key}: every Warden-Reeve in Eda plays this valley today, as the ${people[0].toUpperCase() + people.slice(1)}. Reach the fifth milestone by day ${CHALLENGE_DAYS}; the score is the days to spare and a point a thousand crowns.`, 'milestone', true);
   return s;
 }
 

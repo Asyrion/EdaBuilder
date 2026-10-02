@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY } from './catalog';
 import { edictOn } from './edicts';
 import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Agent, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, pushMessage, rngOf, seasonOf } from './world';
+import { commitRng, forEachBuilding, pushMessage, rngOf, seasonOf, illTiding } from './world';
 import { effects } from './hazards';
 import { SEAM } from './growth';
 import { delverAt } from './wyrmcraft';
@@ -191,6 +191,7 @@ function creatureN(s: GameState, species: string): number {
 export function surgeMaddensGolems(s: GameState): number {
   let n = 0;
   for (const a of s.agents) if (isGolem(a) && a.load > 0) { a.load = 0; a.homeId = -1; a.duty = undefined; a.targetId = -1; n++; }
+  if (n) illTiding(s);
   if (n) pushMessage(s, `${n} bound Concord Warden${n > 1 ? 's' : ''} break their binding in the surge and walk loose.`, 'bad', true);
   return n;
 }

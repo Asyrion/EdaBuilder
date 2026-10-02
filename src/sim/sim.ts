@@ -1,7 +1,7 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
-import { maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireReturn, maybeFireRiot, maybeFireWyrm } from './events';
+import { foxAudit, maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireReturn, maybeFireRiot, maybeFireWyrm } from './events';
 import { seasonOf } from './world';
 import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
 import { dailyDragons, seasonalBout } from './wyrmcraft';
@@ -11,7 +11,7 @@ import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
 import { dailyStorms, dailyTigers } from './lore';
 import { dailyDaughter } from './charter';
-import { dailyWeave, hasMarvel } from './weave';
+import { dailyWeather, dailyWeave, hasMarvel } from './weave';
 import { dailyGuilds } from './guilds';
 import { dailyTwinRoad } from './trade';
 import { dailyBreeding } from './breeding';
@@ -24,7 +24,7 @@ import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
-import { checkMilestones, dailyEconomy } from './economy';
+import { checkMilestones, crownLevy, dailyEconomy } from './economy';
 import { dailyAgents, dailyTraffic, tickAgents } from './agents';
 import { dailyDeath, dailyFire, dailyGloam, dailySurge, recomputeGloamDist } from './hazards';
 import { pushMessage } from './world';
@@ -69,6 +69,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   if (t % 6 === 0) updateCoverage(state, SERVICE_TYPES[Math.floor(t / 6) % SERVICE_TYPES.length]);
   if (t % TICKS_PER_DAY === 0) {
     state.day++;
+    dailyWeather(state); // the sky first: everything below reads it
     dailyBuildings(state);
     state.stats.fullDays = state.goodsShort === 0 ? state.stats.fullDays + 1 : 0;
     updateSocial(state);
@@ -101,6 +102,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (Object.values(state.districtQuarters).some(Boolean)) state.stats.quarterDays++;
   if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
+    if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) { crownLevy(state); foxAudit(state); } // the season tick: the Crown's Thaw levy and the Fen-Nex quarter's audit (iteration 54)
     maybeFireWyrm(state);
     maybeFireReturn(state);
     maybeFireCalendar(state);

@@ -1,4 +1,5 @@
 /** Map sectors: the Charter covers part of the map; buy sectors to extend it, and the Gloam draws back. See DESIGN.md 4.43. */
+import { favourFactor } from './economy';
 import { MAP_H, MAP_W, idx, type GameState } from './types';
 import { markAllDirty, pushMessage } from './world';
 import { relicDone } from './relics';
@@ -56,7 +57,7 @@ export function sectorCost(s: GameState, k: number): number {
   const fk = sectorOf(s.founding.x, s.founding.y);
   const d = Math.abs((k % SECTORS_X) - (fk % SECTORS_X)) + Math.abs(Math.floor(k / SECTORS_X) - Math.floor(fk / SECTORS_X));
   const bought = Math.max(0, charteredCount(s) - 4);
-  return Math.round(SECTOR_BASE_COST * (1 + d * 0.6) * (1 + bought * 0.2) * (relicDone(s, 'concordcharts') ? 0.8 : 1));
+  return Math.round(SECTOR_BASE_COST * (1 + d * 0.6) * (1 + bought * 0.2) * (relicDone(s, 'concordcharts') ? 0.8 : 1) * favourFactor(s)); // the Crown's favour moves the price (iteration 54)
 }
 export function canBuySector(s: GameState, k: number): string | null {
   if (k < 0 || k >= s.sectors.length) return 'No such sector';

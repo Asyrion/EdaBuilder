@@ -19,7 +19,7 @@ import { factionOf } from '../data/factions';
 import { mothBonus } from './creatures';
 import { wyrmGuards } from './wyrm';
 import { GOLEM_LABOUR, labourGolems, raysLured, worksGolems } from './beasts';
-import { aspectAt, auraAt, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, FLOODPROOF } from './weave';
+import { aspectAt, auraAt, drought, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, raining, FLOODPROOF } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -232,7 +232,8 @@ export function dailyBuildings(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
-      b.age++;
+      const aged = !(b.kind === 'worldtree' && drought(state)); // the World Tree waits out a drought (iteration 54)
+      if (aged) b.age++;
       // the Hospice draws two goods of draughts a day from the fullest market within 16 (it holds ten)
       if (b.kind === 'hospice' && b.state === 'ok' && b.lit && b.stock < HOSPICE_DRAUGHTS) {
         let best: Building | null = null;
@@ -247,7 +248,7 @@ export function dailyBuildings(state: GameState): void {
         b.progress++; // relics studied here
       }
       if (def.goodsRate && b.state === 'ok') {
-        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands
+        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (b.kind === 'hanginggardens' && drought(state) && !b.watered ? 0.5 : 1) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands; unwatered gardens wilt in a drought
         b.stock += Math.max(0, made);
         state.goodsProduced += Math.max(0, made);
       }
@@ -255,7 +256,7 @@ export function dailyBuildings(state: GameState): void {
         extraJobs.push(b);
         jobs += capacityOf(b, state);
       }
-      if (b.kind === 'worldtree' && b.age % 30 === 0 && b.age <= 90) {
+      if (b.kind === 'worldtree' && aged && b.age % 30 === 0 && b.age <= 90) {
         markDirty(state, b.x, b.y);
         const st = treeStage(b);
         if (st > 0) pushMessage(state, st === 3 ? `The World Tree at (${b.x},${b.y}) is full-grown: its crown stands above the Lantern of Vell, and the Gloam will not cross its shade.` : `The World Tree at (${b.x},${b.y}) has grown another season; its shade now reaches ${TREE_LEISURE_RADIUS[st]} tiles.`, 'milestone', true, { x: b.x, y: b.y });
@@ -329,7 +330,7 @@ export function dailyBuildings(state: GameState): void {
       const forge = marvelNear(state, 'wyrmforge', b) && forgeHot(state); // a Forge with no wyrmfire is cold (iteration 53)
       const glim = glimhouseNear(state, b) || forge;
       const asp = aspectAt(state, b.x, b.y);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (modifierSum(state, 'rain') > 0 ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (auraAt(state, 'ember', b.x, b.y) ? 0.1 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (forge ? 0.25 : 0));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (raining(state) ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (auraAt(state, 'ember', b.x, b.y) ? 0.1 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (forge ? 0.25 : 0));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const hands = b.workers + Math.min(worksGolems(state, b) * GOLEM_LABOUR, Math.max(0, capacityOf(b, state) - b.workers)); // a posted Concord Warden works the bench for twelve, up to the works' capacity; with none posted the crew alone, exactly as before

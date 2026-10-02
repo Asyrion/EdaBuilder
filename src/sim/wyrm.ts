@@ -1,7 +1,7 @@
 /** The Sleeping Wyrm: a Vein-Wyrm coiled around the farthest ley node. See DESIGN.md 4.29 / 8.2. */
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type GameState, type WyrmState } from './types';
-import { forEachBuilding, markDirtyAround, pushMessage } from './world';
+import { forEachBuilding, markDirtyAround, pushMessage, illTiding } from './world';
 import { edictOn } from './edicts';
 import { effects } from './hazards';
 
@@ -89,6 +89,7 @@ export function wake(s: GameState, why: string): void {
   s.wyrm.waking = 100;
   s.wyrm.tributeDay = s.day; // tribute event fires today
   redraw(s);
+  illTiding(s);
   pushMessage(s, `${why} The Sleeping Wyrm at (${n.x},${n.y}) uncoils and lifts its head. The spires all hum flat.`, 'bad', true, { x: n.x, y: n.y });
 }
 
@@ -166,6 +167,7 @@ export function startFlyover(s: GameState, hostile: boolean): void {
   s.stats.wyrmFlyovers++;
   const gw = hostile ? greatWyrm(s) : null;
   if (gw) { s.stats.wyrmDuels++; pushMessage(s, `${gw.name} rises from its cradle to meet the Vein-Wyrm over ${s.cityName}. Two shadows cross the valley; the old one turns first. Half the roofs it meant to burn are spared.`, 'milestone', true, { x: n.x, y: n.y }); return; }
+  if (hostile) illTiding(s);
   pushMessage(s, hostile ? `The wyrm takes wing over ${s.cityName}. Its shadow is the size of a district.` : `The bound wyrm circles ${s.cityName} once, as it does each season. Glimmoths scatter like sparks.`, hostile ? 'bad' : 'info', true, { x: n.x, y: n.y });
 }
 

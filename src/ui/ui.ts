@@ -1,7 +1,7 @@
-import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, specialLock, type FactionId, costOf } from '../data/factions';
+import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, nextGate, specialLock, type FactionId, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
-import { computeLedger } from '../sim/economy';
+import { DEBT_DAYS, FAVOUR_AUDIT, FAVOUR_NEUTRAL, FAVOUR_STEP, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, favourFactor, grantFor, levyDue, loanLimit } from '../sim/economy';
 import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, demandReasons, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
@@ -23,8 +23,8 @@ import { DEV_COMMANDS, DEV_GROUPS } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
-import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
-import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterLocked, districtOpenAt } from '../sim/districts';
+import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
+import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
 import { FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
 import { TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
 import type { Training, DragonRole } from '../sim/types';
@@ -35,10 +35,10 @@ import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '..
 import type { Tool } from './tools';
 import type { Camera } from '../render/camera';
 import type { Scenario } from '../sim/types';
-import { SCENARIOS } from '../sim/scenario';
+import { CHALLENGE_DAYS, SCENARIOS, challengeScore } from '../sim/scenario';
 import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
-import { ASPECT_INFO, AURA_INFO, aspectAt, aurasAt, pressureWord } from '../sim/weave';
+import { ASPECT_INFO, AURA_INFO, WEATHER_WORD, aspectAt, aurasAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
@@ -73,7 +73,9 @@ export interface UiHost {
   musicOn: boolean;
   setMusic(on: boolean): void;
   setTax(zone: keyof GameState['taxRates'], v: number): void;
-  setEdict(key: string, on: boolean, district: number): void;
+  setEdict(key: string, on: boolean, district: number): string | null;
+  takeLoan(): string | null;
+  repayLoan(): string | null;
   setQuarter(district: number, q: QuarterId | null): string | null;
   seeLesson(id: string): void;
   setPriority(id: number, p: 0 | 1 | 2): void;
@@ -391,17 +393,24 @@ export class UI {
     const s = this.host.state;
     const h = this.host;
     this.q('#tb-name').textContent = s.cityName;
-    this.q('#tb-title').textContent = `${this.ms()[s.milestone].name} · ${factionOf(s).people}`;
+    const gate = nextGate(s);
+    const tbTitle = this.q('#tb-title');
+    tbTitle.textContent = `${this.ms()[s.milestone].name} · ${factionOf(s).people}${gate ? ` · next ${gate}` : ''}`;
+    tbTitle.title = gate ? `Next milestone: ${gate}${gateMet(s) ? '' : ' (the people\'s condition is not met today)'}` : 'The last milestone';
+    tbTitle.classList.toggle('warn', !!gate && !gateMet(s));
     const season = SEASON_NAMES[Math.floor(s.day / DAYS_PER_SEASON) % 4];
     const year = 1 + Math.floor(s.day / (DAYS_PER_SEASON * 4));
-    this.q('#tb-date').textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}`;
+    const tbDate = this.q('#tb-date');
+    tbDate.textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}${s.weather ? ` · ${WEATHER_WORD[s.weather.kind]}` : ''}`;
+    tbDate.title = s.weather ? `${WEATHER_WORD[s.weather.kind][0].toUpperCase() + WEATHER_WORD[s.weather.kind].slice(1)} until day ${s.weather.until}` : 'Fair weather';
     const l = computeLedger(s);
     const gold = this.q('#tb-gold');
     gold.textContent = `${Math.round(s.treasury).toLocaleString()} c`;
     gold.className = `v ${s.treasury < 0 ? 'bad' : 'gold'}`;
     const net = this.q('#tb-net');
-    net.textContent = `${l.net >= 0 ? '+' : ''}${Math.round(l.net)} / day`;
-    net.className = `l ${l.net >= 0 ? 'good' : 'bad'}`;
+    const perDay = l.net + l.trade; // trade is banked on the day too (iteration 54)
+    net.textContent = `${perDay >= 0 ? '+' : ''}${Math.round(perDay)} / day`;
+    net.className = `l ${perDay >= 0 ? 'good' : 'bad'}`;
     this.q('#tb-pop').textContent = s.population.toLocaleString();
     const wf = workforceOf(s);
     this.q('#tb-jobs').textContent = `${s.employed}/${wf}${s.jobs > wf ? ' (+' + (s.jobs - wf) + ' open)' : ''}`;
@@ -431,7 +440,7 @@ export class UI {
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
-      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p>${districtUnlockNotes(s.milestone).map((l) => `<p>${l}</p>`).join('')}<p class="muted">Grant: +${this.ms()[s.milestone].grant} crowns. New buildings unlocked in the toolbar.</p>`, 9000);
+      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p>${districtUnlockNotes(s.milestone).map((l) => `<p>${l}</p>`).join('')}<p class="muted">${grantFor(s, this.ms()[s.milestone].grant) > 0 ? `Grant: +${grantFor(s, this.ms()[s.milestone].grant).toLocaleString()} crowns.` : `The Crown's auditors hold the grant: its favour is under ${FAVOUR_AUDIT}.`} New buildings unlocked in the toolbar.</p>`, 9000);
       this.lastMilestone = s.milestone;
       this.refreshItems();
     }
@@ -485,11 +494,14 @@ export class UI {
     const score = el.querySelector('.score') as HTMLElement;
     if (s.challenge) {
       const done = s.challengeDay >= 0;
-      const text = done ? `Daily challenge ${s.challenge}: Market Town on day ${s.challengeDay}${s.stats.devUses ? ' (dev tools used)' : ''}` : `Daily challenge ${s.challenge}: day ${s.day} of 60, ${this.ms()[s.milestone].name}`;
+      const failed = s.challengeDay === -2;
+      const goal = this.ms()[5].name;
+      const people = factionOf(s).people;
+      const text = done ? `Daily challenge ${s.challenge} (${people}): ${goal} on day ${s.challengeDay}, score ${challengeScore(s)}${s.stats.devUses ? ' (dev tools used)' : ''}` : failed ? `Daily challenge ${s.challenge} (${people}): failed, no ${goal} by day ${CHALLENGE_DAYS}` : `Daily challenge ${s.challenge} (${people}): day ${s.day} of ${CHALLENGE_DAYS}, ${this.ms()[s.milestone].name}`;
       score.classList.remove('hidden');
-      score.innerHTML = `<span class="lbl">${done ? 'Result' : 'Challenge'}</span> ${text}${done ? ' <button class="show" id="q-copy">Copy result</button>' : ''}`;
+      score.innerHTML = `<span class="lbl">${done ? 'Result' : failed ? 'Failed' : 'Challenge'}</span> <span class="${failed ? 'bad' : ''}">${text}</span>${done || failed ? ' <button class="show" id="q-copy">Copy result</button>' : ''}`;
       const cp = score.querySelector('#q-copy') as HTMLButtonElement | null;
-      if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge}: Market Town on day ${s.challengeDay} in ${s.cityName}${s.stats.devUses ? ' (dev tools used)' : ''}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
+      if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge} (${people}): ${done ? `${goal} on day ${s.challengeDay}, score ${challengeScore(s)}` : `failed by day ${CHALLENGE_DAYS}`} in ${s.cityName}${s.stats.devUses ? ' (dev tools used)' : ''}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
     } else score.classList.add('hidden');
     fc.classList.toggle('hidden', !lines.length);
     if (lines.length) fc.innerHTML = `<span class="lbl">Forecast</span>${lines.map((f) => `<div class="${f.kind}">✦ ${f.text}</div>`).join('')}`;
@@ -1166,7 +1178,7 @@ export class UI {
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
-            <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley for everyone, Market Town by day 60.</li>
+            <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
@@ -1198,11 +1210,13 @@ export class UI {
             <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
             <li><b>Unrest</b> above half for five days brings a riot to the least-watched market (the Watch holds it at half coverage, or pay the Crown 600); an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are.</li>
-            <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A road at a building's corner counts as its door.</li>
+            <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A charter costs a crown a building a day and holds ${CHARTER_LOCK_DAYS} days; a Craft quarter's smoke drifts four tiles past its edge, a Temple quarter takes a tenth of the city's market tithe. An <b>edict</b> holds ${EDICT_MIN_DAYS} days and costs ${EDICT_REPEAL} crowns to repeal. A road at a building's corner counts as its door.</li>
+            <li><b>Weather</b> is written in the seed: Bloom rain (fewer fires, more craft, less miasma), an Ember drought (more fires, wells reach less, the gardens and the World Tree wait) and a Hush blizzard (hearths burn more mana, the hounds stay in). The top bar names it; the Observatory sees it coming.</li>
+            <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: the Vellish need happiness 45 + 3 × the milestone, the Tallowkin must hold their light three days.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
-            <li>Treasury below −8,000 for 5 days.</li>
+            <li>Treasury below −8,000 × (1 + milestone ÷ 2) for ${DEBT_DAYS} days.</li>
             <li>The Gloam reaches the founding ley node.</li>
             <li>Forty restless dead walk your streets.</li>
           </ul>
@@ -1235,7 +1249,7 @@ export class UI {
       <div class="names">${names}</div>
       <div class="peoples">${Object.values(FACTIONS).map((fd) => `<button data-fac="${fd.id}" class="${fd.id === 'vellish' ? 'active' : ''}" ${fd.playable ? '' : 'disabled'} title="${fd.lore}"><b>${fd.name}</b><span>${fd.playable ? fd.lore : 'Coming in a later iteration.'}</span></button>`).join('')}</div>
       <div class="scenarios">${SCENARIOS.map((sc, i) => `<button data-sc="${sc.id}" class="${i === 0 ? 'active' : ''}" title="${sc.goal}"><b>${sc.name}</b><span>${sc.blurb}</span><em>Goal: ${sc.goal}</em></button>`).join('')}</div>
-      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley for everyone today; Market Town by day 60">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
+      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley and people for everyone today; the fifth milestone by day ${CHALLENGE_DAYS}, scored">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
       <input type="file" id="t-file" accept=".json" class="hidden">
       <p class="muted" style="font-size:11px">Runs entirely in your browser. Autosaves every day to this browser. Press <b>H</b> in game for help.</p>
     </div>`;
@@ -1411,8 +1425,15 @@ export class UI {
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
+          <tr><td>Charters (a crown a building)</td><td class="r bad" data-k="upkeepCharters"></td></tr>
+          <tr><td>Temple quarter's share of the market tithe</td><td class="r bad" data-k="charterTithe"></td></tr>
+          <tr><td>Interest (debt, the Crown's loan)</td><td class="r bad" data-k="interest"></td></tr>
           <tr><td><b>Net per day</b></td><td class="r" data-k="net"></td></tr>
           <tr><td>Treasury</td><td class="r gold" data-k="treasury"></td></tr>
+          <tr><td>Grants today</td><td class="r good" data-k="grants"></td></tr>
+          <tr><td>The Crown's Thaw levy (next, as the treasury stands)</td><td class="r bad" data-k="levy"></td></tr>
+          <tr><td>The Crown's favour</td><td class="r" data-k="favour"></td></tr>
+          <tr><td>The Crown's loan</td><td class="r" data-k="loan"></td></tr>
         </table>
         <h3 style="margin-top:10px">Tax rates (10% is what folk expect)</h3>
         ${tax('hearth', 'Hearth')}${tax('market', 'Market')}${tax('craft', 'Craft')}${tax('arcane', 'Arcane')}
@@ -1444,12 +1465,31 @@ export class UI {
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
+    set('upkeepCharters', `−${l.upkeepCharters.toFixed(0)}`);
+    set('charterTithe', `−${l.charterTithe.toFixed(0)}`);
+    set('interest', `−${l.interest.toFixed(0)}`);
     const net = this.el.budget.querySelector('[data-k="net"]') as HTMLElement;
     net.innerHTML = `<b>${l.net >= 0 ? '+' : ''}${l.net.toFixed(0)}</b>`;
     net.className = `r ${l.net >= 0 ? 'good' : 'bad'}`;
     set('treasury', `${Math.round(st.treasury)}`);
+    set('grants', `+${Math.round(st.ledger.grants)}`);
+    const nextThaw = DAYS_PER_SEASON * 4 - (st.day % (DAYS_PER_SEASON * 4));
+    const levy = levyDue(st);
+    set('levy', levy > 0 ? `−${levy.toLocaleString()} in ${nextThaw} day${nextThaw === 1 ? '' : 's'}` : `0 (${Math.round(LEVY_RATE * 100)} % above ${LEVY_FLOOR.toLocaleString()}, in ${nextThaw} days)`);
+    const favEl = this.el.budget.querySelector('[data-k="favour"]') as HTMLElement;
+    const ff = favourFactor(st);
+    favEl.textContent = `${Math.round(st.crownFavour)} / 100${ff !== 1 ? ` · sectors and the levy ${ff < 1 ? '−' : '+'}${Math.round(Math.abs(1 - ff) * 100)} %` : ''}${st.crownFavour < FAVOUR_AUDIT ? ' · grants withheld' : ''}`;
+    favEl.className = `r ${st.crownFavour < FAVOUR_AUDIT ? 'bad' : st.crownFavour > FAVOUR_NEUTRAL ? 'good' : ''}`;
+    favEl.title = `Relics sold to the Crown and the collector paid raise it; a pleading costs 10. Each point from ${FAVOUR_NEUTRAL} is ${FAVOUR_STEP * 100} % on sector prices and the Thaw levy; under ${FAVOUR_AUDIT} the auditors hold the next grant.`;
+    const loanEl = this.el.budget.querySelector('[data-k="loan"]') as HTMLElement;
+    loanEl.innerHTML = st.loan > 0 ? `${Math.round(st.loan).toLocaleString()} out at ${LOAN_INTEREST * 100} %/day <button class="show" id="b-repay">Repay</button>` : `none <button class="show" id="b-loan">Take ${loanLimit(st).toLocaleString()}</button>`;
+    loanEl.className = `r ${st.loan > 0 ? 'warn' : ''}`;
+    const loanBtn = loanEl.querySelector('#b-loan') as HTMLButtonElement | null;
+    if (loanBtn) loanBtn.onclick = () => { const why = this.host.takeLoan(); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshBudget(); this.refresh(); };
+    const repayBtn = loanEl.querySelector('#b-repay') as HTMLButtonElement | null;
+    if (repayBtn) repayBtn.onclick = () => { const why = this.host.repayLoan(); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshBudget(); this.refresh(); };
     set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.${idleScholars(st) ? ' Idle scholars: more than half the city is schooled with little Arcane work, +5 unrest.' : ''}${st.unrestHigh > 0 ? ` Unrest above half for ${st.unrestHigh} day${st.unrestHigh === 1 ? '' : 's'} (a riot at 5).` : ''}${st.stats.goodsStolen > 0 ? ` Stolen from unwatched shelves: ${Math.round(st.stats.goodsStolen)} goods.` : ''}`);
-    set('history', `Last 10 days net: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}`);
+    set('history', `Last 10 days net, exports included: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}. The Charter is revoked after ${DEBT_DAYS} days under ${debtLine(st).toLocaleString()} crowns; debt pays 1 % a day.`);
     const routes = tradeRoutes(st);
     const rEl = this.el.budget.querySelector('[data-k="routes"]') as HTMLElement;
     rEl.innerHTML = routes.length ? `<h3 style="margin-top:10px">Trade routes</h3>${routes.map((r) => `<div class="route ${r.open ? '' : 'muted'}"><span class="${r.open ? 'good' : 'warn'}">${r.open ? '●' : '○'}</span> <b>${r.name}</b> <span class="muted">${r.note}</span> <button class="show" data-x="${r.at.x}" data-y="${r.at.y}">Show</button></div>`).join('')}` : '<p class="muted">No trade routes yet: a Trade Depot opens the Gloam road; two quays, two lit arches, a Sky-Dock or a daughter wardlight open more.</p>';
@@ -1609,15 +1649,18 @@ export class UI {
         income += occ * (def.tax ?? 0) * (1 + (b.level - 1) * 0.35) * (0.6 + (b.happiness / 100) * 0.6);
       }
       const cur = st.districtQuarters[d];
-      const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => { const lock = charterLocked(st, q.id); return `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}${lock ? ' locked' : ''}" ${lock ? 'disabled' : ''} title="${lock ? `${lock}. ` : ''}${q.effect} ${q.cost}">${q.name}${lock ? ` <span class="muted">(${lock.toLowerCase()})</span>` : ''}</button>`; }).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" title="No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost}</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : '<div class="muted">A charter gives every building in the district a gift and a price. Pick one.</div>'}</div>`;
+      const held = charterHeld(st, d);
+      const quarters = `<div class="quarters"><span class="muted">Charter:</span> ${QUARTERS.map((q) => { const lock = charterLocked(st, q.id) ?? (cur !== q.id ? held : null); return `<button data-quarter="${q.id}" class="${cur === q.id ? 'active' : ''}${lock ? ' locked' : ''}" ${lock ? 'disabled' : ''} title="${lock ? `${lock}. ` : ''}${q.effect} ${q.cost}">${q.name}${lock ? ` <span class="muted">(${lock.toLowerCase()})</span>` : ''}</button>`; }).join(' ')} <button data-quarter="" class="${cur ? '' : 'active'}" ${held ? 'disabled' : ''} title="${held ? `${held}. ` : ''}No charter: the district is only a scope for edicts.">None</button>${cur ? `<div class="muted">${QUARTER_BY_ID[cur].effect} ${QUARTER_BY_ID[cur].cost} The Crown takes ${charterCostOf(st, d)} crown${charterCostOf(st, d) === 1 ? '' : 's'} a day for it (one a building)${held ? `; ${held.toLowerCase()}` : `; it may be changed (a charter holds ${CHARTER_LOCK_DAYS} days once given)`}.</div><div class="flavor">${QUARTER_BY_ID[cur].flavor}</div>` : `<div class="muted">A charter gives every building in the district a gift and a price: a crown a building a day, and it holds ${CHARTER_LOCK_DAYS} days once given. Pick one.</div>`}</div>`;
       stats = `<div class="dstats"><input type="text" id="e-rename" value="${districtName(st, d)}" maxlength="18" title="Rename district"> <span class="muted">${tiles} tiles · ${bld} buildings · ${pop} folk · ${jobs} jobs · happiness ${hw ? Math.round(happy / hw) : '–'} · ~${Math.round(income)} c/day tithe</span></div>${quarters}`;
     }
     const rows = edictsFor(st).filter((e) => !this.edictScope || !e.cityOnly).map((e) => {
       const locked = st.milestone < e.unlock;
       const on = this.edictScope ? !!st.districtEdicts[`${this.edictScope}:${e.key}`] : !!st.edicts[e.key];
       const cityOn = this.edictScope ? !!st.edicts[e.key] : false;
+      const hold = on ? edictLocked(st, e.key, this.edictScope) : null;
+      const run = on ? (hold ? `runs ${hold.match(/\d+/)![0]} more day${hold.startsWith('Runs 1 ') ? '' : 's'}` : `repeal ${EDICT_REPEAL} c`) : '';
       return `<div class="edict ${locked ? 'locked' : ''}">
-        <label><input type="checkbox" data-key="${e.key}" ${on || cityOn ? 'checked' : ''} ${locked || cityOn ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day${this.edictScope ? ', scaled to the district' : ''})</span>${cityOn ? ' <span class="muted">city-wide</span>' : ''}</label>
+        <label><input type="checkbox" data-key="${e.key}" ${on || cityOn ? 'checked' : ''} ${locked || cityOn ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day${this.edictScope ? ', scaled to the district' : ''}${run ? `, ${run}` : ''})</span>${cityOn ? ' <span class="muted">city-wide</span>' : ''}</label>
         <div class="muted">${e.desc}${e.key === 'scalemail' ? ` <span class="${st.materials.scale > 0 ? 'good' : 'warn'}">${st.materials.scale > 0 ? `${st.materials.scale.toFixed(1)} scale in the vault.` : 'Idle: no scale in the vault.'}</span>` : ''}${locked ? ` <span class="warn">Unlocks at ${this.ms()[e.unlock].name}.</span>` : ''}</div>
         <div class="flavor">${e.flavor}</div>
       </div>`;
@@ -1625,7 +1668,7 @@ export class UI {
     const mods = st.modifiers.filter((m) => m.until > st.day).map((m) => `<li>${m.label} (${m.until - st.day} days left)</li>`).join('');
     this.el.edicts.innerHTML = `<div class="box panel">
       <h2>Edicts of the Warden-Reeve</h2>
-      <p class="muted">Edicts take effect immediately and cost their upkeep every day. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
+      <p class="muted">Edicts take effect immediately and cost their upkeep every day; an edict holds ${EDICT_MIN_DAYS} days once made and costs ${EDICT_REPEAL} crowns to repeal. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
       ${stats}
       ${rows.join('')}
       ${this.councilHtml(st)}
@@ -1634,7 +1677,8 @@ export class UI {
     </div>`;
     this.el.edicts.querySelectorAll('input[type=checkbox]').forEach((inp) => {
       (inp as HTMLInputElement).onchange = () => {
-        this.host.setEdict((inp as HTMLInputElement).dataset.key!, (inp as HTMLInputElement).checked, this.edictScope);
+        const why = this.host.setEdict((inp as HTMLInputElement).dataset.key!, (inp as HTMLInputElement).checked, this.edictScope);
+        if (why) this.toast(`<p class="bad">${why}</p>`, 2500);
         this.refreshEdicts();
       };
     });

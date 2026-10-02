@@ -61,6 +61,35 @@ export function charterLocked(s: GameState, q: QuarterId): string | null {
   const def = QUARTER_BY_ID[q];
   return s.milestone < def.charterUnlock ? `Opens at the ${milestonesOf(s)[def.charterUnlock].name}` : null;
 }
+/** A charter holds CHARTER_LOCK_DAYS days once taken, costs CHARTER_CROWN_PER_BUILDING a building a day, and its price spills: a Craft quarter's smoke carries CHARTER_SMOKE_SPILL tiles past the edge, a Temple quarter takes TEMPLE_TITHE_SHARE of the city's market tithe (iteration 54). */
+export const CHARTER_LOCK_DAYS = 30;
+export const CHARTER_CROWN_PER_BUILDING = 1;
+export const CHARTER_SMOKE_SPILL = 4;
+export const TEMPLE_TITHE_SHARE = 0.1;
+/** Why a district's charter cannot be changed yet, or null. A charter with no stamp (an old save) may be changed. */
+export function charterHeld(s: GameState, district: number): string | null {
+  if (!s.districtQuarters[district]) return null;
+  const since = s.quarterSince[district];
+  if (since === undefined) return null;
+  const left = CHARTER_LOCK_DAYS - (s.day - since);
+  return left > 0 ? `The charter holds ${left} more day${left === 1 ? '' : 's'}` : null;
+}
+/** Crowns a day the charters cost: one for every standing building in a chartered district. */
+export function charterUpkeep(s: GameState): number {
+  let n = 0;
+  for (const b of s.buildings) if (b && b.state !== 'ruin' && s.districtQuarters[s.district[idx(b.x, b.y)]]) n++;
+  return n * CHARTER_CROWN_PER_BUILDING;
+}
+/** Buildings in one chartered district, for its panel line. */
+export function charterCostOf(s: GameState, district: number): number {
+  if (!s.districtQuarters[district]) return 0;
+  let n = 0;
+  for (const b of s.buildings) if (b && b.state !== 'ruin' && s.district[idx(b.x, b.y)] === district) n++;
+  return n * CHARTER_CROWN_PER_BUILDING;
+}
+export function templeQuarterStands(s: GameState): boolean {
+  return Object.values(s.districtQuarters).some((q) => q === 'temple');
+}
 export const QUARTER_BY_ID: Record<QuarterId, QuarterDef> = Object.fromEntries(QUARTERS.map((q) => [q.id, q])) as Record<QuarterId, QuarterDef>;
 
 /** The quarter of a tile: its district's charter, or null. */
@@ -73,11 +102,20 @@ export function quarterOf(s: GameState, b: Building): QuarterId | null {
 }
 /** Give a district its charter (or none). Returns the reason when the charter is not yet open. */
 export function setQuarter(s: GameState, district: number, q: QuarterId | null): string | null {
+  if ((s.districtQuarters[district] ?? null) === q) return null;
   if (q) {
     const why = charterLocked(s, q);
     if (why) return why;
+  }
+  const held = charterHeld(s, district); // a charter holds thirty days once given (iteration 54)
+  if (held) return held;
+  if (q) {
     s.districtQuarters[district] = q;
-  } else delete s.districtQuarters[district];
+    s.quarterSince[district] = s.day;
+  } else {
+    delete s.districtQuarters[district];
+    delete s.quarterSince[district];
+  }
   return null;
 }
 /** A district's buildings, standing. */

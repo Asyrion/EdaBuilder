@@ -15,7 +15,8 @@ export const DEATHCARE_LV = 6;
 import { GOLEM_GUARD_RADIUS, GOLEM_GUARD_STRENGTH, guardGolems, mewsActive } from './beasts';
 import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
-import { dragonAuras, nodesOfAspect, floodedAt } from './weave';
+import { dragonAuras, nodesOfAspect, floodedAt, raining } from './weave';
+import { CHARTER_SMOKE_SPILL } from './districts';
 
 /** A service with a crew radiates by how many of its hands are filled (never below 0.3); one without a crew radiates in full. */
 export function crewFactor(b: Building, state: GameState): number {
@@ -171,19 +172,24 @@ export function updateMiasma(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     const flare = b.kind === 'font' && (b.flare ?? 0) > 0 ? 6 : 0; // a flared Font smokes
     if ((!def.miasma && !flare) || (b.state !== 'ok' && b.state !== 'burning')) return;
-    const amt = (def.miasma ? def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1) * (quarterOf(state, b) === 'craft' ? 1.3 : 1) : 0) + flare;
+    const craftQuarter = quarterOf(state, b) === 'craft';
+    const amt = (def.miasma ? def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1) * (craftQuarter ? 1.3 : 1) : 0) + flare;
     const r = 4;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
+    // a Craft quarter's smoke spills: past its district's edge it carries CHARTER_SMOKE_SPILL tiles further, so a works-only district pays its neighbours (iteration 54)
+    const spill = craftQuarter ? CHARTER_SMOKE_SPILL : 0;
+    const home = state.district[idx(b.x, b.y)];
+    for (let dy = -r - spill; dy <= r + spill; dy++)
+      for (let dx = -r - spill; dx <= r + spill; dx++) {
         const x = b.x + dx;
         const y = b.y + dy;
         if (!inBounds(x, y)) continue;
         const d = Math.abs(dx) + Math.abs(dy);
-        if (d > r) continue;
-        acc[idx(x, y)] += amt * (1 - d / (r + 1));
+        if (d <= r) { acc[idx(x, y)] += amt * (1 - d / (r + 1)); continue; }
+        if (d > r + spill || state.district[idx(x, y)] === home) continue;
+        acc[idx(x, y)] += amt * (1 - r / (r + 1)) * (1 - (d - r) / (spill + 1));
       }
   });
-  const rain = modifierSum(state, 'rain') > 0 ? 0.3 : 1;
+  const rain = raining(state) ? 0.3 : 1;
   if (hallActive(state, 'lyceum')) forEachBuilding(state, (b) => {
     if (b.kind !== 'lyceum' || b.state !== 'ok') return;
     for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = b.x + 1 + dx; const y = b.y + 1 + dy; if (inBounds(x, y)) acc[idx(x, y)] *= 0.67; }

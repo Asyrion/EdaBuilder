@@ -5,7 +5,9 @@ import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type Gam
 import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
 import { hasAcademy } from './relics';
-import { canPlaceBuilding, commitRng, forEachBuilding, placeBuildingRaw, pushMessage, rngOf } from './world';
+import { canPlaceBuilding, commitRng, forEachBuilding, illTiding, placeBuildingRaw, pushMessage, rngOf } from './world';
+import { addFavour } from './economy';
+import { Rng, hashString } from '../core/rng';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
 import { TIGER_FOREST, forestTiles, marketDistrict, startStorm } from './lore';
@@ -55,7 +57,7 @@ export const EVENTS: EventDef[] = [
     text: 'Forty Hearthfolk pilgrims of Aume arrive at the gate, footsore from the Gloam road. Their priest asks leave to settle under your light.',
     when: (s) => s.population > 60 && s.demand.hearth > -0.5,
     choices: [
-      { label: 'Welcome them', desc: 'Up to 40 folk move into empty homes.', apply: (s) => `${addResidents(s, 40)} pilgrims found hearths in ${s.cityName}.` },
+      { label: 'Welcome them', desc: 'Up to 40 folk move into empty homes; a month on they will ask for a shrine of their own.', apply: (s) => { s.pilgrimsDay = s.day; return `${addResidents(s, 40)} pilgrims found hearths in ${s.cityName}.`; } },
       { label: 'Bless them and send them on', desc: 'Nothing changes, but Aume remembers: happiness +3 for 10 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 10, label: 'Pilgrims blessed' }); return 'The pilgrims walk on, singing.'; } },
     ],
   },
@@ -110,8 +112,8 @@ export const EVENTS: EventDef[] = [
     text: 'A tax collector from Vell-on-Sable presents the Crown\'s seal and a ledger. The Charter, he notes, owes a tenth of the treasury.',
     when: (s) => s.treasury > 6000 && s.milestone >= 3,
     choices: [
-      { label: 'Pay the tenth', desc: '−10% of the treasury.', apply: (s) => { const t = Math.round(s.treasury * 0.1); s.treasury -= t; return `${t} crowns ride back to Vell-on-Sable under guard.`; } },
-      { label: 'Plead the Gloam', desc: 'Keep the crowns; tithe income −15% for 15 days while the Crown audits you.', apply: (s) => { s.modifiers.push({ kind: 'tithe', value: -0.15, until: s.day + 15, label: 'Crown audit' }); return 'The collector leaves with a thin smile and a thick ledger.'; } },
+      { label: 'Pay the tenth', desc: '−10% of the treasury; the Crown\'s favour +5.', apply: (s) => { const t = Math.round(s.treasury * 0.1); s.treasury -= t; addFavour(s, 5); return `${t} crowns ride back to Vell-on-Sable under guard. The collector writes "prompt" in the margin.`; } },
+      { label: 'Plead the Gloam', desc: (s) => `Keep the crowns; the Crown's favour −10, and the audit is harsher each time: ${s.pleadings === 0 ? 'tithe income −15% for 15 days' : s.pleadings === 1 ? 'tithe income −25% for 15 days' : 'a levy of a fifth of the treasury at once'} (pleaded ${s.pleadings} time${s.pleadings === 1 ? '' : 's'} before).`, apply: (s) => { addFavour(s, -10); s.pleadings++; if (s.pleadings === 1) { s.modifiers.push({ kind: 'tithe', value: -0.15, until: s.day + 15, label: 'Crown audit' }); return 'The collector leaves with a thin smile and a thick ledger.'; } if (s.pleadings === 2) { s.modifiers.push({ kind: 'tithe', value: -0.25, until: s.day + 15, label: 'Crown audit, the second' }); return 'The collector has heard of the Gloam. He audits every shelf in the city for a fortnight.'; } const t = Math.round(s.treasury * 0.2); s.treasury -= t; s.stats.levies++; s.stats.levied += t; return `The collector has heard this before. ${t} crowns, a fifth of the treasury, are counted out on the Stake's steps under guard.`; } },
     ],
   },
 ];
@@ -126,6 +128,16 @@ export function chose(s: GameState, id: string, choice: number): boolean {
 }
 
 const CHAINS: EventDef[] = [
+  {
+    id: 'pilgrims_shrine', title: 'The pilgrims ask for a shrine', priority: true,
+    text: 'A month under your light, the pilgrims of Aume come to the Founding Stake with their priest. They have no shrine of their own, they say, and the Vigils are far; they ask for one among their hearths, and offer to raise the walls themselves.',
+    when: (s) => s.pilgrimsDay >= 0 && s.day - s.pilgrimsDay >= PILGRIM_ASK_DAYS && s.day - s.pilgrimsDay <= PILGRIM_ASK_DAYS + 10,
+    choices: [
+      { label: 'Raise them a shrine (600 crowns)', desc: 'A shrine of Aume stands among the hearths; happiness +3 for 15 days.', apply: (s) => { s.pilgrimsDay = -1; const spot = findSpot(s, 'shrine'); if (!spot) return 'No ground among the hearths will take a shrine; the pilgrims keep praying at the Stake.'; s.treasury -= 600; const b = placeBuildingRaw(s, 'shrine', spot[0], spot[1]); markDirty(s, b.x, b.y); s.stats.pilgrimShrines++; s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 15, label: 'The pilgrims\' shrine' }); return `A shrine of Aume at (${spot[0]},${spot[1]}), raised in a week by people who sing while they work.`; } },
+      { label: 'The Stake\'s hall is theirs on holy days', desc: 'No shrine; happiness +1 for 20 days.', apply: (s) => { s.pilgrimsDay = -1; s.modifiers.push({ kind: 'happiness', value: 1, until: s.day + 20, label: 'Holy days at the Stake' }); return 'The priest bows. The hall smells of candles every seventh day.'; } },
+      { label: 'Refuse them', desc: 'Happiness −4 for 10 days; Aume remembers.', apply: (s) => { s.pilgrimsDay = -1; s.modifiers.push({ kind: 'happiness', value: -4, until: s.day + 10, label: 'The pilgrims refused' }); return 'They pray in the street outside the Stake for a week, which is worse.'; } },
+    ],
+  },
   {
     id: 'lukuku_first', title: 'The first fall', once: true,
     text: 'Under the Lukuku flagstones the diggers find a hall older than the Concord: a mosaic of a city with three lanterns, and a script no Academy reads. Whatever fell here fell twice.',
@@ -173,6 +185,18 @@ const CHAINS: EventDef[] = [
   },
 ];
 
+/** Welcomed pilgrims ask for a shrine this many days on (iteration 54). */
+export const PILGRIM_ASK_DAYS = 30;
+/** The Fen-Nex quarter's seasonal audit: the foxes trade honestly half the time, on a coin of their own (iteration 54). */
+export function foxAudit(s: GameState): void {
+  if (s.fenNex <= 0 || s.day <= 0 || s.day % 30 !== 0) return;
+  const rng = new Rng(hashString(`${s.seed}:${s.day}:fox`));
+  const honest = rng.chance(0.5);
+  s.stats.foxAudits++;
+  if (honest) { s.treasury += 2000; pushMessage(s, `The season's audit of ${districtName(s, s.fenNex)}: the foxes' ledgers balance, for once, and ${s.cityName} is 2,000 crowns the richer.`, 'good', true); }
+  else { s.treasury -= 1000; pushMessage(s, `The season's audit of ${districtName(s, s.fenNex)}: the foxes' ledgers are in three scripts and none of them adds up. 1,000 crowns are gone and nobody is sorry.`, 'warn', true); }
+}
+
 function findSpot(s: GameState, key: string): [number, number] | null {
   for (const b of s.buildings) {
     if (!b || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth) continue;
@@ -209,13 +233,13 @@ export function holdFeast(s: GameState, want: number): { goods: number; district
 }
 
 /** Calendar events fire on fixed days of the season, at most once per year each. */
-const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
+export const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
   {
     id: 'thawday', title: 'Thaw-day', season: 0, seasonDay: 2,
     text: 'The ice has cracked on the river. By old Vellish custom the Warden-Reeve opens the Thaw with a feast on the square, or with a day of labour on the wards.',
     when: (s) => s.population > 40,
     choices: [
-      { label: 'A feast (300 crowns and 40 goods)', desc: 'Markets give up to 40 goods from their shelves. Happiness +3 for 15 days everywhere, and +5 more in every district whose markets fed the feast. Under 10 goods it is a thin feast: +2 for 8 days.', apply: (s) => { s.treasury -= 300; const fed = holdFeast(s, 40); if (fed.goods < 10) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 8, label: 'A thin feast' }); return `The shelves were bare: ${Math.round(fed.goods)} goods make a thin feast of bread and water. The choir sings anyway.`; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 15, label: 'Thaw feast' }); for (const d of fed.districts) s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 15, label: `Thaw feast (${d ? DISTRICT_NAMES[d - 1] : 'the old town'})`, district: d }); return `${Math.round(fed.goods)} goods from ${fed.districts.length} quarter${fed.districts.length === 1 ? '' : 's'}: bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.`; } },
+      { label: 'A feast (300 crowns and 40 goods)', desc: 'Markets give up to 40 goods from their shelves. Happiness +3 for 15 days everywhere, and +5 more in every district whose markets fed the feast. Under 10 goods it is a thin feast: +2 for 8 days.', apply: (s) => { s.treasury -= 300; const fed = holdFeast(s, 40); if (fed.goods < 10) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 8, label: 'A thin feast' }); return `The shelves were bare: ${Math.round(fed.goods)} goods make a thin feast of bread and water. The choir sings anyway.`; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 15, label: 'Thaw feast' }); for (const d of fed.districts) s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 15, label: `Thaw feast (${d ? DISTRICT_NAMES[d - 1] : 'the old town'})`, district: d }); return `${Math.round(fed.goods)} goods from ${fed.districts.map((d) => (d ? districtName(s, d) : 'the old town')).join(', ')}: bread, glimherb ale, and a Grimmen choir that nobody expected to be so good.`; } },
       { label: 'A day on the wards', desc: 'Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days.', apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -2, until: s.day + 5, label: 'Ward labour' }); let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i] && s.coverage.ward[i] > 0) { s.gloam[i] = 0; n++; markDirty(s, i % MAP_W, Math.floor(i / MAP_W)); } s.stats.gloamBurned += n; if (n) recomputeGloamDist(s); return `${n} tiles of grey grass are cut and burned under the lanterns.`; } },
     ],
   },
@@ -224,7 +248,7 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'Mid-Ember is the Remembrance of the Hollowing. Scholars ask to read the names of the nine houses aloud from the Founding Stake; the priests of Morrow would rather the names stayed buried.',
     when: (s) => s.population > 80,
     choices: [
-      { label: 'Read the names', desc: 'Educated share +4%. The ley stirs: unquieted dead +12, or only +3 if an Ossuary holds the bones steady.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.04); const oss = hasOssuary(s); s.unquieted += oss ? 3 : 12; return oss ? 'The names are read over the vaults. The bones keep their pattern and the spires barely flutter.' : 'The names are read. The spires hum a half-tone flat until dawn.'; } },
+      { label: 'Read the names', desc: 'Educated share +4%. The ley stirs: unquieted dead +12, or only +3 if an Ossuary holds the bones steady.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.04); const oss = hasOssuary(s); s.unquieted += oss ? 3 : 12; s.remembranceDead += oss ? 3 : 12; return oss ? 'The names are read over the vaults. The bones keep their pattern and the spires barely flutter.' : 'The names are read. The spires hum a half-tone flat until dawn.'; } },
       { label: 'Keep the silence', desc: 'Unquieted dead −6, or −15 with an Ossuary to lay them in; the Four Vigils are pleased: happiness +2 for 10 days.', apply: (s) => { const oss = hasOssuary(s); s.unquieted = Math.max(0, s.unquieted - (oss ? 15 : 6)); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'Remembrance kept' }); return oss ? 'A night of candles in the Ossuary. Hollis counts the quiet and finds it good.' : 'A night of candles and no speeches. Morrow approves.'; } },
     ],
   },
@@ -233,7 +257,7 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
     text: 'The first night of the Hush. Tradition asks every hearth to keep a lamp burning until dawn, so that the Gloam finds no dark window to whisper at.',
     when: (s) => s.population > 40,
     choices: [
-      { label: 'Keep the vigil', desc: (s) => { const r = factionOf(s).rules; return `The lamps draw up to ${Math.round(120 * r.vigilCost)} stored mana from the Nexus rings: the Gloam holds 6 days, plus a day for every ${Math.round(12 * r.vigilCost)} mana drawn. Shallow stores (under ${Math.round(60 * r.vigilCost)}) mean the lamps burn from the spires instead: demand +15% for 10 days.`; }, apply: (s) => { const vc = factionOf(s).rules.vigilCost; const take = Math.min(120 * vc, s.manaStorage); s.manaStorage -= take; const days = 6 + Math.floor(take / (12 * vc)); if (take < 60 * vc) s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + days, label: 'Vigil holds the Gloam' }); return take >= 60 * vc ? `${Math.round(take)} mana from the stores keeps every window amber for ${days} nights. Beyond the last lantern, the grey grass waits.` : `The stores are shallow: the spires burn hot to keep the windows lit, and the Gloam holds ${days} nights.`; } },
+      { label: 'Keep the vigil', desc: (s) => { const r = factionOf(s).rules; return `The lamps draw up to ${Math.round(120 * r.vigilCost)} stored mana from the Nexus rings: the Gloam holds 6 days, plus a day for every ${Math.round(12 * r.vigilCost)} mana drawn. Shallow stores (under ${Math.round(60 * r.vigilCost)}) mean the lamps burn from the spires instead: demand +15% for 10 days.`; }, apply: (s) => { const vc = factionOf(s).rules.vigilCost; const take = Math.min(120 * vc, s.manaStorage); s.manaStorage -= take; const days = 6 + Math.floor(take / (12 * vc)); if (take < 60 * vc) s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 10, label: 'Hush vigil' }); s.modifiers.push({ kind: 'gloamHold', value: 1, until: s.day + days, label: 'Vigil holds the Gloam' }); return take >= 60 * vc ? `${Math.round(take)} mana from the stores keeps every window amber for ${days} nights, until day ${s.day + days}. Beyond the last lantern, the grey grass waits.` : `The stores are shallow: the spires burn hot to keep the windows lit, and the Gloam holds ${days} nights, until day ${s.day + days}.`; } },
       { label: 'Let folk sleep', desc: (s) => (factionOf(s).rules.vigilMandatory ? 'The Tallowkin do not sleep through the vigil. Happiness −8 for 30 days, and the dark remembers.' : 'No cost. The whispering is louder this Hush: happiness −3 for 20 days.'), apply: (s) => { const hard = factionOf(s).rules.vigilMandatory; s.modifiers.push({ kind: 'happiness', value: hard ? -8 : -3, until: s.day + (hard ? 30 : 20), label: 'Vigil skipped' }); return hard ? 'Nobody sleeps. Every candle-eyed child sits at a dark window all night, and in the morning nobody speaks to the Warden-Reeve.' : 'Old Maud keeps her lamp lit anyway. She says the dark remembers who did not.'; } },
     ],
   },
@@ -252,7 +276,7 @@ const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
 function eggChoices(line: DragonLine, sell: number): EventDef['choices'] {
   return [
     { label: 'Keep the egg', desc: 'Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown.', apply: (s) => { const d = addEgg(s, line); if (d) return `The ${LINE_INFO[line].name.toLowerCase()} egg is laid in the cradle, warm and humming. The tamers already call it ${d.name}.`; s.treasury += sell; return `No cradle had room. The Crown's assessor pays ${sell} crowns and rides off very carefully.`; } },
-    { label: `Sell it to the Crown (+${sell} crowns)`, desc: 'Crowns now.', apply: (s) => { s.treasury += sell; return `${sell} crowns, and a receipt with the royal wyrm-seal.`; } },
+    { label: `Sell it to the Crown (+${sell} crowns)`, desc: 'Crowns now, and the Crown\'s favour +3.', apply: (s) => { s.treasury += sell; addFavour(s, 3); return `${sell} crowns, and a receipt with the royal wyrm-seal.`; } },
     { label: 'Give it to the Academy', desc: 'Educated share +5% (needs an Academy), else happiness +3 for 10 days.', apply: (s) => { if (s.buildings.some((b) => b && (b.kind === 'academy' || b.kind === 'grandacademy'))) { s.educated = Math.min(0.95, s.educated + 0.05); return 'The scholars draw it from every angle and argue about the spiral.'; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 10, label: 'Egg on display' }); return 'Without an Academy it sits in the Founding Stake, and half the valley comes to look.'; } },
   ];
 }
@@ -317,8 +341,8 @@ const CROWN: EventDef[] = [
     text: 'A grey coach with the royal lantern on its door stops at the Ruin Delve. The assessor has a ledger, a loupe and a purse, and asks what the diggers have brought up.',
     when: (s) => s.relicStock >= 12 && s.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok'),
     choices: [
-      { label: 'Sell the loose relics', desc: '90 crowns each, better than the depot pays; the sextons mutter (−5).', apply: (s) => { const n = s.relicStock; s.treasury += n * 90; s.stats.relicsSold += n; s.relicStock = 0; s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return `${n} relics go north under seal for ${n * 90} crowns. Hollis says the dead will want them back.`; } },
-      { label: 'Sell the uncatalogued pieces', desc: '1,500 crowns for each set piece the Academy has not named; they are gone from the sets. Sextons −8.', apply: (s) => { const n = s.relics.uncatalogued; if (!n) return 'There are no uncatalogued pieces. The assessor buys a cup of tea instead.'; s.treasury += n * 1500; s.relics.uncatalogued = 0; s.stats.relicsSold += n; s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 8); return `${n} piece(s) of something older than the Concord leave in the grey coach for ${n * 1500} crowns.`; } },
+      { label: 'Sell the loose relics', desc: '90 crowns each, better than the depot pays; the Crown\'s favour rises a fifth a relic; the sextons mutter (−5).', apply: (s) => { const n = s.relicStock; s.treasury += n * 90; s.stats.relicsSold += n; addFavour(s, 0.2 * n); s.relicStock = 0; s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return `${n} relics go north under seal for ${n * 90} crowns. Hollis says the dead will want them back.`; } },
+      { label: 'Sell the uncatalogued pieces', desc: '1,500 crowns for each set piece the Academy has not named; they are gone from the sets; the Crown\'s favour +3 each. Sextons −8.', apply: (s) => { const n = s.relics.uncatalogued; if (!n) return 'There are no uncatalogued pieces. The assessor buys a cup of tea instead.'; s.treasury += n * 1500; s.relics.uncatalogued = 0; s.stats.relicsSold += n; addFavour(s, 3 * n); s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 8); return `${n} piece(s) of something older than the Concord leave in the grey coach for ${n * 1500} crowns.`; } },
       { label: 'Keep everything for the Academy', desc: 'Educated share +2%; the assessor leaves empty-handed.', apply: (s) => { s.educated = Math.min(0.95, s.educated + 0.02); return 'The assessor writes a long note and underlines it twice. The scholars are delighted.'; } },
     ],
   },

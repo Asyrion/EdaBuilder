@@ -1,4 +1,11 @@
 import type { FactionId } from './data/factions';
+import { setEdict } from './sim/edicts';
+import { repayLoan, takeLoan } from './sim/economy';
+import * as weave from './sim/weave';
+import * as economy from './sim/economy';
+import * as edicts from './sim/edicts';
+import * as districts from './sim/districts';
+import * as events from './sim/events';
 import { lineNest, raiseCradle } from './sim/wyrmcraft';
 import * as wyrmcraft from './sim/wyrmcraft';
 import * as beasts from './sim/beasts';
@@ -116,7 +123,9 @@ class Game {
       get musicOn() { return game.audio.musicOn; },
       setMusic: (on) => { this.audio.setMusic(on); try { localStorage.setItem('wardlight.music', on ? '1' : '0'); } catch { /* ignore */ } },
       setTax: (z, v) => setTax(this.state, z, v),
-      setEdict: (k, on, district) => { if (district) this.state.districtEdicts[`${district}:${k}`] = on; else this.state.edicts[k] = on; recomputeAll(this.state); this.audio.click(); },
+      setEdict: (k, on, district) => { const why = setEdict(this.state, k, on, district); if (!why) { recomputeAll(this.state); this.audio.click(); } return why; },
+      takeLoan: () => { const why = takeLoan(this.state); if (!why) this.audio.coin(); this.ui.refresh(); return why; },
+      repayLoan: () => { const why = repayLoan(this.state); if (!why) this.audio.coin(); this.ui.refresh(); return why; },
       get settings() { return game.settings; },
       get selectedNode() { return game.selectedNode; },
       get selectedSector() { return game.selectedSector; },
@@ -458,7 +467,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

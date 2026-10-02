@@ -5,6 +5,7 @@ import { BUILDING_BY_KEY } from '../sim/catalog';
 import { factionKey, litShare, stoneQuarried, type FactionId, moorings } from './factions';
 import { chose } from '../sim/events';
 import { aspectAt } from '../sim/weave';
+import { debtLine } from '../sim/economy';
 
 export type Focus =
   | { tool: 'road' | 'zoneHearth' | 'zoneMarket' | 'zoneCraft' | 'zoneArcane' | 'wall' | 'gateBelregi' | 'district' }
@@ -183,7 +184,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'v_bind', chapter: 'The Vein-Wyrm', title: 'Bind the wyrm', hint: 'When the Court is lit the singers offer the binding. A bound wyrm wards 30 tiles and eats 40 goods a day.', when: (s) => has(s, 'wyrmcourt'), done: (s) => s.wyrm.state === 'bound', focus: { center: 'wyrm' }, reward: 3000, priority: 44 },
   { id: 'v_egg', chapter: 'The Vein-Wyrm', title: 'Keep the guardian fed for a season', hint: 'Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg.', when: (s) => s.wyrm.state === 'bound', done: (s) => s.dragons.some((d) => d.line === 'vein'), focus: { panel: 'wyrms' }, reward: 2000, priority: 45 },
   // Scenario goals
-  { id: 'z_daily', chapter: 'The Charter', title: 'Daily challenge: Market Town by day 60', hint: 'The same valley for everyone today. Speed matters: zone early, light everything, keep the tithe at 10%.', when: (s) => !!s.challenge && (s.day <= 60 || s.questsDone.includes('z_daily')), done: (s) => s.milestone >= 5 && s.day <= 60, reward: 3000, priority: 0, strict: true },
+  { id: 'z_daily', chapter: 'The Charter', title: 'Daily challenge: the fifth milestone by day 60', hint: 'The same valley and people for everyone today. Speed matters: zone early, light everything, keep the tithe at 10%. Day 61 is too late; the score is the days to spare and a point a thousand crowns.', when: (s) => !!s.challenge && (s.day <= 60 || s.questsDone.includes('z_daily')), done: (s) => s.milestone >= 5 && s.day <= 60, reward: 3000, priority: 0, strict: true },
   { id: 'z_onenode', chapter: 'The Charter', title: 'The one-node valley: reach Burgh', hint: 'One Vein, running deep. Thrum Fonts, a Torrent Mill and the Nexus carry the rest.', when: (s) => s.scenario === 'onenode', done: (s) => s.milestone >= 6, reward: 5000, priority: 0, strict: true },
   { id: 'z_island', chapter: 'The Charter', title: 'The Gloam-locked island: Township and 300 tiles burned back', hint: 'Ward Lanterns outward from the Stake; the Watch and a Hunters\' Lodge for the hounds.', when: (s) => s.scenario === 'island', done: (s) => s.milestone >= 4 && s.stats.gloamBurned >= 300, focus: { build: 'wardlantern' }, reward: 5000, priority: 0, strict: true },
   { id: 'z_inherited', chapter: 'The Charter', title: 'The inherited collapse: ten clean days, then Burgh', hint: 'Bulldoze the ruins, lay the restless down, cut mana consumers, raise the tithe a little.', when: (s) => s.scenario === 'inherited', done: (s) => s.cleanDays >= 10 && s.milestone >= 6, focus: { panel: 'budget' }, reward: 5000, priority: 0, strict: true },
@@ -206,7 +207,7 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   const u = unlit(s);
   const d = dry(s);
   if (s.overdrawDays > 0) return { text: 'Mana overdrawn: a wild surge is coming. Build a Nexus or Thrum Font, or cut consumers.', focus: { build: 'nexus' } };
-  if (s.treasury < 0) return { text: 'The treasury is in debt. Raise the tithe a little or cut upkeep; five days below −8,000 ends the Charter.', focus: { panel: 'budget' } };
+  if (s.treasury < 0) return { text: `The treasury is in debt, and a debt costs a crown in a hundred a day. Raise the tithe a little or cut upkeep; five days below ${Math.round(debtLine(s)).toLocaleString()} ends the Charter. The Budget panel offers the Crown's loan.`, focus: { panel: 'budget' } };
   if (u > zb.length * 0.25) return { text: `${u} buildings have no mana. Chain Ley Spires within 6 tiles of a node or another lit spire.`, focus: { overlay: 'mana' } };
   if (d > zb.length * 0.25) return { text: `${d} buildings are dry. Dig Wells or a Cistern near them.`, focus: { overlay: 'water' } };
   if (s.unquieted > 12 && !has(s, 'boneyard')) return { text: 'The dead are piling up unquieted. Build a Boneyard before they rise.', focus: { build: 'boneyard' } };
