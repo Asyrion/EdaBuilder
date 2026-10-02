@@ -1,5 +1,5 @@
 import { GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
-import { FISH_MARKET_REACH, SMOKE_REACH, bodyOf, ensureShoals, shoalCap } from './water';
+import { FISH_MARKET_REACH, SMOKE_REACH, bodyOf, ensureShoals, fishingWater, shoalCap } from './water';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones what it can light, keeps buildings lit and
@@ -255,7 +255,7 @@ export class Bot {
   }
 
   /**
-   * The water (iteration 60): one Fishers' Hut on water whose shoal is over half its cap, with a market within its reach,
+   * The water (iteration 60): one Fishers' Hut on water whose shoal is over half its cap, 24 water tiles in reach, a market within its reach,
    * once the purse and the ledger allow; a Smokehouse beside it once a depot stands to sell the smoked fish, or the racks
    * spoil. The bot builds no ford on purpose: its tracks over a narrow river are fords by the rule.
    */
@@ -271,7 +271,8 @@ export class Bot {
         const ok = (x: number, y: number) => {
           const probe = { x, y, w: 1, h: 1 } as Building;
           const body = bodyOf(s, probe);
-          return body >= 0 && s.water.fish[body] > shoalCap(w, body) * 0.5 && markets.some((m) => Math.hypot(m.x - x, m.y - y) <= FISH_MARKET_REACH - 2);
+          // a full shoal with water enough in reach to land four a day (a pond of a few tiles is not worth a crew), and a market for the catch
+          return body >= 0 && s.water.fish[body] > shoalCap(w, body) * 0.5 && fishingWater(s, probe, body) >= 24 && markets.some((m) => Math.hypot(m.x - x, m.y - y) <= FISH_MARKET_REACH - 2);
         };
         if (this.placeNear('fishershut', this.cx, this.cy, this.radius + 4, false, ok)) this.fishBuilt++;
       }
