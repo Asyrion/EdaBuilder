@@ -783,7 +783,7 @@ export function dailyHunt(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Creature || a.species !== 'hound') return true;
     const bounty = edictOn(state, 'bounty');
-    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= (bounty ? 24 : 12) && rng.chance(0.8)) { killed++; return false; }
+    for (const l of lodges) if (Math.hypot(l.x + 0.5 - a.x, l.y + 0.5 - a.y) <= (bounty ? 24 : 12) && rng.chance(0.8)) { killed++; l.stock += 1; state.stats.pelts++; return false; } // a pelt for the Gloam road
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
     if (state.coverage.watch[i] > 120 && rng.chance(bounty ? 0.6 : 0.3)) { killed++; return false; }
     return true;

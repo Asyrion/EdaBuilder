@@ -11,7 +11,8 @@ import { spawnRestless } from './agents';
 import { TIGER_FOREST, forestTiles, marketDistrict, startStorm } from './lore';
 import { districtName, markDirty } from './world';
 import { MAP_W, inBounds, idx } from './types';
-import { recomputeGloamDist } from './hazards';
+import { igniteBuilding, recomputeGloamDist } from './hazards';
+import { RIOT_UNREST } from './growth';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
@@ -538,7 +539,32 @@ export const VESHARI: EventDef[] = [
   },
 ];
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS];
+/** Unrest above RIOT_UNREST for this many days in a row brings a riot to the least-watched market. */
+export const RIOT_DAYS = 5;
+function leastWatchedMarket(s: GameState): Building | null {
+  let best: Building | null = null;
+  let low = Infinity;
+  forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return; const c = s.coverage.watch[idx(b.x, b.y)]; if (c < low) { low = c; best = b; } });
+  return best;
+}
+export const RIOT: EventDef = {
+  id: 'riot', title: 'A riot in the market',
+  text: 'Five days of shouting in the streets, and tonight the shouting has torches. A crowd is in the least-watched market, and the stalls are made of wood.',
+  when: (s) => s.unrestHigh >= RIOT_DAYS,
+  choices: [
+    { label: 'Send the Watch', desc: (s) => { const m = leastWatchedMarket(s); const cov = m ? s.coverage.watch[idx(m.x, m.y)] / 255 : 0; return `The least-watched market${m ? ` at (${m.x},${m.y})` : ''} has watch coverage ${Math.round(cov * 100)} %: at half or more the Watch holds the square (+3 happiness for 5 days); under it the market burns.`; }, apply: (s) => { s.unrestHigh = 0; s.stats.riots++; const m = leastWatchedMarket(s); if (!m) return 'There is no market to riot in. The crowd shouts itself hoarse and goes home.'; const cov = s.coverage.watch[idx(m.x, m.y)] / 255; if (cov >= 0.5) { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 5, label: 'The Watch held the square' }); return `The Watch holds the square at (${m.x},${m.y}). By midnight the torches are out and the stalls stand; the city sleeps easier for it.`; } igniteBuilding(s, m, 'The riot fires the'); return `The Watch is too thin at (${m.x},${m.y}): the market burns. Raise a Watch Post where the shelves are, and bring the unrest down.`; } },
+    { label: "Pay the Crown's peace (600 crowns)", desc: 'Bread on the square and a Crown amnesty: no fire, and unrest −10 % for 10 days.', apply: (s) => { s.treasury -= 600; s.unrestHigh = 0; s.stats.riots++; s.modifiers.push({ kind: 'unrest', value: -0.1, until: s.day + 10, label: "The Crown's peace" }); return 'Bread and a reading of the amnesty from the square steps. The torches go out one by one. The crowd remembers the bread.'; } },
+  ],
+};
+/** The riot fires on its own count, before the storyteller's draw. */
+export function maybeFireRiot(s: GameState): void {
+  if (s.pendingEvent || s.gameOver || s.unrestHigh < RIOT_DAYS) return;
+  s.pendingEvent = { id: RIOT.id, title: RIOT.title, text: RIOT.text, choices: RIOT.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+  s.firedEvents.push(`${RIOT.id}:?`);
+}
+void RIOT_UNREST;
+
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {

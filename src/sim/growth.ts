@@ -6,6 +6,10 @@ import { relicDone } from './relics';
 import { bumpRoadVersion, marketStockCap } from './agents';
 import { PORTAL_CAP } from './networks';
 
+/** The Hospice holds this many goods of draughts; without them it heals at six tenths. */
+export const HOSPICE_DRAUGHTS = 10;
+/** The Academy's studied relics raise the educated floor by a hundredth each, up to this. */
+export const EDUCATED_FLOOR_CAP = 0.2;
 /** A Crystal Mine's seam: this much leystone, then dust. */
 export const SEAM = 2400;
 export const SPENT_RATE = 2;
@@ -229,6 +233,19 @@ export function dailyBuildings(state: GameState): void {
     if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
       b.age++;
+      // the Hospice draws two goods of draughts a day from the fullest market within 16 (it holds ten)
+      if (b.kind === 'hospice' && b.state === 'ok' && b.lit && b.stock < HOSPICE_DRAUGHTS) {
+        let best: Building | null = null;
+        forEachBuilding(state, (m) => { if (BUILDING_BY_KEY[m.kind].zone === Zone.Market && m.state === 'ok' && m.stock > 0 && Math.abs(m.x - b.x) <= 16 && Math.abs(m.y - b.y) <= 16 && (!best || m.stock > best.stock)) best = m; });
+        if (best) { const m = best as Building; const take = Math.min(2, m.stock, HOSPICE_DRAUGHTS - b.stock); m.stock -= take; b.stock += take; }
+      }
+      if (b.kind === 'hospice' && b.state === 'ok') b.stock = Math.max(0, b.stock - 1); // a day's draughts used
+      // the Academy studies a loose relic every five days: a lasting floor under the educated share
+      if ((b.kind === 'academy' || b.kind === 'grandacademy') && b.state === 'ok' && b.lit && state.day > 0 && state.day % 5 === 0 && state.relicStock >= 1 && state.educatedFloor < EDUCATED_FLOOR_CAP) {
+        state.relicStock--;
+        state.educatedFloor = Math.min(EDUCATED_FLOOR_CAP, state.educatedFloor + 0.01);
+        b.progress++; // relics studied here
+      }
       if (def.goodsRate && b.state === 'ok') {
         const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands
         b.stock += Math.max(0, made);
@@ -320,12 +337,13 @@ export function dailyBuildings(state: GameState): void {
     } else if (def.zone === Zone.Market) {
       const want = b.workers * 0.5 + 1;
       if (b.stock <= 0.5) state.goodsShort++;
+      if (b.stock > 0 && theftAt(state, b)) { const taken = b.stock * 0.1; b.stock -= taken; state.stats.goodsStolen += taken; } // an unwatched shelf in an unquiet city
       b.stock = Math.max(0, b.stock - want);
     } else if (def.zone === Zone.Arcane) {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3) * (quarterOf(state, b) === 'scholars' ? 1.2 : 1));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 + 0.05 * state.relics.complete.length : 1);
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 + 0.05 * state.relics.complete.length : 1) * grandAcademyBonus(state);
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -491,7 +509,7 @@ export function updateSocial(state: GameState): void {
   const watchCov = watch / res;
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
-  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
+  state.educated += (Math.min(0.95, 0.05 + state.educatedFloor + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
   const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts') + modifierSum(state, 'health')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
@@ -501,9 +519,32 @@ export function updateSocial(state: GameState): void {
   for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest') + uzulim * 0.02),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest') + uzulim * 0.02),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
+  state.unrestHigh = state.unrest > RIOT_UNREST ? state.unrestHigh + 1 : 0;
+}
+
+/** Unrest above this for RIOT_DAYS days in a row brings a riot. */
+export const RIOT_UNREST = 0.5;
+/** Idle scholars: more than half the city educated with Arcane work for fewer than an eighth of the folk. */
+export const IDLE_SCHOLARS = 0.05;
+export function idleScholars(state: GameState): boolean {
+  if (state.educated <= 0.5) return false;
+  let arcaneJobs = 0;
+  forEachBuilding(state, (b) => { if (BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok') arcaneJobs += capacityOf(b, state); });
+  return arcaneJobs < state.population / 8;
+}
+/** Artifacts sell for +5 % per full tenth of the educated share above four tenths while a lit Grand Academy stands. */
+export function grandAcademyBonus(state: GameState): number {
+  if (!state.buildings.some((b) => b && b.kind === 'grandacademy' && b.state === 'ok' && b.lit)) return 1;
+  return 1 + 0.05 * Math.floor(Math.max(0, state.educated - 0.4) / 0.1);
+}
+/** Markets lose a tenth of their shelves a night to theft while unrest is above this and the watch there under THEFT_WATCH. */
+export const THEFT_UNREST = 0.3;
+export const THEFT_WATCH = 0.3;
+export function theftAt(state: GameState, b: Building): boolean {
+  return state.unrest > THEFT_UNREST && state.coverage.watch[idx(b.x, b.y)] < THEFT_WATCH * 255;
 }
 
 export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: number): boolean {
@@ -541,12 +582,12 @@ export function dailyTrade(state: GameState): void {
   const full: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.state === 'ok' && (def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8) full.push(b);
+    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && b.stock >= 1))) full.push(b); // pelts go too
   });
   full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
   for (const b of full) {
     if (budget <= 0) break;
-    const sell = Math.min(b.stock - craftStockCap(b) * 0.5, budget);
+    const sell = Math.min(b.kind === 'hunterslodge' ? b.stock : b.stock - craftStockCap(b) * 0.5, budget);
     if (sell > 0) {
       b.stock -= sell;
       budget -= sell;

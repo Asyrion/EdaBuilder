@@ -79,6 +79,8 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     happiness: 60,
     health: 0.6,
     unrest: 0.1,
+    unrestHigh: 0,
+    educatedFloor: 0,
     manaSupply: 0,
     manaDemand: 0,
     manaStorage: 0,
@@ -130,7 +132,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -404,6 +406,40 @@ export function influenceRadius(state: GameState, def: BuildingDef, b?: Building
   if (def.key === 'wicktower') return 4;
   if (def.key === 'nexus' || WONDER_HALLS.includes(def.key)) return 9;
   return 0;
+}
+
+/** The reach of the buildings a new one of this kind would join: for a ley member, the link reach of every node and lit relay (place the new spire inside one and it links); for a service, the coverage of every building of that service; for a well, every well's water. */
+export function kinReach(state: GameState, def: BuildingDef): { cx: number; cy: number; r: number }[] {
+  const out: { cx: number; cy: number; r: number }[] = [];
+  const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
+  if (ley) {
+    const reach = factionOf(state).rules.spireReach;
+    for (const n of state.nodes) out.push({ cx: n.x, cy: n.y, r: 6 + reach });
+    forEachBuilding(state, (b) => {
+      if (!b.lit || b.state !== 'ok') return;
+      const link = b.kind === 'spire' ? 6 + reach : b.kind === 'nexus' || WONDER_HALLS.includes(b.kind) ? 9 : b.kind === 'stake' ? 4 : 0;
+      if (link > 0) out.push({ cx: b.x + (b.w - 1) / 2, cy: b.y + (b.h - 1) / 2, r: link });
+    });
+    return out;
+  }
+  if (def.service) {
+    forEachBuilding(state, (b) => {
+      const od = BUILDING_BY_KEY[b.kind];
+      if (!od.service || od.service.type !== def.service!.type || b.state !== 'ok') return;
+      out.push({ cx: b.x + (b.w - 1) / 2, cy: b.y + (b.h - 1) / 2, r: influenceRadius(state, od, b) });
+    });
+    return out;
+  }
+  if (def.waterRadius) {
+    forEachBuilding(state, (b) => {
+      const od = BUILDING_BY_KEY[b.kind];
+      if (!od.waterRadius || b.state !== 'ok') return;
+      let r = waterRadiusOf(state, b);
+      if (r > 0 && od.waterNearBonus && state.waterDist[idx(b.x, b.y)] <= 3) r += od.waterNearBonus;
+      if (r > 0) out.push({ cx: b.x + (b.w - 1) / 2, cy: b.y + (b.h - 1) / 2, r });
+    });
+  }
+  return out;
 }
 
 export function districtName(state: GameState, d: number): string {
