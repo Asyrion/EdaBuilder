@@ -533,9 +533,15 @@ cameo events.
    can lose a bout; materials with sinks; marvels and wonders with a role of their own; the
    Wyrm-Court after the binding; golems assigned to a works. Balance against the iteration
    49 table.
-1. **M16 The wild and the water** (DESIGN §16; the animals folder's creature sheets re-skin the hounds, drakes, golems, skyrays, tigers and wisps here): part 1 the wild (herds, boar, otters,
-   herons, goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as
-   goods; herds that thin where the city spreads); part 2 the water (a Fishers' Hut with
+1. **M14 parts 4 and 5** (DESIGN §15): the world pushes back (weather, the Crown's levy and
+   debt, gates and memory, edicts as commitments, festivals seen, a daily challenge); the
+   bot plays it all (taxes, edicts, walls, a depot, breeding, a warden, a purse that can
+   afford its people's halls: the Hall of Wicks milestone, the Fonts, the sectors) and the
+   Annals.
+2. **M16 The wild and the water** (DESIGN §16): part 1 the wild (herds, boar, otters, herons,
+   goats, wolves; the lodge hunts a chosen quarry for hides, meat and trophies as goods;
+   herds that thin where the city spreads; the animals folder's creature sheets re-skin the
+   hounds, drakes, golems, skyrays, tigers and wisps); part 2 the water (a Fishers' Hut with
    boats, fish that spoil, reed-cutters for thatch, a water garden, the lake's own land
    value and well bonus, a weir pool and a ford).
 
