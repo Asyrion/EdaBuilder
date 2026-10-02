@@ -240,7 +240,7 @@ export class Bot {
           // within the herd's reach, and a market within the meat's reach (the shelves are the point)
           const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok') as Building[];
           const inReach = (x: number, y: number) => Math.hypot(x + 1 - h.x, y + 1 - h.y) <= HUNT_REACH - 2;
-          // only there: a game lodge with no market in reach brings in hides a city with no depot cannot sell (iteration 57: it cost Vellish 42 a sixth of its folk)
+          // only there: a game lodge with no market in reach brings in hides a city with no depot cannot sell
           this.placeNear('hunterslodge', px, py, 8, false, (x, y) => inReach(x, y) && markets.some((m) => Math.hypot(m.x - x - 1, m.y - y - 1) <= MEAT_REACH - 4));
         }
       }

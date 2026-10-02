@@ -380,7 +380,7 @@
 - **Seven Annals counters.**
 - **The ledger:** a row for the hunt's sales, and the Gloam road's prices in the route note.
 - **The bot learns the hunt.**
-  - A game lodge at the city's edge facing the nearest good herd, beside a market if it can.
+  - A game lodge at the city's edge facing the nearest good herd, only with a market in reach.
   - It picks the quarry, leaves herds above half their cap, and calls the Close Season when its
     herds thin.
   - `balance.ts` prints a `wild:` line.
@@ -616,6 +616,10 @@
   - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
     every later roll down another path, so a single seed per people is a thin measure. A wider
     table (three seeds a people) would show the bot's levers better than any one run.
+- **The bot's hunt** (iteration 57). Vellish 42 ends with 1,618 folk against 1,942. With the bot's
+  hunt switched off it is bit-identical to §4.86, so the change is the one game lodge it raised and
+  the path the run took from there. Five of six bot cities have no depot, so their hides are never
+  sold (DESIGN §4.88).
 - **Painted buildings face one way.** Iteration 56 mirrored the paintings fronted on the left
   face so the set faces lower-right. A building does not turn toward its own road, and the
   paintings drawn head-on cannot be turned by a mirror. A per-placement, road-facing mirror at

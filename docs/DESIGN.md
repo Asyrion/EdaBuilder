@@ -2677,8 +2677,8 @@ Hush.
 
 **The bot learns the hunt.**
 - **The game lodge.** With no lodge free for game, it raises one at the city's edge facing the
-  nearest herd of 4 or more, beside a market when it can. It does this once the purse and the
-  ledger allow.
+  nearest herd of 4 or more, and only where a market lies within the meat's reach. It does this
+  once the purse and the ledger allow.
 - **The quarry.** The first lodge stays on hounds while a pack came in the last 15 days. The others
   hunt the most valuable game in their grounds, but only herds above half their cap, so the bot
   does not hunt a herd out.
@@ -2723,7 +2723,15 @@ Hush.
 **What moved the rows.** Seed 44, untouched, shows the side streams hold. Every other row moved
 because the bot now buys a game lodge (1,300 crowns and 24 a day), quests and tales changed (the meat
 quest's 600, the wolf winter, the white hart), and wolves took hens in the Hush. From the first such
-purchase each run follows another path. PROBE
+purchase each run follows another path.
+
+A probe isolates the bot's hunt: Vellish 42 run with the bot's `hunt()` switched off is
+bit-identical to §4.86 (1,942 folk). So the wild itself costs that city nothing. The 324 folk it
+lost come from the one game lodge the bot raised beside a market and the different path
+the run took from there. The lodge brought in 12 hides and 24 meat, and the city has no depot to
+sell the hides. This is the single-seed variance named in the known issues as much as a cost. The
+rule was tightened anyway (a game lodge only with a market within the meat's reach), and the
+six-run table came back identical.
 
 **What the hunt is worth to the bot.**
 - It is worth little.
