@@ -113,27 +113,27 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'mine', name: 'Crystal Mine', category: 'ley',
-    desc: 'Dug into hills. Grimmen miners cut 8 leystone a day (4 unlit); carts haul it to Arcane districts, which sell the enchanted artifacts for crowns.',
+    desc: 'Dug into hills. Grimmen miners cut 8 leystone a day (4 unlit) from a seam of 2,400; carts haul it to Arcane districts, which sell the enchanted artifacts for crowns. A cut-out seam gives 2 a day of dust and wakes wardens three times as often.',
     flavor: 'The seams sing. The miners learn not to answer.',
     w: 2, h: 2, cost: 2600, upkeep: 30, manaUse: 2, unlock: 4, onHills: true, leystone: 8,
   },
   {
     key: 'font', name: 'Thrum Font', category: 'ley',
-    desc: 'A bored well into a deep Vein. Produces 40 mana a day anywhere. Expensive and a little dangerous.',
+    desc: 'A bored well into a deep Vein. Produces 40 mana a day anywhere. Expensive and dangerous when pressed: past nine tenths of the flow it may flare (one chance in fifty a day), burning its yard and smoking for ten days.',
     flavor: 'The Tallowkin who bore the shaft are paid triple and buried for free.',
     w: 2, h: 2, cost: 6500, upkeep: 50, manaUse: 0, manaProduce: 40, unlock: 4,
   },
 
   {
     key: 'torrentmill', name: 'Torrent Mill', category: 'ley',
-    desc: 'A Gekiryu mill on the riverbank: falling water turned into 30 mana a day, no Vein needed. Must touch river or lake water and a road.',
+    desc: 'A Gekiryu mill on the riverbank: falling water turned into 30 mana a day, no Vein needed (more in the Thaw, half when the river freezes). Must touch river or lake water and a road; a second mill within 8 tiles shares the river and makes six tenths.',
     flavor: 'The Veshari claim the design. The Huruhui who built the first one just laughs.',
     w: 1, h: 1, cost: 5200, upkeep: 40, manaUse: 0, manaProduce: 30, unlock: 4, nearWater: true,
   },
 
   {
     key: 'portalarch', name: 'Portal Arch', category: 'ley',
-    desc: 'One of a pair of leystone arches. Carts and folk that pass a lit arch step out of the other, anywhere on the map. Both must be lit; 12 mana each. Only two may stand.',
+    desc: 'One of a pair of leystone arches. Carts and folk that pass a lit arch step out of the other, anywhere on the map. Both must be lit; 12 mana each and a tenth more per crossing; past 60 crossings a day the jump jams like a crowded road. Only two may stand.',
     flavor: 'The first carter through came out the far side a moment before he went in, and refused to discuss it.',
     w: 1, h: 1, cost: 4000, upkeep: 30, manaUse: 12, unlock: 5, needsMana: true, maxCount: 2,
   },
@@ -141,25 +141,25 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- water ----
   {
     key: 'well', name: 'Well', category: 'water',
-    desc: 'Blessed in the name of Vesh. Waters buildings within 8 tiles (10 if dug near water).',
+    desc: 'Blessed in the name of Vesh. Waters buildings within 8 tiles (10 if dug near water) and serves 30 levels of homes and works, the nearest first. Dug more than 8 tiles from any water it reaches only 4; a bank well is fouled while the river floods.',
     flavor: 'Drop a coin in and the water-mage hears it. Drop two and she answers.',
     w: 1, h: 1, cost: 300, upkeep: 4, manaUse: 0, waterRadius: 8, waterNearBonus: 2, unlock: 0,
   },
   {
     key: 'seep', name: 'Seep', category: 'water', faction: ['grimmen'],
-    desc: 'A basin cut into the hill foot where the stone weeps. Waters buildings within 6 tiles; must touch hills. No mana, no coin to the water-mage.',
+    desc: 'A basin cut into the hill foot where the stone weeps. Waters buildings within 6 tiles (9 in the Thaw, 3 in the Ember) and serves 20 levels; must touch hills. No mana, no coin to the water-mage.',
     flavor: 'The Grimmen say the hill is only sleeping, and the seep is where it dreams of the river.',
     w: 1, h: 1, cost: 350, upkeep: 4, manaUse: 0, waterRadius: 6, nearHills: true, unlock: 0,
   },
   {
     key: 'tidewell', name: 'Tide-Well', category: 'water', faction: ['veshari'],
-    desc: 'A stone shaft sunk at the water\'s edge, where the river fills it twice a day. Waters buildings within 10 tiles; must touch river or lake water. No mana.',
+    desc: 'A stone shaft sunk at the water\'s edge, where the river fills it twice a day. Waters buildings within 10 tiles and serves 45 levels; must touch river or lake water. No mana, and the flood does not foul it.',
     flavor: 'The water-mage does not need a coin. She can hear the river from here.',
     w: 1, h: 1, cost: 400, upkeep: 4, manaUse: 0, waterRadius: 10, nearWater: true, unlock: 0,
   },
   {
     key: 'cistern', name: 'Cistern of Vesh', category: 'water',
-    desc: 'A mana-driven cistern that lifts water uphill. Waters buildings within 12 tiles. Needs mana.',
+    desc: 'A mana-driven cistern that lifts water anywhere, far from any river. Waters buildings within 12 tiles and serves 90 levels. Needs mana.',
     flavor: 'The water rises because it is asked nicely, and because eight mana a day are spent on the asking.',
     w: 2, h: 2, cost: 1800, upkeep: 14, manaUse: 8, waterRadius: 12, needsMana: true, unlock: 2,
   },
@@ -612,7 +612,7 @@ export interface RoadDef {
 
 export const ROADS: RoadDef[] = [
   { type: RoadType.Track, key: 'track', name: 'Dirt Track', cost: 10, upkeep: 0.3, manaUse: 0, speed: 1.0, capacity: 60, landValue: 0, unlock: 0,
-    desc: 'Cheap and muddy. Slow, low capacity. Bridges cost 4×, cuts through hills 3×.' },
+    desc: 'Cheap and muddy. Slow, low capacity, and mud in the Thaw and the Hush slows it to six tenths. Bridges cost 4×, cuts through hills 3×.' },
   { type: RoadType.Cobble, key: 'cobble', name: 'Cobbled Road', cost: 45, upkeep: 0.8, manaUse: 0, speed: 1.4, capacity: 160, landValue: 6, unlock: 1,
     desc: 'Faster and wider. Raises land value.' },
   { type: RoadType.Lantern, key: 'lantern', name: 'Lantern-way', cost: 130, upkeep: 1.5, manaUse: 1, speed: 1.7, capacity: 300, landValue: 14, unlock: 4,

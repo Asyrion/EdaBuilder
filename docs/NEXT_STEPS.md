@@ -349,6 +349,16 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 46 (M14 part 1b: the ground has limits)
+
+- Wells serve a capacity of zone levels (Well 30, Seep 20, Tide-Well 45, Cistern 90), the
+  nearest first, with a Drawn row and an overdrawn problem; a far-from-water Well reaches 4,
+  the Seep follows the season, the flood fouls bank wells. Mud slows dirt tracks in the Thaw
+  and the Hush. Mine seams run out (2,400) and a spent shaft wakes wardens ×3. A hot Font
+  may flare. A second mill within 8 shares the river. Portal crossings count, draw mana and
+  jam past 60. Past pressure 0.65 the Gloam comes to a dark, unwarded door and takes the
+  building on the third day.
+
 ## Done in iteration 45 (M14 part 1a: the ley has limits)
 
 - An unlinked node seeps half its flow; a lit spire, stake or hall within 6 draws the rest and
@@ -443,14 +453,16 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 1b: supply has limits, the ground** (DESIGN §15, AUDIT.md §4 part 1): wells
-   with capacity (30 zone levels, cistern 90, Tide-Well 45, Seep 20; nearest first; a
-   "Drawn 34/30" row and an overdrawn problem; wells more than 8 from water reach 4; the
-   Seep's seasons; the Hush flood fouls bank wells), mud on dirt tracks in the Thaw and the
-   Hush, mine seams (2,400; spent shafts wake golems), Font bore flares over 90 % of flow,
-   mills that share a river (×0.6 within 8), portal crossings (60 a day, 0.1 mana each), and
-   the Gloam that takes an unlit, unwarded building after two days' warning when pressure
-   is 0.65 or more. Balance against the iteration 45 table; the three-seed rule.
+0. **M14 part 2: services with staff and stakes** (DESIGN §15, AUDIT.md §4 part 2): crews
+   that scale coverage (Watch Post 4, House 10, Healer 4, Hospice 16, Academy 12, Boneyard
+   3, shrines 2; "Crew 7/10"); happiness and land value breakdowns in the panel and the
+   missing level-up condition; unrest with a riot and market theft; deathcare in the open
+   (a Ledger line, land value −6 near deathcare, the Sextons' Chapel's sextons, the Salt
+   Font's relics); wards with a burn budget (12 × strength tiles a day; the Stone Ward holds,
+   the Scale Ward's plating wears); halls with a difference (the Hospice's draughts, the
+   Temple's consecration, the fire hall's water, the Grand Academy's prices, the Academy's
+   kept relics); the smaller rows (Mews radius, pelts, dust, the petition countdown, the
+   Wrights' vent, the Carters' Yard). Balance against the iteration 46 table.
 1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge

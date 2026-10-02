@@ -31,9 +31,33 @@ export function drainEffects(): Effect[] {
   return effects.splice(0, effects.length);
 }
 
+/** Over this share of the flow a lit Thrum Font runs hot: each has FLARE_CHANCE a day of a bore flare. */
+export const FLARE_AT = 0.9;
+export const FLARE_CHANCE = 0.02;
+export const FLARE_DAYS = 10;
+export function fontsRunHot(state: GameState): boolean {
+  return state.manaDemand > state.manaSupply * FLARE_AT && state.buildings.some((b) => b && b.kind === 'font' && b.lit && b.state === 'ok');
+}
+
 export function dailyFire(state: GameState): void {
   const rng = rngOf(state);
   const toIgnite: Building[] = [];
+  // a hot Font: pressed past nine tenths of the flow, a lit Font may flare: it and the zone buildings beside it burn, and it smokes for ten days
+  if (state.manaDemand > state.manaSupply * FLARE_AT) {
+    forEachBuilding(state, (b) => {
+      if (b.kind !== 'font' || !b.lit || b.state !== 'ok' || (b.flare ?? 0) > 0) return;
+      if (!rng.chance(FLARE_CHANCE)) return;
+      b.flare = FLARE_DAYS;
+      pushMessage(state, `A bore flare at the Thrum Font at (${b.x},${b.y}): the ley came up the shaft as fire. The yard will smoke for ${FLARE_DAYS} days.`, 'bad', true, { x: b.x, y: b.y });
+      igniteBuilding(state, b, 'A bore flare at');
+      forEachBuilding(state, (o) => {
+        if (o === b || o.state !== 'ok' || BUILDING_BY_KEY[o.kind].category !== 'zone') return;
+        const dx = Math.max(0, b.x - (o.x + o.w - 1), o.x - (b.x + b.w - 1));
+        const dy = Math.max(0, b.y - (o.y + o.h - 1), o.y - (b.y + b.h - 1));
+        if (Math.max(dx, dy) <= 2) igniteBuilding(state, o, 'A bore flare at');
+      });
+    });
+  }
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     const i = idx(b.x, b.y);
@@ -143,12 +167,34 @@ export function recomputeGloamDist(state: GameState): void {
   state.stats.gloamTiles = n;
 }
 
-function hasBuildingNear(state: GameState, x: number, y: number, r: number): boolean {
+/** At this Gloam pressure the grey comes up to the door of a dark, unwarded building. */
+export const GLOAM_TAKES = 0.65;
+/** Days the grey stands at a dark building's door before it is taken. */
+export const GREY_DAYS = 3;
+/** A building within r; with litOnly, only one that is lit or stands on warded ground counts. */
+function hasBuildingNear(state: GameState, x: number, y: number, r: number, litOnly = false): boolean {
   for (let dy = -r; dy <= r; dy++)
     for (let dx = -r; dx <= r; dx++) {
       const tx = x + dx;
       const ty = y + dy;
-      if (inBounds(tx, ty) && state.bIndex[idx(tx, ty)] >= 0) return true;
+      if (!inBounds(tx, ty)) continue;
+      const s = state.bIndex[idx(tx, ty)];
+      if (s < 0) continue;
+      if (!litOnly) return true;
+      const b = state.buildings[s];
+      if (b && (b.lit || b.kind === 'stake' || state.coverage.ward[idx(tx, ty)] > 0)) return true;
+    }
+  return false;
+}
+/** True if a Gloam tile touches the building's footprint (4-neighbourhood). */
+function gloamAtDoor(state: GameState, b: Building): boolean {
+  for (let dy = -1; dy <= b.h; dy++)
+    for (let dx = -1; dx <= b.w; dx++) {
+      if ((dx === -1 || dx === b.w) && (dy === -1 || dy === b.h)) continue;
+      if (dx >= 0 && dx < b.w && dy >= 0 && dy < b.h) continue;
+      const x = b.x + dx;
+      const y = b.y + dy;
+      if (inBounds(x, y) && state.gloam[idx(x, y)]) return true;
     }
   return false;
 }
@@ -220,7 +266,9 @@ export function dailyGloam(state: GameState): void {
           if (gloam[j] || isWater(state.terrain[j]) || state.wall[j]) continue;
           if (state.coverage.ward[j] > 0) continue;
           if (greyNodes.some((g) => Math.hypot(g.x - nx, g.y - ny) <= 10)) continue;
-          if (hasBuildingNear(state, nx, ny, 2)) continue;
+          if (state.bIndex[j] >= 0) continue; // never onto a building: the grey comes to the door first
+          // the grey keeps two tiles from a lit building; past the pressure of GLOAM_TAKES it comes up to a dark, unwarded one
+          if (hasBuildingNear(state, nx, ny, 2, state.gloamPressure >= GLOAM_TAKES)) continue;
           if (rng.chance(p * 0.25)) newTiles.push(j);
         }
       }
@@ -260,7 +308,8 @@ export function dailyGloam(state: GameState): void {
       }
     }
   }
-  // 4. gloam kills buildings it touches
+  // 4. gloam kills buildings it touches; at the door of a dark, unwarded building it waits GREY_DAYS days first
+  const taken: Building[] = [];
   forEachBuilding(state, (b) => {
     if (b.kind === 'stake') return;
     let touched = false;
@@ -270,12 +319,22 @@ export function dailyGloam(state: GameState): void {
           touched = true;
           break;
         }
-    if (touched) {
-      pushMessage(state, `${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) was swallowed by the Gloam.`, 'bad');
-      removeBuilding(state, b);
-      changed = true;
-    }
+    if (touched) { taken.push(b); return; }
+    const dark = !b.lit && state.coverage.ward[idx(b.x, b.y)] === 0 && b.state !== 'building';
+    if (dark && gloamAtDoor(state, b)) {
+      b.greyDays = (b.greyDays ?? 0) + 1;
+      if (b.greyDays === 1) pushMessage(state, `The grey is at the door of the ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}): light it or ward it within two days, or the Gloam takes it.`, 'warn', true, { x: b.x, y: b.y });
+      if (b.greyDays >= GREY_DAYS) {
+        for (let dy = 0; dy < b.h; dy++) for (let dx = 0; dx < b.w; dx++) { const j = idx(b.x + dx, b.y + dy); state.gloam[j] = 1; if (state.zone[j]) { state.zone[j] = 0; state.zoneListDirty = true; } markDirty(state, b.x + dx, b.y + dy); }
+        taken.push(b);
+      }
+    } else if (b.greyDays) b.greyDays = 0;
   });
+  for (const b of taken) {
+    pushMessage(state, `${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) was swallowed by the Gloam.`, 'bad', true, { x: b.x, y: b.y });
+    removeBuilding(state, b);
+    changed = true;
+  }
   if (changed) recomputeGloamDist(state);
   // 5. fail: gloam at the founding node
   const f = state.founding;

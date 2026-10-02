@@ -3,7 +3,12 @@ import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
 import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
 import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
-import { marketStockCap } from './agents';
+import { bumpRoadVersion, marketStockCap } from './agents';
+import { PORTAL_CAP } from './networks';
+
+/** A Crystal Mine's seam: this much leystone, then dust. */
+export const SEAM = 2400;
+export const SPENT_RATE = 2;
 import { seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
@@ -327,8 +332,20 @@ export function dailyBuildings(state: GameState): void {
   for (const b of extraJobs) b.workers = Math.round(capacityOf(b, state) * fill);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.leystone && b.state === 'ok') b.stock = Math.min(60, b.stock + def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
+    if (def.leystone && b.state === 'ok') {
+      // the seam runs out: a full seam cuts the rate, a spent shaft only dust
+      const left = b.seam ?? SEAM;
+      let cut = SPENT_RATE;
+      if (left > 0) {
+        cut = Math.min(left, def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
+        b.seam = left - cut;
+        if (b.seam <= 0) pushMessage(state, `The seam under the ${def.name} at (${b.x},${b.y}) is cut out: ${SPENT_RATE} a day of dust from here, and the empty shaft wakes the deep. Bulldoze it or move on.`, 'warn', true, { x: b.x, y: b.y });
+      }
+      b.stock = Math.min(60, b.stock + cut);
+    }
     if (b.kind === 'mothloft') b.stock = 0; // last night's moths were counted by the works today; the next night counts afresh
+    if (b.kind === 'portalarch') { if ((b.load ?? 0) > PORTAL_CAP) bumpRoadVersion(); b.load = 0; } // a new day's crossings
+    if (b.flare && b.flare > 0) b.flare--;
   });
   state.population = pop;
   state.jobs = jobs;

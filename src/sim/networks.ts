@@ -20,6 +20,11 @@ const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
 const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
+/** A second Torrent Mill within 8 of an older one runs at this share: they share the river. */
+export const MILL_SHARE = 0.6;
+/** A Portal Arch carries this many crossings a day before the jump congests; each crossing draws PORTAL_MANA. */
+export const PORTAL_CAP = 60;
+export const PORTAL_MANA = 0.1;
 /** How much mana of buildings a member of the chain can light; over it, its farthest go dark. Nodes carry anything. */
 export const LOAD_CAP: Record<string, number> = { spire: 80, wicktower: 20, stake: 60, nexus: 200 };
 export function loadCapOf(b: Building): number {
@@ -65,7 +70,13 @@ export function updateMana(state: GameState): void {
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
-    if (def.manaProduce) supply += def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1);
+    if (def.manaProduce) {
+      // a mill with an older mill within 8 shares its river and runs at ×0.6
+      const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8);
+      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1);
+      supply += made;
+      b.load = made;
+    }
     if (def.manaStorage && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
   });
 
@@ -266,6 +277,7 @@ export function updateMana(state: GameState): void {
   for (let i = 0; i < n; i++) if (roadLit[i] && state.road[i] === RoadType.Lantern) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
   demand += foundryMana(state);
   demand += floatingMana(state);
+  forEachBuilding(state, (b) => { if (b.kind === 'portalarch' && b.lit && b.state === 'ok') demand += PORTAL_MANA * (b.load ?? 0); }); // each crossing today draws a tenth
   for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   // lantern-ways are the first thing a shortfall dims: their draw leaves the demand and they go dark (with hysteresis, so they do not flicker)
   if (!state.roadsDim && demand + roadDemand > supply) state.roadsDim = true;
@@ -325,23 +337,30 @@ export function updateMana(state: GameState): void {
   state.lit = lit;
 }
 
+/** How many zone levels a water building serves; the farthest homes beyond that are dry. */
+export const WATER_CAP: Record<string, number> = { well: 30, seep: 20, tidewell: 45, cistern: 90, stake: 20 };
+export function waterCapOf(b: Building): number {
+  return WATER_CAP[b.kind] ?? 30;
+}
+interface WaterSource { b: Building; cx: number; cy: number; r: number; cap: number; load: number; list: { t: Building; d: number }[] }
+
 export function updateWater(state: GameState): void {
   const n = MAP_W * MAP_H;
   const watered = new Uint8Array(n);
   let supply = 0;
+  const srcs: WaterSource[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.waterRadius || b.state !== 'ok') return;
-    if (def.needsMana && !b.lit) return;
+    if (def.needsMana && !b.lit) { b.load = undefined; return; }
     let r = waterRadiusOf(state, b);
-    if (def.waterNearBonus) {
-      const cx = b.x;
-      const cy = b.y;
-      if (state.waterDist[idx(cx, cy)] <= 3) r += def.waterNearBonus;
-    }
+    if (r > 0 && def.waterNearBonus && state.waterDist[idx(b.x, b.y)] <= 3) r += def.waterNearBonus;
+    b.load = 0;
+    if (r <= 0) return; // fouled
     supply += r * r;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
+    srcs.push({ b, cx, cy, r, cap: waterCapOf(b), load: 0, list: [] });
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
         const x = Math.round(cx + dx);
@@ -350,8 +369,11 @@ export function updateWater(state: GameState): void {
         if (dx * dx + dy * dy <= r * r + 0.5) watered[idx(x, y)] = 1;
       }
   });
+  // every zone building in reach draws its level from its nearest well; a well serves the nearest first up to its cap
   let demand = 0;
+  const drawers: { t: Building; cx: number; cy: number }[] = [];
   forEachBuilding(state, (b) => {
+    b.dryBy = undefined;
     let w = false;
     for (let dy = 0; dy < b.h && !w; dy++)
       for (let dx = 0; dx < b.w; dx++)
@@ -361,8 +383,33 @@ export function updateWater(state: GameState): void {
         }
     b.watered = w;
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.category === 'zone') demand += b.level;
+    if (def.category === 'zone') {
+      demand += b.level;
+      if (w) drawers.push({ t: b, cx: b.x + (b.w - 1) / 2, cy: b.y + (b.h - 1) / 2 });
+    }
   });
+  if (srcs.length) {
+    const covering = (d: { cx: number; cy: number }) => srcs.filter((s) => Math.hypot(s.cx - d.cx, s.cy - d.cy) <= s.r + 0.7).sort((p, q) => Math.hypot(p.cx - d.cx, p.cy - d.cy) - Math.hypot(q.cx - d.cx, q.cy - d.cy));
+    const left: { t: Building; cx: number; cy: number }[] = [];
+    for (const d of drawers) {
+      const c = covering(d)[0];
+      if (c) c.list.push({ t: d.t, d: Math.hypot(c.cx - d.cx, c.cy - d.cy) });
+    }
+    for (const src of srcs) {
+      src.list.sort((p, q) => p.d - q.d);
+      for (const e of src.list) {
+        if (src.load + e.t.level > src.cap) { left.push({ t: e.t, cx: e.t.x + (e.t.w - 1) / 2, cy: e.t.y + (e.t.h - 1) / 2 }); continue; }
+        src.load += e.t.level;
+      }
+      src.b.load = src.list.reduce((v, e) => v + e.t.level, 0); // the full draw on it, for the panel
+    }
+    // a home its nearest well cannot serve may draw from another well in reach with room
+    for (const d of left) {
+      const other = covering(d).find((s) => s.load + d.t.level <= s.cap);
+      if (other) other.load += d.t.level;
+      else { d.t.watered = false; d.t.dryBy = 'overdrawn'; }
+    }
+  }
   state.watered = watered;
   state.waterSupply = supply;
   state.waterDemand = demand;

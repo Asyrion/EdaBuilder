@@ -140,8 +140,9 @@ export function updateMiasma(state: GameState): void {
   const acc = new Float32Array(n);
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (!def.miasma || b.state !== 'ok') return;
-    const amt = def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1) * (quarterOf(state, b) === 'craft' ? 1.3 : 1);
+    const flare = b.kind === 'font' && (b.flare ?? 0) > 0 ? 6 : 0; // a flared Font smokes
+    if ((!def.miasma && !flare) || (b.state !== 'ok' && b.state !== 'burning')) return;
+    const amt = (def.miasma ? def.miasma * b.level * (edictOn(state, 'herbgardens', b) ? 1.3 : 1) * (quarterOf(state, b) === 'craft' ? 1.3 : 1) : 0) + flare;
     const r = 4;
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {

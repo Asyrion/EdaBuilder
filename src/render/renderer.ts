@@ -557,6 +557,7 @@ export class Renderer {
         else if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) icons.push({ x: wx, y: wy - 10, name: 'icon_nogoods' });
       }
       if (abandoned) icons.push({ x: wx, y: wy - 10, name: 'icon_abandoned' });
+      else if (b.greyDays) icons.push({ x: wx, y: wy - 10, name: 'icon_gloam' }); // the grey is at the door
       if (burning) icons.push({ x: wx, y: wy - 14, name: 'icon_fire' });
       // lights & glow
       const cx = wx + ((b.w - b.h) * TILE_W) / 4;

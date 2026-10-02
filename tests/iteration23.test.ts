@@ -38,8 +38,9 @@ describe('Ley aspects', () => {
     s.nodes[0].aspect = 'tide';
     buildRoad(s, RoadType.Track, roadPath(f.x - 8, f.y + 3, f.x + 8, f.y + 3, false));
     const w = placeBuildingRaw(s, 'well', f.x + 2, f.y + 4);
+    s.waterDist.fill(5); // water within reach (a well more than 8 from any water reaches only 4)
     recomputeAll(s);
-    expect(s.watered[idx(f.x + 2, f.y + 4 + 9)]).toBe(1); // base 8 (+2 near water) +2 Tide
+    expect(s.watered[idx(f.x + 2, f.y + 4 + 9)]).toBe(1); // base 8 +2 Tide
     void w;
     s.nodes[0].aspect = 'ember';
     const c = placeBuildingRaw(s, 'craft', f.x - 2, f.y + 4, 2);
