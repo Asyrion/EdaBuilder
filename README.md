@@ -251,7 +251,12 @@ Charter as `.json`.
   Depot, the chapels, the homes, works, shops and markets of the zones are imported from
   the reference paintings, sharpened and outlined to sit beside the procedural set; one
   painting is the look for every people; the Stake, the Guildhall and the Temple grow with
-  the city; every building has a sprite.
+  the city; every building has a sprite. The painted heroes stand at the height of their
+  procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
+  the whole set faces lower-right.
+- Reach rings: placing or selecting a building draws every reach it has above the buildings,
+  labelled ("water 4", "watch 14", "fed from markets 12"), with its kin's reach faintly around
+  it; square reaches draw as squares, and a well's ring is the water it really gives.
 - A road at a building's corner counts as its door; the zone preview hatches the tiles that
   would never grow. Districts and charters open in steps from the Hamlet to the Burgh, with
   a three-step lesson card when they arrive. The demand bars carry a zero line, a word under

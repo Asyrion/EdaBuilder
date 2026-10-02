@@ -2490,6 +2490,93 @@ Balance, 150 days, against §4.85 in brackets:
   folk and −13,874 crowns.
 - **The final pass** limits the rule to the two peoples whose gate it is, and to real brownouts.
 
+### 4.87 The playtest batch: painted buildings at the procedural scale, one facing for the set, reach rings you can see (iteration 56)
+
+Three findings from the user's playtest of iteration 55, with a screenshot of a night street, are
+fixed together, as small findings go into the next iteration.
+
+**Painted buildings at the procedural scale.** The finding was "the buildings made from the
+inspiration images are a bit big next to the procedural ones". Each imported sprite was measured
+against its procedural twin in the browser, opaque box against opaque box (the paintings blocked
+for one atlas, merged for the other):
+
+- The zone houses already matched (hearth, craft, market and arcane levels at 0.9–1.18× the
+  procedural height).
+- The hero buildings stood 1.3–2.2× taller: the wells, the spire, the Wick-Tower and the Nexus
+  (2.2×), the cistern, the depot and the yard, the chapels, the Lyceum, the Hall of Wicks, and the
+  Founding Stake's four stages (73 px where a house is 38).
+
+The cause was the importer's rule: a building painting is scaled to its footprint's full width and
+the height follows, so a tall painting stands tall. Each hero now has a `targetHeight` of its
+procedural twin's height × 1.15, or × 1.3 for the three towers, which are meant to rise over the
+roofs. The 2 px outline the importer adds is counted. The `centre` anchor stands the sprite in the
+middle of its tile as the procedural ones do. The Stake's stages scale by one factor (0.8) so they
+keep their growth. Measured after the change: 1.09–1.16× for the halls and wells, 1.31–1.33× for
+the towers. A test holds the heights in the manifest.
+
+**One facing for the set.** "Some of the building sprites are turned to the wrong side". No sprite
+was ever mirrored. The procedural painter puts the door and the gable end on the right face, so
+every procedural building faces lower-right, while most paintings show their front on the left face.
+The importer's new `flip` mirrors a painting before it is scaled; the anchor and the glow follow.
+Each painting was judged by eye on a sheet of procedural, imported and mirrored side by side, and
+nine are mirrored: the stage 0–2 Stake halls (the timber hall in the screenshot among them), the
+depot, the Carters' Yard, the Lyceum, the cistern, one hearth and one market. The rest stay as they
+were:
+
+- The symmetric ones (the wells, the towers, the Gothic chapels, the boneyard, the Hall of Wicks).
+- The ones painted head-on, which no mirror can turn: most of the zone houses, and the stage 3 Stake
+  hall, a flat front elevation.
+
+A mirrored painting's light falls from the other side; at the game's scale none of the nine looked
+wrong for it. Facing each building toward its own road (a per-placement mirror at render time) would
+flip the light building by building, and is left for later if wanted.
+
+**Reach rings you can see.** "Water sources should have their radius of influence shown when a new
+one is built or a well is clicked; it should show on every building with a radius where it makes
+sense." The rings existed, both when placing and on selection, but they were drawn before the
+objects, under every house and tree, and before the night's light pass multiplied them darker, at
+8–12 % fill: in a built street or at night a well's ring was all but hidden. Now:
+
+- **The ring's outline and label** are queued and drawn after the lighting, above everything, over a
+  dark under-stroke. The soft fill stays under the objects.
+- **A selected building shows every reach,** labelled ("water 4", "watch 14", "fed from markets
+  12"), and its kin's reach faintly, as placing already did: every well's water around a well. A
+  water ring is the water the building really gives, with the near-water bonus and a drought's
+  shorter reach (`waterReachOf`, which the placement rings now share).
+- **`reachesOf` (`src/sim/reach.ts`)** lists the primary reach (service, water, light) and the
+  secondary reaches the sim uses but the panels only named in text, each read from the constant the
+  sim uses. A ring cannot disagree with what the building does:
+  - the cradles' feeding markets (12) and the Tamer's Lodge's cradles (10);
+  - the Golem Foundry's and the Forge-Temple's binding (12), and the Forge's wake (20);
+  - the quays' and landings' works (8, a square);
+  - the Hospice's draughts (16, a square) and the Carters' Yard's roads (10, a square);
+  - the Hanging Gardens' glowvine (12);
+  - the Great Weir's flood (30, only with its sluice open);
+  - the Lantern of Wicks' spires and the Underking's Seat's cradles (30);
+  - the Torrent Mill's shared river and the Glimhouse's Hush works (8, squares).
+- **Square reaches draw as squares.** Five reaches the sim measures as squares are drawn as their
+  diamond.
+- **Named constants.** Five were bare numbers in the sim (`HOSPICE_REACH`, `GLIMHOUSE_REACH`,
+  `CARTERS_REACH`, `GLOWVINE_REACH`, `MILL_SHARE_REACH`) and are now named. The control balance seed
+  is bit-identical to §4.86's Vellish 42 row.
+- **No Ley Beacon ring.** The beacon's `BEACON_RADIUS` is declared but never read, so it gets no
+  ring.
+
+**Verified.**
+
+- 59 test files and 347 tests; the new `tests/iteration56.test.ts` covers every service and water
+  building's ring, the water reach, the secondary constants, the Weir's sluice, the hero heights and
+  the flip list.
+- The art check sheet, judged by eye, and the before/after side-by-side sheets.
+- `scripts/playtest56.mjs`:
+  - on a midnight street, the selected well's ring shows 397 pixels, 26 of them over the houses (the
+    old order could put none there);
+  - a well being placed shows its ring and the standing water around it;
+  - a selected cradle shows its feeding reach;
+  - the browser's own atlas measures every hero inside 1.2× of its twin (1.4× for the towers);
+  - the screenshot's scene is shown before (the old sprites served from git) and after;
+  - no errors.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -3505,3 +3592,13 @@ playtest of a lakeside town.
   the list of 85 counters.
 - *The Annals hold every counter by test (iteration 55):* like the sprite-for-every-building test,
   a counter that is on no page fails the suite, so nothing the sim counts is write-only again.
+- *A painting is scaled to its procedural twin, not to its footprint (iteration 56):* filling the
+  footprint's width let a tall painting stand up to twice the height of the building it replaces;
+  matching the twin's height (a little over, more for towers) keeps the painted and procedural
+  buildings one set.
+- *The set faces lower-right (iteration 56):* the procedural painter's doors are on the right face, so
+  paintings fronted on the left are mirrored at import, judged one by one; head-on paintings stay as
+  they are, since a mirror cannot turn them. Facing each building toward its road is left for later.
+- *Rings on top (iteration 56):* a reach is a thing to see, so its outline is drawn after the light
+  pass, above the buildings, with a label; and every reach a building has is read from the sim's own
+  constant, so a ring never disagrees with the rule.

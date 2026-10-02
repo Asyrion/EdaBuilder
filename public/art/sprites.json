@@ -2,34 +2,34 @@
  "sprites": {
   "b_stake_s0": {
    "file": "sprites/b_stake_s0.png",
-   "w": 68,
-   "h": 75,
-   "ax": 33,
-   "ay": 42,
+   "w": 55,
+   "h": 60,
+   "ax": 28,
+   "ay": 27,
    "glow": "sprites/b_stake_s0_glow.png"
   },
   "b_stake_s1": {
    "file": "sprites/b_stake_s1.png",
-   "w": 68,
-   "h": 73,
-   "ax": 33,
-   "ay": 40,
+   "w": 55,
+   "h": 59,
+   "ax": 28,
+   "ay": 26,
    "glow": "sprites/b_stake_s1_glow.png"
   },
   "b_stake_s2": {
    "file": "sprites/b_stake_s2.png",
-   "w": 68,
-   "h": 52,
-   "ax": 33,
-   "ay": 19,
+   "w": 55,
+   "h": 42,
+   "ax": 28,
+   "ay": 9,
    "glow": "sprites/b_stake_s2_glow.png"
   },
   "b_stake_s3": {
    "file": "sprites/b_stake_s3.png",
-   "w": 68,
-   "h": 82,
-   "ax": 33,
-   "ay": 49,
+   "w": 55,
+   "h": 66,
+   "ax": 28,
+   "ay": 33,
    "glow": "sprites/b_stake_s3_glow.png"
   },
   "grass_0": {
@@ -310,106 +310,104 @@
   },
   "b_spire": {
    "file": "sprites/b_spire.png",
-   "w": 23,
-   "h": 66,
-   "ax": 12,
-   "ay": 49,
+   "w": 18,
+   "h": 51,
+   "ax": 9,
+   "ay": 34,
    "glow": "sprites/b_spire_glow.png"
   },
   "b_nexus": {
    "file": "sprites/b_nexus.png",
-   "w": 41,
-   "h": 92,
-   "ax": 21,
-   "ay": 59,
+   "w": 26,
+   "h": 57,
+   "ax": 13,
+   "ay": 24,
    "glow": "sprites/b_nexus_glow.png"
   },
   "b_wicktower": {
    "file": "sprites/b_wicktower.png",
-   "w": 28,
-   "h": 58,
-   "ax": 14,
-   "ay": 41,
+   "w": 22,
+   "h": 45,
+   "ax": 11,
+   "ay": 28,
    "glow": "sprites/b_wicktower_glow.png"
   },
   "b_well": {
    "file": "sprites/b_well.png",
-   "w": 36,
-   "h": 44,
-   "ax": 17,
-   "ay": 27,
-   "glow": "sprites/b_well_glow.png"
+   "w": 25,
+   "h": 30,
+   "ax": 13,
+   "ay": 13
   },
   "b_seep": {
    "file": "sprites/b_seep.png",
-   "w": 36,
-   "h": 42,
-   "ax": 17,
-   "ay": 25,
-   "glow": "sprites/b_seep_glow.png"
+   "w": 19,
+   "h": 22,
+   "ax": 10,
+   "ay": 5
   },
   "b_tidewell": {
    "file": "sprites/b_tidewell.png",
-   "w": 36,
-   "h": 46,
-   "ax": 17,
-   "ay": 29,
+   "w": 20,
+   "h": 25,
+   "ax": 10,
+   "ay": 8,
    "glow": "sprites/b_tidewell_glow.png"
   },
   "b_cistern": {
    "file": "sprites/b_cistern.png",
-   "w": 68,
-   "h": 86,
-   "ax": 33,
-   "ay": 53,
+   "w": 49,
+   "h": 62,
+   "ax": 25,
+   "ay": 29,
    "glow": "sprites/b_cistern_glow.png"
   },
   "b_depot": {
    "file": "sprites/b_depot.png",
-   "w": 68,
-   "h": 65,
-   "ax": 33,
-   "ay": 32,
+   "w": 52,
+   "h": 50,
+   "ax": 26,
+   "ay": 17,
    "glow": "sprites/b_depot_glow.png"
   },
   "b_cartersyard": {
    "file": "sprites/b_cartersyard.png",
-   "w": 68,
-   "h": 64,
-   "ax": 33,
-   "ay": 31,
+   "w": 51,
+   "h": 48,
+   "ax": 26,
+   "ay": 15,
    "glow": "sprites/b_cartersyard_glow.png"
   },
   "b_ossuary": {
    "file": "sprites/b_ossuary.png",
-   "w": 68,
-   "h": 68,
-   "ax": 33,
-   "ay": 35,
+   "w": 60,
+   "h": 60,
+   "ax": 30,
+   "ay": 27,
    "glow": "sprites/b_ossuary_glow.png"
   },
   "b_sextonchapel": {
    "file": "sprites/b_sextonchapel.png",
-   "w": 68,
-   "h": 67,
-   "ax": 33,
-   "ay": 34,
+   "w": 57,
+   "h": 56,
+   "ax": 29,
+   "ay": 23,
    "glow": "sprites/b_sextonchapel_glow.png"
   },
   "b_boneyard": {
    "file": "sprites/b_boneyard.png",
-   "w": 68,
-   "h": 70,
-   "ax": 33,
-   "ay": 37,
+   "w": 50,
+   "h": 51,
+   "ax": 25,
+   "ay": 18,
    "glow": "sprites/b_boneyard_glow.png"
   },
   "b_lyceum": {
    "file": "sprites/b_lyceum.png",
-   "w": 68,
-   "h": 76,
-   "ax": 33,
-   "ay": 43,
+   "w": 59,
+   "h": 66,
+   "ax": 30,
+   "ay": 33,
    "glow": "sprites/b_lyceum_glow.png"
   },
   "hearth_l2_v0": {
@@ -666,10 +664,10 @@
   },
   "b_hallofwicks": {
    "file": "sprites/b_hallofwicks.png",
-   "w": 100,
-   "h": 130,
-   "ax": 49,
-   "ay": 81,
+   "w": 66,
+   "h": 86,
+   "ax": 33,
+   "ay": 37,
    "glow": "sprites/b_hallofwicks_glow.png"
   }
  }

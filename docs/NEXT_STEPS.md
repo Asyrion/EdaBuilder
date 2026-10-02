@@ -349,6 +349,30 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 56 (the playtest batch: painted buildings at the procedural scale, one facing, reach rings you can see)
+
+- **The painted heroes stand at the procedural scale.** Each hero sprite is scaled to its
+  procedural twin's height (× 1.15, × 1.3 for the towers) and centred on its tile, instead of
+  filling its footprint's width. Before, they stood 1.3–2.2× as tall as their twins; now the
+  halls are 1.09–1.16× and the towers 1.31–1.33×. The four Founding Stake stages shrink by one
+  factor (0.8), so they still grow from stage to stage.
+- **One facing for the set.** The importer has a `flip` key that mirrors a painting before it is
+  scaled. Nine paintings fronted on the left face are mirrored so they face lower-right like the
+  procedural buildings: the Carters' Yard, the cistern, the depot, the Lyceum, three Stake stages,
+  a level-2 hearth and a level-3 market. Paintings drawn head-on (most zone houses, the last
+  Stake stage) cannot be turned by a mirror and stay as they are.
+- **Reach rings you can see.**
+  - The ring's outline and a label ("water 4", "watch 14") are drawn after the night light, above
+    the buildings.
+  - A selected building shows its kin's reach too, as placing did.
+  - A water ring is the water the building really gives (`waterReachOf`: the near-water bonus, a
+    drought's shorter reach).
+  - `src/sim/reach.ts` adds the secondary reaches the panels only named in text: cradles feeding
+    from markets, the Tamer's Lodge, the foundries, quays, the Hospice, the Carters' Yard, the
+    Gardens, the Weir's open sluice, the Lantern of Wicks, the Underking's Seat, the Torrent Mill,
+    the Glimhouse. Each reads the sim's own constant.
+- Art and UI only. The control seed (Vellish 42) is bit-identical to §4.86 (DESIGN §4.87).
+
 ## Done in iteration 55 (M14 part 5: the bot plays it all, and the Annals; M14 closed)
 
 - **The bot plays the levers.**
@@ -549,6 +573,11 @@
   - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
     every later roll down another path, so a single seed per people is a thin measure. A wider
     table (three seeds a people) would show the bot's levers better than any one run.
+- **Painted buildings face one way.** Iteration 56 mirrored the paintings fronted on the left
+  face so the set faces lower-right. A building does not turn toward its own road, and the
+  paintings drawn head-on cannot be turned by a mirror. A per-placement, road-facing mirror at
+  render time would do both, at the price of light that falls from the other side on half the
+  buildings.
 - **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
   of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
   abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
