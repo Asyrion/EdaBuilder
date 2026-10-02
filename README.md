@@ -222,7 +222,17 @@ Charter as `.json`.
   count as covered.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
   Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
-  still be set per district. A selected building shows its reach.
+  still be set per district. A selected building shows its reach. A charter holds thirty
+  days and costs a crown a building a day (a Craft quarter's smoke drifts past its edge, a
+  Temple quarter takes a tenth of the market tithe); an edict holds ten days and costs 200
+  to repeal.
+- The world pushes back: weather written in the seed (Bloom rain, an Ember drought, a Hush
+  blizzard, each with its price and its gift, read five days ahead by the Observatory); the
+  Crown's Thaw levy, its favour that moves sector prices and withholds grants, interest on
+  a debt and a loan from the Budget, a bankruptcy line that grows with the city; the next
+  milestone's gate named in the top bar (the Vellish need happiness, the Tallowkin must
+  hold their light three days); pilgrims who ask for a shrine, a collector who remembers
+  each pleading, a fox audit every season.
 - Services have crews filled from the city's hands and watch, heal, teach and quiet by how
   many are filled; every happiness and land value shows its largest terms; a home lists what
   its next level needs; wards burn the grey on a daily budget, the nearest first.
@@ -263,7 +273,8 @@ Charter as `.json`.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
-  date with a copyable result, and remappable keys in the Menu.
+  date (the valley, the sky and the people), lost on day 61 and scored by the days to spare
+  and the crowns, with a copyable result, and remappable keys in the Menu.
 - Aria labels and roles on the panels. Desktop browsers only (mouse and keyboard).
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.

@@ -1,7 +1,7 @@
 /** Iteration 16: Fen-Nex quarter, war-tigers, mana-storms, the Font of Quieting. See DESIGN.md 4.37. */
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf } from './world';
+import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, illTiding } from './world';
 import { effects } from './hazards';
 import { auraAt, nodesOfAspect } from './weave';
 import { edictOn } from './edicts';
@@ -115,6 +115,7 @@ export function maybeSpawnTiger(s: GameState, night: boolean): void {
     s.agents.push(a);
     s.stats.tigersTotal++;
     effects.push({ x, y, kind: 'growl', tick: s.tick });
+    illTiding(s);
     pushMessage(s, `A war-tiger of Longwood is loose in the forest at (${x},${y}): striped, silent, and twice a hound. Hunters' Lodges, Watch Houses and warden drakes are the only answer.`, 'bad', true, { x, y });
   }
   commitRng(s, rng);
@@ -145,6 +146,7 @@ export function dailyTigers(s: GameState, wardenDistricts: Set<number>): number 
   commitRng(s, rng);
   s.stats.tigersKilled += killed;
   if (killed) pushMessage(s, `${killed} war-tiger${killed > 1 ? 's' : ''} brought down. The pelt is worth a season of pelts.`, 'good', true);
+  if (taken) illTiding(s);
   if (taken) pushMessage(s, `A war-tiger took ${taken} of the folk from the hearths at the forest edge in the night.`, 'bad', true);
   return killed;
 }

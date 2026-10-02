@@ -5,7 +5,7 @@ import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
-import { assignAspects, aspectAt, floodedAt } from './weave';
+import { assignAspects, aspectAt, drought, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -72,6 +72,9 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     ledger: emptyLedger(),
     ledgerHistory: [],
     bankruptDays: 0,
+    crownFavour: 50,
+    loan: 0,
+    pleadings: 0,
     population: 0,
     jobs: 0,
     employed: 0,
@@ -109,6 +112,12 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     dragons: [],
     nextDragonId: 1,
     materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
+    weather: null,
+    pilgrimsDay: -1,
+    litHeld: 0,
+    edictSince: {},
+    quarterSince: {},
+    remembranceDead: 0,
     departed: [],
     burnWyrmfire: true,
     dustLit: new Uint16Array(n),
@@ -136,7 +145,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -162,7 +171,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
 }
 
 export function emptyLedger() {
-  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, grants: 0, net: 0 };
+  return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, upkeepCharters: 0, charterTithe: 0, interest: 0, levy: 0, grants: 0, net: 0 };
 }
 
 export function seedFromName(name: string): number {
@@ -186,7 +195,11 @@ export function pushMessage(state: GameState, text: string, kind: Message['kind'
   state.messages.push({ tick: state.tick, text, kind });
   if (state.messages.length > 60) state.messages.splice(0, state.messages.length - 60);
   if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
-  if (kind === 'bad') state.lastBadDay = state.day;
+}
+
+/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, a raid, the wyrm, a tiger, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
+export function illTiding(state: GameState): void {
+  state.lastBadDay = state.day;
 }
 
 export function pushChronicle(state: GameState, text: string, kind: Message['kind'], at?: { x: number; y: number }): void {
@@ -495,6 +508,7 @@ export function waterRadiusOf(state: GameState, b: Building): number {
     if (wd <= 2 && floodedAt(state, b.x, b.y)) return 0; // fouled by the flood, or the Weir's open sluice
   }
   if (aspectAt(state, b.x, b.y) === 'tide') r += 2;
+  if (drought(state)) r = Math.max(2, r - 2); // the drought shrinks every well two tiles (iteration 54)
   return r;
 }
 

@@ -1,7 +1,7 @@
 /** Fire, wild surges, the Gloam, and the restless dead. */
 import { BUILDING_BY_KEY } from './catalog';
 import { MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
+import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
 import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { crewFactor } from './services';
@@ -15,7 +15,7 @@ import { seasonOf } from './world';
 import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
 import { surgeMaddensGolems } from './beasts';
 import { fontOfQuieting, startStorm } from './lore';
-import { aspectAt, nodesOfAspect } from './weave';
+import { aspectAt, drought, nodesOfAspect, raining } from './weave';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
@@ -50,6 +50,7 @@ export function dailyFire(state: GameState): void {
       if (b.kind !== 'font' || !b.lit || b.state !== 'ok' || (b.flare ?? 0) > 0) return;
       if (!rng.chance(FLARE_CHANCE)) return;
       b.flare = FLARE_DAYS;
+      illTiding(state);
       pushMessage(state, `A bore flare at the Thrum Font at (${b.x},${b.y}): the ley came up the shaft as fire. The yard will smoke for ${FLARE_DAYS} days.`, 'bad', true, { x: b.x, y: b.y });
       igniteBuilding(state, b, 'A bore flare at');
       forEachBuilding(state, (o) => {
@@ -104,6 +105,7 @@ export function dailyFire(state: GameState): void {
     if (asp === 'ember') p *= 1.5;
     else if (asp === 'tide') p *= 0.7;
     if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
+    if (raining(state)) p *= 0.4; else if (drought(state)) p *= 2; // the weather (iteration 54)
     p *= 1 - fireCov * 0.5;
     if (rng.chance(p)) toIgnite.push(b);
   });
@@ -180,6 +182,7 @@ export function dailySurge(state: GameState): void {
     }
     state.stats.surgesTotal++;
     surgeMaddensGolems(state);
+    illTiding(state);
     pushMessage(state, `WILD SURGE! Overdrawn ley lashes out: ${n} building(s) warped into ruin. The Concord made the same mistake.`, 'bad');
     commitRng(state, rng);
   }
@@ -382,6 +385,7 @@ export function dailyGloam(state: GameState): void {
     } else if (b.greyDays) b.greyDays = 0;
   });
   for (const b of taken) {
+    illTiding(state);
     pushMessage(state, `${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) was swallowed by the Gloam.`, 'bad', true, { x: b.x, y: b.y });
     removeBuilding(state, b);
     changed = true;
@@ -457,7 +461,13 @@ export function dailyDeath(state: GameState): void {
     }
     rng.state = state.rngState;
   }
-  if (rose > 0) pushMessage(state, `${rose} of the unquieted dead rise and walk the streets. Build a Boneyard, or send the Watch.`, 'bad');
+  if (rose > 0) {
+    illTiding(state);
+    // the dead the Remembrance stirred rise first, and the Chronicle says so (iteration 54)
+    const stirred = Math.min(rose, Math.floor(state.remembranceDead / 20));
+    state.remembranceDead = Math.max(0, state.remembranceDead - stirred * 20);
+    pushMessage(state, `${rose} of the unquieted dead rise and walk the streets${stirred > 0 ? ` (${stirred} of them stirred by the Remembrance)` : ''}. Build a Boneyard, or send the Watch.`, 'bad');
+  }
   commitRng(state, rng);
   const cleared = dailyRestless(state);
   if (cleared > 0 && rng.chance(0.5)) pushMessage(state, `The Watch and the wards lay ${cleared} restless to rest.`, 'good');

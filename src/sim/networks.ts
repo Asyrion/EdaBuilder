@@ -3,7 +3,7 @@ import { GREAT_CRADLE_MANA, isCradle } from './wyrmcraft';
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA, WONDER_HALLS } from './catalog';
-import { MAP_H, MAP_W, RoadType, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
+import { MAP_H, MAP_W, RoadType, Zone, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
@@ -12,7 +12,7 @@ import { factionOf } from '../data/factions';
 import { bumpRoadVersion } from './agents';
 import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
-import { aspectAt, dragonAuras, millFactor } from './weave';
+import { aspectAt, blizzard, dragonAuras, millFactor } from './weave';
 import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
@@ -253,6 +253,7 @@ export function updateMana(state: GameState): void {
   let consumers: Consumer[] = [];
   let demand = 0;
   const hush = seasonOf(state) === 3;
+  const snow = blizzard(state);
   const mult = manaMult(state);
   const f = state.founding;
   for (let s = 0; s < state.buildings.length; s++) {
@@ -262,7 +263,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = warmed.has(s) ? 0 : manaUseOf(b, hush) * mult;
+    const use = warmed.has(s) ? 0 : manaUseOf(b, hush) * mult * (snow && BUILDING_BY_KEY[b.kind].zone === Zone.Hearth ? 1.1 : 1); // a blizzard: the hearths drink a tenth more (iteration 54)
     if (use > 0) {
       demand += use;
       let dmin = Infinity;

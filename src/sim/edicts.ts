@@ -153,6 +153,40 @@ export function edictUpkeep(s: GameState): number {
   return c;
 }
 
+// ---------- edicts as commitments (iteration 54) ----------
+/** An edict runs EDICT_MIN_DAYS once on, and repealing one after that costs EDICT_REPEAL crowns. */
+export const EDICT_MIN_DAYS = 10;
+export const EDICT_REPEAL = 200;
+export function edictKey(key: string, district = 0): string {
+  return district ? `${district}:${key}` : key;
+}
+/** Why an edict cannot be repealed yet, or null. An edict with no stamp (an old save) may always be repealed. */
+export function edictLocked(s: GameState, key: string, district = 0): string | null {
+  const since = s.edictSince[edictKey(key, district)];
+  if (since === undefined) return null;
+  const left = EDICT_MIN_DAYS - (s.day - since);
+  return left > 0 ? `Runs ${left} more day${left === 1 ? '' : 's'}: an edict holds ${EDICT_MIN_DAYS} days once made` : null;
+}
+/** Turn an edict on (stamped with the day) or off (after its run, for EDICT_REPEAL crowns). The reason it cannot be, or null. */
+export function setEdict(s: GameState, key: string, on: boolean, district = 0): string | null {
+  if (!EDICT_BY_KEY[key]) return 'No such edict';
+  const k = edictKey(key, district);
+  const cur = district ? !!s.districtEdicts[k] : !!s.edicts[key];
+  if (on === cur) return null;
+  if (on) {
+    if (district) s.districtEdicts[k] = true; else s.edicts[key] = true;
+    s.edictSince[k] = s.day;
+    return null;
+  }
+  const why = edictLocked(s, key, district);
+  if (why) return why;
+  if (s.treasury < EDICT_REPEAL) return `Repealing an edict costs ${EDICT_REPEAL} crowns; the treasury holds ${Math.round(s.treasury)}`;
+  s.treasury -= EDICT_REPEAL;
+  if (district) s.districtEdicts[k] = false; else s.edicts[key] = false;
+  delete s.edictSince[k];
+  return null;
+}
+
 /** Sum of active temporary modifiers of a kind. */
 export function modifierSum(s: GameState, kind: string): number {
   let v = 0;

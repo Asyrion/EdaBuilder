@@ -250,9 +250,22 @@ export interface DayLedger {
   upkeepRoads: number;
   upkeepBuildings: number;
   upkeepEdicts: number;
+  upkeepCharters: number; // a crown a building a day in every chartered district (iteration 54)
+  charterTithe: number; // the Temple quarter's tenth of the city's market tithe
+  interest: number; // 1 % a day on a debt, 0.5 % a day on the Crown's loan
+  levy: number; // the Crown's Thaw levy, on the day it is taken
   grants: number;
   net: number;
 }
+
+/** The sky today: a pure function of the seed and the day (weave.ts), kept for the panels (iteration 54). */
+export type WeatherKind = 'rain' | 'drought' | 'blizzard';
+export interface Weather {
+  kind: WeatherKind;
+  until: number; // the first day it is over
+}
+/** The daily challenge's length in days. */
+export const CHALLENGE_DAYS = 60;
 
 export interface Modifier {
   kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights';
@@ -306,8 +319,11 @@ export interface GameState {
   treasury: number;
   taxRates: TaxRates;
   ledger: DayLedger;
-  ledgerHistory: number[]; // net per day, last 30
+  ledgerHistory: number[]; // net per day, exports included, last 30
   bankruptDays: number;
+  crownFavour: number; // 0..100, 50 neutral: each point is −0.3 % on the levy and on sector prices; under 20 the next grant is withheld (iteration 54)
+  loan: number; // the Crown's loan outstanding, 0.5 % a day
+  pleadings: number; // times the collector was pleaded with: the next audit is harsher
   // demographics
   population: number;
   jobs: number;
@@ -350,6 +366,12 @@ export interface GameState {
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
+  weather: Weather | null; // today's spell, if any (iteration 54)
+  pilgrimsDay: number; // the day pilgrims were last welcomed, −1: they ask for a shrine a month on
+  litHeld: number; // days in a row the Tallowkin's lit share has held the next gate (needs 3)
+  edictSince: Record<string, number>; // the day each edict was turned on (key, or district:key): an edict runs ten days and costs 200 to repeal
+  quarterSince: Record<number, number>; // the day each district took its charter: it holds thirty days
+  remembranceDead: number; // unquieted dead the Remembrance stirred, drawn down as they rise
   departed: DepartedDragon[]; // dragons that left and may return (iteration 53)
   burnWyrmfire: boolean; // burn 0.05 wyrmfire a day for Craft +15 % (iteration 53)
   dustLit: Uint16Array; // a road tile scattered with glim-dust: the day its light ends, 0 none (iteration 53)
@@ -456,6 +478,13 @@ export interface GameState {
     riots: number;
     goodsStolen: number; // goods taken from unwatched shelves
     pelts: number; // hound pelts the lodges brought in
+    rainDays: number; // iteration 54: the weather
+    droughtDays: number;
+    blizzardDays: number;
+    levies: number; // the Crown's Thaw levies taken
+    levied: number; // crowns they took
+    foxAudits: number; // the Fen-Nex quarter's seasonal audits
+    pilgrimShrines: number; // shrines raised at the pilgrims' asking
     tideTrips: number; // barges a Tide dragon swam (iteration 53)
     surgesAbsorbed: number; // surges the Lantern of the Cores took
     dragonsReturned: number; // departed dragons that came back to ask a tribute

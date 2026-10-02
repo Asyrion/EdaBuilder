@@ -287,7 +287,13 @@ the three-seed rule (§14.1) settle them.
   has woken (B36 first). Golems are assigned: labour (12 hands) or guard (ward 6 where
   they stand).
 
-### Part 4: the world pushes back
+### Part 4: the world pushes back ✅ (iteration 54, DESIGN §4.85)
+
+Done as written, with three choices noted in §4.85: the weather is a pure function of the
+seed and the season on a side stream (not a roll of the main stream), favour starts at 50,
+and the challenge's score is the days to spare plus a point a thousand crowns. B16 was
+already true and is held by a test; B17 and B26 are closed.
+
 
 - **Weather.** `dailyWeave` rolls it: Bloom 15 %/day rain for 2 days (fire ×0.4, Craft
   +15 %, miasma ×0.3; the storm caller's rain becomes a sure version of this); Ember 10 %

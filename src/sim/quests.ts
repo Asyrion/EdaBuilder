@@ -1,6 +1,6 @@
 /** Quest bookkeeping: which quests are active, and daily completion checks. */
 import { QUESTS, type QuestDef } from '../data/quests';
-import type { GameState } from './types';
+import { CHALLENGE_DAYS, type GameState } from './types';
 import { pushMessage } from './world';
 
 /** A people's own chapter belongs to that people alone; every other quest is everyone's. */
@@ -28,6 +28,11 @@ export function checkQuests(s: GameState): QuestDef[] {
       if (q.id === 'z_daily') s.challengeDay = s.day;
       completed.push(q);
     }
+  }
+  // the daily challenge fails at day 61 (iteration 54)
+  if (s.challenge && s.challengeDay === -1 && s.day > CHALLENGE_DAYS) {
+    s.challengeDay = -2;
+    pushMessage(s, `The daily challenge of ${s.challenge} is lost: day ${CHALLENGE_DAYS} has passed without the fifth milestone. The valley stays yours to play.`, 'bad', true);
   }
   if (completed.length) {
     const reward = completed.reduce((n, q) => n + q.reward, 0);

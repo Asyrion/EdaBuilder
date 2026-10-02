@@ -125,7 +125,7 @@ describe('The Tallowkin of the Wick: light', () => {
     placeBuildingRaw(s, 'spire', f.x + 7, f.y + 1); placeBuildingRaw(s, 'spire', f.x + 13, f.y + 4);
     recomputeAll(s);
     expect(litShare(s)).toBeGreaterThanOrEqual(0.6);
-    checkMilestones(s);
+    for (let d = 0; d < 6; d++) checkMilestones(s); // the lit share must hold three days for each step (iteration 54)
     expect(s.milestone).toBe(2);
   });
 

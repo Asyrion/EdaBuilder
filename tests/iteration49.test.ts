@@ -102,8 +102,9 @@ describe('Districts in steps', () => {
     expect(s.districtQuarters[1]).toBe('hearth');
     expect(charterLocked(s, 'temple')).toBe('Opens at the Market Town');
     expect(charterLocked(s, 'scholars')).toBe('Opens at the Township');
-    s.milestone = 5;
+    s.milestone = 5; s.day += 30; // the hearth charter's thirty-day hold has run (iteration 54)
     expect(setQuarter(s, 1, 'temple')).toBeNull();
+    s.day += 30;
     expect(setQuarter(s, 1, null)).toBeNull();
     expect(s.districtQuarters[1]).toBeUndefined();
     expect(districtUnlockNotes(1)).toEqual([]);

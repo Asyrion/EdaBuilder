@@ -68,11 +68,13 @@ describe('District charters', () => {
     // the market quarter
     const mIn = placeBuildingRaw(s, 'market', f.x + 8, f.y + 1, 2); mIn.workers = 4; mIn.happiness = 60;
     const mOut = placeBuildingRaw(s, 'market', f.x - 8, f.y + 1, 2); mOut.workers = 4; mOut.happiness = 60;
+    s.day += 30; // each charter holds thirty days (iteration 54)
     setQuarter(s, 1, 'market');
     run(s, 1);
     expect(marketStockCap(mIn)).toBe(marketStockCap(mOut) * 1.5);
     const l = computeLedger(s);
     expect(l.taxMarket).toBeGreaterThan(0);
+    s.day += 30;
     setQuarter(s, 1, null);
     run(s, 1);
     expect(marketStockCap(mIn)).toBe(marketStockCap(mOut));
@@ -96,6 +98,7 @@ describe('District charters', () => {
     const m = placeBuildingRaw(s, 'market', f.x + 8, f.y + 1, 2); m.workers = 4; m.happiness = 60;
     const t0 = computeLedger(s).taxMarket;
     expect(t0).toBeGreaterThan(0);
+    s.day += 30;
     setQuarter(s, 1, 'temple');
     expect(computeLedger(s).taxMarket).toBe(0);
     expect(QUARTERS.length).toBe(5);

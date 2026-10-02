@@ -5,7 +5,7 @@ import { chooseWyrmNode, newWyrm } from './wyrm';
 import { assignAspects } from './weave';
 import type { WyrmState } from './types';
 import { SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
-import { markAllDirty } from './world';
+import { emptyLedger, markAllDirty } from './world';
 import { recomputeAll } from './sim';
 import { distanceMap } from './terrain';
 
@@ -82,6 +82,16 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.materials.glimdust = state.materials.glimdust ?? 0;
   state.departed = state.departed ?? []; // iteration 53
   state.burnWyrmfire = state.burnWyrmfire ?? true;
+  state.weather = state.weather ?? null; // iteration 54
+  state.crownFavour = state.crownFavour ?? 50;
+  state.loan = state.loan ?? 0;
+  state.pleadings = state.pleadings ?? 0;
+  state.pilgrimsDay = state.pilgrimsDay ?? -1;
+  state.litHeld = state.litHeld ?? 0;
+  state.edictSince = state.edictSince ?? {}; // an edict with no stamp may be repealed
+  state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
+  state.remembranceDead = state.remembranceDead ?? 0;
+  state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
   state.gloamPressure = state.gloamPressure ?? 0.3;
   state.lastBadDay = state.lastBadDay ?? -30;
   state.unrestHigh = state.unrestHigh ?? 0;
@@ -97,7 +107,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['lamplighterRounds', 'golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays', 'riots', 'goodsStolen', 'pelts', 'tideTrips', 'surgesAbsorbed', 'dragonsReturned'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['lamplighterRounds', 'golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays', 'riots', 'goodsStolen', 'pelts', 'tideTrips', 'surgesAbsorbed', 'dragonsReturned', 'rainDays', 'droughtDays', 'blizzardDays', 'levies', 'levied', 'foxAudits', 'pilgrimShrines'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.stats.stoneCut = state.stats.stoneCut ?? state.stats.terraformed; // before iteration 38 every terraform op counted as stone
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();

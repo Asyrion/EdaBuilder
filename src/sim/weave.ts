@@ -1,7 +1,9 @@
 /** The ley-weave: node aspects, dragon auras, Gloam pressure and the season's touch on the river. See DESIGN.md 13. */
 import { BUILDING_BY_KEY } from './catalog';
-import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type DragonLine, type GameState } from './types';
-import { forEachBuilding, markDirty, seasonOf } from './world';
+import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type DragonLine, type GameState, type Weather, type WeatherKind } from './types';
+import { forEachBuilding, markDirty, pushMessage, seasonOf } from './world';
+import { Rng, hashString } from '../core/rng';
+import { modifierSum } from './edicts';
 import { treeStage, worldTree } from './growth';
 import { wyrmGuards } from './wyrm';
 import { districtTiles } from './wyrmcraft';
@@ -180,6 +182,69 @@ export function millFactor(s: GameState): number {
 }
 
 /** Daily: Moth-Lofts gather glim-dust, Gloam pressure is recomputed. */
+// ---------- the weather (iteration 54) ----------
+/** Bloom: each day this chance that a RAIN_DAYS rain begins. Ember: this chance of a DROUGHT_DAYS drought a season. Hush: of a BLIZZARD_DAYS blizzard. */
+export const RAIN_CHANCE = 0.15;
+export const RAIN_DAYS = 2;
+export const DROUGHT_CHANCE = 0.1;
+export const DROUGHT_DAYS = 5;
+export const BLIZZARD_CHANCE = 0.2;
+export const BLIZZARD_DAYS = 3;
+export interface WeatherSpell { kind: WeatherKind; start: number; end: number }
+/** A season's spells, drawn once from the seed and the season index on a stream of their own: a pure function the forecast can read ahead, and the same sky for every player of a daily challenge. */
+export function seasonWeather(seed: number, seasonIndex: number): WeatherSpell[] {
+  const season = seasonIndex % 4;
+  const first = seasonIndex * DAYS_PER_SEASON;
+  const rng = new Rng(hashString(`${seed}:${seasonIndex}:weather`));
+  const out: WeatherSpell[] = [];
+  if (season === 1) {
+    for (let d = 0; d < DAYS_PER_SEASON; d++) {
+      if (out.length && out[out.length - 1].end > first + d) continue; // it is raining already
+      if (rng.chance(RAIN_CHANCE)) out.push({ kind: 'rain', start: first + d, end: first + d + RAIN_DAYS });
+    }
+  } else if (season === 2) {
+    if (rng.chance(DROUGHT_CHANCE)) { const d = 3 + rng.int(DAYS_PER_SEASON - DROUGHT_DAYS - 3); out.push({ kind: 'drought', start: first + d, end: first + d + DROUGHT_DAYS }); }
+  } else if (season === 3) {
+    if (rng.chance(BLIZZARD_CHANCE)) { const d = 3 + rng.int(DAYS_PER_SEASON - BLIZZARD_DAYS - 3); out.push({ kind: 'blizzard', start: first + d, end: first + d + BLIZZARD_DAYS }); }
+  }
+  return out;
+}
+/** The spell over a given day, or null. */
+export function weatherAt(s: GameState, day: number): Weather | null {
+  const si = Math.floor(day / DAYS_PER_SEASON);
+  for (const k of [si - 1, si]) {
+    if (k < 0) continue;
+    for (const w of seasonWeather(s.seed, k)) if (w.start <= day && day < w.end) return { kind: w.kind, until: w.end };
+  }
+  return null;
+}
+export const WEATHER_WORD: Record<WeatherKind, string> = { rain: 'rain', drought: 'drought', blizzard: 'blizzard' };
+/** Is it raining: the sky's rain, or rain called from the Storm-Caller's Peak (the sure version of the same). */
+export function raining(s: GameState): boolean {
+  return s.weather?.kind === 'rain' || modifierSum(s, 'rain') > 0;
+}
+export function drought(s: GameState): boolean {
+  return s.weather?.kind === 'drought';
+}
+export function blizzard(s: GameState): boolean {
+  return s.weather?.kind === 'blizzard';
+}
+/** First thing each day: set today's spell and say so when one begins. */
+export function dailyWeather(s: GameState): void {
+  const w = weatherAt(s, s.day);
+  const was = s.weather;
+  s.weather = w;
+  if (w) {
+    if (w.kind === 'rain') s.stats.rainDays++; else if (w.kind === 'drought') s.stats.droughtDays++; else s.stats.blizzardDays++;
+    if (!was || was.kind !== w.kind || was.until !== w.until) {
+      const days = w.until - s.day;
+      if (w.kind === 'rain') pushMessage(s, `Rain over ${s.cityName} for ${days} day${days === 1 ? '' : 's'}: fires sleep, the works run sweet, the smoke is washed down.`, 'info', true);
+      else if (w.kind === 'drought') pushMessage(s, `A drought in the Ember, ${days} days of it: fires catch twice as easily, every well shrinks two tiles, the Hanging Gardens wilt unless watered, and the World Tree waits.`, 'warn', true);
+      else pushMessage(s, `A blizzard in the Hush, ${days} days of it: the hearths drink a tenth more mana, and the hounds keep to their dens.`, 'warn', true);
+    }
+  }
+}
+
 export function dailyWeave(s: GameState): void {
   let dust = 0;
   forEachBuilding(s, (b) => {

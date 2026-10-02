@@ -374,7 +374,7 @@ export class Bot {
       this.placeNear('quarry', this.cx, this.cy, this.radius);
     }
     // the Deep Cut once an Academy stands
-    if (hillOK && !s.edicts.deepcut && s.milestone >= EDICT_BY_KEY.deepcut.unlock && this.countKind('academy') > 0) s.edicts.deepcut = true;
+    if (hillOK && !s.edicts.deepcut && s.milestone >= EDICT_BY_KEY.deepcut.unlock && this.countKind('academy') > 0) { s.edicts.deepcut = true; s.edictSince.deepcut = s.day; }
     void GRIMMEN_STONE; void stoneQuarried;
   }
 

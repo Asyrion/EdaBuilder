@@ -174,7 +174,7 @@ describe('The sweep: edicts, promises and gates', () => {
     expect(computeBuildingHappiness(s, h) - h0).toBe(5);
     lantern.lit = false;
     expect(computeBuildingHappiness(s, h)).toBe(h0);
-    s.population = 5000; s.milestone = 7;
+    s.population = 5000; s.milestone = 7; s.happiness = 70; // the Vellish gate asks 69 for the Beacon (iteration 54)
     
     checkMilestones(s);
     expect(s.milestone).toBe(7); // the Lantern is dark: no Beacon

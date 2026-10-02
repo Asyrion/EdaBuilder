@@ -8,12 +8,12 @@ import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards, flyoverFireCap } fr
 import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { maybeSpawnTiger } from './lore';
-import { aspectAt, auraAt } from './weave';
+import { aspectAt, auraAt, blizzard } from './weave';
 import { edictOn } from './edicts';
 import { effects, igniteBuilding } from './hazards';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState, type Species } from './types';
-import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
+import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, rngOf, seasonOf, timeOfDay } from './world';
 
 const CAP: Record<Species, number> = { glimmoth: 90, thrumhare: 60, wisp: 40, hound: 30, drake: 20, wyvern: 20, wyrm: 1, golem: 12, skyray: 6, rider: 4, airship: 1, tiger: 4 };
 import { courierJob, districtTiles, lineIndex } from './wyrmcraft';
@@ -148,7 +148,7 @@ export function updateCreatures(state: GameState): void {
   }
   // ---- Gloam-hounds: packs come out of the Gloam at night, bolder in the Hush
   const hounds = creatureCount(state, 'hound');
-  if (night && state.stats.gloamTiles > 0 && state.day >= 6) {
+  if (night && state.stats.gloamTiles > 0 && state.day >= 6 && !blizzard(state)) { // a blizzard keeps the packs in their dens (iteration 54)
     const hush = seasonOf(state) === 3;
     const packs = Math.min(CAP.hound, Math.floor((state.population / 250 + 1) * (hush ? 2.2 : 1) * 3));
     if (hounds < packs && rng.chance((hush ? 0.35 : 0.15) * (edictOn(state, 'beastmasters') ? 1.5 : 1))) {
@@ -543,6 +543,7 @@ export function tickCreatures(state: GameState): void {
               b.workers = 0;
               markDirty(state, b.x, b.y);
               state.stats.houndRaids++;
+              illTiding(state);
               pushMessage(state, `Gloam-hounds tore through the ${BUILDING_BY_KEY[b.kind].name.split(' ')[0].toLowerCase()} at (${b.x},${b.y}).`, 'bad');
             }
           }

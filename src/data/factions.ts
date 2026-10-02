@@ -23,6 +23,7 @@ export interface FactionRules {
   vigilCost: number; // × the mana the Hush vigil draws (events.ts)
   vigilMandatory: boolean; // skipping the vigil costs the people dearly (events.ts)
   milestoneGate?: (s: GameState, next: number) => boolean; // false holds the city at its milestone
+  gateHold?: (s: GameState, next: number) => boolean; // a gate that must hold GATE_HOLD_DAYS days running (s.litHeld counts them, in checkMilestones)
 }
 
 export interface FactionDef {
@@ -93,6 +94,12 @@ export function litShare(s: GameState): number {
   return all ? lit / all : 1;
 }
 export const TALLOW_LIGHT = [0, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.9];
+/** The Tallowkin's lit share must hold its gate this many days running (iteration 54). */
+export const GATE_HOLD_DAYS = 3;
+/** The Vellish gate: mean happiness of 45 + 3 × the milestone reached (iteration 54). */
+export function VELLISH_HAPPINESS(next: number): number {
+  return 45 + 3 * next;
+}
 const TALLOW_NAMES = ['Wick', 'Taper', 'Candle', 'Lamp', 'Lantern', 'Beacon-Street', 'Bright Town', 'Hall of Wicks', 'Lantern of Wicks'];
 const TALLOW_TEXTS = [
   'A wick at the node. Raise a spire, light every window, and let no house go dark.',
@@ -114,7 +121,7 @@ export const FACTIONS: Record<string, FactionDef> = {
   vellish: {
     id: 'vellish', name: 'The Vellish', people: 'Vellish', playable: true,
     lore: 'Hearthfolk of the Ashen Crown: the Charter, the spires, the Ward Lanterns and the river wells. The standard wardlight.',
-    milestones: MILESTONES, deny: [], replaces: {}, rules: { ...NEUTRAL_RULES },
+    milestones: MILESTONES, deny: [], replaces: {}, rules: { ...NEUTRAL_RULES, milestoneGate: (s, next) => s.happiness >= VELLISH_HAPPINESS(next) },
   },
   grimmen: {
     id: 'grimmen', name: 'The Grimmen of the Underhill', people: 'Grimmen', playable: true,
@@ -132,7 +139,7 @@ export const FACTIONS: Record<string, FactionDef> = {
     id: 'tallowkin', name: 'The Tallowkin of the Wick', people: 'Tallowkin', playable: true,
     lore: 'The small candle-eyed people born beside the Veins, the spire-wrights of every wardlight, chartered under two nodes. Light is life: a house three days dark is abandoned, their spires reach a tile further and cost double, Wick-Towers light the corners cheaply, the Hush vigil is theirs to keep, and their milestones are measured by how much of the city burns bright.',
     milestones: TALLOW_MILESTONES, deny: [], replaces: { shrine: 'candleshrine', lantern: 'lanternofwicks' },
-    rules: { ...NEUTRAL_RULES, spireReach: 1, spireCost: 2, darkAbandon: 3, vigilCost: 0.5, vigilMandatory: true, nodeMana: 1.2, milestoneGate: (s, next) => litShare(s) >= TALLOW_LIGHT[next] },
+    rules: { ...NEUTRAL_RULES, spireReach: 1, spireCost: 2, darkAbandon: 3, vigilCost: 0.5, vigilMandatory: true, nodeMana: 1.2, milestoneGate: (s, next) => litShare(s) >= TALLOW_LIGHT[next] && s.litHeld >= GATE_HOLD_DAYS, gateHold: (s, next) => litShare(s) >= TALLOW_LIGHT[next] },
   },
 };
 
@@ -177,4 +184,23 @@ export function canBuild(s: GameState, key: string): boolean {
   const def = BUILDING_BY_KEY[key];
   if (!def) return false;
   return buildsFor(factionOf(s), def) && isBuildingUnlocked(s.milestone, key, s.relics?.complete) && !specialLock(s, key);
+}
+
+/** The next milestone's gate in words, for the top bar: folk, and the people's own condition (iteration 54). */
+export function nextGate(s: GameState): string | null {
+  const MS = milestonesOf(s);
+  const next = s.milestone + 1;
+  if (next >= MS.length) return null;
+  const bits = [`${MS[next].pop.toLocaleString()} folk`];
+  if (s.faction === 'vellish') bits.push(`happiness ${VELLISH_HAPPINESS(next)}`);
+  else if (s.faction === 'grimmen') bits.push(`${GRIMMEN_STONE[next]} stone quarried`);
+  else if (s.faction === 'veshari') bits.push(`${VESHARI_MOORINGS[next]} mooring${VESHARI_MOORINGS[next] === 1 ? '' : 's'}`);
+  else if (s.faction === 'tallowkin') bits.push(`${Math.round(TALLOW_LIGHT[next] * 100)} % lit for ${GATE_HOLD_DAYS} days`);
+  if (s.faction === 'vellish' && next === MS.length - 1) bits.push('the Lantern of Vell lit');
+  return `${MS[next].name}: ${bits.join(', ')}`;
+}
+/** Does the city meet the next gate's own condition today (not the folk)? */
+export function gateMet(s: GameState): boolean {
+  const gate = factionOf(s).rules.milestoneGate;
+  return !gate || gate(s, s.milestone + 1);
 }
