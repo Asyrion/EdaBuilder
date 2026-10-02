@@ -14,6 +14,16 @@ export interface SpriteRect {
   ax: number;
   ay: number;
   glow?: { x: number; y: number };
+  /** The sheet the rect points into, when not the atlas image (the mirrored sheet, iteration 58). */
+  src?: CanvasImageSource;
+}
+
+/** A sprite's rect in the sheet mirrored left to right (W wide): the body and the glow move to W − x − w, the anchor to
+ *  w − ax, so a sprite drawn at the same point is its own mirror image about the anchor (a building turned to its road). */
+export function mirrorRect(r: SpriteRect, sheetW: number): SpriteRect {
+  const m: SpriteRect = { x: sheetW - r.x - r.w, y: r.y, w: r.w, h: r.h, ax: r.w - r.ax, ay: r.ay };
+  if (r.glow) m.glow = { x: sheetW - r.glow.x - r.w, y: r.glow.y };
+  return m;
 }
 
 export interface AtlasManifest {
@@ -27,6 +37,30 @@ export class SpriteAtlas {
   /** Names that came from public/art/sprites.json: an imported painting is the look for every people (iteration 51). */
   imported = new Set<string>();
   private missing = new Set<string>();
+  private mirrorSheet: HTMLCanvasElement | null = null;
+  private mirrorOf: unknown = null;
+  private mirrorRects = new Map<string, SpriteRect>();
+
+  /** The sprite mirrored left to right, drawn from one mirrored copy of the sheet made on first use (iteration 58). */
+  mirrored(name: string): SpriteRect | null {
+    const s = this.get(name);
+    if (!s) return null;
+    if (this.mirrorOf !== this.image || !this.mirrorSheet) {
+      const c = document.createElement('canvas');
+      c.width = this.image.width;
+      c.height = this.image.height;
+      const ctx = c.getContext('2d')!;
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(this.image, 0, 0);
+      this.mirrorSheet = c;
+      this.mirrorOf = this.image;
+      this.mirrorRects.clear();
+    }
+    let m = this.mirrorRects.get(name);
+    if (!m) { m = { ...mirrorRect(s, this.image.width), src: this.mirrorSheet }; this.mirrorRects.set(name, m); }
+    return m;
+  }
 
   get(name: string): SpriteRect | null {
     const s = this.sprites[name];

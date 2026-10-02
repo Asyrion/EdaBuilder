@@ -2834,6 +2834,60 @@ six-run table came back identical.
   - a contact sheet of every creature, painted over procedural;
   - no errors, no missing sprites.
 - **Not met.** The wolves at night in the forest are hard to see under the trees at 4×.
+### 4.90 Every building faces its road (iteration 59)
+
+The user's night screenshot of a grown city showed houses turning their sides and backs to the
+street, and asked to fix every building. Iteration 56 (§4.87) gave the set one facing, lower-right,
+and left the road-facing mirror for later; this iteration adds it. Render only; the sim never reads
+which way a building faces.
+
+**Which way a building should face** (`src/render/facing.ts`, `faceLeft`). Every sprite faces
+right at rest: its front is on the lower-right face, toward +x, as the procedural painter draws
+and as iteration 56's flips left the paintings. A building is drawn mirrored when its road runs
+past its left side. The rule counts road tiles along each edge of the footprint:
+
+- the visible front edges first: +x (lower-right) keeps the sprite, +y (lower-left) mirrors it,
+  and the longer road front wins when both have road (right on a tie);
+- with no road in front, the back edges: −y (upper-right) keeps it, −x (upper-left) mirrors it;
+- with corner roads only (iteration 49's corner door), the left corner mirrors it.
+
+The visible fronts win over the sim's door tile (`roadTileOf` scans the back row first), because
+the question is what the player sees. The rule is a few road reads per visible building each frame,
+with no cache: road edits by the bot, the dev commands and undo do not all bump `roadVersion`, so
+a cache could go stale. Every footprint is square (a test holds it), so a mirror about the
+footprint's centre line keeps a building on its own tiles.
+
+**Mirrored drawing.** The atlas makes one mirrored copy of its sheet on first use, and again after
+the paintings merge in. `atlas.mirrored(name)` returns a rect into it (`mirrorRect`): the body and
+the glow at W − x − w, the anchor at w − ax. The draw, glow, glow-occlusion and construction paths
+read the rect's own sheet. A building's body, its night windows, the glow it hides behind it and
+its rising scaffold all turn with it. The placement ghost turns to the road at the cursor, so a
+building faces the same way while placing as once built.
+
+**What a mirror cannot do.**
+
+- Most of the painted zone houses (the level-2 hearths, the craft levels, the arcane level 2, two
+  level-3 markets) were judged again at 5×, each beside its mirror. They are drawn head-on, front
+  to the viewer, as §4.87 said. A mirror moves their door to the road's side, but it cannot turn a
+  front toward a road behind them. No new import flips were made.
+- The light falls from the other side on a mirrored building. At the game's scale this read as
+  fine on the crossroads shots.
+
+**Verified.**
+
+- 62 test files and 374 tests (after merging iteration 58, the wild); the new
+  `tests/iteration59.test.ts` covers the rule on a 1×1 and a
+  2×2 building (each edge, both fronts, both backs, the corners), the mirrored rect, and square
+  footprints.
+- `scripts/playtest59.mjs` builds a crossroads with 36 zone buildings (hearth 1–3, craft 1–3,
+  market 2–3, arcane 2) on all four sides of two roads, and four 2×2 services:
+  - every building faces its road's side (0 wrong of 40);
+  - one frame draws exactly the 20 left-facing buildings from the mirrored sheet;
+  - the ghost turns to the road north of the x-road and east of the y-road;
+  - day and night shots at 2× and 4×, before (the previous build served beside it) and after;
+  - a dusk probe shows no dark frame; no errors and no missing sprites.
+- Render only: the control seed (Vellish 42, 150 days) is bit-identical to main after §4.89 (1,618
+  folk at day 150).
 
 ## 7. Milestone plan
 
@@ -3857,7 +3911,7 @@ playtest of a lakeside town.
   buildings one set.
 - *The set faces lower-right (iteration 56):* the procedural painter's doors are on the right face, so
   paintings fronted on the left are mirrored at import, judged one by one; head-on paintings stay as
-  they are, since a mirror cannot turn them. Facing each building toward its road is left for later.
+  they are, since a mirror cannot turn them. Facing each building toward its road came in iteration 58.
 - *Rings on top (iteration 56):* a reach is a thing to see, so its outline is drawn after the light
   pass, above the buildings, with a label; and every reach a building has is read from the sim's own
   constant, so a ring never disagrees with the rule.
@@ -3875,3 +3929,7 @@ playtest of a lakeside town.
 - *Painted creatures only where they read (iteration 58):* a painting at 7–12 px that reads as a
   blob stays procedural (the boar, the goat, the otter); a painting of another beast does not stand
   in for a lore creature (the lynx and the panther for the copper war-tiger).
+- *Buildings turn to their road (iteration 59):* the renderer mirrors a building whose road runs past
+  its left side, reading the visible front edges before the back ones. The light on a mirrored
+  building comes from the other side, which is the price of a street that faces its road. Head-on
+  paintings keep their front to the viewer; only new paintings could turn them to a road behind.

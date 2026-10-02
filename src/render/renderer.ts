@@ -13,6 +13,7 @@ import { reachesOf, type Reach } from '../sim/reach';
 import { zoneSpriteName } from './atlas';
 import { cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
+import { faceLeft } from './facing';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -124,7 +125,7 @@ export class Renderer {
     const x = Math.round(wx - s.ax - this.camera.left);
     const y = Math.round(wy - s.ay - this.camera.top) + (s.h - rows);
     if (x + s.w < 0 || y + rows < 0 || x > this.back.width || y > this.back.height) return;
-    this.ctx.drawImage(this.atlas.image, s.x, s.y + (s.h - rows), s.w, rows, x, y, s.w, rows);
+    this.ctx.drawImage(s.src ?? this.atlas.image, s.x, s.y + (s.h - rows), s.w, rows, x, y, s.w, rows);
     this.stats.drawn++;
   }
 
@@ -135,7 +136,7 @@ export class Renderer {
     const y = Math.round(wy - s.ay - this.camera.top);
     if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
     if (alpha !== 1) ctx.globalAlpha = alpha;
-    ctx.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
+    ctx.drawImage(s.src ?? this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
     if (alpha !== 1) ctx.globalAlpha = 1;
     this.stats.drawn++;
   }
@@ -161,7 +162,7 @@ export class Renderer {
     const y = Math.round(wy - s.ay - this.camera.top);
     if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
     ctx.globalAlpha = alpha;
-    ctx.drawImage(this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
+    ctx.drawImage(s.src ?? this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
     ctx.globalAlpha = 1;
   }
 
@@ -193,7 +194,7 @@ export class Renderer {
     if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
     e.globalCompositeOperation = 'source-over';
     e.globalAlpha = alpha;
-    e.drawImage(this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
+    e.drawImage(s.src ?? this.atlas.image, s.glow.x, s.glow.y, s.w, s.h, x, y, s.w, s.h);
     e.globalAlpha = 1;
     this.emitted++;
   }
@@ -204,7 +205,7 @@ export class Renderer {
     const y = Math.round(wy - s.ay - this.camera.top);
     if (x + s.w < 0 || y + s.h < 0 || x > this.back.width || y > this.back.height) return;
     e.globalCompositeOperation = 'destination-out';
-    e.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
+    e.drawImage(s.src ?? this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
     e.globalCompositeOperation = 'source-over';
   }
 
@@ -550,7 +551,7 @@ export class Renderer {
       const [wx, wy] = tileToWorld(b.x, b.y);
       const def = BUILDING_BY_KEY[b.kind];
       const name = this.spriteNameFor(b);
-      const s = this.atlas.get(name);
+      const s = faceLeft(state, b) ? this.atlas.mirrored(name) : this.atlas.get(name); // turned to its road (iteration 58): a few road reads, so no cache to go stale
       const d = b.x + b.w - 1 + b.y + b.h - 1 + 0.5;
       const abandoned = b.state === 'abandoned';
       const burning = b.state === 'burning';
@@ -754,7 +755,8 @@ export class Renderer {
       const g = view.ghost;
       const def = BUILDING_BY_KEY[g.key];
       const [wx, wy] = tileToWorld(g.x, g.y);
-      const s = this.atlas.get(def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : `b_${g.key}`);
+      const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : `b_${g.key}`;
+      const s = faceLeft(state, { x: g.x, y: g.y, w: def.w, h: def.h }) ? this.atlas.mirrored(gname) : this.atlas.get(gname);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
     // warding wall inlays glow, under everything

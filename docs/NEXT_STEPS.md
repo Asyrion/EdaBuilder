@@ -349,6 +349,17 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 59 (every building faces its road)
+
+- **Buildings turn to their road.** A building whose road runs past its left side is drawn
+  mirrored, the visible front edges counting before the back ones (DESIGN §4.90). The body, the
+  night windows, the glow it hides and the construction scaffold turn with it, and so does the
+  placement ghost.
+- The painted zone houses were judged again beside their mirrors: they are head-on, so no new
+  import flips were made. A head-on house on a road behind it still faces the viewer (see Known
+  issues).
+- Render only. The control seed (Vellish 42) is bit-identical (DESIGN §4.90).
+
 ## Done in iteration 58 (M16 part 1: the wild)
 
 - **Herds on the land.**
@@ -633,11 +644,11 @@
   hunt switched off it is bit-identical to §4.86, so the change is the one game lodge it raised and
   the path the run took from there. Five of six bot cities have no depot, so their hides are never
   sold (DESIGN §4.89).
-- **Painted buildings face one way.** Iteration 56 mirrored the paintings fronted on the left
-  face so the set faces lower-right. A building does not turn toward its own road, and the
-  paintings drawn head-on cannot be turned by a mirror. A per-placement, road-facing mirror at
-  render time would do both, at the price of light that falls from the other side on half the
-  buildings.
+- **Head-on paintings and a road behind.** Since iteration 59 every building turns toward its road
+  by a mirror. The painted zone houses drawn head-on (most level-2 hearths, the craft levels, the
+  arcane level 2) keep their front to the viewer, so on a road behind them (their upper edges) they
+  still show their front to the empty side. Only new paintings, three-quarter views of the same
+  houses, would turn them.
 - **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
   of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
   abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
