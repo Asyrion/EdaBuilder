@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 62 (a balance measure that can see a change)
+
+- **The balance table.** `npx tsx scripts/table.ts [--compare origin/main]` runs the four peoples × seeds 42–44 × two
+  draws (the second with one extra roll of the main stream on day 10) in parallel: 24 runs, 11 minutes.
+  - It reports each row's spread and each people's σ within seeds.
+  - With `--compare`, it gives the paired difference from a ref and a verdict: "seen" only past twice its standard
+    error.
+- **`balance.ts`** takes `roll=N` and prints a `json:` line for the table.
+- **The calibration** (DESIGN §4.93). The table sees a change of about 9 % over the four peoples. A people's own row
+  sees 8–9 % (the Grimmen, the Veshari), 21 % (the Vellish) and 29 % (the Tallowkin, whose halls come or go with a
+  draw). The six rows of §4.92 came back bit for bit.
+
 ## Done in iteration 61 (the bot's depot, the hunt and the fish)
 
 - **The bot saves for a depot** once the hides, trophies, smoked fish, full works and relics waiting for the Gloam road
@@ -682,10 +694,8 @@
   arcane level 2) keep their front to the viewer, so on a road behind them (their upper edges) they
   still show their front to the empty side. Only new paintings, three-quarter views of the same
   houses, would turn them.
-- **The bot's runs are too noisy to measure a change** (iteration 60). A single extra roll on day 10 sends
-  Tallowkin 42 from 3,003 folk to 1,396 and Vellish 43 from 2,903 to 1,579, each losing two gates. The §4.89
-  rows for those seeds were lucky paths, and this iteration's table cannot show whether the water costs the
-  bot about a tenth or nothing (DESIGN §4.91).
+- **The bot's runs are noisy** (iterations 60 and 62). One extra roll on day 10 moves a seed by up to half its
+  folk. Since iteration 62 the balance table pairs seeds and pools σ; its floor is in DESIGN §4.93.
 - **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
   of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
   abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
@@ -745,14 +755,13 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **A balance measure that can see a change** (from iteration 60): one extra roll of the main stream
-   on day 10 moves a seed by up to half its folk and two gates (DESIGN §4.91; Vellish 42 is 2,622 or 1,288 on main),
-   so the six-run table cannot tell a tenth's cost from luck. `balance.ts` has the `null` flag since iteration 61. What
-   is left: more seeds a people, and the spread reported by a script that runs the table.
-2. **The depot's road does not pay** (from iteration 61, proposed): a depot carries 8 goods a day at 2–4 crowns against
-   25 a day of upkeep, so it pays only on trophies and relics. A hunt or a fishery sold through it loses a little
-   (DESIGN §4.92). A sim decision for the user: more carts a depot, a lower upkeep, or the hunt's goods outside the
-   carts' budget like the trophies.
+1. **The depot's road does not pay** (from iteration 61, proposed; the user's decision before it starts): a depot carries
+   8 goods a day at 2–4 crowns against 25 a day of upkeep, so it pays only on trophies and relics, and a hunt or a
+   fishery sold through it loses a little (DESIGN §4.92). The choices: more carts a depot, a lower upkeep, or the hunt's
+   goods outside the carts' budget like the trophies. Measure it with `scripts/table.ts --compare origin/main`.
+2. **A wider balance bar** (from iteration 62, the user's decision): the default table sees a tenth over all four
+   peoples but only a fifth for the Vellish and three tenths for the Tallowkin. About 25 runs for the Vellish and 50 for
+   the Tallowkin would bring each to a tenth (DESIGN §4.93), at about 75 minutes a ref.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

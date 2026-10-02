@@ -3159,6 +3159,80 @@ branch, ten of twelve did.
   at high water (the Grimmen and Tallowkin rows, Vellish 43 on the plain seed, and the Veshari's flood with the extra
   roll): a crossing a day, only on mornings when the treasury holds its price and 800, is not always enough.
 
+### 4.93 A balance measure that can see a change: the balance table (iteration 62)
+
+NEXT_STEPS item 1, from iterations 60 and 61.
+- **The problem.** One extra roll of the main stream on day 10 moves a bot run by up to half its folk and two gates.
+  So the six-run table, one run a seed, could not tell a change of a tenth from luck. Iteration 61 ran it four ways by
+  hand.
+- **The tool.** This iteration makes that the project's balance tool. It is tooling only: no `src/` change.
+
+**Draws.**
+- `balance.ts` takes a sixth argument, `roll=N`: N extra rolls of the main stream on day 10 (`scripts/rolls.ts`).
+  `null` is `roll=1`.
+- A seed's draws (rolls 0, 1, 2, …) are the same map and the same opening down different paths.
+- The run's last line is `json: {…}`: seed, people, rolls, folk, the milestone and each gate's day, treasury, loan, the
+  depot's day and the road's crowns. The table reads only that line.
+
+**The table** (`scripts/table.ts`, statistics in `scripts/tableStats.ts`).
+- **The matrix.** It runs peoples × seeds × draws as parallel child processes. The default is the four peoples ×
+  seeds 42–44 × two draws: 24 runs, 11 minutes on four cores.
+- **`--compare <ref>`** runs the same matrix on a git ref too. The ref runs in a detached worktree in the temp dir with
+  this tree's runner copied in, removed afterwards. The report has:
+  - **every row:** folk for each draw, the last gate and its day, and the spread;
+  - **per people:** σ, pooled within seeds (the mean of each seed's sample variance), so a difference between maps is
+    not counted as noise;
+  - **the comparison:** Δ, the mean over seeds of the paired difference of the two refs' means, with SE =
+    √(σ²(1/dA + 1/dB)/S) (σ pooled over both refs). Its verdict is **seen** when |Δ| > 2·SE, else **within the
+    noise**. The SE of all peoples together is the root of the summed squares;
+  - **the gates:** how many runs reach each gate, and the median day.
+- With one ref and no compare, it reports the smallest change two such tables could see (2·SE). A "within the noise"
+  then says how large a cost it rules out.
+- The raw runs go to `shots/table.json`.
+
+**Control.** On this tree, the six rows of §4.92 come back bit for bit (Vellish 42 at 2,249 and 1,624, Veshari 42 at
+2,953 and 2,566, and the rest). So `roll=1` is iteration 61's `null`, and the sim did not move. A `--compare
+origin/main` of 30 days reports Δ = 0 on every people and leaves no worktree behind.
+
+**The calibration** (this tree, 24 runs, against which iteration 63 will be measured):
+
+| people | seeds 42 / 43 / 44, folk by draw | mean | σ within seeds | smallest change seen (2·SE) |
+|---|---|---|---|---|
+| Vellish | 2,249·1,624 / 1,366·1,464 / 1,318·1,620 | 1,607 | 286 | 330 (21 %) |
+| Grimmen | 1,343·1,450 / 763·904 / 2,360·2,134 | 1,492 | 117 | 135 (9 %) |
+| Veshari | 2,953·2,566 / 2,493·2,434 / 1,625·1,650 | 2,287 | 160 | 185 (8 %) |
+| Tallowkin | 1,428·1,166 / 1,291·2,170 / 1,994·2,555 | 1,767 | 439 | 507 (29 %) |
+| all four | | 7,153 | | 647 (9 %) |
+
+- **The seeds differ more than the draws.** Grimmen 43 ends at 763–904 and Grimmen 44 at 2,134–2,360. So the
+  pairing by seed matters: an unpaired table would count the maps as noise.
+- **The noise is the people's.** The Grimmen and the Veshari can show a change of a tenth on this table. The Vellish
+  (σ 286) and the Tallowkin (σ 439, whose halls come or go with a draw: Tallowkin 43 is 1,291 or 2,170) cannot.
+- **A third draw** for the Vellish (9 runs) gives σ 268 against 286, so the two-draw σ is not an accident of three
+  degrees of freedom. The floor falls to 16 %.
+- **Runs needed for a tenth:** the floor falls with the square root of the runs, so a people needs (floor / 10 %)² × 6
+  runs. That is about 25 for the Vellish and 50 for the Tallowkin, against 6 now. One table for both at a tenth would
+  take about 75 minutes of runs a ref. The default stays at 24 runs. The four peoples together can see a change of
+  about 9 %, and a people's own row about 8–29 %. Whether the bar grows is the user's to say (NEXT_STEPS).
+- **Gates** over the 24 runs:
+  - Vellish: the Burgh 6 of 6 (median day 42), the Free City 2 of 6 (day 133).
+  - Grimmen: the Deephold 4 of 6 (day 50), the Underking's Hall 2 of 6.
+  - Veshari: the Sable Crown 4 of 6 (day 121).
+  - Tallowkin: the Hall of Wicks 3 of 6 (day 56), the Lantern of Wicks 1 of 6.
+
+**Verified.**
+- `npx tsc --noEmit -p .` (it covers `scripts/`), 65 test files with 407 tests, and `npm run build`.
+- The new `tests/iteration62.test.ts` (8 tests) covers:
+  - the json line;
+  - the roll argument, and `roll=N` drawing exactly N numbers;
+  - σ pooled within seeds;
+  - a 3σ shift seen and a 0.5σ shift not, with SE as the formula gives it;
+  - the peoples' errors adding in quadrature;
+  - the gate counts;
+  - a report that carries every row and a verdict for each people.
+- The control above, and `scripts/playtest61.mjs` with `DAYS=10` against the preview build: the bot plays; no errors
+  and no missing sprites; a clean dawn and dusk.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4218,3 +4292,6 @@ playtest of a lakeside town.
   ledger over 200) run bills of 2,700 a day in a brownout.
 - *A bridge is a street (iteration 61):* the bot's bridges read the treasury, as its grid does, not the purse a goal
   leaves; a Weir instead where it would hold five fords.
+- *A sim change is judged by the paired table, not by one run a seed (iteration 62):* `scripts/table.ts --compare
+  origin/main` runs every seed twice (the second with one extra roll), pools σ within seeds and calls a difference seen
+  only past twice its standard error. Its 24 runs see about 9 % over the four peoples; a people's own row sees 8–29 %.
