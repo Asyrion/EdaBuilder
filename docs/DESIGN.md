@@ -1694,7 +1694,23 @@ gaps before the crowns are spent.
 
 Balance, 150 days, against the iteration 47 table in brackets:
 
-BALANCE_TABLE_48
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 61 (61) | 2,939 (2,939) |
+| Vellish seed 43 | never: Burgh 36 (36) | 1,285 (1,277) |
+| Vellish seed 44 | 68 (68) | 3,006 (3,006) |
+| Grimmen seed 42 | Deephold 59 (59) | 1,352 (1,352) |
+| Veshari seed 42 | Weirhold 86 (86), Vesh's Court 135 (135) | 1,686 (1,686) |
+| Tallowkin seed 42 | Bright Town 64 (64) | 996 (996) |
+
+The runs are the iteration 47 runs to the day and, on five seeds, to the soul: no riot and
+no theft in any of them, because the bot's unrest never leaves the first tenth (it staffs
+its Watch and leaves the tithe alone), and the teeth are for the player who does not. That
+is the shape wanted: a pressure that only bites a city that earned it. The one mover is the
+Gloam road: seed 43's lodges sold 306 pelts (seed 44's 131), eight more folk on the poorest
+seed. The draughts, the consecration and the Academy's relics do not move the bot either,
+which builds its Hospice and its Academy late and holds no loose relics; the player will
+feel them first. Riots, theft and pelts are now in the balance script's summary line.
 
 ## 5. Art direction
 
