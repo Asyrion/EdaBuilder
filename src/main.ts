@@ -25,7 +25,7 @@ import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
-import { resolveEvent, maybeFireEvent, ALL_EVENTS } from './sim/events';
+import { resolveEvent, maybeFireEvent, maybeFireRiot, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
@@ -443,7 +443,7 @@ async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

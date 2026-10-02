@@ -1645,6 +1645,57 @@ wards did not cost the bot (its Gloam counts are within a few hundred tiles of b
 Veshari's Harbour stalls again on seed 42 (day 56), the bot's second landing on a poor early
 purse, as recorded in §4.75.
 
+### 4.79 M14 part 2b, unrest with teeth, halls with a difference, the smaller rows, the kin rings (iteration 48)
+
+The second half of the audit's part 2: the pressures that were silent numbers get an event
+and a cost, the halls that were bigger copies of smaller halls get a role, and the counters
+the player never saw get a row. One addition from the playtest: the reach of the buildings
+already standing is drawn while a new one is placed.
+
+**Unrest with teeth.** `state.unrestHigh` counts the days unrest stands above `RIOT_UNREST`
+(0.5), reset the day it falls. At `RIOT_DAYS` (5) `maybeFireRiot` (run before the storyteller
+each day) fires *A riot in the market*: **Send the Watch** finds the market with the least
+watch coverage; at half or more the Watch holds the square (+3 happiness for 5 days), under
+it the market is ignited (`igniteBuilding`); **Pay the Crown's peace** costs 600 crowns and
+sets unrest −0.1 for 10 days. Either resets the count and adds `stats.riots`; the
+Observatory's forecast warns from the third day. Theft: a market with watch coverage under
+`THEFT_WATCH` (0.3) loses a tenth of its shelves each day while unrest is over `THEFT_UNREST`
+(0.3) (`theftAt`, `stats.goodsStolen`; the market's problem names its watch and the unrest).
+Idle scholars: educated above half with Arcane jobs under a tenth of the folk adds
+`IDLE_SCHOLARS` (0.05) to the unrest target; the Budget's social line says so.
+
+**Halls with a difference.** The Hospice draws 2 goods a day from the fullest market within
+16 onto its own shelf (`HOSPICE_DRAUGHTS` 10) and uses one; with none it heals at 0.6
+(`updateCoverage`; a Draughts row and a dry problem). A pilgrim from a shrine who prays at a
+Temple consecrates that shrine for `CONSECRATED_DAYS` (10, `Building.blessed`): its faith
+radius is ×1.5 (a Consecrated row; the Temple's panel says what it consecrates). A Veshari
+hall that is not watered works at half. Artifacts sell at +5 % per full 10 % of educated
+above 0.4 while a lit Grand Academy stands (`grandAcademyBonus`; its panel shows the bonus).
+Every fifth day a lit Academy or Grand Academy takes one loose relic and raises
+`state.educatedFloor` by 0.01 (cap `EDUCATED_FLOOR_CAP` 0.2); the educated target is
+`0.05 + educatedFloor + schoolCov × 0.85`. The depot's "ten kept for the Academy" now go
+somewhere.
+
+**The smaller rows.** Each hound a lodge kills is a pelt on the lodge's shelf (`stats.pelts`),
+and the Gloam road's carts sell lodge stock like any good. The Moth-Loft's panel shows its
+dust per day (0.3, doubled on Glim ley). The Guildhall's panel counts down to the next
+petition from `COUNCIL_SPACING` and names the lowest guild. The Spire-Wrights' Lodge panel
+has *Vent the store* (host `vent`: the store empties, `overdrawDays` resets to −4, the open
+brownout count clears, 30 days' cooldown), with rows for its storage and its surge line.
+Tiles within 10 of an active Carters' Yard smooth congestion at `CARTERS_EASE` (0.8).
+
+**The kin rings.** `kinReach(state, def)` lists the reach of the buildings a new one would
+join: for a spire, Wick-Tower, Nexus or hall, every node (6 + the people's spire reach) and
+every lit spire, stake or hall; for a service, every standing building of the same service
+type at its `influenceRadius`; for a well, every well at its current water reach. The
+renderer draws them under the ghost in a fainter blue (ley) or gold (service, water) than
+the ghost's own ring, so the player sees where a new spire links and where the Watch has
+gaps before the crowns are spent.
+
+Balance, 150 days, against the iteration 47 table in brackets:
+
+BALANCE_TABLE_48
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2330,9 +2381,9 @@ this section is the table of contents and the order.
 2. **Services with staff and stakes**: 2a ✅ (iteration 47, §4.78) crews that scale coverage; happiness and land value
    breakdowns and the missing level-up condition; deathcare
    in the open with a land-value price; wards with a burn budget (strength matters; Stone
-   and Scale Wards stop dominating); 2b next: unrest with a riot and theft; halls with a difference (draughts, consecration, the
-   fire hall's water, the Grand Academy's prices, the Academy's kept relics); the smaller rows.
-3. **Wyrmcraft matured**: lines that do what they say; the Great Cradle; lodges with
+   and Scale Wards stop dominating); 2b ✅ (iteration 48, §4.79): unrest with a riot and theft; halls with a difference (draughts, consecration, the
+   fire hall's water, the Grand Academy's prices, the Academy's kept relics); the smaller rows; the kin rings while placing.
+3. **Wyrmcraft matured** (next): lines that do what they say; the Great Cradle; lodges with
    capacity; feeding reach; departed dragons return; roles with a price; champions who can
    lose; materials with sinks; marvels and wonders with a role; the Wyrm-Court after the
    binding; golems assigned.
@@ -2563,3 +2614,11 @@ this section is the table of contents and the order.
 - *Show the terms, not the number (iteration 47):* a happiness of 42 is a verdict; "+6 lit
   · −12 the Gloam near · −9 unrest" is advice. Every summed figure the player is asked to
   raise should be able to list its terms.
+- *Unrest must be able to burn something (iteration 48):* a tax on yields is a number the
+  player learns to live with; a market that can burn on the fifth day is a reason to build
+  a Watch Post before the fifth day. Every slow pressure needs one event the player can see
+  coming and one thing it costs.
+- *Show the kin while placing (iteration 48):* a spire's reach is only useful beside the
+  reach it must touch; drawing every standing node's and spire's ring while the ghost is
+  held turns "did that link?" into a thing seen before the crowns are spent. The same for
+  wells and halls: the gaps are the plan.

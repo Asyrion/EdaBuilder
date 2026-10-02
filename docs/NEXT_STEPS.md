@@ -349,6 +349,20 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 48 (M14 part 2b: unrest with teeth, halls with a difference)
+
+- Unrest above half for five days brings a riot: the least-watched market burns unless its
+  watch is at half (then the Watch holds the square), or the Crown's peace is paid (600).
+  Unwatched markets lose a tenth of their shelves a night while the city is unquiet; idle
+  scholars add unrest. The Hospice draws draughts from the markets and heals at six tenths
+  without; a pilgrim's prayer at the Temple consecrates its shrine for ten days (radius
+  ×1.5); a dry Veshari hall works at half; the Grand Academy lifts artifact prices with
+  schooling; Academies study a loose relic every five days for a lasting educated floor.
+  Pelts on the lodge's shelf for the Gloam road, the Moth-Loft's dust, the Guildhall's
+  petition clock, the Wrights' vent button, the Carters' Yard easing the roads within 10.
+  While placing a spire, a well or a service hall, the reach rings of its kin are drawn so
+  the player sees where a new one links or where the gaps are.
+
 ## Done in iteration 47 (M14 part 2a: services with staff and stakes)
 
 - Service buildings have crews filled from the city's hands and radiate by how many are
@@ -467,16 +481,12 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M14 part 2b: unrest with teeth, halls with a difference** (DESIGN §15, AUDIT.md §4
-   part 2): a Riot tale when unrest stays above 0.5 for five days (the least-watched market
-   burns unless its watch is 0.5, or the Crown is paid 600); markets under watch 0.3 lose a
-   tenth of their shelves a day to theft while unrest is over 0.3; idle scholars (educated
-   above 0.5 with few Arcane jobs) add unrest; the Hospice draws 2 goods a day and runs at
-   0.6 without; the Temple consecrates the shrines its pilgrims reach (+50 % radius); the
-   fire hall works at full strength only watered; the Grand Academy lifts artifact prices
-   5 % per 10 % educated above 0.4; a lit Academy spends a kept relic every 5 days for a
-   lasting educated floor; the smaller rows (pelts, dust per day, the petition countdown,
-   the Wrights' vent, the Carters' Yard's congestion). Balance against the iteration 47 table.
+0. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
+   what they say (each line's aura a real, shown effect); the Great Cradle; lodges with a
+   capacity; feeding reach; departed dragons that return; roles with a price; champions who
+   can lose a bout; materials with sinks; marvels and wonders with a role of their own; the
+   Wyrm-Court after the binding; golems assigned to a works. Balance against the iteration
+   48 table.
 1. **M13 part 2: the Tallowkin's light** (DESIGN §4.72): a chapter of eight (the first
    spire, a Wick-Tower, the Candle-Shrine, half the city lit, the vigil kept, a Nexus, the
    Hall of Wicks, the Lantern of Wicks), three tales (a spire-wright's strike, a wild surge
