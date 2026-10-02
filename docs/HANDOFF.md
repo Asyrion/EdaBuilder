@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 61 (the bot's depot, the hunt and the fish; DESIGN §4.92). Iteration 60
-(M16 part 2, the water; M16 closed) came just before it, and 57–59 before that. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 62 (the balance table; DESIGN §4.93). Iteration 61 (the bot's depot, the hunt and
+the fish, §4.92) and 60 (M16 part 2, the water; M16 closed) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.92 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.93 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,12 +32,12 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **a balance measure that can see a change**. On main, one extra roll of the main stream on day 10
-sends Vellish 42 from 2,622 folk to 1,288 (DESIGN §4.92), so a single run a seed cannot tell a tenth's cost from
-luck.
-- `balance.ts` has a `null` flag (the sixth argument) since iteration 61.
-- What is left: more seeds a people, and a script that runs the table and reports each row's spread.
-- Item 2 (the depot's road does not pay its upkeep) is a sim decision proposed for the user. Ask before taking it.
+The two open items at the head of NEXT_STEPS are both **the user's decisions**. Ask before starting either.
+1. **The depot's road does not pay.** A depot carries 8 goods a day at 2–4 crowns against 25 a day of upkeep
+   (DESIGN §4.92). The choices are more carts, a lower upkeep, or the hunt's goods outside the carts' budget. It is a
+   sim change, so it is measured with `scripts/table.ts --compare origin/main`.
+2. **A wider balance bar.** The default table sees a tenth over all four peoples, but only a fifth for the Vellish and
+   three tenths for the Tallowkin (DESIGN §4.93).
 
 Plan it on the Plan panel first.
 
@@ -69,8 +69,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (64 files, 399 tests at this writing; `tests/iteration61.test.ts` is
-  iteration 61's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (65 files, 407 tests at this writing; `tests/iteration62.test.ts` is
+  the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -82,7 +82,10 @@ Plan it on the Plan panel first.
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
   to `shots/` (gitignored).
-- Balance: `npx tsx scripts/balance.ts <seed> 150 - <people>`; the six-run table is Vellish
+- Balance: since iteration 62 the bar is the balance table, `npx tsx scripts/table.ts --compare
+  origin/main` (four peoples × seeds 42–44 × two draws, about 11 minutes a side on four cores; DESIGN §4.93). It
+  reports every row, σ within seeds, the paired Δ and a verdict ("seen" past 2·SE). A single run is still
+  `npx tsx scripts/balance.ts <seed> 150 - <people> [roll=N]`. Before iteration 62 the six-run table was Vellish
   42/43/44 and Grimmen/Veshari/Tallowkin 42; each DESIGN section records it against the
   previous one in brackets. The day line prints dragons, materials, bouts, golems, the
   departed and (iteration 54) the charter upkeep; the summary prints the weather days, the
@@ -204,6 +207,14 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 62 (not yet said elsewhere)
+
+- **`table.ts` worktrees** go in the OS temp dir with `node_modules` symlinked, and are removed in a `finally`. If a run
+  is killed, `git worktree list` shows the leftovers; `git worktree remove --force <dir>` clears them.
+- **The ref side runs this tree's `balance.ts` and `rolls.ts`**, so an old ref prints the same `json:` line. A ref
+  older than iteration 61 prints `depotDay` and `roadCrowns` as missing, which the table does not read.
+- **`tsc -p .` covers `scripts/`**, so the balance scripts are typechecked with the game.
 
 ## Learned in iteration 61 (not yet said elsewhere)
 

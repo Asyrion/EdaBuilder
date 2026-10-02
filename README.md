@@ -20,7 +20,8 @@ npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
 npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
-npx tsx scripts/balance.ts 42 150 - vellish null   # the same run with one extra roll on day 10: the noise yardstick
+npx tsx scripts/balance.ts 42 150 - vellish roll=1   # the same run with one extra roll on day 10: another draw
+npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples × 3 seeds × 2 draws, paired, with a verdict
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
