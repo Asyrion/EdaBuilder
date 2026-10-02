@@ -89,6 +89,7 @@ export interface Building {
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
   tended?: number; // day a healer last tended this home (+4 happiness that day)
+  relit?: number; // lit by a lamplighter's candle until this day (the Tallowkin, iteration 52)
   visited?: number; // day a tamer last visited this cradle (growth ×1.1 that day)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
@@ -231,7 +232,7 @@ export interface DayLedger {
 }
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges';
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights';
   value: number;
   until: number; // day
   label: string;
@@ -417,6 +418,7 @@ export interface GameState {
     walkerLayings: number;
     healerVisits: number;
     wardenRounds: number;
+    lamplighterRounds: number; // dark homes relit by lamplighters
     scholarTrips: number;
     tamerVisits: number;
     pilgrimPrayers: number;

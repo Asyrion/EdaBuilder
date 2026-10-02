@@ -663,6 +663,14 @@
    "h": 30,
    "ax": 15,
    "ay": 28
+  },
+  "b_hallofwicks": {
+   "file": "sprites/b_hallofwicks.png",
+   "w": 100,
+   "h": 130,
+   "ax": 49,
+   "ay": 81,
+   "glow": "sprites/b_hallofwicks_glow.png"
   }
  }
 }

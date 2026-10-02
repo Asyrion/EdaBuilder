@@ -696,6 +696,7 @@ export class UI {
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
       if (def.zone === Zone.Craft && seasonOfState(s) === 3) rows.push(row('The Hush', glimhouseNear(s, b) ? 'warmed by a Glimhouse' : `output ×${HUSH_CRAFT}`));
       if (roadTileOf(s, b) < 0) problems.push('No road at its door: draw a road beside it (a corner counts); nobody can come or go.');
+      if (b.lit && (b.relit ?? -1) >= s.day) rows.push(row('Mana', 'lit by a lamplighter\'s candle today'));
       if (!b.lit) problems.push('No mana: build a Ley Spire within 5 tiles or next to a lit building.');
       if (!b.watered) problems.push(b.dryBy === 'overdrawn' ? 'No water: the nearest well is overdrawn. Dig another well nearby.' : 'No water: build a Well or Cistern nearby.');
       if (b.greyDays) problems.push(`The grey is at the door: light it or ward it, ${Math.max(0, GREY_DAYS - b.greyDays)} day${GREY_DAYS - b.greyDays === 1 ? '' : 's'} left before the Gloam takes it.`);

@@ -1041,6 +1041,19 @@
     "warm": 50
    },
    "checked": true
+  },
+  {
+   "name": "b_hallofwicks",
+   "src": "inspirations/ley_spires/image_0(1).png",
+   "w": 3,
+   "h": 3,
+   "colors": 24,
+   "glow": {
+    "hue": "cool",
+    "minLum": 0.5,
+    "warm": 40
+   },
+   "checked": true
   }
  ]
 }
