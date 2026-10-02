@@ -90,6 +90,9 @@ export class Renderer {
     this.light = document.createElement('canvas');
     this.lctx = this.light.getContext('2d')!;
     this.atlas = atlas;
+    this.treeCount = Math.max(1, atlas.countVariants('tree_'));
+    this.bushCount = Math.max(1, atlas.countVariants('bush_'));
+    this.mushroomCount = Math.max(1, atlas.countVariants('mushroom_'));
   }
 
   resize(): void {
@@ -306,12 +309,17 @@ export class Renderer {
           let nearNode = false;
           for (const nd of state.nodes) if (Math.hypot(nd.x - x, nd.y - y) < 9) nearNode = true;
           for (let k = 0; k < n; k++) {
-            const v = Math.floor(h2(x, y, 21 + k) * 4);
+            const v = Math.floor(h2(x, y, 21 + k) * this.treeCount);
             const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
             const glim = nearNode && h2(x, y, 33 + k) < 0.6;
             cache.props.push({ name: glim ? `glimwood_${v % 2}` : h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
           }
-          if (h2(x, y, 44) < 0.12) cache.props.push({ name: `mushroom_${Math.floor(h2(x, y, 45) * 2)}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
+          if (h2(x, y, 44) < 0.12) {
+            // six imported mushrooms: three woodland, three that glow (near a node, like glimwood); fewer: any of them
+            const glowing = this.mushroomCount >= 6;
+            const mv = Math.floor(h2(x, y, 45) * (glowing ? 3 : this.mushroomCount));
+            cache.props.push({ name: `mushroom_${glowing && nearNode ? 3 + mv : mv}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
+          }
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.Ruins && state.bIndex[i] < 0 && !state.road[i]) {
@@ -320,7 +328,7 @@ export class Renderer {
           else if (r < 0.42) cache.props.push({ name: 'deadtree', wx: wx + (h2(x, y, 51) - 0.5) * 10, wy: wy + 8, d: x + y, sway: 0 });
           else if (r < 0.5) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 52) * 3)}`, wx: wx + (h2(x, y, 53) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
-          if (h2(x, y, 27) < 0.05) cache.props.push({ name: 'bush', wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
+          if (h2(x, y, 27) < 0.05) cache.props.push({ name: `bush_${Math.floor(h2(x, y, 29) * this.bushCount)}`, wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.LeyNode) {
           const nodeHere = state.nodes.find((n) => n.x === x && n.y === y);
           cache.lights.push({ x: wx, y: wy + 8, r: 70, c: nodeHere?.aspect ? ASPECT_INFO[nodeHere.aspect].color : PAL.ley1, i: 0.9 });
@@ -843,6 +851,9 @@ export class Renderer {
   }
 
   private zoneSuffix = '';
+  private treeCount = 4;
+  private bushCount = 1;
+  private mushroomCount = 2;
   private stakeStage = 0;
 
   private spriteNameFor(b: Building): string {

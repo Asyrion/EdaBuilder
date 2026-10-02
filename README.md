@@ -22,6 +22,7 @@ npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
 npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
+node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
 ```
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
@@ -215,6 +216,9 @@ Charter as `.json`.
   Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
   its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
+- The painted set: the ground, the trees, bushes and mushrooms, the spire, the wells, the
+  Depot, the chapels and more are imported from the reference paintings, sharpened and
+  outlined to sit beside the procedural set; every building has a sprite.
 - A road at a building's corner counts as its door; the zone preview hatches the tiles that
   would never grow. Districts and charters open in steps from the Hamlet to the Burgh, with
   a three-step lesson card when they arrive. The demand bars carry a zero line, a word under

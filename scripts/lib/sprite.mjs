@@ -121,7 +121,7 @@ export function colourCount(img) {
 }
 
 /** The night glow: warm, bright pixels (lit windows, lamps) copied onto a transparent layer. */
-export function glowLayer(img, { minLum = 0.6, warm = 40 } = {}) {
+export function glowLayer(img, { minLum = 0.6, warm = 40, hue = 'warm' } = {}) {
   const { w, h, data } = img;
   const out = blank(w, h);
   let count = 0;
@@ -130,7 +130,8 @@ export function glowLayer(img, { minLum = 0.6, warm = 40 } = {}) {
     if (data[o + 3] === 0) continue;
     const r = data[o], g = data[o + 1], b = data[o + 2];
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    if (lum >= minLum && r >= 180 && r - b >= warm) { out.data[o] = r; out.data[o + 1] = g; out.data[o + 2] = b; out.data[o + 3] = 255; count++; }
+    const lit = hue === 'cool' ? b >= 180 && b - r >= warm : hue === 'any' ? Math.max(r, g, b) - Math.min(r, g, b) >= warm && Math.max(r, g, b) >= 180 : r >= 180 && r - b >= warm;
+    if (lum >= minLum && lit) { out.data[o] = r; out.data[o + 1] = g; out.data[o + 2] = b; out.data[o + 3] = 255; count++; }
   }
   return { img: out, count };
 }
@@ -140,6 +141,113 @@ export function autoAnchor(w, h, spriteH) { return { ax: h * 16 + 1, ay: spriteH
 
 /** The footprint diamond's corners relative to the anchor, for the check sheet. */
 export function footprintDiamond(w, h) { return [[0, 0], [w * 16, w * 8], [(w - h) * 16, (w + h) * 8], [-h * 16, h * 8]]; }
+
+
+/** The 8-connected opaque islands of a keyed sheet, row-major: rows are clustered by centre (a new row starts when the
+ *  centre drops more than rowBand below the row's first island), then left to right. */
+export function islands(img, { minPixels = 40, rowBand = 40 } = {}) {
+  const { w, h, data } = img;
+  const label = new Int32Array(w * h).fill(-1);
+  const found = [];
+  for (let start = 0; start < w * h; start++) {
+    if (data[start * 4 + 3] === 0 || label[start] >= 0) continue;
+    const id = found.length; let n = 0; let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    const stack = [start]; label[start] = id;
+    while (stack.length) {
+      const i = stack.pop(); n++;
+      const x = i % w, y = (i / w) | 0;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const j = ny * w + nx;
+        if (label[j] < 0 && data[j * 4 + 3] > 0) { label[j] = id; stack.push(j); }
+      }
+    }
+    found.push({ x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, n });
+  }
+  const kept = found.filter((f) => f.n >= minPixels).sort((a, b) => a.y + a.h / 2 - (b.y + b.h / 2));
+  const rows = [];
+  for (const f of kept) {
+    const cy = f.y + f.h / 2;
+    const row = rows.length ? rows[rows.length - 1] : null;
+    if (row && cy - row.cy <= rowBand) row.items.push(f);
+    else rows.push({ cy, items: [f] });
+  }
+  return rows.flatMap((r) => r.items.sort((a, b) => a.x - b.x));
+}
+
+/** A sub-image by rectangle [x, y, w, h] in source pixels. */
+export function cropRect(img, [x, y, w, h]) {
+  const out = blank(w, h);
+  for (let yy = 0; yy < h; yy++) {
+    const sy = y + yy; if (sy < 0 || sy >= img.h) continue;
+    for (let xx = 0; xx < w; xx++) { const sx = x + xx; if (sx < 0 || sx >= img.w) continue; out.data.set(img.data.subarray((sy * img.w + sx) * 4, (sy * img.w + sx) * 4 + 4), (yy * w + xx) * 4); }
+  }
+  return out;
+}
+
+/** A prop's anchor: the trunk base, from the x-centroid of the bottom opaque rows; ay sits baseInset above the last row. */
+export function propAnchor(img, baseInset = 0) {
+  const { w, h, data } = img;
+  const rows = Math.max(1, Math.round(h * 0.08));
+  let sx = 0, n = 0;
+  for (let y = h - rows; y < h; y++) for (let x = 0; x < w; x++) if (data[(y * w + x) * 4 + 3] > 0) { sx += x + 0.5; n++; }
+  return { ax: n ? Math.round(sx / n) : Math.round(w / 2), ay: h - baseInset };
+}
+
+/** The footprint anchor with the sprite's horizontal centre on the footprint diamond's centre (a sprite narrower than its footprint). */
+export function centreAnchor(w, h, spriteW, spriteH) {
+  return { ax: Math.round(spriteW / 2) - (w - h) * 8, ay: spriteH - 1 - (w + h) * 8 };
+}
+
+/**
+ * A square texture inverse-mapped onto the 32×16 diamond (the same pixel-centre rule as the procedural diamond()), with a
+ * mirror fold so the tile's edges continue into their neighbours, and a box average of the texels under each pixel.
+ */
+export function groundDiamond(tex, { W = 32, H = 16, sub = 4 } = {}) {
+  const out = blank(W, H);
+  const fold = (t) => { t -= Math.floor(t); return t < 0.5 ? t * 2 : (1 - t) * 2; };
+  for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+    const sx = px + 0.5 - W / 2, sy = py + 0.5;
+    const u = sx / W + sy / H, v = sy / H - sx / W;
+    if (u < 0 || v < 0 || u >= 1 || v >= 1) continue;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let j = 0; j < sub; j++) for (let i = 0; i < sub; i++) {
+      const uu = u + ((i + 0.5) / sub - 0.5) / W * 1.0, vv = v + ((j + 0.5) / sub - 0.5) / H * 1.0;
+      const tx = Math.min(tex.w - 1, Math.floor(fold(uu) * tex.w)), ty = Math.min(tex.h - 1, Math.floor(fold(vv) * tex.h));
+      const o = (ty * tex.w + tx) * 4;
+      r += tex.data[o]; g += tex.data[o + 1]; b += tex.data[o + 2]; n++;
+    }
+    const o = (py * W + px) * 4;
+    out.data[o] = Math.round(r / n); out.data[o + 1] = Math.round(g / n); out.data[o + 2] = Math.round(b / n); out.data[o + 3] = 255;
+  }
+  return out;
+}
+
+/** One median cut over several images, so a family of ground variants shares a palette. */
+export function quantizeShared(imgs, n = 32) {
+  let w = 0; const hs = [];
+  for (const im of imgs) { w = Math.max(w, im.w); hs.push(im.h); }
+  const H = hs.reduce((a, b) => a + b, 0);
+  const all = blank(w, H);
+  let y = 0;
+  for (const im of imgs) { for (let yy = 0; yy < im.h; yy++) all.data.set(im.data.subarray(yy * im.w * 4, (yy + 1) * im.w * 4), ((y + yy) * w) * 4); y += im.h; }
+  const q = quantize(all, n);
+  const out = []; y = 0;
+  for (const im of imgs) { const o = blank(im.w, im.h); for (let yy = 0; yy < im.h; yy++) o.data.set(q.data.subarray(((y + yy) * w) * 4, ((y + yy) * w + im.w) * 4), yy * im.w * 4); out.push(o); y += im.h; }
+  return out;
+}
+
+/** Shift an image's mean colour part of the way to a reference's (ground variants of one family). */
+export function meanMatch(img, ref, amount = 0.6) {
+  const mean = (im) => { let r = 0, g = 0, b = 0, n = 0; for (let i = 0; i < im.w * im.h; i++) if (im.data[i * 4 + 3] > 0) { r += im.data[i * 4]; g += im.data[i * 4 + 1]; b += im.data[i * 4 + 2]; n++; } return n ? [r / n, g / n, b / n] : [0, 0, 0]; };
+  const a = mean(img), c = mean(ref);
+  const out = { w: img.w, h: img.h, data: new Uint8ClampedArray(img.data) };
+  for (let i = 0; i < img.w * img.h; i++) if (out.data[i * 4 + 3] > 0) for (let k = 0; k < 3; k++) out.data[i * 4 + k] = Math.max(0, Math.min(255, Math.round(img.data[i * 4 + k] + (c[k] - a[k]) * amount)));
+  return out;
+}
 
 function line(img, x0, y0, x1, y1, rgba) {
   const dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
@@ -153,24 +261,86 @@ function line(img, x0, y0, x1, y1, rgba) {
   }
 }
 
-/** A sheet with every sprite at a zoom over its footprint diamond, so the hand-set offsets can be judged by eye. */
-export function checkSheet(entries, zoom = 4, cell = 110) {
-  const sheet = blank(entries.length * cell * zoom, cell * zoom);
-  sheet.data.fill(0);
-  for (let i = 0; i < sheet.w * sheet.h; i++) { sheet.data[i * 4] = 40; sheet.data[i * 4 + 1] = 60; sheet.data[i * 4 + 2] = 40; sheet.data[i * 4 + 3] = 255; }
-  entries.forEach((e, k) => {
-    const ox = k * cell * zoom + 8 * zoom + e.ax * zoom; // the anchor's sheet position
-    const oy = (cell - 28) * zoom - (e.h - e.ay) * zoom + (e.h - e.ay - (e.w_t + e.h_t) * 8) * zoom;
-    const sx = ox - e.ax * zoom, sy = oy - e.ay * zoom;
-    for (let y = 0; y < e.h; y++) for (let x = 0; x < e.w; x++) {
-      const o = (y * e.w + x) * 4; if (e.img.data[o + 3] === 0) continue;
-      for (let zy = 0; zy < zoom; zy++) for (let zx = 0; zx < zoom; zx++) {
-        const px = sx + x * zoom + zx, py = sy + y * zoom + zy;
-        if (px >= 0 && py >= 0 && px < sheet.w && py < sheet.h) sheet.data.set(e.img.data.subarray(o, o + 4), (py * sheet.w + px) * 4);
+
+/** Pad an image with transparent pixels. */
+export function pad(img, n = 1) {
+  const out = blank(img.w + 2 * n, img.h + 2 * n);
+  for (let y = 0; y < img.h; y++) out.data.set(img.data.subarray(y * img.w * 4, (y + 1) * img.w * 4), ((y + n) * out.w + n) * 4);
+  return out;
+}
+
+/** The procedural set's outline: every transparent pixel 4-adjacent to an opaque one takes the outline colour (pad first so the edge has room). */
+export function outline(img, rgba = [26, 20, 32, 255]) {
+  const { w, h, data } = img;
+  const out = { w, h, data: new Uint8ClampedArray(data) };
+  const op = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3] > 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (op(x, y)) continue;
+    if (op(x - 1, y) || op(x + 1, y) || op(x, y - 1) || op(x, y + 1)) out.data.set(rgba, (y * w + x) * 4);
+  }
+  return out;
+}
+
+/** An unsharp mask over the opaque pixels (a box-scaled painting is soft; the procedural set is crisp). amount 0 leaves it. */
+export function sharpen(img, amount = 0.5) {
+  const { w, h, data } = img;
+  const out = { w, h, data: new Uint8ClampedArray(data) };
+  if (amount <= 0) return out;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const o = (y * w + x) * 4;
+    if (data[o + 3] === 0) continue;
+    for (let c = 0; c < 3; c++) {
+      let sum = 0, n = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const q = (ny * w + nx) * 4;
+        if (data[q + 3] === 0) continue;
+        sum += data[q + c]; n++;
       }
+      const blur = sum / n;
+      out.data[o + c] = Math.max(0, Math.min(255, Math.round(data[o + c] + amount * (data[o + c] - blur))));
     }
+  }
+  return out;
+}
+
+function blit(sheet, img, sx, sy, zoom) {
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+    const o = (y * img.w + x) * 4; if (img.data[o + 3] === 0) continue;
+    for (let zy = 0; zy < zoom; zy++) for (let zx = 0; zx < zoom; zx++) {
+      const px = sx + x * zoom + zx, py = sy + y * zoom + zy;
+      if (px >= 0 && py >= 0 && px < sheet.w && py < sheet.h) sheet.data.set(img.data.subarray(o, o + 4), (py * sheet.w + px) * 4);
+    }
+  }
+}
+
+/** A sheet of every sprite at a zoom, in rows of cols: a building over its footprint diamond, a prop with its anchor on a
+ *  tile's centre, a ground tile as a 3×3 field (so seams show). */
+export function checkSheet(entries, zoom = 4, cell = 110, cols = 10) {
+  const rows = Math.max(1, Math.ceil(entries.length / cols));
+  const sheet = blank(cols * cell * zoom, rows * cell * zoom);
+  for (let i = 0; i < sheet.w * sheet.h; i++) { sheet.data[i * 4] = 40; sheet.data[i * 4 + 1] = 60; sheet.data[i * 4 + 2] = 40; sheet.data[i * 4 + 3] = 255; }
+  const gold = [255, 230, 80, 255];
+  entries.forEach((e, k) => {
+    const cx0 = (k % cols) * cell * zoom, cy0 = Math.floor(k / cols) * cell * zoom;
+    if (e.kind === 'ground') {
+      for (let ty = 0; ty < 3; ty++) for (let tx = 0; tx < 3; tx++) blit(sheet, e.img, cx0 + 8 * zoom + (tx - ty) * 16 * zoom + 32 * zoom, cy0 + 20 * zoom + (tx + ty) * 8 * zoom, zoom);
+      return;
+    }
+    if (e.kind === 'prop') {
+      const ox = cx0 + 55 * zoom, oy = cy0 + 80 * zoom; // the tile's centre
+      const d = [[0, -8], [16, 0], [0, 8], [-16, 0]];
+      for (let j = 0; j < 4; j++) { const [x0, y0] = d[j], [x1, y1] = d[(j + 1) % 4]; line(sheet, ox + x0 * zoom, oy + y0 * zoom, ox + x1 * zoom, oy + y1 * zoom, gold); }
+      blit(sheet, e.img, ox - e.ax * zoom, oy - e.ay * zoom, zoom);
+      line(sheet, ox - 3 * zoom, oy, ox + 3 * zoom, oy, [255, 80, 80, 255]); line(sheet, ox, oy - 3 * zoom, ox, oy + 3 * zoom, [255, 80, 80, 255]);
+      return;
+    }
+    const ox = cx0 + 8 * zoom + e.ax * zoom;
+    const oy = cy0 + (cell - 28) * zoom - (e.w_t + e.h_t) * 8 * zoom;
+    blit(sheet, e.img, ox - e.ax * zoom, oy - e.ay * zoom, zoom);
     const d = footprintDiamond(e.w_t, e.h_t);
-    for (let j = 0; j < 4; j++) { const [x0, y0] = d[j], [x1, y1] = d[(j + 1) % 4]; line(sheet, ox + x0 * zoom, oy + y0 * zoom, ox + x1 * zoom, oy + y1 * zoom, [255, 230, 80, 255]); }
+    for (let j = 0; j < 4; j++) { const [x0, y0] = d[j], [x1, y1] = d[(j + 1) % 4]; line(sheet, ox + x0 * zoom, oy + y0 * zoom, ox + x1 * zoom, oy + y1 * zoom, gold); }
   });
   return sheet;
 }

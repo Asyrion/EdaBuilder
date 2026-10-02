@@ -79,7 +79,6 @@ function roadTile(type: 'track' | 'cobble' | 'lantern' | 'glowvine', mask: numbe
   const e = !!(mask & 2); // x+1  (down-right)
   const s = !!(mask & 4); // y+1  (down-left)
   const w = !!(mask & 8); // x-1  (up-left)
-  const grassCols: Col[] = ['grass1', 'grass2', 'grass3'];
   return diamond((u, v, px, py) => {
     const du = Math.abs(u - 0.5);
     const dv = Math.abs(v - 0.5);
@@ -89,7 +88,7 @@ function roadTile(type: 'track' | 'cobble' | 'lantern' | 'glowvine', mask: numbe
     if (s && u > 0.5 - half && u < 0.5 + half && v >= 0.5) inRoad = true;
     if (n && u > 0.5 - half && u < 0.5 + half && v <= 0.5) inRoad = true;
     if (mask === 0) inRoad = du < half + 0.05 && dv < half + 0.05;
-    if (!inRoad) return grassCols[Math.floor(h2(px >> 1, py >> 1, 5) * 3)];
+    if (!inRoad) return null; // the ground tile shows beside the road (iteration 50: painted ground needs no baked grass)
     const r = h2(px, py, 77 + mask);
     // edge shading
     const edge = (e || w ? Math.min(0.5 + half - v, v - (0.5 - half)) : 1) < 0.05 || (n || s ? Math.min(0.5 + half - u, u - (0.5 - half)) < 0.05 : false);
@@ -1452,6 +1451,16 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
   lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
   greatweir: { w: 2, h: 2, height: 10, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 51, runeBand: true, leyLamps: true, waterWheel: true, lanternPost: true, crystal: true },
+  // the nine that drew nothing until iteration 50 (the Carters' Yard, the Lyceum and the Sextons' Chapel also have paintings)
+  cartersyard: { w: 2, h: 2, height: 8, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, lanternPost: true, seed: 67 },
+  chartroom: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'copper', windows: 2, windowRows: 2, door: true, glassDome: true, banner: true, glowWindows: true, seed: 65 },
+  corelantern: { w: 2, h: 2, height: 12, roofH: 4, wall: 'stone', roof: 'flat', windows: 2, windowRows: 2, leyLamps: true, glowWindows: true, crystal: true, orbit: true, seed: 63 },
+  househall: { w: 2, h: 2, height: 16, roofH: 8, wall: 'timber', roof: 'shingle', windows: 3, windowRows: 2, door: true, banner: true, ridgeOrnament: true, lanternPost: true, glowWindows: true, seed: 64 },
+  lyceum: { w: 2, h: 2, height: 16, roofH: 8, wall: 'plaster', roof: 'slate', windows: 2, windowRows: 3, door: true, alembic: true, bottles: true, glowWindows: true, seed: 68 },
+  saltfont: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'flat', crystal: true, runeBand: true, wisps: true, seed: 62 },
+  sextonchapel: { w: 2, h: 2, height: 12, roofH: 8, wall: 'darkstone', roof: 'slate', windows: 1, windowRows: 2, door: true, spire: true, wisps: true, glowWindows: true, seed: 69 },
+  wrightslodge: { w: 2, h: 2, height: 14, roofH: 8, wall: 'bluewash', roof: 'slate', windows: 2, windowRows: 2, door: true, chimney: true, overhang: true, sign: true, glowWindows: true, runeBand: true, seed: 66 },
+  wyrmcourt: { w: 3, h: 3, height: 2, roofH: 1, wall: 'stone', roof: 'none', standingStones: true, runeBand: true, seed: 61 },
 };
 
 function drawSpire(): { p: Painter; glow: Painter; ax: number; ay: number } {
@@ -1712,7 +1721,7 @@ export function generateSprites(): SpriteDef[] {
     p.px(3, 3, 'leaf3');
     p.px(6, 2, 'leaf3');
     p.outline('outline');
-    out.push({ name: 'bush', p, ax: 5, ay: 8 });
+    out.push({ name: 'bush_0', p, ax: 5, ay: 8 }); // bush_N: imported bushes take the next numbers (iteration 50)
   }
   {
     const p = new Painter(12, 12);

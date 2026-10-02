@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 50 (M15 part 1: the painted set, the ground, trees, bushes, mushrooms, hero buildings)
+
+- The import pipeline slices sheets into islands, imports props (trunk-base anchors) and
+  ground (a square texture folded onto the diamond, families sharing a palette), takes a glow
+  hue, sharpens and outlines every building and prop like the procedural set. Fifteen ground
+  diamonds (grass, meadow, forest, hills, shore), twelve trees, six bushes, six mushrooms
+  (three glowing near nodes), the spire, Nexus, Wick-Tower, the four wells, the Depot, the
+  Carters' Yard, the Ossuary, the Sextons' Chapel, the Boneyard and the Lyceum from the
+  paintings. Road tiles no longer bake grass beside the band. The nine buildings that drew
+  nothing (Carters' Yard, Chart-Room, Core Lantern, House-Hall, Lyceum, Salt Font, Sextons'
+  Chapel, Wrights' Lodge, Wyrm-Court) have procedural sprites, held by a test.
+
 ## Done in iteration 49 (the playtest batch: road corners, districts in steps, the demand explained, the Stake that grows)
 
 - A road at a diagonal corner counts for zone tiles, doors and halls; the zone preview hatches
@@ -496,14 +508,13 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-0. **M15 The painted set** (DESIGN §16, §5 style guide, §4.80 pipeline): the remaining
-   inspiration folders through `npm run art` with a hand-set offset and a checked glow each
-   (spires lit and unlit and the Nexus; wells by reach; the graveyard chapel as the Ossuary
-   and the Sextons' Chapel; forge, brickmaker, alchemist and general craft as the Craft
-   levels and the Lyceum; trade houses as Market 3 and the Depot; wooden houses as the
-   Hearth levels); the nine sprite-less buildings drawn; the procedural set restyled by the
-   guide; the Guildhall and the Temple growing with the city like the Stake. A contact
-   sheet of every imported sprite over its diamond; day and night screenshots.
+0. **M15 part 2: the painted set, the zone levels** (DESIGN §16, §4.81): the wooden houses
+   as the Hearth levels, forge, brickmaker, general craft and the alchemist as the Craft and
+   Arcane levels, the trade houses as Market 3, all 1×1 at 34 px with a readability check
+   on the sheet; an imported base sprite shown for every people (the renderer prefers an
+   imported base over the procedural people copy); the Guildhall and the Temple growing with
+   the city like the Stake; glimwood and Gloam trees recoloured from the birches; the
+   procedural restyle by the guide (signs, awnings, smithy sides, kilns, windlass wells).
 1. **M14 part 3: wyrmcraft matured** (DESIGN §15, AUDIT.md §4 part 3): lines that do
    what they say (each line's aura a real, shown effect); the Great Cradle; lodges with a
    capacity; feeding reach; departed dragons that return; roles with a price; champions who

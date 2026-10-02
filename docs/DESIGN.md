@@ -1806,6 +1806,57 @@ at the Village, which opens four. Without the bot's side rule the same code lost
 the folk on five seeds (Vellish 42 at 2,333, Grimmen 42 at 1,100 with Deephold on day 126):
 the corner lots the planner took sat where its roads would go.
 
+### 4.81 M15 part 1, the painted set: the ground, the trees, the bushes and mushrooms, the hero buildings, the nine made visible (iteration 50)
+
+The first half of M15 (§16). Everything here is art: the sim is untouched, and the one-seed
+balance check (Vellish 42) printed the iteration 49 line to the soul, 3,067 folk and the
+Free City on day 60.
+
+**The pipeline's new modes** (`scripts/lib/sprite.mjs`, `scripts/importSprites.mjs`). A
+sheet is sliced into its 8-connected islands, row-major (`islands`; `--islands <src>` lists
+them), and an entry picks one by `island` index or a `rect`. `kind: 'prop'` scales by
+`targetHeight` and anchors at the trunk base (`propAnchor`: the x-centroid of the bottom
+rows, `ay` a hand-set `baseInset` above the last row). `kind: 'ground'` folds a square
+texture onto the 32×16 pixel-centre diamond (`groundDiamond`, the same rule as the
+procedural `diamond()`): each pixel's (u, v) runs along the diamond's edges and samples the
+texture through a mirror fold, so a tile's left edge continues its right edge and every
+neighbour continues it; a `family` of variants shares one median cut (`quantizeShared`) and
+is mean-matched to its first entry, so the per-tile hash shows no patchwork. Glows take a
+`hue` (warm, cool, any), so ley crystals and glowing mushrooms light the night. `anchor:
+'centre'` places a sprite narrower than its footprint. Every building and prop is sharpened
+(an unsharp mask over the box-scaled painting) and given the procedural set's dark 1 px
+outline (`sharpen`, `pad`, `outline`), which is what made the stakes of iteration 49 read
+as paintings beside pixel art and now makes them read as one set: your note. The check
+sheet lays its cells in rows of ten, a prop on a tile's centre with its anchor cross, a
+ground tile as a 3×3 field so a seam would show.
+
+**The ground.** Fifteen diamonds from the square sheets: `grass_0..3`, `meadow_0..2`
+(flowers), `forest_0..2` (dark, leafy, ferns), `hills_0..2` (stones), `shore_0..1` (mud and
+olive dirt; the golden grass tried first read as orange bands along every bank). Each is an
+island of a sheet, cut 14 % from its fringed edges, folded, quantized to 20 colours per
+family. `roadTile` now returns nothing outside the road band, so the painted ground shows
+beside the road instead of the baked procedural grass.
+
+**Trees, bushes, mushrooms.** The twelve tree paintings are `tree_0..11` (oaks and birches
+at 30 px, pines at 36); six bushes `bush_0..5` (the procedural one is `bush_0`'s fallback);
+six mushrooms `mushroom_0..5`, three woodland and three glowing. The renderer reads the
+variant counts from the atlas once (`SpriteAtlas.countVariants`) instead of hard-coding
+four trees and two mushrooms, and forest tiles within 9 of a node take the glowing three,
+as they take glimwood.
+
+**The hero buildings.** `b_spire` (the blue crystal tower, 64 px, centred on its tile),
+`b_nexus` (the spiral tower, 90 px), `b_wicktower` (the dark rune tower); the four wells as
+`b_well`, `b_seep`, `b_tidewell` (cool glow) and `b_cistern` (the runed arch well at 2×2);
+`b_depot` and `b_cartersyard` from the trade houses; `b_ossuary`, `b_sextonchapel` and
+`b_boneyard` from the graveyards (the hand-coded yard stays as the fallback); `b_lyceum`
+from the alchemist's tower. Every one keeps its procedural sprite as the fallback.
+
+**The nine made visible.** `SERVICE_SPECS` gained the Carters' Yard, the Chart-Room, the
+Core Lantern, the House-Hall, the Lyceum, the Salt Font, the Sextons' Chapel, the Wrights'
+Lodge and the Wyrm-Court (a 3×3 ring of standing stones), which had no sprite at all: the
+renderer asked for `b_<key>` and drew nothing, ghost, construction bar and glow included.
+`tests/sprites.test.ts` holds the line: every non-zone catalog key has a sprite.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -1837,9 +1888,11 @@ the corner lots the planner took sat where its roads would go.
 - **Readability first:** roads and zones have flat, high-contrast colours; overlays
   desaturate the scene and tint tiles; hovered tiles and drag rectangles are always
   outlined.
-- **Reference paintings (iteration 49):** `inspirations/` holds forty 1024² paintings in
-  nine folders (founding stakes, ley spires, wells, graveyards, trade houses, wooden houses,
-  and craft houses: forge, brickmaker, alchemist, general craft), used two ways. **As
+- **Reference paintings (iterations 49–50):** `inspirations/` holds fourteen folders of 1024²
+  paintings: single buildings (founding stakes, ley spires, wells, graveyards, trade houses,
+  wooden houses, and craft houses: forge, brickmaker, alchemist, general craft), single trees,
+  and sheets of many items (grass tiles, bushes, mushrooms, animals; the animals wait for M16),
+  used two ways. **As
   sprites:** `npm run art` turns a chosen painting into a game sprite with a hand-set
   footprint offset and a derived night glow (§4.80), merged over the procedural atlas by
   name; the Founding Stake's four halls are the first, M15 (§16) takes the rest. **As the
@@ -2549,7 +2602,16 @@ Two milestones from the playtest notes of iteration 49, slotted after it: M15 fi
 paintings are in hand and the pipeline is built), then M14 part 3, then M16, then M14 parts
 4–5 and M13 part 2.
 
-**M15 The painted set.** One iteration, perhaps two. (1) The pipeline over every folder, a
+**M15 The painted set.** Part 1 ✅ (iteration 50, §4.81): the pipeline's sheet, prop and
+ground modes, the sharpen and outline pass, the ground, the trees, the bushes and mushrooms,
+the hero buildings (spire, Nexus, Wick-Tower, the four wells, the Depot, the Carters' Yard,
+the Ossuary, the Sextons' Chapel, the Boneyard, the Lyceum), and a procedural sprite for the
+nine buildings that had none. Part 2 (next): the zone levels (wooden houses as the Hearth
+levels, forge, brickmaker, general craft and the alchemist as the Craft and Arcane levels,
+trade houses as Market 3, at 34 px with care), the people suffixes (an imported base over the
+procedural people copy), the Guildhall and the Temple growing with the city like the Stake,
+glimwood and Gloam trees recoloured from the birches, and the procedural restyle by the guide.
+The original list, for the record: (1) The pipeline over every folder, a
 hand-set offset and a checked glow per sprite: the ley spires as the spire's lit and unlit
 pair and the Nexus; the wells by water reach (the plain well, the Seep, the Tide-Well, the
 Cistern); the graveyard chapel as the Ossuary and the Sextons' Chapel; the forge, the
@@ -2815,5 +2877,12 @@ playtest of a lakeside town.
 - *Open things in steps, and say so (iteration 49):* eight districts and five charters at
   the Hamlet were a wall of choices nobody explained; two districts and two charters, a card
   with three steps, and a line in each later milestone toast make the same system a path.
+- *The ground is a texture, not a sprite (iteration 50):* a ground tile is one of thousands
+  of neighbours; what matters is that its edges continue, its family shares a palette and
+  nothing in it repeats loudly. A texture folded onto the diamond gives that; a painted tile
+  cut out and pasted would give seams.
+- *Outline everything (iteration 50):* the procedural set's dark edge is the thing that made
+  the imported stakes look pasted on; the same edge, and a sharpen pass, make a painting
+  and a procedural sprite one set.
 - *A corner is a door (iteration 49):* the four-side rule was invisible and wrong at every
   road end and bend; a rule the player cannot see must at least be the generous one.

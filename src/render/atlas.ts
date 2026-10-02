@@ -40,6 +40,13 @@ export class SpriteAtlas {
     return name in this.sprites;
   }
 
+  /** How many `${prefix}0..N-1` sprites the atlas holds (tree_, bush_, mushroom_: the imported set may add more than the procedural one). */
+  countVariants(prefix: string): number {
+    let n = 0;
+    while (this.has(`${prefix}${n}`)) n++;
+    return n;
+  }
+
   static fromGenerated(): SpriteAtlas {
     const defs = generateSprites();
     const atlas = new SpriteAtlas();

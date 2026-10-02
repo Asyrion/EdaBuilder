@@ -164,7 +164,7 @@ describe('The Founding Stake that grows', () => {
     for (const k of [0, 1, 2, 3]) {
       const e = manifest.sprites[`b_stake_s${k}`];
       expect(e.file).toBe(`sprites/b_stake_s${k}.png`);
-      expect(e.w).toBe(66);
+      expect(e.w).toBe(68); // 66 for the 2×2 footprint, plus the dark outline's pixel each side (iteration 50)
       expect(typeof e.ax).toBe('number');
       expect(typeof e.ay).toBe('number');
     }
