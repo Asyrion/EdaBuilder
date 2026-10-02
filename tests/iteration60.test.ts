@@ -18,7 +18,7 @@ import { generateSprites } from '../src/render/sprites';
 import { BUILDINGS } from '../src/sim/catalog';
 import { AgentKind, RoadType, Terrain, idx, isWater, type Building, type GameState } from '../src/sim/types';
 import {
-  FISH_HAPPY, FISH_PRICE, FORD_COST, THATCH_DAYS, THATCH_HAPPY, bodyOf, catchOf, dailyFish, dailyFords, dailyReeds, dailyShoals, dailyWater,
+  FISH_HAPPY, FISH_PRICE, FORD_COST, SHOAL_REGROW, THATCH_DAYS, THATCH_HAPPY, bodyOf, catchOf, dailyFish, dailyFords, dailyReeds, dailyShoals, dailyWater,
   ensureShoals, fishedOut, reedBeds, fordClosed, forgetWaters, isFordTile, lakeDistAt, shoalCap, syncBoats, thatched, watersOf,
 } from '../src/sim/water';
 import { flatten } from './helpers';
@@ -93,7 +93,7 @@ describe('Fish', () => {
     s.day = 35;
     dailyShoals(s);
     const grew = s.water.fish[b] - cap / 2;
-    expect(grew).toBeCloseTo(0.08 * (cap / 2) * 0.5, 5);
+    expect(grew).toBeCloseTo(SHOAL_REGROW[1] * (cap / 2) * 0.5, 5);
     s.water.fish[b] = cap / 2;
     s.day = 95;
     dailyShoals(s);
@@ -118,6 +118,16 @@ describe('Fish', () => {
     for (let d = 0; d < 120 && !fishedOut(s, b); d++) { dailyShoals(s); dailyFish(s); }
     expect(fishedOut(s, b)).toBe(true);
     expect(catchOf(s, a)).toBeLessThan(first * 0.25);
+  });
+
+  it('one hut alone holds its lake: the shoal settles well above fished out', () => {
+    const { s, lake } = valley(15);
+    const h = hut(s, lake.x - 7, lake.y);
+    const b = bodyOf(s, h);
+    s.day = 65;
+    for (let d = 0; d < 300; d++) { dailyShoals(s); dailyFish(s); }
+    expect(fishedOut(s, b)).toBe(false);
+    expect(s.water.fish[b] / shoalCap(ensureShoals(s), b)).toBeGreaterThan(0.4);
   });
 
   it('fish spoil on the third day with no market or smokehouse; a market within 12 takes them and lifts the hearths near it', () => {
