@@ -349,6 +349,20 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 61 (the bot's depot, the hunt and the fish)
+
+- **The bot saves for a depot** once the hides, trophies, smoked fish, full works and relics waiting for the Gloam road
+  would fetch half its price, and holds the price back like a hall's. Before, it was the seventeenth service in a queue
+  that never emptied. Now 10 of 12 bot runs stand one, against 2 of 12 on main.
+- **Imports only when the ledger carries the bill twice over.** With more depots, the old rule ran a 2,700-a-day bill in
+  a Veshari brownout.
+- **The bot thatches** with a Reed-Cutters' Hut (23–166 homes a run). It raises a Weir where its hut fishes a shoal
+  under half, or where one Weir holds five fords, and bridges its other fords in the second half of a Hush.
+- **`balance.ts`** prints the depot's day, the road's crowns, the cutters, the Weirs and the bridges. Its `null` flag
+  draws one extra roll on day 10.
+- The six seeds were each run four ways (main and branch, each with and without the extra roll). The branch lies inside
+  main's spread or above it on every seed (DESIGN §4.92).
+
 ## Done in iteration 60 (M16 part 2: the water; M16 closed)
 
 - **Shoals and the Fishers' Hut.** Every river and lake holds a shoal that regrows by the season. A hut on the bank
@@ -656,10 +670,13 @@
   - **Variance:** the six runs swing a lot between passes. A one-line change to the bot sends
     every later roll down another path, so a single seed per people is a thin measure. A wider
     table (three seeds a people) would show the bot's levers better than any one run.
-- **The bot's hunt** (iteration 58). Vellish 42 ends with 1,618 folk against 1,942. With the bot's
-  hunt switched off it is bit-identical to §4.86, so the change is the one game lodge it raised and
-  the path the run took from there. Five of six bot cities have no depot, so their hides are never
-  sold (DESIGN §4.89).
+- **The bot's hunt** (iterations 58 and 61). The bot's lodges stand on hounds in every run, so its hunt
+  crowns are small (0–517 a run) and come from hound lodges switched to game between packs. Since
+  iteration 61 ten of twelve bot runs stand a depot (DESIGN §4.92).
+- **The Tallowkin bot stands no depot** (iteration 61). It wants one from day 55 to 95 and holds the
+  price back, but its Wick-Towers and spires read the treasury, not the purse, and spend it first.
+- **No bot Weir in the runs** (iteration 61). No bot hut fishes its shoal under half, and no five fords
+  lie in one Weir's reach on the six seeds; the rule is held by tests only.
 - **Head-on paintings and a road behind.** Since iteration 59 every building turns toward its road
   by a mirror. The painted zone houses drawn head-on (most level-2 hearths, the craft levels, the
   arcane level 2) keep their front to the viewer, so on a road behind them (their upper edges) they
@@ -728,14 +745,14 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **The bot's depot, the hunt and the fish** (from iterations 58 and 60): five of the six bot cities
-   stand no depot, so their hides, trophies and smoked fish are never sold (Vellish 42 smoked 424 fish
-   and sold none); the hunt and the smokehouse pay only where a depot stands. The bot also never
-   thatches, builds a Weir or bridges a ford.
-2. **A balance measure that can see a change** (from iteration 60): one extra roll of the main stream
-   on day 10 moves a seed by up to half its folk and two gates (DESIGN §4.91), so the six-run table
-   cannot tell a tenth's cost from luck. Run each seed twice (the second with one extra roll) and
-   more seeds a people, and report the spread.
+1. **A balance measure that can see a change** (from iteration 60): one extra roll of the main stream
+   on day 10 moves a seed by up to half its folk and two gates (DESIGN §4.91; Vellish 42 is 2,622 or 1,288 on main),
+   so the six-run table cannot tell a tenth's cost from luck. `balance.ts` has the `null` flag since iteration 61. What
+   is left: more seeds a people, and the spread reported by a script that runs the table.
+2. **The depot's road does not pay** (from iteration 61, proposed): a depot carries 8 goods a day at 2–4 crowns against
+   25 a day of upkeep, so it pays only on trophies and relics. A hunt or a fishery sold through it loses a little
+   (DESIGN §4.92). A sim decision for the user: more carts a depot, a lower upkeep, or the hunt's goods outside the
+   carts' budget like the trophies.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

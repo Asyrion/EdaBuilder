@@ -20,6 +20,7 @@ npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
 npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
+npx tsx scripts/balance.ts 42 150 - vellish null   # the same run with one extra roll on day 10: the noise yardstick
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
@@ -149,8 +150,11 @@ Charter as `.json`.
   a headless bot player for balance runs and a vitest suite. The bot plays the levers a player
   has: it saves for one goal at a time (its people's hall, a cradle, the cheapest mana) and takes
   the Crown's loan as a bridge to a hall. It zones what it can light, moves the tithe off the
-  hearths, and sets the curfew, draughts and imports. It walls the Gloam side, stands a depot and
-  a cradle, and answers each tale by playing every choice on a copy of the city.
+  hearths, and sets the curfew, draughts and imports. It walls the Gloam side and stands a cradle.
+  It saves for a depot once the hides, trophies, smoked fish and full works waiting for the Gloam
+  road would fetch half its price. It thatches with a Reed-Cutters' Hut, raises a Weir where its
+  Fishers' Hut fishes the shoal down, and bridges its fords before the Thaw's high water. It answers
+  each tale by playing every choice on a copy of the city.
 - Procedural terrain: river, lake, forests, meadows, hills, 4–6 ley nodes, Gloam rim.
 - Roads (3 tiers, bridges), 4 zone types, buildings that level up 1→3 with visibly
   different sprites, 20+ civic buildings, a wonder.

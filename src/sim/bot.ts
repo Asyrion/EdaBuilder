@@ -1,5 +1,5 @@
 import { GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
-import { FISH_MARKET_REACH, SMOKE_REACH, bodyOf, ensureShoals, fishingWater, shoalCap } from './water';
+import { FISH_MARKET_REACH, REED_REACH, SMOKE_KEEP, SMOKE_REACH, THATCH_REACH, WEIR_REACH, bodyOf, ensureShoals, fishingWater, isFordTile, reedBeds, shoalCap, weirHolds } from './water';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones what it can light, keeps buildings lit and
@@ -7,13 +7,14 @@ import { FISH_MARKET_REACH, SMOKE_REACH, bodyOf, ensureShoals, fishingWater, sho
  * buys services as they unlock. Deliberately simple; it is a test tool, not AI (DESIGN 4.86).
  */
 import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
-import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewWall, roadPath, setTax, terraform, wallTileCost } from './actions';
+import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, setTax, terraform, wallTileCost } from './actions';
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
-import { HUNT_REACH, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
+import { HUNT_REACH, LODGE_MEAT_KEEP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
+import { RELIC_KEEP, RELIC_PRICE, craftStockCap } from './growth';
 import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
-import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
-import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, touchesTerrain } from './world';
+import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
+import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
 import { resolveEvent } from './events';
 import { districtMarkets, lineNest, setRole } from './wyrmcraft';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
@@ -31,7 +32,7 @@ export interface BotOptions {
 }
 
 /** The one large purchase the bot is saving for: its price is held back from growth until it is bought. */
-export interface BotGoal { kind: 'link' | 'font' | 'deepen' | 'mill' | 'hall' | 'cradle'; key: string; cost: number; mana: boolean }
+export interface BotGoal { kind: 'link' | 'font' | 'deepen' | 'mill' | 'hall' | 'cradle' | 'depot'; key: string; cost: number; mana: boolean }
 
 /** Zone buildings standing, and how many of them are dark. */
 function zoneLight(s: GameState): { zone: number; dark: number } {
@@ -52,6 +53,11 @@ export class Bot {
   private houndDay = -99;
   quarryChanges = 0;
   fishBuilt = 0; // huts and smokehouses the bot raised (iteration 60)
+  /** Iteration 61: the day the bot's depot went up, reed-cutters and Weirs raised, ford tiles bridged. */
+  depotDay = -1;
+  cuttersBuilt = 0;
+  weirsBuilt = 0;
+  fordsBridged = 0;
   private lastExpand = -99;
   /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
   goal: BotGoal | null = null;
@@ -94,9 +100,12 @@ export class Bot {
     this.setEdicts();
     this.hunt();
     this.fish();
+    this.thatch();
+    this.fords();
     this.goal = this.pickGoal();
-    // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can
-    this.reserve = this.goal && (this.goal.kind === 'hall' || s.brownout > 0.05) ? this.goal.cost : 0;
+    // the price is held back from growth only when it is urgent: a hall, or a brownout past a twentieth; a ley merely tight buys its Font when it can.
+    // A depot is held back too (iteration 61): unheld, the Tallowkin wanted one for forty days and growth spent the purse every morning
+    this.reserve = this.goal && (this.goal.kind === 'hall' || this.goal.kind === 'depot' || s.brownout > 0.05) ? this.goal.cost : 0;
     this.pursueGoal();
     // the Crown's loan goes back once the purse can carry it and nothing is being saved for; while it is out, growth waits for that
     if (s.loan > 0 && !this.goal && s.treasury >= s.loan + 2000) repayLoan(s);
@@ -189,7 +198,10 @@ export class Bot {
     if (has('imports')) {
       const markets = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Market && b.state === 'ok').length;
       const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
-      if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200) setEdict(s, 'imports', true);
+      // the bill: up to 8 goods for each dry market at twice the road's price; on only while the ledger carries it twice over (iteration 61:
+      // with the depot standing in more cities, a brownout that dried 37 markets ran a bill of 2,700 a day against a ledger of 480)
+      const bill = s.goodsShort * 8 * s.trade.priceGoods * 2;
+      if (depot && s.goodsShort > Math.max(3, markets * 0.4) && net > 200 && bill <= net / 2) setEdict(s, 'imports', true);
       else if (s.goodsShort === 0 || net < 0) off('imports');
     }
   }
@@ -279,6 +291,14 @@ export class Bot {
       return;
     }
     const hut = huts[0];
+    // a Weir on the hut's water once its shoal is fished under half its cap: the pool doubles the regrowth (iteration 61)
+    if (hut && canBuild(s, 'weir')) {
+      const w = ensureShoals(s);
+      const body = bodyOf(s, hut);
+      const weirs = s.buildings.filter((b) => b && b.kind === 'weir') as Building[];
+      const def = BUILDING_BY_KEY.weir;
+      if (body >= 0 && s.water.fish[body] < shoalCap(w, body) * 0.5 && !weirs.some((b) => bodyOf(s, b) === body) && this.spendable() > costOf(s, def) + 1000 && s.ledger.net - def.upkeep > 100) this.placeWeir(hut.x, hut.y, 10, body);
+    }
     if (!hut || s.buildings.some((b) => b && b.kind === 'smokehouse') || !canBuild(s, 'smokehouse')) return;
     const depot = s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
     if (!depot && (hut.spoiled ?? 0) < 2) return;
@@ -286,6 +306,102 @@ export class Bot {
     if (this.spendable() > costOf(s, def) + 1000 && s.ledger.net - def.upkeep > 100) {
       if (this.placeNear('smokehouse', hut.x, hut.y, SMOKE_REACH - 1, false, (x, y) => Math.hypot(x - hut.x, y - hut.y) <= SMOKE_REACH)) this.fishBuilt++;
     }
+  }
+
+  /** What the goods held for the Gloam road would fetch at today's prices: hides, salted meat and trophies on the lodges, smoked
+   *  fish over the smokehouse's keep, full works over half their store (as `dailyTrade` sells them), and loose relics (iteration 61). */
+  waitingForRoad(): number {
+    const s = this.s;
+    const t = s.trade;
+    let v = Math.max(0, s.relicStock - RELIC_KEEP) * RELIC_PRICE;
+    forEachBuilding(s, (b) => {
+      if (b.state !== 'ok') return;
+      const def = BUILDING_BY_KEY[b.kind];
+      if (b.kind === 'hunterslodge') v += b.stock * (t.priceHides ?? 0) + Math.max(0, Math.floor((b.meat ?? 0) - LODGE_MEAT_KEEP)) * (t.priceMeat ?? 0) + (b.trophies ?? 0) * (t.priceTrophy ?? 0);
+      else if (b.kind === 'smokehouse') v += Math.max(0, b.stock - SMOKE_KEEP) * (t.priceFish ?? 0);
+      else if ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8) v += (b.stock - craftStockCap(b) * 0.5) * t.priceGoods;
+    });
+    return v;
+  }
+
+  /**
+   * Thatch (iteration 61): a Reed-Cutters' Hut where the shore has ten reed beds within its reach and eight level-1 homes stand
+   * within its thatching reach; a second for homes the first cannot reach, after day 90. +3 to a street of homes for 5 a day.
+   */
+  private thatch(): void {
+    const s = this.s;
+    if (s.day < 15 || s.day % 3 !== 2 || !canBuild(s, 'reedcutters')) return;
+    const cutters = s.buildings.filter((b) => b && b.kind === 'reedcutters') as Building[];
+    if (cutters.length >= 2 || (cutters.length === 1 && s.day < 90)) return;
+    const def = BUILDING_BY_KEY.reedcutters;
+    if (this.spendable() < costOf(s, def) + 1000 || s.ledger.net - def.upkeep < 100) return;
+    // the level-1 homes no cutters reach yet
+    const homes: { x: number; y: number }[] = [];
+    forEachBuilding(s, (b) => {
+      if (BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || b.state !== 'ok' || b.level !== 1) return;
+      if (cutters.some((c) => Math.hypot(c.x - b.x, c.y - b.y) <= THATCH_REACH)) return;
+      homes.push({ x: b.x, y: b.y });
+    });
+    if (homes.length < 8) return;
+    const ok = (x: number, y: number) => homes.filter((h) => Math.hypot(h.x - x, h.y - y) <= THATCH_REACH).length >= 8 && reedBeds(s, { x, y, w: 1, h: 1 } as Building) >= 10;
+    if (this.placeNear('reedcutters', this.cx, this.cy, this.radius + REED_REACH, false, ok)) this.cuttersBuilt++;
+  }
+
+  /** The bot's unheld fords: Dirt Track tiles over a narrow river that no Weir holds at high water. */
+  private unheldFords(): number[] {
+    const s = this.s;
+    const out: number[] = [];
+    for (let i = 0; i < s.road.length; i++) if (s.road[i] && isFordTile(s, i) && !weirHolds(s, i)) out.push(i);
+    return out;
+  }
+
+  /** A Weir on the best spot touching `body` (any water with body −1) within `r` of (x, y): the most unheld fords in its reach, then the nearest. */
+  private placeWeir(x: number, y: number, r: number, body: number, minFords = 0): boolean {
+    const s = this.s;
+    const fords = this.unheldFords();
+    let best: { x: number; y: number; score: number } | null = null;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        const px = x + dx;
+        const py = y + dy;
+        if (!inBounds(px, py) || canPlaceBuilding(s, 'weir', px, py)) continue;
+        if (body >= 0 && bodyOf(s, { x: px, y: py, w: 1, h: 1 } as Building) !== body) continue;
+        const held = fords.filter((i) => Math.hypot((i % MAP_W) - px, ((i / MAP_W) | 0) - py) <= WEIR_REACH).length;
+        if (held < minFords) continue;
+        const score = held * 100 - Math.hypot(dx, dy);
+        if (!best || score > best.score) best = { x: px, y: py, score };
+      }
+    if (!best || !placeBuilding(s, 'weir', best.x, best.y).ok) return false;
+    this.weirsBuilt++;
+    return true;
+  }
+
+  /**
+   * The fords (iteration 61): in the second half of a Hush, before the Thaw's high water, a Weir where one bank spot holds five
+   * unheld fords or more (five bridges cost what a Weir does), else the nearest crossing bridged with a cobbled road, one a day.
+   * A bridge is a street: it reads the treasury, as the grid does, not the purse the goal leaves (the Font's reserve held every
+   * bridge back in the first draft).
+   */
+  private fords(): void {
+    const s = this.s;
+    if (s.milestone < 1 || seasonOf(s) !== 3 || s.day % DAYS_PER_SEASON < 15) return;
+    const fords = this.unheldFords();
+    if (!fords.length) return;
+    const weir = BUILDING_BY_KEY.weir;
+    if (canBuild(s, 'weir') && fords.length >= 5 && this.spendable() >= costOf(s, weir) + 1500) {
+      // the cluster nearest the centre first: a Weir within WEIR_REACH of five of its fords
+      const sorted = [...fords].sort((a, b) => Math.hypot((a % MAP_W) - this.cx, ((a / MAP_W) | 0) - this.cy) - Math.hypot((b % MAP_W) - this.cx, ((b / MAP_W) | 0) - this.cy));
+      for (const i of sorted.slice(0, 6)) if (this.placeWeir(i % MAP_W, (i / MAP_W) | 0, WEIR_REACH, -1, 5)) return;
+    }
+    // the crossing nearest the centre: the ford tiles joined to it
+    const set = new Set(fords);
+    const start = fords.reduce((a, b) => (Math.hypot((b % MAP_W) - this.cx, ((b / MAP_W) | 0) - this.cy) < Math.hypot((a % MAP_W) - this.cx, ((a / MAP_W) | 0) - this.cy) ? b : a));
+    const run = [start];
+    set.delete(start);
+    for (let k = 0; k < run.length; k++) for (const j of [run[k] - 1, run[k] + 1, run[k] - MAP_W, run[k] + MAP_W]) if (set.has(j)) { set.delete(j); run.push(j); }
+    const cost = previewRoad(s, RoadType.Cobble, run).cost;
+    if (s.treasury < cost + 800 + Math.max(0, s.loan)) return;
+    if (buildRoad(s, RoadType.Cobble, run).ok) this.fordsBridged += run.length;
   }
 
   /** The one large purchase worth saving for: the cheapest mana when the ley runs short, else the people's hall. */
@@ -302,6 +418,10 @@ export class Bot {
     const cradle = factionKey(s, 'cradle');
     const def = BUILDING_BY_KEY[cradle];
     if (canBuild(s, cradle) && this.countKind(cradle) === 0 && (this.goalBlocked.cradle ?? -1) < s.day && s.manaSupply - s.manaDemand >= def.manaUse + 5 && s.ledger.net >= 300) return { kind: 'cradle', key: cradle, cost: costOf(s, def) + 200, mana: false };
+    // a depot once what waits for the Gloam road would fetch half its price (iteration 61: as a service it came seventeenth in a
+    // queue that never emptied, and five cities in six sold no hide, trophy or smoked fish in 150 days)
+    const depot = BUILDING_BY_KEY.depot;
+    if (canBuild(s, 'depot') && this.countKind('depot') === 0 && (this.goalBlocked.depot ?? -1) < s.day && s.ledger.net - depot.upkeep >= 100 && this.waitingForRoad() >= costOf(s, depot) / 2) return { kind: 'depot', key: 'depot', cost: costOf(s, depot) + 300, mana: false };
     // then the cheapest mana when the ley runs short
     const short = s.brownout > 0.02 || s.manaDemand > s.manaSupply * 0.9;
     if (!short) return null;
@@ -335,10 +455,11 @@ export class Bot {
     if (s.treasury < g.cost) return;
     let done = false;
     if (g.kind === 'link') return; // linkNodes buys the sector and raises the spire
-    if (g.kind === 'font' || g.kind === 'hall' || g.kind === 'cradle') done = g.key === 'greatweir' ? this.placeNear(g.key, this.cx, this.cy, this.radius) : this.placeService(g.key);
+    if (g.kind === 'font' || g.kind === 'hall' || g.kind === 'cradle' || g.kind === 'depot') done = g.key === 'greatweir' ? this.placeNear(g.key, this.cx, this.cy, this.radius) : this.placeService(g.key);
     else if (g.kind === 'deepen') { const f = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y); done = f >= 0 && !canDeepenNode(s, f) && !deepenNode(s, f); }
     else if (g.kind === 'mill') done = this.placeNear('torrentmill', this.cx, this.cy, this.radius);
     const tag = g.kind === 'hall' ? g.key : g.kind;
+    if (done && g.kind === 'depot') this.depotDay = s.day;
     if (done) { this.goal = null; this.reserve = 0; this.goalTries[tag] = 0; return; }
     this.goalTries[tag] = (this.goalTries[tag] ?? 0) + 1;
     if (this.goalTries[tag] >= 5) { this.goalBlocked[tag] = s.day + 20; this.goalTries[tag] = 0; this.goal = null; this.reserve = 0; }

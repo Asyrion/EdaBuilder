@@ -376,7 +376,14 @@ export function fordClosedToday(state: GameState, i: number): boolean {
   const x = i % MAP_W;
   const y = (i / MAP_W) | 0;
   if (!highWater(state) && !flooding(state) && !floodedAt(state, x, y)) return false;
-  return !state.buildings.some((b) => b && b.kind === 'weir' && b.state === 'ok' && Math.hypot(b.x - x, b.y - y) <= WEIR_REACH);
+  return !weirHolds(state, i);
+}
+
+/** Whether a standing Weir within WEIR_REACH holds the ford at tile i open at high water. */
+export function weirHolds(state: GameState, i: number): boolean {
+  const x = i % MAP_W;
+  const y = (i / MAP_W) | 0;
+  return state.buildings.some((b) => b && b.kind === 'weir' && b.state === 'ok' && Math.hypot(b.x - x, b.y - y) <= WEIR_REACH);
 }
 
 const closedSets = new WeakMap<GameState, Set<number>>();
