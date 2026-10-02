@@ -124,7 +124,16 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
   return true;
 }
 
+/** The Lantern of the Cores takes the first CORES_ABSORB of a surge's overdraw, then cracks for CORES_BROKEN_DAYS (iteration 53). */
+export const CORES_ABSORB = 30;
+export const CORES_BROKEN_DAYS = 10;
 export function dailySurge(state: GameState): void {
+  // a cracked Lantern of the Cores heals a day at a time
+  forEachBuilding(state, (b) => {
+    if ((b.broken ?? 0) <= 0) return;
+    b.broken = (b.broken ?? 0) - 1;
+    if (b.broken === 0) { markDirty(state, b.x, b.y); pushMessage(state, `The Lantern of the Cores at (${b.x},${b.y}) is whole again: the three cores light and the housing hums.`, 'good', true, { x: b.x, y: b.y }); }
+  });
   const threshold = (edictOn(state, 'wardens') ? 1.5 : 1.25) + (hallActive(state, 'wrightslodge') ? 0.15 : 0);
   // a Nexus store soaks up the peak: the count runs only once the store is spent
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20 && state.manaStorage <= 0.5) {
@@ -139,6 +148,20 @@ export function dailySurge(state: GameState): void {
   if (state.overdrawDays >= 5) {
     state.overdrawDays = -4;
     state.stats.brownoutOpen = 0;
+    // a whole Lantern of the Cores takes the first 30 of the overdraw and cracks; a surge no bigger than that burns nothing
+    const cores = state.buildings.find((b) => b && b.kind === 'corelantern' && b.state === 'ok' && (b.broken ?? 0) <= 0) ?? null;
+    if (cores) {
+      const deficit = state.manaDemand - state.manaSupply;
+      cores.broken = CORES_BROKEN_DAYS;
+      markDirty(state, cores.x, cores.y);
+      effects.push({ x: cores.x, y: cores.y, kind: 'surge', tick: state.tick });
+      if (deficit <= CORES_ABSORB) {
+        state.stats.surgesAbsorbed++;
+        pushMessage(state, `The Lantern of the Cores at (${cores.x},${cores.y}) takes the surge: the three cores flare white and crack. Nothing else burns; the Lantern is dark for ${CORES_BROKEN_DAYS} days.`, 'warn', true, { x: cores.x, y: cores.y });
+        return;
+      }
+      pushMessage(state, `The Lantern of the Cores at (${cores.x},${cores.y}) drinks ${CORES_ABSORB} of an overdraw of ${Math.round(deficit)} and cracks; the rest breaks loose.`, 'bad', true, { x: cores.x, y: cores.y });
+    }
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {

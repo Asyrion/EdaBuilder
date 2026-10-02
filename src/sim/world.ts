@@ -5,7 +5,7 @@ import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
-import { assignAspects, aspectAt, flooding } from './weave';
+import { assignAspects, aspectAt, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -109,6 +109,9 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     dragons: [],
     nextDragonId: 1,
     materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
+    departed: [],
+    burnWyrmfire: true,
+    dustLit: new Uint16Array(n),
     wyrm: newWyrm(chooseWyrmNode(t.nodes, t.founding)),
     airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
     fenNex: 0,
@@ -133,7 +136,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, wyrmTributes: 0, wyrmFlyovers: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -489,7 +492,7 @@ export function waterRadiusOf(state: GameState, b: Building): number {
   if (b.kind === 'well') {
     const wd = state.waterDist[idx(b.x, b.y)];
     if (wd > 8) r = 4; // dry land: the Cistern's reason
-    if (wd <= 2 && flooding(state)) return 0; // fouled by the flood
+    if (wd <= 2 && floodedAt(state, b.x, b.y)) return 0; // fouled by the flood, or the Weir's open sluice
   }
   if (aspectAt(state, b.x, b.y) === 'tide') r += 2;
   return r;

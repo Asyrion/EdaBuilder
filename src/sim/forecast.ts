@@ -1,9 +1,11 @@
 /** The Astral Observatory's forecast: what the ley says is coming in the next five days. */
+import { boutOdds, nextBoutDay, ringChampion } from './wyrmcraft';
+import { wyrmEats } from './wyrm';
 import { DAYS_PER_SEASON, SEASON_NAMES, type GameState } from './types';
 import { seasonOf } from './world';
 import { fontsRunHot } from './hazards';
 import { RIOT_DAYS } from './events';
-import { spiresAtWyrm, WYRM_WAKE_PER_SPIRE, WYRM_EATS, WYRM_SULK_AFTER } from './wyrm';
+import { spiresAtWyrm, WYRM_WAKE_PER_SPIRE, WYRM_SULK_AFTER } from './wyrm';
 import { pressureWord } from './weave';
 
 export const FORECAST_DAYS = 5;
@@ -46,7 +48,7 @@ export function forecast(s: GameState): ForecastLine[] {
       if (dd > 0 && dd <= FORECAST_DAYS && at >= 30) out.push({ text: `${name[0].toUpperCase() + name.slice(1)} in ${dd} day${dd === 1 ? '' : 's'}.`, kind: 'info' });
     }
   }
-  if (dayOfSeason < 15 && 15 - dayOfSeason <= FORECAST_DAYS && s.buildings.some((b) => b && b.kind === 'ring') && s.dragons.some((d) => d.role === 'champion')) out.push({ text: `A bout in the Wyrm-Ring in ${15 - dayOfSeason} day${15 - dayOfSeason === 1 ? '' : 's'}.`, kind: 'info' });
+  if (dayOfSeason < 15 && 15 - dayOfSeason <= FORECAST_DAYS && s.buildings.some((b) => b && b.kind === 'ring') && s.dragons.some((d) => d.role === 'champion')) { const ch = ringChampion(s); out.push({ text: `A bout in the Wyrm-Ring in ${15 - dayOfSeason} day${15 - dayOfSeason === 1 ? '' : 's'}${ch ? `: ${ch.name}'s odds are ${Math.round(boutOdds(s, ch, nextBoutDay(s)).chance * 100)} %` : ''}.`, kind: 'info' }); }
   const w = s.wyrm;
   if (w.state === 'sleeping' && w.waking > 0) {
     const rate = Math.min(6, spiresAtWyrm(s) * WYRM_WAKE_PER_SPIRE);
@@ -58,7 +60,7 @@ export function forecast(s: GameState): ForecastLine[] {
     const d = w.tributeDay - s.day;
     if (d <= FORECAST_DAYS) out.push({ text: d <= 0 ? 'The wyrm wants its tribute today.' : `The wyrm asks its tribute in ${d} day${d === 1 ? '' : 's'}.`, kind: 'warn' });
   } else if (w.state === 'bound' && w.unfed > 0) {
-    out.push({ text: `The guardian has gone ${w.unfed} day${w.unfed === 1 ? '' : 's'} without its ${WYRM_EATS} goods; it sulks after ${WYRM_SULK_AFTER}.`, kind: w.unfed >= WYRM_SULK_AFTER - 3 ? 'bad' : 'warn' });
+    out.push({ text: `The guardian has gone ${w.unfed} day${w.unfed === 1 ? '' : 's'} without its ${wyrmEats(s)} goods; it sulks after ${WYRM_SULK_AFTER}.`, kind: w.unfed >= WYRM_SULK_AFTER - 3 ? 'bad' : 'warn' });
   }
   out.push({ text: `The Gloam is ${pressureWord(s.gloamPressure)}${s.gloamPressure >= 0.45 ? ': quiet the dead and spread faith coverage to ease it' : ''}.`, kind: s.gloamPressure >= 0.65 ? 'bad' : s.gloamPressure >= 0.45 ? 'warn' : 'info' });
   if (!out.length) out.push({ text: 'Clear skies in the ley. Nothing stirs this week.', kind: 'good' });

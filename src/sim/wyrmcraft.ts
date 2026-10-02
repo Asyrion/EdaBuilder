@@ -1,12 +1,16 @@
 /**
- * Wyrmcraft I: dragons raised from eggs in a Wyrm-Cradle. Egg -> hatchling -> drake in this
- * iteration; wyvern and wyrm stages arrive with the sky layer. See DESIGN.md 8.6.
+ * Wyrmcraft: dragons raised from eggs in a Wyrm-Cradle. Egg -> hatchling -> drake -> wyvern (-> wyrm for a trueblood).
+ * Iteration 53 (M14 part 3) gave the cradle a ceiling (the Great Cradle, lodge seats, a feeding reach), hunger a price
+ * (a stage lost at ten days, a dragon that returns wild), roles a cost and the bout its odds. See DESIGN.md 8.6 and 4.84.
  */
 import { aspectAt } from './weave';
 import { BUILDING_BY_KEY } from './catalog';
-import { AgentKind, Zone, idx, type Building, type Dragon, type DragonLine, type DragonRole, type GameState, type Training } from './types';
+import { AgentKind, DAYS_PER_SEASON, TICKS_PER_DAY, Zone, idx, type Building, type DepartedDragon, type Dragon, type DragonLine, type DragonRole, type GameState, type Training } from './types';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
+import { edictOn } from './edicts';
+import { igniteBuilding } from './hazards';
+import { milestonesOf } from '../data/factions';
 
 export const STAGE_NAMES = ['egg', 'hatchling', 'drake', 'wyvern', 'wyrm'];
 export const STAGE_DAYS = [30, 20, 40, 60, 120];
@@ -20,6 +24,30 @@ export function stageCap(d: Dragon): number {
   return d.trueblood ? 4 : Math.min(MAX_STAGE_NOW, maxStage(d.line));
 }
 export const WYRM_EATS_GOODS = 20;
+/** A cradle feeds from markets this near (iteration 53); a warden eats from its district instead. */
+export const FEED_REACH = 12;
+/** A Tamer's Lodge within LODGE_REACH of a cradle seats this many dragons. */
+export const LODGE_SEATS = 4;
+export const LODGE_REACH = 10;
+/** Unfed this many days, a drake or older loses a stage; its mood falls HUNGER_MOOD a day meanwhile. */
+export const REGRESS_AFTER = 10;
+export const HUNGER_MOOD = 6;
+/** The Great Cradle: four slots, four more mana, raised at the people's sixth milestone. */
+export const GREAT_CRADLE_COST = 4000;
+export const GREAT_CRADLE_MANA = 4;
+export const GREAT_CRADLE_MILESTONE = 6;
+/** An egg in a nest lined with eggshell warms this much faster. */
+export const EGGSHELL_HATCH = 1.25;
+/** Wyrmfire burned a day for the Craft bonus (the city toggle) and by each lit Forge. */
+export const WYRMFIRE_BURN = 0.05;
+export const FORGE_BURN = 0.1;
+/** The Scale-Mail edict: scale a day, and the unrest it takes off. */
+export const SCALEMAIL_PER_DAY = 0.05;
+export const SCALEMAIL_UNREST = 0.05;
+/** A returned dragon's tribute: crowns, or goods when the purse cannot, times its stage. */
+export const RETURN_TRIBUTE = 500;
+export const RETURN_GOODS = 60;
+export const RETURN_FIRES_REACH = 12;
 export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: string }> = {
   ember: { name: 'Ember', scale: 6, desc: 'brick red, breathes wyrmfire; a delver warms the seams' },
   bone: { name: 'Bone', scale: 8, desc: 'ivory over black; the restless lie down near it' },
@@ -45,8 +73,26 @@ export function cradleAccepts(b: Building, line?: DragonLine): boolean {
   const lines = CRADLE_LINES[b.kind];
   return !lines || !line || lines.includes(line);
 }
+/** Two slots; four for a Great Cradle (level 2). */
 export function cradleCapacity(b: Building): number {
-  return isCradle(b.kind) ? 2 : 0;
+  return isCradle(b.kind) ? (b.level >= 2 ? 4 : 2) : 0;
+}
+export function isGreatCradle(b: Building): boolean {
+  return isCradle(b.kind) && b.level >= 2;
+}
+/** Raise a cradle to a Great Cradle: four slots, four more mana. The reason it cannot be, or null. */
+export function raiseCradle(state: GameState, id: number): string | null {
+  const b = state.buildings.find((x) => x && x.id === id);
+  if (!b || !isCradle(b.kind)) return 'No cradle here';
+  if (b.level >= 2) return 'Already a Great Cradle';
+  if (b.state !== 'ok') return 'Finish it first';
+  if (state.milestone < GREAT_CRADLE_MILESTONE) return `A Great Cradle is raised at ${milestonesOf(state)[GREAT_CRADLE_MILESTONE].name}`;
+  if (state.treasury < GREAT_CRADLE_COST) return `Needs ${GREAT_CRADLE_COST} crowns`;
+  state.treasury -= GREAT_CRADLE_COST;
+  b.level = 2;
+  markDirty(state, b.x, b.y);
+  pushMessage(state, `The ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) is raised to a Great Cradle: four nests in the spiral, and the ley hums ${GREAT_CRADLE_MANA} deeper for it.`, 'milestone', true, { x: b.x, y: b.y });
+  return null;
 }
 
 export function dragonsIn(state: GameState, cradleId: number): Dragon[] {
@@ -108,49 +154,117 @@ export function setRole(state: GameState, id: number, role: DragonRole, target =
   return null;
 }
 
-function tamerNear(state: GameState, cradle: Building): boolean {
-  let ok = false;
-  forEachBuilding(state, (b) => {
-    if (b.kind === 'tamerslodge' && b.state === 'ok' && Math.hypot(b.x - cradle.x, b.y - cradle.y) <= 10) ok = true;
-  });
-  return ok;
+/** Line an egg's nest with eggshell: it warms a quarter faster. The reason it cannot be, or null. */
+export function lineNest(state: GameState, id: number): string | null {
+  const d = state.dragons.find((x) => x.id === id);
+  if (!d) return 'No such egg';
+  if (d.stage !== 0) return 'Only an egg takes a lining';
+  if (d.lined) return 'Already lined';
+  if (state.materials.eggshell < 1) return 'Needs 1 eggshell';
+  state.materials.eggshell -= 1;
+  d.lined = true;
+  return null;
 }
 
-/** Feed from the nearest stocked market: returns true if fed. */
-function feed(state: GameState, cradle: Building, amount: number): boolean {
+/** The lodge seats: every Tamer's Lodge within LODGE_REACH of a cradle seats LODGE_SEATS dragons, filled in dragon-id order. */
+export function lodgeSeats(state: GameState): Map<number, Building | null> {
+  const lodges: { b: Building; left: number }[] = [];
+  forEachBuilding(state, (b) => { if (b.kind === 'tamerslodge' && b.state === 'ok') lodges.push({ b, left: LODGE_SEATS }); });
+  const out = new Map<number, Building | null>();
+  const sorted = [...state.dragons].filter((d) => d.stage >= 1).sort((a, b) => a.id - b.id);
+  for (const d of sorted) {
+    const cradle = state.buildings.find((b) => b && b.id === d.cradleId);
+    let seat: Building | null = null;
+    if (cradle) {
+      for (const l of lodges) {
+        if (l.left <= 0 || Math.hypot(l.b.x - cradle.x, l.b.y - cradle.y) > LODGE_REACH) continue;
+        l.left--;
+        seat = l.b;
+        break;
+      }
+    }
+    out.set(d.id, seat);
+  }
+  return out;
+}
+/** Lodges within reach of a cradle, and the dragons they would have to seat. */
+export function lodgesFor(state: GameState, cradle: Building): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(state, (b) => { if (b.kind === 'tamerslodge' && b.state === 'ok' && Math.hypot(b.x - cradle.x, b.y - cradle.y) <= LODGE_REACH) out.push(b); });
+  return out;
+}
+
+/** Markets a cradle can feed from: within FEED_REACH of it. */
+export function marketsInReach(state: GameState, cradle: Building): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(state, (b) => {
+    if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
+    if (Math.hypot(b.x - cradle.x, b.y - cradle.y) <= FEED_REACH) out.push(b);
+  });
+  return out;
+}
+/** Markets a warden eats from: those of its district. */
+export function districtMarkets(state: GameState, district: number): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(state, (b) => {
+    if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
+    if (state.district[idx(b.x, b.y)] === district) out.push(b);
+  });
+  return out;
+}
+/** The markets that feed this dragon today. */
+export function feedingMarkets(state: GameState, d: Dragon, cradle: Building): Building[] {
+  return d.role === 'warden' && d.roleTarget > 0 ? districtMarkets(state, d.roleTarget) : marketsInReach(state, cradle);
+}
+
+/** Feed from the nearest stocked market within reach (a warden: of its district): returns true if fed. */
+function feed(state: GameState, d: Dragon, cradle: Building, amount: number): boolean {
   let best: Building | null = null;
   let bd = Infinity;
-  forEachBuilding(state, (b) => {
-    if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok' || b.stock < amount) return;
-    const d = Math.hypot(b.x - cradle.x, b.y - cradle.y);
-    if (d < bd) {
-      bd = d;
+  for (const b of feedingMarkets(state, d, cradle)) {
+    if (b.stock < amount) continue;
+    const dist = Math.hypot(b.x - cradle.x, b.y - cradle.y);
+    if (dist < bd) {
+      bd = dist;
       best = b;
     }
-  });
+  }
   if (!best) return false;
   (best as Building).stock -= amount;
   return true;
+}
+
+/** How much a dragon eats a day by stage. */
+export function eats(d: Dragon): number {
+  return d.stage === 1 ? 6 : d.stage === 2 ? 10 : d.stage >= 4 ? WYRM_EATS_GOODS : 14;
+}
+
+/** A dragon leaves the city: remembered in state.departed so it can return after a season. */
+function depart(state: GameState, d: Dragon, cradle: Building | null): void {
+  state.departed.push({ name: d.name, line: d.line, stage: d.stage, day: state.day, x: cradle ? cradle.x : state.founding.x, y: cradle ? cradle.y : state.founding.y, returned: false });
 }
 
 /** Daily dragon upkeep: warmth, food, growth, training mishaps, materials, roles. */
 export function dailyDragons(state: GameState): void {
   const rng = rngOf(state);
   const gone: Dragon[] = [];
+  const seats = lodgeSeats(state);
   for (const d of state.dragons) {
     const cradle = state.buildings.find((b) => b && b.id === d.cradleId) ?? null;
     if (!cradle || cradle.state !== 'ok') {
       // no cradle: eggs die, others leave
       gone.push(d);
+      if (d.stage > 0) depart(state, d, cradle);
       pushMessage(state, d.stage === 0 ? `An egg went cold: its cradle is gone.` : `${d.name} the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]} left: its cradle is gone.`, 'bad');
       continue;
     }
     const warm = cradle.lit;
     const asp = aspectAt(state, cradle.x, cradle.y);
     const attuned = asp === d.line || (!!d.second && asp === d.second);
-    const speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1) * ((cradle.visited ?? -1) >= state.day ? 1.1 : 1);
+    const seat = seats.get(d.id) ?? null;
+    let speed = (d.training === 'gentle' ? 0.8 : d.training === 'hard' ? 1.3 : 1.6) * (attuned ? 1.25 : 1) * (d.trueblood ? 1.25 : 1) * ((cradle.visited ?? -1) >= state.day ? 1.1 : 1);
     if (d.stage === 0) {
-      if (warm) d.days += 1;
+      if (warm) d.days += d.lined ? EGGSHELL_HATCH : 1;
       else if (rng.chance(0.15)) pushMessage(state, `The eggs in the cradle at (${cradle.x},${cradle.y}) are going cold: it needs mana.`, 'warn');
       if (d.days >= STAGE_DAYS[0]) {
         d.stage = 1;
@@ -161,34 +275,44 @@ export function dailyDragons(state: GameState): void {
       }
       continue;
     }
-    // living dragons eat: 6 goods a day as hatchling, 10 as drake
-    const fedNow = feed(state, cradle, d.stage === 1 ? 6 : d.stage === 2 ? 10 : d.stage >= 4 ? WYRM_EATS_GOODS : 14);
+    // living dragons eat: 6 goods a day as hatchling, 10 as drake, 14 as wyvern, 20 as a great wyrm
+    const fedNow = feed(state, d, cradle, eats(d));
     if (fedNow) {
       d.hungry = 0;
       d.mood = Math.min(100, d.mood + (d.training === 'gentle' ? 6 : 3) + (attuned ? 2 : 0));
     } else {
       d.hungry++;
-      d.mood = Math.max(0, d.mood - 12);
-      if (d.hungry === 3) pushMessage(state, `${d.name} has not eaten in three days. Markets near the cradle are empty.`, 'warn');
+      d.mood = Math.max(0, d.mood - HUNGER_MOOD);
+      if (d.hungry === 3) pushMessage(state, d.role === 'warden' && d.roleTarget > 0 ? `${d.name} has not eaten in three days: the markets of its district have nothing on the shelf.` : `${d.name} has not eaten in three days: no market within ${FEED_REACH} tiles of its cradle has food.`, 'warn');
+      if (d.hungry === REGRESS_AFTER && d.stage >= 2) {
+        d.stage = (d.stage - 1) as Dragon['stage'];
+        d.days = 0;
+        if (d.role === 'courier' && d.stage < 3) { d.role = 'none'; d.roleTarget = -1; }
+        pushMessage(state, `${d.name}, unfed for ${REGRESS_AFTER} days, shrinks back to a ${STAGE_NAMES[d.stage]}. Feed it or it flies into the Gloam.`, 'warn', true, { x: cradle.x, y: cradle.y });
+      }
     }
     if (!warm) d.mood = Math.max(0, d.mood - 5);
-    const trained = d.stage === 1 ? tamerNear(state, cradle) : true;
-    if (!trained && rng.chance(0.2)) pushMessage(state, `${d.name} needs a Tamer's Lodge within 10 tiles of its cradle to grow.`, 'warn');
+    // a seat at a Tamer's Lodge: a hatchling needs one to grow at all; a drake without one grows at half pace and, trained hard, burns more
+    const trained = d.stage === 1 ? !!seat : true;
+    if (!trained && rng.chance(0.2)) pushMessage(state, `${d.name} needs a seat at a Tamer's Lodge within ${LODGE_REACH} tiles of its cradle to grow (each lodge seats ${LODGE_SEATS}).`, 'warn');
+    if (d.stage >= 2 && !seat) speed *= 0.5;
     if (d.mood <= 0) {
       gone.push(d);
+      depart(state, d, cradle);
       pushMessage(state, `${d.name} the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]} flies into the Gloam, starved and sullen. It may remember you.`, 'bad');
       continue;
     }
-    // training mishaps
-    if (d.training === 'hard' && d.stage >= 1 && rng.chance(0.02)) {
+    // training mishaps: hard training scorches the cradle; without a lodge seat three times as often
+    if (d.training === 'hard' && d.stage >= 1 && rng.chance(0.02 * (seat ? 1 : 3))) {
       cradle.state = 'burning';
       cradle.stateDays = 0;
       markDirty(state, cradle.x, cradle.y);
       state.stats.firesTotal++;
-      pushMessage(state, `${d.name} scorched the cradle roof under hard training. Fire!`, 'bad');
+      pushMessage(state, `${d.name} scorched the cradle roof under hard training${seat ? '' : ', with no tamer to check it'}. Fire!`, 'bad');
     }
     if (d.training === 'wild' && rng.chance(0.01)) {
       gone.push(d);
+      depart(state, d, cradle);
       pushMessage(state, `${d.name}, trained wild, took wing at dawn and did not come back.`, 'warn');
       continue;
     }
@@ -204,8 +328,8 @@ export function dailyDragons(state: GameState): void {
         pushMessage(state, `${d.name} is a ${STAGE_NAMES[d.stage]} now: ${LINE_INFO[d.line].desc}. ${d.stage === 3 ? 'It can fly goods as a courier.' : 'Give it a role in the Wyrms panel.'}`, 'milestone');
       }
     } else if (d.stage >= stageCap(d)) d.days += 1;
-    // materials from grown dragons
-    if (d.stage >= 2 && (d.line === 'ember' || d.second === 'ember') && state.day % 30 === 0) {
+    // materials from grown dragons: an ember drake breathes a jar of wyrmfire a month, a wyvern one a fortnight
+    if (d.stage >= 2 && (d.line === 'ember' || d.second === 'ember') && state.day % (d.stage >= 3 ? 15 : 30) === 0) {
       state.materials.wyrmfire += 1;
       pushMessage(state, `${d.name} breathes a jar of wyrmfire for the alchemists.`, 'good');
     }
@@ -216,14 +340,25 @@ export function dailyDragons(state: GameState): void {
     state.dragons = state.dragons.filter((d) => !ids.has(d.id));
     state.agents = state.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId !== undefined && ids.has(a.dragonId)));
   }
-  // consume materials in use
-  if (state.materials.wyrmfire > 0) state.materials.wyrmfire = Math.max(0, state.materials.wyrmfire - 0.02); // jars leak a little; eggshell keeps
+  // the sinks: the Craft bonus burns wyrmfire while the toggle is on, every lit Forge burns its own, the Scale-Mail edict wears scale
+  const m = state.materials;
+  if (state.burnWyrmfire && m.wyrmfire > 0) m.wyrmfire = Math.max(0, m.wyrmfire - WYRMFIRE_BURN);
+  forEachBuilding(state, (b) => { if (b.kind === 'wyrmforge' && b.state === 'ok' && b.lit && m.wyrmfire > 0) m.wyrmfire = Math.max(0, m.wyrmfire - FORGE_BURN); });
+  if (edictOn(state, 'scalemail') && m.scale >= SCALEMAIL_PER_DAY) m.scale = Math.max(0, m.scale - SCALEMAIL_PER_DAY);
   commitRng(state, rng);
 }
 
-/** Craft rate bonus while wyrmfire is in stock. */
+/** Craft rate bonus while wyrmfire is in stock and the city burns it. */
 export function wyrmfireBonus(state: GameState): number {
-  return state.materials.wyrmfire > 0 ? 0.15 : 0;
+  return state.burnWyrmfire && state.materials.wyrmfire > 0 ? 0.15 : 0;
+}
+/** A Wyrmfire Forge is hot while there is wyrmfire to feed it. */
+export function forgeHot(state: GameState): boolean {
+  return state.materials.wyrmfire > 0;
+}
+/** Scale-Mail: the Watch wears it while the edict is on and scale is in the vault. */
+export function scaleMailOn(state: GameState): boolean {
+  return edictOn(state, 'scalemail') && state.materials.scale > 0;
 }
 
 /** Leystone per day added to a mine by delver drakes. */
@@ -231,6 +366,10 @@ export function delverBonus(state: GameState, mine: Building): number {
   let n = 0;
   for (const d of state.dragons) if (d.role === 'delver' && d.roleTarget === mine.id && d.stage >= 2) n += d.line === 'ember' ? 6 : 4;
   return n;
+}
+/** A delver works this mine (it halves the chance of waking a Concord Warden there). */
+export function delverAt(state: GameState, mine: Building): boolean {
+  return state.dragons.some((d) => d.role === 'delver' && d.roleTarget === mine.id && d.stage >= 2);
 }
 
 /** Districts with a warden drake: watch and fire coverage bonus applied in updateCoverage. */
@@ -265,21 +404,44 @@ export function districtTiles(state: GameState, d: number): number[] {
 
 export { idx };
 
+// ---------- the Wyrm-Ring ----------
+/** The next bout day: day 15 of a season, from day 45 on. */
+export function nextBoutDay(state: GameState): number {
+  let d = state.day + 1;
+  while (d % 30 !== 15) d++;
+  return Math.max(45, d);
+}
+/** A champion's odds this season: the deterministic halves and the chance over the two rolls of 40. */
+export function boutOdds(state: GameState, champ: Dragon, day = state.day): { ours: number; theirs: number; chance: number } {
+  const season = Math.floor(day / 30) % 4;
+  const year = Math.floor(day / 120);
+  const lineBonus = champ.line === 'ember' && champ.stage >= 3 ? 10 : champ.line === 'grey' ? 6 : 0;
+  const ours = champ.stage * 20 + champ.mood / 2 + (champ.training === 'hard' ? 10 : champ.training === 'gentle' ? 5 : 0) + lineBonus;
+  const theirs = champ.stage * 20 + 20 + season * 5 + Math.min(16, year * 8);
+  // both sides add rng × 40: the difference of two uniforms is triangular on [-1, 1]
+  const z = (theirs - ours) / 40;
+  const chance = z <= -1 ? 1 : z <= 0 ? 1 - ((1 + z) * (1 + z)) / 2 : z < 1 ? ((1 - z) * (1 - z)) / 2 : 0;
+  return { ours, theirs, chance };
+}
+/** The champion the Ring would send out: the highest stage among those named. */
+export function ringChampion(state: GameState): Dragon | null {
+  return state.dragons.filter((d) => d.role === 'champion' && d.stage >= 2).sort((a, b) => b.stage - a.stage)[0] ?? null;
+}
+
 /** Seasonal bout at the Wyrm-Ring on day 15 of each season. */
 export function seasonalBout(state: GameState): void {
   if (state.day % 30 !== 15 || state.day < 30) return;
   const ring = state.buildings.find((b) => b && b.kind === 'ring' && b.state === 'ok');
   if (!ring) return;
-  const champ = state.dragons.filter((d) => d.role === 'champion' && d.stage >= 2).sort((a, b) => b.stage - a.stage)[0];
+  const champ = ringChampion(state);
   if (!champ) {
     pushMessage(state, 'The Wyrm-Ring stands empty this season: name a champion in the Wyrms panel.', 'info');
     return;
   }
   const rng = rngOf(state);
-  const season = Math.floor(state.day / 30) % 4;
-  const lineBonus = champ.line === 'ember' && champ.stage >= 3 ? 10 : champ.line === 'grey' ? 6 : 0;
-  const ours = champ.stage * 20 + champ.mood / 2 + (champ.training === 'hard' ? 10 : champ.training === 'gentle' ? 5 : 0) + lineBonus + rng.next() * 40;
-  const theirs = 40 + season * 5 + Math.floor(state.day / 120) * 8 + rng.next() * 40;
+  const odds = boutOdds(state, champ);
+  const ours = odds.ours + rng.next() * 40;
+  const theirs = odds.theirs + rng.next() * 40;
   const challenger = rng.pick(['a Gloam-grey drake with one eye', 'a marsh-wyrm of the Ulum', 'a Belerial rider\'s strider-drake', 'an ember wyvern from the Mahjula', 'a bone drake nobody will claim']);
   if (ours >= theirs) {
     const purse = 1500 * champ.stage;
@@ -287,13 +449,14 @@ export function seasonalBout(state: GameState): void {
     state.stats.boutsWon++;
     state.modifiers.push({ kind: 'happiness', value: 8, until: state.day + 10, label: 'Ring victory' });
     champ.mood = Math.min(100, champ.mood + 10);
-    pushMessage(state, `THE RING: ${champ.name} beats ${challenger} to first blood. Purse ${purse} crowns; the square sings all night.`, 'milestone');
+    pushMessage(state, `THE RING: ${champ.name} beats ${challenger} to first blood (the odds were ${Math.round(odds.chance * 100)} %). Purse ${purse} crowns; the square sings all night.`, 'milestone');
   } else {
     state.stats.boutsLost++;
     if (champ.stage > 1) { champ.stage = (champ.stage - 1) as Dragon['stage']; champ.days = 0; }
+    if (champ.role === 'courier' && champ.stage < 3) { champ.role = 'none'; champ.roleTarget = -1; }
     champ.mood = Math.max(10, champ.mood - 20);
     state.modifiers.push({ kind: 'unrest', value: 0.05, until: state.day + 10, label: 'Ring defeat' });
-    pushMessage(state, `THE RING: ${challenger} humbles ${champ.name}, which limps back a ${STAGE_NAMES[champ.stage]}. The crowd is quiet.`, 'bad');
+    pushMessage(state, `THE RING: ${challenger} humbles ${champ.name} (the odds were ${Math.round(odds.chance * 100)} %), which limps back a ${STAGE_NAMES[champ.stage]}. The crowd is quiet.`, 'bad');
   }
   commitRng(state, rng);
 }
@@ -328,4 +491,58 @@ export function courierJob(state: GameState): { from: Building; to: Building; am
   });
   if (!to) return null;
   return { from: f, to: to as Building, amount: Math.min(30, f.stock) };
+}
+
+// ---------- the departed ----------
+/** The departed dragon whose season away has passed and whose tale is unanswered, if any. */
+export function dueReturn(state: GameState): DepartedDragon | null {
+  return state.departed.find((e) => !e.returned && state.day - e.day >= DAYS_PER_SEASON) ?? null;
+}
+/** A returned dragon takes its tribute: crowns by stage, or goods from the markets when the purse cannot. */
+export function payReturn(state: GameState, e: DepartedDragon): string {
+  e.returned = true;
+  state.stats.dragonsReturned++;
+  const crowns = RETURN_TRIBUTE * Math.max(1, e.stage);
+  if (state.treasury >= crowns) {
+    state.treasury -= crowns;
+    return `${crowns} crowns are laid on the cradle stones. ${e.name} takes them in its claws and is gone over the hills.`;
+  }
+  let left = RETURN_GOODS * Math.max(1, e.stage);
+  const want = left;
+  forEachBuilding(state, (b) => {
+    if (left <= 0 || BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
+    const t = Math.min(b.stock, left);
+    b.stock -= t;
+    left -= t;
+  });
+  return `The purse cannot pay ${crowns}; ${e.name} empties ${Math.round(want - left)} goods off the market shelves instead and is gone over the hills.`;
+}
+/** A returned dragon comes home if a cradle takes its line: sullen, its stage kept. */
+export function homeReturn(state: GameState, e: DepartedDragon): string | null {
+  const cradle = freeCradle(state, e.line);
+  if (!cradle) return null;
+  e.returned = true;
+  state.stats.dragonsReturned++;
+  const d: Dragon = { id: state.nextDragonId++, name: e.name, line: e.line, stage: e.stage, days: 0, cradleId: cradle.id, role: 'none', roleTarget: -1, mood: 40, hungry: 0, training: 'gentle', agentId: -1, born: state.day };
+  state.dragons.push(d);
+  return `${e.name} folds its wings in the cradle at (${cradle.x},${cradle.y}) and watches the tamers for a long while before it eats.`;
+}
+/** Refused, a returned dragon circles its old cradle for a day and sets roofs alight: up to its stage, unlit and unwarded, within reach. */
+export function refuseReturn(state: GameState, e: DepartedDragon): string {
+  e.returned = true;
+  state.stats.dragonsReturned++;
+  state.agents.push({
+    id: state.nextAgentId++, kind: AgentKind.Creature, x: e.x + 1, y: e.y + 1, path: [], pathIdx: 0, speed: 4, homeId: -1, targetId: -1,
+    timer: TICKS_PER_DAY, variant: lineIndex(e.line), dir: 0, load: 0, species: 'wyvern', dragonId: -1, anchorId: -1, ax: e.x + 1, ay: e.y + 1, alt: 30, phase: 3,
+  });
+  const targets: { b: Building; d: number }[] = [];
+  forEachBuilding(state, (b) => {
+    if (b.state !== 'ok' || b.lit || state.coverage.ward[idx(b.x, b.y)] > 0) return;
+    const dist = Math.hypot(b.x - e.x, b.y - e.y);
+    if (dist <= RETURN_FIRES_REACH) targets.push({ b, d: dist });
+  });
+  targets.sort((p, q) => p.d - q.d || p.b.id - q.b.id);
+  let fires = 0;
+  for (const t of targets.slice(0, Math.max(1, e.stage))) if (igniteBuilding(state, t.b, `${e.name}'s breath sets`)) fires++;
+  return fires ? `${e.name} screams over ${state.cityName} all day; ${fires} dark roof${fires === 1 ? '' : 's'} within ${RETURN_FIRES_REACH} of its old cradle burn${fires === 1 ? 's' : ''}.` : `${e.name} screams over ${state.cityName} all day and finds every roof near its old cradle lit or warded. It leaves hungry.`;
 }

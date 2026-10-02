@@ -312,21 +312,21 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'hatchery', name: 'Hatchery', category: 'service', faction: ['grimmen'],
-    desc: 'A stone nest in the hill\'s warmth. Holds two eggs of the stone lines only: Bone, Grey and Ember. Must be lit and drinks 6 mana a day; needs a ley node or spire within 6 to be cut at all.',
+    desc: 'A stone nest in the hill\'s warmth. Holds two eggs of the stone lines only: Bone, Grey and Ember (four as a Great Cradle, raised from its panel at the Deephold). Feeds from markets within 12. Must be lit and drinks 6 mana a day (a lit Underking\'s Seat within 30 warms it for nothing); needs a ley node or spire within 6 to be cut at all.',
     flavor: 'The Grimmen do not breed the bright lines. "We keep what the Gloam cannot touch," they say, "and what the Gloam cannot touch is grey."',
     w: 2, h: 2, cost: 3200, upkeep: 28, manaUse: 6, unlock: 4, needsMana: true,
     service: { type: 'leisure', radius: 5, strength: 0.3 },
   },
   {
     key: 'cradle', name: 'Wyrm-Cradle', category: 'service',
-    desc: 'A stone nest warmed by the ley. Holds two dragon eggs; hatchlings and drakes live here until given a role. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Needs a ley node or spire within 6 to be raised at all.',
+    desc: 'A stone nest warmed by the ley. Holds two dragon eggs (four as a Great Cradle, raised from its panel at the Burgh for 4,000 crowns and 4 more mana); hatchlings and drakes live here and eat from markets within 12 tiles. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Needs a ley node or spire within 6 to be raised at all.',
     flavor: 'The stones are laid in the spiral the grass makes around a node. Nobody taught the masons that; the eggs did.',
     w: 2, h: 2, cost: 3500, upkeep: 30, manaUse: 8, unlock: 4, needsMana: true,
     service: { type: 'leisure', radius: 5, strength: 0.3 },
   },
   {
     key: 'tamerslodge', name: "Tamer's Lodge", category: 'service',
-    desc: 'Where Wyrm-Tamers, mostly candle-eyed Tallowkin, train hatchlings. A cradle within 10 tiles can raise its hatchlings; set each dragon\'s training in the Wyrms panel.',
+    desc: 'Where Wyrm-Tamers, mostly candle-eyed Tallowkin, train hatchlings. Seats four dragons from cradles within 10 tiles: a hatchling without a seat does not grow, a drake without one grows at half pace and, trained hard, scorches its cradle three times as often. Set each dragon\'s training in the Wyrms panel.',
     flavor: 'Rule one on the lodge wall: never lie to a dragon. Rule two: never let it see you count the scales.',
     w: 2, h: 2, cost: 1800, upkeep: 22, manaUse: 2, unlock: 4,
     service: { type: 'leisure', radius: 5, strength: 0.3 },
@@ -334,7 +334,7 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'ring', name: 'Wyrm-Ring', category: 'leisure',
-    desc: 'An arena of sand and stands. Once a season a champion dragon fights a wild challenger to first blood: purses, pilgrims and pride, or a humbled dragon. Land value and happiness within 10.',
+    desc: 'An arena of sand and stands. Once a season (day 15) a champion dragon fights a wild challenger of its own weight to first blood: a purse and pride, or a humbled dragon a stage smaller. The Wyrms panel shows the odds before the bout. Land value and happiness within 10.',
     flavor: 'Vell forbids a bout to the death. The Grimmen sextons would refuse to quiet the sand.',
     w: 3, h: 3, cost: 6000, upkeep: 40, manaUse: 4, unlock: 5,
     service: { type: 'leisure', radius: 10, strength: 1.0 }, landValue: 12,
@@ -359,24 +359,24 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- wonder ----
   {
     key: 'lantern', name: 'Lantern of Vell', category: 'wonder',
-    desc: 'A great leystone lighthouse. Wards 30 tiles, delights the whole city and marks you a true wardlight.',
+    desc: 'A great leystone lighthouse. Wards 30 tiles, delights the whole city (+5 happiness, a tenth more on the next grant, like every lit wonder hall) and marks you a true wardlight. 10 mana.',
     flavor: 'From the top you can see the next lantern on the horizon, and the dark between.',
-    w: 3, h: 3, cost: 22000, upkeep: 200, manaUse: 20, needsMana: true,
+    w: 3, h: 3, cost: 22000, upkeep: 200, manaUse: 10, needsMana: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
 
   {
     key: 'underkingseat', name: "Underking's Seat", category: 'wonder', faction: ['grimmen'],
-    desc: 'The deepest hall in Eda, cut into the hill with a leystone heart. Wards 30 tiles, relays the ley like a Nexus, counts ten stone quarried, and marks the Grimmen a true people of the Underhill. Must touch hills. Needs mana.',
+    desc: 'The deepest hall in Eda, cut into the hill with a leystone heart. Wards 30 tiles, relays the ley like a Nexus, warms every Hatchery within 30 for no mana, counts ten stone quarried, and marks the Grimmen a true people of the Underhill. Must touch hills. Needs mana.',
     flavor: 'The Underking has not sat in it for three hundred years. The chair is kept warm anyway.',
     w: 3, h: 3, cost: 22000, upkeep: 180, manaUse: 14, needsMana: true, nearHills: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
   {
     key: 'greatweir', name: 'The Great Weir', category: 'wonder', faction: ['veshari'],
-    desc: 'A leystone weir across the Sable with sluice gates and lamps. Makes 90 mana a day from the current, wards 30 tiles across the water, relays the ley like a Nexus, and holds the Hush flood back. Must touch water. No mana.',
+    desc: 'A leystone weir across the Sable with sluice gates and lamps. Makes 45 mana a day from the current (90 with the sluice open, which floods the bank within 30 of it in the Thaw), wards 30 tiles across the water, relays the ley like a Nexus, and holds the Hush flood back. Must touch water. No mana.',
     flavor: 'The river did not agree to it. The river was not asked. The river, the Veshari say, is still thinking it over.',
-    w: 2, h: 2, cost: 22000, upkeep: 160, manaUse: 0, manaProduce: 90, nearWater: true,
+    w: 2, h: 2, cost: 22000, upkeep: 160, manaUse: 0, manaProduce: 45, nearWater: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
   },
   {
@@ -388,7 +388,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'lanternofwicks', name: 'Lantern of Wicks', category: 'wonder', faction: ['tallowkin'],
-    desc: 'The Lantern of Vell rebuilt by the spire-wrights: a leystone lighthouse of ten thousand wicks. Wards 30 tiles, relays the ley like a Nexus, lights itself and the street around it, and marks the Tallowkin a true people of the light.',
+    desc: 'The Lantern of Vell rebuilt by the spire-wrights: a leystone lighthouse of ten thousand wicks. Wards 30 tiles, relays the ley like a Nexus, lights itself and the street around it, halves what every lit spire within 30 draws for its buildings, and marks the Tallowkin a true people of the light.',
     flavor: 'They say you can read by it from the next valley. They say a lot of things in the next valley.',
     w: 3, h: 3, cost: 18000, upkeep: 180, manaUse: 10, needsMana: true, selfLit: true,
     service: { type: 'ward', radius: 30, strength: 1.0 }, landValue: 20, unlock: 7, wonder: true,
@@ -396,7 +396,7 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
-    desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day.',
+    desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day, or 20 while the Court is lit; let the Court go dark two days and the wyrm sulks until it is lit again.',
     flavor: 'The song has no words. The singers say the wyrm supplies them.',
     w: 3, h: 3, cost: 18000, upkeep: 150, manaUse: 40, needsMana: true, landValue: 12, unlock: 7, wonder: true,
   },
@@ -437,7 +437,7 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'golemfoundry', name: 'Golem Foundry', category: 'service',
-    desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden labours for 12 hands with no housing and drinks 10 mana a day here. A wild surge sets them loose again.',
+    desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden drinks 10 mana a day here and, from this panel, labours for 12 hands with no housing, stands guard (a ward of 6 around the foundry) or is posted to a Craft works within 20 to work its bench. A wild surge sets them loose again.',
     flavor: 'The Concord built them to guard a city that is gone. They do not seem to mind the change of employer.',
     w: 2, h: 2, cost: 9000, upkeep: 80, manaUse: 8, unlock: 6, needsMana: true,
   },
@@ -475,7 +475,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'tidepool', name: 'Tide Pool', category: 'service', faction: ['veshari'],
-    desc: 'A walled pool open to the river, warmed by a spire. Takes only the water lines (Tide, Storm and Glim eggs); hatchlings grow with a tamer\'s visits. Must touch water and a ley node or spire within 6.',
+    desc: 'A walled pool open to the river, warmed by a spire. Takes only the water lines (Tide, Storm and Glim eggs), two of them (four as a Great Cradle, raised from its panel at the Harbour-Town); hatchlings grow with a tamer\'s visits and eat from markets within 12. Must touch water and a ley node or spire within 6.',
     flavor: 'The eggs sit on the bottom like river stones and the river stones sit on the eggs, and the Veshari swear they can tell them apart.',
     w: 2, h: 2, cost: 3500, upkeep: 30, manaUse: 6, needsMana: true, unlock: 4, nearWater: true,
     service: { type: 'leisure', radius: 5, strength: 0.3 },
@@ -504,26 +504,26 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'wyrmforge', name: 'Wyrmfire Forge', category: 'marvel',
-    desc: 'A forge fed with bottled wyrmfire. Craft works within 8 make 35% more (a Glimhouse\'s tenth and the forge\'s quarter) and ignore the Hush. Costs 8 wyrmfire.',
+    desc: 'A forge fed with bottled wyrmfire. Craft works within 8 make 35% more (a Glimhouse\'s tenth and the forge\'s quarter) and ignore the Hush, while it is hot: it burns 0.1 wyrmfire a day and goes cold with none in the vault. Costs 8 wyrmfire.',
     flavor: 'The smiths wear glass over their eyes and sing to keep the fire sweet.',
     w: 2, h: 2, cost: 4000, upkeep: 45, manaUse: 4, unlock: 4, needsMana: true, materials: { wyrmfire: 8 }, miasma: 1,
   },
   {
     key: 'eggshellfont', name: 'Eggshell Font', category: 'marvel',
-    desc: 'A font lined with crushed dragon eggshell, which drinks the ley like a hatchling. +25 mana a day anywhere. Costs 6 eggshell.',
+    desc: 'A font lined with crushed dragon eggshell, which drinks the ley like a hatchling. +25 mana a day anywhere. Costs 3 eggshell.',
     flavor: 'It purrs. Nobody has decided whether that is a good sign.',
-    w: 1, h: 1, cost: 3000, upkeep: 30, manaUse: 0, manaProduce: 25, unlock: 5, materials: { eggshell: 6 },
+    w: 1, h: 1, cost: 3000, upkeep: 30, manaUse: 0, manaProduce: 25, unlock: 5, materials: { eggshell: 3 },
   },
   {
     key: 'raymirror', name: 'Rayscale Mirror', category: 'marvel',
-    desc: 'A mirror of polished rayscale that throws the ley into the sky. Leisure within 14 tiles, and every skyray school that crosses the valley turns to circle it. Costs 8 rayscale.',
+    desc: 'A mirror of polished rayscale that throws the ley into the sky. Leisure within 14 tiles, and every skyray school that crosses the valley turns to circle it, shedding glim-dust over the mirror where a Beacon\'s school sheds rayscale. Costs 8 rayscale.',
     flavor: 'On clear nights the mirror shows a different sky.',
     w: 2, h: 2, cost: 5000, upkeep: 40, manaUse: 6, unlock: 6, needsMana: true, materials: { rayscale: 8 }, landValue: 10,
     service: { type: 'leisure', radius: 14, strength: 0.8 },
   },
   {
     key: 'hallofmarvels', name: 'Hall of Marvels', category: 'marvel',
-    desc: 'A gallery of everything the valley has tamed: scale, wyrmfire, eggshell, rayscale and glim-dust under one roof. Happiness +8 for the whole city, artifacts sell for half again as much. Costs 10 of each.',
+    desc: 'A gallery of everything the valley has tamed: scale, wyrmfire, eggshell, rayscale and glim-dust under one roof. Lit, it exhibits each rare good in the vault for +2 happiness across the city (up to +10), and artifacts sell for half again as much. Costs 10 of each.',
     flavor: 'Pilgrims come to see the dust that lights itself, and stay for the market.',
     w: 3, h: 3, cost: 15000, upkeep: 120, manaUse: 10, unlock: 6, needsMana: true, maxCount: 1, landValue: 20, materials: { scale: 10, wyrmfire: 10, eggshell: 10, rayscale: 10, glimdust: 10 },
     service: { type: 'faith', radius: 12, strength: 0.5 },
@@ -532,7 +532,7 @@ export const BUILDINGS: BuildingDef[] = [
   // ---- special ----
   {
     key: 'corelantern', name: 'Lantern of the Cores', category: 'marvel',
-    desc: 'The three Lantern-Cores of Vell set in one housing. Wards 12 tiles, lights itself and its neighbours with no mana, and holds 30 mana. Needs the Lantern-Cores relic set entire.',
+    desc: 'The three Lantern-Cores of Vell set in one housing. Wards 12 tiles, lights itself and its neighbours with no mana, and holds 30 mana. When a wild surge comes it drinks the first 30 of the overdraw and cracks for 10 days (dark, no store, no ward); a surge no bigger than that burns nothing. Needs the Lantern-Cores relic set entire.',
     flavor: 'The Concord lit a hundred of these. This one was found in three pieces under a floor.',
     w: 2, h: 2, cost: 4000, upkeep: 30, manaUse: 0, unlock: 4, selfLit: true, manaStorage: 30, relic: 'lanterncores', maxCount: 2,
     service: { type: 'ward', radius: 12, strength: 0.8 },

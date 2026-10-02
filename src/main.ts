@@ -1,4 +1,11 @@
 import type { FactionId } from './data/factions';
+import { lineNest, raiseCradle } from './sim/wyrmcraft';
+import * as wyrmcraft from './sim/wyrmcraft';
+import * as beasts from './sim/beasts';
+import * as vehicles from './sim/vehicles';
+import { setGolemDuty } from './sim/beasts';
+import { scatterDust, toggleSluice } from './sim/actions';
+import { maybeFireReturn } from './sim/events';
 import { costOf } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
@@ -128,9 +135,15 @@ class Game {
       replate: (id) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b && b.kind === 'scaleward' && this.state.materials.scale >= 2 && (b.plate ?? 1) < 1) { this.state.materials.scale -= 2; b.plate = 1; recomputeAll(this.state); this.audio.spire(); } },
       callRain: (id) => { const r = callRain(this.state, id); if (r.ok) { recomputeAll(this.state); this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
       setRole: (id, role, target) => { const why = setRole(this.state, id, role, target); if (!why) { recomputeAll(this.state); this.audio.spire(); } return why; },
+      raiseCradle: (id) => { const why = raiseCradle(this.state, id); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } this.ui.refresh(); return why; },
+      lineNest: (id) => { const why = lineNest(this.state, id); if (!why) this.audio.click(); return why; },
+      setBurnWyrmfire: (on) => { this.state.burnWyrmfire = on; this.audio.click(); },
+      toggleSluice: (id) => { const why = toggleSluice(this.state, id); if (!why) { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); return why; },
+      setGolemDuty: (id, duty, target) => { const why = setGolemDuty(this.state, id, duty, target); if (!why) { recomputeAll(this.state); this.audio.click(); } return why; },
+      scatterDust: (x, y) => { const r = scatterDust(this.state, x, y); if (r.ok) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },
       get undoLabel() { return game.undoStack.length ? game.undoStack[game.undoStack.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
-      resolveEvent: (c) => { resolveEvent(this.state, c); this.audio.coin(); this.ui.refresh(); },
+      resolveEvent: (c, amount) => { resolveEvent(this.state, c, amount); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
       charterGuilds: (g) => { const why = charterGuilds(this.state, g); if (!why) { this.audio.coin(); this.ui.refresh(); } return why; },
       dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = runDev(this.state, id, arg, { x: Math.floor(u), y: Math.floor(v) }); recomputeAll(this.state); this.paused = true; this.ui.refresh(); return out; },
@@ -445,7 +458,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn };
   const game = new Game(atlas);
   (window as any).__game = game;
 }

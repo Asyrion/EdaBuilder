@@ -232,6 +232,7 @@ export function updateCreatures(state: GameState): void {
     if (a.species === 'hound' && !night) return rng.chance(0.3); // slink back into the grey at dawn
     if (a.species === 'hound' && wyrmGuards(state) && inLair(state, a.x, a.y)) return false; // nothing hunts under the wyrm's eye
     if (a.species === 'wyrm') return state.wyrm.flyover > 0;
+    if (a.species === 'wyvern' && a.dragonId === -1) return a.phase === 3 && a.timer > 0; // a returned dragon, refused: it circles for a day
     if (a.species === 'drake' || a.species === 'wyvern') return state.dragons.some((d) => d.id === a.dragonId && d.stage >= 1);
     if (a.species === 'wisp') {
       wispSeen++;
@@ -295,11 +296,13 @@ export function tickCreatures(state: GameState): void {
         const bc = beacon(state);
         const season = seasonOf(state);
         if (a.phase === 1) {
-          if (!bc || (season !== 1 && season !== 2)) { a.phase = 0; a.path = [idx(a.x < MAP_W / 2 ? 2 : MAP_W - 3, Math.max(2, Math.min(MAP_H - 3, Math.floor(a.y))))]; break; }
+          // the school circles the lure that sang to it (a Beacon or a Rayscale Mirror); rays from older saves keep the first lit one
+          const lure = ((a.anchorId ?? -1) >= 0 ? state.buildings.find((b) => b && b.id === a.anchorId && b.state === 'ok' && b.lit) : bc) ?? null;
+          if (!lure || (season !== 1 && season !== 2)) { a.phase = 0; a.anchorId = -1; a.path = [idx(a.x < MAP_W / 2 ? 2 : MAP_W - 3, Math.max(2, Math.min(MAP_H - 3, Math.floor(a.y))))]; break; }
           const ph = a.id * 1.3;
           const r = 6 + (a.variant % 3) * 1.5;
-          const tx = bc.x + 0.5 + Math.cos(t * 0.35 + ph) * r * 1.4;
-          const ty = bc.y + 0.5 + Math.sin(t * 0.35 + ph) * r * 0.8;
+          const tx = lure.x + 0.5 + Math.cos(t * 0.35 + ph) * r * 1.4;
+          const ty = lure.y + 0.5 + Math.sin(t * 0.35 + ph) * r * 0.8;
           a.x += (tx - a.x) * 0.04;
           a.y += (ty - a.y) * 0.04;
           a.dir = tx > a.x ? 0 : 2;
@@ -308,8 +311,9 @@ export function tickCreatures(state: GameState): void {
         }
         if (bc && Math.hypot(bc.x - a.x, bc.y - a.y) <= (aspectAt(state, bc.x, bc.y) === 'sky' ? 45 : 30)) {
           a.phase = 1;
+          a.anchorId = bc.id;
           if (a.variant === 0) effects.push({ x: bc.x, y: bc.y, kind: 'song', tick: state.tick });
-          if (a.variant === 0) pushMessage(state, `The skyrays turn on the Ley Beacon's song at (${bc.x},${bc.y}) and begin to circle. They will stay the season.`, 'good', true, { x: bc.x, y: bc.y });
+          if (a.variant === 0) pushMessage(state, bc.kind === 'raymirror' ? `The skyrays turn on the Rayscale Mirror's light at (${bc.x},${bc.y}) and begin to circle. They will stay the season and shed glim-dust over it.` : `The skyrays turn on the Ley Beacon's song at (${bc.x},${bc.y}) and begin to circle. They will stay the season.`, 'good', true, { x: bc.x, y: bc.y });
           break;
         }
         if (a.path.length === 0) { a.timer = -1; break; }
@@ -652,6 +656,18 @@ export function tickCreatures(state: GameState): void {
         break;
       }
       case 'wyvern': {
+        if (a.dragonId === -1 && a.phase === 3) {
+          // a refused dragon screams over its old cradle all day, then is gone
+          a.timer--;
+          const ph = a.id * 0.7;
+          const tx = ax + Math.cos(t * 0.5 + ph) * 6;
+          const ty = ay + Math.sin(t * 0.5 + ph) * 3.5;
+          a.x += (tx - a.x) * 0.03;
+          a.y += (ty - a.y) * 0.03;
+          a.dir = tx > a.x ? 0 : 2;
+          a.alt = 30 + Math.sin(t * 0.9 + ph) * 4;
+          break;
+        }
         const d = state.dragons.find((x) => x.id === a.dragonId);
         if (!d) break;
         const alt = a.alt ?? 0;
@@ -693,7 +709,7 @@ export function tickCreatures(state: GameState): void {
         const dx = tx - a.x;
         const dy = ty - a.y;
         const dist = Math.hypot(dx, dy);
-        const sp = a.speed * dt;
+        const sp = a.speed * dt * (auraAt(state, 'sky', a.x, a.y) ? 1.25 : 1); // a Sky dragon's aura speeds every flyer in it
         a.alt = dist > 3 ? Math.min(36, alt + 3) : Math.max(0, alt - 3);
         if (dist <= sp) {
           a.x = tx;
@@ -718,6 +734,7 @@ export function tickCreatures(state: GameState): void {
               state.stats.courierTrips++;
               const from = state.buildings.find((b) => b && b.id === a.homeId);
               if (from && a.load > put) from.stock += a.load - put; // the rest goes back on the works' shelf
+              d.lastTrip = { fx: from ? from.x : to.x, fy: from ? from.y : to.y, tx: to.x, ty: to.y, goods: Math.round(put), day: state.day }; // shown in the Wyrms panel (iteration 53)
             }
             a.load = 0;
             a.phase = 0;

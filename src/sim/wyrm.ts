@@ -8,6 +8,11 @@ import { effects } from './hazards';
 export const WYRM_MIN_DIST = 40; // node must be this far from the founding node
 export const WYRM_LAIR_RADIUS = 30;
 export const WYRM_EATS = 40; // goods a day when bound
+export const COURT_GRACE = 2; // days a courted wyrm bears a dark Court before it sulks (iteration 53)
+/** What the bound wyrm eats today: half while a lit Wyrm-Court sings over its lair. */
+export function wyrmEats(s: GameState): number {
+  return hasCourt(s) ? WYRM_EATS / 2 : WYRM_EATS;
+}
 export const WYRM_SULK_AFTER = 10; // unfed days
 export const WYRM_DIES_AFTER = 40; // sulking days
 export const WYRM_WAKE_PER_SPIRE = 3; // waking points per lit spire per day
@@ -25,7 +30,7 @@ export function flyoverFireCap(s: GameState): number {
 export const WYRM_VEIN_EGG_DAYS = DAYS_PER_SEASON;
 
 export function newWyrm(node: number): WyrmState {
-  return { node, state: node < 0 ? 'none' : 'sleeping', waking: 0, tributes: 0, tributeDay: -1, unfed: 0, sulking: 0, fedDays: 0, refused: 0, flyover: 0, fires: 0, bound: -1, died: -1, askedBind: -1 };
+  return { node, state: node < 0 ? 'none' : 'sleeping', waking: 0, tributes: 0, tributeDay: -1, unfed: 0, sulking: 0, fedDays: 0, refused: 0, flyover: 0, fires: 0, bound: -1, died: -1, askedBind: -1, courted: false, courtDark: 0 };
 }
 
 /** Choose the wyrm's node: the farthest from the founding node, if far enough. */
@@ -216,10 +221,24 @@ export function dailyWyrm(s: GameState): void {
     return;
   }
   if (w.state === 'bound') {
-    const eaten = takeGoods(s, WYRM_EATS);
-    if (eaten >= WYRM_EATS * 0.75) {
+    // the Court after the binding: lit, it halves the appetite; courted once and then dark two days, the wyrm sulks until it is lit again
+    if (hasCourt(s)) {
+      if (!w.courted) { w.courted = true; pushMessage(s, `The Wyrm-Court sings over the lair: the bound wyrm eats ${WYRM_EATS / 2} goods a day while the Court is lit, and sulks if it goes dark.`, 'good', true, { x: n.x, y: n.y }); }
+      if (w.courtDark > 0) {
+        w.courtDark = 0;
+        if (w.sulking > 0 && w.unfed < WYRM_SULK_AFTER) { w.sulking = 0; redraw(s); pushMessage(s, 'The Wyrm-Court is lit again and the wyrm lifts its head. Its lair wards the Gloam once more.', 'good', true, { x: n.x, y: n.y }); }
+      }
+    } else if (w.courted) {
+      w.courtDark++;
+      if (w.courtDark === 1) pushMessage(s, `The Wyrm-Court is dark. The wyrm watches the dead stones; ${COURT_GRACE} days of this and it sulks.`, 'warn', true);
+      if (w.courtDark >= COURT_GRACE && w.sulking === 0) { w.sulking = 1; redraw(s); pushMessage(s, `The Court has been dark ${w.courtDark} days: the wyrm sulks and wards nothing until it is lit again.`, 'bad', true, { x: n.x, y: n.y }); }
+    }
+    const courtSulk = w.courted && w.courtDark >= COURT_GRACE;
+    const need = wyrmEats(s);
+    const eaten = takeGoods(s, need);
+    if (eaten >= need * 0.75) {
       w.unfed = 0;
-      if (w.sulking > 0) {
+      if (w.sulking > 0 && !courtSulk) {
         w.sulking = 0;
         redraw(s);
         pushMessage(s, 'Fed at last, the wyrm stops sulking. The Gloam feels it and draws back.', 'good', true);
@@ -231,7 +250,7 @@ export function dailyWyrm(s: GameState): void {
       if (w.unfed === WYRM_SULK_AFTER && w.sulking === 0) {
         w.sulking = 1;
         redraw(s);
-        pushMessage(s, `Unfed for ${WYRM_SULK_AFTER} days, the wyrm sulks: it will not ward the Gloam until the markets feed it ${WYRM_EATS} goods a day. It wants leystone.`, 'bad', true, { x: n.x, y: n.y });
+        pushMessage(s, `Unfed for ${WYRM_SULK_AFTER} days, the wyrm sulks: it will not ward the Gloam until the markets feed it ${need} goods a day. It wants leystone.`, 'bad', true, { x: n.x, y: n.y });
       } else if (w.sulking > 0) {
         w.sulking++;
         if (w.sulking >= WYRM_DIES_AFTER) {
@@ -270,7 +289,7 @@ export function describeWyrm(s: GameState): string {
     case 'none': return 'No wyrm sleeps on this map.';
     case 'sleeping': return w.waking <= 0 ? 'Asleep, coiled around a distant node. Spires near it would wake it.' : `Stirring: ${Math.round(w.waking)}% awake. ${spiresAtWyrm(s)} spires drink from its node.`;
     case 'awake': return `Awake and unbound. It wants tribute each season (${wyrmTribute(s)} crowns or ${WYRM_TRIBUTE_GOODS} goods); refused ${w.refused} times.`;
-    case 'bound': return w.sulking > 0 ? `Bound but sulking (${w.sulking} days): no ward from its lair until fed ${WYRM_EATS} goods a day.` : `Bound. Guards ${WYRM_LAIR_RADIUS} tiles around its lair, eats ${WYRM_EATS} goods a day; fed ${w.fedDays} days running.`;
+    case 'bound': return w.sulking > 0 ? (w.courted && w.courtDark >= COURT_GRACE ? `Bound but sulking: the Wyrm-Court has been dark ${w.courtDark} days. No ward from its lair until the Court is lit again.` : `Bound but sulking (${w.sulking} days): no ward from its lair until fed ${wyrmEats(s)} goods a day.`) : `Bound. Guards ${WYRM_LAIR_RADIUS} tiles around its lair, eats ${wyrmEats(s)} goods a day${hasCourt(s) ? ' (halved by the lit Wyrm-Court)' : w.courted ? ` (the Court is dark: the full ${WYRM_EATS})` : ''}; fed ${w.fedDays} days running.`;
     case 'dead': return 'Dead. Its bones quiet the dead for miles.';
   }
 }

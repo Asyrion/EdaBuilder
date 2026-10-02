@@ -80,6 +80,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0 };
   state.materials.rayscale = state.materials.rayscale ?? 0;
   state.materials.glimdust = state.materials.glimdust ?? 0;
+  state.departed = state.departed ?? []; // iteration 53
+  state.burnWyrmfire = state.burnWyrmfire ?? true;
   state.gloamPressure = state.gloamPressure ?? 0.3;
   state.lastBadDay = state.lastBadDay ?? -30;
   state.unrestHigh = state.unrestHigh ?? 0;
@@ -88,13 +90,14 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
+  if (!state.dustLit || state.dustLit.length !== state.w * state.h) state.dustLit = new Uint16Array(state.w * state.h);
   state.stats.houndsTotal = state.stats.houndsTotal ?? 0;
   state.stats.houndRaids = state.stats.houndRaids ?? 0;
   state.stats.wyrmTributes = state.stats.wyrmTributes ?? 0;
   state.stats.wyrmFlyovers = state.stats.wyrmFlyovers ?? 0;
   state.stats.relics = state.stats.relics ?? 0;
   state.stats.portalTrips = state.stats.portalTrips ?? 0;
-  for (const k of ['lamplighterRounds', 'golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays', 'riots', 'goodsStolen', 'pelts'] as const) state.stats[k] = state.stats[k] ?? 0;
+  for (const k of ['lamplighterRounds', 'golemsWoken', 'golemsBound', 'skyraySchools', 'rayscaleTotal', 'bargeTrips', 'airshipVoyages', 'airshipCrowns', 'riderRescues', 'stormWarps', 'stormsDissolved', 'fullDays', 'firesTotal', 'surgesTotal', 'restlessTotal', 'peakPopulation', 'tigersTotal', 'tigersKilled', 'brownoutsSurvived', 'brownoutOpen', 'mothsSeen', 'daughters', 'terraformed', 'sectorsBought', 'glimdustTotal', 'marvels', 'quietHush', 'hushPressureBreaks', 'wispRing', 'councils', 'twinGoods', 'feastGoods', 'crossEggs', 'guildHalls', 'truebloods', 'devUses', 'greatWyrms', 'relicsSold', 'guildWars', 'wyrmDuels', 'relicsAuctioned', 'guildCharters', 'walkerKills', 'walkerLayings', 'healerVisits', 'wardenRounds', 'scholarTrips', 'tamerVisits', 'pilgrimPrayers', 'trueVeins', 'floodDays', 'floodsWeathered', 'bargemanRounds', 'quarterDays', 'riots', 'goodsStolen', 'pelts', 'tideTrips', 'surgesAbsorbed', 'dragonsReturned'] as const) state.stats[k] = state.stats[k] ?? 0;
   state.stats.stoneCut = state.stats.stoneCut ?? state.stats.terraformed; // before iteration 38 every terraform op counted as stone
   state.stats.lastFeastDay = state.stats.lastFeastDay ?? -99;
   state.guilds = state.guilds ?? initGuilds();
@@ -114,6 +117,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.cleanDays = state.cleanDays ?? 0;
   state.storms = state.storms ?? [];
   if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
+  state.wyrm.courted = state.wyrm.courted ?? false; // iteration 53
+  state.wyrm.courtDark = state.wyrm.courtDark ?? 0;
   // rebuild derived layers
   const n = state.w * state.h;
   for (const s of SERVICE_TYPES as ServiceType[]) state.coverage[s] = new Uint8Array(n);

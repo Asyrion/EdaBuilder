@@ -1405,6 +1405,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   mothloft: { w: 1, h: 1, height: 16, roofH: 5, wall: 'timber', roof: 'cone', windows: 2, windowRows: 3, seed: 25, runeBand: true, orbit: true },
   hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
   cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
+  greatcradle: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true, standingStones: true, crystal: true }, // a cradle at level 2 (iteration 53)
   hatchery: { w: 2, h: 2, height: 5, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 33, runeBand: true, leyLamps: true, standingStones: true },
   seep: { w: 1, h: 1, height: 3, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 9 },
   stoneward: { w: 1, h: 1, height: 12, roofH: 2, wall: 'darkstone', roof: 'flat', windows: 0, seed: 21, runeBand: true, standingStones: true },

@@ -1,9 +1,9 @@
-import { isCradle } from './wyrmcraft';
+import { GREAT_CRADLE_MANA, isCradle } from './wyrmcraft';
 /** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA, WONDER_HALLS } from './catalog';
-import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState , Terrain } from './types';
+import { MAP_H, MAP_W, RoadType, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
 import { guildEffect, hallActive } from './guilds';
@@ -27,6 +27,17 @@ export const PORTAL_CAP = 60;
 export const PORTAL_MANA = 0.1;
 /** How much mana of buildings a member of the chain can light; over it, its farthest go dark. Nodes carry anything. */
 export const LOAD_CAP: Record<string, number> = { spire: 80, wicktower: 20, stake: 60, nexus: 200 };
+/** The Underking's Seat warms cradles this far for no mana; the Lantern of Wicks halves the draw through lit spires this far (iteration 53). */
+export const SEAT_WARMTH = 30;
+export const WICKS_REACH = 30;
+/** Is this cradle warmed by a lit Underking's Seat (lit at no mana)? */
+export function seatWarmed(state: GameState, b: Building): boolean {
+  return isCradle(b.kind) && state.buildings.some((o) => o && o.kind === 'underkingseat' && o.state === 'ok' && o.lit && Math.hypot(o.x + 1 - b.x - 0.5, o.y + 1 - b.y - 0.5) <= SEAT_WARMTH);
+}
+/** Is this spire's draw halved by a lit Lantern of Wicks within reach? */
+export function wicksHalved(state: GameState, b: Building): boolean {
+  return b.kind === 'spire' && state.buildings.some((o) => o && o.kind === 'lanternofwicks' && o.state === 'ok' && o.lit && Math.hypot(o.x + 1 - b.x, o.y + 1 - b.y) <= WICKS_REACH);
+}
 export function loadCapOf(b: Building): number {
   return LOAD_CAP[b.kind] ?? (LEY_HALLS.includes(b.kind) ? 200 : 80);
 }
@@ -37,7 +48,7 @@ export function isLeyMember(b: Building): boolean {
 export function priorityOf(b: Building): 0 | 1 | 2 {
   if (b.priority !== undefined) return b.priority;
   const def = BUILDING_BY_KEY[b.kind];
-  if (def.service?.type === 'ward' || def.waterRadius) return 0;
+  if (def.service?.type === 'ward' || def.waterRadius || b.kind === 'wyrmcourt') return 0; // the Court goes dark last: a dark Court sulks the wyrm
   if (def.category === 'leisure') return 2;
   return 1;
 }
@@ -48,7 +59,7 @@ let beastmastersOn = false;
 export function manaUseOf(b: Building, hush = false): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
-  const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
+  const base = (def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse) + (isCradle(b.kind) && b.level >= 2 ? GREAT_CRADLE_MANA : 0); // a Great Cradle drinks four more
   if (isCradle(b.kind) && beastmastersOn) return base * 0.6;
   return hush && def.category === 'zone' ? base * 1.25 : base;
 }
@@ -73,11 +84,11 @@ export function updateMana(state: GameState): void {
     if (def.manaProduce) {
       // a mill with an older mill within 8 shares its river and runs at ×0.6
       const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8);
-      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1);
+      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : b.kind === 'greatweir' && b.sluice ? 2 : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); // the Weir's open sluice doubles it (iteration 53)
       supply += made;
       b.load = made;
     }
-    if (def.manaStorage && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
+    if (def.manaStorage && !cracked(b) && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
   });
 
   // 2. spire chain: BFS from nodes over spires/nexus
@@ -124,7 +135,7 @@ export function updateMana(state: GameState): void {
   const gardens: { x: number; y: number }[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.selfLit && b.state === 'ok') {
+    if (def.selfLit && b.state === 'ok' && !cracked(b)) {
       if (b.kind === 'hanginggardens') gardens.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 }); // only the vines' own gardens keep a lane alive
       sources.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, r: 2 });
     }
@@ -223,6 +234,21 @@ export function updateMana(state: GameState): void {
   }
   // (lit road tiles are marked after the shortfall decides whether the lantern-ways dim)
 
+  // 4b. the Underking's Seat warms every cradle within SEAT_WARMTH for no mana (iteration 53); the Lantern of Wicks halves what lit spires within WICKS_REACH carry
+  const seats: { x: number; y: number }[] = [];
+  const wicks: { x: number; y: number }[] = [];
+  for (let s = 0; s < state.buildings.length; s++) {
+    const b = state.buildings[s];
+    if (!b || !litB[s] || b.state !== 'ok') continue;
+    if (b.kind === 'underkingseat') seats.push({ x: b.x + 1, y: b.y + 1 });
+    if (b.kind === 'lanternofwicks') wicks.push({ x: b.x + 1, y: b.y + 1 });
+  }
+  const warmed = new Set<number>();
+  if (seats.length) for (let s = 0; s < state.buildings.length; s++) {
+    const b = state.buildings[s];
+    if (!b || b.state !== 'ok' || !isCradle(b.kind)) continue;
+    if (seats.some((q) => Math.hypot(q.x - b.x - 0.5, q.y - b.y - 0.5) <= SEAT_WARMTH)) { warmed.add(s); litB[s] = true; }
+  }
   // 5. demand & brownout
   let consumers: Consumer[] = [];
   let demand = 0;
@@ -236,7 +262,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = manaUseOf(b, hush) * mult;
+    const use = warmed.has(s) ? 0 : manaUseOf(b, hush) * mult;
     if (use > 0) {
       demand += use;
       let dmin = Infinity;
@@ -255,6 +281,7 @@ export function updateMana(state: GameState): void {
       let bd = Infinity;
       for (const nd of state.nodes) { const d = Math.hypot(bx - nd.x, by - nd.y); if (d < bd) { bd = d; best = null; } }
       for (const m of members) { const d = Math.hypot(bx - m.x, by - m.y); if (d < bd) { bd = d; best = m; } }
+      if (best && best.b.kind === 'spire' && wicks.length && wicks.some((q) => Math.hypot(q.x - best!.x, q.y - best!.y) <= WICKS_REACH)) { demand -= c.use / 2; c.use /= 2; } // the Lantern of Wicks halves the draw through its spires
       if (best) { best.load += c.use; best.list.push({ c, d: bd }); }
     }
     const shed = new Set<number>();
@@ -331,9 +358,11 @@ export function updateMana(state: GameState): void {
     if (!b.lit) return;
     for (let dy = 0; dy < b.h; dy++) for (let dx = 0; dx < b.w; dx++) lit[idx(b.x + dx, b.y + dy)] = 1;
   });
+  // glim-dust on a road tile lights that tile for a season: land value, the overlay and a glow, but it conducts nothing and lights no building (iteration 53)
+  for (let i = 0; i < n; i++) if (state.dustLit[i] > state.day && state.road[i]) lit[i] = 1;
   // dirty chunks where lit changed (for lantern-way glow rendering)
   for (let i = 0; i < n; i++) {
-    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine)) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
+    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine || state.dustLit[i])) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
     if (lit[i] !== oldLit[i] && state.bIndex[i] >= 0 && state.buildings[state.bIndex[i]]?.kind === 'portalarch') bumpRoadVersion();
   }
   state.lit = lit;

@@ -7,6 +7,7 @@ import { Zone, type Building, type GameState } from './types';
 import { GROWING_HALLS, forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
+import { litWonders } from './weave';
 
 export function taxOf(state: GameState, zone: Zone): number {
   switch (zone) {
@@ -88,9 +89,11 @@ export function checkMilestones(state: GameState): void {
   while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1)) && (state.milestone + 1 < MS.length - 1 || beaconLit())) {
     state.milestone++;
     const m = MS[state.milestone];
-    state.treasury += m.grant;
-    state.ledger.grants += m.grant;
-    pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${m.grant} crowns)`, 'milestone');
+    const halls = litWonders(state).length; // every lit wonder hall lifts the grant a tenth (iteration 53)
+    const grant = Math.round(m.grant * (1 + 0.1 * halls));
+    state.treasury += grant;
+    state.ledger.grants += grant;
+    pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${grant} crowns${halls ? `, a tenth more for each of ${halls} lit wonder hall${halls === 1 ? '' : 's'}` : ''})`, 'milestone');
     for (const line of districtUnlockNotes(state.milestone)) pushMessage(state, line, 'milestone');
   }
   if (stakeStage(state) !== stage0) {

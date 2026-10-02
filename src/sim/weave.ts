@@ -1,7 +1,7 @@
 /** The ley-weave: node aspects, dragon auras, Gloam pressure and the season's touch on the river. See DESIGN.md 13. */
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type DragonLine, type GameState } from './types';
-import { forEachBuilding, seasonOf } from './world';
+import { forEachBuilding, markDirty, seasonOf } from './world';
 import { treeStage, worldTree } from './growth';
 import { wyrmGuards } from './wyrm';
 import { districtTiles } from './wyrmcraft';
@@ -83,12 +83,22 @@ export function dragonAuras(s: GameState): Aura[] {
 export function auraAt(s: GameState, line: DragonLine, x: number, y: number): boolean {
   return dragonAuras(s).some((a) => a.line === line && Math.hypot(a.x - x, a.y - y) <= a.r);
 }
+/** Every line whose aura reaches a tile, each once, with the dragons' names (for the building inspector, iteration 53). */
+export function aurasAt(s: GameState, x: number, y: number): { line: DragonLine; names: string[] }[] {
+  const out: { line: DragonLine; names: string[] }[] = [];
+  for (const a of dragonAuras(s)) {
+    if (Math.hypot(a.x - x, a.y - y) > a.r) continue;
+    const e = out.find((o) => o.line === a.line);
+    if (e) { if (!e.names.includes(a.name)) e.names.push(a.name); } else out.push({ line: a.line, names: [a.name] });
+  }
+  return out;
+}
 export const AURA_INFO: Record<DragonLine, string> = {
-  ember: 'wyrmfire for the works',
+  ember: 'Craft works within its aura make 10 % more; it breathes wyrmfire for the alchemists',
   bone: 'the restless lie down within its aura (deathcare)',
   glim: 'lights its cradle\'s neighbours without mana',
   vein: '+10 mana a day while it roosts',
-  sky: 'flies courier loads of 40, a third faster',
+  sky: 'carts and couriers within its aura move a quarter faster',
   grey: 'the Gloam parts around it (ward)',
   tide: 'douses fires within its aura (fire brigade)',
   storm: 'dissolves mana-storms within its aura',
@@ -137,6 +147,32 @@ export function flooding(s: GameState): boolean {
 }
 /** Buildings the flood does not touch: moorings, tide-wells, mills and the Weir live on the water. */
 export const FLOODPROOF = [...MOORINGS, 'tidewell', 'torrentmill', 'greatweir'];
+/** The Great Weir's sluice stands open: 90 mana instead of 45, and in the Thaw from day 5 the bank below it floods (iteration 53). */
+export const SLUICE_FLOOD_REACH = 30;
+export function sluiceFlooding(s: GameState): boolean {
+  return !factionOf(s).rules.riverFreezes && seasonOf(s) === 0 && s.day % DAYS_PER_SEASON >= 5 && s.buildings.some((b) => b && b.kind === 'greatweir' && b.state === 'ok' && !!b.sluice);
+}
+/** Is this tile in a flood today: the Hush flood (city-wide) or the open sluice's Thaw flood within reach of the Weir. Callers check the bank distance. */
+export function floodedAt(s: GameState, x: number, y: number): boolean {
+  if (flooding(s)) return true;
+  if (!sluiceFlooding(s)) return false;
+  return s.buildings.some((b) => b && b.kind === 'greatweir' && b.state === 'ok' && !!b.sluice && Math.hypot(b.x - x, b.y - y) <= SLUICE_FLOOD_REACH);
+}
+/** The wonder halls standing and lit (or needing no mana): each delights the whole city and lifts the next grant (iteration 53). */
+export function litWonders(s: GameState): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(s, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (def.category === 'wonder' && b.state === 'ok' && (b.lit || !def.needsMana)) out.push(b);
+  });
+  return out;
+}
+/** Rare goods on show in a lit Hall of Marvels: one of each kind in the vault is an exhibit. */
+export function marvelExhibits(s: GameState): number {
+  if (!hasMarvel(s, 'hallofmarvels')) return 0;
+  const m = s.materials;
+  return [m.scale, m.wyrmfire, m.eggshell, m.rayscale, m.glimdust].filter((v) => v >= 1).length;
+}
 /** Torrent Mill output by season: the Thaw flood, the Hush freeze. */
 export function millFactor(s: GameState): number {
   if (riverFrozen(s)) return 0.5;
@@ -151,6 +187,8 @@ export function dailyWeave(s: GameState): void {
   });
   s.materials.glimdust += dust;
   s.stats.glimdustTotal += dust;
+  // glim-dust scattered on a road tile lights it for a season; the light ends today where its day has come (iteration 53)
+  for (let i = 0; i < s.dustLit.length; i++) if (s.dustLit[i] && s.dustLit[i] <= s.day) { s.dustLit[i] = 0; markDirty(s, i % s.w, (i / s.w) | 0); }
   s.gloamPressure = computeGloamPressure(s);
   // a quiet Hush: every day of the season under 0.45
   const dos = s.day % DAYS_PER_SEASON;

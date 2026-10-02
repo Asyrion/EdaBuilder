@@ -101,6 +101,13 @@ export interface Building {
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
   plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
   blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
+  sluice?: boolean; // the Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw (iteration 53)
+  broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
+}
+
+/** The Lantern of the Cores is cracked after taking a surge: no light, no store, no ward until it heals (iteration 53). */
+export function cracked(b: Building): boolean {
+  return b.kind === 'corelantern' && (b.broken ?? 0) > 0;
 }
 
 export const enum AgentKind {
@@ -135,6 +142,19 @@ export interface Dragon {
   training: Training;
   agentId: number; // creature agent when out of the cradle, else -1
   born: number; // day
+  lastTrip?: { fx: number; fy: number; tx: number; ty: number; goods: number; day: number }; // a courier's last delivery (iteration 53)
+  lined?: boolean; // an egg whose nest is lined with eggshell warms a quarter faster (iteration 53)
+}
+
+/** A dragon that left the city (starved, trained wild, its cradle gone): it returns after a season, wild, to ask a tribute. */
+export interface DepartedDragon {
+  name: string;
+  line: DragonLine;
+  stage: DragonStage;
+  day: number; // day it left
+  x: number; // its cradle's tile
+  y: number;
+  returned: boolean; // its return tale has been answered
 }
 
 export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited';
@@ -154,6 +174,8 @@ export interface WyrmState {
   bound: number; // day bound, -1
   died: number; // day died, -1
   askedBind: number; // day the binding was last offered, -1
+  courted: boolean; // a lit Wyrm-Court has stood since the binding (iteration 53)
+  courtDark: number; // days in a row the courted wyrm has had no lit Court
 }
 
 export interface Materials {
@@ -187,6 +209,7 @@ export interface Agent {
   ay?: number;
   job?: string; // walkers: key into WALKER_JOBS
   log?: string[]; // walkers: what it did today, last three lines
+  duty?: 'guard' | 'works'; // a bound golem's post: guard (ward 6 at its foundry) or works (12 hands at targetId); unset = labour (iteration 53)
 }
 
 export interface TaxRates {
@@ -243,7 +266,7 @@ export interface PendingEvent {
   id: string;
   title: string;
   text: string;
-  choices: { label: string; desc: string }[];
+  choices: { label: string; desc: string; slider?: { max: number; label: string } }[]; // a slider choice carries an amount (the caravan's rare goods)
 }
 
 export interface GameState {
@@ -327,6 +350,9 @@ export interface GameState {
   dragons: Dragon[];
   nextDragonId: number;
   materials: Materials;
+  departed: DepartedDragon[]; // dragons that left and may return (iteration 53)
+  burnWyrmfire: boolean; // burn 0.05 wyrmfire a day for Craft +15 % (iteration 53)
+  dustLit: Uint16Array; // a road tile scattered with glim-dust: the day its light ends, 0 none (iteration 53)
   wyrm: WyrmState;
   fenNex: number; // district granted to the Fen-Nex, 0 none
   guilds: GuildState; // the council at the Guildhall (guilds.ts)
@@ -430,6 +456,9 @@ export interface GameState {
     riots: number;
     goodsStolen: number; // goods taken from unwatched shelves
     pelts: number; // hound pelts the lodges brought in
+    tideTrips: number; // barges a Tide dragon swam (iteration 53)
+    surgesAbsorbed: number; // surges the Lantern of the Cores took
+    dragonsReturned: number; // departed dragons that came back to ask a tribute
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

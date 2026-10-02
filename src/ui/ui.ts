@@ -1,4 +1,4 @@
-import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
+import { FACTIONS, buildsFor, canBuild, factionKey, factionOf, milestonesOf, specialLock, type FactionId, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, GATE_COST, GATE_UNLOCK, WALL_COST, WALL_MANA, WALL_UNLOCK, WALL_UPKEEP, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { computeLedger } from '../sim/economy';
@@ -6,9 +6,9 @@ import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappin
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
-import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
+import { AgentKind, RoadType, Zone, cracked, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
-import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, waterCapOf } from '../sim/networks';
+import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, seatWarmed, waterCapOf, wicksHalved } from '../sim/networks';
 import { SEAM, SPENT_RATE } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
 import { mewsActive } from '../sim/beasts';
@@ -25,7 +25,8 @@ import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, districtsInUse, edictsFor } from '../sim/edicts';
 import { DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterLocked, districtOpenAt } from '../sim/districts';
-import { LINE_INFO, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, dragonsIn, cradleCapacity, isCradle, stageCap } from '../sim/wyrmcraft';
+import { FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
+import { TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
@@ -37,7 +38,7 @@ import type { Scenario } from '../sim/types';
 import { SCENARIOS } from '../sim/scenario';
 import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
-import { ASPECT_INFO, AURA_INFO, aspectAt, pressureWord } from '../sim/weave';
+import { ASPECT_INFO, AURA_INFO, aspectAt, aurasAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
@@ -45,9 +46,9 @@ import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
-import { WYRM_LAIR_RADIUS, describeWyrm, wyrmNode, wyrmTribute } from '../sim/wyrm';
+import { WYRM_EATS, WYRM_LAIR_RADIUS, describeWyrm, wyrmEats, wyrmNode, wyrmTribute } from '../sim/wyrm';
 import { forecast } from '../sim/forecast';
-import { describeBeasts, boundGolems, wildGolems, raysLured, GOLEM_LABOUR } from '../sim/beasts';
+import { describeBeasts, boundGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
 import { HUSH_CRAFT, glimhouseNear, treeStage, TREE_LEISURE_RADIUS, TREE_WARD_RADIUS } from '../sim/growth';
 import { seasonOf as seasonOfState } from '../sim/world';
 
@@ -93,7 +94,13 @@ export interface UiHost {
   replate(buildingId: number): void;
   vent(buildingId: number): void;
   setRole(id: number, role: DragonRole, target: number): string | null;
-  resolveEvent(choice: number): void;
+  raiseCradle(id: number): string | null;
+  lineNest(id: number): string | null;
+  setBurnWyrmfire(on: boolean): void;
+  toggleSluice(id: number): string | null;
+  setGolemDuty(id: number, duty: 'labour' | 'guard' | 'works', target: number): string | null;
+  scatterDust(x: number, y: number): boolean;
+  resolveEvent(choice: number, amount?: number): void;
   centerOn(x: number, y: number): void;
   camera: Camera;
   selected: Building | null;
@@ -282,6 +289,7 @@ export class UI {
       }
       add('De-zone', '', false, t.kind === 'zone' && t.zone === Zone.None, () => this.host.setTool({ kind: 'zone', zone: Zone.None }), () => `<div class="t">De-zone</div>Removes zoning (and any zoned building) from the area.`);
     } else if (this.category === 'land') {
+      add('Glim-dust', '1 dust/tile', s.milestone < 2, t.kind === 'dust', () => this.host.setTool({ kind: 'dust' }), () => `<div class="t">Scatter glim-dust</div>One glim-dust lights a track or cobbled tile for a season: land value and a warm glow where no spire reaches, but it conducts no ley and lights no building. ${s.materials.glimdust.toFixed(1)} in the vault (Moth-Lofts gather it; rays over a Rayscale Mirror shed it).${s.milestone < 2 ? `<br><span class="muted">Unlocks at ${this.ms()[2].name}</span>` : ''}`);
       for (const op of (Object.keys(TERRAFORM) as TerraformOp[]).filter((k) => !TERRAFORM[k].faction || TERRAFORM[k].faction!.includes(s.faction))) {
         const d = TERRAFORM[op];
         const locked = s.milestone < d.unlock;
@@ -326,7 +334,7 @@ export class UI {
     if (d.service) bits.push(`radius ${d.service.radius}`);
     if (d.waterRadius) bits.push(`waters ${d.waterRadius} tiles`);
     if (d.needsMana) bits.push('needs mana');
-    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${d.relic && !this.host.state.relics.complete.includes(d.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === d.relic)?.name} entire (Ruin Delve and Academy)` : `Unlocks at ${this.ms()[d.unlock].name} (${this.ms()[d.unlock].pop} folk)`}</span>` : ''}`;
+    return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${d.relic && !this.host.state.relics.complete.includes(d.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === d.relic)?.name} entire (Ruin Delve and Academy)` : this.host.state.milestone >= d.unlock && specialLock(this.host.state, d.key) ? specialLock(this.host.state, d.key) : `Unlocks at ${this.ms()[d.unlock].name} (${this.ms()[d.unlock].pop} folk)`}</span>` : ''}`;
   }
 
   showTooltip(html: string, x: number, y: number): void {
@@ -713,7 +721,26 @@ export class UI {
     } else {
       rows.push(row('Upkeep', `${def.upkeep} c/day`));
       if (GROWING_HALLS.includes(b.kind)) rows.push(row('Hall', `${stakeHallName(s)} (grows with the city)`));
-      if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
+      if (def.manaUse) rows.push(row('Mana', seatWarmed(s, b) ? `none: warmed by the Underking's Seat (${manaUseOf(b)} without it)` : `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
+      if (isCradle(b.kind)) {
+        rows.push(row('Nests', `${dragonsIn(s, b.id).length} / ${cradleCapacity(b)}${isGreatCradle(b) ? ' (a Great Cradle)' : ''}`));
+        const mk = marketsInReach(s, b);
+        rows.push(row(`Markets within ${FEED_REACH}`, mk.length ? `${mk.length}, ${Math.round(mk.reduce((n, m) => n + m.stock, 0))} goods on their shelves` : '<span class="bad">none: its dragons will starve</span>'));
+        const lg = lodgesFor(s, b);
+        rows.push(row('Lodge seats', lg.length ? `${lg.length * LODGE_SEATS} at ${lg.length} lodge${lg.length === 1 ? '' : 's'} within ${LODGE_REACH} (shared with other cradles in their reach)` : `<span class="bad">no Tamer's Lodge within ${LODGE_REACH}</span>`));
+      }
+      if (b.kind === 'mine') rows.push(row('Concord Wardens', delverAt(s, b) ? 'a delver drake works the seam: they wake half as often' : 'the digging may wake one; a delver drake would halve the chance'));
+      if (b.kind === 'ring') { const ch = ringChampion(s); rows.push(row('Next bout', `day ${nextBoutDay(s)}`)); rows.push(row('Champion', ch ? `${ch.name} the ${STAGE_NAMES[ch.stage]}: odds ${Math.round(boutOdds(s, ch, nextBoutDay(s)).chance * 100)} % against a challenger of its weight` : 'none named (Wyrms panel)')); }
+      if (b.kind === 'wyrmforge') rows.push(row('Fire', forgeHot(s) ? `hot: burns ${FORGE_BURN} wyrmfire a day (${s.materials.wyrmfire.toFixed(1)} in the vault)` : '<span class="bad">cold: no wyrmfire in the vault; the works near it lose their quarter</span>'));
+      if (b.kind === 'greatweir') rows.push(row('Sluice', b.sluice ? 'open: 90 mana a day; the bank within 30 floods in the Thaw' : 'closed: 45 mana a day'));
+      if (b.kind === 'corelantern') rows.push(row('Cores', cracked(b) ? `<span class="bad">cracked: dark for ${b.broken} more day${b.broken === 1 ? '' : 's'}</span>` : 'whole: takes the first 30 overdraw of a surge, then cracks for 10 days'));
+      if (b.kind === 'wyrmcourt') { rows.push(row('The wyrm', describeWyrm(s))); rows.push(row('Appetite', s.wyrm.state === 'bound' ? `${wyrmEats(s)} goods a day${b.lit ? ' (halved while the Court is lit)' : ` (dark: the full ${WYRM_EATS}; ${s.wyrm.courted ? `${s.wyrm.courtDark} dark day${s.wyrm.courtDark === 1 ? '' : 's'}, it sulks at 2` : 'two dark days and it sulks'})`}` : 'none bound yet')); }
+      if (GOLEM_HOUSES.includes(b.kind)) {
+        const gs = s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'golem' && a.load > 0 && a.homeId === b.id);
+        const works = postableWorks(s, b);
+        rows.push(row('Wardens', gs.length ? `${gs.length} bound here: labour (12 hands each), guard (a ward of ${GOLEM_GUARD_RADIUS} around the foundry) or posted to a works within ${GOLEM_POST_REACH}` : 'none bound here yet'));
+        for (const g of gs) rows.push(row(`Warden ${g.id}`, `<select data-golem="${g.id}"><option value="labour" ${!g.duty ? 'selected' : ''}>labour: 12 hands for the city</option><option value="guard" ${g.duty === 'guard' ? 'selected' : ''}>guard: ward ${GOLEM_GUARD_RADIUS} here</option>${works.map((w) => `<option value="works:${w.id}" ${g.duty === 'works' && g.targetId === w.id ? 'selected' : ''}>at the works (${w.x},${w.y}): 12 hands at its bench</option>`).join('')}</select>`));
+      }
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
       if (def.waterRadius) {
         const wr = waterRadiusOf(s, b);
@@ -739,8 +766,9 @@ export class UI {
       if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
       if (b.kind === 'spire' && !b.lit) problems.push('Not linked: a spire must be within 6 tiles of a ley node or a lit spire.');
-      if (isLeyMember(b) && b.lit && b.load !== undefined) { rows.push(row('Load', `${Math.round(b.load)} / ${loadCapOf(b)} mana of buildings`)); if (b.load > loadCapOf(b)) problems.push('Overloaded: its farthest buildings go dark. Raise another spire among them.'); }
+      if (isLeyMember(b) && b.lit && b.load !== undefined) { rows.push(row('Load', `${Math.round(b.load)} / ${loadCapOf(b)} mana of buildings${wicksHalved(s, b) ? ' (halved by the Lantern of Wicks)' : ''}`)); if (b.load > loadCapOf(b)) problems.push('Overloaded: its farthest buildings go dark. Raise another spire among them.'); }
     }
+    { const au = aurasAt(s, b.x + (b.w - 1) / 2, b.y + (b.h - 1) / 2); if (au.length) rows.push(row('Dragon auras', au.map((a) => `<b>${LINE_INFO[a.line].name}</b> (${a.names.join(', ')}): ${AURA_INFO[a.line]}`).join('; '))); }
     if (def.manaUse > 0 && !isLeyMember(b)) { const p = priorityOf(b); rows.push(row('Brownout', `<span class="prio">${[['Essential', 0], ['Normal', 1], ['Dim', 2]].map(([n, v]) => `<button data-prio="${v}" class="${p === v ? 'active' : ''}" title="When the ley runs short, Dim buildings go dark first, then Normal, then Essential">${n}</button>`).join(' ')}</span>`)); }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
     if (def.leystone) {
@@ -836,6 +864,30 @@ export class UI {
       btn.onclick = () => { this.host.replate(b.id); this.refreshInfo(); };
       el.appendChild(btn);
     }
+    if (isCradle(b.kind) && !isGreatCradle(b) && b.state === 'ok') {
+      const btn = document.createElement('button');
+      const early = s.milestone < GREAT_CRADLE_MILESTONE;
+      btn.textContent = `Raise to a Great Cradle (${GREAT_CRADLE_COST} crowns): four nests, +${GREAT_CRADLE_MANA} mana${early ? ` (from ${this.ms()[GREAT_CRADLE_MILESTONE].name})` : ''}`;
+      btn.disabled = early || s.treasury < GREAT_CRADLE_COST;
+      btn.style.width = '100%';
+      btn.onclick = () => { const why = this.host.raiseCradle(b.id); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshInfo(); };
+      el.appendChild(btn);
+    }
+    if (b.kind === 'greatweir' && b.state === 'ok') {
+      const btn = document.createElement('button');
+      btn.textContent = b.sluice ? 'Close the sluice (45 mana a day, the bank stays dry)' : 'Open the sluice (90 mana a day; floods the bank within 30 in the Thaw)';
+      btn.style.width = '100%';
+      btn.onclick = () => { const why = this.host.toggleSluice(b.id); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshInfo(); };
+      el.appendChild(btn);
+    }
+    el.querySelectorAll('select[data-golem]').forEach((sel) => {
+      (sel as HTMLSelectElement).onchange = () => {
+        const [duty, target] = (sel as HTMLSelectElement).value.split(':');
+        const why = this.host.setGolemDuty(Number((sel as HTMLElement).dataset.golem), duty as 'labour' | 'guard' | 'works', Number(target ?? -1));
+        if (why) this.toast(`<p class="bad">${why}</p>`, 2000);
+        this.refreshInfo();
+      };
+    });
     el.querySelectorAll('button[data-prio]').forEach((pb) => { (pb as HTMLButtonElement).onclick = () => { this.host.setPriority(b.id, Number((pb as HTMLElement).dataset.prio) as 0 | 1 | 2); this.refreshInfo(); }; });
   }
 
@@ -898,7 +950,7 @@ export class UI {
     const title = isWyrm ? (s.wyrm.state === 'sleeping' ? 'The Sleeping Wyrm' : s.wyrm.state === 'dead' ? "The Wyrm's Bones" : 'The Vein-Wyrm') : founding ? 'The Founding Wellspring' : s.daughter && s.daughter.node === i ? `${s.daughter.name}'s Wellspring` : 'Ley Node';
     el.innerHTML = `<button class="close">✕</button><h2>${title}</h2><div class="muted">(${n.x},${n.y}) · ${isWyrm ? 'a Vein with a wyrm coiled on it' : 'a Vein breaking the surface'}</div>${rows.join('')}
       ${isWyrm ? `<p class="${s.wyrm.state === 'sleeping' && s.wyrm.waking > 0 ? 'warn' : 'muted'}">${describeWyrm(s)}</p>` : ''}
-      <p class="muted">${isWyrm && s.wyrm.state === 'sleeping' ? `Spires within 6 tiles drink from the wyrm and wake it (about ${Math.round(100 / 3)} days per spire). Deepening this node wakes it at once. Awake, it wants tribute each season, or it burns; a Wyrm-Court (Free City) can bind it as the city's guardian: wards ${WYRM_LAIR_RADIUS} tiles, no hounds, happiness +10, eats 40 goods a day.` : `Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.`}</p>
+      <p class="muted">${isWyrm && s.wyrm.state === 'sleeping' ? `Spires within 6 tiles drink from the wyrm and wake it (about ${Math.round(100 / 3)} days per spire). Deepening this node wakes it at once. Awake, it wants tribute each season, or it burns; a Wyrm-Court (Free City) can bind it as the city's guardian: wards ${WYRM_LAIR_RADIUS} tiles, no hounds, happiness +10, eats 40 goods a day (20 while the Court is lit).` : `Ley Spires within 6 tiles of a node drink from it. Deepening the Wellspring (from Burgh) adds ${NODE_DEEPEN_MANA} mana a day, twice at most.`}</p>
       <button id="n-deepen" ${why ? 'disabled' : ''}>${isWyrm && s.wyrm.state === 'sleeping' ? 'Deepen and wake the wyrm' : 'Deepen the Wellspring'} (${depth < NODE_DEEPEN_COST.length ? NODE_DEEPEN_COST[depth] + ' crowns' : 'done'})</button>
       ${why ? `<div class="muted" style="margin-top:4px">${why}</div>` : ''}
       ${!founding && !isWyrm && s.milestone >= 8 && !s.daughter ? `<div class="drow" style="margin-top:8px"><input id="n-dname" type="text" value="${CITY_NAMES[(i * 3) % CITY_NAMES.length]}" maxlength="18" style="width:120px"> <button id="n-daughter" ${canDaughter === true ? '' : 'disabled'}>Found a daughter wardlight</button>${canDaughter === true ? '' : `<div class="muted">${canDaughter}</div>`}</div>` : ''}
@@ -1134,14 +1186,14 @@ export class UI {
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
             <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
-            <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge; eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role.</li>
+            <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge (it seats four); eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role. Dragons eat from markets within 12 of the cradle (a warden from its district); ten unfed days cost a stage, and a dragon that leaves comes back after a season to ask a tribute. A cradle becomes a <b>Great Cradle</b> (four nests) from the Burgh; the Ring shows a champion's odds before each bout.</li>
             <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
             <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
             <li><b>Longwood and the Fen-Nex</b>: big forests hide <b>war-tigers</b> that hunt hearths by night (hunters, strong Watch or warden drakes kill them); the <b>Fen-Nex</b> fox-folk trade honestly half the time and may take a quarter of the city; a wild surge can leave a drifting <b>mana-storm</b> that warps buildings until wards dissolve it; the <b>Font of Quieting</b> (Free City) makes the dead easy to lay down.</li>
             <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; a lit <b>Drake Mews</b> sends <b>drake riders</b> to the restless and to fires; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus.</li>
-            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills; a <b>Golem Foundry</b> (Burgh) binds them into tireless labour that drinks mana. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
-            <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura; rare goods build the <b>Marvels</b> tab; the Gloam's pressure rises with the dead and falls with faith.</li>
-            <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City) binds it as the city's guardian, if you feed it.</li>
+            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills (a delver drake halves it); a <b>Golem Foundry</b> (Burgh) binds them and its panel sets each one to labour, to guard the foundry or to work a Craft bench. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale; a <b>Rayscale Mirror</b> gets glim-dust instead). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
+            <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura (an Ember drake lifts Craft a tenth, a Sky wyvern speeds the carts, a Tide drake swims a barge a day) and every building in one names it; rare goods build the <b>Marvels</b> tab and have sinks of their own (the <b>Scale-Mail</b> edict, the Forge's fire, an eggshell-lined nest, glim-dust scattered on a dark lane from the Land tab, the caravan's share); the Gloam's pressure rises with the dead and falls with faith.</li>
+            <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City, once a wyrm is awake) binds it as the city's guardian: lit, it halves the wyrm's appetite; dark two days, the wyrm sulks. Every lit <b>wonder hall</b> delights the city (+5) and lifts the next grant a tenth; the <b>Lantern of the Cores</b> takes the first 30 of a surge and cracks for 10 days.</li>
             <li><b>Walkers</b>: Watch Houses send watchmen, Boneyards sextons, Healer's Shrines healers, spires Tallowkin wardens (under their edict), Academies scholars to the delve, Tamer's Lodges tamers to the cradles, and shrines pilgrims to the temple. The streets they walk count as covered, and each does its job where it goes.</li>
             <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects and dragon auras; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
@@ -1458,30 +1510,55 @@ export class UI {
     const slots = cradles.reduce((n, c) => n + cradleCapacity(c), 0);
     const mines = st.buildings.filter((b) => b && b.kind === 'mine') as NonNullable<typeof st.buildings[number]>[];
     const districts = districtsInUse(st);
+    const seats = lodgeSeats(st);
+    const champ = ringChampion(st);
     const rows = st.dragons.map((d) => {
       const stageMax = STAGE_DAYS[d.stage];
       const pct = d.stage >= stageCap(d) ? 100 : Math.min(100, Math.round((d.days / stageMax) * 100));
       const hasRing = st.buildings.some((b) => b && b.kind === 'ring');
+      const cradle = st.buildings.find((b) => b && b.id === d.cradleId) ?? null;
+      const seat = seats.get(d.id) ?? null;
+      const bits: string[] = [];
+      if (d.stage === 0) bits.push(d.lined ? 'nest lined with eggshell: hatches a quarter faster' : `<button data-line="${d.id}" ${st.materials.eggshell >= 1 ? '' : 'disabled'} title="One eggshell: the egg warms a quarter faster">Line the nest (1 eggshell)</button>`);
+      if (d.stage >= 1) bits.push(seat ? `seat at the lodge (${seat.x},${seat.y})` : `<span class="bad">no lodge seat${d.stage === 1 ? ': it will not grow' : ': grows at half pace' + (d.training === 'hard' ? ', scorches thrice as often' : '')}</span>`);
+      if (d.stage >= 1 && cradle) {
+        const mk = feedingMarkets(st, d, cradle);
+        bits.push(d.role === 'warden' && d.roleTarget > 0 ? `eats ${eats(d)} a day from the ${mk.length} market${mk.length === 1 ? '' : 's'} of its district` : `eats ${eats(d)} a day from ${mk.length} market${mk.length === 1 ? '' : 's'} within ${FEED_REACH} of its cradle`);
+        if (d.hungry > 0) bits.push(`<span class="bad">hungry ${d.hungry} day${d.hungry === 1 ? '' : 's'}${d.stage >= 2 ? ` (a stage lost at ${REGRESS_AFTER})` : ''}</span>`);
+      }
+      if (swimsBarges(d)) { const q = tideMooring(st, d); bits.push(q ? `swims a barge a day from the quay at (${q.x},${q.y})` : `no mooring within ${TIDE_REACH} of its cradle to swim a barge from`); }
+      if (d.role === 'courier') bits.push(d.lastTrip ? `last trip: ${d.lastTrip.goods} goods from (${d.lastTrip.fx},${d.lastTrip.fy}) to (${d.lastTrip.tx},${d.lastTrip.ty}) on day ${d.lastTrip.day}` : 'no trip yet');
+      if (d.role === 'champion' && d.stage >= 2) { const o = boutOdds(st, d, nextBoutDay(st)); bits.push(`<b>odds ${Math.round(o.chance * 100)} %</b> at the bout on day ${nextBoutDay(st)}${champ && champ.id !== d.id ? ` (${champ.name} fights first)` : ''}`); }
       const roleSel = d.stage >= 2
         ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
         <div><b>${d.name}</b> <span class="muted">the ${d.second ? `${LINE_INFO[d.line].name}-${LINE_INFO[d.second].name} ${d.trueblood ? 'trueblood' : 'crossed'}` : LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>
         <div class="muted">${LINE_INFO[d.line].desc}. ${d.stage >= 2 && (d.role === 'none' || d.role === 'warden') ? `<span class="good">Aura: ${AURA_INFO[d.line]}${d.second ? `; and, fainter, ${AURA_INFO[d.second]}` : ''}.</span> ` : ''}${(() => { const c = st.buildings.find((b) => b && b.id === d.cradleId); return c && aspectAt(st, c.x, c.y) === d.line ? '<span class="good">Attuned to its node.</span> ' : ''; })()}${d.stage >= stageCap(d) ? (d.stage >= 4 ? 'A great wyrm: auras half again as wide, the Gloam shrinks from it.' : d.stage >= 3 ? 'A grown wyvern.' : 'Grown as far as its line allows on the ground.') : `Growth ${pct}% toward ${STAGE_NAMES[d.stage + 1]}${d.trueblood && d.stage === 3 ? ' (a trueblood may become a great wyrm)' : ''}.`}</div>
+        ${bits.length ? `<div class="muted">${bits.join(' · ')}</div>` : ''}
         <div class="drow">Training: <select data-train="${d.id}"><option value="gentle" ${d.training === 'gentle' ? 'selected' : ''}>gentle (slow, safe)</option><option value="hard" ${d.training === 'hard' ? 'selected' : ''}>hard (fast, mishaps)</option><option value="wild" ${d.training === 'wild' ? 'selected' : ''}>wild (fastest, may leave)</option></select> Role: ${roleSel}</div>
       </div>`;
     });
     const m = st.materials;
+    const great = cradles.filter((c) => isGreatCradle(c)).length;
+    const forges = st.buildings.filter((b) => b && b.kind === 'wyrmforge' && b.state === 'ok' && b.lit).length;
+    const departed = st.departed.filter((e) => !e.returned);
     this.el.wyrms.innerHTML = `<div class="box panel">
       <h2>Wyrmcraft</h2>
-      <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} slots). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day; hatchlings need a Tamer's Lodge within 10 tiles and food from nearby markets.</p>
-      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost. Materials: scale ${Math.round(m.scale)} · wyrmfire ${m.wyrmfire.toFixed(1)}${m.wyrmfire > 0 ? ' (Craft +15%)' : ''} · eggshell ${m.eggshell.toFixed(1)} · rayscale ${m.rayscale.toFixed(1)} · glim-dust ${m.glimdust.toFixed(1)} <span class="muted">(the Marvels tab spends them; caravans buy them)</span></p>
+      <p class="muted">Cradles: ${cradles.length} (${st.dragons.length} / ${slots} nests${great ? `, ${great} Great` : ''}). Eggs come from events: a warm seam in a mine, a quiet boneyard with an Ossuary, an old Moth-Loft, poachers. A cradle needs ley within 6 tiles and 8 mana a day (a Great Cradle, raised from its panel at ${this.ms()[GREAT_CRADLE_MILESTONE].name}, has four nests for 4 more); each Tamer's Lodge within ${LODGE_REACH} seats ${LODGE_SEATS}; dragons eat from markets within ${FEED_REACH} of the cradle (a warden from its district), and ${REGRESS_AFTER} unfed days cost a stage. A dragon that leaves comes back after a season to ask a tribute.</p>
+      <p class="muted">Ring: ${st.stats.boutsWon} won, ${st.stats.boutsLost} lost${champ ? `; ${champ.name} fights next on day ${nextBoutDay(st)} at ${Math.round(boutOdds(st, champ, nextBoutDay(st)).chance * 100)} %` : ''}. Materials: scale ${m.scale.toFixed(1)}${scaleMailOn(st) ? ' <span class="good">(Scale-Mail: unrest −5 %, 0.05 a day)</span>' : ''} · wyrmfire ${m.wyrmfire.toFixed(1)} <label title="Burns ${WYRMFIRE_BURN} a day while there is any"><input type="checkbox" id="w-burn" ${st.burnWyrmfire ? 'checked' : ''}> burn it for Craft +15 %</label>${forges ? ` (${forges} Forge${forges === 1 ? '' : 's'} burn${forges === 1 ? 's' : ''} ${FORGE_BURN} a day${forgeHot(st) ? '' : ': <span class="bad">cold</span>'})` : ''} · eggshell ${m.eggshell.toFixed(1)} (lines a nest; the Font costs 3) · rayscale ${m.rayscale.toFixed(1)} · glim-dust ${m.glimdust.toFixed(1)} (the Land tab scatters it on a dark lane for a season) <span class="muted">(the Marvels tab spends them; the caravan buys the share you set)</span></p>
+      ${departed.length ? `<p class="warn">Departed: ${departed.map((e) => `${e.name} the ${LINE_INFO[e.line].name} ${STAGE_NAMES[e.stage]} (left day ${e.day}; returns from day ${e.day + 30})`).join('; ')}.</p>` : ''}
       <p class="muted">The Gloam is <b>${pressureWord(st.gloamPressure)}</b> (${Math.round(st.gloamPressure * 100)}%): the dead, the restless, overdraw and wild beasts press it; faith, the wyrm, the Tree and Grey ley hold it back.</p>
       <p class="muted">Beasts: ${describeBeasts(st)}</p>
       ${st.wyrm.state !== 'none' ? `<div class="wyrmrow"><b>The Vein-Wyrm</b> <span class="muted">at (${wyrmNode(st)!.x},${wyrmNode(st)!.y})</span><div class="${st.wyrm.state === 'bound' && st.wyrm.sulking === 0 ? 'good' : st.wyrm.state === 'awake' || st.wyrm.sulking > 0 ? 'warn' : 'muted'}">${describeWyrm(st)}</div><button id="w-goto">Show me</button></div>` : ''}
       ${rows.length ? rows.join('') : '<p class="flavor">No dragons yet. Build a Wyrm-Cradle and wait for the Veins to offer an egg.</p>'}
       <div style="text-align:right"><button id="w-close">Close</button></div>
     </div>`;
+    const burn = this.el.wyrms.querySelector('#w-burn') as HTMLInputElement | null;
+    if (burn) burn.onchange = () => { this.host.setBurnWyrmfire(burn.checked); this.refreshWyrms(); };
+    this.el.wyrms.querySelectorAll('button[data-line]').forEach((btn) => {
+      (btn as HTMLButtonElement).onclick = () => { const why = this.host.lineNest(Number((btn as HTMLElement).dataset.line)); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshWyrms(); };
+    });
     this.el.wyrms.querySelectorAll('select[data-train]').forEach((sel) => {
       (sel as HTMLSelectElement).onchange = () => this.host.setTraining(Number((sel as HTMLElement).dataset.train), (sel as HTMLSelectElement).value as Training);
     });
@@ -1541,7 +1618,7 @@ export class UI {
       const cityOn = this.edictScope ? !!st.edicts[e.key] : false;
       return `<div class="edict ${locked ? 'locked' : ''}">
         <label><input type="checkbox" data-key="${e.key}" ${on || cityOn ? 'checked' : ''} ${locked || cityOn ? 'disabled' : ''}> <b>${e.name}</b> <span class="muted">(${e.costPerDay(st)} c/day${this.edictScope ? ', scaled to the district' : ''})</span>${cityOn ? ' <span class="muted">city-wide</span>' : ''}</label>
-        <div class="muted">${e.desc}${locked ? ` <span class="warn">Unlocks at ${this.ms()[e.unlock].name}.</span>` : ''}</div>
+        <div class="muted">${e.desc}${e.key === 'scalemail' ? ` <span class="${st.materials.scale > 0 ? 'good' : 'warn'}">${st.materials.scale > 0 ? `${st.materials.scale.toFixed(1)} scale in the vault.` : 'Idle: no scale in the vault.'}</span>` : ''}${locked ? ` <span class="warn">Unlocks at ${this.ms()[e.unlock].name}.</span>` : ''}</div>
         <div class="flavor">${e.flavor}</div>
       </div>`;
     });
@@ -1637,10 +1714,11 @@ export class UI {
     el.innerHTML = `<div class="box panel" style="border-color:var(--gold)">
       <h2>${pe.title}</h2>
       <p>${pe.text}</p>
-      <div class="choices">${pe.choices.map((c, i) => `<button data-i="${i}"><b>${c.label}</b><br><span class="muted">${c.desc}</span></button>`).join('')}</div>
+      <div class="choices">${pe.choices.map((c, i) => `${c.slider ? `<div class="tax" style="margin:4px 0 0"><label>${c.slider.label}</label><input type="range" min="0" max="${c.slider.max}" value="${c.slider.max}" data-slider="${i}"><output>${c.slider.max} %</output></div>` : ''}<button data-i="${i}"><b>${c.label}</b><br><span class="muted">${c.desc}</span></button>`).join('')}</div>
     </div>`;
     el.classList.remove('hidden');
-    el.querySelectorAll('button').forEach((b) => (b.onclick = () => this.host.resolveEvent(Number((b as HTMLElement).dataset.i))));
+    el.querySelectorAll('input[data-slider]').forEach((inp) => { (inp as HTMLInputElement).oninput = () => { (inp.nextElementSibling as HTMLOutputElement).textContent = `${(inp as HTMLInputElement).value} %`; }; });
+    el.querySelectorAll('button').forEach((b) => (b.onclick = () => { const i = Number((b as HTMLElement).dataset.i); const sl = el.querySelector(`input[data-slider="${i}"]`) as HTMLInputElement | null; this.host.resolveEvent(i, sl ? Number(sl.value) : undefined); }));
   }
 
   showGameOver(): void {

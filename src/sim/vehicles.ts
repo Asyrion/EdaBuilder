@@ -1,7 +1,7 @@
 /** Vehicles: floating carts, river barges (Quay), drake riders (Drake Mews), the airship (Sky-Dock). See DESIGN.md 4.36. */
 import { BUILDING_BY_KEY } from './catalog';
 import { isGoodsSource } from './growth';
-import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
+import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type Building, type Dragon, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
@@ -102,48 +102,93 @@ function near(s: GameState, q: Building, test: (b: Building) => boolean): Buildi
   return out;
 }
 
-/** Daily: every quay sends a barge to a quay whose markets are emptier, along the water. */
+/** Send one barge from a mooring to the other mooring whose markets are emptiest; a dragon's barge carries its id. Returns the goods sent, 0 if none sailed. */
+function sendBarge(s: GameState, from: Building, qs: Building[], dragonId = -1): { total: number; to: Building } | null {
+  const sources = near(s, from, (b) => isGoodsSource(b) && b.stock > 8);
+  const avail = sources.reduce((n, b) => n + (b.stock - 8), 0);
+  if (avail < 10) return null;
+  // the emptiest destination
+  let best: Building | null = null;
+  let bestNeed = 0;
+  for (const to of qs) {
+    if (to === from) continue;
+    const markets = near(s, to, (b) => BUILDING_BY_KEY[b.kind].zone === Zone.Market);
+    const need = markets.reduce((n, m) => n + Math.max(0, marketStockCap(m) - m.stock), 0);
+    if (need > bestNeed) { bestNeed = need; best = to; }
+  }
+  if (!best || bestNeed < 10) return null;
+  const w0 = waterTileOf(s, from);
+  const w1 = waterTileOf(s, best);
+  if (w0 < 0 || w1 < 0) return null;
+  const path = waterPath(s, w0, w1);
+  if (!path) return null;
+  let load = Math.min(seasonOf(s) === 0 ? BARGE_LOAD * 1.5 : BARGE_LOAD, avail, bestNeed);
+  const total = load;
+  for (const src of sources) {
+    if (load <= 0) break;
+    const t = Math.min(src.stock - 8, load);
+    src.stock -= t;
+    load -= t;
+  }
+  const a: Agent = {
+    id: s.nextAgentId++, kind: AgentKind.Cart, x: (w0 % MAP_W) + 0.5, y: ((w0 / MAP_W) | 0) + 0.5, path, pathIdx: 0, speed: 0.9,
+    homeId: from.id, targetId: best.id, timer: 0, variant: BARGE_VARIANT, dir: 0, load: total,
+  };
+  if (dragonId >= 0) a.dragonId = dragonId;
+  s.agents.push(a);
+  s.stats.bargeTrips++;
+  effects.push({ x: from.x, y: from.y, kind: 'bell', tick: s.tick });
+  return { total, to: best };
+}
+
+/** Daily: every quay sends a barge to a quay whose markets are emptier, along the water; then the Tide dragons swim theirs. */
 export function dailyBarges(s: GameState): void {
+  dailyQuayBarges(s);
+  dailyTideBarges(s);
+}
+function dailyQuayBarges(s: GameState): void {
   const qs = quays(s);
   if (qs.length < 2 || riverFrozen(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
   const rng = rngOf(s);
   for (const from of qs) {
-    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id)) continue;
-    const sources = near(s, from, (b) => isGoodsSource(b) && b.stock > 8);
-    let avail = sources.reduce((n, b) => n + (b.stock - 8), 0);
-    if (avail < 10) continue;
-    // the emptiest destination
-    let best: Building | null = null;
-    let bestNeed = 0;
-    for (const to of qs) {
-      if (to === from) continue;
-      const markets = near(s, to, (b) => BUILDING_BY_KEY[b.kind].zone === Zone.Market);
-      const need = markets.reduce((n, m) => n + Math.max(0, marketStockCap(m) - m.stock), 0);
-      if (need > bestNeed) { bestNeed = need; best = to; }
-    }
-    if (!best || bestNeed < 10) continue;
-    const w0 = waterTileOf(s, from);
-    const w1 = waterTileOf(s, best);
-    if (w0 < 0 || w1 < 0) continue;
-    const path = waterPath(s, w0, w1);
-    if (!path) continue;
-    let load = Math.min(seasonOf(s) === 0 ? BARGE_LOAD * 1.5 : BARGE_LOAD, avail, bestNeed);
-    const total = load;
-    for (const src of sources) {
-      if (load <= 0) break;
-      const t = Math.min(src.stock - 8, load);
-      src.stock -= t;
-      load -= t;
-    }
-    avail -= total;
-    const a: Agent = {
-      id: s.nextAgentId++, kind: AgentKind.Cart, x: (w0 % MAP_W) + 0.5, y: ((w0 / MAP_W) | 0) + 0.5, path, pathIdx: 0, speed: 0.9,
-      homeId: from.id, targetId: best.id, timer: 0, variant: BARGE_VARIANT, dir: 0, load: total,
-    };
-    s.agents.push(a);
-    s.stats.bargeTrips++;
-    effects.push({ x: from.x, y: from.y, kind: 'bell', tick: s.tick });
-    if (rng.chance(0.15)) pushMessage(s, `A barge casts off from the quay at (${from.x},${from.y}) with ${Math.round(total)} goods for the markets at (${best.x},${best.y}).`, 'info');
+    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id && a.dragonId === undefined)) continue;
+    const sent = sendBarge(s, from, qs);
+    if (sent && rng.chance(0.15)) pushMessage(s, `A barge casts off from the quay at (${from.x},${from.y}) with ${Math.round(sent.total)} goods for the markets at (${sent.to.x},${sent.to.y}).`, 'info');
+  }
+  commitRng(s, rng);
+}
+
+/** A Tide dragon's mooring: the nearest within TIDE_REACH of its cradle. */
+export const TIDE_REACH = 12;
+export function tideMooring(s: GameState, d: Dragon): Building | null {
+  const cradle = s.buildings.find((b) => b && b.id === d.cradleId);
+  if (!cradle) return null;
+  let best: Building | null = null;
+  let bd = TIDE_REACH + 0.001;
+  for (const q of quays(s)) {
+    const dist = Math.hypot(q.x - cradle.x, q.y - cradle.y);
+    if (dist < bd) { bd = dist; best = q; }
+  }
+  return best;
+}
+/** Does this dragon swim a barge: a Tide line at drake or older, radiating its aura (no role, or a warden). */
+export function swimsBarges(d: Dragon): boolean {
+  return d.line === 'tide' && d.stage >= 2 && (d.role === 'none' || d.role === 'warden');
+}
+/** Daily: every Tide dragon radiating its aura swims one barge from the mooring nearest its cradle: no crew, no strike, beside the mooring's own barge (iteration 53). */
+export function dailyTideBarges(s: GameState): void {
+  const qs = quays(s);
+  if (qs.length < 2 || riverFrozen(s)) return;
+  const rng = rngOf(s);
+  for (const d of s.dragons) {
+    if (!swimsBarges(d)) continue;
+    const from = tideMooring(s, d);
+    if (!from) continue;
+    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.dragonId === d.id)) continue;
+    const sent = sendBarge(s, from, qs, d.id);
+    if (!sent) continue;
+    s.stats.tideTrips++;
+    if (rng.chance(0.3)) pushMessage(s, `${d.name} swims out beside a barge from the quay at (${from.x},${from.y}): ${Math.round(sent.total)} goods for the markets at (${sent.to.x},${sent.to.y}), and no bargeman aboard.`, 'info', true, { x: from.x, y: from.y });
   }
   commitRng(s, rng);
 }

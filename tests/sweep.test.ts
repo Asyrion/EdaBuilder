@@ -184,7 +184,11 @@ describe('The sweep: edicts, promises and gates', () => {
     const hall = placeBuildingRaw(s, 'hallofmarvels', f.x - 10, f.y - 6); ok(hall); hall.lit = false;
     const noHall = computeBuildingHappiness(s, h);
     hall.lit = true;
-    expect(computeBuildingHappiness(s, h) - noHall).toBe(8);
+    expect(computeBuildingHappiness(s, h) - noHall).toBe(0); // nothing in the vault: nothing on show (iteration 53)
+    s.materials.scale = 3; s.materials.wyrmfire = 1; s.materials.glimdust = 0.5;
+    expect(computeBuildingHappiness(s, h) - noHall).toBe(4); // two exhibits at +2
+    hall.lit = false;
+    expect(computeBuildingHappiness(s, h) - noHall).toBe(0);
   });
 
   it('the Peak needs its caller and the Court a woken wyrm', () => {
