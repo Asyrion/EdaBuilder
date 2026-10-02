@@ -17,6 +17,7 @@ await page.evaluate(() => {
   g.newGame(42, 'Botwick', 'valley', 'vellish');
   for (const id of ['help', 'title']) document.getElementById(id)?.classList.add('hidden');
   g.paused = true;
+  g.state.lessonsSeen = ['districts']; // the lesson card would cover the shots
   window.__bot = new window.__wardlight.Bot(g.state);
   window.__road = 0;
 });
