@@ -455,8 +455,7 @@ export function kinReach(state: GameState, def: BuildingDef): { cx: number; cy: 
     forEachBuilding(state, (b) => {
       const od = BUILDING_BY_KEY[b.kind];
       if (!od.waterRadius || b.state !== 'ok') return;
-      let r = waterRadiusOf(state, b);
-      if (r > 0 && od.waterNearBonus && state.waterDist[idx(b.x, b.y)] <= 3) r += od.waterNearBonus;
+      const r = waterReachOf(state, b);
       if (r > 0) out.push({ cx: b.x + (b.w - 1) / 2, cy: b.y + (b.h - 1) / 2, r });
     });
   }
@@ -496,6 +495,13 @@ export const NODE_DEEPEN_MANA = 45;
 /** Extra mana from deepened nodes. */
 /** Water radius with the Tide aspect. */
 /** A water building's reach today: the Seep swells in the Thaw and shrinks in the Ember, a plain well far from any water reaches 4, a bank well gives nothing while the river floods, Tide ley adds 2. */
+/** The tiles a water building actually waters: its radius this season, and the near-water bonus (as updateWater reads it). */
+export function waterReachOf(state: GameState, b: Building): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  let r = waterRadiusOf(state, b);
+  if (r > 0 && def.waterNearBonus && state.waterDist[idx(b.x, b.y)] <= 3) r += def.waterNearBonus;
+  return r;
+}
 export function waterRadiusOf(state: GameState, b: Building): number {
   const def = BUILDING_BY_KEY[b.kind];
   let r = def.waterRadius ?? 0;

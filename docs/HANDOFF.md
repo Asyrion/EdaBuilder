@@ -1,14 +1,15 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 55 (M14 part 5, the bot plays it all, and the Annals), which
-closed M14. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 56 (the playtest batch: painted buildings at the procedural
+scale, one facing for the set, reach rings you can see). Iteration 55 closed M14 in the same
+session. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.86 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.87 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -16,6 +17,9 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 - M1–M15 are closed. M14 (the depth pass) closed in iteration 55 with part 5 (DESIGN §4.86,
   AUDIT.md §4 part 5); M13 (the Tallowkin) in iteration 52; M15 (the painted set) in 50–51.
+- Iteration 56 (DESIGN §4.87) was a playtest batch between milestones: the painted heroes
+  scaled to their procedural twins, nine left-fronted paintings mirrored, and reach rings drawn
+  above the buildings with labels and secondary reaches.
 - **M16 the wild and the water** (DESIGN §16) is next, in two parts: **part 1, the wild** is
   the next item.
 
@@ -52,11 +56,15 @@ hunt in the same iteration if the plan says so.
   - the Hall of Wicks the vigil never unlocked;
   - tales refused in a city in debt ("0 crowns asked").
 - Seed 43 (Vellish) used to never reach the Free City; with the part 5 bot it does (day 123).
+- **Painted buildings face one way** (iteration 56). The set faces lower-right, but a building
+  does not turn toward its own road, and the paintings drawn head-on (most zone houses, the last
+  Stake stage) cannot be turned by a mirror. A road-facing mirror at render time is a possible
+  later item; the user has not asked for it yet.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (58 files, 342 tests at this writing; `tests/iteration55.test.ts`
-  is iteration 55's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (59 files, 347 tests at this writing; `tests/iteration56.test.ts`
+  is iteration 56's). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -78,13 +86,20 @@ hunt in the same iteration if the plan says so.
   the standard for a change that should not move the world: iteration 53's first draft
   drifted by two goods on one day and lost six per cent of the folk by day 150. Iteration
   54 moved every row on purpose (the gates, the charter's price, the rain), and §4.85 names
-  the reason for each; the next baseline is §4.85's table.
+  the reason for each. Iteration 55 moved them again (the bot's levers, §4.86); iteration 56
+  matched §4.86's Vellish 42 bit for bit. The next baseline is §4.86's table.
 - Art: `npm run art` turns paintings in `inspirations/` into `public/art/sprites/*.png` and
   `public/art/sprites.json` as `art/sources.json` says (kinds building/prop/ground, islands
   for sheets, hand-set anchors, glow hues, recolour, sharpen and outline); `npm run
   art:check` writes `shots/import_check.png`; the atlas merges the manifest over the
   procedural sprites at boot (`SpriteAtlas.mergeOverrides`). The outputs are committed. The
   Great Cradle is the procedural `b_greatcradle` (a cradle at level 2).
+  - A hero painting gets `targetHeight` = its procedural twin's opaque height × 1.15 (× 1.3 for
+    towers) and `anchor: 'centre'`; a test holds every `b_` sprite with a `targetHeight` to the
+    centre anchor.
+  - `flip: true` mirrors a painting (and its glow) before scaling. Procedural buildings face
+    lower-right (door and gable on the right face), so a painting fronted on the left gets
+    `flip`. The flip list is pinned in `tests/iteration56.test.ts`.
 - Sim: deterministic (`rngOf`/`commitRng`), `save.ts` defaults for new fields, `recomputeAll`
   after structural edits. The renderer never changes the sim. Multiplying a chance keeps the
   rng stream (a `chance` consumes one roll whatever the odds); adding a roll shifts every
@@ -125,3 +140,16 @@ hunt in the same iteration if the plan says so.
   each `renderer.render` into a 32×18 canvas, then look for frames under a quarter of the median.
   `scripts/playtest55.mjs` renders dawn and dusk ticks for it.
 - **The light pass** must leave the context in `source-over`. Every frame now starts there anyway.
+
+## Learned in iteration 56 (not yet said elsewhere)
+
+- **Rings:** `src/sim/reach.ts` `reachesOf(state, def, b?)` is the one list of a building's
+  reaches (primary from `waterReachOf`/`influenceRadius`, then `SECONDARY_REACH`, each a sim
+  constant). A new reach in the sim should get a constant and a row there. The renderer fills the
+  ring under the objects and queues the outline and label in `topRings`, drawn after lighting.
+- **Measuring sprites:** to compare an imported sprite with its procedural twin in the browser,
+  open one page with `art/sprites.json` routed to a 404 (the procedural-only atlas) and one
+  without, then measure opaque boxes in `__wardlight.atlas`. `scripts/playtest56.mjs` does it.
+  With `OLD_ART=<dir>` it serves an older `public/art` for a before shot.
+- **Ring pixels in a playtest:** the back buffer (`renderer.back`) after `renderer.render` is
+  what to count. A mask of the houses comes from rendering with and without them.

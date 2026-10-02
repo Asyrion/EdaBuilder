@@ -7,7 +7,8 @@ import { inCharter } from '../sim/sectors';
 import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
-import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, influenceRadius, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
+import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
+import { reachesOf, type Reach } from '../sim/reach';
 import { zoneSpriteName } from './atlas';
 import { roadTileOf } from '../sim/agents';
 import { SpriteAtlas, type SpriteRect } from './atlas';
@@ -69,6 +70,8 @@ export class Renderer {
   overlayChunks = new Map<number, HTMLCanvasElement>();
   overlayVersion = 0;
   private lightDiv = 2;
+  /** Reach outlines queued while the previews draw, stroked after the lighting (drawTopRings). */
+  private topRings: { cx: number; cy: number; r: number; square: boolean; stroke: string; label?: string }[] = [];
   private bloom: HTMLCanvasElement | null = null;
   /** The emissive layer: window light and ley glow, laid down in depth order so a house in front covers the windows of the one behind. */
   private emissive: HTMLCanvasElement | null = null;
@@ -829,6 +832,8 @@ export class Renderer {
     // icons (always on top, bobbing)
     const bobY = Math.round(Math.sin(this.time * 4) * 1.5);
     for (const ic of icons) this.draw(this.atlas.get(ic.name), ic.x, ic.y + bobY);
+    // reach rings: outlines and labels above the lit scene
+    this.drawTopRings();
 
     // hover cursor
     if (view.hover) {
@@ -1042,34 +1047,85 @@ export class Renderer {
           this.draw(this.atlas.get(g.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
         }
       // the reach of the ones already standing, so the player sees where a new spire links or where a service has gaps
-      if (g.radius > 0 || def.key === 'wicktower') { const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key); for (const k of kinReach(state, def)) this.ring(k.cx, k.cy, k.r, ley ? 'rgba(120,220,255,0.03)' : 'rgba(255,220,120,0.04)', ley ? 'rgba(120,220,255,0.3)' : 'rgba(255,220,120,0.3)'); }
-      if (g.radius > 0) this.ring(g.x + (def.w - 1) / 2, g.y + (def.h - 1) / 2, g.radius, 'rgba(120,220,255,0.12)', 'rgba(120,220,255,0.5)');
+      const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
+      if (g.radius > 0 || def.key === 'wicktower') for (const k of kinReach(state, def)) this.reachRing(k.cx, k.cy, k.r, false, ley ? 'rgba(120,220,255,0.03)' : 'rgba(255,220,120,0.04)', ley ? 'rgba(120,220,255,0.55)' : 'rgba(255,220,120,0.55)');
+      this.ownRings(g.x + (def.w - 1) / 2, g.y + (def.h - 1) / 2, reachesOf(state, def), 'rgba(120,220,255,0.12)', 'rgba(140,230,255,0.95)');
     } else if (view.selected) {
-      // the selected building shows what it reaches: its service, its water or its light
+      // the selected building shows everything it reaches, and its kin's reach faintly, so the gaps show from either side (iteration 56)
       const b = view.selected;
-      const r = influenceRadius(state, BUILDING_BY_KEY[b.kind], b);
-      if (r > 0) this.ring(b.x + (b.w - 1) / 2, b.y + (b.h - 1) / 2, r, 'rgba(255,220,120,0.08)', 'rgba(255,220,120,0.55)');
+      const def = BUILDING_BY_KEY[b.kind];
+      const cx = b.x + (b.w - 1) / 2;
+      const cy = b.y + (b.h - 1) / 2;
+      const reaches = reachesOf(state, def, b);
+      if (reaches.some((x) => x.primary)) for (const k of kinReach(state, def)) if (k.cx !== cx || k.cy !== cy) this.reachRing(k.cx, k.cy, k.r, false, 'rgba(255,220,120,0.03)', 'rgba(255,220,120,0.45)');
+      this.ownRings(cx, cy, reaches, 'rgba(255,220,120,0.08)', 'rgba(255,225,130,0.95)');
     }
   }
 
-  /** A tile-radius ring around a centre, in world space. */
-  private ring(cx: number, cy: number, r: number, fill: string, stroke: string): void {
+  /** A building's own reaches: the primary in its colour, each secondary in violet, every one labelled. */
+  private ownRings(cx: number, cy: number, reaches: Reach[], fill: string, stroke: string): void {
+    for (const x of reaches) this.reachRing(cx, cy, x.r, !!x.square, x.primary ? fill : 'rgba(200,170,255,0.06)', x.primary ? stroke : 'rgba(210,185,255,0.95)', x.label);
+  }
+
+  /** A reach: its soft fill now, under the objects; its outline and label queued for after the lighting, above everything (iteration 56:
+   *  drawn under the houses and darkened by the night, a well's ring was all but hidden in a built street). */
+  private reachRing(cx: number, cy: number, r: number, square: boolean, fill: string, stroke: string, label?: string): void {
+    this.ringPath(cx, cy, r, square);
+    this.ctx.fillStyle = fill;
+    this.ctx.fill();
+    this.topRings.push({ cx, cy, r, square, stroke, label });
+  }
+
+  /** The queued outlines and labels, drawn on top of the lit scene. */
+  private drawTopRings(): void {
+    const ctx = this.ctx;
+    for (const t of this.topRings) {
+      ctx.strokeStyle = 'rgba(10,8,18,0.55)';
+      ctx.lineWidth = 3;
+      this.ringPath(t.cx, t.cy, t.r, t.square);
+      ctx.stroke();
+      ctx.strokeStyle = t.stroke;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    for (const t of this.topRings) {
+      if (!t.label) continue;
+      // the label sits on the ring's top (the north corner of a square)
+      const [wx, wy] = t.square ? tileToWorld(t.cx - t.r, t.cy - t.r) : tileToWorld(t.cx + 0.5 - t.r * Math.SQRT1_2, t.cy + 0.5 - t.r * Math.SQRT1_2);
+      const x = Math.round(wx - this.camera.left);
+      const y = Math.round(wy - this.camera.top) - 2;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(10,8,18,0.85)';
+      ctx.strokeText(t.label, x, y);
+      ctx.fillStyle = t.stroke;
+      ctx.fillText(t.label, x, y);
+    }
+    ctx.lineWidth = 1;
+    ctx.textAlign = 'left';
+    this.topRings = [];
+  }
+
+  /** The outline of a reach in screen space: a circle of tiles, or a square of tiles drawn as its diamond. */
+  private ringPath(cx: number, cy: number, r: number, square: boolean): void {
     const ctx = this.ctx;
     const L = this.camera.left;
     const T = this.camera.top;
-    ctx.fillStyle = fill;
-    ctx.strokeStyle = stroke;
     ctx.beginPath();
-    const steps = 48;
-    for (let k = 0; k <= steps; k++) {
-      const a = (k / steps) * Math.PI * 2;
-      const [wx, wy] = tileToWorld(cx + 0.5 + Math.cos(a) * r, cy + 0.5 + Math.sin(a) * r);
-      if (k === 0) ctx.moveTo(wx - L, wy - T);
-      else ctx.lineTo(wx - L, wy - T);
+    if (square) {
+      const pts: [number, number][] = [[cx - r, cy - r], [cx + r + 1, cy - r], [cx + r + 1, cy + r + 1], [cx - r, cy + r + 1]];
+      pts.forEach(([tx, ty], k) => { const [wx, wy] = tileToWorld(tx, ty); if (k === 0) ctx.moveTo(wx - L, wy - T); else ctx.lineTo(wx - L, wy - T); });
+    } else {
+      const steps = 48;
+      for (let k = 0; k <= steps; k++) {
+        const a = (k / steps) * Math.PI * 2;
+        const [wx, wy] = tileToWorld(cx + 0.5 + Math.cos(a) * r, cy + 0.5 + Math.sin(a) * r);
+        if (k === 0) ctx.moveTo(wx - L, wy - T);
+        else ctx.lineTo(wx - L, wy - T);
+      }
     }
     ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
   }
 
   private drawLeyLines(state: GameState, night: number): void {

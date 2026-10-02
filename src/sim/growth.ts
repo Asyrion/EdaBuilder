@@ -8,6 +8,9 @@ import { PORTAL_CAP } from './networks';
 
 /** The Hospice holds this many goods of draughts; without them it heals at six tenths. */
 export const HOSPICE_DRAUGHTS = 10;
+/** The Hospice draws its draughts from markets within this many tiles (a square); a lit Glimhouse lifts the Hush works within GLIMHOUSE_REACH (a square). Named for the reach rings (iteration 56). */
+export const HOSPICE_REACH = 16;
+export const GLIMHOUSE_REACH = 8;
 /** The Academy's studied relics raise the educated floor by a hundredth each, up to this. */
 export const EDUCATED_FLOOR_CAP = 0.2;
 /** A Crystal Mine's seam: this much leystone, then dust. */
@@ -38,7 +41,7 @@ export function delveActive(state: GameState): boolean {
 export const HUSH_CRAFT = 0.8;
 
 export function glimhouseNear(state: GameState, b: Building): boolean {
-  return state.buildings.some((g) => g && g.kind === 'glimhouse' && g.state === 'ok' && g.lit && Math.abs(g.x - b.x) <= 8 && Math.abs(g.y - b.y) <= 8);
+  return state.buildings.some((g) => g && g.kind === 'glimhouse' && g.state === 'ok' && g.lit && Math.abs(g.x - b.x) <= GLIMHOUSE_REACH && Math.abs(g.y - b.y) <= GLIMHOUSE_REACH);
 }
 
 /** Buildings whose goods carts collect: Craft works and any producer with a goodsRate (Hanging Gardens). */
@@ -237,7 +240,7 @@ export function dailyBuildings(state: GameState): void {
       // the Hospice draws two goods of draughts a day from the fullest market within 16 (it holds ten)
       if (b.kind === 'hospice' && b.state === 'ok' && b.lit && b.stock < HOSPICE_DRAUGHTS) {
         let best: Building | null = null;
-        forEachBuilding(state, (m) => { if (BUILDING_BY_KEY[m.kind].zone === Zone.Market && m.state === 'ok' && m.stock > 0 && Math.abs(m.x - b.x) <= 16 && Math.abs(m.y - b.y) <= 16 && (!best || m.stock > best.stock)) best = m; });
+        forEachBuilding(state, (m) => { if (BUILDING_BY_KEY[m.kind].zone === Zone.Market && m.state === 'ok' && m.stock > 0 && Math.abs(m.x - b.x) <= HOSPICE_REACH && Math.abs(m.y - b.y) <= HOSPICE_REACH && (!best || m.stock > best.stock)) best = m; });
         if (best) { const m = best as Building; const take = Math.min(2, m.stock, HOSPICE_DRAUGHTS - b.stock); m.stock -= take; b.stock += take; }
       }
       if (b.kind === 'hospice' && b.state === 'ok') b.stock = Math.max(0, b.stock - 1); // a day's draughts used

@@ -7,10 +7,20 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
+
+/** The image mirrored left to right. */
+function mirror(img) {
+  const out = { w: img.w, h: img.h, data: new Uint8ClampedArray(img.data.length) };
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+    const a = (y * img.w + x) * 4, b = (y * img.w + (img.w - 1 - x)) * 4;
+    for (let k = 0; k < 4; k++) out.data[b + k] = img.data[a + k];
+  }
+  return out;
+}
 
 const args = process.argv.slice(2);
 const check = args.includes('--check');
@@ -36,6 +46,7 @@ for (const e of sources.sprites) {
   if (e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
   else if (e.rect) img = cropRect(img, e.rect);
   if (kind !== 'ground') img = crop(e.islands === 'keep' ? img : keepLargest(img)).img;
+  if (e.flip) img = mirror(img); // a painting whose front is on its left face is mirrored, so the set faces lower-right with the procedural buildings (iteration 56)
   if (kind === 'ground') {
     const inset = e.inset ?? 0.12;
     const ix = Math.round(img.w * inset), iy = Math.round(img.h * inset);
@@ -82,7 +93,7 @@ for (const r of results) {
   writeFileSync(`public/art/${entry.file}`, encodePng(sprite));
   let glowCount = 0;
   if (e.glow !== false && kind !== 'ground') {
-    const glow = e.glowSrc ? { img: decodePng(readFileSync(e.glowSrc)), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
+    const glow = e.glowSrc ? { img: e.flip ? mirror(decodePng(readFileSync(e.glowSrc))) : decodePng(readFileSync(e.glowSrc)), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
     if (glow.count > 0) { entry.glow = `sprites/${e.name}_glow.png`; writeFileSync(`public/art/${entry.glow}`, encodePng(glow.img)); glowCount = glow.count; }
   }
   manifest.sprites[e.name] = entry;

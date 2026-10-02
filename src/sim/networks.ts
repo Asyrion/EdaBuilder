@@ -22,6 +22,9 @@ const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
 /** A second Torrent Mill within 8 of an older one runs at this share: they share the river. */
 export const MILL_SHARE = 0.6;
+/** A second mill within this many tiles shares the river (a square); a Hanging Gardens keeps glowvine alive within GLOWVINE_REACH. Named for the reach rings (iteration 56). */
+export const MILL_SHARE_REACH = 8;
+export const GLOWVINE_REACH = 12;
 /** A Portal Arch carries this many crossings a day before the jump congests; each crossing draws PORTAL_MANA. */
 export const PORTAL_CAP = 60;
 export const PORTAL_MANA = 0.1;
@@ -83,7 +86,7 @@ export function updateMana(state: GameState): void {
     if (b.state !== 'ok') return;
     if (def.manaProduce) {
       // a mill with an older mill within 8 shares its river and runs at ×0.6
-      const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8);
+      const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= MILL_SHARE_REACH && Math.abs(o.y - b.y) <= MILL_SHARE_REACH);
       const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : b.kind === 'greatweir' && b.sluice ? 2 : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); // the Weir's open sluice doubles it (iteration 53)
       supply += made;
       b.load = made;
@@ -145,7 +148,7 @@ export function updateMana(state: GameState): void {
       if (state.road[i] !== RoadType.Glowvine) continue;
       const x = i % MAP_W;
       const y = (i / MAP_W) | 0;
-      if (gardens.some((g) => Math.hypot(g.x - x, g.y - y) <= 12)) lit[i] = 1;
+      if (gardens.some((g) => Math.hypot(g.x - x, g.y - y) <= GLOWVINE_REACH)) lit[i] = 1;
     }
   }
   // 3. lit tiles from sources
