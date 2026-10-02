@@ -1721,7 +1721,10 @@ the reference paintings in `inspirations/`.
 door with a road at a diagonal corner counts as connected, where before only the four sides
 did and a lot past a road's end, or on the outer corner of a bend, silently never grew.
 `roadTileOf` tries the sides first and the corners after, so every door that existed keeps
-its tile and older saves replay unchanged; the bot zones by the same ring (`roadInRing`).
+its tile and older saves replay unchanged. The bot keeps zoning beside a road's sides
+(`roadOnSide` in bot.ts): a corner lot is the player's door, but in the bot's grid it sits
+where the next road would go, and letting the planner take corners cost it a fifth of its
+folk on five seeds of six before the rule was kept to the sides.
 What the player sees: the zone preview hatches the tiles with no road in their ring and the
 hint counts them ("3 tiles have no road at the door and will never grow"); a building whose
 road is bulldozed shows "No road at its door" and the `icon_noroad` glyph; the placement
@@ -1784,7 +1787,24 @@ a stage: close enough at 2×, judged per sprite.
 
 Balance, 150 days, against the iteration 48 table in brackets:
 
-BALANCE_TABLE_49
+| run | Free City / last gate | folk at day 150 |
+|---|---|---|
+| Vellish seed 42 | 60 (61) | 3,067 (2,939) |
+| Vellish seed 43 | never: Burgh 40 (36) | 1,182 (1,285) |
+| Vellish seed 44 | 57 (68) | 3,266 (3,006) |
+| Grimmen seed 42 | Deephold 58 (59), Underking's Hall 145 (never) | 1,581 (1,352) |
+| Veshari seed 42 | Harbour 15 (56), Weirhold 60 (86), Vesh's Court 103 (135) | 2,137 (1,686) |
+| Tallowkin seed 42 | Bright Town 70 (64) | 950 (996) |
+
+Four of six gain, two of them by a lot: a hall may now stand with a road at its corner, so
+the bot's placement search finds a spot sooner, and the Veshari's moorings most of all: the
+Harbour that stalled on seed 42 from day 11 to day 56 in every table since §4.75 now comes on
+day 15, and the Court forty days earlier. Seed 43 and the Tallowkin lose a few score folk
+(the Tallowkin's purse dips below zero at day 150 on a net of +60: a watch item for M13 part
+2). The district slots and charter steps cost the bot nothing: it charters its Hearth quarter
+at the Village, which opens four. Without the bot's side rule the same code lost a fifth of
+the folk on five seeds (Vellish 42 at 2,333, Grimmen 42 at 1,100 with Deephold on day 126):
+the corner lots the planner took sat where its roads would go.
 
 ## 5. Art direction
 
