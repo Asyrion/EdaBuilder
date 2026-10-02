@@ -6,7 +6,9 @@ import { capacityOf, computeBuildingHappiness, workforceOf } from '../sim/growth
 import { manaUseOf } from '../sim/networks';
 import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf } from '../sim/world';
-import { isLeyMember, loadCapOf, priorityOf } from '../sim/networks';
+import { PORTAL_CAP, PORTAL_MANA, isLeyMember, loadCapOf, priorityOf, waterCapOf } from '../sim/networks';
+import { SEAM, SPENT_RATE } from '../sim/growth';
+import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
 import { mewsActive } from '../sim/beasts';
 import { MOORINGS } from '../data/factions';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
@@ -661,7 +663,8 @@ export class UI {
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
       if (def.zone === Zone.Craft && seasonOfState(s) === 3) rows.push(row('The Hush', glimhouseNear(s, b) ? 'warmed by a Glimhouse' : `output ×${HUSH_CRAFT}`));
       if (!b.lit) problems.push('No mana: build a Ley Spire within 5 tiles or next to a lit building.');
-      if (!b.watered) problems.push('No water: build a Well or Cistern nearby.');
+      if (!b.watered) problems.push(b.dryBy === 'overdrawn' ? 'No water: the nearest well is overdrawn. Dig another well nearby.' : 'No water: build a Well or Cistern nearby.');
+      if (b.greyDays) problems.push(`The grey is at the door: light it or ward it, ${Math.max(0, GREY_DAYS - b.greyDays)} day${GREY_DAYS - b.greyDays === 1 ? '' : 's'} left before the Gloam takes it.`);
       if (s.miasma[i] > 60) problems.push('Choking on miasma from nearby Craft works.');
       if (s.gloamDist[i] < 6) problems.push('The Gloam whispers nearby. Raise a Ward Lantern.');
       if (cov.death[i] < 30 && def.zone === Zone.Hearth) problems.push('No Boneyard covers this home; its dead will not rest.');
@@ -676,7 +679,17 @@ export class UI {
       rows.push(row('Upkeep', `${def.upkeep} c/day`));
       if (def.manaUse) rows.push(row('Mana', `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
-      if (def.waterRadius) { const near = def.waterNearBonus && s.waterDist[idx(b.x, b.y)] <= 3 ? def.waterNearBonus : 0; rows.push(row('Waters', `${waterRadiusOf(s, b) + near} tiles${near ? ' (dug near water)' : ''}${waterRadiusOf(s, b) > def.waterRadius ? ' (Tide ley)' : ''}`)); }
+      if (def.waterRadius) {
+        const wr = waterRadiusOf(s, b);
+        const near = wr > 0 && def.waterNearBonus && s.waterDist[idx(b.x, b.y)] <= 3 ? def.waterNearBonus : 0;
+        const why = wr === 0 ? ' (fouled by the flood)' : b.kind === 'well' && s.waterDist[idx(b.x, b.y)] > 8 ? ' (far from water: a Cistern lifts it further)' : b.kind === 'seep' && wr !== def.waterRadius ? (wr > def.waterRadius ? ' (the Thaw swells it)' : ' (the Ember shrinks it)') : near ? ' (dug near water)' : wr > def.waterRadius ? ' (Tide ley)' : '';
+        rows.push(row('Waters', `${wr + near} tiles${why}`));
+        if (b.load !== undefined && wr > 0) { rows.push(row('Drawn', `${b.load} / ${waterCapOf(b)} levels of homes and works`)); if (b.load > waterCapOf(b)) problems.push('Overdrawn: its farthest homes are dry. Dig another well among them.'); }
+        if (wr === 0) problems.push('Fouled: the flood is in the shaft; it waters nothing until the river falls.');
+      }
+      if (b.kind === 'torrentmill' && b.load !== undefined) rows.push(row('Output', `${Math.round(b.load)} mana / day${s.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= 8 && Math.abs(o.y - b.y) <= 8) ? ' (shares the river with an older mill: ×0.6)' : ''}`));
+      if (b.kind === 'font' && (b.flare ?? 0) > 0) problems.push(`Bore flare: the yard smokes for ${b.flare} more day${b.flare === 1 ? '' : 's'} (miasma 6 within 4).`);
+      if (b.kind === 'font' && fontsRunHot(s)) problems.push('Running hot: past nine tenths of the flow a Font may flare (one chance in fifty a day). Raise the flow or cut consumers.');
       if (def.capacity) rows.push(row('Workers', `${b.workers} / ${capacityOf(b, s)}`));
       if (def.goodsRate) rows.push(row('Carts', String(s.agents.filter((a) => a.kind === AgentKind.Cart && a.homeId === b.id).length)));
       if (def.needsMana && !b.lit) problems.push('Unlit: this building needs mana to work at full strength.');
@@ -685,7 +698,12 @@ export class UI {
     }
     if (def.manaUse > 0 && !isLeyMember(b)) { const p = priorityOf(b); rows.push(row('Brownout', `<span class="prio">${[['Essential', 0], ['Normal', 1], ['Dim', 2]].map(([n, v]) => `<button data-prio="${v}" class="${p === v ? 'active' : ''}" title="When the ley runs short, Dim buildings go dark first, then Normal, then Essential">${n}</button>`).join(' ')}</span>`)); }
     if (def.zone === Zone.Arcane) rows.push(row('Leystone in the workshop', `${Math.round(b.stock)} / ${20 * b.level}`));
-    if (def.leystone) rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+    if (def.leystone) {
+      rows.push(row('Leystone awaiting carts', `${Math.round(b.stock)} / 60`));
+      const seam = b.seam ?? SEAM;
+      rows.push(row('Seam', seam > 0 ? `${Math.round((seam / SEAM) * 100)} % (${Math.round(seam)} leystone left)` : 'cut out'));
+      if (seam <= 0) problems.push(`Spent: ${SPENT_RATE} a day of dust; the empty shaft wakes wardens three times as often. Bulldoze it or move on.`);
+    }
     if (def.goodsRate) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
     if (b.kind === 'observatory') rows.push(...(b.lit ? forecast(s) : [{ text: 'Unlit: the dome is dark and reads nothing.', kind: 'warn' as const }]).map((f) => `<div class="fc ${f.kind}">✦ ${f.text}</div>`));
     if (b.kind === 'worldtree') {
@@ -716,6 +734,8 @@ export class UI {
       const other = s.buildings.filter((o) => o && o.kind === 'portalarch' && o !== b) as Building[];
       rows.push(row('Paired', other.length ? (other[0].lit && b.lit ? `with the arch at (${other[0].x},${other[0].y}), open` : 'yes, but an arch is unlit') : 'no: raise a second arch'));
       rows.push(row('Trips through the arches', `${s.stats.portalTrips}`));
+      rows.push(row('Crossings today', `${b.load ?? 0} / ${PORTAL_CAP} (each draws ${PORTAL_MANA} mana)`));
+      if ((b.load ?? 0) > PORTAL_CAP) problems.push('Crowded: past 60 crossings a day the jump costs the carts like a jammed road.');
     }
     if (b.kind === 'stormpeak') {
       rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));

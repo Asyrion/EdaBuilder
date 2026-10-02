@@ -4,7 +4,8 @@ import { marketQuarterAt } from './districts';
 import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
 import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
-import { roadAt } from './roads';
+import { roadAt, roadSpeedAt } from './roads';
+import { PORTAL_CAP } from './networks';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
@@ -58,6 +59,7 @@ export function portalGates(state: GameState): [number[], number[]] | null {
 function astar(state: GameState, start: number, goal: number, maxNodes: number): number[] | null {
   const gates = portalGates(state);
   const portal = new Map<number, number[]>();
+  const portalBusy = !!gates && state.buildings.some((b) => b && b.kind === 'portalarch' && (b.load ?? 0) > PORTAL_CAP);
   if (gates) {
     for (const t of gates[0]) portal.set(t, gates[1]);
     for (const t of gates[1]) portal.set(t, gates[0]);
@@ -131,7 +133,7 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
       const rt = roadAt(state, j);
       if (!rt) continue;
       const congestion = state.trafficSmooth[j] / 255;
-      const cost = 1 / ROAD_BY_TYPE[rt].speed + congestion * 1.5;
+      const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5 + (k >= 4 && portalBusy ? 1.5 : 0); // mud on a track; a busy arch costs like a jammed road
       const ng = gc + cost;
       if (ng < (g.get(j) ?? Infinity)) {
         g.set(j, ng);
@@ -453,15 +455,18 @@ export function tickAgents(state: GameState): void {
     const congestion = state.trafficSmooth[t] / 255;
     const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
     const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
-    let sp = a.speed * (barge ? 1.2 : ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
+    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;
     let d = Math.hypot(dx, dy);
     if (d > 1.6) {
-      // a Portal Arch: step out of the far arch, if both arches still stand lit
-      const archLit = (x: number, y: number) => state.buildings.some((b) => b && b.kind === 'portalarch' && b.state === 'ok' && b.lit && Math.abs(b.x + (b.w - 1) / 2 - x) <= 2.5 && Math.abs(b.y + (b.h - 1) / 2 - y) <= 2.5);
-      if (!archLit(a.x, a.y) || !archLit(tx, ty)) { a.path = []; a.pathIdx = 0; return; }
+      // a Portal Arch: step out of the far arch, if both arches still stand lit; every crossing counts on both
+      const archAt = (x: number, y: number) => state.buildings.find((b) => b && b.kind === 'portalarch' && b.state === 'ok' && b.lit && Math.abs(b.x + (b.w - 1) / 2 - x) <= 2.5 && Math.abs(b.y + (b.h - 1) / 2 - y) <= 2.5) ?? null;
+      const a1 = archAt(a.x, a.y);
+      const a2 = archAt(tx, ty);
+      if (!a1 || !a2) { a.path = []; a.pathIdx = 0; return; }
+      for (const ar of [a1, a2]) { ar.load = (ar.load ?? 0) + 1; if (ar.load === PORTAL_CAP + 1) bumpRoadVersion(); }
       effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'portal', tick: state.tick });
       effects.push({ x: t % MAP_W, y: (t / MAP_W) | 0, kind: 'portal', tick: state.tick });
       state.stats.portalTrips++;

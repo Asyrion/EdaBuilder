@@ -93,7 +93,11 @@ export interface Building {
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
   priority?: 0 | 1 | 2; // brownout tier: 0 essential, 1 normal, 2 dim (dark first); unset = by category
-  load?: number; // a spire's load: the mana of the buildings it lights (transient)
+  load?: number; // a member's load: a spire's mana of lit buildings, a well's levels drawn, a mill's output, an arch's crossings today (transient)
+  seam?: number; // a Crystal Mine's leystone left in the seam (unset = a full seam)
+  flare?: number; // days a Thrum Font's bore flare still smokes
+  greyDays?: number; // days the Gloam has stood at the door of this dark, unwarded building
+  dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
 }
 
 export const enum AgentKind {

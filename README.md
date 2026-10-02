@@ -205,6 +205,10 @@ Charter as `.json`.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
   Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
   still be set per district. A selected building shows its reach.
+- The ground has limits: wells serve a capacity of homes (the nearest first), a far-from-water
+  well reaches less, the Seep follows the season, mud slows tracks in the wet seasons, mine
+  seams run out, a hot Font may flare, mills share a river, portal crossings jam, and the
+  Gloam takes a dark, unwarded building after two days at its door.
 - The ley has limits: an unlinked node seeps only half its flow, a spire carries 80
   mana of buildings and its farthest go dark over that (a Load row), every building has a
   brownout tier, and lantern-ways dim first when the ley runs short.

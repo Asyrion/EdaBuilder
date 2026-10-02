@@ -1523,6 +1523,72 @@ NEXT_STEPS as the peoples' bots' purse.
 Water, mud, mine seams, Font flares, shared rivers, portal crossings and the Gloam that takes
 a dark building are part 1b, the next iteration.
 
+### 4.77 M14 part 1b, the ground has limits: wells, mud, seams, flares, rivers, crossings, the Gloam that takes (iteration 46)
+
+The second half of part 1. Each is one read at its hook, one row on its panel, and a way to
+lose.
+
+**Wells with capacity.** A water building serves a number of zone levels: a Well 30, a Seep
+20, a Tide-Well 45, a Cistern 90 (`WATER_CAP`). Every zone building inside a well's reach
+draws its level from its nearest covering well; a well serves the nearest first, and the
+farthest beyond its cap go dry with `dryBy = 'overdrawn'`; a home its nearest well cannot
+serve draws from another well in reach with room. The panel: "Drawn 39 / 30 levels of homes
+and works" and "Overdrawn: its farthest homes are dry. Dig another well among them"; a dry
+home's problem names the overdrawn well. The four wells have four roles at last: a plain
+Well dug more than 8 tiles from any water reaches only 4 (the Cistern lifts water anywhere
+and keeps 12: its reason); the Seep swells to 9 in the Thaw and shrinks to 3 in the Ember;
+a bank Well within 2 of the river is fouled while the Veshari's Hush flood is up, and the
+Tide-Well is not (`waterRadiusOf` in world.ts).
+
+**Mud.** A dirt track runs at six tenths in the Thaw and the Hush (`roadSpeedAt`, read at
+the pathing cost and the carts' speed; cobble and better do not mind).
+
+**Mine seams.** A Crystal Mine's seam holds 2,400 leystone (`Building.seam`, a full seam
+when unset); the daily cut and a delver's bonus come out of it; cut out, the shaft gives 2 a
+day of dust and wakes wardens three times as often (`GOLEM_WAKE_CHANCE × 3`). Panel: "Seam
+61 %" and, spent, "Bulldoze it or move on."
+
+**Font bore flares.** Past nine tenths of the flow a lit Thrum Font has one chance in fifty
+a day to flare: it and the zone buildings within 2 ignite and it smokes miasma 6 within 4
+for ten days (`Building.flare`, read by `updateMiasma`). The forecast and the Font's panel
+say "the Fonts run hot" (`fontsRunHot`). The Font's "a little dangerous" is a sentence the
+player can read a number behind.
+
+**Mills that share a river.** A Torrent Mill with an older mill within 8 makes six tenths
+(`MILL_SHARE`); its panel shows "Output 39 mana / day" and names the sharing.
+
+**Portal crossings.** Every crossing counts on both arches (`Building.load`, reset daily),
+draws a tenth of a mana, and past 60 a day the jump costs the carts like a jammed road in
+the route search (`PORTAL_CAP`, `PORTAL_MANA`). Panel: "Crossings today 34 / 60".
+
+**The Gloam that takes.** Creep never enters a building's tile, and keeps two tiles from a
+lit or warded building; past a pressure of 0.65 (`GLOAM_TAKES`) it may come up to the door
+of a dark, unwarded one. Such a building counts `greyDays`: on the first the Chronicle says
+"the grey is at the door: light it or ward it within two days" with a jump, the panel lists
+it, the renderer shows the Gloam icon over it; on the third day it is taken and its tiles
+grey (`GREY_DAYS = 3`). Lit or warded again, the count resets. The swallow code the audit
+found unreachable in normal play now has a path to it, and the brownout tiers of part 1a
+have a reason: a Dim building at the grey edge is the one the Gloam takes.
+
+Balance, 150 days, against the iteration 45 table in brackets:
+
+| run | Free City / last gate | folk at day 150 | brownout |
+|---|---|---|---|
+| Vellish seed 42 | 68 (58) | 2,625 (3,039) | 13 % |
+| Vellish seed 43 | never: Burgh 50 (47) | 1,174 (1,196) | 17 % |
+| Vellish seed 44 | 83 (60) | 2,672 (3,032) | 0 % |
+| Grimmen seed 42 | Deephold 107 (74) | 1,262 (1,472) | 62 % |
+| Veshari seed 42 | Weirhold 54 (106), Vesh's Court 93 (133) | 1,936 (1,640) | 40 % |
+| Tallowkin seed 42 | Bright Town 134 (none) | 1,051 (865) | 3 % |
+
+The Veshari and the Tallowkin gain (their bots had been starved of water the wells now
+serve by capacity, so the dry homes they dug for are the ones that count); the Vellish and
+the Grimmen bots lose two to three weeks to Free City. A seed-42 run with mud switched off
+reaches Free City on day 70, so mud is not the cause: it is the wells' capacity, which the
+bot meets only after a home has gone dry (three wells a day, beside the dry ones), so a
+capacity-limited town lags its own growth. Part 5 teaches the bot to dig ahead of its
+hearths. Recorded in NEXT_STEPS.
+
 ## 5. Art direction
 
 - **Projection:** 2:1 isometric. **Native tile:** 32×16. Integer zoom 1–4 (scene is
@@ -2200,8 +2266,8 @@ iteration each, under one rule: a mechanic exists only if the player can see it,
 about it and lose by it. The full designs, with numbers and hooks, are in AUDIT.md §4;
 this section is the table of contents and the order.
 
-1. **Supply has limits** (ley, water, roads): 1a ✅ (iteration 45, §4.76) linked nodes only; spire load (80, Nexus 200);
-   the store shown and spent, brownout priority tiers, lantern-ways that need their light; 1b next: wells with capacity (30 zone levels,
+1. **Supply has limits** (ley, water, roads) ✅: 1a (iteration 45, §4.76) linked nodes only; spire load (80, Nexus 200);
+   the store shown and spent, brownout priority tiers, lantern-ways that need their light; 1b (iteration 46, §4.77): wells with capacity (30 zone levels,
    cistern 90) and the dry-land reason for the cistern; roads that need their light; mine
    seams (2,400), Font bore flares, mills that share a river, portal crossings; the Gloam
    that takes an unlit, unwarded building after two days' warning.
@@ -2432,3 +2498,6 @@ this section is the table of contents and the order.
 - *A limit is a number on a panel (iteration 45):* a cap the player cannot read is a bug
   report waiting to happen; every limit of the ley (the link, the load, the tier, the dimmed
   road) is one row where the thing it limits is shown, and one read in `updateMana`.
+- *The ground answers the season (iteration 46):* a well, a track and a seep that read the
+  calendar give the four seasons a hand in the city's supply, where before only the Hush's
+  mana did; a limit that moves with the year is a limit the player plans around.

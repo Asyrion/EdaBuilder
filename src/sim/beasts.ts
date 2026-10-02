@@ -4,6 +4,7 @@ import { edictOn } from './edicts';
 import { AgentKind, MAP_H, MAP_W, Terrain, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf, seasonOf } from './world';
 import { effects } from './hazards';
+import { SEAM } from './growth';
 
 export const GOLEM_LABOUR = 12; // jobs' worth of work per bound golem
 export const GOLEM_MANA = 10; // mana a day per bound golem at the foundry
@@ -59,7 +60,7 @@ export function dailyBeasts(s: GameState): void {
   if (creatureN(s, 'golem') < GOLEM_CAP) {
     forEachBuilding(s, (b) => {
       if (b.kind !== 'mine' || b.state !== 'ok' || b.age < 5) return;
-      if (!rng.chance(GOLEM_WAKE_CHANCE)) return;
+      if (!rng.chance(GOLEM_WAKE_CHANCE * ((b.seam ?? SEAM) <= 0 ? 3 : 1))) return; // an empty shaft wakes the deep three times as often
       for (let k = 0; k < 20; k++) {
         const x = b.x + rng.int(13) - 6;
         const y = b.y + rng.int(13) - 6;

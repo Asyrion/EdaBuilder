@@ -5,7 +5,7 @@ import { buildTicks, construction } from './construction';
 import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
-import { assignAspects, aspectAt } from './weave';
+import { assignAspects, aspectAt, flooding } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -412,10 +412,19 @@ export const NODE_DEEPEN_MANA = 45;
 
 /** Extra mana from deepened nodes. */
 /** Water radius with the Tide aspect. */
+/** A water building's reach today: the Seep swells in the Thaw and shrinks in the Ember, a plain well far from any water reaches 4, a bank well gives nothing while the river floods, Tide ley adds 2. */
 export function waterRadiusOf(state: GameState, b: Building): number {
   const def = BUILDING_BY_KEY[b.kind];
   let r = def.waterRadius ?? 0;
-  if (r && aspectAt(state, b.x, b.y) === 'tide') r += 2;
+  if (!r) return 0;
+  const season = seasonOf(state);
+  if (b.kind === 'seep') r = Math.round(r * (season === 0 ? 1.5 : season === 2 ? 0.5 : 1));
+  if (b.kind === 'well') {
+    const wd = state.waterDist[idx(b.x, b.y)];
+    if (wd > 8) r = 4; // dry land: the Cistern's reason
+    if (wd <= 2 && flooding(state)) return 0; // fouled by the flood
+  }
+  if (aspectAt(state, b.x, b.y) === 'tide') r += 2;
   return r;
 }
 

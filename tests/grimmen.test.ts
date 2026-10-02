@@ -66,7 +66,14 @@ describe('The Grimmen of the Underhill', () => {
     recomputeAll(g);
     updateWater(g);
     expect(g.watered[idx(f.x - 6, f.y + 9)]).toBe(1);
-    expect(g.watered[idx(f.x - 6, f.y + 12)]).toBe(0);
+    expect(g.watered[idx(f.x - 6, f.y + 12)]).toBe(1); // the Thaw swells the seep to 9
+    expect(g.watered[idx(f.x - 6, f.y + 14)]).toBe(0);
+    g.day = 60; // the Ember shrinks it to 3
+    updateWater(g);
+    expect(g.watered[idx(f.x - 6, f.y + 9)]).toBe(0);
+    expect(g.watered[idx(f.x - 6, f.y + 7)]).toBe(1);
+    g.day = 0;
+    updateWater(g);
     // a stone ward wards with no mana at all
     const sw = placeBuildingRaw(g, 'stoneward', f.x + 12, f.y - 6);
     recomputeAll(g);
