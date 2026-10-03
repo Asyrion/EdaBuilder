@@ -3294,6 +3294,7 @@ does not buy them.
   a run. The road's daily sales were 1,063–1,444.
 - **The gates move both ways.**
   - The Vellish lose the Free City (0 of 6, against 2 of 6 on main).
+    *(Iteration 64's wide bar, §4.95: 22 of 48 against 21 of 48, so this was noise.)*
   - The Tallowkin reach the Hall of Wicks in 5 of 6 (against 3 of 6).
   - The Grimmen reach the Underking's Seat in 2 of 6 (against 1).
   - The Veshari's Sable Crown holds at 4 of 6.
@@ -3313,6 +3314,84 @@ does not buy them.
   - The Budget row and the depot panel read as above, and the history's last line is +5,206.
   - The Annals carry the row.
   - No errors, no missing sprites, and a clean dawn and dusk.
+
+### 4.95 A wider balance bar (iteration 64)
+
+NEXT_STEPS item 1, approved by the user. The table of §4.93 (24 runs a side) sees a tenth over all four peoples, but
+only a fifth for the Vellish and three tenths for the Tallowkin. Iteration 63's open question (the Vellish −7 % and
+a lost Free City) was that size.
+
+**The bar** (`scripts/table.ts --bar wide`; statistics in `scripts/tableStats.ts`):
+- **Seeds 42–47** (six instead of three), two draws each, then rounds.
+- **Rounds.** Each people whose floor (2·SE, against the other side, or against a copy of itself with no compare) is
+  over the target share of its mean (`--target`, 0.10) gets one more draw a seed on both sides. Rounds repeat until
+  each people is under the target or at the cap (`--max-draws`, 8). SE = σ·√(2/(draws × seeds)), so the runs go
+  where the noise is.
+- **The report** opens with the bar: per people, seeds × draws, the floor, its share, and *met*, *not met*, or *not
+  met: at the cap*. A cap is never rounded up.
+- **The cache** (`shots/table-cache`). A run is stored by its commit, the runner's hash (`balance.ts` + `rolls.ts`),
+  people, seed, roll and days.
+  - A ref is always cached. The working tree is cached when nothing under `src/`, `scripts/`, `public/` or
+    `package.json` differs from HEAD.
+  - So a table stopped part way resumes, and a rerun after a bot fix pays only for the branch side.
+  - The first real run needed this: it outran the two-hour limit of a background job in its seventh round and
+    resumed from 230 cached runs (13 minutes for the last 22).
+- **CLAUDE.md rule 4** names the wide bar for any sim change. The quick table is for probes, and one control seed is
+  for art.
+
+**Its first use: iteration 63 (`84dcd06`) against iteration 62 (`fc41ecc`).** 252 runs, about 2¼ hours on four cores.
+
+| people | seeds × draws | iteration 63 | iteration 62 | Δ paired by seed | ± 2·SE (share) | verdict |
+|---|---|---|---|---|---|---|
+| Vellish | 6 × 8 | 1,786 | 1,651 | +135 (+8.2 %) | 175 (10.2 %, at the cap) | within the noise |
+| Grimmen | 6 × 2 | 1,383 | 1,343 | +40 (+3.0 %) | 110 (8.1 %) | within the noise |
+| Veshari | 6 × 3 | 2,395 | 2,322 | +73 (+3.1 %) | 213 (9.0 %) | within the noise |
+| Tallowkin | 6 × 8 | 1,914 | 1,873 | +41 (+2.2 %) | 213 (11.3 %, at the cap) | within the noise |
+| all | | 7,479 | 7,189 | +289 (+4.0 %) | 365 (4.9 %) | within the noise |
+
+- **Iteration 63's Vellish −7 % was noise.** On 48 runs a side the sign turns (+8 %), and neither is past the noise.
+- **The Free City** is reached in 22 of 48 Vellish runs on iteration 63 and 21 of 48 on 62. The "lost Free City" of
+  §4.94's quick table was three seeds' luck.
+- **The other gates:**
+  - the Beacon of Eda 3 and 3;
+  - the Sable Crown 12 and 12 of 18;
+  - the Hall of Wicks 33 and 33 of 48 (median day 56 against 64);
+  - the Lantern of Wicks 12 and 12;
+  - Bright Town 45 against 48 of 48;
+  - the Underking's Seat 2 against 1 of 12.
+- **Depots and the caravan:**
+  - on iteration 63, 48 of 48 Vellish and 48 of 48 Tallowkin runs stand a depot (median day 30 and 34; on 62, 52 and
+    44);
+  - the caravan paid a mean of 25,563 (Vellish), 10,591 (Grimmen), 30,917 (Veshari) and 39,493 (Tallowkin) a run.
+
+**What the noise is.**
+- σ within seeds on six seeds and many draws is higher than §4.93's three-seed, two-draw estimate:
+
+  | people | σ (iteration 63 / iteration 62) | §4.93's estimate |
+  |---|---|---|
+  | Vellish | 394 / 462 | 286 |
+  | Grimmen | 148 / 120 | 117 |
+  | Veshari | 358 / 274 | 160 |
+  | Tallowkin | 552 / 490 | 439 |
+
+  - Two draws a seed underestimate σ: a seed's few draws often land near each other.
+- That is why eight draws leave the Vellish at 10.2 % and the Tallowkin at 11.3 %. A tenth would take about 9 and
+  10 draws, about 30 minutes more a comparison.
+- The cap stays at 8: the bar as approved costs about 2¼ hours a comparison (67 minutes a ref), and the two misses are
+  reported as misses.
+
+**Verified.**
+- `npx tsc --noEmit -p .`, 67 test files with 418 tests, and `npm run build`.
+- The new `tests/iteration64.test.ts` (5 tests) covers:
+  - the floor against SE's formula;
+  - rounds that grow only the noisy peoples and stop at the cap;
+  - a compare's floor counting both sides;
+  - the cache key moving with each input;
+  - the report's met / not met / at the cap.
+- A 30-day wide bar with the target at 1 % ran two rounds to the cap of 3, named both peoples "at the cap", and left no
+  worktree. Its rerun took the ref side from the cache: identical report, half the time.
+- The working tree's cache: a committed tree's second run came wholly from the cache.
+- `scripts/playtest63.mjs` with `DAYS=10`: no errors, no missing sprites, a clean dawn and dusk. No game code changed.
 
 ## 7. Milestone plan
 
@@ -4379,3 +4458,6 @@ playtest of a lakeside town.
 - *The caravan is income, and the books say so (iteration 63):* the Belerial caravan's take joins the Budget, the
   ledger history, the depot's panel and the Annals. §4.92's "the depot does not pay" counted only the road's eight goods
   a day and is withdrawn; the depot pays about ten times its upkeep through the caravan.
+- *The wide bar spends runs where the noise is (iteration 64):* six seeds a people and draws added until the floor is a
+  tenth of the people's folk (capped at 8), with every run cached so a long table resumes. A people at the cap is
+  reported as not met. Iteration 63's Vellish −7 % and lost Free City, a quick table's verdict, did not survive it.

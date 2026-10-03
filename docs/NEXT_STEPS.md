@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 64 (a wider balance bar)
+
+- **`scripts/table.ts --bar wide`**: six seeds a people, and draws added in rounds wherever a people's floor is over a
+  tenth of its folk (capped at 8 draws). The report opens with the bar per people: met, or not met at the cap.
+- **A cache of every run** (by commit and runner). A table stopped part way resumes, and a rerun after a fix pays only
+  for the branch side. The working tree is cached once committed.
+- **CLAUDE.md's bar for a sim change** is the wide table.
+- **Its first use: iteration 63 against 62** (252 runs). Every people is within the noise; the four together are
+  +4.0 % (± 4.9 %).
+  - Iteration 63's Vellish −7 % was noise (+8 % here), and so was its lost Free City (22 of 48 against 21 of 48).
+  - The Vellish and the Tallowkin end at floors of 10.2 % and 11.3 % at the cap. That is reported as not met.
+
 ## Done in iteration 63 (the caravan in the books; NEXT_STEPS item 1 withdrawn)
 
 - **Item 1 ("the depot's road does not pay") was wrong, and is withdrawn.** Iteration 61 counted only the road's eight
@@ -710,8 +722,10 @@
   arcane level 2) keep their front to the viewer, so on a road behind them (their upper edges) they
   still show their front to the empty side. Only new paintings, three-quarter views of the same
   houses, would turn them.
-- **The bot's runs are noisy** (iterations 60 and 62). One extra roll on day 10 moves a seed by up to half its
-  folk. Since iteration 62 the balance table pairs seeds and pools σ; its floor is in DESIGN §4.93.
+- **The bot's runs are noisy** (iterations 60, 62 and 64). One extra roll on day 10 moves a seed by up to half its
+  folk (σ within a seed: Vellish about 430, Tallowkin about 520). The wide bar (DESIGN §4.95) sees a tenth for the
+  Grimmen and the Veshari, and 10.2 % and 11.3 % for the Vellish and the Tallowkin at its cap of 8 draws. A full
+  comparison takes about 2¼ hours: commit first, and rerun after a stop to resume from the cache.
 - **The Grimmen fall in the Ember** (seen in iterations 54 and 55). The Grimmen bot loses a third
   of its folk between days 60 and 70 (964 to 665 in iteration 55, 923 to 628 in 54). No home is
   abandoned, mana demand falls from 340 to 218 and happiness dips to 51. Something in the Ember
@@ -771,15 +785,10 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **A wider balance bar** (from iteration 62, the user's decision): the default table sees a tenth over all four
-   peoples but only a fifth for the Vellish and three tenths for the Tallowkin. About 25 runs for the Vellish and 50 for
-   the Tallowkin would bring each to a tenth (DESIGN §4.93), at about 75 minutes a ref. Iteration 63's Vellish −7 % and
-   lost Free City are exactly the size this table cannot tell.
-
-4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
+1. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override
    (`public/art/sprites.json`) takes any PNG with an anchor, painted or imported.
-8. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
+2. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
    ramps, scale and keys are done).
-10. **Replays.** The sim is deterministic; a command log would allow replays (the daily
-    result is already shareable as text).
+3. **Replays.** The sim is deterministic; a command log would allow replays (the daily
+   result is already shareable as text).

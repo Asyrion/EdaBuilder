@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 63 (the caravan in the books; DESIGN §4.94). Iterations 62 (the balance table, §4.93)
-and 61 (the bot's depot, the hunt and the fish, §4.92) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 64 (the wide balance bar; DESIGN §4.95). Iterations 63 (the caravan in the books,
+§4.94), 62 (the balance table, §4.93) and 61 (the bot's depot, §4.92) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.94 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.95 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,13 +32,9 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **a wider balance bar**. It is the user's decision, because it costs time.
-- The default table sees a tenth over all four peoples, but only a fifth for the Vellish and three tenths for the
-  Tallowkin (DESIGN §4.93).
-- Iteration 63's Vellish −7 % and lost Free City are exactly the size it cannot tell.
-- About 25 Vellish runs and 50 Tallowkin runs would bring each to a tenth, at about 75 minutes a ref.
-
-If the user declines, the items after it are hand-made art, accessibility and replays.
+NEXT_STEPS item 1, **hand-made art beyond the paintings**. The temple, the Lantern of Vell and the citizen sprites would
+gain most. The per-sprite override (`public/art/sprites.json`) takes any PNG with an anchor, and CLAUDE.md rule 7 sets
+the art rules. It is art only, so the balance bar is one control seed.
 
 Plan it on the Plan panel first.
 
@@ -70,8 +66,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (66 files, 413 tests at this writing; `tests/iteration63.test.ts` is the
-  caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (67 files, 418 tests at this writing; `tests/iteration64.test.ts` is the
+  wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -83,7 +79,11 @@ Plan it on the Plan panel first.
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
   to `shots/` (gitignored).
-- Balance: since iteration 62 the bar is the balance table, `npx tsx scripts/table.ts --compare
+- Balance: since iteration 64 the bar for a sim change is `npx tsx scripts/table.ts --bar wide --compare
+  origin/main` (DESIGN §4.95): six seeds, draws added where the floor is over a tenth, every run cached. A full
+  comparison takes about 2¼ hours, longer than a background job's two-hour limit. Commit first (the working tree is
+  cached only when clean) and rerun the same command after a stop: it resumes from the cache. Before that, the quick
+  table was `npx tsx scripts/table.ts --compare
   origin/main` (four peoples × seeds 42–44 × two draws, about 11 minutes a side on four cores; DESIGN §4.93). It
   reports every row, σ within seeds, the paired Δ and a verdict ("seen" past 2·SE). A single run is still
   `npx tsx scripts/balance.ts <seed> 150 - <people> [roll=N]`. Before iteration 62 the six-run table was Vellish
@@ -208,6 +208,13 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 64 (not yet said elsewhere)
+
+- **Two draws underestimate σ.** σ within seeds on six seeds and up to eight draws is 1.2–2.2 times §4.93's two-draw
+  estimate (Vellish about 430, Veshari about 320). Read any floor from a quick table as optimistic.
+- **A background job stops at two hours** and leaves the table's worktrees in the temp dir (`git worktree list`, then
+  `git worktree remove --force`). The cache keeps every finished run.
 
 ## Learned in iteration 63 (not yet said elsewhere)
 
