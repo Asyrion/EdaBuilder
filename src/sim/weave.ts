@@ -62,7 +62,11 @@ export function clearAuraCache(): void {
 }
 /** Drakes and wyverns at stage 2+ with no role or a warden post radiate their line's aura. Cached per 50 ticks. */
 export function dragonAuras(s: GameState): Aura[] {
-  const stamp = Math.floor(s.tick / 50) * 1000003 + s.dragons.length * 7919 + (s.seed % 1000003);
+  // the stamp carries the dragons' stages, roles, posts and cradles (iteration 67): a role changed inside the 50-tick window cannot
+  // leave a stale list that only a UI read filled, so a replay without the UI reads the same auras as the game did
+  let sig = 0;
+  for (const d of s.dragons) sig = (Math.imul(sig ^ (d.stage * 31 + (d.role.charCodeAt(0) || 0) * 7 + d.roleTarget * 131 + d.cradleId * 8191 + (d.second ? 3 : 0) + (d.trueblood ? 5 : 0)), 16777619) + d.id) >>> 0;
+  const stamp = Math.floor(s.tick / 50) * 1000003 + s.dragons.length * 7919 + (s.seed % 1000003) + sig * 0.5;
   if (auraCache && auraCache.tick === stamp) return auraCache.list;
   const list: Aura[] = [];
   for (const d of s.dragons) {

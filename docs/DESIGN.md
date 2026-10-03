@@ -3553,6 +3553,102 @@ UI only.
   - no errors.
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`) is identical to iteration 63's `json:` line.
 
+### 4.98 Replays: one command layer, a replay file and a verifier (iteration 67)
+
+NEXT_STEPS item 1, the last on the list. The sim was deterministic, but the player changed it by about forty paths:
+- the map tools in `tools.ts`;
+- some twenty-five host methods in `main.ts`, some of which wrote fields directly;
+- a direct write in `ui.ts`.
+
+Each path ran its own `recomputeAll` and, for some, its own road-path bump. A log of what the player did could not be
+replayed, because nothing recorded it in one place.
+
+**The command layer** (`src/sim/commands.ts`).
+- Every change the player makes is one op, `exec(op, ...args)`, logged as `{ t: state.tick, op, args }`.
+- **The ops:**
+  - the map: `bulldoze`, `terraform`, `dust`, `build`, `gate`, `road`, `zone`, `district`, `wall`;
+  - the undo pair: `snap` (the snapshot a map action takes first) and `undo`;
+  - the panels: `tax`, `edict`, `loan`, `repay`, `sector`, `deepen`, `daughter`, `quarter`, `guild`, `lesson`,
+    `priority`, `renameDistrict`, `training`, `role`, `nest`, `cradle`, `sluice`, `golem`, `rain`, `vent`, `replate`,
+    `burnWyrmfire`, `quarry`;
+  - `tale` (the choice and the slider);
+  - `dev`, with the tile the camera pointed at resolved to x, y.
+- Each op does what its call site did, moved and not rewritten: the same sim call, its `recomputeAll` when it took, and
+  its `bumpRoadVersion` for bulldoze, build, gate, road and the daughter charter.
+- A drag stays one command per tile, as it was one action per tile.
+- The undo stack (12 deep) lives in the runner. A replay retakes the snapshots at the same ticks, so an undo restores the
+  same state. An undo does not restore the RNG, and neither does its replay.
+- `tools.ts` and `main.ts` send everything through `exec`. The lodge's quarry, the last direct write in `ui.ts`, became
+  the `quarry` op.
+
+**Three determinism fixes the inventory found.**
+- **The dragon-aura cache** (`weave.ts`) was keyed by the tick window and the dragon count. A role changed inside a
+  50-tick window left the sim reading auras the UI had filled. The key now hashes each dragon's stage, role, target,
+  cradle and line.
+- **The daughter charter** builds roads and now bumps the path cache.
+- **The daily challenge** takes its date as a parameter, so its replay uses the recorded date and not today's.
+
+**The replay file.**
+- The header `{ seed, name, scenario, faction, challenge? }` founds the same charter.
+- `build` is the git short sha, injected by Vite (`__BUILD__`, `src/core/build.ts`).
+- Then the commands.
+- A checkpoint at each day's turn: `[day, rngState, treasury, population]`. The RNG state alone catches nearly any
+  divergence.
+- `endTick`, and the checksum (FNV-1a of `serialize(state)`).
+- A log begins with a new charter. A charter loaded from a save records nothing, since a rebuilt save is not the live
+  state bit for bit. *Export replay* then says that a replay begins with a new charter.
+
+**In the game.**
+- **Export:** Menu → *Export replay* downloads `<city>_day<N>.wardlight-replay.json`.
+- **Watching:**
+  - title → *Watch a replay* founds the header's charter again;
+  - before each tick, the loop feeds every command stamped with that tick, in order;
+  - a toast warns when the file came from another build.
+- **During a replay:**
+  - a *REPLAY* badge sits in the top bar;
+  - the camera, the selection and the panels can be read, but every command is refused;
+  - the autosave is off, so a replay never writes over the player's charter;
+  - pause and speed work, and *Skip to end* runs up to 1,500 ticks a frame.
+- **At the end,** a toast says *The replay matches its recording* with the checksum, or names the first day whose
+  checkpoint differs. A tale left waiting with no answer in the log ends the replay as stuck.
+
+**The verifier.** `npx tsx scripts/replay.ts <file>` plays the file headless and prints MATCH and the checksum, or
+DIVERGED and the first day. It exits 1 on a divergence. A player's file reproduces their charter on any checkout of the
+same build, so a bug report can be a file.
+
+**Found by the playtest:** Escape did nothing while a dialog's slider or checkbox had focus (the field returned before
+the key reached the handler). Escape now passes through, and the other keys stay with the field.
+
+**Verified.**
+- `npx tsc --noEmit -p .`, 70 test files with 437 tests, and `npm run build`.
+- **`tests/iteration67.test.ts`** (6 tests):
+  - a twelve-day Vellish charter played through the runner (roads, zones, a Well drawing from the main stream, a
+    bulldoze drag and its undo, a tax, a lesson, a priority, an edict, a loan, a rename, tales answered as they come)
+    replays to the same `serialize` bit for bit, with every checkpoint equal and the verifier saying match;
+  - the same holds for a daily challenge with a fixed date, a Grimmen charter and a Veshari charter;
+  - a dropped `build` command makes the verifier report a divergence and its day;
+  - a charter from a save logs nothing and refuses to export;
+  - every op runs on a fresh charter without throwing;
+  - the auras follow a role change inside their window.
+- **`scripts/playtest67.mjs`** plays 30 days in Chromium through the real UI:
+  - roads and zones dragged with the mouse, a Well and a Ley Spire from the toolbar, a bulldoze drag undone by Ctrl+Z,
+    the Hearth tithe moved by the arrow keys on the Budget's slider, tales answered by click;
+  - the speed buttons at 1× and 3×, with the speed raised past 3× in stretches only to save wall time;
+  - Menu → *Export replay* (25 commands, 13 folk on day 30);
+  - `scripts/replay.ts` on the download says MATCH;
+  - title → *Watch a replay* on the same file shows the badge; a road dragged during the replay changes nothing;
+  - *Skip to end* ends on *The replay matches its recording* with the same checksum;
+  - Escape closes the Budget from its slider; no errors.
+- **Not covered:** no edict was open at the Founding Stake, so the playtest set none (the unit test covers the op), and
+  the other-build warning was not exercised.
+- **The balance table** (`scripts/table.ts --compare origin/main`, 4 peoples × 3 seeds × 2 draws, 48 runs) is the same
+  run for run: Δ +0 for every people (Vellish 1,495, Grimmen 1,557, Veshari 2,259, Tallowkin 1,849), with the same gates
+  and depots. The wide bar was not run because nothing moved. The aura key was also checked bit for bit against
+  iteration 63's Vellish 42 and Veshari 42. The bot drives the sim directly, not through the runner, so the table holds
+  the sim, and the tests and playtest hold the commands.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`) is identical to iteration 63's `json:` line in all 13 fields: 2,130
+  folk, the Burgh on day 41.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4627,3 +4723,7 @@ playtest of a lakeside town.
 - *Shortcuts belong to the map (iteration 66):* the game's keys fire only with focus on the page or the map; a focused
   control keeps its own keys and a dialog all but Escape. Tab moves focus, so Info views moved to V. One dialog watcher
   and one rebuild guard cover every panel, instead of editing each toggle.
+- *Every player change is one command (iteration 67):* the map tools and the panels send ops through one runner that logs
+  them by tick and does what the call sites did, moved and not rewritten, so live play is unchanged and a replay can apply
+  the same op at the same tick. A replay begins with a new charter (a loaded save is rebuilt, not the live state), carries
+  daily checkpoints of the RNG to name the first day two runs part, and is checked headless by `scripts/replay.ts`.

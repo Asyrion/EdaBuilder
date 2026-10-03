@@ -73,6 +73,12 @@ export interface UiHost {
   save(): void;
   exportJson(): void;
   importJson(file: File): void;
+  /** Replays (iteration 67): the charter's commands exported; a replay watched; the lodge's quarry as a command. */
+  exportReplay(): string | null;
+  watchReplay(file: File): void;
+  skipReplay(): void;
+  readonly replaying: boolean;
+  setQuarry(id: number, q: string): void;
   setMuted(m: boolean): void;
   musicOn: boolean;
   setMusic(on: boolean): void;
@@ -153,6 +159,7 @@ export class UI {
       <div id="topbar" class="panel">
         <canvas id="clock" width="34" height="34" title="Time of day"></canvas>
         <div class="stat city"><span class="v" id="tb-name"></span><span class="l" id="tb-title"></span></div>
+        <span id="tb-replay" class="replay-badge hidden" title="A recorded charter playing itself: the map and the panels can be read, not changed">REPLAY <button id="tb-skip" title="Run the replay to its end and check it against its recording">Skip to end</button></span>
         <div class="stat"><span class="v" id="tb-date"></span><span class="l">day</span></div>
         <div class="stat"><span class="v gold" id="tb-gold"></span><span class="l" id="tb-net">tithe/day</span></div>
         <div class="stat"><span class="v" id="tb-pop"></span><span class="l">folk</span></div>
@@ -223,6 +230,7 @@ export class UI {
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
     this.q('#btn-help').onclick = () => this.toggleHelp();
     this.q('#btn-menu').onclick = () => this.toggleMenu();
+    this.q('#tb-skip').onclick = () => this.host.skipReplay();
     this.q('#q-select').onclick = () => this.host.setTool({ kind: 'select' });
     this.q('#q-bulldoze').onclick = () => this.host.setTool({ kind: 'bulldoze' });
     this.q('#q-undo').onclick = () => this.host.undo();
@@ -429,6 +437,7 @@ export class UI {
     const s = this.host.state;
     const h = this.host;
     this.q('#tb-name').textContent = s.cityName;
+    this.q('#tb-replay').classList.toggle('hidden', !h.replaying);
     const gate = nextGate(s);
     const tbTitle = this.q('#tb-title');
     tbTitle.textContent = `${this.ms()[s.milestone].name} · ${factionOf(s).people}${gate ? ` · next ${gate}` : ''}`;
@@ -995,7 +1004,7 @@ export class UI {
         btn.dataset.quarry = q;
         btn.disabled = quarryOf(b) === q;
         btn.title = q === 'hounds' ? 'Guard the edge: hounds at full chance' : `${WILD[q].meat} meat, ${WILD[q].hides} hides a head${WILD[q].trophy ? `, ${WILD[q].trophyName} now and then` : ''}`;
-        btn.onclick = () => { setQuarry(s, b, q); this.refreshInfo(); };
+        btn.onclick = () => { this.host.setQuarry(b.id, q); this.refreshInfo(); };
         bar.appendChild(btn);
       }
       el.appendChild(bar);
@@ -1294,6 +1303,7 @@ export class UI {
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>N</kbd> Annals · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
+            <li><b>Replays</b>: the Menu's <b>Export replay</b> saves every command of this charter since it was founded (a charter loaded from a save starts none); the title screen's <b>Watch a replay</b> plays such a file again. The map and panels can be read but not changed; <b>Skip to end</b> runs it to its last day and says whether it matches its recording.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
             <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>V</kbd> view list</li>
             <li><b>Keyboard:</b> <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> move between controls · <kbd>F6</kbd> jumps between the top bar, the toolbar, the Ledger, the panels and the map · the arrows move along the toolbar's tabs and items, <kbd>Enter</kbd> picks · <kbd>Esc</kbd> closes a panel · the first <kbd>Tab</kbd> offers <b>Skip to the map</b>; the shortcuts and the map keys work while the map has focus</li>
@@ -1367,7 +1377,7 @@ export class UI {
       <div class="names">${names}</div>
       <div class="peoples">${Object.values(FACTIONS).map((fd) => `<button data-fac="${fd.id}" class="${fd.id === 'vellish' ? 'active' : ''}" ${fd.playable ? '' : 'disabled'} title="${fd.lore}"><b>${fd.name}</b><span>${fd.playable ? fd.lore : 'Coming in a later iteration.'}</span></button>`).join('')}</div>
       <div class="scenarios">${SCENARIOS.map((sc, i) => `<button data-sc="${sc.id}" class="${i === 0 ? 'active' : ''}" title="${sc.goal}"><b>${sc.name}</b><span>${sc.blurb}</span><em>Goal: ${sc.goal}</em></button>`).join('')}</div>
-      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley and people for everyone today; the fifth milestone by day ${CHALLENGE_DAYS}, scored">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button></div>
+      <div class="row"><button id="t-new">Found a new wardlight</button><button id="t-daily" title="The same valley and people for everyone today; the fifth milestone by day ${CHALLENGE_DAYS}, scored">Today's challenge</button><button id="t-continue">Continue</button><button id="t-import">Import Charter (.json)</button><button id="t-replay" title="Watch a charter played again from its replay file">Watch a replay</button></div><input type="file" id="t-rfile" accept=".json" class="hidden">
       <input type="file" id="t-file" accept=".json" class="hidden">
       <p class="muted" style="font-size:11px">Runs entirely in your browser. Autosaves every day to this browser. Press <b>H</b> in game for help.</p>
     </div>`;
@@ -1395,6 +1405,9 @@ export class UI {
     cont.onclick = () => {
       if (this.host.continueGame()) t.classList.add('hidden');
     };
+    const rfile = t.querySelector('#t-rfile') as HTMLInputElement;
+    (t.querySelector('#t-replay') as HTMLButtonElement).onclick = () => rfile.click();
+    rfile.onchange = () => { if (rfile.files?.[0]) { this.host.watchReplay(rfile.files[0]); t.classList.add('hidden'); } };
     const file = t.querySelector('#t-file') as HTMLInputElement;
     (t.querySelector('#t-import') as HTMLButtonElement).onclick = () => file.click();
     file.onchange = () => {
@@ -1460,6 +1473,7 @@ export class UI {
         <button id="m-save">Save Charter (browser)</button>
         <button id="m-export">Export Charter as .json</button>
         <button id="m-import">Import Charter from .json</button>
+        <button id="m-replay" title="The commands of this charter since it was founded, to watch again or share; a charter loaded from a save cannot be replayed">Export replay</button>
         <button id="m-mute">Sound: on</button>
         <button id="m-music">Music: on</button>
         <button id="m-cb">Colour-blind overlay ramps: off</button>
@@ -1478,6 +1492,7 @@ export class UI {
       this.toast('<p>Charter saved to this browser.</p>', 2500);
     };
     (m.querySelector('#m-export') as HTMLButtonElement).onclick = () => this.host.exportJson();
+    (m.querySelector('#m-replay') as HTMLButtonElement).onclick = () => { const why = this.host.exportReplay(); this.toast(why ? `<p class="warn">${why}</p>` : '<p>Replay exported: watch it from the title screen, or check it with <code>npx tsx scripts/replay.ts</code>.</p>', 5000); };
     const file = m.querySelector('#m-file') as HTMLInputElement;
     (m.querySelector('#m-import') as HTMLButtonElement).onclick = () => file.click();
     file.onchange = () => {

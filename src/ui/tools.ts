@@ -8,7 +8,7 @@ import { BUILDING_BY_KEY } from '../sim/catalog';
 import { canBuild, costOf, factionOf, milestonesOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding, influenceRadius, roadInRing } from '../sim/world';
-import { bumpRoadVersion } from '../sim/agents';
+import type { CommandResult } from '../sim/commands';
 import type { ViewState } from '../render/renderer';
 import type { OverlayId } from '../render/overlays';
 import { OVERLAY_LIST } from '../render/overlays';
@@ -33,6 +33,8 @@ export interface ToolHost {
   onAction: (kind: 'road' | 'zone' | 'place' | 'bulldoze' | 'terrain' | 'error' | 'click' | 'district', msg?: string) => void;
   keys: () => Record<KeyAction, string>;
   beforeAction: (label: string) => void; // undo snapshot hook
+  /** Every change to the charter goes through a command (iteration 67): logged for replays, refused while one plays. */
+  exec: (op: string, ...args: unknown[]) => CommandResult;
   onSelect: (b: Building | null) => void;
   onSelectNode?: (index: number) => void;
   onSelectSector?: (index: number) => void;
@@ -123,8 +125,8 @@ export class Tools {
         this.doTerraform(t);
         break;
       case 'dust': {
-        const r = scatterDust(this.host.state, t[0], t[1]);
-        if (r.ok) this.host.onAction('terrain'); else this.host.onAction('error', r.reason);
+        const r = this.host.exec('dust', t[0], t[1]);
+        if (r.ok) this.host.onAction('terrain'); else this.host.onAction('error', r.reason ?? undefined);
         break;
       }
       case 'build':
@@ -132,8 +134,8 @@ export class Tools {
         break;
       case 'gate': {
         this.host.beforeAction('gate');
-        const r = placeGate(this.host.state, this.tool.style, t[0], t[1]);
-        if (r.ok) { bumpRoadVersion(); this.host.onAction('place'); } else this.host.onAction('error', r.reason);
+        const r = this.host.exec('gate', this.tool.style, t[0], t[1]);
+        if (r.ok) this.host.onAction('place'); else this.host.onAction('error', r.reason ?? undefined);
         break;
       }
       case 'select': {
@@ -179,27 +181,25 @@ export class Tools {
     if (this.tool.kind === 'road') {
       const tiles = this.roadTiles(start, end);
       this.host.beforeAction('road');
-      const r = buildRoad(s, this.tool.type, tiles);
-      if (r.ok) {
-        bumpRoadVersion();
-        this.host.onAction('road');
-      } else this.host.onAction('error', r.reason);
+      const r = this.host.exec('road', this.tool.type, tiles);
+      if (r.ok) this.host.onAction('road');
+      else this.host.onAction('error', r.reason ?? undefined);
     } else if (this.tool.kind === 'zone') {
       this.host.beforeAction('zone');
-      const r = paintZone(s, this.tool.zone, start[0], start[1], end[0], end[1]);
+      const r = this.host.exec('zone', this.tool.zone, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('zone');
-      else this.host.onAction('error', r.reason);
+      else this.host.onAction('error', r.reason ?? undefined);
     } else if (this.tool.kind === 'district') {
       this.host.beforeAction('district');
-      const r = paintDistrict(s, this.tool.id, start[0], start[1], end[0], end[1]);
+      const r = this.host.exec('district', this.tool.id, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('district', String(this.tool.id));
-      else this.host.onAction('error', r.reason);
+      else this.host.onAction('error', r.reason ?? undefined);
     } else if (this.tool.kind === 'wall') {
       const tiles = this.roadTiles(start, end);
       this.host.beforeAction('wall');
-      const r = buildWall(s, tiles);
+      const r = this.host.exec('wall', tiles);
       if (r.ok) this.host.onAction('place');
-      else this.host.onAction('error', r.reason);
+      else this.host.onAction('error', r.reason ?? undefined);
     }
     this.updatePreview();
   }
@@ -214,7 +214,7 @@ export class Tools {
     const i = idx(t[0], t[1]);
     if (this.bulldozed.has(i)) return;
     this.bulldozed.add(i);
-    const r = terraform(this.host.state, this.tool.op, t[0], t[1]);
+    const r = this.host.exec('terraform', this.tool.op, t[0], t[1]);
     if (r.ok) this.host.onAction('terrain');
     else if (r.reason) this.host.onAction('error', r.reason);
   }
@@ -224,11 +224,9 @@ export class Tools {
     const i = idx(t[0], t[1]);
     if (this.bulldozed.has(i)) return;
     this.bulldozed.add(i);
-    const r = bulldoze(this.host.state, t[0], t[1]);
-    if (r.ok) {
-      bumpRoadVersion();
-      this.host.onAction('bulldoze');
-    } else if (r.reason) this.host.onAction('error', r.reason);
+    const r = this.host.exec('bulldoze', t[0], t[1]);
+    if (r.ok) this.host.onAction('bulldoze');
+    else if (r.reason) this.host.onAction('error', r.reason);
   }
 
   private doBuild(t: [number, number]): void {
@@ -237,12 +235,11 @@ export class Tools {
     const x = t[0] - Math.floor((def.w - 1) / 2);
     const y = t[1] - Math.floor((def.h - 1) / 2);
     if (!canPlaceBuilding(this.host.state, this.tool.key, x, y)) this.host.beforeAction('build');
-    const r = placeBuilding(this.host.state, this.tool.key, x, y);
+    const r = this.host.exec('build', this.tool.key, x, y);
     if (r.ok) {
-      bumpRoadVersion();
       this.host.onAction('place');
       if (def.wonder) this.setTool({ kind: 'select' });
-    } else this.host.onAction('error', r.reason);
+    } else this.host.onAction('error', r.reason ?? undefined);
   }
 
   updatePreview(): void {
@@ -311,8 +308,9 @@ export class Tools {
 
   private keyDown(e: KeyboardEvent): void {
     const tag = (e.target as HTMLElement | null)?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     const k = e.key.toLowerCase();
+    // a field keeps its keys, but Escape from a slider or a checkbox still closes its dialog (iteration 67's playtest)
+    if ((tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') && k !== 'escape') return;
     // a focused control keeps its own keys (Space presses a button, the arrows move in a list), and a dialog keeps all but Escape;
     // the game's shortcuts and the map's keys fire only with focus on the page or the map (iteration 66)
     if (k !== 'escape' && !shortcutTarget(e.target as HTMLElement | null)) return;
