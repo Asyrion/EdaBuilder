@@ -6,8 +6,9 @@
  *                           [--no-cache] [--out shots/table.json]
  *
  *  --ref runs another git ref instead of the working tree; --compare runs both. A ref runs in a detached worktree in the temp dir
- *  with this tree's balance.ts and rolls.ts copied in (so both print the same json line), removed afterwards. A ref's runs are cached
- *  in shots/table-cache by commit, runner and run; the working tree is never cached.
+ *  with this tree's balance.ts and rolls.ts copied in (so both print the same json line), removed afterwards. Runs are cached in
+ *  shots/table-cache by commit, runner and run: a ref's always, the working tree's when it has no uncommitted change under src/,
+ *  scripts/ or public/. A table stopped part way resumes from the cache.
  *
  *  --bar wide (the bar for a sim change since iteration 64): seeds 42–47, two draws, then rounds: every people whose floor (2·SE) is
  *  over the target share of its mean gets one more draw a seed on both sides, until each is under it or at the cap of draws. */
@@ -88,7 +89,13 @@ async function pool(list: Job[], round: number): Promise<Run[]> {
 const sides: Side[] = [];
 const shaOf = (r: string) => execFileSync('git', ['rev-parse', `${r}^{commit}`], { cwd: ROOT }).toString().trim();
 if (ref) sides.push({ label: ref, dir: worktree(ref), temp: true, sha: shaOf(ref) });
-else sides.push({ label: 'this tree', dir: ROOT, temp: false });
+else {
+  // the working tree is cached too when nothing the runs read differs from HEAD (iteration 64: the first wide bar outran the
+  // two-hour limit of a background job; with every finished run cached, a rerun resumes where it was stopped)
+  const dirty = execFileSync('git', ['status', '--porcelain', '--', 'src', 'scripts', 'public', 'package.json'], { cwd: ROOT }).toString().trim();
+  sides.push({ label: 'this tree', dir: ROOT, temp: false, sha: dirty ? undefined : shaOf('HEAD') });
+  if (dirty) process.stderr.write('this tree has uncommitted changes: its runs are not cached (commit first to make a long table resumable)\n');
+}
 if (compareRef) sides.push({ label: compareRef, dir: worktree(compareRef), temp: true, sha: shaOf(compareRef) });
 try {
   const runs: Run[] = [];
