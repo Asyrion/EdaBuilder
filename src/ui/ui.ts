@@ -42,7 +42,7 @@ import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost,
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
 import { ASPECT_INFO, AURA_INFO, WEATHER_WORD, aspectAt, aurasAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
-import { UNBINDABLE, roving, watchDialogs, watchRegions } from './focus';
+import { UNBINDABLE, keepFocusThroughRebuilds, roving, watchDialogs, watchRegions } from './focus';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
 import { PAL } from '../render/palette';
@@ -173,7 +173,7 @@ export class UI {
         <button id="btn-wyrms" title="Dragons, eggs and materials">Wyrms</button>
         <button id="btn-chronicle" title="Chronicle: what has happened in the world (C)">Chronicle</button>
         <button id="btn-annals" title="Annals: every counter the charter keeps (N)">Annals</button>
-        <button id="btn-views" title="Info views (Tab)">Views</button>
+        <button id="btn-views" title="Info views (V)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
       </div>
@@ -247,6 +247,7 @@ export class UI {
     skip.onclick = (e) => { e.preventDefault(); (document.getElementById('game') as HTMLElement | null)?.focus(); };
     this.root.prepend(skip);
     watchDialogs(this.root);
+    keepFocusThroughRebuilds(this.root);
     watchRegions();
     this.buildTabs();
     this.buildViews();
@@ -699,7 +700,7 @@ export class UI {
     const bars: [string, number, string, DemandZone][] = [['H', d.hearth, '#5ee36f', 'hearth'], ['M', d.market, '#5aa8ff', 'market'], ['C', d.craft, '#ffb347', 'craft'], ['A', d.arcane, '#c58cff', 'arcane']];
     const el = this.el.demand;
     if (!el.children.length) {
-      el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand <button class="help" id="demand-help" title="What the bars mean">?</button></div></div>` + bars.map(([l, , c, z]) => `<div class="col" data-zone="${z}"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div><div class="sign muted">–</div></div>`).join('');
+      el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand <button class="help" id="demand-help" title="What the bars mean" aria-label="What the demand bars mean">?</button></div></div>` + bars.map(([l, , c, z]) => `<div class="col" data-zone="${z}"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div><div class="sign muted">–</div></div>`).join('');
       el.querySelectorAll('.col[data-zone]').forEach((col) => {
         const zone = (col as HTMLElement).dataset.zone as DemandZone;
         const tip = () => { const x = demandExplain(s, zone); return `<div class="t">${x.headline}</div>${x.detail}<br><span class="muted">${x.advice}</span>`; };

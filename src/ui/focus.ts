@@ -72,7 +72,7 @@ export function watchDialogs(root: HTMLElement): void {
     requestAnimationFrame(() => {
       if (m.classList.contains('hidden')) return;
       if (m.contains(document.activeElement)) return;
-      const first = focusables(m)[0];
+      const first = m.querySelector<HTMLElement>('[data-autofocus], .choices button') ?? focusables(m)[0];
       if (first) first.focus();
       else { m.tabIndex = -1; m.focus(); }
     });
@@ -89,15 +89,11 @@ export function watchDialogs(root: HTMLElement): void {
     if (was) enter(m);
     new MutationObserver(() => {
       const now = !m.classList.contains('hidden');
-      if (now === was) {
-        // a dialog that rebuilt its contents (a tale's next page, the menu's key screen) keeps focus inside
-        if (now && !m.contains(document.activeElement)) { const first = focusables(m)[0]; if (first) first.focus(); }
-        return;
-      }
+      if (now === was) return; // a rebuilt dialog keeps its focus through keepFocusThroughRebuilds
       was = now;
       if (now) enter(m);
       else leave(m);
-    }).observe(m, { attributes: true, attributeFilter: ['class'], childList: true });
+    }).observe(m, { attributes: true, attributeFilter: ['class'] });
   }
   // Tab cycles inside the top dialog
   document.addEventListener('keydown', (e) => {
@@ -167,4 +163,26 @@ export function roving(container: HTMLElement, opts: { selected: () => HTMLEleme
   container.addEventListener('focusout', (e) => { if (!container.contains(e.relatedTarget as Node)) settle(); });
   (container as HTMLElement & { settleRoving?: () => void }).settleRoving = settle;
   settle();
+}
+
+/**
+ * Panels that rebuild their contents (the Budget each refresh, the building panel, a tale's next page) would drop the keyboard's
+ * focus to the page. When the focused element leaves the page, focus moves to its replacement: the same id, else a control with the
+ * same label in the same panel, else that panel's first control.
+ */
+export function keepFocusThroughRebuilds(root: HTMLElement): void {
+  let last: { el: HTMLElement; id: string; label: string; panel: HTMLElement | null } | null = null;
+  const labelOf = (el: HTMLElement) => el.getAttribute('aria-label') || el.dataset.k || el.dataset.i || el.textContent?.trim() || '';
+  root.addEventListener('focusin', (e) => {
+    const el = e.target as HTMLElement;
+    const panel = el.closest<HTMLElement>('.modal, .panel');
+    last = { el, id: el.id, label: labelOf(el), panel };
+  });
+  new MutationObserver(() => {
+    if (!last || last.el.isConnected || document.activeElement !== document.body) return;
+    const { id, label, panel } = last;
+    let next: HTMLElement | null = id ? document.getElementById(id) : null;
+    if (!next && panel?.isConnected && !panel.classList.contains('hidden')) next = focusables(panel).find((x) => labelOf(x) === label) ?? focusables(panel)[0] ?? null;
+    if (next && next.offsetParent !== null) next.focus();
+  }).observe(root, { childList: true, subtree: true });
 }

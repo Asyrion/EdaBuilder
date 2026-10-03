@@ -1,15 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 65 (drawn art for the Lantern of Vell, the temple and the citizens; DESIGN §4.96).
-Iterations 64 (the wide balance bar, §4.95), 63 (the caravan in the books, §4.94) and 62 (the balance table, §4.93) came
-just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 66 (keyboard focus; DESIGN §4.97). Iterations 65 (drawn art, §4.96), 64 (the wide
+balance bar, §4.95) and 63 (the caravan in the books, §4.94) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.96 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.97 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -33,8 +32,9 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **accessibility**: keyboard focus order for the toolbar and panels. Labels, roles, colour-blind ramps,
-UI scale and key bindings are done. It is UI only, so the balance bar is one control seed. Then item 2, replays.
+NEXT_STEPS item 1, **replays**. The sim is deterministic, so a log of the player's commands (with their ticks) would let a
+charter be replayed from its seed. The daily challenge's result is already shareable as text. It is the last item on the
+list: after it, the list needs new items from the user (a playtest batch, or a new milestone).
 
 Plan it on the Plan panel first.
 
@@ -66,8 +66,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (68 files, 425 tests at this writing; `tests/iteration65.test.ts` is the
-  drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (69 files, 431 tests at this writing; `tests/iteration66.test.ts` is the
+  keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -208,6 +208,21 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 66 (not yet said elsewhere)
+
+- **Keyboard focus** lives in `src/ui/focus.ts`:
+  - `shortcutTarget` guards the game's keys;
+  - `watchDialogs` handles every `.modal`;
+  - `keepFocusThroughRebuilds` handles panels that rebuild their HTML;
+  - `roving` handles the toolbar;
+  - `REGIONS` is the F6 order.
+  - A new panel joins the F6 order through `REGIONS`. A new dialog needs only the `modal` class.
+- **The map canvas comes after `#ui` in the page** (for the Tab order); the z-index keeps the UI on top.
+- **Playtests that press keys** must mind focus. A shortcut fires only with focus on the page or the map, so focus
+  `#game` first (`page.focus('#game')`).
+- **Screenshots of every visible change** go in the final message: the user's rule since iteration 65 (CLAUDE.md
+  rule 7).
 
 ## Learned in iteration 65 (not yet said elsewhere)
 

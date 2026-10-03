@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 66 (keyboard focus: the toolbar, the panels and the dialogs)
+
+- **The whole UI works from the keyboard:**
+  - Tab moves in screen order behind a *Skip to the map* link, and F6 jumps between the regions;
+  - the toolbar's categories and items each take one stop, with the arrows moving inside;
+  - dialogs take focus, keep it, and give it back on Escape;
+  - a panel that rebuilds keeps the focused control;
+  - a gold ring shows where the keyboard is.
+- **Shortcuts fire only from the page or the map.** Space on a focused button presses it and no longer pauses as well.
+  Info views moved from Tab to V, and old key tables are migrated.
+- UI only: the control seed is identical (DESIGN §4.97).
+
 ## Done in iteration 65 (drawn art: the Lantern of Vell, the temple, the citizens)
 
 - **The Lantern of Vell is a leystone lighthouse**, drawn by hand in code:
@@ -798,7 +810,5 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
-   ramps, scale and keys are done).
-2. **Replays.** The sim is deterministic; a command log would allow replays (the daily
+1. **Replays.** The sim is deterministic; a command log would allow replays (the daily
    result is already shareable as text).
