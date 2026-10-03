@@ -17,10 +17,12 @@ order of the list is itself a decision the user made.
    (`actions/runs?branch=main`). The user does not merge by hand.
 4. **The verification bar, every iteration:** `npx tsc --noEmit -p .`, `npx vitest run`,
    `npm run build`, a Playwright playtest script (`scripts/playtestNN.mjs` against
-   `npx vite preview --port 4173`), and the balance runs (`npx tsx scripts/balance.ts <seed>
-   150 - <people>`, the six-run table: Vellish 42/43/44, Grimmen/Veshari/Tallowkin 42) for any
-   sim change; one control seed for art-only changes. Report the numbers honestly, losses
-   included.
+   `npx vite preview --port 4173`), and for any sim change the wide balance bar
+   (`npx tsx scripts/table.ts --bar wide --compare origin/main`: six seeds a people, draws added
+   until each people's floor is a tenth of its folk; DESIGN §4.95), with each people's verdict
+   and gates reported; the quick table (no `--bar`) is for probes during an iteration; one control
+   seed (`npx tsx scripts/balance.ts 42 150`) for art-only changes. Report the numbers honestly,
+   losses included, and a floor not met as not met.
 5. **Docs stay current:** DESIGN.md gets a `### 4.NN` section per iteration with the
    balance table and a decision-log entry; NEXT_STEPS.md gets "Done in iteration NN" and the
    reordered list; README.md's feature list and the in-game help follow.

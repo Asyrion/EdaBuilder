@@ -134,3 +134,54 @@ export function renderTable(a: Run[], b?: Run[], names: [string, string] = ['thi
   }
   return out.join('\n').trimEnd();
 }
+
+// ---------- the wide bar (iteration 64): rounds that spend runs where the noise is ----------
+
+/** The floor (2·SE) as a share of the people's mean folk (both sides' means averaged). */
+export function floorShare(c: Comparison): number {
+  const m = (c.meanA + c.meanB) / 2;
+  return m > 0 ? c.floor / m : Infinity;
+}
+
+/** The comparison a people's bar is judged by: against the other side, or with one side the table against a copy of itself
+ *  (the floor two such tables would have). */
+export function barComparison(people: string, a: Map<number, Run[]>, b?: Map<number, Run[]>): Comparison {
+  return compare(people, a, b ?? a);
+}
+
+/** Draws a people has: the fewest any of its seeds has on side A. */
+export function drawsOf(seeds: Map<number, Run[]>): number {
+  return Math.min(...[...seeds.values()].map((rs) => rs.length));
+}
+
+/** The peoples that get one more draw a seed this round: over the target, and under the cap. */
+export function needMore(a: Run[], b: Run[] | undefined, target: number, maxDraws: number): string[] {
+  const A = bySeed(a);
+  const B = b ? bySeed(b) : undefined;
+  const out: string[] = [];
+  for (const [people, seeds] of A) {
+    if (drawsOf(seeds) >= maxDraws) continue;
+    if (floorShare(barComparison(people, seeds, B?.get(people))) > target) out.push(people);
+  }
+  return out;
+}
+
+/** The cache's key for a ref's run: the commit, the runner's hash (balance.ts and rolls.ts), the run itself. */
+export function cacheKey(k: { sha: string; runner: string; people: string; seed: number; rolls: number; days: number }): string {
+  return `${k.sha.slice(0, 12)}-${k.runner.slice(0, 12)}-${k.people}-${k.seed}-r${k.rolls}-d${k.days}`;
+}
+
+/** The bar's report: per people, the draws used, the floor reached against the target, met or at the cap (never rounded up). */
+export function renderBar(a: Run[], b: Run[] | undefined, target: number, maxDraws: number): string {
+  const A = bySeed(a);
+  const B = b ? bySeed(b) : undefined;
+  const out = ['| people | seeds × draws | floor (2·SE) | share of the mean | target | bar |', '|---|---|---|---|---|---|'];
+  for (const [people, seeds] of A) {
+    const c = barComparison(people, seeds, B?.get(people));
+    const share = floorShare(c);
+    const d = drawsOf(seeds);
+    const status = share <= target ? 'met' : d >= maxDraws ? `**not met: at the cap of ${maxDraws} draws**` : '**not met**';
+    out.push(`| ${people} | ${seeds.size} × ${d} | ${n0(c.floor)} | ${(share * 100).toFixed(1)} % | ${(target * 100).toFixed(0)} % | ${status} |`);
+  }
+  return out.join('\n');
+}
