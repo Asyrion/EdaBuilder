@@ -456,6 +456,8 @@ export interface GameState {
     gloamBurned: number;
     restlessLaid: number;
     caravanGoods: number;
+    caravanCrowns: number; // what the Belerial caravan paid this charter (iteration 63)
+    lastCaravanCrowns: number; // and at its last halt
     lastCaravanDay: number; // the Belerial caravan's rhythm; −1 before the first
     courierTrips: number;
     boutsWon: number;

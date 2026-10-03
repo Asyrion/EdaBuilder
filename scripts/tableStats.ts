@@ -7,7 +7,7 @@
 export interface Gate { name: string; day: number }
 export interface Run {
   seed: number; people: string; rolls: number; days: number; folk: number; milestone: number; gates: Gate[];
-  treasury: number; loan: number; depotDay: number; roadCrowns: number; gameOver: boolean;
+  treasury: number; loan: number; depotDay: number; roadCrowns: number; caravanCrowns?: number; gameOver: boolean;
   ref?: string;
 }
 
@@ -116,6 +116,14 @@ export function renderTable(a: Run[], b?: Run[], names: [string, string] = ['thi
     const cs = [...A.keys()].filter((p) => B.has(p)).map((p) => compare(p, A.get(p)!, B.get(p)!));
     out.push(`| people | ${names[0]} mean | ${names[1]} mean | Δ (paired by seed) | ± 2·SE | verdict |`, '|---|---|---|---|---|---|');
     for (const c of [...cs, overall(cs)]) out.push(`| ${c.people} | ${n0(c.meanA)} | ${n0(c.meanB)} | ${sgn(c.delta)} (${pct(c.delta, c.meanB)}) | ${n0(c.floor)} | ${c.seen ? '**seen**' : 'within the noise'} |`);
+  }
+  out.push('');
+  // the trade: how many runs stand a depot, its median day, and what the road and the caravan paid (iteration 63)
+  out.push('| side | people | runs with a depot | median depot day | road crowns (mean) | caravan crowns (mean) |', '|---|---|---|---|---|---|');
+  for (const [label, M] of B ? ([[names[0], A], [names[1], B]] as const) : ([['', A]] as const)) for (const [people, seeds] of M) {
+    const rs = [...seeds.values()].flat();
+    const withDepot = rs.filter((r) => r.depotDay >= 0 || (r.caravanCrowns ?? 0) > 0);
+    out.push(`| ${label || 'this tree'} | ${people} | ${withDepot.length}/${rs.length} | ${n0(median(rs.filter((r) => r.depotDay >= 0).map((r) => r.depotDay)))} | ${n0(mean(rs.map((r) => r.roadCrowns ?? 0)))} | ${rs.some((r) => r.caravanCrowns !== undefined) ? n0(mean(rs.map((r) => r.caravanCrowns ?? 0))) : '–'} |`);
   }
   out.push('');
   for (const [label, M] of B ? ([[names[0], A], [names[1], B]] as const) : ([['', A]] as const)) {

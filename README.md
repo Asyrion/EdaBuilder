@@ -152,8 +152,8 @@ Charter as `.json`.
   has: it saves for one goal at a time (its people's hall, a cradle, the cheapest mana) and takes
   the Crown's loan as a bridge to a hall. It zones what it can light, moves the tithe off the
   hearths, and sets the curfew, draughts and imports. It walls the Gloam side and stands a cradle.
-  It saves for a depot once the hides, trophies, smoked fish and full works waiting for the Gloam
-  road would fetch half its price. It thatches with a Reed-Cutters' Hut, raises a Weir where its
+  It saves for a depot once the works' surplus (at the Belerial caravan's price), hides, trophies
+  and smoked fish waiting for the Gloam road would fetch half its price. It thatches with a Reed-Cutters' Hut, raises a Weir where its
   Fishers' Hut fishes the shoal down, and bridges its fords before the Thaw's high water. It answers
   each tale by playing every choice on a copy of the city.
 - Procedural terrain: river, lake, forests, meadows, hills, 4–6 ley nodes, Gloam rim.
@@ -198,7 +198,8 @@ Charter as `.json`.
   building inside a dragon's aura names it: an Ember drake lifts Craft a tenth, a Sky
   wyvern speeds the carts, a Tide drake swims a barge a day.
 - Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
-  caravans (every twelve days at a Trade Depot; the depot panel counts them down) and the
+  caravans (every twelve days at a Trade Depot; the depot panel counts them down, and the Budget
+  and the Annals count what they pay) and the
   Wandering Merchant.
 - The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.

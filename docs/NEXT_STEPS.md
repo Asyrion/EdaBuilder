@@ -349,6 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 63 (the caravan in the books; NEXT_STEPS item 1 withdrawn)
+
+- **Item 1 ("the depot's road does not pay") was wrong, and is withdrawn.** Iteration 61 counted only the road's eight
+  goods a day. The Belerial caravan halts at a depot every twelve days and buys the works' surplus at 1.5×. It paid
+  14,000–36,000 crowns a run on average, about ten times the depot's upkeep (DESIGN §4.94, and a correction note in
+  §4.92).
+- **The caravan is in the books:**
+  - the Budget's new row (the last take and the charter's total);
+  - the 10-day ledger history;
+  - the depot's panel ("sold so far for … crowns");
+  - the Annals.
+- **The bot values the works' surplus at the caravan's price.** Its depots go up earlier, and the Tallowkin stand one
+  in every run. The balance table against main: Δ +6 folk over the four peoples (± 578), every people within the noise.
+  The Vellish lose the Free City (0 of 6 against 2) and the Tallowkin gain the Hall of Wicks (5 of 6 against 3).
+
 ## Done in iteration 62 (a balance measure that can see a change)
 
 - **The balance table.** `npx tsx scripts/table.ts [--compare origin/main]` runs the four peoples × seeds 42–44 × two
@@ -685,8 +700,9 @@
 - **The bot's hunt** (iterations 58 and 61). The bot's lodges stand on hounds in every run, so its hunt
   crowns are small (0–517 a run) and come from hound lodges switched to game between packs. Since
   iteration 61 ten of twelve bot runs stand a depot (DESIGN §4.92).
-- **The Tallowkin bot stands no depot** (iteration 61). It wants one from day 55 to 95 and holds the
-  price back, but its Wick-Towers and spires read the treasury, not the purse, and spend it first.
+- **The Tallowkin bot's depot** (iterations 61 and 63). On iteration 61's seed it stood none: its Wick-Towers read the
+  treasury and spent it first. Since iteration 63 the bot values the caravan, and the Tallowkin stand a depot in 6 runs
+  of 6 (median day 37).
 - **No bot Weir in the runs** (iteration 61). No bot hut fishes its shoal under half, and no five fords
   lie in one Weir's reach on the six seeds; the rule is held by tests only.
 - **Head-on paintings and a road behind.** Since iteration 59 every building turns toward its road
@@ -755,13 +771,10 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **The depot's road does not pay** (from iteration 61, proposed; the user's decision before it starts): a depot carries
-   8 goods a day at 2–4 crowns against 25 a day of upkeep, so it pays only on trophies and relics, and a hunt or a
-   fishery sold through it loses a little (DESIGN §4.92). The choices: more carts a depot, a lower upkeep, or the hunt's
-   goods outside the carts' budget like the trophies. Measure it with `scripts/table.ts --compare origin/main`.
-2. **A wider balance bar** (from iteration 62, the user's decision): the default table sees a tenth over all four
+1. **A wider balance bar** (from iteration 62, the user's decision): the default table sees a tenth over all four
    peoples but only a fifth for the Vellish and three tenths for the Tallowkin. About 25 runs for the Vellish and 50 for
-   the Tallowkin would bring each to a tenth (DESIGN §4.93), at about 75 minutes a ref.
+   the Tallowkin would bring each to a tenth (DESIGN §4.93), at about 75 minutes a ref. Iteration 63's Vellish −7 % and
+   lost Free City are exactly the size this table cannot tell.
 
 4. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
    the citizen sprites would still gain most from drawn art; the per-sprite override

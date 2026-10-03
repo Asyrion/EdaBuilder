@@ -887,7 +887,7 @@ export class UI {
     if (b.kind === 'depot') {
       const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
       const due = caravanDue(s);
-      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods} sold so far`));
+      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods.toLocaleString()} sold so far for ${s.stats.caravanCrowns.toLocaleString()} crowns`));
     }
     if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
@@ -1282,7 +1282,7 @@ export class UI {
             <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there. The <b>Annals</b> (top bar, <kbd>N</kbd>) keep every count of the charter by chapter: riots and levies, rain days and hound raids, bouts, relics, walkers' rounds.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
-            <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods.</li>
+            <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods, and every 12 days the Belerial caravan halts there to buy the works' surplus at 1.5× (the Budget counts its take).</li>
             <li><b>Dragons</b>: build a Wyrm-Cradle (Township) near ley and a Tamer's Lodge (it seats four); eggs arrive through events. Raise them in the <b>Wyrms</b> panel and give drakes a role. Dragons eat from markets within 12 of the cradle (a warden from its district); ten unfed days cost a stage, and a dragon that leaves comes back after a season to ask a tribute. A cradle becomes a <b>Great Cradle</b> (four nests) from the Burgh; the Ring shows a champion's odds before each bout.</li>
             <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
             <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
@@ -1511,6 +1511,7 @@ export class UI {
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
           <tr><td>The hunt's goods sold today</td><td class="r good" data-k="hunt"></td></tr>
           <tr><td>Smoked fish sold today</td><td class="r good" data-k="fish"></td></tr>
+          <tr><td>The Belerial caravan (every ${CARAVAN_EVERY} days)</td><td class="r good" data-k="caravan"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -1553,6 +1554,12 @@ export class UI {
     set('trade', `+${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('hunt', st.trade.priceHides !== undefined ? `${st.trade.hidesSold ?? 0} hides at ${st.trade.priceHides} · ${st.trade.meatSold ?? 0} salted meat at ${st.trade.priceMeat} · ${st.trade.trophiesSold ?? 0} trophies at ${st.trade.priceTrophy}` : 'none');
     set('fish', st.trade.priceFish !== undefined ? `${st.trade.fishSold ?? 0} at ${st.trade.priceFish}` : 'none');
+    // the caravan pays at its halt, not by the day: the last take and the charter's total (iteration 63)
+    {
+      const due = caravanDue(st);
+      const c = st.stats;
+      set('caravan', due === null ? 'halts once a depot stands (from the Village)' : c.caravanCrowns > 0 || c.lastCaravanCrowns > 0 ? `last: +${c.lastCaravanCrowns.toLocaleString()} on day ${c.lastCaravanDay} · this charter: +${c.caravanCrowns.toLocaleString()} · next in ${due} day${due === 1 ? '' : 's'}` : `first halt in ${due} day${due === 1 ? '' : 's'}: ${caravanSurplus(st)} surplus goods at 1.5× price`);
+    }
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
