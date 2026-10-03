@@ -3393,6 +3393,85 @@ a lost Free City) was that size.
 - The working tree's cache: a committed tree's second run came wholly from the cache.
 - `scripts/playtest63.mjs` with `DAYS=10`: no errors, no missing sprites, a clean dawn and dusk. No game code changed.
 
+### 4.96 Drawn art: the Lantern of Vell, the temple and the citizens (iteration 65)
+
+NEXT_STEPS item 1, "hand-made art beyond the paintings". No painting in `inspirations/` covers these three, and the user
+chose that they be drawn by hand in code (like `drawRing`, `drawSpire` and `drawGate`). A painting uploaded later still
+replaces any of them through `npm run art`, since a manifest entry wins over the procedural atlas. Art only.
+
+**The method** (`src/render/drawn.ts`).
+- A 3×3 footprint is a 24×24 unit square. A point (x, y, z) projects to (49 + 2x − 2y, ay + 48 − x − y − z), with the
+  anchor at the footprint's back ground corner (49, ay), as in every 3×3 painter.
+- Boxes, gables and slopes are filled as projected polygons, drawn back to front.
+- Round things (the tower, the gallery, the lantern room, the drum and the domes) are solids of revolution: ellipse
+  slices painted bottom up, so the highest slice covering a pixel wins.
+- The set's rules hold:
+  - the light comes from the right (a left face takes the darker tone, as in `WALLS`);
+  - windows are `windowDark` by day and `windowLit` on the glow layer;
+  - one outline closes each sprite.
+
+**The Lantern of Vell** (was a stone cube with a pyramid roof; 98×119 → 98×169):
+- **The base:** a two-step plinth of flagged stone.
+- **The tower:** coursed, tapering from a radius of 15 to 10 over 78 pixels, lit on its right. It has a band of
+  leystone runes a third of the way up, and six slit windows climbing in a spiral.
+- **The top:**
+  - a corbelled gallery with an iron rail;
+  - a lantern room of ley-glass between mullions, with the great crystal inside: a halo and two beam stubs on the glow
+    layer;
+  - a copper cap with a verdigris rim, a gilded finial and a pennant.
+- **At its foot:** the keeper's whitewashed house with a slate lean-to, a door and a lit window, and two ley lamps at
+  the stair.
+- It is the tallest 3×3 sprite, as the wonder of the last gate should be.
+
+**The temple** (was a box under a dome that covered the whole roof):
+- **Stage 0** (98×97):
+  - a flagged plinth with three steps;
+  - a whitewashed nave with stone buttresses and three arched windows on its long wall;
+  - a slate roof with a lit far slope and a lead ridge;
+  - the front gable with a rose window;
+  - a portico of four columns under an entablature and a pediment with a gilded sun, and two ley lamps.
+- **Stage 1** (98×113) adds a bell tower at the back corner, with a bronze bell in an open belfry and a pyramid cap, and
+  banners on the outer columns.
+- **Stage 2** (98×121) adds a dome over the crossing: a whitewashed drum with four ley-glass windows, a copper-green dome
+  and a gilded lantern.
+- The stages follow `STAKE_STAGE_AT`, as the Stake's do (stage 1 from milestone 3, stage 2 from milestone 6).
+
+**The citizens** (`citizen()`, the same 8×12 canvas and anchor (4, 12)):
+- two-tone cloth with a shaded left column and a lit shoulder;
+- a belt, or a gilt sash on every third variant, and an apron on some;
+- a face shaded on the left, and hair or a hood;
+- arms that swing against the stride (the forward arm a row longer, its hand showing);
+- grey hose and brown boots, the lifted foot a row short.
+
+The Grimmen keep their grey skin and wider bone helm, and the Tallowkin their candle eyes on the glow layer. Builders and
+walkers are drawn on this body and keep every prop (the Watch's rod, the pilgrim's lit staff, the lamplighter's pole).
+
+**Judged by eye.**
+- `scripts/playtest65.mjs` writes before and after sheets of the four buildings at 3× and the folk at 8×; the before
+  sheet comes from a build of the previous main on port 4174.
+- It also shoots, in a town painted on seed 65:
+  - the temple at each stage at 3×;
+  - the Lantern by day and night at 2×, its crystal and windows lit;
+  - the temple by night;
+  - a temple mirrored to a road on its left;
+  - a street of folk at 4× beside the painted houses.
+- The drawn buildings are cleaner and flatter than the paintings around them, but share their outline, their palette and
+  their light, and read as one set at 2× and 3×.
+
+**Verified.**
+- `npx tsc --noEmit -p .`, 68 test files with 425 tests, and `npm run build`.
+- The new `tests/iteration65.test.ts` (7 tests) covers:
+  - the anchors, and the front corner on the canvas;
+  - the temple growing by stage;
+  - the Lantern as the tallest 3×3, with its lantern room glowing, and the temple's glow;
+  - every citizen frame at 8×12 on (4, 12), the four frames differing;
+  - the Tallowkin's eyes and the Grimmen's helm;
+  - the walkers' props;
+  - each drawn sprite closed by its outline.
+- The playtest: no errors, no missing sprites, a clean dawn and dusk, and the left-road temple mirrored.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`) prints the same `json:` line as iteration 63's code
+  (Vellish 42: 2,130 folk). The sim did not move.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4461,3 +4540,6 @@ playtest of a lakeside town.
 - *The wide bar spends runs where the noise is (iteration 64):* six seeds a people and draws added until the floor is a
   tenth of the people's folk (capped at 8), with every run cached so a long table resumes. A people at the cap is
   reported as not met. Iteration 63's Vellish −7 % and lost Free City, a quick table's verdict, did not survive it.
+- *Drawn art where the paintings have nothing (iteration 65):* the Lantern of Vell, the temple and the citizens are
+  drawn by hand in code from projected boxes and solids of revolution, under the procedural set's light and outline. A
+  painting uploaded later replaces any of them through the manifest; nothing waits on one.

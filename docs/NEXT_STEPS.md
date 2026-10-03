@@ -349,6 +349,19 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 65 (drawn art: the Lantern of Vell, the temple, the citizens)
+
+- **The Lantern of Vell is a leystone lighthouse**, drawn by hand in code:
+  - a coursed tower with a rune band and slit windows;
+  - a gallery, and a lantern room whose crystal blazes at night;
+  - a copper cap;
+  - the keeper's house at its foot.
+- **The temple** is a whitewashed nave with buttresses, a rose window and a pillared portico. It gains a bell tower at
+  the Village's stage and a copper dome over the crossing at the Market Town's.
+- **The citizens** are redrawn on their 8×12 canvas: shaded cloth, belts, boots and arms that swing with the stride. The
+  builders and walkers keep their props.
+- Art only: the control seed is bit-identical (DESIGN §4.96).
+
 ## Done in iteration 64 (a wider balance bar)
 
 - **`scripts/table.ts --bar wide`**: six seeds a people, and draws added in rounds wherever a people's floor is over a
@@ -785,10 +798,7 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **Hand-made art beyond the paintings.** After M15, the temple, the Lantern of Vell and
-   the citizen sprites would still gain most from drawn art; the per-sprite override
-   (`public/art/sprites.json`) takes any PNG with an anchor, painted or imported.
-2. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
+1. **Accessibility.** Keyboard focus order for the toolbar and panels (labels, roles,
    ramps, scale and keys are done).
-3. **Replays.** The sim is deterministic; a command log would allow replays (the daily
+2. **Replays.** The sim is deterministic; a command log would allow replays (the daily
    result is already shareable as text).

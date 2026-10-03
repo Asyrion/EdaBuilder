@@ -280,6 +280,10 @@ Charter as `.json`.
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
   the whole set faces lower-right; every building then turns toward its road (a mirror when the
   road runs past its left side), and the placement ghost turns with it.
+- Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
+  tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its
+  foot); the temple is a nave and portico that gains a bell tower and then a copper dome; the
+  citizens have shaded cloth, belts, boots and a walk with swinging arms.
 - The donkey carts: 31 painted carts (barrels, sacks, hay, stalls, covered wagons, and stone for
   the mines' leystone) drive the roads at the folk's scale, each facing the way it goes; the
   first-cart quest's Show me finds one on its way to market.

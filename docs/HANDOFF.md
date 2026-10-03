@@ -1,14 +1,15 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 64 (the wide balance bar; DESIGN §4.95). Iterations 63 (the caravan in the books,
-§4.94), 62 (the balance table, §4.93) and 61 (the bot's depot, §4.92) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 65 (drawn art for the Lantern of Vell, the temple and the citizens; DESIGN §4.96).
+Iterations 64 (the wide balance bar, §4.95), 63 (the caravan in the books, §4.94) and 62 (the balance table, §4.93) came
+just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.95 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.96 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,9 +33,8 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **hand-made art beyond the paintings**. The temple, the Lantern of Vell and the citizen sprites would
-gain most. The per-sprite override (`public/art/sprites.json`) takes any PNG with an anchor, and CLAUDE.md rule 7 sets
-the art rules. It is art only, so the balance bar is one control seed.
+NEXT_STEPS item 1, **accessibility**: keyboard focus order for the toolbar and panels. Labels, roles, colour-blind ramps,
+UI scale and key bindings are done. It is UI only, so the balance bar is one control seed. Then item 2, replays.
 
 Plan it on the Plan panel first.
 
@@ -66,8 +66,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (67 files, 418 tests at this writing; `tests/iteration64.test.ts` is the
-  wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (68 files, 425 tests at this writing; `tests/iteration65.test.ts` is the
+  drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -208,6 +208,17 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 65 (not yet said elsewhere)
+
+- **Drawing a building in code** (`src/render/drawn.ts`):
+  - `projector(ay)` maps footprint units to the sprite: 24 units a side for 3×3, the anchor at (49, ay);
+  - `box` draws the left face, the right face and the top;
+  - `revolve` draws a round solid in ellipse slices.
+  - Draw back to front by x + y (the smaller sum is nearer the viewer), and remember the light comes from the right.
+  - Check by eye at 3× and 8×: `scripts/playtest65.mjs` writes sheets from a running build.
+- **A night shot needs lit buildings.** An unlit building draws no glow, and a hand-built town without spires is
+  unlit, so a playtest sets `b.lit = true` before rendering. The renderer does not tick the sim.
 
 ## Learned in iteration 64 (not yet said elsewhere)
 
