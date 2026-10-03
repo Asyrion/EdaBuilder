@@ -42,6 +42,7 @@ import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost,
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
 import { ASPECT_INFO, AURA_INFO, WEATHER_WORD, aspectAt, aurasAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
+import { UNBINDABLE, roving, watchDialogs, watchRegions } from './focus';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
 import { QUESTS } from '../data/quests';
 import { PAL } from '../render/palette';
@@ -188,13 +189,13 @@ export class UI {
         <div class="hint"></div>
       </div>
       <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="score hidden"></div><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
+      <div id="info" class="panel hidden" role="region" aria-label="Selected"></div>
       </div>
       <div id="tooltip" class="panel hidden"></div>
       <div id="views" class="panel hidden"><h3>Info views <span class="grip" title="Drag to move">⋮⋮</span></h3><div class="list"></div><div class="legend"></div></div>
       <div id="demand" class="panel"></div>
       <div id="minimap" class="panel"><span class="grip" title="Drag to move">⋮⋮</span><button class="min" title="Collapse">–</button><canvas width="264" height="132" title="Click to jump; the box is the current view"></canvas></div>
       <div id="log" class="panel"><span class="grip" title="Drag to move">⋮⋮</span><div class="lines"></div></div>
-      <div id="info" class="panel hidden"></div>
       <div id="perf" class="panel"></div>
       <div id="toast" class="panel hidden"></div>
       <div id="lesson" class="panel hidden"></div>
@@ -237,6 +238,16 @@ export class UI {
     this.el.log.querySelector('.lines')!.setAttribute('aria-live', 'polite');
     this.root.querySelectorAll('.modal').forEach((m) => { m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); });
     this.el.minimap.setAttribute('aria-label', 'Minimap: click to move the view');
+    // keyboard focus (iteration 66): regions with names, a skip link first, dialogs that hold focus, F6 between regions
+    for (const [id, label] of [['topbar', 'City and speed'], ['tasks', "The Charter's Ledger"], ['views', 'Info views'], ['minimap', 'Minimap']] as [string, string][]) { this.el[id].setAttribute('role', id === 'topbar' ? 'banner' : 'region'); if (id !== 'minimap') this.el[id].setAttribute('aria-label', label); }
+    const skip = document.createElement('a');
+    skip.href = '#game';
+    skip.className = 'skip';
+    skip.textContent = 'Skip to the map';
+    skip.onclick = (e) => { e.preventDefault(); (document.getElementById('game') as HTMLElement | null)?.focus(); };
+    this.root.prepend(skip);
+    watchDialogs(this.root);
+    watchRegions();
     this.buildTabs();
     this.buildViews();
     this.buildHelp();
@@ -249,28 +260,42 @@ export class UI {
   private buildTabs(): void {
     const tabs = this.q('#toolbar .tabs');
     tabs.innerHTML = '';
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', 'Tool categories');
     for (const c of CATEGORIES) {
       const b = document.createElement('button');
       b.textContent = c.name;
       b.dataset.cat = c.id;
+      b.setAttribute('role', 'tab');
       b.onclick = () => {
         this.category = c.id;
         this.refreshItems();
       };
       tabs.appendChild(b);
     }
+    // one tab stop for the categories, the arrows move between them and open each (iteration 66)
+    roving(tabs as HTMLElement, { selected: () => tabs.querySelector('button.active'), activate: true });
+    const items = this.q('#toolbar .items') as HTMLElement;
+    items.setAttribute('role', 'group');
+    items.setAttribute('aria-label', 'Tools');
+    roving(items, { selected: () => items.querySelector('button.active') ?? items.querySelector('button:not(.locked)'), grid: true });
   }
 
   refreshItems(): void {
     const s = this.host.state;
     const items = this.q('#toolbar .items');
+    // the items are rebuilt: a focused item keeps its place (iteration 66)
+    const hadFocus = items.contains(document.activeElement) ? Array.from(items.children).indexOf(document.activeElement as Element) : -1;
     items.innerHTML = '';
-    this.q('#toolbar .tabs').querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.cat === this.category));
+    this.q('#toolbar .tabs').querySelectorAll('button').forEach((b) => { const on = (b as HTMLElement).dataset.cat === this.category; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    ((this.q('#toolbar .tabs') as HTMLElement & { settleRoving?: () => void }).settleRoving)?.();
     const add = (label: string, cost: string, locked: boolean, active: boolean, onClick: () => void, tip: () => string) => {
       const b = document.createElement('button');
       b.innerHTML = `<span>${label}</span><span class="cost">${cost}</span>`;
-      if (locked) b.classList.add('locked');
+      if (locked) { b.classList.add('locked'); b.setAttribute('aria-disabled', 'true'); }
       if (active) b.classList.add('active');
+      b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      b.setAttribute('aria-label', `${label}${cost ? `, ${cost}` : ''}${locked ? ', locked' : ''}`);
       b.onclick = onClick;
       b.onmouseenter = (e) => this.showTooltip(tip(), e.clientX, e.clientY);
       b.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY);
@@ -332,6 +357,10 @@ export class UI {
     (this.q('#q-undo') as HTMLButtonElement).disabled = !this.host.undoLabel;
     this.q('#q-undo').title = this.host.undoLabel ? `Undo ${this.host.undoLabel} (Ctrl+Z)` : 'Nothing to undo';
     this.q('#q-bulldoze').classList.toggle('active', t.kind === 'bulldoze');
+    this.q('#q-select').setAttribute('aria-pressed', t.kind === 'select' ? 'true' : 'false');
+    this.q('#q-bulldoze').setAttribute('aria-pressed', t.kind === 'bulldoze' ? 'true' : 'false');
+    ((items as HTMLElement & { settleRoving?: () => void }).settleRoving)?.();
+    if (hadFocus >= 0) { const list = items.querySelectorAll<HTMLButtonElement>('button'); const b = list[Math.min(hadFocus, list.length - 1)]; if (b) { list.forEach((x) => (x.tabIndex = -1)); b.tabIndex = 0; b.focus(); } }
   }
 
   private buildingTip(d: BuildingDef, locked: boolean, cost = d.cost): string {
@@ -1265,7 +1294,8 @@ export class UI {
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
             <li><kbd>Space</kbd> pause · <kbd>,</kbd> <kbd>.</kbd> slower / faster</li>
-            <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>Tab</kbd> view list</li>
+            <li><kbd>1</kbd>–<kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd> <kbd>G</kbd> <kbd>M</kbd> info views · <kbd>V</kbd> view list</li>
+            <li><b>Keyboard:</b> <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> move between controls · <kbd>F6</kbd> jumps between the top bar, the toolbar, the Ledger, the panels and the map · the arrows move along the toolbar's tabs and items, <kbd>Enter</kbd> picks · <kbd>Esc</kbd> closes a panel · the first <kbd>Tab</kbd> offers <b>Skip to the map</b>; the shortcuts and the map keys work while the map has focus</li>
             <li><kbd>F5</kbd> quick save · <kbd>F9</kbd> quick load · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</li>
           </ul>
         </div>
@@ -1606,14 +1636,19 @@ export class UI {
   private showKeys(): void {
     const m = this.el.menu;
     const keys = { ...this.host.settings.keys };
+    let refused = '';
+    let lastRow: KeyAction | null = null;
     const render = (waiting: KeyAction | null) => {
       m.innerHTML = `<div class="box panel" style="width:380px">
         <h2>Key bindings</h2>
         <p class="muted">Click an action, then press the key for it. Ctrl+Z undo, Shift+G grid and the view keys 1–0 are fixed.</p>
-        ${KEY_ACTIONS.map((a) => `<div class="keyrow ${waiting === a.id ? 'waiting' : ''}" data-k="${a.id}"><span>${a.name}</span><kbd>${waiting === a.id ? 'press a key…' : keyLabel(keys[a.id])}</kbd></div>`).join('')}
+        ${KEY_ACTIONS.map((a) => `<button class="keyrow ${waiting === a.id ? 'waiting' : ''}" data-k="${a.id}" aria-label="${a.name}: ${waiting === a.id ? 'press a key' : keyLabel(keys[a.id]) || 'unbound'}"><span>${a.name}</span><kbd>${waiting === a.id ? 'press a key…' : keyLabel(keys[a.id])}</kbd></button>`).join('')}
+        ${refused ? `<p class="bad">${refused}</p>` : ''}
         <div class="row"><button id="k-reset">Reset to defaults</button><button id="k-done">Done</button></div>
       </div>`;
-      m.querySelectorAll('.keyrow').forEach((r) => ((r as HTMLElement).onclick = () => render((r as HTMLElement).dataset.k as KeyAction)));
+      m.querySelectorAll('.keyrow').forEach((r) => ((r as HTMLElement).onclick = () => { lastRow = (r as HTMLElement).dataset.k as KeyAction; render(lastRow); }));
+      // the rows are rebuilt: the keyboard stays on the row being bound (iteration 66)
+      if (lastRow) (m.querySelector(`[data-k="${lastRow}"]`) as HTMLElement | null)?.focus();
       (m.querySelector('#k-reset') as HTMLButtonElement).onclick = () => { for (const a of KEY_ACTIONS) keys[a.id] = DEFAULT_KEYS_LOCAL[a.id]; render(null); };
       (m.querySelector('#k-done') as HTMLButtonElement).onclick = () => { this.host.setSetting('keys', keys); window.removeEventListener('keydown', onKey, true); this.buildMenu(); this.toggleMenu(false); };
     };
@@ -1625,6 +1660,9 @@ export class UI {
       e.stopPropagation();
       const k = e.key.toLowerCase();
       const id = row.dataset.k as KeyAction;
+      // Tab and F6 move focus and Escape closes: they cannot be bound (iteration 66)
+      if (UNBINDABLE.includes(k) || k === 'escape') { refused = k === 'escape' ? '' : `${keyLabel(k)} moves the keyboard focus and cannot be bound.`; render(null); return; }
+      refused = '';
       for (const a of KEY_ACTIONS) if (keys[a.id] === k && a.id !== id) keys[a.id] = '';
       keys[id] = k;
       waitingFor = null;
