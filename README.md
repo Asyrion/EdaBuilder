@@ -323,7 +323,11 @@ Charter as `.json`.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
   date (the valley, the sky and the people), lost on day 61 and scored by the days to spare
   and the crowns, with a copyable result, and remappable keys in the Menu.
-- Aria labels and roles on the panels. Desktop browsers only (mouse and keyboard).
+- Aria labels and roles on the panels, and the whole UI works from the keyboard: Tab moves in
+  screen order behind a *Skip to the map* link, F6 jumps between the top bar, the toolbar, the
+  Ledger, the panels and the map, the arrows move along the toolbar's tabs and items, a dialog
+  holds focus and gives it back on Escape, and a gold ring shows where the keyboard is. The game's
+  shortcuts work while the map has focus (Info views moved from Tab to V). Desktop browsers only.
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island and

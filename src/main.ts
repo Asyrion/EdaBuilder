@@ -50,6 +50,7 @@ import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/ac
 import { deepenNode, canDeepenNode, placeBuildingRaw } from './sim/world';
 import { setTraining, setRole } from './sim/wyrmcraft';
 import * as wyrm from './sim/wyrm';
+import { migrateKeys } from './ui/focus';
 import { Bot } from './sim/bot';
 
 const SAVE_KEY = 'wardlight.save.v1';
@@ -81,6 +82,7 @@ class Game {
   constructor(atlas: SpriteAtlas) {
     const canvas = document.getElementById('game') as HTMLCanvasElement;
     canvas.tabIndex = 0;
+    canvas.setAttribute('aria-label', 'The map: arrows or WASD pan, plus and minus zoom; the shortcuts work while the map has focus');
     this.renderer = new Renderer(canvas, atlas);
     this.renderer.resize();
     window.addEventListener('resize', () => this.renderer.resize());
@@ -212,7 +214,7 @@ class Game {
       const raw = localStorage.getItem('wardlight.settings');
       if (raw) Object.assign(this.settings, JSON.parse(raw));
     } catch { /* ignore */ }
-    this.settings.keys = { ...DEFAULT_KEYS, ...(this.settings.keys ?? {}) };
+    this.settings.keys = migrateKeys({ ...DEFAULT_KEYS, ...(this.settings.keys ?? {}) }); // Tab moves focus since iteration 66
     this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
@@ -346,7 +348,7 @@ class Game {
       case 'load': this.load(); return true;
       case 'cancel': {
         let handled = false;
-        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle']) {
+        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle', 'edicts', 'wyrms', 'dev']) {
           const el = document.getElementById(id)!;
           if (!el.classList.contains('hidden')) { el.classList.add('hidden'); handled = true; }
         }

@@ -3472,6 +3472,87 @@ walkers are drawn on this body and keep every prop (the Watch's rod, the pilgrim
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`) prints the same `json:` line as iteration 63's code
   (Vellish 42: 2,130 folk). The sim did not move.
 
+### 4.97 Keyboard focus: the toolbar, the panels and the dialogs (iteration 66)
+
+NEXT_STEPS item 1, "keyboard focus order for the toolbar and panels". The labels were done (every titled button had an
+`aria-label`), but focus was handled nowhere:
+- **Tab was captured.** The Info views binding swallowed it, so focus could not move at all.
+- **Shortcuts fired whatever had focus.** Space on a focused button both pressed it and paused, the arrows panned the
+  map from inside a panel, and `w` both panned and toggled the Weave.
+- **The dialogs** were `aria-modal` but never took focus or gave it back.
+- **The toolbar** cost one Tab per button.
+- **No focus ring** showed where the keyboard was.
+
+UI only.
+
+**Where a shortcut fires** (`src/ui/focus.ts`, `shortcutTarget`).
+- The game's shortcuts and the map's keys fire only with focus on the page or the map canvas.
+- A focused control keeps its own keys: Space and Enter press, the arrows move, a `select` selects.
+- A dialog keeps every key but Escape.
+- Escape still closes the open panels, now the Edicts, the Wyrms and the dev tools too, else it cancels the tool.
+- The camera pans only from keys pressed on the page or the map.
+
+**Tab is the browser's again.**
+- Info views moved to `V` (the overlays use 1–5, g, o, i, w and m).
+- A saved key table that still binds Tab is moved to `V` when the settings load (`migrateKeys`).
+- The key menu refuses Tab and F6 as bindings and says why. Its rows are buttons now.
+
+**The order.**
+- Tab follows the screen:
+  - a *Skip to the map* link, shown only while focused;
+  - the top bar: speed, then the panel buttons;
+  - the toolbar: one stop for the categories, one for the items, then Select, Bulldoze and Undo;
+  - the Ledger, the building panel (moved after the Ledger in the page), the demand's ?, the minimap, and the map last.
+- The map canvas moved after the UI in the page (the UI's z-index keeps it on top) and is labelled with its keys.
+- **F6 / Shift+F6** move between the regions (`REGIONS`: the top bar, the toolbar, the Ledger, the building panel, the
+  Info views, the minimap and the map), skipping hidden ones.
+
+**The toolbar** (WAI-ARIA tabs and roving focus).
+- The categories are a `tablist`: Left/Right (and Home/End) move between tabs and open each, and `aria-selected`
+  follows.
+- The items are a group with one tab stop: the arrows move through them (Up/Down by a row), and Enter picks the tool.
+  `aria-pressed` marks the active tool, `aria-disabled` a locked one, and each item's label carries its price.
+- A rebuilt item row keeps the focused item's place.
+
+**Dialogs.**
+- One watcher (a `MutationObserver` on every `.modal`'s `hidden` class) handles them all; no `toggleX` was edited.
+  - **On open:** a dialog takes focus on its first control (a tale on its first choice).
+  - **While open:** Tab and Shift+Tab cycle inside it.
+  - **On close:** focus returns to the control that opened it.
+- **Panels that rebuild their contents** (the Budget every refresh, the building panel, a tale's next page) would drop
+  focus to the page. `keepFocusThroughRebuilds` moves it to the replacement: the same id, else the same label in the
+  same panel, else the panel's first control. The playtest found this: the Budget lost focus the frame after it opened.
+
+**The ring.**
+- `:focus-visible` draws a 2px gold outline with a soft glow on buttons, selects, inputs, links and `[tabindex]`. The
+  map gets a 3px gold frame drawn inside its edge.
+- A mouse click shows no ring.
+
+**The help** names Tab and Shift+Tab, F6, the toolbar's arrows, Enter, Escape, the skip link and `V`.
+
+**Verified.**
+- `npx tsc --noEmit -p .`, 69 test files with 431 tests, and `npm run build`.
+- The new `tests/iteration66.test.ts` (6 tests) covers:
+  - `shortcutTarget` for the page, the map, the clock canvas and the controls;
+  - `nextRegion` forward, back, wrapping and skipping;
+  - the default keys free of Tab and F6;
+  - the migration;
+  - no clashes in the key table.
+- `scripts/playtest66.mjs` works the game by keyboard in Chromium:
+  - the Tab order as above (and Tab never opens the Info views);
+  - Space on the 1× button unpauses and does not toggle the pause;
+  - Right on the tabs moves Roads to Zones and the camera stays;
+  - Tab into the items, Right, and Enter picks the Market zone;
+  - Enter on Budget focuses its first control, 30 Tabs stay inside, and Escape closes it and returns to the Budget
+    button;
+  - a tale lands on its first choice;
+  - F6 cycles the top bar → the toolbar → the Ledger → the minimap → the map (the hidden panels skipped);
+  - on the map, the arrows pan and `V` opens the Info views; on a button they do not pan;
+  - screenshots of the ring on the skip link, a top-bar button, a toolbar tab and item, inside the Budget, a tale and
+    the map;
+  - no errors.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`) is identical to iteration 63's `json:` line.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4543,3 +4624,6 @@ playtest of a lakeside town.
 - *Drawn art where the paintings have nothing (iteration 65):* the Lantern of Vell, the temple and the citizens are
   drawn by hand in code from projected boxes and solids of revolution, under the procedural set's light and outline. A
   painting uploaded later replaces any of them through the manifest; nothing waits on one.
+- *Shortcuts belong to the map (iteration 66):* the game's keys fire only with focus on the page or the map; a focused
+  control keeps its own keys and a dialog all but Escape. Tab moves focus, so Info views moved to V. One dialog watcher
+  and one rebuild guard cover every panel, instead of editing each toggle.

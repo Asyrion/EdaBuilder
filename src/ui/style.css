@@ -15,8 +15,8 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0912; color: var(--text); }
-canvas#game { position: fixed; inset: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
-#ui { position: fixed; inset: 0; pointer-events: none; font-size: 13px; zoom: var(--ui-scale); }
+canvas#game { position: fixed; inset: 0; z-index: 0; display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
+#ui { position: fixed; inset: 0; z-index: 1; pointer-events: none; font-size: 13px; zoom: var(--ui-scale); }
 #ui > * { pointer-events: auto; }
 .panel { background: linear-gradient(180deg, rgba(38,28,48,0.94), rgba(22,16,30,0.94)); border: 1px solid #6a5478; box-shadow: 0 0 0 1px #0b0912, inset 0 0 0 1px rgba(233,194,91,0.12), 0 4px 18px rgba(0,0,0,0.55), 0 0 24px rgba(79,227,255,0.06); border-radius: 3px; position: relative; }
 .panel::before, .panel::after { content: ''; position: absolute; width: 7px; height: 7px; border: 1px solid var(--gold); pointer-events: none; opacity: 0.7; }
@@ -224,3 +224,13 @@ h3 { font-size: 13px; color: var(--gold); }
 .quarry { display: flex; flex-wrap: wrap; gap: 3px; margin: 4px 0; }
 .quarry button { flex: 1 1 auto; }
 .quarry button:disabled { opacity: 1; outline: 1px solid var(--gold, #d8b45a); }
+
+/* keyboard focus (iteration 66): a gold ring where the keyboard is, none for the mouse */
+:focus { outline: none; }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 1px; box-shadow: 0 0 8px rgba(233,194,91,0.45);
+}
+canvas#game:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+.skip { position: absolute; left: 8px; top: -60px; z-index: 50; padding: 6px 10px; background: #2a2034; color: var(--gold); border: 1px solid var(--gold); text-decoration: none; }
+.skip:focus { top: 46px; }
+#menu button.keyrow { width: 100%; background: none; border: none; border-bottom: 1px solid rgba(255,255,255,0.06); border-radius: 0; text-align: left; color: inherit; }

@@ -1,4 +1,5 @@
 /** Mouse/keyboard input → tool state → sim actions. */
+import { shortcutTarget } from './focus';
 import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
@@ -310,8 +311,11 @@ export class Tools {
 
   private keyDown(e: KeyboardEvent): void {
     const tag = (e.target as HTMLElement | null)?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     const k = e.key.toLowerCase();
+    // a focused control keeps its own keys (Space presses a button, the arrows move in a list), and a dialog keeps all but Escape;
+    // the game's shortcuts and the map's keys fire only with focus on the page or the map (iteration 66)
+    if (k !== 'escape' && !shortcutTarget(e.target as HTMLElement | null)) return;
     this.keys.add(k);
     if (this.host.onKey(k, e)) {
       e.preventDefault();
