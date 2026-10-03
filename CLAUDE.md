@@ -32,6 +32,9 @@ order of the list is itself a decision the user made.
    (`art/sources.json`, hand-set anchors, `npm run art:check` judged by eye) or from the
    procedural painter; every building must have a sprite (a test holds it); imported sprites
    are sharpened and outlined so they read as one set with the procedural ones.
+   **Whenever an iteration adds or changes buildings or other graphics, show the user
+   screenshots** in the final message (the sprites before and after, and in game), not only a
+   description.
 8. **Writing to the user:** lead with the outcome, say what was verified, name what was not,
    end with what comes next. The user does not watch the tool calls.
 
