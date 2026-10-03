@@ -3236,6 +3236,84 @@ origin/main` of 30 days reports Δ = 0 on every people and leaves no worktree be
 - The control above, and `scripts/playtest61.mjs` with `DAYS=10` against the preview build: the bot plays; no errors
   and no missing sprites; a clean dawn and dusk.
 
+### 4.94 The caravan in the books (iteration 63)
+
+NEXT_STEPS item 1 after iteration 62 was "the depot's road does not pay", from §4.92. That reading was wrong, and the
+item is withdrawn.
+- §4.92 compared the road's eight goods a day (460–1,770 crowns a run) with the depot's upkeep.
+- It missed the **Belerial caravan** (`maybeFireCaravan`, `src/sim/events.ts`). Every 12 days at a standing depot, its
+  Trade buys every works' stock above ten at 1.5× the price. The bot takes it every time.
+- A probe of §4.92's six runs:
+
+| run | caravan crowns | depot upkeep paid | road's daily sales |
+|---|---|---|---|
+| Vellish 42 | 23,448 | 2,525 | 1,683 |
+| Vellish 43 | 30,928 | 2,725 | 1,336 |
+| Vellish 44 | 23,760 | 2,600 | 1,126 |
+| Grimmen 42 | 3,390 (depot on day 125) | 625 | 460 |
+| Veshari 42 | 39,243 | 2,175 | 952 |
+| Tallowkin 42 | no depot | | |
+
+**The real fault.** The depot pays about ten times its upkeep, but nothing a player or the bot looks at said so:
+- the Budget's "Exports" row and the 10-day ledger history counted only the daily road;
+- the depot's panel counted goods, not crowns;
+- the bot valued a full works at half its store on the road.
+
+§15's rule (a player must be able to see a mechanic) was broken. This iteration fixes the books, not the depot.
+
+**The books.**
+- `stats.caravanCrowns` and `stats.lastCaravanCrowns` count what the caravan pays: its Trade, the rare goods and the
+  relic auction. The take is the treasury's rise as the tale is answered (`resolveEvent`). Buying striders is not a
+  take, and a caravan sent on counts 0.
+- The take joins the day's line of the 10-day ledger history ("exports included").
+- **The Budget** has a row, *The Belerial caravan (every 12 days)*: "last: +4,829 on day 106 · this charter: +21,699 ·
+  next in 12 days", or the first halt's day and the surplus waiting.
+- **The depot's panel:** "5,723 sold so far for 21,699 crowns".
+- **The Annals:** "Crowns from the caravan".
+- An old save fills both stats from a fresh game (0). Nothing in the sim reads them, so the sim does not move.
+
+**The bot reads the caravan.** `waitingForRoad` values the works' stock above ten at 1.5× the price (`caravanSurplus`),
+in place of the road's half-store share. The hides, meat, trophies, smoked fish and relics stay as they were: the caravan
+does not buy them.
+
+**The table** (`scripts/table.ts --compare origin/main`, 48 runs, 25 minutes):
+
+| people | this tree | main | Δ paired by seed | ± 2·SE | verdict |
+|---|---|---|---|---|---|
+| Vellish | 1,495 | 1,607 | −112 (−7.0 %) | 283 | within the noise |
+| Grimmen | 1,557 | 1,492 | +65 (+4.3 %) | 149 | within the noise |
+| Veshari | 2,259 | 2,287 | −28 (−1.2 %) | 168 | within the noise |
+| Tallowkin | 1,849 | 1,767 | +81 (+4.6 %) | 451 | within the noise |
+| all | 7,160 | 7,153 | +6 (+0.1 %) | 578 | within the noise |
+
+- **Depots go up earlier** (median day 34 / 50 / 39 / 37 against 48 / 55 / 62 / 43). The Tallowkin stand one in 6 runs
+  of 6, against none on §4.92's single seed.
+  - Main's count in the table misses depots bought as a service: they print no depot day, and main has no caravan
+    count.
+- **The caravan paid** a mean of 27,646 (Vellish), 13,930 (Grimmen), 27,083 (Veshari) and 36,273 (Tallowkin) crowns
+  a run. The road's daily sales were 1,063–1,444.
+- **The gates move both ways.**
+  - The Vellish lose the Free City (0 of 6, against 2 of 6 on main).
+  - The Tallowkin reach the Hall of Wicks in 5 of 6 (against 3 of 6).
+  - The Grimmen reach the Underking's Seat in 2 of 6 (against 1).
+  - The Veshari's Sable Crown holds at 4 of 6.
+- Neither the folk nor the gates show a change past the noise. The Vellish's −7 % would need about four times the
+  runs to be told (§4.93).
+
+**Verified.**
+- `npx tsc --noEmit -p .`, 66 test files with 413 tests, and `npm run build`.
+- The new `tests/iteration63.test.ts` (6 tests) covers:
+  - Trade counted at the treasury's rise and joining the day's history;
+  - the rare goods and the relic auction counted, a caravan sent on counting 0, and striders not a take;
+  - an old save;
+  - the Annals row;
+  - the bot's caravan valuation and the depot goal it raises.
+- `scripts/playtest63.mjs`: the bot plays Vellish 42 in the browser to day 100.
+  - The caravan paid 16,870 by day 100, and 4,829 at its halt on day 106.
+  - The Budget row and the depot panel read as above, and the history's last line is +5,206.
+  - The Annals carry the row.
+  - No errors, no missing sprites, and a clean dawn and dusk.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4298,3 +4376,6 @@ playtest of a lakeside town.
 - *A sim change is judged by the paired table, not by one run a seed (iteration 62):* `scripts/table.ts --compare
   origin/main` runs every seed twice (the second with one extra roll), pools σ within seeds and calls a difference seen
   only past twice its standard error. Its 24 runs see about 9 % over the four peoples; a people's own row sees 8–29 %.
+- *The caravan is income, and the books say so (iteration 63):* the Belerial caravan's take joins the Budget, the
+  ledger history, the depot's panel and the Annals. §4.92's "the depot does not pay" counted only the road's eight goods
+  a day and is withdrawn; the depot pays about ten times its upkeep through the caravan.

@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 62 (the balance table; DESIGN §4.93). Iteration 61 (the bot's depot, the hunt and
-the fish, §4.92) and 60 (M16 part 2, the water; M16 closed) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 63 (the caravan in the books; DESIGN §4.94). Iterations 62 (the balance table, §4.93)
+and 61 (the bot's depot, the hunt and the fish, §4.92) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.93 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.94 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,12 +32,13 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-The two open items at the head of NEXT_STEPS are both **the user's decisions**. Ask before starting either.
-1. **The depot's road does not pay.** A depot carries 8 goods a day at 2–4 crowns against 25 a day of upkeep
-   (DESIGN §4.92). The choices are more carts, a lower upkeep, or the hunt's goods outside the carts' budget. It is a
-   sim change, so it is measured with `scripts/table.ts --compare origin/main`.
-2. **A wider balance bar.** The default table sees a tenth over all four peoples, but only a fifth for the Vellish and
-   three tenths for the Tallowkin (DESIGN §4.93).
+NEXT_STEPS item 1, **a wider balance bar**. It is the user's decision, because it costs time.
+- The default table sees a tenth over all four peoples, but only a fifth for the Vellish and three tenths for the
+  Tallowkin (DESIGN §4.93).
+- Iteration 63's Vellish −7 % and lost Free City are exactly the size it cannot tell.
+- About 25 Vellish runs and 50 Tallowkin runs would bring each to a tenth, at about 75 minutes a ref.
+
+If the user declines, the items after it are hand-made art, accessibility and replays.
 
 Plan it on the Plan panel first.
 
@@ -69,8 +70,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (65 files, 407 tests at this writing; `tests/iteration62.test.ts` is
-  the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
+- Tests: `npx vitest run` (66 files, 413 tests at this writing; `tests/iteration63.test.ts` is the
+  caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
   `window.__game` (state, view, renderer, ui, select, newGame) and `window.__wardlight`
@@ -207,6 +208,16 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 63 (not yet said elsewhere)
+
+- **Income outside the ledger.** A tale's choice can pay into the treasury with no ledger row: the Belerial caravan, the
+  airship, the relic auctions, the grants. Before judging a building by its ledger, look for the tales its presence
+  fires (`maybeFireCaravan` needs a depot).
+- **A take counted at the tale:** `resolveEvent` measures the treasury's rise across a choice. That is how the caravan's
+  crowns are counted, and the same works for any other tale that pays.
+- **Main's depot count in the table** misses depots bought as a service (the bot prints no depot day for them). The
+  branch side counts them through the caravan's crowns.
 
 ## Learned in iteration 62 (not yet said elsewhere)
 
