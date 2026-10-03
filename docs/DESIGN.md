@@ -3121,6 +3121,9 @@ branch, ten of twelve did.
 - So the levers cost nothing measurable. Whether they gain anything cannot be told at this noise (NEXT_STEPS item 2).
 
 **What the runs show that a table of folk does not.**
+- **Corrected in iteration 63 (§4.94): this paragraph is wrong.** It counts only the road's eight goods a day. The
+  Belerial caravan halts at a depot every twelve days and buys the works' surplus at 1.5×. Over these runs it paid
+  23,000–39,000 crowns a city, about ten times the depot's upkeep. The reading as first written:
 - **The depot does not pay its way on the road.** The road paid 460–1,765 crowns over the 65–105 days the depot
   stood, against 25 a day of upkeep (1,600–2,600) and its 2,200 price.
   - The road carries 8 goods a day a depot, at 2–3 crowns (hides 2.5–4). That is 16–32 crowns, about its upkeep.
