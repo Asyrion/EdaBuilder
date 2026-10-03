@@ -887,7 +887,7 @@ export class UI {
     if (b.kind === 'depot') {
       const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
       const due = caravanDue(s);
-      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods} sold so far`));
+      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods.toLocaleString()} sold so far for ${s.stats.caravanCrowns.toLocaleString()} crowns`));
     }
     if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
@@ -1511,6 +1511,7 @@ export class UI {
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
           <tr><td>The hunt's goods sold today</td><td class="r good" data-k="hunt"></td></tr>
           <tr><td>Smoked fish sold today</td><td class="r good" data-k="fish"></td></tr>
+          <tr><td>The Belerial caravan (every ${CARAVAN_EVERY} days)</td><td class="r good" data-k="caravan"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -1553,6 +1554,12 @@ export class UI {
     set('trade', `+${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('hunt', st.trade.priceHides !== undefined ? `${st.trade.hidesSold ?? 0} hides at ${st.trade.priceHides} · ${st.trade.meatSold ?? 0} salted meat at ${st.trade.priceMeat} · ${st.trade.trophiesSold ?? 0} trophies at ${st.trade.priceTrophy}` : 'none');
     set('fish', st.trade.priceFish !== undefined ? `${st.trade.fishSold ?? 0} at ${st.trade.priceFish}` : 'none');
+    // the caravan pays at its halt, not by the day: the last take and the charter's total (iteration 63)
+    {
+      const due = caravanDue(st);
+      const c = st.stats;
+      set('caravan', due === null ? 'halts once a depot stands (from the Village)' : c.caravanCrowns > 0 || c.lastCaravanCrowns > 0 ? `last: +${c.lastCaravanCrowns.toLocaleString()} on day ${c.lastCaravanDay} · this charter: +${c.caravanCrowns.toLocaleString()} · next in ${due} day${due === 1 ? '' : 's'}` : `first halt in ${due} day${due === 1 ? '' : 's'}: ${caravanSurplus(st)} surplus goods at 1.5× price`);
+    }
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);

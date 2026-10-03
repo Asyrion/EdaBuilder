@@ -781,6 +781,15 @@ export function resolveEvent(s: GameState, choice: number, amount?: number): voi
     if (f.endsWith(':?') && (f === `${def.id}:?` || f.startsWith(`${def.id}@`))) { s.firedEvents[k] = f.slice(0, -1) + ci; break; }
   }
   // only a named price is refused: a free choice in a city in debt was refused as "0 crowns asked" and its tale asked again every day (fixed in iteration 55)
+  const before = s.treasury;
   const result = asked > 0 && asked > s.treasury ? `the purse is too light: ${asked} crowns asked, ${Math.round(s.treasury)} in the chest. Nothing changes.` : c.apply(s, amount);
+  // the caravan's take goes in the books: the Annals, the Budget's row and the day's line of the ledger history (iteration 63: it was counted
+  // nowhere, and iteration 61 judged the depot by its 8 goods a day when the caravan paid it ten times its upkeep)
+  if (def.id === 'caravan') {
+    const take = Math.max(0, Math.round(s.treasury - before));
+    s.stats.caravanCrowns += take;
+    s.stats.lastCaravanCrowns = take;
+    if (take > 0 && s.ledgerHistory.length) s.ledgerHistory[s.ledgerHistory.length - 1] += take;
+  }
   pushMessage(s, `${pe.title}: ${result}`, 'milestone');
 }

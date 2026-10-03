@@ -11,11 +11,11 @@ import { TERRAFORM, buildRoad, buildWall, bulldoze, paintDistrict, paintZone, pl
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
 import { HUNT_REACH, LODGE_MEAT_KEEP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
-import { RELIC_KEEP, RELIC_PRICE, craftStockCap } from './growth';
+import { RELIC_KEEP, RELIC_PRICE } from './growth';
 import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
 import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
-import { resolveEvent } from './events';
+import { caravanSurplus, resolveEvent } from './events';
 import { districtMarkets, lineNest, setRole } from './wyrmcraft';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
 import { chooseTale } from './botPolicy';
@@ -309,17 +309,16 @@ export class Bot {
   }
 
   /** What the goods held for the Gloam road would fetch at today's prices: hides, salted meat and trophies on the lodges, smoked
-   *  fish over the smokehouse's keep, full works over half their store (as `dailyTrade` sells them), and loose relics (iteration 61). */
+   *  fish over the smokehouse's keep and loose relics (iteration 61), and the works' surplus above ten at the caravan's 1.5× (iteration 63:
+   *  the caravan that halts every twelve days at a depot pays ten times its upkeep, where the road's eight goods a day pay about it). */
   waitingForRoad(): number {
     const s = this.s;
     const t = s.trade;
-    let v = Math.max(0, s.relicStock - RELIC_KEEP) * RELIC_PRICE;
+    let v = Math.max(0, s.relicStock - RELIC_KEEP) * RELIC_PRICE + caravanSurplus(s) * t.priceGoods * 1.5;
     forEachBuilding(s, (b) => {
       if (b.state !== 'ok') return;
-      const def = BUILDING_BY_KEY[b.kind];
       if (b.kind === 'hunterslodge') v += b.stock * (t.priceHides ?? 0) + Math.max(0, Math.floor((b.meat ?? 0) - LODGE_MEAT_KEEP)) * (t.priceMeat ?? 0) + (b.trophies ?? 0) * (t.priceTrophy ?? 0);
       else if (b.kind === 'smokehouse') v += Math.max(0, b.stock - SMOKE_KEEP) * (t.priceFish ?? 0);
-      else if ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8) v += (b.stock - craftStockCap(b) * 0.5) * t.priceGoods;
     });
     return v;
   }

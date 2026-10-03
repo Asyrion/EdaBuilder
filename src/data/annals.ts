@@ -35,6 +35,7 @@ export const ANNALS: AnnalChapter[] = [
     rows: [
       { label: 'Goods delivered', stat: 'goodsDelivered', note: 'Goods the carts brought from the works to the markets.' },
       { label: 'Sold to the caravan', stat: 'caravanGoods', note: 'Surplus goods sold to the Belerial caravan at the Trade Depot.' },
+      { label: 'Crowns from the caravan', stat: 'caravanCrowns', note: 'What the Belerial caravan paid at its halts: the works\' surplus, the rare goods and the relics it bought.' },
       { label: 'Courier trips', stat: 'courierTrips', note: 'Goods runs flown by wyvern couriers.' },
       { label: 'Goods on the Twin Road', stat: 'twinGoods', note: 'Goods carried between this wardlight and its daughter.' },
       { label: 'Trips through the arches', stat: 'portalTrips', note: 'Carts that stepped through a pair of Portal Arches.' },
@@ -199,6 +200,7 @@ export const ANNALS: AnnalChapter[] = [
 /** Fields of `stats` that are timers, streaks or flags, not counters: they stay off the page, each for its reason. */
 export const ANNALS_INTERNAL: Partial<Record<StatKey, string>> = {
   lastCaravanDay: "the caravan's rhythm: the day it last halted",
+  lastCaravanCrowns: "the caravan's last take, for the Budget's row",
   lastFeastDay: 'the day of the last Thaw feast, for the forecast',
   brownoutOpen: 'a flag while an overdraw is running',
   hushPressureBreaks: 'days of the current Hush with high pressure, reset each Hush',
