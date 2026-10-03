@@ -52,6 +52,8 @@ import { setTraining, setRole } from './sim/wyrmcraft';
 import * as wyrm from './sim/wyrm';
 import { migrateKeys } from './ui/focus';
 import { Bot } from './sim/bot';
+import { CommandRunner, ReplayPlayer, checksum, stateFromHeader, type CommandResult, type ReplayFile, type ReplayHeader } from './sim/commands';
+import { BUILD } from './core/build';
 
 const SAVE_KEY = 'wardlight.save.v1';
 
@@ -67,7 +69,10 @@ class Game {
   selected: Building | null = null;
   selectedNode = -1;
   selectedSector = -1;
-  undoStack: Snapshot[] = [];
+  /** Every change the player makes goes through the runner (iteration 67); while a replay plays, the replay feeds it instead. */
+  runner!: CommandRunner;
+  replay: ReplayPlayer | null = null;
+  private skipping = false;
   muted = false;
   settings: { colorBlind: boolean; uiScale: number; keys: Record<KeyAction, string> } = { colorBlind: false, uiScale: 1, keys: { ...DEFAULT_KEYS } };
   perf = { fps: 60, ms: 0, drawn: 0 };
@@ -87,6 +92,7 @@ class Game {
     this.renderer.resize();
     window.addEventListener('resize', () => this.renderer.resize());
     this.state = createGame(1, 'Thornwick');
+    this.runner = new CommandRunner(this.state, null); // the valley behind the title records nothing
     this.tools = new Tools({
       state: this.state,
       view: this.view,
@@ -97,6 +103,7 @@ class Game {
       onSelectNode: (i) => { this.selectedNode = i; this.ui.refresh(); },
       onSelectSector: (k) => { this.selectedSector = k; this.ui.refresh(); },
       beforeAction: (label) => this.pushUndo(label),
+      exec: (op, ...args) => this.cmd(op, ...args),
       onKey: (k, e) => this.onKey(k, e),
       keys: () => this.settings.keys,
       refreshUI: () => {
@@ -125,43 +132,48 @@ class Game {
       save: () => this.save(),
       exportJson: () => this.exportJson(),
       importJson: (f) => this.importJson(f),
+      exportReplay: () => this.exportReplay(),
+      watchReplay: (f) => this.watchReplay(f),
+      skipReplay: () => this.skipReplay(),
+      get replaying() { return !!game.replay; },
+      setQuarry: (id, q) => { this.cmd('quarry', id, q); },
       setMuted: (m) => { this.muted = m; this.audio.setMuted(m); },
       get musicOn() { return game.audio.musicOn; },
       setMusic: (on) => { this.audio.setMusic(on); try { localStorage.setItem('wardlight.music', on ? '1' : '0'); } catch { /* ignore */ } },
-      setTax: (z, v) => setTax(this.state, z, v),
-      setEdict: (k, on, district) => { const why = setEdict(this.state, k, on, district); if (!why) { recomputeAll(this.state); this.audio.click(); } return why; },
-      takeLoan: () => { const why = takeLoan(this.state); if (!why) this.audio.coin(); this.ui.refresh(); return why; },
-      repayLoan: () => { const why = repayLoan(this.state); if (!why) this.audio.coin(); this.ui.refresh(); return why; },
+      setTax: (z, v) => { this.cmd('tax', z, v); },
+      setEdict: (k, on, district) => { const why = this.cmd('edict', k, on, district).reason ?? null; if (!why) this.audio.click(); return why; },
+      takeLoan: () => { const why = this.cmd('loan').reason ?? null; if (!why) this.audio.coin(); this.ui.refresh(); return why; },
+      repayLoan: () => { const why = this.cmd('repay').reason ?? null; if (!why) this.audio.coin(); this.ui.refresh(); return why; },
       get settings() { return game.settings; },
       get selectedNode() { return game.selectedNode; },
       get selectedSector() { return game.selectedSector; },
-      buySector: (k) => { const why = buySector(this.state, k); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); this.selectedSector = -1; } return why; },
-      deepenNode: (i) => { const why = deepenNode(this.state, i); if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); },
+      buySector: (k) => { const why = this.cmd('sector', k).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); this.selectedSector = -1; } return why; },
+      deepenNode: (i) => { const why = this.cmd('deepen', i).reason ?? null; if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else this.audio.spire(); this.ui.refresh(); },
       canDeepenNode: (i) => canDeepenNode(this.state, i),
       canFoundDaughter: (i) => canFoundDaughter(this.state, i),
-      foundDaughter: (i, name) => { const why = foundDaughter(this.state, i, name); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
-      setQuarter: (d, q) => { const why = setQuarter(this.state, d, q); if (!why) { recomputeAll(this.state); this.renderer.overlayVersion++; this.audio.click(); } return why; },
-      seeLesson: (id) => { if (!this.state.lessonsSeen.includes(id)) this.state.lessonsSeen.push(id); },
-      setPriority: (id, p) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b) { b.priority = p; b.lit = true; /* a changed tier is judged afresh: the brownout darkens the already-dark first */ recomputeAll(this.state); this.audio.click(); } },
-      renameDistrict: (d, name) => { this.state.districtNames[d] = name.trim().slice(0, 18); this.renderer.overlayVersion++; },
+      foundDaughter: (i, name) => { const why = this.cmd('daughter', i, name).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
+      setQuarter: (d, q) => { const why = this.cmd('quarter', d, q).reason ?? null; if (!why) { this.renderer.overlayVersion++; this.audio.click(); } return why; },
+      seeLesson: (id) => { if (!this.state.lessonsSeen.includes(id)) this.cmd('lesson', id); },
+      setPriority: (id, p) => { /* a changed tier is judged afresh: the brownout darkens the already-dark first */ if (this.cmd('priority', id, p).ok) this.audio.click(); },
+      renameDistrict: (d, name) => { this.cmd('renameDistrict', d, name); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
-      setTraining: (id, t) => { setTraining(this.state, id, t); this.audio.click(); },
-      vent: (id) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b && b.kind === 'wrightslodge' && (b.cooldown ?? 0) <= 0) { this.state.manaStorage = 0; this.state.overdrawDays = -4; this.state.stats.brownoutOpen = 0; b.cooldown = 30; recomputeAll(this.state); this.audio.spire(); } },
-      replate: (id) => { const b = this.state.buildings.find((x) => x && x.id === id); if (b && b.kind === 'scaleward' && this.state.materials.scale >= 2 && (b.plate ?? 1) < 1) { this.state.materials.scale -= 2; b.plate = 1; recomputeAll(this.state); this.audio.spire(); } },
-      callRain: (id) => { const r = callRain(this.state, id); if (r.ok) { recomputeAll(this.state); this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
-      setRole: (id, role, target) => { const why = setRole(this.state, id, role, target); if (!why) { recomputeAll(this.state); this.audio.spire(); } return why; },
-      raiseCradle: (id) => { const why = raiseCradle(this.state, id); if (!why) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.milestone(); } this.ui.refresh(); return why; },
-      lineNest: (id) => { const why = lineNest(this.state, id); if (!why) this.audio.click(); return why; },
-      setBurnWyrmfire: (on) => { this.state.burnWyrmfire = on; this.audio.click(); },
-      toggleSluice: (id) => { const why = toggleSluice(this.state, id); if (!why) { recomputeAll(this.state); this.audio.spire(); } this.ui.refresh(); return why; },
-      setGolemDuty: (id, duty, target) => { const why = setGolemDuty(this.state, id, duty, target); if (!why) { recomputeAll(this.state); this.audio.click(); } return why; },
-      scatterDust: (x, y) => { const r = scatterDust(this.state, x, y); if (r.ok) { recomputeAll(this.state); this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },
-      get undoLabel() { return game.undoStack.length ? game.undoStack[game.undoStack.length - 1].label : null; },
+      setTraining: (id, t) => { this.cmd('training', id, t); this.audio.click(); },
+      vent: (id) => { if (this.cmd('vent', id).ok) this.audio.spire(); },
+      replate: (id) => { if (this.cmd('replate', id).ok) this.audio.spire(); },
+      callRain: (id) => { const r = this.cmd('rain', id); if (r.ok) { this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
+      setRole: (id, role, target) => { const why = this.cmd('role', id, role, target).reason ?? null; if (!why) this.audio.spire(); return why; },
+      raiseCradle: (id) => { const why = this.cmd('cradle', id).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); } this.ui.refresh(); return why; },
+      lineNest: (id) => { const why = this.cmd('nest', id).reason ?? null; if (!why) this.audio.click(); return why; },
+      setBurnWyrmfire: (on) => { this.cmd('burnWyrmfire', on); this.audio.click(); },
+      toggleSluice: (id) => { const why = this.cmd('sluice', id).reason ?? null; if (!why) this.audio.spire(); this.ui.refresh(); return why; },
+      setGolemDuty: (id, duty, target) => { const why = this.cmd('golem', id, duty, target).reason ?? null; if (!why) this.audio.click(); return why; },
+      scatterDust: (x, y) => { const r = this.cmd('dust', x, y); if (r.ok) { this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },
+      get undoLabel() { const u = game.runner?.undoStack ?? []; return u.length ? u[u.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
-      resolveEvent: (c, amount) => { resolveEvent(this.state, c, amount); this.audio.coin(); this.ui.refresh(); },
+      resolveEvent: (c, amount) => { if (this.replay) return; this.cmd('tale', c, amount ?? null); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
-      charterGuilds: (g) => { const why = charterGuilds(this.state, g); if (!why) { this.audio.coin(); this.ui.refresh(); } return why; },
-      dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = runDev(this.state, id, arg, { x: Math.floor(u), y: Math.floor(v) }); recomputeAll(this.state); this.paused = true; this.ui.refresh(); return out; },
+      charterGuilds: (g) => { const why = this.cmd('guild', g).reason ?? null; if (!why) { this.audio.coin(); this.ui.refresh(); } return why; },
+      dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = this.cmd('dev', id, arg, Math.floor(u), Math.floor(v)).out ?? ''; this.paused = true; this.ui.refresh(); return out; },
       get camera() { return game.renderer.camera; },
       select: (b) => this.select(b),
     });
@@ -176,12 +188,11 @@ class Game {
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  private bindState(s: GameState): void {
+  private bindState(s: GameState, header: ReplayHeader | null = null, replay: ReplayFile | null = null): void {
     this.state = s;
     (this.tools as unknown as { host: { state: GameState } }).host.state = s;
     this.renderer.invalidateAll();
     this.renderer.particles.list.length = 0;
-    this.undoStack = [];
     this.selectedNode = -1;
     this.select(null);
     this.tools.setTool({ kind: 'select' });
@@ -189,6 +200,11 @@ class Game {
     this.lastDay = s.day;
     recomputeAll(s);
     bumpRoadVersion();
+    // a new charter records its commands; a loaded one cannot be replayed (a save is rebuilt, not the live state); a replay feeds its own
+    this.replay = replay ? new ReplayPlayer(replay, s) : null;
+    this.runner = this.replay ? this.replay.runner : new CommandRunner(s, header);
+    this.skipping = false;
+    this.replayEnded = null;
     this.renderer.camera.centerOnTile(s.founding.x + 2, s.founding.y + 2);
     this.renderer.camera.setZoom(2);
     this.ui.refreshItems();
@@ -219,9 +235,57 @@ class Game {
   }
 
   newGame(seed: number, name: string, scenario: Scenario | 'daily' = 'valley', faction: FactionId = 'vellish'): void {
-    this.bindState(scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name, 'valley', faction) : createScenario(seed, name, scenario, faction));
+    const s = scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name, 'valley', faction) : createScenario(seed, name, scenario, faction);
+    this.bindState(s, { seed, name, scenario, faction, challenge: s.challenge ?? undefined });
     this.audio.milestone();
   }
+
+  /** Every change the player makes, through the runner; refused while a replay plays. */
+  private cmd(op: string, ...args: unknown[]): CommandResult {
+    if (this.replay) return { ok: false, reason: 'Watching a replay: the charter plays itself.' };
+    return this.runner.exec(op, ...args);
+  }
+
+  /** Menu → Export replay: the commands of this charter since it was founded. */
+  exportReplay(): string | null {
+    if (!this.runner?.header || this.replay) return this.replay ? 'This is a replay already.' : 'A replay begins with a new charter: this one was loaded from a save.';
+    const file = this.runner.toFile(BUILD);
+    const blob = new Blob([JSON.stringify(file)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${this.state.cityName.replace(/\s+/g, '_')}_day${this.state.day}.wardlight-replay.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    return null;
+  }
+
+  /** Title → Watch a replay: the recorded charter founded again, and its commands fed as the ticks come. */
+  watchReplay(file: File): void {
+    file.text().then((text) => {
+      let f: ReplayFile;
+      try { f = JSON.parse(text) as ReplayFile; if (f.replay !== 1 || !f.header || !Array.isArray(f.commands)) throw new Error('not a replay'); } catch { this.ui.toast('<p class="bad">That file is not a Wardlight replay.</p>', 5000); return; }
+      this.bindState(stateFromHeader(f.header), f.header, f);
+      this.ui.toast(`<p><b>Replay</b> of ${f.header.name}: ${f.commands.length} commands over ${Math.floor(f.endTick / 900)} days.${f.build !== BUILD ? ` <span class="warn">It was recorded with another build (${f.build}, this is ${BUILD}): it may diverge.</span>` : ''}</p>`, 7000);
+      this.ui.refresh();
+    });
+  }
+
+  /** The replay, run to its end as fast as the browser allows. */
+  skipReplay(): void { if (this.replay) { this.skipping = true; this.paused = false; } }
+
+  private endReplay(stuck: boolean): void {
+    const p = this.replay;
+    if (!p) return;
+    this.skipping = false;
+    this.paused = true;
+    const sum = checksum(this.state);
+    const day = p.firstDivergence();
+    const ok = !stuck && sum === p.file.checksum;
+    this.ui.toast(ok ? `<p><b>The replay matches its recording</b>: day ${this.state.day}, checksum ${sum}.</p>` : `<p class="bad"><b>The replay diverged</b>${day >= 0 ? ` on day ${day}` : stuck ? ': a tale waited with no answer' : ''} (checksum ${sum}, recorded ${p.file.checksum}).</p>`, 12000);
+    this.replayEnded = { ok, day, sum };
+    this.ui.refresh();
+  }
+  replayEnded: { ok: boolean; day: number; sum: string } | null = null;
 
   save(): void {
     try {
@@ -265,16 +329,13 @@ class Game {
   }
 
   pushUndo(label: string): void {
-    this.undoStack.push(takeSnapshot(this.state, label));
-    if (this.undoStack.length > 12) this.undoStack.shift();
+    this.cmd('snap', label);
   }
 
   undo(): boolean {
-    const snap = this.undoStack.pop();
-    if (!snap) return false;
-    restoreSnapshot(this.state, snap);
-    bumpRoadVersion();
-    recomputeAll(this.state);
+    const r = this.cmd('undo');
+    if (!r.ok) return false;
+    const snap = { label: r.out ?? '' };
     this.renderer.invalidateAll();
     this.renderer.overlayVersion++;
     this.select(null);
@@ -323,10 +384,7 @@ class Game {
         if (msg) this.ui.setHint(`<span class="bad">${msg}</span>`);
         break;
     }
-    if (kind !== 'error' && kind !== 'click') {
-      recomputeAll(this.state);
-      this.renderer.overlayVersion++;
-    }
+    if (kind !== 'error' && kind !== 'click') this.renderer.overlayVersion++; // the command ran its own recomputeAll (iteration 67)
     this.ui.refresh();
   }
 
@@ -402,8 +460,17 @@ class Game {
         this.acc += dt * this.speed;
         const step = 1 / TICKS_PER_SEC;
         let n = 0;
-        while (this.acc >= step && n < 12) {
+        const cap = this.skipping ? 1500 : 12;
+        if (this.skipping) this.acc = step * cap;
+        while (this.acc >= step && n < cap) {
+          if (this.replay && !this.replayEnded) {
+            // a replay applies the commands of this tick before running the next
+            if (!this.replay.feed()) { this.endReplay(false); break; }
+            if (this.replay.done) { this.endReplay(false); break; }
+            if (this.replay.stuck) { this.endReplay(true); break; }
+          }
           tick(this.state);
+          this.runner.checkpoint();
           this.acc -= step;
           n++;
         }
@@ -420,7 +487,7 @@ class Game {
           void prevMilestone;
           this.lastDay = this.state.day;
           this.renderer.overlayVersion++;
-          this.save();
+          if (!this.replay) this.save(); // a replay never writes over the player's charter
           const lastMsg = this.state.messages[this.state.messages.length - 1];
           if (lastMsg && lastMsg.tick === this.state.tick && lastMsg.kind === 'milestone' && this.state.day > 0) this.audio.melody(this.state.milestone * 7 + this.state.seed);
         }
