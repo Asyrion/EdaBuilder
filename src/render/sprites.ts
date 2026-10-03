@@ -4,6 +4,7 @@
  * any sprite by name via public/art/atlas.json (see atlas.ts).
  */
 import { Painter, h2 } from './painter';
+import { drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {
@@ -1148,39 +1149,44 @@ function rock(variant: number): Painter {
 }
 
 function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean): { p: Painter; glow: Painter } {
+  // drawn by hand (iteration 65): two-tone cloth lit from the right, a belt, boots, arms that swing against the stride.
+  // The layout is the walkers' (hair or cap on row t-1, the face on t..t+1, the body on t+2..t+5, props in columns 6 and 7).
   const p = new Painter(8, 12);
   const glow = new Painter(8, 12);
   const cloth: Col[] = ['cloth1', 'cloth2', 'cloth3', 'cloth4', 'cloth5', 'wood2'];
   const c = cloth[variant % cloth.length];
   const skin: Col = grimmen ? 'skinGrey' : 'skin';
-  const top = tallow ? 3 : 1;
-  // head
-  p.rect(3, top, 2, 2, skin);
-  if (grimmen) p.rect(3, top - 1, 2, 1, 'bone');
-  else p.rect(3, top - 1, 2, 1, variant % 2 ? 'wood1' : 'outline');
-  if (tallow) {
-    p.px(3, top, 'windowLit');
-    p.px(4, top, 'windowLit');
-    glow.px(3, top, 'windowLit');
-    glow.px(4, top, 'windowLit');
-  }
-  // hooded cloak on some folk
-  if (variant % 3 === 0) {
-    p.rect(2, top - 1, 4, 1, c);
-    p.px(2, top, c);
-    p.px(5, top, c);
-  }
-  // body
-  p.rect(2, top + 2, 4, 4, c);
-  // legs (4-frame walk cycle)
-  switch (frame % 4) {
-    case 0: p.rect(2, top + 6, 1, 3, 'outline'); p.rect(5, top + 6, 1, 3, 'outline'); break;
-    case 1: p.rect(3, top + 6, 1, 3, 'outline'); p.rect(4, top + 6, 1, 2, 'outline'); break;
-    case 2: p.rect(3, top + 6, 1, 3, 'outline'); p.rect(4, top + 6, 1, 3, 'outline'); break;
-    default: p.rect(2, top + 6, 1, 2, 'outline'); p.rect(4, top + 6, 1, 3, 'outline');
-  }
+  const t = tallow ? 3 : 1;
+  const f = frame % 4;
+  // arms first, so the body overlaps their shoulders: the forward arm reaches a row lower, and its hand shows
+  const armL = f === 0 ? 3 : f === 2 ? 1 : 2;
+  const armR = f === 2 ? 3 : f === 0 ? 1 : 2;
+  for (let k = 0; k < armL; k++) { p.px(1, t + 2 + k, c); p.px(1, t + 2 + k, 'outline', 45); }
+  p.px(1, t + 2 + armL, skin);
+  for (let k = 0; k < armR; k++) p.px(6, t + 2 + k, c);
+  p.px(6, t + 2 + armR, skin);
+  // the body: the shaded left column, a lit shoulder, the belt, and an apron or a sash by variant
+  p.rect(2, t + 2, 4, 4, c);
+  for (let k = 0; k < 4; k++) p.px(2, t + 2 + k, 'outline', 45);
+  p.px(5, t + 2, 'whitewash', 70);
+  p.px(4, t + 2, 'whitewash', 40);
+  p.rect(2, t + 4, 4, 1, variant % 3 === 2 ? 'gold' : 'wood1');
+  if (variant % 4 === 1) { p.rect(3, t + 4, 2, 2, 'bone'); p.px(3, t + 5, 'outline', 50); }
+  // the head: hair or a hood, the face shaded on the left
+  p.rect(3, t, 2, 2, skin);
+  p.px(3, t + 1, 'outline', 60);
+  if (grimmen) { p.rect(2, t - 1, 4, 1, 'bone'); p.px(2, t - 1, 'stone2'); }
+  else if (variant % 3 === 0) { p.rect(2, t - 1, 4, 1, c); p.px(2, t, c); p.px(5, t, c); p.px(2, t, 'outline', 80); }
+  else p.rect(3, t - 1, 2, 1, variant % 2 ? 'wood1' : 'outline');
+  if (tallow) { for (const x of [3, 4]) { p.px(x, t, 'windowLit'); glow.px(x, t, 'windowLit'); } }
+  // legs in dark hose with boots: a stride on frames 0 and 2 (the lifted foot a row short), the legs together on 1 and 3
+  const leg = (x: number, len: number) => { for (let k = 0; k < len - 1; k++) p.px(x, t + 6 + k, x <= 3 ? 'stone1' : 'stone2'); p.px(x, t + 5 + len, 'wood1'); };
+  if (f === 0) { leg(2, 3); leg(5, 2); }
+  else if (f === 2) { leg(2, 2); leg(5, 3); }
+  else if (f === 1) { leg(3, 3); leg(4, 2); }
+  else { leg(3, 2); leg(4, 3); }
   // a small pack or basket on one side gives the sprite a facing
-  p.px(6, top + 3, variant % 2 ? 'wood1' : 'cloth5');
+  p.px(6, t + 3, variant % 2 ? 'wood1' : 'cloth5');
   p.outline('outline');
   return { p, glow };
 }
@@ -1851,6 +1857,8 @@ export function generateSprites(): SpriteDef[] {
     else if (key === 'square') push('b_square', drawSquare());
     else if (key === 'boneyard') push('b_boneyard', drawBoneyard());
     else if (key === 'wardlantern') push('b_wardlantern', drawWardLantern());
+    else if (key === 'lantern') push('b_lantern', drawLanternOfVell()); // drawn by hand (iteration 65)
+    else if (key === 'temple' || key === 'temple_s1' || key === 'temple_s2') push(`b_${key}`, drawTemple(key === 'temple' ? 0 : key === 'temple_s1' ? 1 : 2));
     else if (key === 'ring') continue;
     else push(`b_${key}`, drawBuilding(spec));
   }
