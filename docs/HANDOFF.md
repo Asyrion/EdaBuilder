@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 66 (keyboard focus; DESIGN §4.97). Iterations 65 (drawn art, §4.96), 64 (the wide
-balance bar, §4.95) and 63 (the caravan in the books, §4.94) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 67 (replays; DESIGN §4.98). Iterations 66 (keyboard focus, §4.97), 65 (drawn art,
+§4.96) and 64 (the wide balance bar, §4.95) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.97 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.98 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,11 +32,9 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-NEXT_STEPS item 1, **replays**. The sim is deterministic, so a log of the player's commands (with their ticks) would let a
-charter be replayed from its seed. The daily challenge's result is already shareable as text. It is the last item on the
-list: after it, the list needs new items from the user (a playtest batch, or a new milestone).
-
-Plan it on the Plan panel first.
+**The list in NEXT_STEPS.md is empty.** Replays (iteration 67) were its last item. Ask the user for the next items, for
+example a playtest batch or a new milestone, and write them into NEXT_STEPS.md in the order the user gives before
+planning anything. Plan each on the Plan panel first.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
@@ -66,7 +64,8 @@ Plan it on the Plan panel first.
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (69 files, 431 tests at this writing; `tests/iteration66.test.ts` is the
+- Tests: `npx vitest run` (70 files, 437 tests at this writing; `tests/iteration67.test.ts` is the replays',
+  `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
   '/opt/pw-browsers/chromium'`), against `npx vite preview --port 4173 --strictPort`;
@@ -208,6 +207,23 @@ Plan it on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 67 (not yet said elsewhere)
+
+- **Every player change goes through `exec`.** A new player action must be a new op in `src/sim/commands.ts` (`OPS`)
+  that `main.ts` or `tools.ts` calls through `this.cmd(...)` / `host.exec(...)`. It must never be a direct write to
+  `state`, or replays diverge. The op does its own `recomputeAll` (and `bumpRoadVersion` if it touches roads or
+  buildings); `onAction` no longer recomputes. `tests/iteration67.test.ts` fails if an op has no test call.
+- **Divergence hunting:** a replay that fails names its first day. Replay to that day with `ReplayPlayer` and compare
+  `serialize` with the recording's state at the same tick. The usual causes are a module-level cache read by both the UI
+  and the sim (the aura cache was one), or a write the UI makes outside a command.
+- **The UI may read sim helpers, not fill sim caches with different inputs.** If a render or panel path calls something
+  the sim also caches, its key must cover everything the result depends on.
+- **Playtests and speed:** the top bar stops at 3× (30 ticks a second). A playtest that needs weeks sets
+  `__game.speed` higher, and the loop's cap of 12 ticks a frame holds. `__game.runner.log` is the live log, and
+  `__game.replay` / `__game.replayEnded` show the replay's state.
+- **`scripts/playtest67.mjs`** writes its exported replay to `shots/iter67.wardlight-replay.json` (shots/ is not
+  committed). The file matches only on the build that recorded it.
 
 ## Learned in iteration 66 (not yet said elsewhere)
 

@@ -349,6 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 67 (replays)
+
+- **Every change the player makes is one command** (`src/sim/commands.ts`), logged by its tick and applied the same way
+  live and in a replay. Live play is unchanged.
+- **Menu → Export replay** saves a charter's commands since its founding. **Title → Watch a replay** plays one again, with
+  a REPLAY badge, *Skip to end*, and an end toast that says whether it matches its recording.
+- **`npx tsx scripts/replay.ts <file>`** checks a replay headless and names the first day it diverges, so a bug report can
+  be a file.
+- **Fixes the inventory found:**
+  - the dragon-aura cache follows role changes;
+  - the daughter charter bumps the path cache;
+  - the daily challenge replays with its own date;
+  - Escape closes a dialog from a slider or a checkbox.
+- The balance table is identical run for run, and so is the control seed (DESIGN §4.98).
+
 ## Done in iteration 66 (keyboard focus: the toolbar, the panels and the dialogs)
 
 - **The whole UI works from the keyboard:**
@@ -780,6 +795,9 @@
   Torrent Mills carry roughly 3,000–4,000 folk. Past that the answer is the daughter
   charter on another node.
 - **Undo** covers player actions only; a building the Gloam or a fire removed is not undoable.
+- **A replay begins with a new charter** (iteration 67). A charter loaded from a save, or imported, records nothing, since
+  a rebuilt save is not the live state bit for bit. A replay from another build may diverge, and the game warns when it
+  loads one.
 - The GitHub Pages workflow deploys from `main` only; a branch preview would need a second
   job.
 
@@ -810,5 +828,5 @@ cameo events.
 
 ## Prioritized ideas for the next iteration
 
-1. **Replays.** The sim is deterministic; a command log would allow replays (the daily
-   result is already shareable as text).
+The list is empty: replays (iteration 67) were its last item. The next items come from the user, for example a
+playtest batch or a new milestone.

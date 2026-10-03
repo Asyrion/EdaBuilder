@@ -23,6 +23,7 @@ npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
 npx tsx scripts/balance.ts 42 150 - vellish roll=1   # the same run with one extra roll on day 10: another draw
 npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples × 3 seeds × 2 draws, paired, with a verdict
 npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until each people sees a tenth
+npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
@@ -328,6 +329,10 @@ Charter as `.json`.
   Ledger, the panels and the map, the arrows move along the toolbar's tabs and items, a dialog
   holds focus and gives it back on Escape, and a gold ring shows where the keyboard is. The game's
   shortcuts work while the map has focus (Info views moved from Tab to V). Desktop browsers only.
+- Replays: every change the player makes goes through one command log. Menu → *Export replay*
+  saves the charter's commands since its founding, title → *Watch a replay* plays it again
+  (with *Skip to end*), and `scripts/replay.ts` checks a file headless and names the first day
+  it diverges, so a bug report can be a file that reproduces it.
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
