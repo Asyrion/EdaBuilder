@@ -706,15 +706,15 @@ export function gateRecord(s: GameState): GateDeed[] {
 export function heartTrust(s: GameState): number {
   return gateRecord(s).reduce((a, d) => a + d.trust, 0);
 }
-function recite(s: GameState): string {
+function recite(s: GameState, who = 'She'): string {
   const r = gateRecord(s);
-  if (!r.length) return 'She has heard nothing of you at the gates, good or ill, and says so.';
+  if (!r.length) return who === 'She' ? 'She has heard nothing of you at the gates, good or ill, and says so.' : `${who} has heard nothing of you at the gates, good or ill.`;
   const good = r.filter((d) => d.trust > 0).map((d) => d.text);
   const ill = r.filter((d) => d.trust < 0).map((d) => d.text);
   const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
   const bits: string[] = [];
-  if (good.length) bits.push(`She has heard that ${list(good)}.`);
-  if (ill.length) bits.push(`${good.length ? 'She has also heard' : 'She has heard'} that ${list(ill)}.`);
+  if (good.length) bits.push(`${who} has heard that ${list(good)}.`);
+  if (ill.length) bits.push(`${who} has ${good.length ? 'also heard' : 'heard'} that ${list(ill)}.`);
   return bits.join(' ');
 }
 const cold = (s: GameState) => heartTrust(s) < 0;
@@ -761,10 +761,10 @@ function heartText(s: GameState, e: EventDef): string {
   if (e.id === 'heart_warden') return `${e.text} ${recite(s)} "The Heart goes where it is kept well," she says. "Tell me where it goes."`;
   if (e.id === 'heart_obelisks') return `${e.text} ${gateCounts(s).uzulim === 1 ? 'Your Uzulim gate is' : `Your ${gateCounts(s).uzulim} Uzulim gates are`} the proof of it, they say, and they want their share.`;
   if (e.id === 'heart_wakes') {
-    const where = s.heart.held === 'guardians' ? 'The Guardians send word from the Pass: the Heart woke there, and it asked after the city that sent it home.' : 'The keystone of the Great Gate is warm to the touch, and the runes pulse like a slow pulse.';
+    const where = s.heart.held === 'guardians' ? 'The Guardians send word from the Pass: the Heart woke there, and it asked after the city that sent it home.' : 'The keystone of the Great Gate is warm to the touch, and the runes beat like a slow heart.';
     const t = heartTrust(s);
     const warmth = t < 0 ? 'It is cold toward you: what it gives, it gives by half.' : t >= 2 ? 'It is warm toward you.' : 'It is neither warm nor cold toward you.';
-    return `${e.text} ${where} ${recite(s)} ${warmth}`;
+    return `${e.text} ${where} ${recite(s, 'The Pass')} ${warmth}`;
   }
   return e.text;
 }

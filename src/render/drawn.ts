@@ -306,9 +306,9 @@ export function drawGreatGate(): Drawn {
       if (rune) glow.px(Math.round(x), Math.round(y), 'ley1', 210);
     }
   };
-  /** Coursed stone on a block's two visible faces: a darker line every eight pixels of height. */
+  /** Coursed stone on a block's two visible faces: a darker line every twelve pixels of height. */
   const courses = (x0: number, y0: number, x1: number, y1: number, z0: number, z1: number) => {
-    for (let z = z0 + 8; z < z1; z += 8) { p.line(...P(x0, y0, z), ...P(x0, y1, z), course); p.line(...P(x0, y0, z), ...P(x1, y0, z), course); }
+    for (let z = z0 + 12; z < z1 - 3; z += 12) { p.line(...P(x0, y0, z), ...P(x0, y1, z), course); p.line(...P(x0, y0, z), ...P(x1, y0, z), course); }
   };
   /** A slit window on a tower's right face (y = y0) or left face (x = x0), dark by day and lit on the glow layer. */
   const slit = (x: number, y: number, z: number) => {
@@ -322,7 +322,7 @@ export function drawGreatGate(): Drawn {
     courses(x0, y0, x1, y1, 3, H);
     runeBand(x0, y0, x1, y1, 16);
     runeBand(x0, y0, x1, y1, H - 6);
-    for (const z of [22, 32]) { slit((x0 + x1) / 2, y0, z); slit(x0, (y0 + y1) / 2, z); }
+    for (const z of [22, 32]) if (z < H - 8) { slit((x0 + x1) / 2, y0, z); slit(x0, (y0 + y1) / 2, z); }
     // crenels along the two visible top edges
     for (let t = y0; t < y1 - 0.5; t += 2) box(p, P, x0, t, H, x0 + 1, t + 1, H + 2, sL, sR, sT);
     for (let t = x0 + 1; t < x1 - 0.5; t += 2) box(p, P, t, y0, H, t + 1, y0 + 1, H + 2, sL, sR, sT);
@@ -336,20 +336,27 @@ export function drawGreatGate(): Drawn {
     p.px(apex[0], apex[1] - 5, 'leyGlow');
     glow.px(apex[0], apex[1] - 5, 'leyGlow');
   };
-  // the far tower (toward the right corner)
-  tower(16.5, 2, 23, 21, 46);
-  // the arch block between the towers, a little set back, with a parapet
+  // four square towers at the corners of a long passage block, curtain walls between them; back to front: the right column
+  // (x ≥ 16.5) from the back, the passage block, then the left column from the back
+  const curtain = (x0: number, y0: number, x1: number, y1: number, H: number) => {
+    box(p, P, x0, y0, 3, x1, y1, H, sL, sR, sT);
+    courses(x0, y0, x1, y1, 3, H);
+    for (let t = y0; t < y1 - 0.5; t += 2) box(p, P, x0, t, H, x0 + 1, t + 1, H + 2, sL, sR, sT);
+    for (let t = x0 + 1; t < x1 - 0.5; t += 2) box(p, P, t, y0, H, t + 1, y0 + 1, H + 2, sL, sR, sT);
+  };
+  tower(16.5, 15, 23, 21.5, 36);
+  curtain(17.5, 9, 22, 15, 24);
+  tower(16.5, 2, 23, 9, 46);
+  // the passage block between the towers, a little set back, with a parapet
   const bx0 = 7;
   const bx1 = 16.5;
   const by0 = 4;
-  const BH = 32;
-  box(p, P, bx0, by0, 3, bx1, 20, BH, sL, sR, sT);
-  courses(bx0, by0, bx1, 20, 3, BH);
-  for (let t = bx0; t < bx1 - 0.5; t += 2) box(p, P, t, by0, BH, t + 1, by0 + 1, BH + 2, sL, sR, sT);
+  const BH = 30;
+  curtain(bx0, by0, bx1, 21, BH);
   // the arch: a deep dark opening on the right face, round-headed, with lit voussoirs and a glimpse of road through it
-  const ax0 = 9;
-  const ax1 = 14.5;
-  const spring = 15;
+  const ax0 = 8.5;
+  const ax1 = 15;
+  const spring = 14;
   const rise = (ax1 - ax0) / 2;
   const archTop = (x: number) => spring + Math.sqrt(Math.max(0, rise * rise - (x - (ax0 + ax1) / 2) ** 2)) * 2;
   const open: Pt[] = [P(ax0, by0, 3)];
@@ -374,7 +381,7 @@ export function drawGreatGate(): Drawn {
   p.px(hx, hy - 1, 'leyGlow');
   glow.poly([[hx, hy - 4], [hx + 3, hy], [hx, hy + 4], [hx - 3, hy]], 'leyGlow');
   glow.circle(hx, hy, 8, 'ley1', 80);
-  runeBand(bx0, by0, bx1, 20, 26);
+  runeBand(bx0, by0, bx1, 21, 25);
   // two ley lamps on the plinth either side of the arch
   for (const x of [ax0 - 1.2, ax1 + 1.2]) {
     const [lx, ly] = P(x, 1.8, 3);
@@ -383,10 +390,12 @@ export function drawGreatGate(): Drawn {
     glow.px(Math.round(lx), Math.round(ly) - 8, 'leyGlow');
     glow.circle(Math.round(lx), Math.round(ly) - 8, 2, 'ley1', 90);
   }
-  // the near tower, and a Guardians' banner hung from it
-  tower(1, 2, 7, 21, 42);
+  // the left column from the back: a tower, a curtain, the near tower with a Guardians' banner
+  tower(1, 15, 7.5, 21.5, 34);
+  curtain(1.5, 9, 6, 15, 22);
+  tower(1, 2, 7.5, 9, 42);
   {
-    const [bxp, byp] = P(7, 6, 36);
+    const [bxp, byp] = P(4.2, 2, 34);
     p.rect(Math.round(bxp), Math.round(byp), 3, 9, 'ley3');
     p.rect(Math.round(bxp) + 1, Math.round(byp) + 2, 1, 4, 'ley1');
     p.px(Math.round(bxp) + 1, Math.round(byp) + 9, 'ley3');
