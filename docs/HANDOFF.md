@@ -1,15 +1,15 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 67 (replays; DESIGN §4.98). Iterations 66 (keyboard focus, §4.97), 65 (drawn art,
-§4.96) and 64 (the wide balance bar, §4.95) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 68 (the plan's gaps written down; DESIGN §4.99, §17). Iterations 67 (replays,
+§4.98), 66 (keyboard focus, §4.97) and 65 (drawn art, §4.96) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.98 are one per iteration; §7 the milestone
-plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
+design lives in `docs/DESIGN.md` (sections 4.1–4.99 are one per iteration; §7 the milestone
+plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
 ## Milestones
@@ -32,9 +32,20 @@ plan; §15 M14; §16 M15 and M16; §12 the decision log), the open list in
 
 ## The next item
 
-**The list in NEXT_STEPS.md is empty.** Replays (iteration 67) were its last item. Ask the user for the next items, for
-example a playtest batch or a new milestone, and write them into NEXT_STEPS.md in the order the user gives before
-planning anything. Plan each on the Plan panel first.
+NEXT_STEPS item 1, **the Great Gate and the Heart of Belregi** (DESIGN §17.4 A, §11 item 1).
+- The Belregi and Uzulim wall gates exist (`catalog.ts`, `services.ts`).
+- The wonder and its tale chain do not: no `great gate` or `heart of belregi` anywhere in `src/`.
+- Plan it on the Plan panel first.
+
+**The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
+- **Five single items:** the Great Gate; two ways to lose (§8.5); golem haulers; loose ends; markets and the road
+  (AUDIT B40).
+- **Then three milestones**, each part one iteration:
+  - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
+  - **M18**, the Fen-Nex: the people, then their game;
+  - **M19**, the Belerial: striders for everyone, the people, then their game.
+- A new people runs the wide bar with its own row in the table (the table's people list grows).
+- DESIGN §17 has the subtasks.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
@@ -207,6 +218,12 @@ planning anything. Plan each on the Plan panel first.
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 68 (not yet said elsewhere)
+
+- **NEXT_STEPS drifted from DESIGN.** The design's promises in §8, §11, §13.13 and §14.2 were never all copied into
+  NEXT_STEPS, and the lists parted. Since iteration 68 every unbuilt promise points to its place in DESIGN §17. When a
+  new idea is designed, put it in NEXT_STEPS in the same iteration.
 
 ## Learned in iteration 67 (not yet said elsewhere)
 
