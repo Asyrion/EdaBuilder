@@ -16,6 +16,7 @@ import { districtName, markDirty } from './world';
 import { MAP_W, inBounds, idx } from './types';
 import { igniteBuilding, recomputeGloamDist } from './hazards';
 import { RIOT_UNREST } from './growth';
+import { HEART_GLOAM_REACH, HEART_STEP_DAYS, PASS_ALMS, PASS_PILGRIM_DAY, PASS_PILGRIMS, WARDEN_DAYS, BELREGI_REACH_HEART, GREAT_GATE_REACH_HEART, GREAT_GATE_REACH, BELREGI_REACH_GREAT, gateCounts, greatGateOf, litGreatGate, passPilgrims } from './gate';
 import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
@@ -32,7 +33,7 @@ export function descOf(c: { desc: string | ((s: GameState) => string) }, s: Game
   return typeof c.desc === 'function' ? c.desc(s) : c.desc;
 }
 
-function addResidents(s: GameState, n: number): number {
+export function addResidents(s: GameState, n: number): number {
   let left = n;
   forEachBuilding(s, (b) => {
     if (left <= 0 || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || b.state !== 'ok') return;
@@ -681,7 +682,118 @@ export function maybeFireReturn(s: GameState): void {
   s.pendingEvent = { id: def.id, title: `${e.name} returns`, text: `${e.name} the ${LINE_INFO[e.line].name} ${STAGE_NAMES[e.stage]}, which left ${s.cityName} ${s.day - e.day} days ago, circles its old cradle at (${e.x},${e.y}) at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.`, choices: def.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
   s.firedEvents.push(`${def.id}:?`);
 }
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, RIOT, DRAGON_RETURNS];
+// ---------------------------------------------------------------- the Heart of Belregi (iteration 69, DESIGN 4.100)
+
+/** One line of the city's record at the gates: what the High Warden has heard, and whether it raises the Pass's trust or lowers it. */
+export interface GateDeed { text: string; trust: 1 | -1 }
+/** The record of the gates: earlier answers at the gate (the pilgrims, their shrine, the Lantern Fair, the poachers) and the gates in
+ *  the wall. The tales of the Heart recite it, and its sum is the Pass's trust. */
+export function gateRecord(s: GameState): GateDeed[] {
+  const out: GateDeed[] = [];
+  if (chose(s, 'pilgrims', 0)) out.push({ text: 'you took in the pilgrims of Aume', trust: 1 });
+  if (chose(s, 'pilgrims_shrine', 0)) out.push({ text: 'you raised them a shrine', trust: 1 });
+  if (chose(s, 'pilgrims_shrine', 2)) out.push({ text: 'you refused the pilgrims their shrine', trust: -1 });
+  if (chose(s, 'lanternfair', 0)) out.push({ text: 'you opened your gates for the Lantern Fair', trust: 1 });
+  if (chose(s, 'lanternfair', 1)) out.push({ text: 'you kept your gates shut on the Lantern Fair', trust: -1 });
+  if (chose(s, 'egg_poachers', 1)) out.push({ text: 'your Watch took the egg poachers at the gate', trust: 1 });
+  if (chose(s, 'egg_poachers', 0)) out.push({ text: 'you bought a poached egg at the gate', trust: -1 });
+  const g = gateCounts(s);
+  if (g.belregi > g.uzulim) out.push({ text: `your wall has more Belregi gates than Uzulim (${g.belregi} to ${g.uzulim})`, trust: 1 });
+  else if (g.uzulim > g.belregi) out.push({ text: `your wall has more Uzulim gates than Belregi (${g.uzulim} to ${g.belregi})`, trust: -1 });
+  return out;
+}
+/** The Pass's trust: the sum of the record. Under zero the Heart wakes cold and gives half. */
+export function heartTrust(s: GameState): number {
+  return gateRecord(s).reduce((a, d) => a + d.trust, 0);
+}
+function recite(s: GameState): string {
+  const r = gateRecord(s);
+  if (!r.length) return 'She has heard nothing of you at the gates, good or ill, and says so.';
+  const good = r.filter((d) => d.trust > 0).map((d) => d.text);
+  const ill = r.filter((d) => d.trust < 0).map((d) => d.text);
+  const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+  const bits: string[] = [];
+  if (good.length) bits.push(`She has heard that ${list(good)}.`);
+  if (ill.length) bits.push(`${good.length ? 'She has also heard' : 'She has heard'} that ${list(ill)}.`);
+  return bits.join(' ');
+}
+const cold = (s: GameState) => heartTrust(s) < 0;
+function heartStep(s: GameState): void {
+  s.heart.step++;
+  s.heart.day = s.day;
+}
+
+export const HEART_EVENTS: EventDef[] = [
+  {
+    id: 'heart_warden', title: 'The High Warden of Belregi',
+    // heart.day holds the day the Gate first stood lit until she comes (maybeFireHeart stamps it)
+    text: 'The High Warden of the Belregi Guardians comes through the Great Gate with a lead box under her cloak. In it is the Heart of Belregi.',
+    when: (s) => s.heart.step === 0 && s.heart.held === 'none' && !!litGreatGate(s) && s.heart.day >= 0 && s.day - s.heart.day >= WARDEN_DAYS,
+    choices: [
+      { label: 'Set the Heart in the Great Gate', desc: (s) => `The Gate wards ${GREAT_GATE_REACH_HEART} tiles instead of ${GREAT_GATE_REACH}, and every Belregi gate ${BELREGI_REACH_HEART} instead of ${BELREGI_REACH_GREAT}.${gateCounts(s).uzulim ? ' An Uzulim gate stands in your wall: its wardens will hear of it.' : ''} In the Hush the Heart wakes and asks what you want of it.`, apply: (s) => { s.heart.held = 'set'; heartStep(s); return 'The Heart goes into the keystone of the arch. The runes on every Belregi gate in the wall turn a deeper blue that night.'; } },
+      { label: 'Let the Guardians keep it', desc: `The Heart goes home to the Pass. Twice as many pilgrims of the Pass come each season (${PASS_PILGRIMS * 2} instead of ${PASS_PILGRIMS}), and the Crown's favour rises 5. The Heart still wakes in the Hush, far away, and the Guardians send word.`, apply: (s) => { s.heart.held = 'guardians'; heartStep(s); addFavour(s, 5); return 'The High Warden bows, which the Guardians do not do often. The road to the Pass is busier by the next season.'; } },
+      { label: "Sell it to the Crown's assessor", desc: "+6,000 crowns and the Crown's favour +10. The Guardians close the Pass to you: no more pilgrims of the Pass, and the Great Gate wards at six tenths. The tales of the Heart end here.", apply: (s) => { s.heart.held = 'sold'; s.heart.step = 3; s.heart.day = s.day; s.treasury += 6000; addFavour(s, 10); return 'The assessor pays in Crown silver and has the box on a cart before dusk. The High Warden leaves by the Gloam road and does not look back. The runes on the Great Gate dim.'; } },
+    ],
+  },
+  {
+    id: 'heart_obelisks', title: 'The crimson obelisks',
+    text: 'Wardens of Uzulim, hooded, come to the Great Gate. The Heart, they say, belongs to the whole Pass, both its gates.',
+    when: (s) => s.heart.step === 1 && s.heart.held === 'set' && gateCounts(s).uzulim > 0 && !!litGreatGate(s) && s.day - s.heart.day >= HEART_STEP_DAYS,
+    choices: [
+      { label: 'Refuse them', desc: 'The Heart stays whole in the Great Gate. Unrest +5 % for 15 days while the obelisks sulk.', apply: (s) => { heartStep(s); s.modifiers.push({ kind: 'unrest', value: 0.05, until: s.day + 15, label: 'The Uzulim refused' }); return 'The wardens leave without a word. The crimson symbols on your Uzulim gates burn a little brighter, and the streets near them are quarrelsome.'; } },
+      { label: 'Share the Heart', desc: `A sliver of the Heart goes into each Uzulim gate: the Great Gate wards ${GREAT_GATE_REACH} tiles again and the Belregi gates ${BELREGI_REACH_GREAT}, but the Uzulim gates stop adding unrest while the Great Gate stands.`, apply: (s) => { s.heart.held = 'shared'; heartStep(s); return 'The Heart is cut on the Stake\'s anvil by a Grimmen smith who will not say how. The obelisks hum in a lower key; folk near them sleep better.'; } },
+      { label: 'Pay them off (2,500 crowns)', desc: 'The Heart stays whole, and the Uzulim go home with a purse.', apply: (s) => { heartStep(s); s.treasury -= 2500; return 'The wardens count it twice and go. Nobody thinks it is over.'; } },
+    ],
+  },
+  {
+    id: 'heart_wakes', title: 'The Heart of Belregi wakes',
+    text: 'The Hush, and the Heart of Belregi wakes. Whoever holds it, the old tales say, can ask the weather and the grey for a favour.',
+    when: (s) => s.heart.step === 2 && (s.heart.held === 'set' || s.heart.held === 'shared' || s.heart.held === 'guardians') && seasonOf(s) === 3 && !!greatGateOf(s) && s.day - s.heart.day >= HEART_STEP_DAYS,
+    choices: [
+      { label: 'Ask it to hold back the Gloam', desc: (s) => `The Gloam is cleared within ${cold(s) ? Math.round(HEART_GLOAM_REACH / 2) : HEART_GLOAM_REACH} tiles of the Great Gate${cold(s) ? ' (the Heart is cold: half the reach)' : ''}.`, apply: (s) => { const g = greatGateOf(s); heartStep(s); if (!g) return 'The Gate is gone; the Heart has nothing to answer through.'; const r = cold(s) ? Math.round(HEART_GLOAM_REACH / 2) : HEART_GLOAM_REACH; const cx = g.x + 1; const cy = g.y + 1; let n = 0; for (let y = cy - r; y <= cy + r; y++) for (let x = cx - r; x <= cx + r; x++) { if (!inBounds(x, y) || Math.hypot(x - cx, y - cy) > r) continue; const i = idx(x, y); if (s.gloam[i]) { s.gloam[i] = 0; n++; markDirty(s, x, y); } } s.stats.gloamBurned += n; if (n) recomputeGloamDist(s); return n ? `A blue wind goes out from the arch at midnight. By dawn ${n} tiles of grey grass are green again.` : 'A blue wind goes out from the arch at midnight and finds no grey to burn. The Heart seems pleased anyway.'; } },
+      { label: 'Ask it for rain and harvest', desc: (s) => `Rain over the city for ${cold(s) ? 5 : 10} days and goods +${cold(s) ? 10 : 20} % for 30${cold(s) ? ' (the Heart is cold: half)' : ''}.`, apply: (s) => { const h = cold(s) ? 0.5 : 1; heartStep(s); s.modifiers.push({ kind: 'rain', value: 1, until: s.day + 10 * h, label: 'The Heart\'s rain' }); s.modifiers.push({ kind: 'goods', value: 0.2 * h, until: s.day + 30, label: 'The Heart\'s harvest' }); return 'Rain in the Hush, warm as Bloom. The herb yards do not know what season it is and do not care.'; } },
+      { label: 'Ask nothing of it', desc: (s) => `The Guardians name ${s.cityName} a friend of the Pass: happiness +${cold(s) ? 2 : 3} for 60 days${cold(s) ? ' (the Heart is cold: less)' : ''}.`, apply: (s) => { heartStep(s); s.modifiers.push({ kind: 'happiness', value: cold(s) ? 2 : 3, until: s.day + 60, label: 'A friend of the Pass' }); return 'The Heart goes back to sleep. The High Warden writes, in a hand like a carved rune, that it has not been asked for nothing in three hundred years.'; } },
+    ],
+  },
+];
+/** The tale's text for this city: the High Warden recites the record, the waking says how warm the Heart is. */
+function heartText(s: GameState, e: EventDef): string {
+  if (e.id === 'heart_warden') return `${e.text} ${recite(s)} "The Heart goes where it is kept well," she says. "Tell me where it goes."`;
+  if (e.id === 'heart_obelisks') return `${e.text} ${gateCounts(s).uzulim === 1 ? 'Your Uzulim gate is' : `Your ${gateCounts(s).uzulim} Uzulim gates are`} the proof of it, they say, and they want their share.`;
+  if (e.id === 'heart_wakes') {
+    const where = s.heart.held === 'guardians' ? 'The Guardians send word from the Pass: the Heart woke there, and it asked after the city that sent it home.' : 'The keystone of the Great Gate is warm to the touch, and the runes pulse like a slow pulse.';
+    const t = heartTrust(s);
+    const warmth = t < 0 ? 'It is cold toward you: what it gives, it gives by half.' : t >= 2 ? 'It is warm toward you.' : 'It is neither warm nor cold toward you.';
+    return `${e.text} ${where} ${recite(s)} ${warmth}`;
+  }
+  return e.text;
+}
+/** The Heart's tales fire on their own terms, with no draw: a city without a Great Gate never meets them. A Heart set in a city with
+ *  no Uzulim gate skips the obelisks, and a Heart the Guardians keep goes straight to the waking. */
+export function maybeFireHeart(s: GameState): void {
+  if (s.pendingEvent || s.gameOver || s.heart.step >= 3 || !greatGateOf(s)) return;
+  if (s.heart.step === 0 && s.heart.day < 0 && litGreatGate(s)) s.heart.day = s.day; // the day the Gate first stood lit: the Warden comes ten days on
+  if (s.heart.step === 1 && s.day - s.heart.day >= HEART_STEP_DAYS && (s.heart.held === 'guardians' || (s.heart.held === 'set' && gateCounts(s).uzulim === 0))) s.heart.step = 2; // no tale between: the waking counts its days from the Warden
+  for (const e of HEART_EVENTS) {
+    if (!e.when(s)) continue;
+    s.pendingEvent = { id: e.id, title: e.title, text: heartText(s, e), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+    s.firedEvents.push(`${e.id}:?`);
+    return;
+  }
+}
+/** Pilgrims of the Pass, on the 15th of each season: up to 12 (24 with the Guardians) lodge in empty homes and pay alms. */
+export function dailyGatePilgrims(s: GameState): void {
+  if (s.day % 30 !== PASS_PILGRIM_DAY) return;
+  const n = passPilgrims(s);
+  if (n <= 0) return;
+  const lodged = addResidents(s, n);
+  const alms = lodged * PASS_ALMS;
+  s.treasury += alms;
+  s.stats.gatePilgrims += lodged;
+  s.stats.gateAlms += alms;
+  pushMessage(s, lodged ? `Pilgrims of the Pass come through the Great Gate: ${lodged} lodge in ${s.cityName}'s empty homes and pay ${alms} crowns in alms.` : 'Pilgrims of the Pass come through the Great Gate, find no empty home, pray at the arch and walk on.', 'good');
+}
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, ...HEART_EVENTS, RIOT, DRAGON_RETURNS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {

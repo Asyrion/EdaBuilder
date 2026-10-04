@@ -4,7 +4,7 @@
  * any sprite by name via public/art/atlas.json (see atlas.ts).
  */
 import { Painter, h2 } from './painter';
-import { drawLanternOfVell, drawTemple } from './drawn';
+import { drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {
@@ -1534,6 +1534,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   saltfont: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'flat', crystal: true, runeBand: true, wisps: true, seed: 62 },
   sextonchapel: { w: 2, h: 2, height: 12, roofH: 8, wall: 'darkstone', roof: 'slate', windows: 1, windowRows: 2, door: true, spire: true, wisps: true, glowWindows: true, seed: 69 },
   wrightslodge: { w: 2, h: 2, height: 14, roofH: 8, wall: 'bluewash', roof: 'slate', windows: 2, windowRows: 2, door: true, chimney: true, overhang: true, sign: true, glowWindows: true, runeBand: true, seed: 66 },
+  greatgate: { w: 3, h: 3, height: 46, roofH: 16, wall: 'stone', roof: 'none', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 69, runeBand: true }, // drawn by hand (drawn.ts, iteration 69)
   wyrmcourt: { w: 3, h: 3, height: 2, roofH: 1, wall: 'stone', roof: 'none', standingStones: true, runeBand: true, seed: 61 },
   hallofwicks: { w: 3, h: 3, height: 24, roofH: 10, wall: 'stone', roof: 'cone', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, crystal: true, runeBand: true, banner: true, lanternPost: true, seed: 70 },
   // halls that grow with the city (iteration 51): stage 1 from the Village, stage 2 from the Burgh
@@ -1858,6 +1859,7 @@ export function generateSprites(): SpriteDef[] {
     else if (key === 'boneyard') push('b_boneyard', drawBoneyard());
     else if (key === 'wardlantern') push('b_wardlantern', drawWardLantern());
     else if (key === 'lantern') push('b_lantern', drawLanternOfVell()); // drawn by hand (iteration 65)
+    else if (key === 'greatgate') push('b_greatgate', drawGreatGate()); // drawn by hand (iteration 69)
     else if (key === 'temple' || key === 'temple_s1' || key === 'temple_s2') push(`b_${key}`, drawTemple(key === 'temple' ? 0 : key === 'temple_s1' ? 1 : 2));
     else if (key === 'ring') continue;
     else push(`b_${key}`, drawBuilding(spec));

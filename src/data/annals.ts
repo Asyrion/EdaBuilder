@@ -27,6 +27,8 @@ export const ANNALS: AnnalChapter[] = [
       { label: 'Goods stolen', stat: 'goodsStolen', note: 'Taken from market shelves with little watch while unrest stood over 0.3.' },
       { label: 'Days with a chartered quarter', stat: 'quarterDays', note: 'Days on which at least one district held a charter.' },
       { label: 'Shrines raised for pilgrims', stat: 'pilgrimShrines', note: 'Shrines of Aume built when the welcomed pilgrims came back to ask.' },
+      { label: 'Pilgrims of the Pass lodged', stat: 'gatePilgrims', note: 'Pilgrims who came through the Great Gate on the 15th of a season and took an empty home.' },
+      { label: 'Alms of the Pass', stat: 'gateAlms', note: 'Crowns the pilgrims of the Pass paid on arriving, 40 each.' },
       { label: 'Days in good order', value: (s) => s.cleanDays, note: 'Days in a row in the black with no ruins and none of the restless walking.' },
     ],
   },

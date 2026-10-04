@@ -1,7 +1,7 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
-import { foxAudit, maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireReturn, maybeFireRiot, maybeFireWyrm } from './events';
+import { dailyGatePilgrims, maybeFireHeart, foxAudit, maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireReturn, maybeFireRiot, maybeFireWyrm } from './events';
 import { seasonOf } from './world';
 import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
 import { dailyDragons, seasonalBout } from './wyrmcraft';
@@ -101,6 +101,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyConstruction(state);
     dailyBreeding(state);
     dailyRelics(state);
+    dailyGatePilgrims(state); // pilgrims of the Pass through the Great Gate (iteration 69)
     state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
@@ -108,6 +109,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) { crownLevy(state); foxAudit(state); } // the season tick: the Crown's Thaw levy and the Fen-Nex quarter's audit (iteration 54)
     maybeFireWyrm(state);
+    maybeFireHeart(state); // the Heart of Belregi, on its own terms (iteration 69)
     maybeFireReturn(state);
     maybeFireCalendar(state);
     maybeFireCaravan(state);

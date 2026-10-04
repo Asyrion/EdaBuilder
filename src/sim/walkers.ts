@@ -162,9 +162,9 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
   },
   pilgrim: {
     id: 'pilgrim', name: 'pilgrim', plural: 'pilgrims', prop: 'staff',
-    desc: 'Walks from its shrine or temple to another house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
-    from: ['shrine', 'candleshrine', 'temple'],
-    count: (_s, b) => (b.kind === 'temple' ? 2 : 1),
+    desc: 'Walks from its shrine, temple or the Great Gate to a house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
+    from: ['shrine', 'candleshrine', 'temple', 'greatgate'],
+    count: (_s, b) => (b.kind === 'greatgate' ? (b.lit ? 3 : 0) : b.kind === 'temple' ? 2 : 1),
     radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
     cap: 99,
     target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'candleshrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),

@@ -13,7 +13,7 @@ export type Focus =
   | { build: string }
   | { panel: 'edicts' | 'wyrms' | 'budget' | 'views' | 'chronicle' }
   | { overlay: string }
-  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' | 'ruins' | 'cart' };
+  | { center: 'founding' | 'gloam' | 'node' | 'cradle' | 'wyrm' | 'ruins' | 'cart' | 'greatgate' };
 
 export interface QuestDef {
   id: string;
@@ -37,6 +37,7 @@ const zoned = (s: GameState, z: Zone, n: number) => { let c = 0; for (let i = 0;
 const roads = (s: GameState) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i]) c++; return c; };
 const walls = (s: GameState) => { let c = 0; for (let i = 0; i < s.wall.length; i++) if (s.wall[i] === 1) c++; return c; };
 const gates = (s: GameState) => { for (let i = 0; i < s.wall.length; i++) if (s.wall[i] >= 2) return true; return false; };
+const belregiGates = (s: GameState) => { for (let i = 0; i < s.wall.length; i++) if (s.wall[i] === 2) return true; return false; };
 const zoneBuildings = (s: GameState, z?: Zone) => s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok' && (z === undefined || BUILDING_BY_KEY[b.kind].zone === z)) as NonNullable<GameState['buildings'][number]>[];
 const unlit = (s: GameState) => zoneBuildings(s).filter((b) => !b.lit).length;
 const dry = (s: GameState) => zoneBuildings(s).filter((b) => !b.watered).length;
@@ -69,6 +70,8 @@ export const QUESTS: QuestDef[] = [
   { id: 'g_wall', chapter: 'The grey edge', title: 'Draw 20 tiles of Warding Wall', hint: 'Services tab. The Gloam and its hounds never cross it.', when: (s) => s.milestone >= 2 && (s.stats.houndsTotal > 0 || s.stats.gloamTiles > 2000), done: (s) => walls(s) >= 20, focus: { tool: 'wall' }, reward: 600, priority: 15 },
   { id: 'g_hounds', chapter: 'The grey edge', title: 'Kill 10 Gloam-hounds', hint: "A Hunters' Lodge hunts within 12 tiles each night.", when: (s) => s.stats.houndsTotal > 0, done: (s) => s.stats.houndsKilled >= 10, focus: { build: 'hunterslodge' }, reward: 700, priority: 16 },
   { id: 'g_gate', chapter: 'The grey edge', title: 'Raise a gate of the Pass', hint: 'A Belregi or Uzulim gate lets roads through the wall and wards the ground around it.', when: (s) => walls(s) >= 10 && s.milestone >= 3, done: (s) => gates(s), focus: { tool: 'gateBelregi' }, reward: 600, priority: 17 },
+  { id: 'g_greatgate', chapter: 'The grey edge', title: 'Raise the Great Gate', hint: 'A wonder of the Burgh: the gatehouse of the Pass, raised in the angle between a Belregi gate and its road (a corner counts). Lit, it wards 20 tiles, every Belregi gate reaches 12, and pilgrims of the Pass come each season.', when: (s) => s.milestone >= 6 && belregiGates(s), done: (s) => has(s, 'greatgate'), focus: { build: 'greatgate' }, reward: 2000, priority: 18 },
+  { id: 'g_heart', chapter: 'The grey edge', title: 'Answer the High Warden of Belregi', hint: 'Ten days after the Great Gate stands lit, the High Warden brings the Heart of Belregi. What she has heard of your gates (the pilgrims, the Lantern Fair, the poachers, Belregi against Uzulim) colours the tale; in the Hush the Heart wakes.', when: (s) => has(s, 'greatgate'), done: (s) => s.heart.step >= 1, focus: { center: 'greatgate' }, reward: 1000, priority: 19 },
   // Goods
   { id: 'o_cart', chapter: 'Goods', title: 'See the first cart deliver', hint: 'Donkey carts carry potions from the works to the markets by road. Show me finds one on the way.', when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
   { id: 'o_full', chapter: 'Goods', title: 'No market short for five days', hint: 'Goods view (o). Zone works near the markets, or build a Trade Depot and import.', when: (s) => s.goodsShort > 0, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
