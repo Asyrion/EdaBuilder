@@ -3696,6 +3696,127 @@ Docs only: no code, test or art changed.
 
 There was no playtest and no balance run, since nothing executable changed.
 
+### 4.100 The Great Gate and the Heart of Belregi (iteration 69)
+
+§17.4 A, the first of the single items. The Belregi and Uzulim gates have stood in the wall since iteration 9 (§11 item
+1). The wonder and its tales did not exist.
+
+**The Great Gate** (`greatgate`, `src/sim/gate.ts`):
+- **What it is:** a 3×3 wonder of the Burgh. Cost 16,000, upkeep 120, mana 12. One per city.
+- **Where it stands:** its footprint must touch a Belregi gate tile (wall value 2), and a corner counts (`nearGate`,
+  `touchesBelregiGate`).
+  - A gate in the wall has wall on two sides and road on the other two, so no 3×3 can touch it edge to edge. The
+    gatehouse stands in the angle between the wall and the road.
+  - It blocks hounds like every building, and the road keeps passing through the gate tile.
+- **While it stands lit:**
+  - **Its own ward:** 20 tiles at full strength (`GREAT_GATE_REACH`), 30 with the Heart set.
+  - **The gates' reach:** every Belregi gate's faith and ward reach 12 tiles instead of 8 (16 with the Heart). This is
+    `belregiReach`, read where `services.ts` lays the gates' coverage.
+  - **Pilgrims:** three walk from it (the pilgrim walker's `from` gains `greatgate`) to a temple, shrine or the Stake
+    within 30, painting faith on the roads.
+  - **Pilgrims of the Pass:** on the 15th of each season (`dailyGatePilgrims`), 12 lodge in empty homes and pay 40
+    crowns of alms each. Twice as many come while the Guardians keep the Heart, and none once it is sold. They are
+    counted in the Annals (`gatePilgrims`, `gateAlms`).
+  - No roll anywhere: the Gate never touches the rng.
+- **The sprite** is drawn in code (`drawGreatGate` in `drawn.ts`, the §4.96 kit), since `inspirations/` holds no gate:
+  - four square towers of Belregi Stone (pale grey with blue in it, the left faces darker), with slate caps and gold
+    finials;
+  - curtain walls between them and a parapet over a deep round arch on the right face, which the facing mirror turns
+    to the road;
+  - blue rune bands, lit slits, two ley lamps, and the Guardians' banner;
+  - the Heart of Belregi as a glowing keystone.
+  - It casts a wonder's night light (radius 100, ley blue).
+  - A first draft drew two long halls with dense coursing, and read as sheds at 3×. The towers were made square and
+    the coursing lightened.
+
+**The Heart of Belregi** (`HEART_EVENTS`, `maybeFireHeart`, `state.heart`):
+- **How the tales fire:** on their own terms, called beside `maybeFireWyrm`. They are not in the storyteller's pool and
+  draw nothing, so a city without a Great Gate is untouched.
+- **The state:** `state.heart` is `{ held, step, day }`. An old save loads as `none` from the fresh game's fill.
+- **The record of the gates** (`gateRecord`) is read from earlier answers and from the wall. The tales recite it, and
+  its sum is the Pass's trust:
+  - **Raises trust:**
+    - the pilgrims of Aume welcomed;
+    - their shrine raised;
+    - the Lantern Fair opened;
+    - the egg poachers arrested at the gate;
+    - more Belregi gates than Uzulim.
+  - **Lowers trust:**
+    - the shrine refused;
+    - the gates kept shut on the Fair;
+    - a poached egg bought;
+    - more Uzulim gates than Belregi.
+1. **The High Warden of Belregi** comes ten days after the Gate first stands lit. She recites the record and asks
+   where the Heart goes.
+   - **Set it in the arch:** the Gate wards 30 tiles and every Belregi gate 16.
+   - **Let the Guardians keep it:** twice the pilgrims of the Pass, and the Crown's favour +5.
+   - **Sell it to the Crown's assessor:** +6,000 crowns and favour +10. The Pass closes: no more pilgrims, and the Gate
+     wards at six tenths. The tales end there.
+2. **The crimson obelisks**, twenty days on, only if the Heart was set and an Uzulim gate stands.
+   - **Refuse them:** unrest +5 % for 15 days.
+   - **Share the Heart:** the Gate wards 20 again and the Belregi gates 12, but the Uzulim gates stop adding unrest
+     while the Great Gate stands.
+   - **Pay them off:** 2,500 crowns.
+   - A Heart set with no Uzulim gate skips this tale, and so does a Heart the Guardians keep.
+3. **The Heart wakes** in the Hush, twenty days or more after the last step, and grants one favour:
+   - the Gloam cleared within 25 tiles of the Gate;
+   - rain for 10 days and goods +20 % for 30;
+   - or nothing asked: happiness +3 for 60 days, and the city named a friend of the Pass.
+   - A trust under zero makes the Heart cold, and it gives half. The text says whether it is warm or cold, and the
+     Gate's panel shows the record's sum before the tale comes.
+
+**Where it shows:**
+- two Ledger tasks: *Raise the Great Gate* (2,000 crowns) and *Answer the High Warden* (1,000), with Show me;
+- two Annals rows;
+- the Gate's panel: the Heart, the reaches, the next pilgrims, the record;
+- the help, the Belregi gate's tooltip, its reach ring (`influenceRadius` reads `greatGateReach`), and the README.
+
+**The bot** does not raise the Gate. No bot city meets the tales, so the balance table should show no change. Teaching
+the bot a wonder it would buy only after walls is a separate decision. Walls are rare in its cities: Vellish 43 alone
+builds them, and only where hounds came.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 71 test files with 451 tests, and `npm run build`.
+- **`tests/iteration69.test.ts`** (14 tests):
+  - **placement:** beside a Belregi gate yes; beside the wall without a gate, or beside an Uzulim gate, no;
+  - **reaches:**
+    - the Gate's ward reaches 20, then 30 with the Heart, is weaker once the Heart is sold, and is none when dark;
+    - a Belregi gate reaches 8, then 12, then 16;
+  - **pilgrims:** three walkers lit and none dark; the 15th lodges 12 and pays their alms, 24 come under the Guardians,
+    and none once the Heart is sold;
+  - **the record:** its lines and the trust;
+  - **the tales:**
+    - none fires without a Gate, and none sits in the storyteller's pool;
+    - the Warden comes on the tenth lit day and recites the pilgrims;
+    - the obelisks come with an Uzulim gate, and sharing works;
+    - with no Uzulim gate the obelisks are skipped, the Heart wakes in the Hush, and asking for the Gloam clears it;
+    - under the Guardians the word comes from the Pass;
+    - a cold Heart gives +2, not +3;
+    - selling pays 6,000 and ends the tales;
+  - **saves:** a save without the Heart loads as none, and the Heart round-trips;
+  - **the sprite:** it exists with its glow.
+- **`scripts/playtest69.mjs`** in Chromium:
+  - **the town:** a walled town with a Belregi and an Uzulim gate, lit by real spires (supply 330, demand 46);
+  - **placement:**
+    - the Gate placed through `placeBuilding`;
+    - refused beside the wall with no gate ("Must stand beside a Belregi gate…");
+    - a second refused ("Only one may be raised");
+  - **coverage:**
+    - a Belregi gate's faith at 11 tiles is 34/255 and at 13 is 0;
+    - the Gate's ward at 18 tiles is 117/255 and at 23 is 0;
+  - **the tales:**
+    - the Warden recites "you took in the pilgrims of Aume and you raised them a shrine… you kept your gates shut on the
+      Lantern Fair";
+    - setting the Heart brings the obelisks;
+    - sharing it brings the waking on day 100 of the Hush;
+  - **the days:** three days of ticks lodge 12 pilgrims of the Pass for 480 crowns, with 3 pilgrim walkers out, and both
+    Ledger tasks paid;
+  - **shots:**
+    - the Gate by day and night at 3×, selected with its ring and panel at 2×, and mirrored to a road on its left;
+    - the three tales, and a sprite sheet at 3× and 8× beside the Belregi gate, the Lantern and the Wyrm-Court;
+  - no errors, no missing sprite.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): BAR_TABLE
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -3975,7 +4096,7 @@ Content and mechanics the canon drop suggests, in the order worth building. Each
 consistent with `EDA_LORE.md` §9.
 
 1. ✅ **Wall Gates, Belregi and Uzulim style** (the gates; the Great Gate and the Heart of
-   Belregi are not built: item A of §17.4). A gate tile in the Warding Wall lets a road
+   Belregi since iteration 69, §4.100). A gate tile in the Warding Wall lets a road
    pass. Two styles, both from the Pass of Buluiain: a **Belregi Gate** (blue runes: ward
    coverage +0.3 within 8, pilgrims arrive, happiness +2 nearby) and an **Uzulim Gate**
    (crimson obelisks: hounds and the restless never pass within 10, unrest +3 % in its
@@ -4476,7 +4597,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 
 ### 17.4 The single items (one iteration each, in this order)
 
-- **A. The Great Gate and the Heart of Belregi** (§11 item 1).
+- ✅ **A. The Great Gate and the Heart of Belregi** (§11 item 1; built in iteration 69, §4.100).
   - A gate wonder in the Warding Wall: the largest of the Belregi gates, with pilgrims and a ward of its own.
   - A tale chain, the Heart of Belregi, that follows the player's earlier choices at the gates.
 - **B. Two ways to lose** (§8.5).
@@ -4884,3 +5005,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   milestones (M17 the marsh and the atoll, M18 the Fen-Nex, M19 the Belerial) and five single items, all in §17, in
   the user's order: the single items first. NEXT_STEPS now holds every open promise, so the two lists cannot drift
   apart again. Same-line nesting is dropped for cross-line breeding.
+- *The Great Gate stands in the angle of a gate (iteration 69):* a Belregi gate has wall on two sides and road on two,
+  so the gatehouse counts a corner as touching it, rather than replacing wall tiles or straddling the road. Roads keep
+  passing through the gate tile, and the wall's tiles stay what they are. The Heart's tales fire on their own terms with
+  no draw, so a city without the Gate never meets them. They read the player's earlier answers at the gates with
+  `chose()` rather than a new score kept in state. A poor record halves the Heart's favour rather than refusing it.
