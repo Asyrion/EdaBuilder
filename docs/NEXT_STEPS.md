@@ -365,7 +365,8 @@
   - **The waking,** in the Hush, grants one favour: the Gloam cleared within 25, rain and harvest, or a friend of the
     Pass. A city with a poor record gets half.
 - **Where it shows:** two Ledger tasks, two Annals rows, the Gate's panel, the help, and the README.
-- **The bot** does not raise the Gate. BAR_NEXT (DESIGN §4.100)
+- **The bot** does not raise the Gate. The wide bar stopped at its two-hour limit, unfinished, with the floors not met.
+  All 62 pairs it finished are identical run for run (DESIGN §4.100).
 
 ## Done in iteration 68 (the plan's gaps written down)
 

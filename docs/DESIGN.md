@@ -3815,7 +3815,25 @@ builds them, and only where hounds came.
     - the Gate by day and night at 3×, selected with its ring and panel at 2×, and mirrored to a road on its left;
     - the three tales, and a sprite sheet at 3× and 8× beside the Belregi gate, the Lantern and the Wyrm-Court;
   - no errors, no missing sprite.
-- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): BAR_TABLE
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`, run from a worktree of the sim's
+  commit) **stopped at its two-hour limit and was not finished.**
+  - **How far it got:** 124 runs, round 1's 96 and 28 of round 2's 36.
+  - **What it found:** every one of the 62 pairs it finished is identical, field by field: folk, every gate and its
+    day, treasury, loan, depot day, the road's and the caravan's crowns. Δ is +0 in every pair, for every people:
+
+    | people | pairs | mean folk (both sides) | milestones reached |
+    |---|---|---|---|
+    | Vellish | 18 (6 seeds × 3 draws) | 1,821 | Burgh 10, Free City 7, Beacon 1 |
+    | Grimmen | 12 (6 × 2) | 1,383 | 5th 2, 6th 8, 8th 2 |
+    | Veshari | 18 (6 × 3) | 2,395 | 7th 6, 8th 12 |
+    | Tallowkin | 14 (6 seeds, 2–3 draws) | 1,825 | 5th 1, 6th 4, 7th 7, 8th 2 |
+
+  - **The floors:** the bar's draw rounds were adding runs toward each people's floor (a tenth of its folk). That floor
+    is **not met** for the three peoples still in round 2.
+  - **Why it was not resumed:** the floor measures the noise of a Δ, and here every paired run is equal bit for bit.
+    The cache under the worktree's `shots/table-cache` keeps every run, if a later reader wants to finish it.
+  - **The commit:** the runs used the sim's first commit. The later commits change the waking tale's wording, the
+    sprite and the docs, none of which a bot run reaches.
 
 ## 7. Milestone plan
 
