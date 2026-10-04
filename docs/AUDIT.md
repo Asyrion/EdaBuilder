@@ -68,16 +68,16 @@ for the depth pass because the fix is a design.
 | B30 | Market Square | "big boost to trade": no trade hook at all. | 44 (markets within 8 pay ×1.15) |
 | B31 | Lantern of Vell | "delights the whole city", "marks you a true wardlight": neither exists. | 44 (+5 happiness while lit; the Beacon milestone needs it) |
 | B32 | Moth-Loft | "where moths swarm": moths are never checked. | 44 (bonus scales with moths within 8) |
-| B33 | Stone Ward | "holds" the Gloam; it burns it like a lantern, unlit, for no mana. | M14 (hold-only, the sexton cuts) |
+| B33 | Stone Ward | "holds" the Gloam; it burns it like a lantern, unlit, for no mana. | M14 (hold-only, the sexton cuts) ✅ iteration 47 (§4.78) |
 | B34 | Wyrmfire Forge | says +25 %; gives +35 % (it counts as a Glimhouse too). | 44 (text) |
 | B35 | Storm-Caller's Peak | "rain over the district", no fee named; the rain is city-wide and costs 300. | 44 (text) |
 | B36 | Wyrm-Court | "if a wyrm has woken": buildable with no wyrm; does nothing after the binding. | 44 (gate) / 53 (lit, it halves the appetite; dark, the wyrm sulks) |
 | B37 | Hall of Marvels | works unlit. | 44 |
 | B38 | Wyrms panel | "caravans buy them": wyrmfire and eggshell cannot be sold. | 44 (500 / 200 crowns) |
 | B39 | The Sleeping Wyrm | "half again as much each time": tribute grows linearly. | 44 (text) |
-| B40 | Market | "wants a good road": the road tier never touches markets. | M14 |
+| B40 | Market | "wants a good road": the road tier never touches markets. | Open: NEXT_STEPS, DESIGN §17.4 item E (iteration 68) |
 | B41 | t_grown, the Mews | "four seasons": three. The airship "ten days": nine. | 44 (text / day) |
-| B42 | Wyrmcraft lines | "Tide swims the river", the Ember aura: text only. | M14 |
+| B42 | Wyrmcraft lines | "Tide swims the river", the Ember aura: text only. | M14 ✅ iteration 53 (§4.84: Tide dragons swim barges, the Ember aura acts) |
 
 ### 1.5 Panels and views
 
@@ -185,7 +185,7 @@ Five parts, each an iteration, each with the rule that a mechanic exists only if
 can see it, decide about it and lose by it. Numbers are the first guess; the balance bot and
 the three-seed rule (§14.1) settle them.
 
-### Part 1: supply has limits (ley, water, roads)
+### Part 1: supply has limits (ley, water, roads) ✅ (iterations 45–46, DESIGN §4.76–4.77)
 
 - **Linked nodes only.** A node's 90 mana counts only while a lit spire, stake or wonder
   hall stands within 6 of it (`networks.ts` supply loop). Nodes under the Gloam, beyond the
@@ -221,7 +221,7 @@ the three-seed rule (§14.1) settle them.
   the building is lost and the tile greys. This makes brownout edges a real loss and gives
   the swallow code a path in normal play.
 
-### Part 2: services with staff and stakes
+### Part 2: services with staff and stakes ✅ (iterations 47–48, DESIGN §4.78–4.79)
 
 - **Staffed services.** Every service building has a crew (Watch Post 4, House 10, Healer
   4, Hospice 16, Academy 12, Boneyard 3, shrines 2): its strength scales with

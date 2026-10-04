@@ -349,6 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 68 (the plan's gaps written down)
+
+- **An audit of DESIGN.md against the code** found promises the game does not keep:
+  - the marsh and the atoll;
+  - the Great Gate;
+  - the Fen-Nex and the Belerial as peoples;
+  - golem haulers;
+  - two ways to lose;
+  - a handful of loose ends;
+  - markets and the road (AUDIT B40).
+- **The gaps became work:** three new milestones (M17–M19) and five single items, all in DESIGN §17, in the order the
+  user chose. They form the list below.
+- **Stale notes fixed:** M8's "in progress", §11's missing ✅, the Tallowkin still listed as unbuilt, and AUDIT B33,
+  B42 and the Part 1 and 2 headings. Docs only (DESIGN §4.99).
+
 ## Done in iteration 67 (replays)
 
 - **Every change the player makes is one command** (`src/sim/commands.ts`), logged by its tick and applied the same way
@@ -817,16 +832,46 @@ Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, mini
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
 vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
 war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
-lore-drop list of §11 are complete except swamp and atoll maps (scenario charters).
+lore-drop list of §11 are complete except what the iteration-68 audit found: the Great Gate, the
+two ways to lose, golem haulers, the loose ends, and the swamp and atoll maps (items 1–4 and 6–8 below).
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
 Done: wall gates (Belregi/Uzulim), Storm-Caller's Peak, Belerial caravans and the
 Wandering Merchant, Hanging Gardens and Glowvine Lanes, the Torrent Mill, the Ruins of
-Lukuku, the World Tree sapling. Next: Fen-Nex visitors, war-tigers, swamp and atoll maps,
-cameo events.
+Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events. Not built: the Great
+Gate and the Heart of Belregi, and the swamp and atoll maps (items 1 and 6–8 below).
 
 ## Prioritized ideas for the next iteration
 
-The list is empty: replays (iteration 67) were its last item. The next items come from the user, for example a
-playtest batch or a new milestone.
+Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
+the single items first, then the milestones. Each numbered item is one iteration.
+
+1. **The Great Gate and the Heart of Belregi** (DESIGN §17.4 A, §11 item 1). A gate wonder in the Warding Wall, and
+   the tale chain that follows the player's choices at the gates.
+2. **Two ways to lose** (§17.4 B, §8.5).
+   - A starved, unbound Sleeping Wyrm razes the Founding Stake ("the valley belongs to the wyrm").
+   - A hound pack that empties three districts in one Hush brings the Long Night early.
+   - A sim change: the wide bar.
+3. **Golem haulers** (§17.4 C, §8.4). Foundry carts that carry 30 and are not scared by hounds.
+4. **Loose ends** (§17.4 D).
+   - The eggs go grey.
+   - The Sky-Dock's wyvern.
+   - Hatchling riders.
+   - Sextons at the brawl, and the duel flown by the wyvern agent.
+   - The Wandering Merchant's memory of past deals.
+5. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
+   change: the wide bar.
+6. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+7. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+8. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+9. **M18 part 1, the Fen-Nex** (§17.2).
+   - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
+   - The fen start, the buildings, the look, the bot, and a row in the table.
+10. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+11. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+    strider trade.
+12. **M19 part 2, the Belerial** (§17.3).
+    - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
+    - The start, the buildings, the look, the bot, and a row in the table.
+13. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

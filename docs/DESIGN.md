@@ -3649,6 +3649,53 @@ the key reached the handler). Escape now passes through, and the other keys stay
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`) is identical to iteration 63's `json:` line in all 13 fields: 2,130
   folk, the Burgh on day 41.
 
+### 4.99 The plan's gaps written down (iteration 68)
+
+Iteration 67 closed the last NEXT_STEPS item. The user asked whether everything planned was in the game. It was not.
+NEXT_STEPS had carried only the work in hand, and nobody had read this document against the code since. An audit read
+the planning sections (§7, §8, §11, §13, §14, §16 and AUDIT.md) against `src/` and checked each claim by grep.
+
+Docs only: no code, test or art changed.
+
+**Planned and absent:**
+- the swamp biome and the Patagoi Atoll (no marsh `Terrain`, no Drainage edict, no atoll scenario);
+- the Great Gate and the Heart of Belregi;
+- the Fen-Nex and the Belerial as peoples (`FactionId` holds four);
+- golem haulers, and marsh-wyrms as a creature;
+- the two failure states of §8.5;
+- "the eggs go grey", and the Sky-Dock's wyvern;
+- hatchling riders;
+- sextons at the brawl, and the duel flown by the wyvern agent.
+
+**Partly built:**
+- **Strider mounts** are a 60-day Watch bonus, not couriers.
+- **The Wandering Merchant's memory** is flavour text.
+- **Tide eggs** come from a Veshari tale, not a marsh-wyrm nest.
+- **AUDIT B40** (markets and the road tier) is still open.
+
+**Stale notes, fixed:**
+- **§7:** M8 read "phase 6 in progress", but §13.12 closed it.
+- **§11:** items 1, 2 and 4 lacked their ✅. Each now says what part is missing.
+- **§14.2** still listed the Tallowkin as not built.
+- **AUDIT.md:** the Part 1 and Part 2 headings lacked ✅. B33 was fixed in iteration 47 (§4.78: the Stone Ward holds,
+  its sexton cuts) and B42 in iteration 53 (§4.84: Tide dragons swim barges), but both still read "M14".
+
+**Where the gaps went.**
+- **§17** holds the work:
+  - three milestones with their parts: M17 the marsh and the atoll (3 parts), M18 the Fen-Nex (2), and M19 the
+    Belerial (3, the first being striders for every people);
+  - five single items: the Great Gate; two ways to lose; golem haulers; loose ends; markets and the road.
+  - Every unbuilt promise in §8, §11, §13.13 and §14.2 now points to its place in §17.
+- **NEXT_STEPS** lists them in the user's order: the single items, then M17, M18 and M19.
+- **Dropped on the record (§17.5):** same-line nesting, which became cross-line breeding.
+
+**Verified:**
+- the claims by grep against `src/`, for example `FactionId` (`src/data/factions.ts`), and no `great gate`,
+  `drainage` or `atoll` anywhere;
+- `npx tsc --noEmit -p .` and `npm run build`, unchanged.
+
+There was no playtest and no balance run, since nothing executable changed.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -3662,7 +3709,8 @@ the key reached the handler). Escape now passes through, and the other keys stay
 - **M7 The fantasy layer** — creatures, dragons, the Vein-Wyrm, magical buildings,
   vehicles, the Charter line, scenarios (iterations 7–23). ✅
 - **M8 The deep dive** — aspects, auras, pressure, the council, festivals, routes, breeding,
-  relics, halls, rivalries (iterations 23–29, §13). ✅ (phase 6 in progress)
+  relics, halls, rivalries (iterations 23–29, §13). ✅ (phase 6, the duel, the auction and the charter,
+  closed it: §13.12)
 - **M9 Construction and dev tools** — sites, builders, the dev panel (iterations 26, 28). ✅
 - **M10 Walkers** — more NPC kinds that embody the systems: watchmen, sextons, healers,
   wardens, scholars, tamers and pilgrims on the roads, each doing a visible job (§14.1). ✅
@@ -3690,6 +3738,11 @@ the key reached the handler). Escape now passes through, and the other keys stay
   herds, boar, otters, herons, goats and wolves with hides, meat and trophies as goods;
   fishing from a bank or a lake shore, boats, reed-cutters, a water garden. ✅ Part 1, the wild
   (iteration 58, §4.89); part 2, the water (iteration 60, §4.91).
+- **M17 The marsh and the atoll**: marsh terrain and the Drainage edict, marsh-wyrms, and the
+  Patagoi Atoll charter (§17.1). Planned in iteration 68, after the five single items of §17.4.
+- **M18 The Fen-Nex**: the fifth people, the fox-folk traders, in two parts (§17.2).
+- **M19 The Belerial plains-riders**: striders for every people, then the sixth people in two parts
+  (§17.3).
 
 ## 8. Fantasy roadmap: creatures, dragons, magical buildings, vehicles
 
@@ -3704,7 +3757,7 @@ counter, and every magical building changes how the player plans.
 |---|---|---|---|
 | **Glimmoths** | swarm ley nodes and lit spires at night, all seasons | harmless; luminous ambient life; shed *glim-dust* | a **Moth-Loft** near a node harvests dust: Craft goods +20 % in radius |
 | **Thrumhares** | meadows by day | ambient; flee agents; a Garden makes them stay | none needed; hunters take a few for a small happiness bump |
-| **Marsh-wyrms** | rivers and lakes; Bloom | eel-like; one may lair under a bridge: carts on it slow to a crawl | Veshari Hall coverage drives it off; a **Quay** keeps them away for good |
+| **Marsh-wyrms** | rivers and lakes; Bloom | eel-like; one may lair under a bridge: carts on it slow to a crawl | Veshari Hall coverage drives it off; a **Quay** keeps them away for good (not built: M17 part 2, §17.1) |
 | **Gloam-hounds** | out of the Gloam at night; packs grow in the Hush | fast; harass outlying buildings (happiness, occasional damage); flee light | Ward Lanterns and Watch coverage; a **Hunters' Lodge** hunts them in radius |
 | **Wisps** | over Boneyards and the restless | benign lights; multiply when unquieted dead rise; guide the Watch to restless | deathcare; too many wisps is the early warning |
 | **Concord Wardens** | sleeping stone constructs in hills; woken by mining | wake and wander; hostile until *bound*; immune to fire and the Gloam | a **Golem Foundry** binds them: labour that needs no housing but drinks mana; a surge sends them mad |
@@ -3736,7 +3789,7 @@ people, sleeping coiled around the deepest nodes. Rules:
 - A wyrm may also **die** (age, or a player who starves it and refuses it): its bones
   become a **Wyrm-Bone Ossuary** site with the best deathcare in the game.
 - Later: **hatchlings** raised at the Court become drakes of a higher order that can carry
-  a rider across the map (see vehicles).
+  a rider across the map (see vehicles). Not built: item D of §17.4.
 
 ### 8.3 Magical buildings (new catalog entries, by unlock)
 
@@ -3766,7 +3819,7 @@ people, sleeping coiled around the deepest nodes. Rules:
 - **Drake riders** (Drake Mews): fast Watch agents that fly straight to the restless and
   to fires; visible in the sky layer with shadows.
 - **Golem haulers** (Golem Foundry): slow, tireless carts that carry 30 and are not
-  scared by hounds.
+  scared by hounds. Not built: item C of §17.4.
 - **Airships** (Sky-Dock): the late-game trade route; a ship leaves each season with the
   city's surplus and returns with crowns, rare goods and a story event.
 - Rendering: a **sky layer** drawn after lighting with drop shadows on the ground; agent
@@ -3788,7 +3841,7 @@ people, sleeping coiled around the deepest nodes. Rules:
   creatures are above the city.
 - **Failure states gain teeth:** an unbound, starved wyrm that razes the Founding Stake
   ends the game ("the valley belongs to the wyrm"); a hound pack that empties three
-  districts in one Hush triggers the Long Night early.
+  districts in one Hush triggers the Long Night early. Neither is built: item B of §17.4.
 
 ### 8.6 Wyrmcraft: eggs, hatchery, tamers and the arena
 
@@ -3895,12 +3948,14 @@ they land.
 
 **Flying trade (the future).** A wyvern courier is a first vehicle. At Beacon of Eda the
 **Sky-Dock** (8.3) can send a wyvern instead of an airship: faster, no mana, but the
-trade event may return a *rival wardlight's* egg offer or a challenge for the Ring.
+trade event may return a *rival wardlight's* egg offer or a challenge for the Ring. Not built: item D of §17.4.
 
 **Failure and drama.** A starved wyrm-stage dragon leaves and returns wild after a season
 (tribute like 8.2). A cradle in a district that the Gloam reaches is a hazard event ("the
-eggs go grey"). Two dragons of the same line at wyrm stage may **nest**: a vein egg
-without an event.
+eggs go grey"; not built: item D of §17.4). Two dragons of the same line at wyrm stage may
+**nest**: a vein egg without an event. *Dropped:* breeding went cross-line instead (§4.48: the
+cradle refuses two of one line, "two of one line breed nothing new"; vein eggs come from the
+Sleeping Wyrm).
 
 ### 8.7 Delivery order
 
@@ -3919,12 +3974,13 @@ without an event.
 Content and mechanics the canon drop suggests, in the order worth building. Each is
 consistent with `EDA_LORE.md` §9.
 
-1. **Wall Gates, Belregi and Uzulim style.** A gate tile in the Warding Wall lets a road
+1. ✅ **Wall Gates, Belregi and Uzulim style** (the gates; the Great Gate and the Heart of
+   Belregi are not built: item A of §17.4). A gate tile in the Warding Wall lets a road
    pass. Two styles, both from the Pass of Buluiain: a **Belregi Gate** (blue runes: ward
    coverage +0.3 within 8, pilgrims arrive, happiness +2 nearby) and an **Uzulim Gate**
    (crimson obelisks: hounds and the restless never pass within 10, unrest +3 % in its
    district). A **Great Gate** wonder later, with a Heart of Belregi event chain.
-2. **Storm-Caller's Peak** (on hills, Township): a Huruhui-trained storm caller calls
+2. ✅ **Storm-Caller's Peak** (on hills, Township): a Huruhui-trained storm caller calls
    rain on a district (fires out, miasma washed, herb yields +), disperses a mana-storm,
    or, in the Hush, holds a storm off the wards. Replaces the planned Weather Vane of
    Vesh. Event: *a storm caller of the Huruhui, marked with glowing sigils, asks for a
@@ -3933,7 +3989,8 @@ consistent with `EDA_LORE.md` §9.
    that needs hills on one side; produces goods and health without farmland and lights
    itself with bioluminescent vines (a **Glowvine Lane** road tier lit by plants, no
    mana). Unlocked by the storm caller's visit or by an Academy exchange event.
-4. **Belerial caravans.** Every season a caravan of riders on bipedal **striders** may
+4. ✅ **Belerial caravans** (the caravan and the Wandering Merchant; strider mounts are a
+   season's Watch bonus only, and the merchant's memory is words: M19 part 1 and item D of §17.4). Every season a caravan of riders on bipedal **striders** may
    reach the Trade Depot (needs a road to the map edge): sells rare goods, buys surplus
    at good prices, offers strider mounts (Watch reach +, later couriers) and, rarely, an
    egg. The **Wandering Merchant of Belerial** is a named recurring visitor with a
@@ -3953,7 +4010,7 @@ consistent with `EDA_LORE.md` §9.
    happiness, land value, glimmoths and skyrays gather, and its roots hold the Gloam.
 9. ✅ **Torrent Mill** (Gekiryu): a mill on river tiles that turns falling water into mana
    (a Huruhui renewable), with an animated torrent; the Veshari claim the design.
-10. **Swamp biome and atoll maps.** Marsh terrain (buildable after a Drainage edict,
+10. **Swamp biome and atoll maps** (not built: M17, §17.1). Marsh terrain (buildable after a Drainage edict,
     marsh-wyrm home) and island maps for scenario charters (Patagoi Atoll).
 11. ✅ **Cameos as events.** Dr. Jelly (an eccentric alchemist selling one strange potion:
     a random large effect), the Cloud Forest Wizard (offers a glimwood grove), and a
@@ -4165,8 +4222,9 @@ This closes M8, the deep dive. The next large steps are M10 Walkers and M11 Peop
 
 ### 13.13 Later
 
-Smaller follow-ups once walkers exist: scholars carry relic pieces, sextons attend the
-brawl, and the great wyrm's duel is flown by the wyvern agent itself.
+Smaller follow-ups once walkers exist: scholars carry relic pieces (✅, the scholar walker), sextons
+attend the brawl, and the great wyrm's duel is flown by the wyvern agent itself (these two not built:
+item D of §17.4).
 
 ## 14. Milestones ahead: walkers and peoples
 
@@ -4251,9 +4309,8 @@ picks it beside the scenario; the bot plays any of them.
 - **The third people: the Tallowkin of the Wick (iteration 41 ✅ as 4.72, part 1).** Light is
   life: spires reach further and cost double, Wick-Towers light the corners, a dark house is
   abandoned in three days, the vigil is theirs, milestones by lit share, a twin-node start.
-- **Designed, not built (ideas for the remaining peoples).** *Tallowkin candle-folk (now built, above):* light is life: every building must be lit or it is abandoned in
-  a day, spires reach 7 but cost double, the Hush vigil is mandatory and cheap, their wonder
-  is the Lantern of Vell rebuilt. *Fen-Nex:* a trading people with no Craft zones at all,
+- **Designed, not built (ideas for the remaining peoples; M18 and M19, §17).** (The Tallowkin
+  candle-folk, first sketched here, are built: M13, above.) *Fen-Nex:* a trading people with no Craft zones at all,
   goods come by caravan and route, markets hold triple, Fen cat-dragons as wardens, their
   progression is by trade routes opened. *Belerial plains-riders:* no walls, striders for
   carts (fast, no congestion), hounds are hunted for sport (bounty always on), the Gloam
@@ -4350,6 +4407,102 @@ water garden as leisure on a lake shore; the lake's own land value and well bonu
 as a resource beyond mills and barges (a weir pool, a ford). Verified by the creatures' tests
 (spawn, flee, hunt, goods), a balance table with fish and hides on the depot's ledger, and a
 playtest of a lakeside town.
+
+## 17. M17–M19 and the single items: what the plan still promises (iteration 68)
+
+An audit in iteration 68 (§4.99) compared this document with `src/`. What it planned and the game does not have is
+written here as work. The order was set by the user: the five single items of §17.4 first, then M17, M18 and M19. Each
+numbered part is one iteration with its own plan, and gets its own §4.NN when it is done. The bar is CLAUDE.md's:
+- a sim change runs the wide balance bar;
+- a new people adds its own row to the table;
+- every new building or graphic is shown in screenshots.
+
+### 17.1 M17 The marsh and the atoll (§11 item 10, §8.1)
+
+1. **Marsh terrain.**
+   - **Generation:** a new `Terrain` beside slow water (river bends, lake margins), never on the founding node.
+   - **The look:** reed beds, standing pools and mist at dawn, drawn by the procedural painter or imported through
+     `npm run art`.
+   - **Rules:**
+     - nothing is built on marsh, but a road may cross it as a causeway at a bridge's price;
+     - marsh breeds miasma, which the Fen-Nex and the deathcare read;
+     - reed-cutters cut it (M16).
+   - **The Drainage edict:** it turns the marsh nearest the city to meadow, a few tiles a day, for a daily cost. The
+     land loses its reeds.
+   - Old saves load: there is no marsh in them, and the edict is off.
+2. **Marsh-wyrms** (the §8.1 row).
+   - **The creature:** eel-like, in rivers and lakes, out in Bloom.
+   - **The lair:** one may lair under a bridge, and the carts on it slow to a crawl.
+   - **The answers:** the Veshari Hall's coverage drives it off, and a Quay keeps them away.
+   - **Nests:** a marsh-wyrm nest by a Quay becomes the tide eggs' second source (the §8.6 table; today only a Veshari
+     tale lays them).
+3. **The Patagoi Atoll** (§11 item 10). A scenario charter on the title screen:
+   - a ring of islands in open water, with the founding node on the largest;
+   - land scarce, barges and bridges the roads, storms in the Hush;
+   - a goal and its Done page, as the other charters have;
+   - the bot can play it, and the balance table can run it.
+
+### 17.2 M18 The Fen-Nex (§14.2; the fifth people)
+
+On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as the Tallowkin had (§4.72, §4.83).
+1. **Part 1: the people.**
+   - **Rules:**
+     - no Craft zones: goods come by caravan and trade route;
+     - markets hold three times the stock;
+     - Fen cat-dragons (the fen-drake line of §11 item 5) serve as wardens;
+     - progression counts trade routes opened.
+   - **The start:** a fen start on M17's marsh.
+   - **Buildings:** their own, each with a sprite.
+   - **The look,** and the bot playing them.
+   - **The table:** the balance table gains a Fen-Nex row.
+2. **Part 2: their game.** Their quest chapter, tales, walker and wonder, and their late game, like §4.83 for the
+   Tallowkin.
+
+### 17.3 M19 The Belerial plains-riders (§14.2, §11 item 4; the sixth people)
+
+1. **Striders for every people.**
+   - The caravan's strider offer, today a season's Watch bonus, becomes a strider stable.
+   - Strider carts are fast and not slowed by congestion.
+   - Strider couriers carry goods across the map.
+   - The caravan sells and buys strider stock.
+2. **Part 1: the people.**
+   - **Rules:**
+     - no Warding Walls;
+     - Hunters' Bounty always on;
+     - the Gloam is outrun rather than warded: pressure counts for more and wards for less;
+     - progression is counted in herds (on M16's wild).
+   - **Also:** buildings with sprites, the start, the look, the bot, and a row in the table.
+3. **Part 2: their game.** Their quest chapter, tales, walker and wonder, and their late game.
+
+### 17.4 The single items (one iteration each, in this order)
+
+- **A. The Great Gate and the Heart of Belregi** (§11 item 1).
+  - A gate wonder in the Warding Wall: the largest of the Belregi gates, with pilgrims and a ward of its own.
+  - A tale chain, the Heart of Belregi, that follows the player's earlier choices at the gates.
+- **B. Two ways to lose** (§8.5).
+  - **"The valley belongs to the wyrm":** an unbound Sleeping Wyrm, starved of tribute, razes the Founding Stake and
+    ends the charter, after warnings.
+  - **The Long Night early:** a hound pack that empties three districts in one Hush brings the Long Night before its
+    season.
+  - Both show in the game-over screen and the Annals. This is a sim change, so it runs the wide bar.
+- **C. Golem haulers** (§8.4). The Golem Foundry fields slow, tireless carts that carry 30 and are not scared by
+  hounds. They are drawn as vehicles.
+- **D. Loose ends.**
+  - "The eggs go grey": the Gloam reaches a cradle (§8.6).
+  - The Sky-Dock sends a wyvern instead of the airship: faster and without mana, but it may come back with a rival's
+    egg offer or a challenge for the Ring (§8.6).
+  - Hatchling riders cross the map (§8.2).
+  - Sextons attend the brawl, and the great wyrm's duel is flown by the wyvern agent (§13.13).
+  - The Wandering Merchant remembers past deals in state, not only in words (§11 item 4).
+- **E. Markets want a good road** (AUDIT B40). The road tier at a market's door counts for its trade, as the
+  Market's description promises. This is a sim change, so it runs the wide bar.
+
+### 17.5 Dropped, on the record
+
+- The Weather Vane of Vesh, which became the Storm-Caller's Peak (§11 item 2).
+- Same-line nesting, which became cross-line breeding (§4.48, §8.6).
+- The four ideas AUDIT.md §4 rejects: services that burn rare materials to run, the Stone and Scale Wards needing
+  mana, rain on one district, and a weekly budget.
 
 ## 12. Decision log
 
@@ -4727,3 +4880,7 @@ playtest of a lakeside town.
   them by tick and does what the call sites did, moved and not rewritten, so live play is unchanged and a replay can apply
   the same op at the same tick. A replay begins with a new charter (a loaded save is rebuilt, not the live state), carries
   daily checkpoints of the RNG to name the first day two runs part, and is checked headless by `scripts/replay.ts`.
+- *The plan's gaps become milestones (iteration 68):* what this document promised and the game lacks became three
+  milestones (M17 the marsh and the atoll, M18 the Fen-Nex, M19 the Belerial) and five single items, all in §17, in
+  the user's order: the single items first. NEXT_STEPS now holds every open promise, so the two lists cannot drift
+  apart again. Same-line nesting is dropped for cross-line breeding.
