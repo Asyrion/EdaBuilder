@@ -23,7 +23,8 @@ import { WALKER_JOBS, walkersOf } from '../sim/walkers';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
-import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
+import { CARAVAN_EVERY, caravanDue, caravanSurplus, heartTrust } from '../sim/events';
+import { PASS_ALMS, belregiReach, greatGateReach, passPilgrims, pilgrimsDue } from '../sim/gate';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
@@ -352,7 +353,7 @@ export class UI {
       if (this.category === 'service') {
         const locked = s.milestone < WALL_UNLOCK;
         const glocked = s.milestone < GATE_UNLOCK;
-        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles.<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${this.ms()[GATE_UNLOCK].name}</span>` : ''}`);
+        add('Belregi Gate', `${GATE_COST[2]}c`, glocked, t.kind === 'gate' && t.style === 2, () => this.host.setTool({ kind: 'gate', style: 2 }), () => `<div class="t">Belregi Gate</div>A runed arch of pale stone in the Warding Wall; roads pass through it. Faith +0.3 and ward +0.2 within 8 tiles (12 beside a lit Great Gate, 16 with the Heart of Belregi set in it).<br><span class="flavor">Blue runes that tell the history of whoever keeps them.</span>${glocked ? `<br><span class="warn">Unlocks at ${this.ms()[GATE_UNLOCK].name}</span>` : ''}`);
         add('Uzulim Gate', `${GATE_COST[3]}c`, glocked, t.kind === 'gate' && t.style === 3, () => this.host.setTool({ kind: 'gate', style: 3 }), () => `<div class="t">Uzulim Gate</div>A dark volcanic arch with crimson symbols and hooded statues; roads pass through it. Ward +0.4 and watch +0.3 within 10 tiles; unrest +2% per gate.<br><span class="flavor">The statues' eyes follow anyone who approaches.</span>${glocked ? `<br><span class="warn">Unlocks at ${this.ms()[GATE_UNLOCK].name}</span>` : ''}`);
         add('Warding Wall', `${WALL_COST}c/tile`, locked, t.kind === 'wall', () => this.host.setTool({ kind: 'wall' }), () => `<div class="t">Warding Wall</div>A line of leystone-inlaid stone. The Gloam cannot cross it and Gloam-hounds cannot pass. Drag to draw.<br><span class="muted">Cost ${WALL_COST}/tile (×2 in hills) · upkeep ${WALL_UPKEEP}/tile/day · ${WALL_MANA} mana/tile</span><br><span class="flavor">Every stone sung over once, so the grey grass forgets how to grow across it.</span>${locked ? `<br><span class="warn">Unlocks at ${this.ms()[WALL_UNLOCK].name}</span>` : ''}`);
       }
@@ -599,6 +600,7 @@ export class UI {
     } else if ('center' in f) {
       if (f.center === 'founding') this.host.centerOn(s.founding.x, s.founding.y);
       else if (f.center === 'node') { const n = s.nodes[0]; if (n) this.host.centerOn(n.x, n.y); }
+      else if (f.center === 'greatgate') { const g = s.buildings.find((b) => b && b.kind === 'greatgate'); if (g) this.host.centerOn(g.x + 1, g.y + 1); }
       else if (f.center === 'cradle') { const c = s.buildings.find((b) => b && isCradle(b.kind)); if (c) this.host.centerOn(c.x, c.y); }
       else if (f.center === 'wyrm') { const n = wyrmNode(s); if (n) this.host.centerOn(n.x, n.y); }
       else if (f.center === 'ruins') { for (let i = 0; i < s.terrain.length; i++) if (s.terrain[i] === 8) { this.host.centerOn(i % s.w, (i / s.w) | 0); break; } }
@@ -889,6 +891,15 @@ export class UI {
     }
     if (b.kind === 'hospice') { rows.push(row('Draughts', `${Math.round(b.stock)} / ${HOSPICE_DRAUGHTS} (2 goods a day from the fullest market within 16)`)); if (b.stock <= 0) problems.push('No draughts: with no goods on the shelf it heals at six tenths. A market within 16 tiles.'); }
     if (b.kind === 'shrine' || b.kind === 'candleshrine') rows.push(row('Consecrated', (b.blessed ?? -1) >= s.day ? `${b.blessed! - s.day} day${b.blessed! - s.day === 1 ? '' : 's'}: reaches half again as far` : 'no: a pilgrim of this shrine who prays at a Temple consecrates it for 10 days'));
+    if (b.kind === 'greatgate') {
+      const held = { none: 'not yet brought: the High Warden comes ten days after the Gate stands lit', set: 'set in the keystone: the Gate wards 30, every Belregi gate 16', guardians: 'kept by the Guardians in the Pass: twice the pilgrims', sold: 'sold to the Crown: the Pass is closed, and the Gate wards at six tenths', shared: 'shared with the Uzulim: their gates add no unrest' }[s.heart.held];
+      rows.push(row('The Heart of Belregi', held));
+      rows.push(row('Reaches', `ward ${greatGateReach(s)} tiles · Belregi gates ${belregiReach(s)} (8 without a lit Great Gate)`));
+      const n = passPilgrims(s);
+      rows.push(row('Pilgrims of the Pass', n ? `${n} in ${pilgrimsDue(s)} day${pilgrimsDue(s) === 1 ? '' : 's'} (the 15th of each season), ${PASS_ALMS} crowns of alms each · ${s.stats.gatePilgrims} lodged so far` : s.heart.held === 'sold' ? 'none: the Guardians closed the Pass' : 'none while the Gate is dark'));
+      const t = heartTrust(s);
+      rows.push(row('Record at the gates', `${t >= 0 ? '+' : ''}${t}${t < 0 ? ' <span class="warn">(the Heart would wake cold)</span>' : ''}`));
+    }
     if (b.kind === 'temple') rows.push(row('Consecrates', 'the shrines whose pilgrims pray here reach half again as far for 10 days'));
     if (b.kind === 'veshari' && !b.watered) problems.push('Dry: a fire hall without water fights at half strength. A well within reach.');
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relics studied', `${Math.round(b.progress)} here · educated floor +${Math.round(s.educatedFloor * 100)} % (a loose relic every 5 days while lit, up to ${EDUCATED_FLOOR_CAP * 100} %)`));
@@ -1341,6 +1352,7 @@ export class UI {
             <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: the Vellish need happiness 45 + 3 × the milestone, the Tallowkin must hold their light three days.</li>
             <li><b>The wild</b>: herds of deer and elk graze the meadows by day and bed down in the woods at night, and run from lit ground; boar keep the forests, goats the hills, otters and herons the banks. A herd breeds in Bloom and thins where the city builds within two tiles of its ground; a ward or a lit Glimhouse helps it recover. A <b>Hunters' Lodge</b> hunts the <b>quarry</b> its panel names within 16 tiles: hides, meat and trophies (antlers, tusks, plumes, wolf heads) for the Gloam road at their own prices, and meat for the markets within 16, where it makes the hearths within 10 happier. Hunters after game kill hounds at half the chance; a herd hunted to the last is gone. <b>The Close Season</b> edict closes the chase in Bloom and keeps six head in every herd. In the Hush <b>wolves</b> leave the forest at night to take hens from the dark, unwatched hearths at the edge.</li>
             <li><b>The water</b>: every river and lake holds a shoal. A <b>Fishers' Hut</b> on the bank puts boats out and lands fish as the shoal allows; fish spoil in two days unless a market within 12 or a <b>Smokehouse</b> within 6 takes them, and a market with fish makes the hearths within 10 happier. Too many huts on one water fish it out; a <b>Weir</b> doubles its regrowth and keeps the fords near it open. <b>Reed-Cutters</b> on the shore thatch the level-1 homes (+3 happiness, but thatch burns). The <b>lake</b> (open water) lifts the land within 4, its wells serve half again, and the <b>Water Garden</b> stands on its shore. A Dirt Track over a narrow river is a <b>ford</b>: cheap, but under water in the Thaw's first ten days.</li>
+            <li><b>The Great Gate</b> (Burgh): the gatehouse of the Pass of Buluiain, raised in the angle between a <b>Belregi gate</b> and its road. Lit, it wards 20 tiles, every Belregi gate reaches 12 instead of 8, three pilgrims walk from it, and on the 15th of each season <b>pilgrims of the Pass</b> lodge in empty homes and pay 40 crowns of alms. Ten days on, the <b>High Warden of Belregi</b> brings the <b>Heart</b>: set it in the arch (wards 30, gates 16), leave it with the Guardians (twice the pilgrims), or sell it (6,000 crowns; the Pass closes). She recites what you did at the gates before: the pilgrims of Aume, the Lantern Fair, the poachers, your Belregi and Uzulim gates. With an Uzulim gate in the wall, its wardens come for a share; in the Hush the Heart wakes and grants one favour, by half if your record at the gates is poor.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>

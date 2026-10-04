@@ -54,6 +54,7 @@ export function isGoodsSource(b: Building): boolean {
 import { SCALEMAIL_UNREST, delverBonus, forgeHot, scaleMailOn, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
+import { greatGateOf } from './gate';
 
 export function capacityOf(b: Building, s?: GameState): number {
   const def = BUILDING_BY_KEY[b.kind];
@@ -576,7 +577,8 @@ export function updateSocial(state: GameState): void {
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
   let uzulim = 0;
-  for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
+  // the obelisks stop sapping the folk once the Heart of Belregi is shared with the Uzulim and the Great Gate stands (iteration 69)
+  if (!(state.heart.held === 'shared' && greatGateOf(state))) for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
   const targetUnrest = Math.max(
     0,
     Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') - (scaleMailOn(state) ? SCALEMAIL_UNREST : 0) + modifierSum(state, 'unrest') + uzulim * 0.02),

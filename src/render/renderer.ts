@@ -624,8 +624,8 @@ export class Renderer {
         if (Math.random() < 0.6) this.particles.emit({ x: cx + (Math.random() - 0.5) * 16, y: cy - 6, vx: (Math.random() - 0.5) * 6, vy: -14 - Math.random() * 10, maxLife: 1.2, size: 1, color: Math.random() < 0.5 ? PAL.fire1 : PAL.ember, glow: true, kind: 'ember' });
         if (Math.random() < 0.3) this.particles.emit({ x: cx, y: cy - 10, vx: 0, vy: -10, maxLife: 3, size: 2, color: PAL.smoke, glow: false, kind: 'smoke' });
       } else if (b.lit && b.state === 'ok') {
-        const ley = b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
-        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) ? 100 : b.kind === 'spire' ? 34 : b.kind === 'wicktower' ? 28 : 46, c: b.kind === 'wicktower' ? PAL.lampWarm : PAL.ley1, i: 0.8 });
+        const ley = b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || b.kind === 'greatgate' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
+        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) || b.kind === 'greatgate' ? 100 : b.kind === 'spire' ? 34 : b.kind === 'wicktower' ? 28 : 46, c: b.kind === 'wicktower' ? PAL.lampWarm : PAL.ley1, i: 0.8 });
         else if ((def.category === 'zone' && (cam.zoom > 1 || (b.x + b.y) % 3 === 0)) || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
         if (s && s.glow) item.g = { s, x: wx, y: wy, a: 0.9 };
         // spire sparkles

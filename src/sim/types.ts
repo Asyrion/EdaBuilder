@@ -63,6 +63,11 @@ export const SERVICE_TYPES: ServiceType[] = [
   'leisure',
 ];
 
+/** Where the Heart of Belregi is (iteration 69): not yet brought; set in the Great Gate; left with the Guardians; sold to the Crown;
+ *  shared with the Uzulim. `step` counts the tales answered (the High Warden, the obelisks or their skip, the waking); `day` is the last. */
+export type HeartHeld = 'none' | 'set' | 'guardians' | 'sold' | 'shared';
+export interface HeartState { held: HeartHeld; step: number; day: number }
+
 export type BuildingState = 'ok' | 'burning' | 'ruin' | 'abandoned' | 'building';
 
 export interface Building {
@@ -415,6 +420,7 @@ export interface GameState {
   materials: Materials;
   weather: Weather | null; // today's spell, if any (iteration 54)
   pilgrimsDay: number; // the day pilgrims were last welcomed, −1: they ask for a shrine a month on
+  heart: HeartState; // the Heart of Belregi and its tales (iteration 69)
   litHeld: number; // days in a row the Tallowkin's lit share has held the next gate (needs 3)
   edictSince: Record<string, number>; // the day each edict was turned on (key, or district:key): an edict runs ten days and costs 200 to repeal
   quarterSince: Record<number, number>; // the day each district took its charter: it holds thirty days
@@ -547,6 +553,8 @@ export interface GameState {
     homesThatched: number; // level-1 homes the reed-cutters thatched
     fordDaysClosed: number; // days a ford stood closed by high water
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
+    gatePilgrims: number; // pilgrims of the Pass lodged through the Great Gate (iteration 69)
+    gateAlms: number; // the alms they paid
     tideTrips: number; // barges a Tide dragon swam (iteration 53)
     surgesAbsorbed: number; // surges the Lantern of the Cores took
     dragonsReturned: number; // departed dragons that came back to ask a tribute

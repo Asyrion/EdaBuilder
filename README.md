@@ -347,6 +347,13 @@ Charter as `.json`.
 - Beasts of the Concord and the sky: Concord Wardens woken by mining and bound at the
   Golem Foundry into tireless labour, skyray schools kept by a Ley Beacon, the Drake
   Mews, and three taming edicts.
+- The Great Gate and the Heart of Belregi: a gatehouse wonder of the Burgh raised beside a
+  Belregi gate in the Warding Wall. Lit, it wards 20 tiles, lengthens every Belregi gate's reach
+  from 8 to 12, sends three pilgrims and lodges pilgrims of the Pass each season. Ten days on, the
+  High Warden brings the Heart and recites what the city did at its gates before (the pilgrims, the
+  Lantern Fair, the poachers, Belregi against Uzulim). Set it in the arch, leave it with the
+  Guardians or sell it; the Uzulim may come for a share, and in the Hush the Heart wakes and grants
+  one favour, by half to a city with a poor record.
 - Longwood and Lukuku: a pair of Portal Arches carts step through, the Ruins of Lukuku
   with a Ruin Delve and its relic chain, and the World Tree Sapling wonder that grows over
   four seasons.

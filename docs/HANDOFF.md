@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 68 (the plan's gaps written down; DESIGN §4.99, §17). Iterations 67 (replays,
-§4.98), 66 (keyboard focus, §4.97) and 65 (drawn art, §4.96) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 69 (the Great Gate and the Heart of Belregi; DESIGN §4.100). Iterations 68 (the
+plan's gaps written down, §4.99, §17), 67 (replays, §4.98) and 66 (keyboard focus, §4.97) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
@@ -32,13 +32,19 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **the Great Gate and the Heart of Belregi** (DESIGN §17.4 A, §11 item 1).
-- The Belregi and Uzulim wall gates exist (`catalog.ts`, `services.ts`).
-- The wonder and its tale chain do not: no `great gate` or `heart of belregi` anywhere in `src/`.
+NEXT_STEPS item 1, **two ways to lose** (DESIGN §17.4 B, §8.5).
+- **The wyrm:** an unbound Sleeping Wyrm, starved of tribute, razes the Founding Stake. Tribute and refusal are in
+  `src/sim/wyrm.ts`.
+- **The Long Night early:** a hound pack that empties three districts in one Hush ends the charter. The game-over screen
+  is `ui.showGameOver`.
+- This is a sim change, so it runs the wide bar.
 - Plan it on the Plan panel first.
 
+The Great Gate (item A) was built in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and
+`drawGreatGate` in `drawn.ts`.
+
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
-- **Five single items:** the Great Gate; two ways to lose (§8.5); golem haulers; loose ends; markets and the road
+- **Four single items** (the Great Gate is done): two ways to lose (§8.5); golem haulers; loose ends; markets and the road
   (AUDIT B40).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
@@ -75,7 +81,7 @@ NEXT_STEPS item 1, **the Great Gate and the Heart of Belregi** (DESIGN §17.4 A,
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (70 files, 437 tests at this writing; `tests/iteration67.test.ts` is the replays',
+- Tests: `npx vitest run` (71 files, 451 tests at this writing; `tests/iteration69.test.ts` is the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -218,6 +224,21 @@ NEXT_STEPS item 1, **the Great Gate and the Heart of Belregi** (DESIGN §17.4 A,
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 69 (not yet said elsewhere)
+
+- **Tales on their own rhythm.** A chain that must not touch the main stream fires from a `maybeFire…` beside
+  `maybeFireWyrm`, with its tales outside the storyteller's pool and only in `ALL_EVENTS` (so `resolveEvent` finds them).
+  The pool filters by `when` before its roll, so a new pool tale whose `when` is false never moves the stream either.
+- **Per-city tale text:** set `pendingEvent.text` when firing (`heartText`), as `maybeFireReturn` does. `EventDef.text` is
+  the generic line.
+- **A gate tile has no free edge.** It has wall on two sides and road on two, so a building that must "touch" one must
+  count a corner (`touchesBelregiGate`).
+- **Lit by the sim in a playtest:** a few spires from the founding node (`w.place(s, 'spire', …)`) light a hand-built
+  town for real, so ticks keep it lit. Setting `b.lit = true` by hand lasts only until the next `updateMana`.
+- **The bar from a worktree.** The table reads the working tree for the branch side, so editing `src/` while it runs
+  would mix code. Iteration 69 ran it from a `git worktree` of the committed sim, with `node_modules` symlinked, and went
+  on working in the main tree.
 
 ## Learned in iteration 68 (not yet said elsewhere)
 

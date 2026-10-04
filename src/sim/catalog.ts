@@ -38,6 +38,7 @@ export interface BuildingDef {
   nearHills?: boolean; // a hills tile must touch the footprint
   nearWater?: boolean; // a river/lake tile must touch the footprint
   nearShore?: boolean; // a shore or water tile must touch the footprint (the reed-cutters, iteration 60)
+  nearGate?: boolean; // a footprint tile must touch a Belregi gate in the Warding Wall (the Great Gate, iteration 69)
   nearLake?: boolean; // a footprint tile within 3 of the lake's open water (the Water Garden, iteration 60)
   selfLit?: boolean; // lights itself and its neighbours without mana
   goodsRate?: number; // goods produced per day, carted like a Craft works
@@ -430,6 +431,14 @@ export const BUILDINGS: BuildingDef[] = [
   },
 
   {
+    key: 'greatgate', name: 'The Great Gate', category: 'wonder',
+    desc: 'The gatehouse of the Pass of Buluiain raised in your wall: two towers of Belregi Stone over a deep arch, beside a Belregi gate. While lit it wards 20 tiles, every Belregi gate in the wall reaches 12 instead of 8, three pilgrims walk from it to the shrines and the Stake, and on the 15th of each season pilgrims of the Pass lodge in empty homes and pay alms. Ten days after it is lit the High Warden of Belregi comes with the Heart. Must touch a Belregi gate and a road. 12 mana.',
+    flavor: 'The Guardians say the gate does not keep anyone out. It reminds them which side they are on.',
+    w: 3, h: 3, cost: 16000, upkeep: 120, manaUse: 12, needsMana: true, nearGate: true,
+    service: { type: 'ward', radius: 20, strength: 1.0 }, landValue: 15, unlock: 6, wonder: true,
+  },
+
+  {
     key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
     desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day, or 20 while the Court is lit; let the Court go dark two days and the wyrm sulks until it is lit again.',
     flavor: 'The song has no words. The singers say the wyrm supplies them.',
@@ -686,7 +695,7 @@ export const MILESTONES: Milestone[] = [
     text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },
   { name: 'Market Town', pop: 650, grant: 8000, unlocks: ['ossuary', 'hospice', 'guildhall', 'watergarden'],
     text: 'Carts from three valleys come to your market. The guilds petition for a hall.' },
-  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'golemfoundry', 'leybeacon', 'drakemews'],
+  { name: 'Burgh', pop: 1000, grant: 11000, unlocks: ['temple', 'grandacademy', 'golemfoundry', 'leybeacon', 'drakemews', 'greatgate'],
     text: 'A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped.' },
   { name: 'Free City', pop: 1500, grant: 16000, unlocks: ['lantern_wonder', 'wyrmcourt', 'fontquieting'],
     text: 'The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken.' },

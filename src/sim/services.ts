@@ -10,6 +10,7 @@ import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
 import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree } from './growth';
+import { belregiReach, greatGateReach, GREAT_GATE_SOLD_STRENGTH } from './gate';
 
 /** Land value lost within 4 tiles of any deathcare. */
 export const DEATHCARE_LV = 6;
@@ -41,11 +42,12 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (cracked(b)) strength = 0; // the Lantern of the Cores wards nothing while cracked
     if (b.kind === 'hospice' && b.stock <= 0) strength *= 0.6; // no draughts on the shelf
     if (b.kind === 'veshari' && !b.watered) strength *= 0.5; // a dry fire hall
+    if (b.kind === 'greatgate' && state.heart.held === 'sold') strength *= GREAT_GATE_SOLD_STRENGTH; // the Guardians closed the Pass (iteration 69)
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
     const consecrated = (b.kind === 'shrine' || b.kind === 'candleshrine') && (b.blessed ?? -1) >= state.day;
-    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
+    const r = b.kind === 'greatgate' ? greatGateReach(state) : b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -61,12 +63,13 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
   });
   // gates of the Pass of Buluiain: Belregi (faith, ward) and Uzulim (ward, watch)
   if (type === 'faith' || type === 'ward' || type === 'watch') {
+    const belregi = belregiReach(state); // 8, 12 beside a lit Great Gate, 16 with the Heart set in it (iteration 69)
     for (let i = 0; i < n; i++) {
       const g = state.wall[i];
       if (g < 2) continue;
       const gx = i % MAP_W;
       const gy = (i / MAP_W) | 0;
-      const r = g === 2 ? 8 : 10;
+      const r = g === 2 ? belregi : 10;
       const str = g === 2 ? (type === 'faith' ? 0.3 : type === 'ward' ? 0.2 : 0) : type === 'ward' ? 0.4 : type === 'watch' ? 0.3 : 0;
       if (str <= 0) continue;
       for (let dy = -r; dy <= r; dy++)

@@ -77,6 +77,7 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.loan = state.loan ?? 0;
     state.pleadings = state.pleadings ?? 0;
     state.pilgrimsDay = state.pilgrimsDay ?? -1;
+    state.heart = state.heart ?? { held: 'none', step: 0, day: -1 }; // iteration 69
     state.litHeld = state.litHeld ?? 0;
     state.edictSince = state.edictSince ?? {}; // an edict with no stamp may be repealed
     state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
