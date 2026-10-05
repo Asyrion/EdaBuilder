@@ -4,7 +4,7 @@
  * any sprite by name via public/art/atlas.json (see atlas.ts).
  */
 import { Painter, h2 } from './painter';
-import { drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
+import { drawBrickworks, drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {
@@ -2204,6 +2204,7 @@ export function generateSprites(): SpriteDef[] {
   for (let f = 0; f < 2; f++) { const w = drawWyrmFly(f); out.push({ name: `wyrm_fly_${f}`, p: w.p, glow: w.glow, ax: 30, ay: 34 }); }
   push('b_ring', drawRing());
   for (let st = 0; st < 4; st++) push(`b_worldtree_${st}`, drawWorldTree(st));
+  push('b_brickworks', drawBrickworks()); // drawn after the user's painting, given to no building yet
   push('gate_2', drawGate(2));
   push('gate_3', drawGate(3));
   // creatures
