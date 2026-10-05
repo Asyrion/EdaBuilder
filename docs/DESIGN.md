@@ -4365,6 +4365,45 @@ ones at 10×.
   42 150`) is main's own: 2,155 folk at day 150, the Burgh on day 42, the Free City on day 125 (§4.106 moved it from
   2,130 with the market road; §4.107's "2,130" was written before that merge).
 
+### 4.109 The scale of things: the citizen is the yardstick for the small buildings (iteration 78)
+
+Art only, a playtest finding after §4.108: "the well is way too big in comparison to the citizens, and a lot more buildings
+are". §4.108 judged every sprite against its tile; this iteration judges the small ones against a citizen (12 px tall, the
+8×12 `cit_*` canvas of §4.96). Measured so, the 1×1 objects and sheds stood 2.5 to 3.3 citizens tall where life gives 1.5
+to 2.5: the well 30 px, the tide-well 25, the seep 22, the ward lantern 40, the shrines and the 1×1 works 35–38, the
+level-1 cottages 30–37. The two-storey houses (36–46 px), the 2×2 halls (4–5 citizens) and the towers and wonders read
+right, because a tall thing may stand over the folk; a well may not.
+
+**The yardstick** (in citizens of 12 px, the outline counted; `tests/iteration78.test.ts` holds it):
+
+| Class | Buildings | Cap | Before → after |
+|---|---|---|---|
+| Objects a person reaches over | the well, the tide-well, the seep | 1.5 | 30, 25, 22 → 18, 16, 14 |
+| Posts and small shrines | the ward lantern, the shrine, the candle shrine | 2.5 | 40, 35, 35 → 28, 30, 30 |
+| Sheds, works and cottages (1×1) | fishers' hut, smokehouse, reed-cutters, healer, torrent mill; level-1 hearth, market, craft, arcane | 2.8 (the Tallowkin wickhouses 3.2) | 35–38 → 32–33; 30–37 → 28–33 |
+| Two-storey houses (level 2–3) | unchanged | 4 | 36–46 |
+| Halls (2×2) | the academy comes down a storey; the rest unchanged | 5.5 | 73 → 66 |
+| Towers, fonts, spires, wonders | unchanged, meant to rise over the roofs | free | |
+
+**How.** The painted ones are a `targetHeight` in `art/sources.json` (the well 28 → 16, the tide-well 23 → 14, the seep
+20 → 12, the four level-1 craft paintings 32 → 28). A small object no longer fills its tile, so the importer's new `shift`
+key moves its centre anchor up 6 px: the well stands in the middle of its tile, not at its front corner (the test holds
+the shifted anchor). The drawn ones are `height` and `roofH` in `SERVICE_SPECS` and `zoneSpecs` (`src/render/sprites.ts`);
+`drawBuilding` sizes the sprite from the footprint and those two numbers and places the anchor from the same, so nothing
+moves on its tile, and the Grimmen, Veshari and Tallowkin copies follow through their spec functions. The ward lantern is
+hand-drawn: its post lost 12 rows, the lamp and the base are as they were.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 79 test files with 501 tests (`tests/iteration78.test.ts`: every class under its cap, the
+  painted from the manifest and the drawn from `generateSprites()`'s opaque rows, the citizen still 8×12, the towers still
+  tall, the shifted anchors; `tests/iteration77.test.ts` allows the shift), `npm run build`, `npm run art`.
+- **`scripts/playtest78.mjs`** (§4.108's survey tool with a citizen at every tile's front corner) against the build and
+  main's build on port 4174: the 1×1 sheet, the level-1 houses of every people, all 77 `b_` sprites; a street on seed 78
+  (the three wells, the spire, level-1 and level-2 houses, a craft, a market, a shrine, the ward lantern, the depot, the
+  cistern, a watchpost, a healer, a fishers' hut, a smokehouse, sixteen folk on the road) at 2×, 4× and 6× and at night,
+  before and after. No errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5600,3 +5639,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   the Burgh. Each stage is now fitted to its diamond on its own, and a test holds what the eye settled: the tall halls
   never shrink, the wide one fills its width. A survey sheet of every sprite over its diamond, beside its mirror, is the
   check to run after any import.
+- *The citizen is the yardstick for the small things, the tile for the big ones (iteration 78):* a building that fills
+  its footprint is judged against its tile (§4.108); a well, a post or a shed is judged against the folk who use it, and
+  may leave its tile half empty. Towers and wonders are free to rise. The survey sheet now stands a citizen beside every
+  sprite, so the next import is judged both ways at once.

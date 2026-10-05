@@ -293,7 +293,9 @@ Charter as `.json`.
   the whole set faces lower-right; every building then turns toward its road (a mirror when the
   road runs past its left side), and the placement ghost turns with it. Every building sprite
   was surveyed over its footprint diamond beside its mirror (iteration 77): the facings hold,
-  and the Stake's stage 2 hall and the Hall of Wicks now fill their tiles.
+  and the Stake's stage 2 hall and the Hall of Wicks now fill their tiles. The small buildings
+  are scaled to the citizen (iteration 78): a well is a citizen and a half, a lamp post or a
+  shrine two and a half, a shed or a cottage under three; the towers rise as they did.
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
   tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its
   foot); the temple is a nave and portico that gains a bell tower and then a copper dome; the

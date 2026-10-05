@@ -334,24 +334,24 @@
   },
   "b_well": {
    "file": "sprites/b_well.png",
-   "w": 25,
-   "h": 30,
-   "ax": 13,
-   "ay": 13
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
   },
   "b_seep": {
    "file": "sprites/b_seep.png",
-   "w": 19,
-   "h": 22,
-   "ax": 10,
-   "ay": 5
+   "w": 12,
+   "h": 14,
+   "ax": 6,
+   "ay": 3
   },
   "b_tidewell": {
    "file": "sprites/b_tidewell.png",
-   "w": 20,
-   "h": 25,
-   "ax": 10,
-   "ay": 8,
+   "w": 13,
+   "h": 16,
+   "ax": 7,
+   "ay": 5,
    "glow": "sprites/b_tidewell_glow.png"
   },
   "b_cistern": {
@@ -445,33 +445,33 @@
   "craft_l1_v0": {
    "file": "sprites/craft_l1_v0.png",
    "w": 36,
-   "h": 34,
+   "h": 30,
    "ax": 17,
-   "ay": 17,
+   "ay": 13,
    "glow": "sprites/craft_l1_v0_glow.png"
   },
   "craft_l1_v1": {
    "file": "sprites/craft_l1_v1.png",
    "w": 36,
-   "h": 34,
+   "h": 30,
    "ax": 17,
-   "ay": 17,
+   "ay": 13,
    "glow": "sprites/craft_l1_v1_glow.png"
   },
   "craft_l1_v2": {
    "file": "sprites/craft_l1_v2.png",
    "w": 36,
-   "h": 34,
+   "h": 30,
    "ax": 17,
-   "ay": 17,
+   "ay": 13,
    "glow": "sprites/craft_l1_v2_glow.png"
   },
   "craft_l1_v3": {
    "file": "sprites/craft_l1_v3.png",
    "w": 36,
-   "h": 34,
+   "h": 30,
    "ax": 17,
-   "ay": 17,
+   "ay": 13,
    "glow": "sprites/craft_l1_v3_glow.png"
   },
   "craft_l2_v0": {

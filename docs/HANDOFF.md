@@ -1,17 +1,17 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 77 (the sprites faced and fitted; art only; DESIGN §4.108), the last of the single
-items of §17.4. Iteration 76 (the wyrm's wings beat, §4.107) came before it; 75 (markets want a good road, §4.106) was
-built in a parallel session and merged first; 74 (the wyrm redrawn, §4.105), 73 (the loose ends, §4.104) and 72 (golem
-haulers, §4.103) came before them. Two sessions at once means merging main before the PR and taking the next free
-numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 78 (the scale of things: the small buildings scaled to the citizen; art only; DESIGN
+§4.109), a playtest finding taken between the single items and M17. Iteration 77 (the sprites faced and fitted, §4.108)
+closed the single items of §17.4; 76 (the wyrm's wings beat, §4.107) came before it; 75 (markets want a good road, §4.106)
+was built in a parallel session and merged first. Two sessions at once means merging main before the PR and taking the
+next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.108 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.109 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -66,7 +66,8 @@ Built since iteration 68:
 
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
 - **Single items:** all done (the Great Gate, the two ways to lose, the golem haulers, the loose ends, markets and the
-  road, and the sprites faced and fitted in iteration 77; the wyrm was redrawn in iteration 74).
+  road, and the sprites faced and fitted in iteration 77; the wyrm was redrawn in iteration 74; the small buildings were
+  scaled to the citizen in iteration 78, a playtest finding).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
   - **M18**, the Fen-Nex: the people, then their game;
@@ -108,7 +109,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (78 files, 494 tests at this writing; `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (79 files, 501 tests at this writing; `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -176,6 +177,20 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 78 (not yet said elsewhere)
+
+- **Two yardsticks for a sprite:** the tile for a building that fills its footprint (§4.108), the citizen (12 px) for
+  anything a person uses at arm's length (§4.109's table of caps). Judge both at once: `OLD_PORT=4174 node
+  scripts/playtest78.mjs` draws a citizen beside every sprite over its diamond, after and before.
+- **A small painted object needs `shift`:** the centre anchor puts a sprite's base on the diamond's bottom edge, which
+  is right for a building and wrong for a well (it stands at the tile's front corner). `shift: { x: 0, y: 6 }` in
+  `art/sources.json` lifts it into the tile's middle; `tests/iteration77.test.ts` allows it.
+- **A drawn building's height is two numbers** (`height`, `roofH` in `SERVICE_SPECS` or `zoneSpecs`); `drawBuilding`
+  places the anchor from the footprint, so lowering them moves nothing. The hand-drawn sprites (`drawWardLantern` and
+  the like) are moved by hand, and the lantern's anchor convention is one row past the last (the test allows both).
+- **Opaque rows, not canvas rows:** a drawn sprite's canvas is taller than its paint (the watchpost 43 for 36); the tests
+  measure the paint.
 
 ## Learned in iteration 77 (not yet said elsewhere)
 

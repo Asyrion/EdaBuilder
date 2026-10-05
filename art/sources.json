@@ -1,5 +1,5 @@
 {
- "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs; see its header for every key). kind: building (default), prop (trees, bushes, mushrooms: anchor at the trunk base, scaled by targetHeight) or ground (a square texture folded onto the 32x16 diamond; family shares a palette). island picks an item of a sheet by row-major index (node scripts/importSprites.mjs --islands <src>). anchor: 'auto' (footprint), 'centre' (a sprite narrower than its footprint), or {ax, ay} hand-set. checked: true once the --check sheet has been judged by eye. flip: true mirrors a painting left to right, so its front sits on the right face like the procedural set's (iteration 56). A building's targetHeight is its procedural twin's height × 1.15 (towers × 1.3), with the centre anchor (iteration 56). kind 'vehicle' (the donkey carts, iteration 57): scale is a fraction of the painting's pixels, set per sheet so every donkey stands the same height; the cart faces right after any flip; mirrored: true also writes <name>_l, the left-facing twin.",
+ "_readme": "Reference paintings that become sprites (scripts/importSprites.mjs; see its header for every key). kind: building (default), prop (trees, bushes, mushrooms: anchor at the trunk base, scaled by targetHeight) or ground (a square texture folded onto the 32x16 diamond; family shares a palette). island picks an item of a sheet by row-major index (node scripts/importSprites.mjs --islands <src>). anchor: 'auto' (footprint), 'centre' (a sprite narrower than its footprint), or {ax, ay} hand-set; shift {x, y} moves the auto or centre anchor (y: 6 stands a small object in the middle of its tile instead of at its front corner; iteration 78). checked: true once the --check sheet has been judged by eye. flip: true mirrors a painting left to right, so its front sits on the right face like the procedural set's (iteration 56). A building's targetHeight is its procedural twin's height × 1.15 (towers × 1.3), with the centre anchor (iteration 56). kind 'vehicle' (the donkey carts, iteration 57): scale is a fraction of the painting's pixels, set per sheet so every donkey stands the same height; the cart faces right after any flip; mirrored: true also writes <name>_l, the left-facing twin.",
  "sprites": [
   {
    "name": "b_stake_s0",
@@ -530,8 +530,12 @@
     "warm": 60
    },
    "checked": true,
-   "targetHeight": 28,
-   "anchor": "centre"
+   "targetHeight": 16,
+   "anchor": "centre",
+   "shift": {
+    "x": 0,
+    "y": 6
+   }
   },
   {
    "name": "b_seep",
@@ -545,8 +549,12 @@
     "warm": 60
    },
    "checked": true,
-   "targetHeight": 20,
-   "anchor": "centre"
+   "targetHeight": 12,
+   "anchor": "centre",
+   "shift": {
+    "x": 0,
+    "y": 6
+   }
   },
   {
    "name": "b_tidewell",
@@ -560,8 +568,12 @@
     "warm": 40
    },
    "checked": true,
-   "targetHeight": 23,
-   "anchor": "centre"
+   "targetHeight": 14,
+   "anchor": "centre",
+   "shift": {
+    "x": 0,
+    "y": 6
+   }
   },
   {
    "name": "b_cistern",
@@ -708,7 +720,7 @@
    "w": 1,
    "h": 1,
    "targetWidth": 34,
-   "targetHeight": 32,
+   "targetHeight": 28,
    "colors": 20,
    "sharpen": 0.8,
    "checked": true
@@ -719,7 +731,7 @@
    "w": 1,
    "h": 1,
    "targetWidth": 34,
-   "targetHeight": 32,
+   "targetHeight": 28,
    "colors": 20,
    "sharpen": 0.8,
    "checked": true
@@ -730,7 +742,7 @@
    "w": 1,
    "h": 1,
    "targetWidth": 34,
-   "targetHeight": 32,
+   "targetHeight": 28,
    "colors": 20,
    "sharpen": 0.8,
    "checked": true
@@ -741,7 +753,7 @@
    "w": 1,
    "h": 1,
    "targetWidth": 34,
-   "targetHeight": 32,
+   "targetHeight": 28,
    "colors": 20,
    "sharpen": 0.8,
    "checked": true
