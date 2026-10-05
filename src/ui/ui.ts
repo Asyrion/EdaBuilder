@@ -34,6 +34,7 @@ import { BARGE_VARIANT, FLOAT_VARIANT, GOLEM_LOAD, TIDE_REACH, WYVERN_DAYS, WYVE
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
+import { marketRoadMultAt, marketRoadWords } from '../sim/roads';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
@@ -797,6 +798,7 @@ export class UI {
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
       { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
       if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
+      if (def.zone === Zone.Market) { const door = roadTileOf(s, b); const f = marketRoadMultAt(s, door); rows.push(row('Road at the door', `<span class="${f < 1 ? 'warn' : f > 1 ? 'good' : ''}">${marketRoadWords(s, door)}</span>`)); if (f < 1 && door >= 0) problems.push('A dirt track at the door: cobble it and the market trades in full.'); }
       if (def.zone === Zone.Market && ((b.meat ?? 0) > 0 || s.buildings.some((l) => l && l.kind === 'hunterslodge' && Math.hypot(l.x + 1 - b.x, l.y + 1 - b.y) <= MEAT_REACH))) rows.push(row('Meat on the shelves', `${Math.round(b.meat ?? 0)} / ${MARKET_MEAT_CAP}${(b.meat ?? 0) >= 1 ? ': hearths within 10 are happier' : ' (a lodge within 16 hunting game fills it)'}`));
       if (def.zone === Zone.Market && ((b.fish ?? 0) > 0 || s.buildings.some((h) => h && (h.kind === 'fishershut' || h.kind === 'smokehouse') && Math.hypot(h.x - b.x, h.y - b.y) <= FISH_MARKET_REACH))) rows.push(row('Fish on the shelves', `${Math.round(b.fish ?? 0)} / ${MARKET_FISH_CAP}${(b.fish ?? 0) >= 1 ? `: hearths within ${FISH_HAPPY_REACH} are happier` : ` (a Fishers' Hut within ${FISH_MARKET_REACH} fills it)`}`));
       if (def.zone === Zone.Hearth && b.level === 1) rows.push(row('Roof', thatched(s, b) ? `thatched for ${(b.thatchUntil ?? 0) - s.day} more days: +${THATCH_HAPPY} happiness, catches fire ×${THATCH_FIRE}` : 'sod and turf (Reed-Cutters within 10 would thatch it)'));
@@ -1350,7 +1352,7 @@ export class UI {
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Veshari (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
-            <li><b>Goods</b>: Craft works fill donkey carts; the carts feed Markets by road (the mines' carts carry leystone). Empty shelves and idle stills both hurt.</li>
+            <li><b>Goods</b>: Craft works fill donkey carts; the carts feed Markets by road (the mines' carts carry leystone). A market trades by the road at its door: a cobbled road in full, a dirt track a tenth less (a fifth in the mud of the Thaw and the Hush), a lit Lantern-way or a Glowvine Lane a tenth more. Empty shelves and idle stills both hurt.</li>
             <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there. The <b>Annals</b> (top bar, <kbd>N</kbd>) keep every count of the charter by chapter: riots and levies, rain days and hound raids, bouts, relics, walkers' rounds.</li>
             <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
             <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
