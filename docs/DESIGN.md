@@ -4064,7 +4064,25 @@ adds both halves: the donkey carts balk at hounds, and the haulers do not.
   main's side from the cache). The bot stands no foundry, so **no bot city has a hauler**: the bar measures the balk rule
   alone.
 
-TABLE_PENDING
+  240 runs, 120 from the cache, in 66 minutes on four cores. No bot city lost its charter on either side.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 7 | 1,771 | 1,766 | +5 (+0.3 %) | 171 (9.7 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,430 | 1,408 | +23 (+1.6 %) | 127 (9.0 %) | met | within the noise |
+  | Veshari | 6 × 3 | 2,367 | 2,352 | +15 (+0.6 %) | 234 (9.9 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,887 | 1,913 | −26 (−1.4 %) | 223 (11.7 %) | **not met: at the cap of 8 draws** | within the noise |
+  | all | | 7,455 | 7,439 | +17 (+0.2 %) | 387 | | within the noise |
+
+  - **The gates** move by a run or two, both ways: the Vellish reach the Free City in 22 of 42 runs (main 19) and the
+    Beacon in 2 (main 1); the Grimmen the Deephold in 11 of 12 (main 10); the Veshari Vesh's Court in 17 of 18 (main 18)
+    and the Sable Crown in 13 (main 12); the Tallowkin's Hall and Lantern of Wicks are the same, 32 and 12 of 48.
+  - **The balk rule is small in the bot's cities.** Most runs are identical to the last folk (every run whose hounds never
+    crossed a cart's road), and the rest part by a few goods on one night and drift from there. The largest single
+    changes are Veshari 44's third draw (1,097 against 1,545: it stops at the Weirhold) and Vellish 46's first (1,370
+    against 1,572), each one run of 42 or 18.
+  - **The Tallowkin's floor** is 11.7 % of their folk at eight draws a seed, as in iterations 64 and 70: not met.
+  - The branch's runs are in `balance/cache/1be0f4d08811-a8d78ee53ad3.json`, committed with the iteration.
 
 ## 7. Milestone plan
 
