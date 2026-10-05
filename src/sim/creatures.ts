@@ -4,7 +4,7 @@
  * They are ambient life with small mechanical hooks (glim-dust for Moth-Lofts, wisps as
  * the early warning for restless dead).
  */
-import { WYRM_FLYOVER_FIRES, endFlyover, inLair, wyrmGuards, flyoverFireCap } from './wyrm';
+import { WYRM_FLYOVER_FIRES, endFlyover, inLair, razeStake, wyrmGuards, flyoverFireCap } from './wyrm';
 import { beacon } from './beasts';
 import { RIDER_RANGE, airshipArrives, riderTarget } from './vehicles';
 import { maybeSpawnTiger } from './lore';
@@ -21,6 +21,7 @@ import { marketStockCap } from './agents';
 import { HOUND_REACH, houndChance, isWild, tickWildAgent } from './wild';
 import { tickBoat } from './water';
 import { Rng } from '../core/rng';
+import { houndAtDoor } from './hounds';
 
 export function creatureCount(state: GameState, species?: Species): number {
   let n = 0;
@@ -547,8 +548,9 @@ export function tickCreatures(state: GameState): void {
           } else a.timer = 15;
           a.dir = dx > 0 ? 0 : 2;
         } else if (!scared && a.targetId >= 0) {
-          // at the building: harass (rarely, real damage)
+          // at the building: harass (rarely, real damage); in the Hush a home counts the night, and three drive its folk out (iteration 70)
           a.timer = 40 + rng.int(40);
+          { const tb = state.buildings.find((o) => o && o.id === a.targetId); if (tb) houndAtDoor(state, tb); }
           if (rng.chance(0.01)) {
             const b = state.buildings.find((o) => o && o.id === a.targetId);
             if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone' && b.level === 1) {
@@ -650,7 +652,8 @@ export function tickCreatures(state: GameState): void {
           a.x = tx;
           a.y = ty;
           a.path = [];
-          if (a.phase === 1) { a.phase = 2; a.timer = hostile ? 260 : 200; }
+          if (a.phase === 1 && a.load === 2) { razeStake(state); a.load = 1; a.phase = 2; a.timer = 260; } // the third refusal: the Stake (iteration 70)
+          else if (a.phase === 1) { a.phase = 2; a.timer = hostile ? 260 : 200; }
           else if (a.phase === 3) {
             state.agents = state.agents.filter((o) => o !== a);
             endFlyover(state, hostile);

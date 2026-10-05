@@ -401,6 +401,7 @@ export function dailyGloam(state: GameState): void {
       const y = f.y + dy;
       if (inBounds(x, y) && state.gloam[idx(x, y)] && !state.gameOver) {
         state.gameOver = 'The Gloam reaches the founding node. The light goes out, and the valley forgets its name.';
+        state.lostTo = 'gloam';
         pushMessage(state, state.gameOver, 'bad');
       }
     }
@@ -476,6 +477,7 @@ export function dailyDeath(state: GameState): void {
   const rc = restlessCount(state);
   if (rc >= 40 && !state.gameOver) {
     state.gameOver = 'The Long Night: the restless outnumber the Watch, the living flee, and the wardlight gutters out.';
+    state.lostTo = 'restless';
     pushMessage(state, state.gameOver, 'bad');
   }
 }

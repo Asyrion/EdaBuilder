@@ -354,6 +354,10 @@ Charter as `.json`.
   Lantern Fair, the poachers, Belregi against Uzulim). Set it in the arch, leave it with the
   Guardians or sell it; the Uzulim may come for a share, and in the Hush the Heart wakes and grants
   one favour, by half to a city with a poor record.
+- Five ways to lose, each named on the game-over screen: the Gloam at the founding node, forty
+  restless walking, the Crown's revocation, a wyrm refused three times running that comes down on
+  the Founding Stake, and the Long Night early when the Hush's hounds drive the folk out of three
+  districts (three nights at a dark home's door and its folk flee until the Thaw).
 - Longwood and Lukuku: a pair of Portal Arches carts step through, the Ruins of Lukuku
   with a Ruin Delve and its relic chain, and the World Tree Sapling wonder that grows over
   four seasons.

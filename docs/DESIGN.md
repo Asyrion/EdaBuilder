@@ -3831,9 +3831,123 @@ builds them, and only where hounds came.
   - **The floors:** the bar's draw rounds were adding runs toward each people's floor (a tenth of its folk). That floor
     is **not met** for the three peoples still in round 2.
   - **Why it was not resumed:** the floor measures the noise of a Δ, and here every paired run is equal bit for bit.
-    The cache under the worktree's `shots/table-cache` keeps every run, if a later reader wants to finish it.
+    The run cache lived in the worktree, which was removed after the merge, so it is gone (corrected in iteration 70).
   - **The commit:** the runs used the sim's first commit. The later commits change the waking tale's wording, the
     sprite and the docs, none of which a bot run reaches.
+
+### 4.101 Two ways to lose (iteration 70)
+
+§17.4 B (§8.5). The game had three losses: the Gloam at the founding node, the Long Night of forty restless, and the
+Crown's revocation. §8.5 promised two more, and every loss now names its cause.
+
+**The probe first.** Before the plan, twelve bot cities (four peoples × seeds 42–44, 150 days) were run with a counter
+of the nights hounds reached an occupied hearth's door in the Hush.
+- **The wyrm** never woke: the bot keeps spires off its node.
+- **The hounds** reached doors in five cities:
+  - Veshari 43: one march on all 30 Hush nights, 1,995 visits, and the city still ended at 2,742 folk;
+  - Grimmen 42 on 15 nights, Grimmen 44 on 9, Grimmen 43 on 6, Vellish 44 on 5.
+- **What that ruled out:** hounds harry a city's Gloam edge for weeks without hurting it. A rule that emptied a whole
+  district after N hound nights would have gutted healthy cities for edge harassment. So the rule works per home.
+
+**The valley belongs to the wyrm** (`wyrm.ts`):
+- **The count:** `wyrm.starved` counts refusals in a row, and goods short of half count as a refusal. A tribute paid
+  in crowns or goods, the binding, or the wyrm's death resets it. The Annals keep the most refusals in a row.
+- **The warnings:**
+  - the first refusal: "a second would be unwise, and a third would be the last";
+  - the second: a red Chronicle line, and an Advisor line while it stands;
+  - the next asking is titled *The wyrm's last asking*, and its Refuse choice says the game ends.
+- **The razing:** the third refusal in a row (`WYRM_STARVE_LIMIT`) sends a razing flight (`load = 2`) along the flyover's
+  path, which already flew to the Founding Stake first.
+  - On arrival the Stake burns to ruin and the charter ends: *"The valley belongs to the wyrm…"*.
+  - A great wyrm of the city's own (a stage-4 dragon) meets the flight above the Stake instead. It turns into an
+    ordinary hostile flyover, and the count starts again.
+  - A refusal while a flight is already aloft turns that flight toward the Stake.
+- **The bot's tale policy** scores `wyrm.razing` like a game over (`worth`), so a bot city pays the third time. No bot
+  city wakes the wyrm today.
+
+**The Long Night comes early** (`src/sim/hounds.ts`):
+- **A night at the door:** in the Hush, a hound reaching an occupied hearth (the existing harass branch) counts a night
+  for that home.
+  - The day is the night's key, since the sim's day turns at mid-morning and a whole night lies inside one day.
+  - The hounds' target filter already skips warded homes and lit, watched ones, so only dark, unwarded homes can be
+    hounded.
+- **Flight:** three nights (`FLEE_NIGHTS`) and the home's folk flee. It takes no move-ins until the Thaw (`b.fled`).
+- **A unit emptied:** half the homes of a unit fled (`EMPTY_SHARE`, at least 4 homes) empties it.
+  - A unit is a painted district, or, for homes in none, their march (`MARCH_UNIT + sector`). A city that never paints
+    a district is not exempt.
+  - The third unit emptied in one Hush (`LONG_NIGHT_UNITS`) ends the charter, naming the three.
+- **The warnings:**
+  - the Chronicle at a unit's first home on its second night;
+  - a red line at a quarter fled;
+  - each emptied unit says how many more the Hush can take;
+  - the Advisor keeps the count.
+- **The Thaw** lets the fled homes be lived in again and clears the count (`dailyHush`).
+- **No roll is added:** the hounds' paths decide it all, and a city whose hounds never reach a door in the Hush is
+  bit-identical.
+- **What the player sees:**
+  - a home's panel ("at the door 2 of 3 nights this Hush", or fled until the Thaw);
+  - the Districts view's line per district ("n fled the hounds", "emptied by the hounds");
+  - two Annals rows, and the help.
+
+**Every loss names its cause.** `state.lostTo` is set by all five losses (`gloam`, `restless`, `crown`, `wyrm`, `hounds`).
+The game-over screen takes its title from it, and under the old summary line it gives the cause's numbers: the refusals
+and the Stake's day, or the three districts and the homes fled.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 72 test files with 462 tests, and `npm run build`.
+- **`tests/iteration70.test.ts`** (11 tests):
+  - **The wyrm:**
+    - the warnings come at one and two refusals;
+    - the Advisor speaks at two;
+    - a tribute paid resets the count;
+    - the last asking's title and choice text;
+    - the third refusal sets `razing`, `worth` sees it at once, and the flight lands, ruins the Stake and ends the game;
+    - goods short of half count as a refusal;
+    - a great wyrm turns the razing back;
+    - the bot's worth prefers paying the third time.
+  - **The hounds:**
+    - a night counts once;
+    - three nights make a home flee;
+    - nothing counts outside the Hush or at an empty home;
+    - marches stand in for unpainted homes;
+    - half fled empties a unit and the Advisor speaks;
+    - three units end the game;
+    - the Thaw clears it.
+  - **The Annals and saves:** the Annals hold the new counters, and old saves load the defaults.
+- **`scripts/playtest70.mjs`** in Chromium takes both charters to their end:
+  - **The wyrm:**
+    - the last asking's dialog;
+    - the wyrm in flight over the town 144 ticks after the refusal;
+    - the Stake in ruin and the game-over screen titled *The valley belongs to the wyrm*, with "Refusals in a row: 3".
+  - **The hounds:**
+    - a Hush town with three painted districts of four homes, the hounds driven through the sim's `houndAtDoor`;
+    - a home's panel at two nights;
+    - the Districts view with Hearthside "emptied by the hounds" and the Advisor's warning;
+    - the third district emptied, and the game-over screen titled *The Long Night comes early*, naming Hearthside,
+      Stillward and Spirefield;
+  - the Annals rows, and no errors.
+- **A quick check before the bar:** the four hounded cities, single runs on this commit against main.
+  - **Grimmen 42:** unchanged, 1,254 folk.
+  - **Grimmen 43:** 764 (763).
+  - **Grimmen 44:** 2,665 (2,606).
+  - **Veshari 43:** 2,556 (2,742).
+  - None lost its charter.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main --peoples <one>`, one people per job from
+  a worktree of the sim's commit, about 4½ hours in all). No bot city lost its charter on either side.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 7 | 1,766 | 1,774 | −8 (−0.4 %) | 164 (9.3 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,408 | 1,383 | +25 (+1.8 %) | 115 (8.2 %) | met | within the noise |
+  | Veshari | 6 × 3 | 2,352 | 2,395 | −43 (−1.8 %) | 228 (9.6 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,913 | 1,914 | −1 (−0.1 %) | 226 (11.8 %) | **not met: at the cap of 8 draws** | within the noise |
+
+  - **The gates** are the same, run for run, but for one run each:
+    - Vellish reach the Free City in 19 of 42 runs (main 20) and the Beacon in 1 (main 2);
+    - the Tallowkin raise the Hall of Wicks in 32 of 48 (main 33).
+  - **The largest single change** is Veshari 43's first draw, 2,556 against 2,742: one march hounded all Hush long
+    lost the homes it besieged.
+  - **The Tallowkin's floor** stays above a tenth of their folk at eight draws a seed, as in iteration 64; it is not met.
 
 ## 7. Milestone plan
 
@@ -3978,9 +4092,9 @@ people, sleeping coiled around the deepest nodes. Rules:
   halved, wyrm ward halved).
 - **Sky layer and shadows** for every flying thing, so the map reads at a glance which
   creatures are above the city.
-- **Failure states gain teeth:** an unbound, starved wyrm that razes the Founding Stake
+- ✅ **Failure states gain teeth:** an unbound, starved wyrm that razes the Founding Stake
   ends the game ("the valley belongs to the wyrm"); a hound pack that empties three
-  districts in one Hush triggers the Long Night early. Neither is built: item B of §17.4.
+  districts in one Hush triggers the Long Night early. Built in iteration 70 (§4.101).
 
 ### 8.6 Wyrmcraft: eggs, hatchery, tamers and the arena
 
@@ -4618,7 +4732,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - ✅ **A. The Great Gate and the Heart of Belregi** (§11 item 1; built in iteration 69, §4.100).
   - A gate wonder in the Warding Wall: the largest of the Belregi gates, with pilgrims and a ward of its own.
   - A tale chain, the Heart of Belregi, that follows the player's earlier choices at the gates.
-- **B. Two ways to lose** (§8.5).
+- ✅ **B. Two ways to lose** (§8.5; built in iteration 70, §4.101).
   - **"The valley belongs to the wyrm":** an unbound Sleeping Wyrm, starved of tribute, razes the Founding Stake and
     ends the charter, after warnings.
   - **The Long Night early:** a hound pack that empties three districts in one Hush brings the Long Night before its
@@ -5028,3 +5142,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   passing through the gate tile, and the wall's tiles stay what they are. The Heart's tales fire on their own terms with
   no draw, so a city without the Gate never meets them. They read the player's earlier answers at the gates with
   `chose()` rather than a new score kept in state. A poor record halves the Heart's favour rather than refusing it.
+- *A home flees, not a district (iteration 70):* hounds at a city's Gloam edge for weeks are ordinary in bot cities (one
+  Veshari march on all 30 Hush nights), so a district is emptied only when half its homes have each had the pack at
+  the door three nights. Homes in no district count by their march, so not painting districts is no shelter. The wyrm
+  counts refusals in a row, not in all: any tribute paid forgives the past, and a great wyrm of one's own is the one
+  answer to the razing in flight.

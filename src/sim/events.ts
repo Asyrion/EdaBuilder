@@ -17,7 +17,7 @@ import { MAP_W, inBounds, idx } from './types';
 import { igniteBuilding, recomputeGloamDist } from './hazards';
 import { RIOT_UNREST } from './growth';
 import { HEART_GLOAM_REACH, HEART_STEP_DAYS, PASS_ALMS, PASS_PILGRIM_DAY, PASS_PILGRIMS, WARDEN_DAYS, BELREGI_REACH_HEART, GREAT_GATE_REACH_HEART, GREAT_GATE_REACH, BELREGI_REACH_GREAT, gateCounts, greatGateOf, litGreatGate, passPilgrims } from './gate';
-import { WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
+import { WYRM_STARVE_LIMIT, WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 
 export interface EventDef {
   id: string;
@@ -499,8 +499,8 @@ export const WYRM_EVENTS: EventDef[] = [
     when: (s) => s.wyrm.state === 'awake' && s.wyrm.tributeDay >= 0 && s.day >= s.wyrm.tributeDay && !s.pendingEvent,
     choices: [
       { label: 'Pay in crowns', desc: 'Costs the current tribute; each tribute asks 750 crowns more than the last.', apply: (s) => payTribute(s, 'crowns') },
-      { label: 'Pay in goods', desc: `${WYRM_TRIBUTE_GOODS} goods taken from the market shelves. Fewer than half and it counts as a refusal.`, apply: (s) => payTribute(s, 'goods') },
-      { label: 'Refuse', desc: 'It flies over the city and burns up to four buildings, then sleeps again; spires near it will wake it once more.', apply: (s) => refuse(s) },
+      { label: 'Pay in goods', desc: (s) => `${WYRM_TRIBUTE_GOODS} goods taken from the market shelves (${Math.round(marketGoods(s))} on them now). Fewer than half and it counts as a refusal${s.wyrm.starved >= WYRM_STARVE_LIMIT - 1 ? ': the last one' : ''}.`, apply: (s) => payTribute(s, 'goods') },
+      { label: 'Refuse', desc: (s) => (s.wyrm.starved >= WYRM_STARVE_LIMIT - 1 ? `Refused ${s.wyrm.starved} times running, it will not circle this time: it flies for the Founding Stake and burns the Charter on its door. The game ends, unless a great wyrm of your own rises to meet it.` : s.wyrm.starved > 0 ? 'It flies over the city and burns up to four buildings, then sleeps again. Refused twice running, the next refusal will be its last: it would come for the Founding Stake.' : 'It flies over the city and burns up to four buildings, then sleeps again; spires near it will wake it once more. It remembers refusals in a row: the third brings it down on the Founding Stake.'), apply: (s) => refuse(s) },
     ],
   },
   {
@@ -819,7 +819,9 @@ export function maybeFireWyrm(s: GameState): void {
     if (s.wyrm.state === 'none' && e.id !== 'airship_tale') continue; // the captain's story needs no wyrm
     if (!e.when(s)) continue;
     if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+    // the third asking after two refusals is the last (iteration 70)
+    const last = e.id === 'wyrm_tribute' && s.wyrm.starved >= WYRM_STARVE_LIMIT - 1;
+    s.pendingEvent = { id: e.id, title: last ? "The wyrm's last asking" : e.title, text: last ? `${e.text} It has been refused ${s.wyrm.starved} times running. The keeper is pale: this time it is not asking for coin so much as for a reason not to come down on the Founding Stake.` : e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${e.id}:?`);
     return;
   }

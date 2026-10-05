@@ -322,7 +322,8 @@ export function dailyBuildings(state: GameState): void {
     if (def.zone === Zone.Hearth) {
       // move-in / move-out
       const d = state.demand.hearth;
-      if (b.residents < cap && b.happiness > 35 && d > -0.3) {
+      if (b.fled !== undefined) { /* fled from the hounds: empty until the Thaw (iteration 70) */ }
+      else if (b.residents < cap && b.happiness > 35 && d > -0.3) {
         const gain = 1 + (b.happiness > 65 && d > 0.5 ? 1 : 0);
         b.residents = Math.min(cap, b.residents + gain);
       } else if (b.happiness < 30 && b.residents > 0 && rng.chance(0.5)) {

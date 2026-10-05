@@ -24,6 +24,7 @@ import { builderTarget, buildersAt, construction, sites } from '../sim/construct
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { CARAVAN_EVERY, caravanDue, caravanSurplus, heartTrust } from '../sim/events';
+import { houndLine, unitName } from '../sim/hounds';
 import { PASS_ALMS, belregiReach, greatGateReach, passPilgrims, pilgrimsDue } from '../sim/gate';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
@@ -891,6 +892,7 @@ export class UI {
     }
     if (b.kind === 'hospice') { rows.push(row('Draughts', `${Math.round(b.stock)} / ${HOSPICE_DRAUGHTS} (2 goods a day from the fullest market within 16)`)); if (b.stock <= 0) problems.push('No draughts: with no goods on the shelf it heals at six tenths. A market within 16 tiles.'); }
     if (b.kind === 'shrine' || b.kind === 'candleshrine') rows.push(row('Consecrated', (b.blessed ?? -1) >= s.day ? `${b.blessed! - s.day} day${b.blessed! - s.day === 1 ? '' : 's'}: reaches half again as far` : 'no: a pilgrim of this shrine who prays at a Temple consecrates it for 10 days'));
+    { const hl = houndLine(s, b); if (hl) { if (b.fled !== undefined) problems.push(`Fled from the hounds: three nights of Gloam-hounds at the door drove its folk out, and it stands empty until the Thaw.`); else rows.push(row('Hounds at the door', `<span class="warn">${hl}</span>`)); } }
     if (b.kind === 'greatgate') {
       const held = { none: 'not yet brought: the High Warden comes ten days after the Gate stands lit', set: 'set in the keystone: the Gate wards 30, every Belregi gate 16', guardians: 'kept by the Guardians in the Pass: twice the pilgrims', sold: 'sold to the Crown: the Pass is closed, and the Gate wards at six tenths', shared: 'shared with the Uzulim: their gates add no unrest' }[s.heart.held];
       rows.push(row('The Heart of Belregi', held));
@@ -1353,6 +1355,7 @@ export class UI {
             <li><b>The wild</b>: herds of deer and elk graze the meadows by day and bed down in the woods at night, and run from lit ground; boar keep the forests, goats the hills, otters and herons the banks. A herd breeds in Bloom and thins where the city builds within two tiles of its ground; a ward or a lit Glimhouse helps it recover. A <b>Hunters' Lodge</b> hunts the <b>quarry</b> its panel names within 16 tiles: hides, meat and trophies (antlers, tusks, plumes, wolf heads) for the Gloam road at their own prices, and meat for the markets within 16, where it makes the hearths within 10 happier. Hunters after game kill hounds at half the chance; a herd hunted to the last is gone. <b>The Close Season</b> edict closes the chase in Bloom and keeps six head in every herd. In the Hush <b>wolves</b> leave the forest at night to take hens from the dark, unwatched hearths at the edge.</li>
             <li><b>The water</b>: every river and lake holds a shoal. A <b>Fishers' Hut</b> on the bank puts boats out and lands fish as the shoal allows; fish spoil in two days unless a market within 12 or a <b>Smokehouse</b> within 6 takes them, and a market with fish makes the hearths within 10 happier. Too many huts on one water fish it out; a <b>Weir</b> doubles its regrowth and keeps the fords near it open. <b>Reed-Cutters</b> on the shore thatch the level-1 homes (+3 happiness, but thatch burns). The <b>lake</b> (open water) lifts the land within 4, its wells serve half again, and the <b>Water Garden</b> stands on its shore. A Dirt Track over a narrow river is a <b>ford</b>: cheap, but under water in the Thaw's first ten days.</li>
             <li><b>The Great Gate</b> (Burgh): the gatehouse of the Pass of Buluiain, raised in the angle between a <b>Belregi gate</b> and its road. Lit, it wards 20 tiles, every Belregi gate reaches 12 instead of 8, three pilgrims walk from it, and on the 15th of each season <b>pilgrims of the Pass</b> lodge in empty homes and pay 40 crowns of alms. Ten days on, the <b>High Warden of Belregi</b> brings the <b>Heart</b>: set it in the arch (wards 30, gates 16), leave it with the Guardians (twice the pilgrims), or sell it (6,000 crowns; the Pass closes). She recites what you did at the gates before: the pilgrims of Aume, the Lantern Fair, the poachers, your Belregi and Uzulim gates. With an Uzulim gate in the wall, its wardens come for a share; in the Hush the Heart wakes and grants one favour, by half if your record at the gates is poor.</li>
+            <li><b>Two ways to lose</b> beyond the Gloam, the restless and the Crown. <b>The wyrm</b> remembers refusals in a row: the first is forgiven, the second brings a warning, and the third brings it down on the Founding Stake, which ends the charter unless a great wyrm of your own rises to meet it. Any tribute paid starts the count again. <b>The hounds</b>: in the Hush, three nights of Gloam-hounds at the door of a dark, unwarded home drive its folk out until the Thaw. A district with half its homes fled (homes in no district count by their march) is emptied, and three emptied in one Hush bring the Long Night early. Light, wards, the Watch, Hunters' Lodges and the Warding Wall keep them from the doors.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1934,9 +1937,14 @@ export class UI {
   showGameOver(): void {
     const s = this.host.state;
     if (!this.el.gameover.classList.contains('hidden')) return;
+    // every loss names its cause (iteration 70): a title, and the numbers that brought it
+    const title = { wyrm: 'The valley belongs to the wyrm', hounds: 'The Long Night comes early', restless: 'The Long Night', gloam: 'The Gloam takes the node', crown: 'The Charter is revoked' }[s.lostTo ?? 'gloam'] ?? 'The light goes out';
+    const cause = s.lostTo === 'wyrm' ? `Refusals in a row: ${s.wyrm.starved} (tributes paid over the charter: ${s.stats.wyrmTributes}). The Founding Stake burned on day ${s.day}.`
+      : s.lostTo === 'hounds' ? `Districts emptied this Hush: ${s.hush.emptied.map((u) => unitName(s, u)).join(', ')}. Homes fled from the hounds over the charter: ${s.stats.houndFled}.`
+      : s.lostTo === 'restless' ? `The restless walking: ${s.agents.filter((a) => a.kind === 2).length}.` : '';
     this.el.gameover.innerHTML = `<div class="box panel">
-      <h2>The light goes out</h2>
-      <p>${s.gameOver}</p>
+      <h2>${title}</h2>
+      <p>${s.gameOver}</p>${cause ? `\n      <p>${cause}</p>` : ''}
       <p class="muted">${s.cityName} reached ${this.ms()[s.milestone].name} with a peak of ${s.stats.peakPopulation} folk over ${s.day} days. Fires: ${s.stats.firesTotal}. Surges: ${s.stats.surgesTotal}. Restless risen: ${s.stats.restlessTotal}.</p>
       <div style="text-align:right"><button id="go-title">Found another wardlight</button></div>
     </div>`;

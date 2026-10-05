@@ -19,6 +19,8 @@ export const WYRM_WAKE_PER_SPIRE = 3; // waking points per lit spire per day
 export const WYRM_TRIBUTE_BASE = 1500;
 export const WYRM_TRIBUTE_GOODS = 150;
 export const WYRM_FLYOVER_FIRES = 4;
+/** Refusals in a row before the wyrm comes for the Founding Stake (iteration 70): the third ends the charter. */
+export const WYRM_STARVE_LIMIT = 3;
 /** A great wyrm (a trueblood at the wyrm stage) rises to meet a hostile flyover: half the fires, and the Vein-Wyrm sleeps deeper after. */
 export function greatWyrm(s: GameState): { name: string } | null {
   const d = s.dragons.find((x) => x.stage >= 4);
@@ -30,7 +32,7 @@ export function flyoverFireCap(s: GameState): number {
 export const WYRM_VEIN_EGG_DAYS = DAYS_PER_SEASON;
 
 export function newWyrm(node: number): WyrmState {
-  return { node, state: node < 0 ? 'none' : 'sleeping', waking: 0, tributes: 0, tributeDay: -1, unfed: 0, sulking: 0, fedDays: 0, refused: 0, flyover: 0, fires: 0, bound: -1, died: -1, askedBind: -1, courted: false, courtDark: 0 };
+  return { node, state: node < 0 ? 'none' : 'sleeping', waking: 0, tributes: 0, tributeDay: -1, unfed: 0, sulking: 0, fedDays: 0, refused: 0, flyover: 0, fires: 0, bound: -1, died: -1, askedBind: -1, courted: false, courtDark: 0, starved: 0, razing: false };
 }
 
 /** Choose the wyrm's node: the farthest from the founding node, if far enough. */
@@ -123,6 +125,7 @@ export function payTribute(s: GameState, kind: 'crowns' | 'goods'): string {
     s.treasury -= c;
     s.wyrm.tributes++;
     s.wyrm.tributeDay = nextSeasonDay(s);
+    s.wyrm.starved = 0;
     s.stats.wyrmTributes++;
     pushMessage(s, `${c} crowns are carted to the wyrm's node at (${n.x},${n.y}) and melted into its hoard. It sleeps with one eye open.`, 'info', true, { x: n.x, y: n.y });
     return `${c} crowns melted into the hoard.`;
@@ -134,6 +137,7 @@ export function payTribute(s: GameState, kind: 'crowns' | 'goods'): string {
   }
   s.wyrm.tributes++;
   s.wyrm.tributeDay = nextSeasonDay(s);
+  s.wyrm.starved = 0;
   s.stats.wyrmTributes++;
   pushMessage(s, `${Math.round(got)} goods are laid at the wyrm's node at (${n.x},${n.y}). Every market shelf in the city is thinner for it.`, 'info', true, { x: n.x, y: n.y });
   return `${Math.round(got)} goods laid at the node.`;
@@ -143,22 +147,47 @@ export function nextSeasonDay(s: GameState): number {
   return (Math.floor(s.day / DAYS_PER_SEASON) + 1) * DAYS_PER_SEASON + 1;
 }
 
-/** Refuse tribute: the wyrm flies over the city, burning, then sleeps again. */
+/** Refuse tribute: the wyrm flies over the city, burning, then sleeps again. The third refusal in a row, it flies for the
+ *  Founding Stake (iteration 70): the warnings come at the first and the second. */
 export function refuse(s: GameState): string {
-  s.wyrm.refused++;
-  s.wyrm.tributes++; // the price still rises
+  const w = s.wyrm;
+  w.refused++;
+  w.tributes++; // the price still rises
+  w.starved++;
+  s.stats.wyrmStarvedMost = Math.max(s.stats.wyrmStarvedMost, w.starved);
+  if (w.starved >= WYRM_STARVE_LIMIT) {
+    w.razing = true;
+    startFlyover(s, true, true);
+    return w.razing ? 'The wyrm rises, and it does not circle. It flies straight for the Founding Stake.' : 'The wyrm rises for the Stake, and is met.';
+  }
   startFlyover(s, true);
+  if (w.starved === WYRM_STARVE_LIMIT - 1) pushMessage(s, `The wyrm has been refused ${w.starved} times running. Its keeper says it is no longer hungry for coin: refuse it once more and it comes for the Founding Stake itself, and the charter ends with it.`, 'bad', true);
+  else pushMessage(s, 'The wyrm will remember the refusal. Its keeper says a second would be unwise, and a third would be the last.', 'warn', true);
   return 'The wyrm rises. Ring the Veshari bells.';
 }
 
+/** The razing flight reaches the Founding Stake: the Stake burns, and the valley belongs to the wyrm. */
+export function razeStake(s: GameState): void {
+  const stake = s.buildings.find((b) => b && b.kind === 'stake');
+  const at = stake ? { x: stake.x, y: stake.y } : s.founding;
+  if (stake) { stake.state = 'ruin'; stake.stateDays = 0; markDirtyAround(s, stake.x, stake.y); }
+  effects.push({ x: at.x, y: at.y, kind: 'roar', tick: s.tick });
+  s.wyrm.razing = false;
+  if (s.gameOver) return;
+  s.gameOver = `The valley belongs to the wyrm. Refused ${s.wyrm.starved} times running, it came down on the Founding Stake on day ${s.day} and burned the Charter on its door. Nobody nails up another.`;
+  s.lostTo = 'wyrm';
+  pushMessage(s, s.gameOver, 'bad', true, at);
+}
+
 /** Spawn the flying wyrm agent. Hostile flyovers ignite buildings along the way. */
-export function startFlyover(s: GameState, hostile: boolean): void {
+export function startFlyover(s: GameState, hostile: boolean, raze = false): void {
   const n = wyrmNode(s);
   if (!n) return;
-  if (s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'wyrm')) return;
+  const flying = s.agents.find((a) => a.kind === AgentKind.Creature && a.species === 'wyrm');
+  if (flying) { if (raze) { flying.load = 2; flying.phase = 1; flying.path = []; } return; } // a refusal while it is aloft turns the flight to the Stake
   s.agents.push({
     id: s.nextAgentId++, kind: AgentKind.Creature, x: n.x + 0.5, y: n.y + 0.5, path: [], pathIdx: 0, speed: 5, homeId: -1, targetId: -1,
-    timer: 0, variant: 0, dir: 0, load: hostile ? 1 : 0, species: 'wyrm', anchorId: -1, ax: n.x + 0.5, ay: n.y + 0.5, alt: 0, phase: 1,
+    timer: 0, variant: 0, dir: 0, load: raze ? 2 : hostile ? 1 : 0, species: 'wyrm', anchorId: -1, ax: n.x + 0.5, ay: n.y + 0.5, alt: 0, phase: 1,
   });
   s.wyrm.flyover = Math.max(1, s.tick);
   s.wyrm.fires = 0;
@@ -166,6 +195,16 @@ export function startFlyover(s: GameState, hostile: boolean): void {
   redraw(s);
   s.stats.wyrmFlyovers++;
   const gw = hostile ? greatWyrm(s) : null;
+  if (gw && raze) {
+    // a great wyrm of the city's own meets the razing flight over the Stake: it turns, and the count starts again (iteration 70)
+    const a = s.agents[s.agents.length - 1];
+    a.load = 1;
+    s.wyrm.razing = false;
+    s.wyrm.starved = 0;
+    s.stats.wyrmDuels++;
+    pushMessage(s, `The Vein-Wyrm flies for the Founding Stake, and ${gw.name} rises from its cradle to meet it above the Charter. The old one turns aside; the Stake stands. It will be hungry again.`, 'milestone', true, { x: n.x, y: n.y });
+    return;
+  }
   if (gw) { s.stats.wyrmDuels++; pushMessage(s, `${gw.name} rises from its cradle to meet the Vein-Wyrm over ${s.cityName}. Two shadows cross the valley; the old one turns first. Half the roofs it meant to burn are spared.`, 'milestone', true, { x: n.x, y: n.y }); return; }
   if (hostile) illTiding(s);
   pushMessage(s, hostile ? `The wyrm takes wing over ${s.cityName}. Its shadow is the size of a district.` : `The bound wyrm circles ${s.cityName} once, as it does each season. Glimmoths scatter like sparks.`, hostile ? 'bad' : 'info', true, { x: n.x, y: n.y });
@@ -193,6 +232,8 @@ export function bind(s: GameState): string {
   s.wyrm.sulking = 0;
   s.wyrm.fedDays = 0;
   s.wyrm.tributeDay = -1;
+  s.wyrm.starved = 0;
+  s.wyrm.razing = false;
   redraw(s);
   pushMessage(s, `The Wyrm-Singer's song ends at dawn and the wyrm lowers its head to the Court. ${s.cityName} has a guardian. Its lair at (${n.x},${n.y}) burns back the Gloam for 30 tiles.`, 'milestone', true, { x: n.x, y: n.y });
   return 'The wyrm is bound.';
