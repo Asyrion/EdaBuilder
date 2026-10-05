@@ -4084,6 +4084,81 @@ adds both halves: the donkey carts balk at hounds, and the haulers do not.
   - **The Tallowkin's floor** is 11.7 % of their folk at eight draws a seed, as in iterations 64 and 70: not met.
   - The branch's runs are in `balance/cache/1be0f4d08811-a8d78ee53ad3.json`, committed with the iteration.
 
+### 4.104 The loose ends (iteration 73)
+
+NEXT_STEPS item 1, §17.4 D: five small promises this document made and the code never kept, found by iteration 68's audit
+(§4.99). Each is a rule the player can see and decide about; together they were one iteration. Sim changes: the wide bar.
+
+**1. The eggs go grey** (§8.6; `wyrmcraft.ts` `dailyGreyEggs`, `hazards.ts` `gloamAtDoor`). A cradle with the Gloam at its
+door is a hazard for its eggs:
+- each day the Gloam stands there, the cradle's `grey` count rises; it resets when the Gloam is cut back;
+- the first day warns, naming the cradle: cut it back, three days and they turn;
+- on the third, every egg in it turns to the **Grey line** (the Ward-beast of §8.6; a crossed line or a trueblood's blood is
+  lost with it), counted in `eggsGreyed`. Hatchlings and older are not touched. The cradle's panel shows the count and the
+  days left, with a problem line; the Annals have the row.
+
+**2. The Sky-Dock's wyvern** (§8.6; `vehicles.ts`, `events.ts` `wyvern_tale`):
+- the Dock's panel has a button: send a wyvern instead of the airship, or the airship again (`airship.wyvern`, the
+  `skydock` op). It names the wyvern that would go: a wyvern-stage dragon with no role or a courier's, at home;
+- on day 3 of the season a wyvern takes up to **100** surplus goods (the airship 200) for **5 days** (the airship 10) and
+  **no mana**: the Dock need not be lit. With none at home the airship goes instead, if the Dock is lit;
+- the dragon is away (`voyage`: the day it returns): no agent, not fed and not hungry, no growth, no new role; the Wyrms
+  panel says so. The Dock gone, it finds its own way home;
+- home again it pays 1.6 × the season price like the airship, and one time in two **"The wyvern's return"**: a rival
+  wardlight's egg (ember, bone, glim or storm for 3,000, needs a cradle), a challenge for the Ring (a bout fought at once,
+  the champion's odds at three quarters and the purse doubled; no Ring or no champion, and it goes unanswered), or only
+  the story (happiness +4 for 15 days). `fightBout` is the one bout, shared with the seasonal one and drawing the same
+  rolls in the same order.
+
+**3. Hatchling riders cross the map** (§8.2; `wyrmcraft.ts` `setRole`, `creatures.ts` `mountTick`). A fourth role for a
+drake or older, **mount**, once a Wyrm-Court stands ("raised at the Court"): it flies the Drake Mews' rider's errands (the
+nearest restless laid, the nearest fire doused) over the **whole map**, from its cradle, at the riders' speed, and comes
+home. `riderRescues` counts it like a rider and `mountRescues` as its own. It is drawn as a rider in the sky layer with a
+shadow beneath.
+
+**4a. Sextons at the brawl** (§13.13; `guilds.ts`, `walkers.ts`). The brawl sets `guilds.brawlDay`; on that day and the
+next every sexton's errand is the Guildhall's square, logged and counted (`brawlsParted`) when it arrives. The brawl tale
+has a fifth choice, **"Let the sextons part them"**: with a sexton abroad both guilds +5 and the sextons +10 for no crowns;
+with none, nobody comes and the guilds are unmoved. The choice is last, so the four old ones keep their places in every
+replay and save.
+
+**4b. The duel flown** (§13.13; `wyrm.ts` `sendDuelist`, the wyvern branch in `creatures.ts`). A great wyrm meeting a
+hostile flyover sends its own flyer: phase 4, the duel. It chases the Vein-Wyrm's agent at altitude 48; at the first
+meeting a roar, and the old one is marked: it circles the city **half as long** (130 ticks for 260; a meeting during the
+circling halves what is left). When the wyrm lands the duelist goes home. The messages, the duel count and the fire cap's
+half are as they were.
+
+**5. The merchant's memory** (§11 item 4; `events.ts`, `state.merchant`). Visits, crowns spent, eggs bought and evenings
+of stories are kept in state, with a default for old saves. A tale may now carry a `textFn` beside its text: the
+merchant's reads the record on every visit after the first ("The wagon is back, for the third time…"). Her choices read it
+too: the egg is **sky** the first time, **storm** the second, **ember** after, and each egg bought takes a tenth off every
+price (down to half); "Only talk" counts an evening; **"Call in the favour"** is owed after two evenings (Longwood seeds for
+nothing, the evenings spent) and refused before. The Trade Depot's panel shows the record. The choice is always listed, its
+line saying whether it is owed, since a tale's choices are one list.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 75 test files with 485 tests, and `npm run build`.
+- **`tests/iteration73.test.ts`** (9 tests): the eggs turn on the third day and not before, a hatchling untouched, the
+  count reset, the Annals row and the cradle's desc, and the daily hook; the wyvern leaves on day 3 without a lit Dock
+  with 100, the dragon away, unfed and refusing a role, home in five days with the crowns, the agent back, the airship
+  instead with none at home and the Dock lit, and the mode saved; the tale's three choices (the egg's line and price, the
+  challenge unanswered without a Ring and fought with one, the story) and `fightBout`'s purse; the mount refused without a
+  Court or at the egg, a mounted drake laying a restless 50 tiles off and coming home; the sextons' errand reaching the
+  Guildhall, the fifth choice with and without a sexton abroad, the old choices in their places; the duelist's chase, the
+  meeting, the halved circling and the return; the merchant's record over six visits, sky then storm, the prices, the
+  favour refused and then owed; old saves' defaults and the `skydock` op.
+- **`scripts/playtest73.mjs`** in Chromium, six scenes: the cradle's panel with "at the door 1 day: the eggs turn grey in
+  2 days" and the warning, then both eggs grey; the Dock's button naming the wyvern, the run sent and the panel while it is
+  away; a mounted drake in the air over the Court with its shadow, and the restless 28 tiles east laid; a sexton at the
+  Guildhall's door on the brawl's day and the brawl tale's fifth choice ("1 sexton abroad with salt"); the Vein-Wyrm and the
+  city's sky wyvern side by side over the forest, met after 59 ticks; the merchant's third-visit dialog with the ember egg
+  at 3,200 and the favour owed. A dusk brightness probe, no errors, no missing sprites.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim, main's
+  side from the cache). The bot raises no Sky-Dock, Court or Ring and never calls the brawl's fifth choice; the grey eggs
+  and the merchant are what it can meet.
+
+TABLE_PENDING
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4176,8 +4251,8 @@ people, sleeping coiled around the deepest nodes. Rules:
   (tribute of leystone) if unfed for ten days, sulking (no ward effect) until fed.
 - A wyrm may also **die** (age, or a player who starves it and refuses it): its bones
   become a **Wyrm-Bone Ossuary** site with the best deathcare in the game.
-- Later: **hatchlings** raised at the Court become drakes of a higher order that can carry
-  a rider across the map (see vehicles). Not built: item D of §17.4.
+- **Hatchlings** raised at the Court become drakes that carry a rider across the map (the
+  mount role; built in iteration 73, §4.104).
 
 ### 8.3 Magical buildings (new catalog entries, by unlock)
 
@@ -4334,13 +4409,13 @@ streaks, grey motes, wisps, drips, lightning, lamp-glow). Flying bodies are draw
 sky layer with an elliptical shadow on the ground and a `altitude` offset that dips as
 they land.
 
-**Flying trade (the future).** A wyvern courier is a first vehicle. At Beacon of Eda the
+**Flying trade.** A wyvern courier is a first vehicle. At Beacon of Eda the
 **Sky-Dock** (8.3) can send a wyvern instead of an airship: faster, no mana, but the
-trade event may return a *rival wardlight's* egg offer or a challenge for the Ring. Not built: item D of §17.4.
+trade event may return a *rival wardlight's* egg offer or a challenge for the Ring. Built in iteration 73 (§4.104).
 
 **Failure and drama.** A starved wyrm-stage dragon leaves and returns wild after a season
-(tribute like 8.2). A cradle in a district that the Gloam reaches is a hazard event ("the
-eggs go grey"; not built: item D of §17.4). Two dragons of the same line at wyrm stage may
+(tribute like 8.2). A cradle with the Gloam at its door is a hazard ("the
+eggs go grey"; built in iteration 73, §4.104: three days, and the eggs turn to the grey line). Two dragons of the same line at wyrm stage may
 **nest**: a vein egg without an event. *Dropped:* breeding went cross-line instead (§4.48: the
 cradle refuses two of one line, "two of one line breed nothing new"; vein eggs come from the
 Sleeping Wyrm).
@@ -4378,7 +4453,7 @@ consistent with `EDA_LORE.md` §9.
    itself with bioluminescent vines (a **Glowvine Lane** road tier lit by plants, no
    mana). Unlocked by the storm caller's visit or by an Academy exchange event.
 4. ✅ **Belerial caravans** (the caravan and the Wandering Merchant; strider mounts are a
-   season's Watch bonus only, and the merchant's memory is words: M19 part 1 and item D of §17.4). Every season a caravan of riders on bipedal **striders** may
+   season's Watch bonus only: M19 part 1; the merchant's memory is in state since iteration 73, §4.104). Every season a caravan of riders on bipedal **striders** may
    reach the Trade Depot (needs a road to the map edge): sells rare goods, buys surplus
    at good prices, offers strider mounts (Watch reach +, later couriers) and, rarely, an
    egg. The **Wandering Merchant of Belerial** is a named recurring visitor with a
@@ -4611,8 +4686,7 @@ This closes M8, the deep dive. The next large steps are M10 Walkers and M11 Peop
 ### 13.13 Later
 
 Smaller follow-ups once walkers exist: scholars carry relic pieces (✅, the scholar walker), sextons
-attend the brawl, and the great wyrm's duel is flown by the wyvern agent itself (these two not built:
-item D of §17.4).
+attend the brawl, and the great wyrm's duel is flown by the wyvern agent itself (✅ both, iteration 73, §4.104).
 
 ## 14. Milestones ahead: walkers and peoples
 
@@ -4875,7 +4949,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - Both show in the game-over screen and the Annals. This is a sim change, so it runs the wide bar.
 - ✅ **C. Golem haulers** (§8.4; built in iteration 72, §4.103). The Golem Foundry fields slow, tireless carts that carry
   30 and are not scared by hounds. They are drawn as vehicles.
-- **D. Loose ends.**
+- ✅ **D. Loose ends** (built in iteration 73, §4.104).
   - "The eggs go grey": the Gloam reaches a cradle (§8.6).
   - The Sky-Dock sends a wyvern instead of the airship: faster and without mana, but it may come back with a rival's
     egg offer or a challenge for the Ring (§8.6).
@@ -5297,3 +5371,9 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   donkey carts now balk at a hound within 4 tiles, once a tick's look at the hounds abroad, with no roll, so every city
   without hounds on its roads is bit-identical. A hauler loads what the market has room for, since 30 into a cap of 20
   would throw a third away.
+- *Five loose ends in one iteration, each the smallest rule that bites (iteration 73):* the eggs turn to the grey line
+  rather than dying, so the hazard costs the chosen line and not the egg; the wyvern run reuses the airship's state machine
+  and books rather than a second one; a mount is a role with the rider's errands and no range, not a new creature; the
+  sextons' choice is appended, not inserted, so every recorded choice keeps its index; the duel is a phase on the agent
+  the great wyrm already has; the merchant's memory is four numbers in state and a text that reads them, with the owed
+  favour listed always and refused until it is owed, since a tale's choices are one list.
