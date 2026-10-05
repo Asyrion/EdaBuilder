@@ -349,6 +349,15 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 78 (the scale of things)
+
+- **The citizen is the yardstick for the small buildings** (a playtest finding: the well stood two and a half citizens
+  tall). Objects a person reaches over (the three wells) are 1.5 citizens at most, posts and small shrines 2.5, sheds,
+  works and level-1 cottages 2.8, the academy a storey lower; the two-storey houses, the halls, the towers and the wonders
+  are unchanged. A small painted object stands in the middle of its tile (the importer's `shift` key).
+- **The survey tool** (`scripts/playtest78.mjs`) stands a citizen beside every sprite.
+- Art only: the sim files are unchanged (DESIGN §4.109). M17 part 1 is still next.
+
 ## Done in iteration 77 (the sprites faced and fitted)
 
 - **Every building sprite surveyed** over its footprint diamond, each painted one beside its mirror

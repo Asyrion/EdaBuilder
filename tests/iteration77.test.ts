@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8')).sprites as Record<string, { w: number; h: number; ax: number; ay: number }>;
-const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; w?: number; h?: number; checked?: boolean; targetHeight?: number }[];
+const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; w?: number; h?: number; checked?: boolean; targetHeight?: number; shift?: { x: number; y: number } }[];
 const buildings = sources.filter((e) => (e.kind ?? 'building') === 'building' && e.w && e.h);
 
 describe('The painted buildings fitted to their tiles', () => {
@@ -29,8 +29,8 @@ describe('The painted buildings fitted to their tiles', () => {
     for (const e of buildings) if (e.name.startsWith('b_')) {
       const m = manifest[e.name];
       // the centre anchor: the sprite's middle over the footprint's centre line (centreAnchor in scripts/lib/sprite.mjs)
-      expect(m.ax, `${e.name} anchor`).toBe(Math.round(m.w / 2) - (e.w! - e.h!) * 8);
-      expect(m.ay, `${e.name} base`).toBe(m.h - 1 - (e.w! + e.h!) * 8);
+      expect(m.ax, `${e.name} anchor`).toBe(Math.round(m.w / 2) - (e.w! - e.h!) * 8 + (e.shift?.x ?? 0));
+      expect(m.ay, `${e.name} base`).toBe(m.h - 1 - (e.w! + e.h!) * 8 + (e.shift?.y ?? 0)); // a small object may be shifted up into its tile's middle (iteration 78)
     }
   });
 });

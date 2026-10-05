@@ -1535,7 +1535,7 @@ function zoneSpecs(zone: string, level: number, variant: number, people?: string
     if (level === 1) {
       const walls: Wall[] = ['sod', 'sod', 'plaster', 'sod'];
       const roofs: Roof[] = ['thatch', 'moss', 'thatch', 'shingle'];
-      return { w: 1, h: 1, height: 7 + (variant % 2), roofH: 6 + (variant === 3 ? 1 : 0), wall: walls[variant], roof: roofs[variant], windows: 1, door: true, chimney: variant % 2 === 0, glowWindows: true, seed, lanternPost: variant === 1 };
+      return { w: 1, h: 1, height: 5 + (variant % 2), roofH: 5 + (variant === 3 ? 1 : 0), wall: walls[variant], roof: roofs[variant], windows: 1, door: true, chimney: variant % 2 === 0, glowWindows: true, seed, lanternPost: variant === 1 };
     }
     if (level === 2) {
       const walls: Wall[] = ['timber', 'plaster', 'whitewash', 'bluewash'];
@@ -1547,7 +1547,7 @@ function zoneSpecs(zone: string, level: number, variant: number, people?: string
     return { w: 1, h: 1, height: 18 + (variant % 2) * 2, roofH: 9, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 3, door: true, chimney: true, glowWindows: true, seed, hip: variant >= 2, overhang: true, lanternPost: true, ridgeOrnament: variant % 2 === 1, leyLamps: variant === 0 };
   }
   if (zone === 'market') {
-    if (level === 1) return { w: 1, h: 1, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 0, door: true, sign: true, glowWindows: true, seed, bottles: true };
+    if (level === 1) return { w: 1, h: 1, height: 5, roofH: 4, wall: 'timber', roof: 'awning', windows: 0, door: true, sign: true, glowWindows: true, seed, bottles: true };
     if (level === 2) return { w: 1, h: 1, height: 11, roofH: 6, wall: variant % 2 ? 'plaster' : 'timber', roof: variant % 2 ? 'tile' : 'awning', windows: 2, windowRows: 2, door: true, sign: true, glowWindows: true, seed, bottles: true, lanternPost: true, overhang: variant % 2 === 1 };
     return { w: 1, h: 1, height: 18, roofH: 7, wall: variant % 2 ? 'plaster' : 'stone', roof: variant % 2 ? 'copper' : 'slate', windows: 3, windowRows: 3, door: true, sign: true, banner: variant % 2 === 0, glowWindows: true, seed, hip: true, bottles: true, lanternPost: true, bellTower: variant % 2 === 0, ridgeOrnament: true };
   }
@@ -1557,7 +1557,7 @@ function zoneSpecs(zone: string, level: number, variant: number, people?: string
     return { w: 1, h: 1, height: 14, roofH: 7, wall: 'darkstone', roof: variant % 2 ? 'slate' : 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, glassDome: variant % 2 === 0, alembic: variant % 2 === 1, runeBand: variant % 2 === 1 };
   }
   // arcane
-  if (level === 1) return { w: 1, h: 1, height: 11, roofH: 7, wall: 'arcane', roof: 'arcane', windows: 1, windowRows: 1, door: true, glowWindows: true, seed, hip: variant % 2 === 1, runeBand: true };
+  if (level === 1) return { w: 1, h: 1, height: 8, roofH: 6, wall: 'arcane', roof: 'arcane', windows: 1, windowRows: 1, door: true, glowWindows: true, seed, hip: variant % 2 === 1, runeBand: true };
   if (level === 2) return { w: 1, h: 1, height: 16, roofH: 8, wall: variant % 2 ? 'stone' : 'arcane', roof: 'arcane', windows: 2, windowRows: 2, door: true, glowWindows: true, seed, spire: true, runeBand: true, overhang: variant % 2 === 0 };
   return { w: 1, h: 1, height: 22, roofH: 11, wall: variant % 2 ? 'arcane' : 'stone', roof: 'cone', windows: 2, windowRows: 3, door: true, glowWindows: true, seed, crystal: true, orbit: true, runeBand: true };
 }
@@ -1581,7 +1581,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   tidepool: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'none', windows: 0, seed: 50, runeBand: true, leyLamps: true, wisps: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
-  torrentmill: { w: 1, h: 1, height: 12, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
+  torrentmill: { w: 1, h: 1, height: 9, roofH: 5, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
   glimhouse: { w: 2, h: 2, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 3, windowRows: 1, glowWindows: true, seed: 31, glassDome: true, runeBand: true },
   observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
   hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
@@ -1604,14 +1604,14 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
   watchhouse: { w: 2, h: 2, height: 16, roofH: 6, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 8, lanternPost: true, bellTower: true },
-  healer: { w: 1, h: 1, height: 12, roofH: 7, wall: 'plaster', roof: 'green', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 9, bottles: true, lanternPost: true },
+  healer: { w: 1, h: 1, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 9, bottles: true, lanternPost: true },
   hospice: { w: 2, h: 2, height: 16, roofH: 8, wall: 'whitewash', roof: 'green', windows: 3, windowRows: 3, door: true, chimney: true, glowWindows: true, seed: 10, hip: true, bottles: true, glassDome: true, lanternPost: true },
   veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true, runeBand: true, bellTower: true },
-  shrine: { w: 1, h: 1, height: 8, roofH: 8, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
-  candleshrine: { w: 1, h: 1, height: 9, roofH: 7, wall: 'whitewash', roof: 'cone', windows: 1, windowRows: 2, door: true, glowWindows: true, seed: 52, lanternPost: true, leyLamps: true },
+  shrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
+  candleshrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, windowRows: 2, door: true, glowWindows: true, seed: 52, lanternPost: true, leyLamps: true },
   wicktower: { w: 1, h: 1, height: 14, roofH: 3, wall: 'plaster', roof: 'cone', windows: 1, windowRows: 3, seed: 53, glowWindows: true, lanternPost: true },
   temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true },
-  academy: { w: 2, h: 2, height: 18, roofH: 8, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
+  academy: { w: 2, h: 2, height: 13, roofH: 6, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
   grandacademy: { w: 3, h: 3, height: 26, roofH: 10, wall: 'stone', roof: 'arcane', windows: 4, windowRows: 4, door: true, glowWindows: true, seed: 15, crystal: true, hip: true, orbit: true, runeBand: true, bellTower: true },
   boneyard: { w: 2, h: 2, height: 5, roofH: 5, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 16 },
   ossuary: { w: 2, h: 2, height: 14, roofH: 9, wall: 'bone', roof: 'slate', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 17, spire: true, wisps: true, runeBand: true },
@@ -1624,9 +1624,9 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
   lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
   // the water (iteration 60)
-  fishershut: { w: 1, h: 1, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 71, fishRack: true, lanternPost: true, glowWindows: true },
-  smokehouse: { w: 1, h: 1, height: 10, roofH: 6, wall: 'stone', roof: 'shingle', windows: 0, door: true, chimney: true, seed: 72, smokeRack: true },
-  reedcutters: { w: 1, h: 1, height: 8, roofH: 8, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 73, reedBundles: true },
+  fishershut: { w: 1, h: 1, height: 7, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 71, fishRack: true, lanternPost: true, glowWindows: true },
+  smokehouse: { w: 1, h: 1, height: 8, roofH: 5, wall: 'stone', roof: 'shingle', windows: 0, door: true, chimney: true, seed: 72, smokeRack: true },
+  reedcutters: { w: 1, h: 1, height: 6, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 73, reedBundles: true },
   weir: { w: 1, h: 1, height: 4, roofH: 2, wall: 'stone', roof: 'flat', windows: 0, seed: 74, weirStones: true, lanternPost: true },
   watergarden: { w: 2, h: 2, height: 7, roofH: 6, wall: 'plaster', roof: 'copper', windows: 0, seed: 75, lilyPond: true, ridgeOrnament: true, lanternPost: true },
   greatweir: { w: 2, h: 2, height: 10, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 51, runeBand: true, leyLamps: true, waterWheel: true, lanternPost: true, crystal: true },
@@ -1799,14 +1799,15 @@ function drawBoneyard(): { p: Painter; glow: Painter; ax: number; ay: number } {
 }
 
 function drawWardLantern(): { p: Painter; glow: Painter; ax: number; ay: number } {
-  const p = new Painter(34, 40);
-  const glow = new Painter(34, 40);
-  p.poly([[17, 24], [32, 32], [17, 40], [2, 32]], 'shadow', 90);
-  p.poly([[17, 28], [24, 32], [17, 36], [10, 32]], 'stone2');
-  p.poly([[10, 32], [17, 36], [17, 38], [10, 34]], 'stone1');
-  p.poly([[17, 36], [24, 32], [24, 34], [17, 38]], 'stone2');
-  p.rect(16, 10, 3, 22, 'stone1');
-  p.rect(16, 10, 1, 22, 'outline');
+  // a lamp post two citizens and a bit tall (iteration 78: the post was 12 px longer and stood over three)
+  const p = new Painter(34, 28);
+  const glow = new Painter(34, 28);
+  p.poly([[17, 12], [32, 20], [17, 28], [2, 20]], 'shadow', 90);
+  p.poly([[17, 16], [24, 20], [17, 24], [10, 20]], 'stone2');
+  p.poly([[10, 20], [17, 24], [17, 26], [10, 22]], 'stone1');
+  p.poly([[17, 24], [24, 20], [24, 22], [17, 26]], 'stone2');
+  p.rect(16, 10, 3, 10, 'stone1');
+  p.rect(16, 10, 1, 10, 'outline');
   // lantern cage
   p.rect(13, 4, 9, 8, 'outline');
   p.rect(14, 5, 7, 6, 'ley1');
@@ -1815,7 +1816,7 @@ function drawWardLantern(): { p: Painter; glow: Painter; ax: number; ay: number 
   p.px(17, 2, 'stone3');
   glow.rect(13, 3, 9, 10, 'ley1', 255);
   p.outline('outline');
-  return { p, glow, ax: 17, ay: 24 };
+  return { p, glow, ax: 17, ay: 12 };
 }
 
 // ---------- assemble ----------
