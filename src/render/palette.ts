@@ -127,6 +127,9 @@ export const PAL = {
   mossRoof2: '#4f6a2a',
   copperRoof: '#4fa89a',
   copperRoof2: '#2f7a6e',
+  // red brick, for the paintings redrawn in code (iteration 79)
+  brick1: '#a8503a',
+  brick2: '#7e3a2a',
 } as const;
 
 export type PalName = keyof typeof PAL;

@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8')).sprites as Record<string, { w: number; h: number; ax: number; ay: number }>;
-const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; w?: number; h?: number; checked?: boolean; targetHeight?: number; shift?: { x: number; y: number } }[];
-const buildings = sources.filter((e) => (e.kind ?? 'building') === 'building' && e.w && e.h);
+const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; w?: number; h?: number; checked?: boolean; targetHeight?: number; shift?: { x: number; y: number }; off?: boolean }[];
+const buildings = sources.filter((e) => (e.kind ?? 'building') === 'building' && e.w && e.h && !e.off); // the paintings switched off in iteration 79 are not in the atlas
 
 describe('The painted buildings fitted to their tiles', () => {
   it("the Founding Stake's halls grow: the three tall halls never shrink, and the wide brick hall of stage 2 fills its diamond's width", () => {

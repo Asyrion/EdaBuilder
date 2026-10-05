@@ -169,7 +169,7 @@ function wallTile(mask: number): { p: Painter; glow: Painter } {
 }
 
 // ---------- buildings ----------
-export type Wall = 'sod' | 'timber' | 'stone' | 'whitewash' | 'arcane' | 'bone' | 'darkstone' | 'plaster' | 'bluewash';
+export type Wall = 'sod' | 'timber' | 'stone' | 'whitewash' | 'arcane' | 'bone' | 'darkstone' | 'plaster' | 'bluewash' | 'log' | 'brick';
 export type Roof = 'thatch' | 'shingle' | 'slate' | 'tile' | 'arcane' | 'flat' | 'cone' | 'dome' | 'green' | 'awning' | 'moss' | 'copper' | 'none';
 
 export interface BuildingSpec {
@@ -211,6 +211,17 @@ export interface BuildingSpec {
   smokeRack?: boolean; // a smoking rack of fish under a little roof by the right face (the Smokehouse)
   lilyPond?: boolean; // a pond with lilies and stepping stones in front (the Water Garden)
   weirStones?: boolean; // a low stone sill with white water over it (the Weir)
+  // the paintings' features, redrawn in the set's manner (iteration 79)
+  porch?: boolean; // a small lean-to roof over the door on two posts
+  flowerBox?: boolean; // a box of flowers under the ground-floor windows of the right face
+  bush?: boolean; // a round bush at the left corner
+  woodpile?: boolean; // logs stacked at the right corner
+  stalls?: boolean; // a striped awning along the right face with a counter of goods under it (the depot)
+  sideTree?: 'round' | 'conifer' | 'autumn'; // a small tree at the left corner
+  fence?: boolean; // pickets along the left front edge
+  dormer?: boolean; // a dormer window on the front slope
+  balcony?: boolean; // a railing across the right face at mid height
+  brickChimney?: boolean; // the chimney in brick instead of stone
 }
 
 const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
@@ -223,6 +234,8 @@ const WALLS: Record<Wall, { l: Col; r: Col; t: Col; d: Col }> = {
   darkstone: { l: 'outline', r: 'stone1', t: 'stone2', d: 'shadow' },
   plaster: { l: 'plaster2', r: 'plaster', t: 'plaster', d: 'wood1' },
   bluewash: { l: 'bluewash2', r: 'bluewash', t: 'bluewash', d: 'wood1' },
+  log: { l: 'wood1', r: 'wood2', t: 'wood3', d: 'wood1' }, // the timber wall with a seam every third row (the log cabins of the paintings, iteration 79)
+  brick: { l: 'brick2', r: 'brick1', t: 'brick1', d: 'wood1' },
 };
 const ROOFS: Record<string, { a: Col; b: Col }> = {
   thatch: { a: 'thatch1', b: 'thatch2' },
@@ -299,6 +312,11 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
         } else if (spec.wall === 'whitewash' || spec.wall === 'plaster' || spec.wall === 'bluewash') {
           if (d % 6 === 0 || i % 7 === 0) p.px(x, y, 'wood1', 200);
           if (spec.wall !== 'whitewash' && (i + d) % 7 === 3 && d % 6 !== 0) p.px(x, y, 'wood1', 90);
+        } else if (spec.wall === 'log') {
+          if (d % 3 === 0) p.px(x, y, right ? 'wood1' : 'outline', 130); // a seam under every log
+          if (d % 3 === 1 && i % 9 === 4) p.px(x, y, 'wood3', 110); // a knot now and then
+        } else if (spec.wall === 'brick') {
+          if (d % 3 === 0 || (i + (d % 6 >= 3 ? 2 : 0)) % 4 === 0) p.px(x, y, right ? 'brick2' : 'outline', 110);
         } else if (spec.wall === 'sod') {
           if (r < 0.15) p.px(x, y, 'sod2', right ? 120 : 200);
         } else if (spec.wall === 'arcane') {
@@ -461,9 +479,9 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
     if (spec.chimney) {
       const cx = Math.round(r1[0] + (r2[0] - r1[0]) * 0.3);
       const cy = Math.round(r1[1] + (r2[1] - r1[1]) * 0.3);
-      p.rect(cx - 1, cy - 6, 3, 7, 'stone1');
-      p.rect(cx - 1, cy - 6, 1, 7, 'outline');
-      p.rect(cx, cy - 7, 2, 1, 'stone2');
+      p.rect(cx - 1, cy - 6, 3, 7, spec.brickChimney ? 'brick1' : 'stone1');
+      p.rect(cx - 1, cy - 6, 1, 7, spec.brickChimney ? 'brick2' : 'outline');
+      p.rect(cx, cy - 7, 2, 1, spec.brickChimney ? 'brick2' : 'stone2');
     }
   }
   // sign (market)
@@ -708,6 +726,69 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
         glow.px(cx + x, cy + y, 'glass', 120);
       }
     p.px(cx, cy - r - 1, 'copper');
+  }
+  // the paintings' features (iteration 79), each a few flat polygons in the set's colours
+  const gyR = (x: number) => B[1] + ((R[1] - B[1]) * (x - B[0])) / (R[0] - B[0]); // the right face's ground line
+  const gyL = (x: number) => L[1] + ((B[1] - L[1]) * (x - L[0])) / (B[0] - L[0]); // the left face's ground line
+  if (spec.porch) {
+    const x0 = Math.round(B[0] + (R[0] - B[0]) * 0.35) - 1;
+    const rcP = ROOFS[spec.roof === 'none' || spec.roof === 'flat' ? 'shingle' : spec.roof];
+    for (const px of [x0, x0 + 5]) p.rect(px, Math.floor(gyR(px)) - 6, 1, 6, 'wood1');
+    for (let dx = -1; dx <= 6; dx++) { const y = Math.floor(gyR(x0 + dx)) - 7; p.px(x0 + dx, y, rcP.a); p.px(x0 + dx, y - 1, rcP.b); p.px(x0 + dx, y + 1, 'outline'); }
+  }
+  if (spec.flowerBox && H >= 9) {
+    const cols = Math.max(0, Math.round((spec.windows ?? 0) * (w / (w + h)) * 2));
+    for (let c = 0; c < cols; c++) {
+      const x = Math.round(B[0] + 2 + (R[0] - 2 - (B[0] + 2)) * ((c + 0.5) / cols)) - 1;
+      const y = Math.floor(gyR(x)) - H + 7;
+      p.rect(x - 1, y + 1, 4, 1, 'wood1');
+      p.px(x - 1, y, 'leaf2'); p.px(x, y, 'flower1'); p.px(x + 1, y, 'flower2'); p.px(x + 2, y, 'leaf2');
+    }
+  }
+  if (spec.balcony) {
+    const yb = Math.floor(H * 0.5);
+    for (let x = B[0] + 3; x < R[0] - 3; x++) { const y = Math.floor(gyR(x)) - yb; p.px(x, y, 'wood1'); if ((x - B[0]) % 3 === 0) p.px(x, y + 1, 'wood2'); }
+  }
+  if (spec.dormer) {
+    const mx = Math.round((L[0] + B[0]) / 2) + 2;
+    const my = Math.round((L[1] + B[1]) / 2) - H - Math.round(RH * 0.55);
+    p.rect(mx - 2, my - 3, 5, 4, wc.r);
+    p.rect(mx - 2, my - 3, 1, 4, wc.l);
+    p.rect(mx, my - 2, 2, 2, 'windowDark');
+    if (spec.glowWindows) glow.rect(mx, my - 2, 2, 2, 'windowLit');
+    p.rect(mx - 3, my - 4, 7, 1, ROOFS[spec.roof === 'none' || spec.roof === 'flat' ? 'shingle' : spec.roof].b);
+  }
+  if (spec.bush) {
+    const cx = L[0] + 4, cy = L[1] - 1;
+    p.circle(cx, cy, 3, 'leaf2');
+    p.circle(cx - 1, cy - 1, 1, 'leaf1');
+    p.px(cx + 1, cy, 'leaf3');
+  }
+  if (spec.sideTree) {
+    const tx = L[0] + 3, ty = L[1] - 2;
+    if (spec.sideTree === 'conifer') {
+      p.rect(tx, ty - 1, 1, 2, 'trunk');
+      for (let k = 0; k < 7; k++) { const hw = Math.floor(k / 2); p.rect(tx - hw, ty - 8 + k, 2 * hw + 1, 1, k % 2 ? 'leaf2' : 'leaf1'); }
+    } else {
+      const cols: Col[] = spec.sideTree === 'autumn' ? ['leafAutumn', 'thatch1'] : ['leaf2', 'leaf1'];
+      p.rect(tx, ty - 3, 1, 4, 'trunk');
+      p.circle(tx, ty - 6, 3, cols[0]);
+      p.circle(tx - 1, ty - 7, 1, cols[1]);
+    }
+  }
+  if (spec.fence) {
+    for (let k = 1; k <= 5; k++) { const x = L[0] + 1 + k * 2; const y = Math.floor(gyL(x)) + 1; p.rect(x, y - 2, 1, 3, 'wood1'); p.px(x, y - 3, 'wood2'); if (k < 5) p.px(x + 1, y - 1, 'wood2'); }
+  }
+  if (spec.woodpile) {
+    const x = R[0] - 7, y = R[1] - 1;
+    for (const [dx, dy] of [[0, 0], [2, 0], [4, 0], [1, -2], [3, -2]]) { p.circle(x + dx, y + dy, 1, 'wood2'); p.px(x + dx, y + dy, 'wood3'); }
+  }
+  if (spec.stalls) {
+    const len = R[0] - B[0];
+    const x0 = B[0] + Math.round(len * 0.55), x1 = B[0] + Math.round(len * 0.95);
+    for (let x = x0; x <= x1; x++) { const y = Math.floor(gyR(x)) - 7; const c: Col = Math.floor((x - x0) / 2) % 2 ? 'whitewash' : 'cloth2'; p.px(x, y, c); p.px(x, y - 1, c); p.px(x, y + 1, 'outline'); }
+    for (const px of [x0, x1]) p.rect(px, Math.floor(gyR(px)) - 6, 1, 6, 'wood1');
+    for (let x = x0 + 1; x < x1; x++) { const y = Math.floor(gyR(x)); p.px(x, y - 2, 'wood1'); p.px(x, y - 1, 'wood2'); if ((x - x0) % 3 === 1) p.px(x, y - 3, (['flower1', 'gold', 'leaf2', 'cloth4'] as Col[])[Math.floor((x - x0) / 3) % 4]); }
   }
   p.outline('outline');
   return { p, glow, ax: ox + h * 16, ay: base + H };
@@ -1540,7 +1621,15 @@ function zoneSpecs(zone: string, level: number, variant: number, people?: string
     if (level === 2) {
       const walls: Wall[] = ['timber', 'plaster', 'whitewash', 'bluewash'];
       const roofs: Roof[] = ['shingle', 'moss', 'tile', 'slate'];
-      return { w: 1, h: 1, height: 12 + (variant % 2), roofH: 7, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, hip: variant === 3, overhang: true, lanternPost: variant % 2 === 0 };
+      // the four wooden_houses paintings, redrawn in code (iteration 79): a plank house with a tile roof and a porch, a log cabin
+      // with a flower box and a woodpile, a log cabin with a red roof and a veranda, a log cabin with a dormer and lanterns
+      const painted: Partial<BuildingSpec>[] = [
+        { wall: 'timber', roof: 'tile', height: 13, roofH: 7, brickChimney: true, porch: true, lanternPost: true, fence: true, bush: true, sideTree: 'round' },
+        { wall: 'log', roof: 'shingle', height: 12, roofH: 7, porch: true, flowerBox: true, woodpile: true, sideTree: 'conifer' },
+        { wall: 'log', roof: 'tile', height: 12, roofH: 6, brickChimney: true, porch: true, bush: true, sideTree: 'round', fence: true },
+        { wall: 'log', roof: 'shingle', height: 12, roofH: 8, dormer: true, flowerBox: true, porch: true, lanternPost: true, bush: true },
+      ];
+      return { w: 1, h: 1, height: 12, roofH: 7, wall: walls[variant], roof: roofs[variant], windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, ...painted[variant % 4] };
     }
     const walls: Wall[] = ['stone', 'plaster', 'bluewash', 'whitewash'];
     const roofs: Roof[] = ['slate', 'tile', 'copper', 'slate'];
@@ -1552,7 +1641,17 @@ function zoneSpecs(zone: string, level: number, variant: number, people?: string
     return { w: 1, h: 1, height: 18, roofH: 7, wall: variant % 2 ? 'plaster' : 'stone', roof: variant % 2 ? 'copper' : 'slate', windows: 3, windowRows: 3, door: true, sign: true, banner: variant % 2 === 0, glowWindows: true, seed, hip: true, bottles: true, lanternPost: true, bellTower: variant % 2 === 0, ridgeOrnament: true };
   }
   if (zone === 'craft') {
-    if (level === 1) return { w: 1, h: 1, height: 7, roofH: 4, wall: 'timber', roof: variant % 2 ? 'thatch' : 'shingle', windows: 1, door: true, chimney: true, glowWindows: true, seed, alembic: variant % 2 === 0 };
+    if (level === 1) {
+      // the four general_craft paintings, redrawn in code (iteration 79): the tan workshop with a balcony and a sign, the red-roofed
+      // cottage with a porch, the half-timbered house with a green roof and a dormer, the stone-and-timber house with a balcony
+      const painted: Partial<BuildingSpec>[] = [
+        { wall: 'timber', roof: 'shingle', height: 9, roofH: 5, sign: true, balcony: true, flowerBox: true, woodpile: true, sideTree: 'round' },
+        { wall: 'timber', roof: 'tile', height: 8, roofH: 6, sign: true, porch: true, flowerBox: true, sideTree: 'round', fence: true, lanternPost: true },
+        { wall: 'plaster', roof: 'green', height: 9, roofH: 5, brickChimney: true, dormer: true, flowerBox: true, sideTree: 'autumn', fence: true },
+        { wall: 'stone', roof: 'slate', height: 9, roofH: 5, sign: true, balcony: true, porch: true, sideTree: 'conifer', woodpile: true },
+      ];
+      return { w: 1, h: 1, height: 9, roofH: 5, wall: 'timber', roof: 'shingle', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed, ...painted[variant % 4] };
+    }
     if (level === 2) return { w: 1, h: 1, height: 10, roofH: 6, wall: variant % 2 ? 'stone' : 'darkstone', roof: 'shingle', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed, alembic: true };
     return { w: 1, h: 1, height: 14, roofH: 7, wall: 'darkstone', roof: variant % 2 ? 'slate' : 'shingle', windows: 2, windowRows: 2, door: true, chimney: true, glowWindows: true, seed, glassDome: variant % 2 === 0, alembic: variant % 2 === 1, runeBand: variant % 2 === 1 };
   }
@@ -1619,7 +1718,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   garden: { w: 1, h: 1, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 19 },
   square: { w: 2, h: 2, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 20 },
   guildhall: { w: 2, h: 2, height: 18, roofH: 8, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 3, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true },
-  depot: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, glowWindows: true, seed: 24, lanternPost: true, banner: true },
+  depot: { w: 2, h: 2, height: 16, roofH: 8, wall: 'plaster', roof: 'slate', windows: 3, windowRows: 2, door: true, chimney: true, brickChimney: true, sign: true, banner: true, stalls: true, lanternPost: true, flowerBox: true, overhang: true, dormer: true, glowWindows: true, seed: 24 }, // the trade_houses painting redrawn (iteration 79): a half-timbered hall over a slate roof, awnings and a stall along its front
   ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
   lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
@@ -1683,26 +1782,73 @@ function drawSpire(): { p: Painter; glow: Painter; ax: number; ay: number } {
   return { p, glow, ax: 17, ay: 24 };
 }
 
+/** The three wells after their paintings (iteration 79), a citizen and a half tall, standing in the middle of the tile: the
+ *  anchor is 10 rows above the sprite's last row, so the ring's base sits at the tile's centre. Each is a stone ring under a
+ *  little pyramid roof on two posts, with the bucket the paintings show; 16 painted rows, 18 with the outline. */
+function wellRing(p: Painter, water: Col, hi: Col, mossy: boolean): void {
+  // the ring: a dark left half and a lit right half, the water seen in its top
+  p.rect(11, 12, 13, 5, 'stone1');
+  p.rect(17, 12, 7, 5, 'stone2');
+  p.poly([[17, 10], [23, 12], [17, 14], [11, 12]], 'stone3');
+  p.poly([[17, 11], [21, 12], [17, 13], [13, 12]], water);
+  p.px(17, 12, hi);
+  for (let d = 0; d < 6; d++) p.px(12 + d * 2, 14 + (d % 2), d < 3 ? 'outline' : 'stone3'); // the courses
+  if (mossy) { p.px(12, 16, 'moss'); p.px(22, 15, 'moss'); p.px(15, 16, 'moss'); }
+}
+function wellRoof(p: Painter, a: Col, b: Col, post: Col): void {
+  // two posts, and a pyramid roof over them: the lit faces toward the right, the dark toward the left, as the set's cone roofs
+  p.rect(11, 6, 1, 7, post);
+  p.rect(23, 6, 1, 7, 'wood2');
+  const apex: [number, number] = [17, 1], T: [number, number] = [17, 3], R: [number, number] = [25, 7], B: [number, number] = [17, 10], L: [number, number] = [9, 7];
+  p.poly([L, T, apex], b);
+  p.poly([T, R, apex], a);
+  p.poly([L, B, apex], b);
+  p.poly([B, R, apex], a);
+  p.line(B[0], B[1], apex[0], apex[1], 'outline');
+  p.line(L[0], L[1], apex[0], apex[1], b);
+  p.line(R[0], R[1], apex[0], apex[1], a);
+  p.rect(16, 11, 2, 2, 'wood1'); // the bucket on the rim
+  p.px(16, 10, 'ironDark');
+}
 function drawWell(): { p: Painter; glow: Painter; ax: number; ay: number } {
-  const p = new Painter(34, 28);
-  const glow = new Painter(34, 28);
-  p.poly([[17, 12], [32, 20], [17, 28], [2, 20]], 'shadow', 90);
-  // stone ring
-  p.poly([[17, 15], [27, 20], [17, 25], [7, 20]], 'stone2');
-  p.poly([[17, 19], [23, 20], [17, 23], [11, 20]], 'water2');
-  p.px(17, 20, 'water3');
-  p.poly([[7, 20], [17, 25], [17, 27], [7, 22]], 'stone1');
-  p.poly([[17, 25], [27, 20], [27, 22], [17, 27]], 'stone2');
-  // posts and little roof
-  p.rect(9, 8, 2, 12, 'wood1');
-  p.rect(24, 8, 2, 12, 'wood1');
-  p.poly([[17, 2], [30, 9], [17, 12], [4, 9]], 'shingle1');
-  p.poly([[4, 9], [17, 12], [17, 14], [4, 11]], 'shingle2');
-  p.poly([[17, 12], [30, 9], [30, 11], [17, 14]], 'shingle1');
-  p.rect(17, 14, 1, 4, 'wood1');
-  p.rect(16, 18, 3, 2, 'wood2');
+  const p = new Painter(34, 18);
+  const glow = new Painter(34, 18);
+  // the painting: a mossy stone ring, a shingled roof on timber posts, the bucket, a coil of rope and a mound of earth beside
+  // it, cobbles under it
+  for (const x of [8, 26, 10, 24]) p.px(x, 16, 'stone3');
+  p.poly([[3, 17], [9, 17], [6, 14]], 'dirt2');
+  p.circle(28, 15, 1, 'thatch1'); p.px(28, 15, 'thatch2');
+  wellRing(p, 'water1', 'water3', true);
+  wellRoof(p, 'shingle1', 'shingle2', 'wood1');
   p.outline('outline');
-  return { p, glow, ax: 17, ay: 12 };
+  return { p, glow, ax: 17, ay: 7 };
+}
+function drawSeep(): { p: Painter; glow: Painter; ax: number; ay: number } {
+  const p = new Painter(34, 18);
+  const glow = new Painter(34, 18);
+  // the painting: the same well under a violet slate roof, grass and flowers about its foot
+  for (let x = 4; x <= 30; x += 2) p.px(x, 16, x % 4 ? 'grass2' : 'grass3');
+  p.px(5, 15, 'flower3'); p.px(29, 15, 'flower1'); p.px(27, 16, 'flower2');
+  wellRing(p, 'water2', 'waterHi', true);
+  wellRoof(p, 'bluewash2', 'deepPurple', 'wood1');
+  p.outline('outline');
+  return { p, glow, ax: 17, ay: 7 };
+}
+function drawTidewell(): { p: Painter; glow: Painter; ax: number; ay: number } {
+  const p = new Painter(34, 18);
+  const glow = new Painter(34, 18);
+  // the painting: a shrine well, its water glowing blue, under a green pagoda roof with upturned eaves and a finial, runes on
+  // the arch beneath it, a lantern hung at each eave
+  for (const x of [8, 26]) p.px(x, 16, 'stone3');
+  wellRing(p, 'ley1', 'leyGlow', false);
+  glow.poly([[17, 11], [21, 12], [17, 13], [13, 12]], 'ley1', 200);
+  wellRoof(p, 'copperRoof', 'copperRoof2', 'wood1');
+  for (const [x, y] of [[14, 9], [17, 8], [20, 9]] as [number, number][]) { p.px(x, y, 'rune'); glow.px(x, y, 'rune', 200); }
+  p.px(8, 6, 'copperRoof'); p.px(26, 6, 'copperRoof'); // the upturned eaves
+  p.px(17, 0, 'ironDark'); // the finial
+  for (const x of [7, 27]) { p.px(x, 8, 'ironDark'); p.px(x, 9, 'lampWarm'); glow.rect(x - 1, 8, 3, 3, 'lampWarm', 220); }
+  p.outline('outline');
+  return { p, glow, ax: 17, ay: 7 };
 }
 
 function drawGarden(): { p: Painter; glow: Painter; ax: number; ay: number } {
@@ -1960,6 +2106,8 @@ export function generateSprites(): SpriteDef[] {
   for (const [key, spec] of Object.entries(SERVICE_SPECS)) {
     if (key === 'spire') push('b_spire', drawSpire());
     else if (key === 'well') push('b_well', drawWell());
+    else if (key === 'seep') push('b_seep', drawSeep()); // the three wells after their paintings (iteration 79)
+    else if (key === 'tidewell') push('b_tidewell', drawTidewell());
     else if (key === 'garden') push('b_garden', drawGarden());
     else if (key === 'square') push('b_square', drawSquare());
     else if (key === 'boneyard') push('b_boneyard', drawBoneyard());

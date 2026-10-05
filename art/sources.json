@@ -520,6 +520,7 @@
   },
   {
    "name": "b_well",
+   "off": true,
    "src": "inspirations/wells/image_2(1).png",
    "w": 1,
    "h": 1,
@@ -539,6 +540,7 @@
   },
   {
    "name": "b_seep",
+   "off": true,
    "src": "inspirations/wells/image_1(1).png",
    "w": 1,
    "h": 1,
@@ -558,6 +560,7 @@
   },
   {
    "name": "b_tidewell",
+   "off": true,
    "src": "inspirations/wells/image_3(2).png",
    "w": 1,
    "h": 1,
@@ -593,6 +596,7 @@
   },
   {
    "name": "b_depot",
+   "off": true,
    "src": "inspirations/trade_houses/image_0(1).png",
    "w": 2,
    "h": 2,
@@ -671,6 +675,7 @@
   },
   {
    "name": "hearth_l2_v0",
+   "off": true,
    "src": "inspirations/wooden_houses/image_0(1).png",
    "w": 1,
    "h": 1,
@@ -683,6 +688,7 @@
   },
   {
    "name": "hearth_l2_v1",
+   "off": true,
    "src": "inspirations/wooden_houses/image_1(1).png",
    "w": 1,
    "h": 1,
@@ -694,6 +700,7 @@
   },
   {
    "name": "hearth_l2_v2",
+   "off": true,
    "src": "inspirations/wooden_houses/image_2(1).png",
    "w": 1,
    "h": 1,
@@ -705,6 +712,7 @@
   },
   {
    "name": "hearth_l2_v3",
+   "off": true,
    "src": "inspirations/wooden_houses/image_3(2).png",
    "w": 1,
    "h": 1,
@@ -716,6 +724,7 @@
   },
   {
    "name": "craft_l1_v0",
+   "off": true,
    "src": "inspirations/craft_houses/general_craft/image_0(1).png",
    "w": 1,
    "h": 1,
@@ -727,6 +736,7 @@
   },
   {
    "name": "craft_l1_v1",
+   "off": true,
    "src": "inspirations/craft_houses/general_craft/image_1(1).png",
    "w": 1,
    "h": 1,
@@ -738,6 +748,7 @@
   },
   {
    "name": "craft_l1_v2",
+   "off": true,
    "src": "inspirations/craft_houses/general_craft/image_2(1).png",
    "w": 1,
    "h": 1,
@@ -749,6 +760,7 @@
   },
   {
    "name": "craft_l1_v3",
+   "off": true,
    "src": "inspirations/craft_houses/general_craft/image_3(2).png",
    "w": 1,
    "h": 1,
