@@ -85,7 +85,7 @@ export const BUILDINGS: BuildingDef[] = [
     'Homes for Hearthfolk, Tallowkin and Grimmen. Grow from sod huts to stone townhouses.',
     'Every door has an Aume-niche; every window, at night, a small warm light.'),
   Z('market', 'Market (trade)', Zone.Market, [3, 6, 10], 1.0, 2,
-    'Stalls, shops and guild-houses. Wants shoppers, goods and a good road.',
+    'Stalls, shops and guild-houses. Wants shoppers, goods and a good road: a cobbled road at the door trades in full, a dirt track a tenth less (a fifth in the mud of the Thaw and the Hush), a lit Lantern-way or a Glowvine Lane a tenth more.',
     'Potions by the ladle, leystone by the ounce, gossip for free.'),
   Z('craft', 'Craft (alchemy & works)', Zone.Craft, [4, 8, 12], 1.0, 3,
     'Herb yards, stills, tanneries and leystone cutters. Jobs for many; emits miasma.',

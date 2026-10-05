@@ -50,7 +50,9 @@ main node.
    draws back.
 1. **Roads** — pick *Dirt Track* and drag. Everything grows beside a road. Bridges over
    shallow water cost 4×. Cobbles (Hamlet) raise land value; Lantern-ways (Township) also
-   carry mana along their length.
+   carry mana along their length. A market trades by the road at its door: cobbles in
+   full, a dirt track a tenth less (a fifth in the mud of the Thaw and the Hush), a lit
+   Lantern-way or a Glowvine Lane a tenth more.
 2. **Zones** — drag rectangles next to roads: **Hearth** (homes), **Market** (trade),
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.

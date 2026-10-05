@@ -1,8 +1,10 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 74 (the wyrm redrawn after the user's painting, art only; DESIGN §4.105). Iterations 73
-(the loose ends, §4.104), 72 (golem haulers, §4.103), 71 (a faster balance bar, §4.102) and 70 (two ways to lose, §4.101)
-came just before it. Iterations 72–73 and 74 were built in two sessions at once; 74 merged main and took the next numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 75 (markets want a good road; DESIGN §4.106). Iteration 74 (the wyrm redrawn after the
+user's painting, art only; §4.105) was built in a parallel session and merged first; 73 (the loose ends, §4.104), 72 (golem
+haulers, §4.103), 71 (a faster balance bar, §4.102) and 70 (two ways to lose, §4.101) came before them. Two sessions at
+once means merging main before the PR and taking the next free numbers. Update this file whenever a session ends (see
+CLAUDE.md, "Session handoff").
 
 ## What the game is
 
@@ -33,17 +35,20 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **markets want a good road** (DESIGN §17.4 E, AUDIT B40): the road tier at a market's door counts for
-its trade, as the Market's catalog description promises.
-- **Where things are:** the market's door is `roadTileOf(state, b)` in `src/sim/agents.ts`; the road tier at a tile is
-  `roadAt(state, i)` in `src/sim/roads.ts` (`ROAD_BY_TYPE[tier].speed`); a market's sales are in `src/sim/growth.ts`
-  (`dailyBuildings`, the market's tithe and stock) and its cap in `marketStockCap`. Read AUDIT.md B40 first for what
-  "counts for its trade" was meant to be, and the Market's desc in `src/sim/catalog.ts`.
-- **Decide the rule's size:** a tenth per tier is the kind of number the bar can see; say it in the market's panel
-  (`src/ui/ui.ts`, the zone rows) so the player can decide about it.
-- **The bar:** a sim change, and one the bot's cities all meet (every bot market has a road), so expect a verdict. The
-  bot upgrades roads? Check `src/sim/bot.ts` (grep `road`) before the design: if it never lays better than a track, the
-  rule only costs it.
+NEXT_STEPS item 1, **the sprites faced and fitted** (DESIGN §17.4 F; the user's request in iteration 72). Art only.
+- **The ask:** check every building sprite in the game, painted and drawn, for its orientation and how it sits in its
+  tile square. The procedural buildings are the yardstick: door and gable on the right face, the footprint diamond filled
+  neatly. Correct the ones faced wrong or that look off.
+- **The tools:** `art/sources.json` (a painting's `flip`, `anchor`, `targetHeight`; `checked: true` once judged by eye),
+  `npm run art` (writes `public/art/sprites/*.png` and `sprites.json`; the outputs are committed), `npm run art:check`
+  (`shots/import_check.png`). `scripts/playtest65.mjs` writes sheets of named sprites from a running build, and
+  `scripts/playtest59.mjs` shoots a before build beside the after (`OLD_PORT`). Judge a facing at 5× or more (iteration
+  59's lesson). The flip list is pinned in `tests/iteration56.test.ts`; the hero paintings' scale in `tests/iteration56`
+  too (targetHeight = the procedural twin × 1.15, towers × 1.3, `anchor: 'centre'`).
+- **Known since iteration 59:** the head-on paintings (most level-2 hearths, the craft levels, the arcane level 2, the
+  last Stake stage) cannot turn their front to a road behind them; only new three-quarter paintings would.
+- **Verification:** the control seed (`npx tsx scripts/balance.ts 42 150`) for an art-only change, not the bar; a sheet
+  of every building before and after, in the final message, and in-game shots.
 - **Plan it on the Plan panel first.**
 
 Built since iteration 68:
@@ -53,15 +58,17 @@ Built since iteration 68:
   `state.lostTo`;
 - the golem haulers (item C), in iteration 72: the `'haul'` duty in `beasts.ts`, `GOLEM_VARIANT` and the balk constants
   in `vehicles.ts`, the balk rule in `tickAgents` (`agents.ts`), the `cart_6` sprite in `sprites.ts`.
+- markets and the road (item E), in iteration 75: `marketRoadMultAt`/`marketRoadWords` in `roads.ts`, the factor in
+  `computeLedger`, `paveDoors` in `bot.ts`;
 - the loose ends (item D), in iteration 73: `dailyGreyEggs` and `fightBout` in `wyrmcraft.ts`, the wyvern run in
   `vehicles.ts` (`sendWyvern`, `wyvernReturns`, `toggleSkyDockWyvern`), the mount role (`mountTick` in `creatures.ts`),
   `sendDuelist` in `wyrm.ts` and the duel phase in the wyvern branch, the sextons' errand in `walkers.ts` and
   `sextonsAbroad`/`brawlToday` in `guilds.ts`, `state.merchant` and `textFn` in `events.ts`.
 
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
-- **Single items** (the Great Gate, the two ways to lose, the golem haulers and the loose ends are done): markets and the
-  road (AUDIT B40); then **the sprites faced and fitted** (§17.4 F, added at the user's request in iteration 72: every
-  building sprite checked for its facing and its fit in the tile square, art only).
+- **Single items** (the Great Gate, the two ways to lose, the golem haulers, the loose ends and markets and the road are
+  done; the wyrm was redrawn in iteration 74): **the sprites faced and fitted** (§17.4 F, added at the user's request in iteration 72: every building sprite
+  checked for its facing and its fit in the tile square, art only).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
   - **M18**, the Fen-Nex: the people, then their game;
@@ -103,7 +110,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (75 files, 485 tests at this writing; `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (76 files, 489 tests at this writing; `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -171,6 +178,20 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 75 (not yet said elsewhere)
+
+- **`pkill -f` and `ps | grep` kill the shell that runs them** when the pattern is in the command line (iteration 60 said
+  it of `balance.ts`; it holds for `vite preview` too). Start the preview in one Bash call and run the playtest in
+  another; never put the server's name and a kill in one command.
+- **The preview server dies with its shell** between turns; check `curl localhost:4173` before a playtest.
+- **A rule the bot can only lose by** measures its cost, not the game: give the bot the lever (one door a day) in the same
+  iteration.
+- **Never edit `scripts/balance.ts` or `rolls.ts` in an iteration that runs the bar:** the runner's hash is in the cache
+  key, so a changed print line throws away main's cached side and the bar runs both sides (over two hours). A counter the
+  bar should see goes in the sim's state or the playtest, not the runner.
+- **The market panel's row labels are narrow:** a label of one word, the rest in the text.
+- **Tests:** 76 files, 489 tests.
 
 ## Learned in iteration 74 (not yet said elsewhere)
 
