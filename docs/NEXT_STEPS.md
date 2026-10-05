@@ -355,7 +355,8 @@
   and the Hush), cobbles in full, a lit Lantern-way or a Glowvine Lane a tenth more, no road a fifth less. The market's
   panel has the row and a problem line; the Market desc, the help and the README say the numbers. AUDIT B40 closed.
 - **The bot paves:** from Market Town it cobbles one track-side market door a day, the nearest its centre first.
-- The bar's verdict is in DESIGN §4.105.
+- **The bar:** all four peoples +5.5 %, seen; the Grimmen +12.9 %, seen; Veshari 44 ends at the Weirhold where main
+  reached Vesh's Court (DESIGN §4.105).
 
 ## Done in iteration 73 (the loose ends)
 

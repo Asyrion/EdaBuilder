@@ -4219,7 +4219,29 @@ Vellish 42 has 20 doors paved by day 60 (24 of its 48 markets on cobbles).
 - **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim, main's
   side from the cache). Every bot city meets this rule, so the bar can see it either way.
 
-TABLE_PENDING
+  276 runs, 96 from the cache, in 93 minutes on four cores. No bot city lost its charter on either side.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 8 | 1,897 | 1,781 | +116 (+6.5 %) | 177 (9.6 %) | met | within the noise |
+  | Grimmen | 6 × 3 | 1,601 | 1,418 | +183 (+12.9 %) | 112 (7.4 %) | met | **seen** |
+  | Veshari | 6 × 4 | 2,339 | 2,332 | +7 (+0.3 %) | 206 (8.8 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,986 | 1,887 | +99 (+5.2 %) | 210 (10.8 %) | **not met: at the cap of 8 draws** | within the noise |
+  | all | | 7,823 | 7,418 | +405 (+5.5 %) | 361 | | **seen** |
+
+  - **The rule pays the bot's cities.** Every bot market sits on the grid's track until the bot paves its door, and the
+    paving outruns the tenth the track costs: the four peoples together grow by a twentieth, seen past the noise, and the
+    Grimmen by an eighth, seen on their own row.
+  - **The gates:** the Grimmen reach the Underking's Hall in 11 of 18 runs (main 3) and the Deephold in 17 (main 15); the
+    Vellish the Free City in 31 of 48 (main 24); the Tallowkin the Hall of Wicks in 35 of 48 (main 32) and the Lantern of
+    Wicks in 11 (main 12), a season earlier at the median (day 85 against 114); the Veshari Vesh's Court in 20 of 24 (main
+    22) and the Sable Crown in 16 of 24 (main 16).
+  - **The losses, named:** Veshari 44 ends at the Weirhold in all four draws (1,299 to 1,488 folk) where main reached
+    Vesh's Court in three of four (1,097 to 1,760); Grimmen 44 and 47 and Veshari 45 end a little smaller. The Veshari row
+    is the one the rule does not lift: their bot's crowns go to moorings and the Weir, and a paved door costs the same 45.
+  - **The Tallowkin's floor** is 10.8 % of their folk at eight draws a seed, nearer a tenth than in iterations 70 to 73
+    (11.6 to 11.8 %), and still not met.
+  - Both cache files are committed; main's grew by the draws the floors asked for.
 
 ## 7. Milestone plan
 
