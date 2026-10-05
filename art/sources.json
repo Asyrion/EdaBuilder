@@ -779,7 +779,8 @@
    "targetHeight": 36,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l2_v1",
@@ -790,7 +791,8 @@
    "targetHeight": 36,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l2_v2",
@@ -801,7 +803,8 @@
    "targetHeight": 36,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l2_v3",
@@ -812,7 +815,8 @@
    "targetHeight": 36,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l3_v0",
@@ -823,7 +827,8 @@
    "targetHeight": 40,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l3_v1",
@@ -834,7 +839,8 @@
    "targetHeight": 40,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l3_v2",
@@ -845,7 +851,8 @@
    "targetHeight": 40,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "craft_l3_v3",
@@ -856,7 +863,8 @@
    "targetHeight": 40,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "arcane_l2_v0",
@@ -867,7 +875,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "arcane_l2_v1",
@@ -878,7 +887,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "arcane_l2_v2",
@@ -889,7 +899,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "arcane_l2_v3",
@@ -900,7 +911,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "market_l3_v0",
@@ -911,7 +923,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "market_l3_v1",
@@ -923,7 +936,8 @@
    "colors": 20,
    "sharpen": 0.8,
    "checked": true,
-   "flip": true
+   "flip": true,
+   "off": true
   },
   {
    "name": "market_l3_v2",
@@ -934,7 +948,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "market_l3_v3",
@@ -945,7 +960,8 @@
    "targetHeight": 44,
    "colors": 20,
    "sharpen": 0.8,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "glimwood_0",
@@ -1982,6 +1998,3529 @@
     ],
     "specks": 600
    }
+  },
+  {
+   "name": "hearth_l1_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 2,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 3,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 0,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 9,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l2_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/plated_houses_4.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/plated_houses_4.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l2_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_4.png",
+   "island": 3,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_4.png",
+   "island": 2,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 55,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 2,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_4.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 15,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 4,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_4.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_4.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l3_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_plated_4.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_plated_4.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 9,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 130,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 125,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 70,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 0,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 64,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 6,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 54,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 58,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 59,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 60,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 14,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v0",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v1",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 51,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l3_v2",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v3",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 119,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 5,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 128,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/plated_houses_4.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l2_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 13,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_4.png",
+   "island": 0,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 127,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 126,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 0,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l1_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 6,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l1_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 53,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 5,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 7,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 3,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l3_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 63,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 54,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 22,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/stone_houses_4.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/stone_houses_4.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 52,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/stone_houses_4.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l2_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 101,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l3_v0_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 10,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 11,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 52,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l2_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 13,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 16,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 11,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 117,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_labelled_12.png",
+   "island": 52,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 1,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_4.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_grey_10.png",
+   "island": 8,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 68,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 1,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l3_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_plated_4.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l3_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 128,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l3_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 65,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 48,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 69,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 17,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 15,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 53,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 19,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 14,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 179,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 116,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l1_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 53,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 61,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l2_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 12,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v0_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v1_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v2_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 118,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v3_veshari",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 60,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l1_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_12.png",
+   "island": 8,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l1_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 2,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 182,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_labelled_16.png",
+   "island": 181,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l2_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_towers_8.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "hearth_l3_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_16.png",
+   "island": 55,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "hearth_l3_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 47,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l1_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/smithies_plated_4.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l1_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l1_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_grey_16.png",
+   "island": 3,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l2_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 12,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "craft_l2_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "craft_l3_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 20,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l1_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l2_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_8.png",
+   "island": 54,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l2_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 15,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "market_l3_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l3_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/medieval_9.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_4.png",
+   "island": 1,
+   "white": 200,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/houses_10.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
+   "island": 49,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_16.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l2_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 59,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lodges_labelled_12.png",
+   "island": 129,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
+  },
+  {
+   "name": "arcane_l3_v0_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/towers_8.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v1_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/wooden_houses_20.png",
+   "island": 18,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true
   }
  ]
 }

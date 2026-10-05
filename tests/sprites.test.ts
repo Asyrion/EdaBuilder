@@ -39,11 +39,11 @@ import { recolour } from '../scripts/lib/sprite.mjs';
 import { readFileSync } from 'node:fs';
 
 describe('the painted set, part 2', () => {
-  it('an imported base is the look for every people; the levels without a painting keep the people copy', () => {
-    const atlas = { imported: new Set(['hearth_l2_v0']) };
-    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_grimmen')).toBe('hearth_l2_v0');
-    expect(zoneSpriteName(atlas, 'hearth', 2, 4, '_grimmen')).toBe('hearth_l2_v0');
-    expect(zoneSpriteName(atlas, 'hearth', 1, 0, '_grimmen')).toBe('hearth_l1_v0_grimmen');
+  it('every people its own houses: an imported base is no longer the look for the others (iteration 82)', () => {
+    const atlas = { imported: new Set(['hearth_l2_v0', 'hearth_l2_v0_grimmen']) };
+    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_grimmen')).toBe('hearth_l2_v0_grimmen');
+    expect(zoneSpriteName(atlas, 'hearth', 2, 4, '_grimmen')).toBe('hearth_l2_v0_grimmen');
+    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_veshari')).toBe('hearth_l2_v0_veshari');
     expect(zoneSpriteName(atlas, 'hearth', 1, 0, '')).toBe('hearth_l1_v0');
   });
 
@@ -64,7 +64,7 @@ describe('the painted set, part 2', () => {
     expect(out.data[3]).toBe(255);
     expect(out.data[7]).toBe(0);
     const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8'));
-    for (const n of ['craft_l2_v0', 'craft_l3_v0', 'arcane_l2_v0', 'market_l3_v0']) expect(manifest.sprites[n].w).toBe(36); // the level-2 hearths and level-1 crafts are drawn in code since iteration 79
+    for (const n of ['craft_l2_v0', 'craft_l3_v0', 'arcane_l2_v0', 'market_l3_v0']) expect(manifest.sprites[n].w).toBeLessThanOrEqual(36); // the user's houses since iteration 82: at most the tile's width and the outline
     expect(manifest.sprites.glimwood_0.glow).toBeDefined();
   });
 });

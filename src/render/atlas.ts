@@ -175,13 +175,13 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Shelf packing in the given order, from startY down, 1 px gutters. Pure, so a test can hold it to no overlaps. */
-/** A zone building's sprite: the people's copy, unless the base was imported (one painting is the look for everyone). */
-export function zoneSpriteName(atlas: { imported: Set<string> }, kind: string, level: number, variant: number, suffix: string): string {
-  const base = `${kind}_l${level}_v${variant % 4}`;
-  return suffix && !atlas.imported.has(base) ? `${base}${suffix}` : base;
+/** A zone building's sprite: every people its own (iteration 82). A people's slot shows its own imported painting or, where
+ *  none was drawn yet, its own drawn house; no people borrows another's painting (iteration 51's shared look is gone). */
+export function zoneSpriteName(_atlas: { imported: Set<string> }, kind: string, level: number, variant: number, suffix: string): string {
+  return `${kind}_l${level}_v${variant % 4}${suffix}`;
 }
 
+/** Shelf packing in the given order, from startY down, 1 px gutters. Pure, so a test can hold it to no overlaps. */
 export function shelfPack(items: { w: number; h: number }[], W = 1024, startY = 0): { pos: { x: number; y: number }[]; height: number } {
   let x = 0;
   let y = startY;

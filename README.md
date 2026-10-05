@@ -300,7 +300,8 @@ Charter as `.json`.
   code after their paintings, and since iteration 81 each is composed by hand after its own
   painting (`src/render/painted.ts`: boxes, gables along either axis, porches, verandas,
   dormers, chimneys and props where the painting has them), crisp at the citizen scale and
-  one set with the procedural buildings.
+  one set with the procedural buildings. Since iteration 82 the zone houses are the user's own
+  houses from the eda-lore sheets, every people its own (180 houses, none used twice).
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
   tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its
   foot); the temple is a nave and portico that gains a bell tower and then a copper dome; the
