@@ -1,18 +1,83 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 79 (the paintings redrawn in code, part 1: twelve buildings drawn by the procedural
-painter after their paintings, judged side by side; art only; DESIGN §4.110). Iteration 78 (the small buildings scaled to
-the citizen, §4.109) and 77 (the sprites faced and fitted, §4.108, the last single item of §17.4) came before it; 76 (the
-wyrm's wings beat, §4.107) before that; 75 (markets want a good road, §4.106) was built in a parallel session and merged
-first. Two sessions at once means merging main before the PR and taking the next free numbers. Update this file whenever
-a session ends (see CLAUDE.md, "Session handoff").
+Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
+sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
+as possible are to be replaced by them. Main stands at iteration 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, DESIGN §4.114,
+from a parallel session); before it 82 (the eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve
+paintings composed by hand, §4.112) and 80 (the brickworks sprite drawn after the user's painting, §4.111). Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
+§4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
+before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+
+## The eda-lore swap (the next session's work)
+
+**The source.** The user's repository `eda-lore` (connect it to the session: it must be among the session's repositories,
+or added with the session's `add_repo` tool; nothing of it is in this repository yet). It holds the user's own sprites in
+the set's projection: 2:1 dimetric pixel art, lit from the front right, usually several to a sheet on a white or light
+grey ground, some with a grey drop shadow, some on a grass plate. The user showed samples in the chat of iteration 81:
+sheets of cottages, log cabins, half-timbered and stone houses, thatched cottages, dormer cottages, a treehouse, a
+Victorian house, barns, chapel-like stone houses, and two alchemist's-house dioramas; also modern houses (glass boxes,
+igloos, a factory, a solar roof, an adobe house) that do not fit the setting and are left out.
+
+**The goal.** Swap as many of the game's buildings and assets as the repository can cover, in batches, each batch judged
+on a side-by-side sheet and in the game before it is committed. The order that serves the player first:
+1. the zone houses (hearth, craft, market, arcane; levels 1–3; four variants a level; a sheet's houses become the
+   variants, cottages at level 1, two-storey houses at 2, the grandest at 3; barns and workshops are crafts; stone and
+   chapel-like houses are arcane);
+2. the 1×1 and 2×2 service buildings (`src/sim/catalog.ts` lists the 81 buildings; `b_<key>` is the sprite name; the
+   stake's stages are `b_stake_s0..3`, the temple's `b_temple`, `_s1`, `_s2`);
+3. the props (trees `tree_N`, bushes `bush_N`, mushrooms, glimwood) and anything else the repository has (carts, creatures).
+Keep the citizen yardstick of DESIGN §4.109 (a citizen is 12 px: wells 1.5, posts and shrines 2.5, sheds and cottages
+2.8, two-storey houses 4, halls 5.5, towers free) and the facing rule of §4.90 (the front on the right face; a sprite
+fronted on the left gets `flip: true`).
+
+**The pipeline** (DESIGN §4.80–§4.87, the importer's header comment in `scripts/importSprites.mjs`):
+- copy the chosen sheets into `inspirations/<folder>/` (the paintings' home; they are committed);
+- `node scripts/importSprites.mjs --islands inspirations/<sheet>.png [white]` lists a sheet's islands row-major; a `white`
+  threshold of about 200 keys out a light-grey drop shadow with the background (the default 235 keeps it);
+- an entry in `art/sources.json`: `name` (the sprite to replace), `src`, `island`, `w`/`h` (the footprint in tiles),
+  `targetHeight` from the yardstick, `anchor: 'centre'`, `flip` if fronted on the left, `shift: { x: 0, y: 6 }` for a
+  small object that should stand in the tile's middle, `checked: true` once judged; the importer sharpens and outlines;
+- `npm run art` writes `public/art/sprites/*.png` and `sprites.json` (committed); the atlas merges them over the
+  procedural sprites by name at boot (`SpriteAtlas.mergeOverrides`), so a replaced procedural sprite needs no code;
+- a zone house imported under its base name (`hearth_l2_v0`) is the look for every people (`zoneSpriteName` skips the
+  `_grimmen`/`_veshari`/`_tallowkin` copies when the base is imported); keep that, or import per people if the repository
+  has peoples' looks;
+- `off: true` on an entry switches an old painting off (its code sprite shows); iteration 81's `src/render/painted.ts`
+  hand-drawn houses and §4.110's spec houses give way to an import by the same name without any code change;
+- the side-by-side tool: `scripts/playtest81.mjs` draws the old sprite from a build of main served on port 4174 beside the new one from the build on 4173,
+  each over its footprint diamond with a citizen; `scripts/playtest78.mjs` sheets every building with a citizen.
+- Tests to keep green when names move: `tests/iteration56.test.ts` (the flip list and height caps), `iteration77`
+  (anchors), `iteration78` (the yardstick), `iteration79`/`sprites.test.ts` (which names are in the manifest).
+
+**The way to work it:** plan on the Plan panel; one batch per iteration (DESIGN `### 4.NN`, NEXT_STEPS "Done in
+iteration NN", README); screenshots of every batch in the final message, old beside new and in the game by day and night;
+the control seed (`npx tsx scripts/balance.ts 42 150`, 2,155 folk) for art-only work. The user's standing wish: the set
+must read as one (outlines, crisp pixels), the buildings must stand right against the folk, and the game's buildings
+should look like the user's drawings.
+
+## Batch 1 done (iteration 82, DESIGN §4.113)
+
+- **The zone houses are the user's:** 180 houses from 22 of eda-lore's root sheets (copied to `inspirations/eda-lore/`),
+  every people its own, none used twice (the user's two rules, given in iteration 82). `zoneSpriteName` now always names
+  the people's own sprite; a slot without a painting keeps its people's drawn house.
+- **The allocation lives in `scripts/edaLoreHouses.mjs`** (sheet letter + island, `!` to mirror, `-` for a gap); rerun it
+  and `npm run art` after a change. `scripts/playtest82.mjs` sheets each people before and after and builds a street.
+- **Still to draw** (the user asked for this list): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3, arcane 3 v3;
+  Tallowkin craft 3 v3, market 1 v2–v3, arcane 3 v2–v3.
+- **Left for batch 2** on the sheets: the shrines and altars of `shrines_16` not used (the metal altars, the crystal ones),
+  the ward towers (`image_1 (19)`), the lantern towers (`image_0 (17)`), the castles (`medieval_9` 3 and 9), the
+  graveyards, and the unused houses (`houses_10` 5, `lodges_labelled_16` 0, `houses_grey_16` 6, 7, 9, 10, 11,
+  `lodges_labelled_12` 0, `smithies_labelled_12` 99, 100, 103, `wooden_houses_20` 6).
+- **Learned:** a sheet's light-grey drop shadow needs `white: 200` (houses_12, houses_4, houses_grey_16,
+  smithies_grey_10); the auto glow lit whole cream walls until `maxBlob` kept only window-sized patches; a wide house on a
+  1×1 tile must come down in height (`maxWidth`), which is why low houses went to level 1.
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.110 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.112 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -35,29 +100,16 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 - No milestone is open. The rest of the list is items, not milestones.
 
 **Iteration 80** (DESIGN §4.111, art only) added `b_brickworks`, a brickworks drawn after the user's painting.
-**Iteration 81** (DESIGN §4.112) gave it a building of its own: the Brickworks, 3×3, at the Village.
+**Iteration 83** (DESIGN §4.114) gave it a building of its own: the Brickworks, 3×3, at the Village.
 - It makes 6 goods a day, lit by its kiln, and sites within 12 tiles rise half again as fast.
 - The bot does not build it.
 
 ## The next item
 
-**The user decides first:** iteration 79 was a trial of twelve redraws (DESIGN §4.110). If the user wants the rest, NEXT_STEPS
-items 1 and 2 are parts 2 and 3 (the other 30 paintings, in the same manner: a `drawBuilding` spec per painting with the
-painter's features, bespoke drawing only for shapes no spec gives, `off: true` on the painting's entry, the side-by-side sheet
-of `scripts/playtest79.mjs` with the new names). If not, item 3, **M17 part 1, marsh terrain** (DESIGN §17.1 item 1), a sim
-change that runs the wide bar:
-- **Generation:** a new `Terrain` value beside slow water (river bends, lake margins), never on the founding node. The
-  terrain is generated once per map (`src/sim/world.ts`; the water's bodies are worked out in `src/sim/water.ts`, M16).
-- **The look:** reed beds, standing pools and mist at dawn, by the procedural painter (`src/render/sprites.ts`,
-  `groundVariants`) or imported as a ground texture through `npm run art` (kind `ground`, a family sharing a palette).
-- **Rules:** nothing is built on marsh; a road may cross it as a causeway at a bridge's price; marsh breeds miasma (a field
-  the Fen-Nex and the deathcare will read); the reed-cutters of M16 cut it.
-- **The Drainage edict:** turns the marsh nearest the city to meadow, a few tiles a day, for a daily cost; the land loses
-  its reeds. Edicts live in `src/sim/edicts.ts`; the panel in `src/ui`.
-- **Saves:** old saves load with no marsh and the edict off (`save.ts` defaults).
-- **Verification:** the wide bar (`npx tsx scripts/table.ts --bar wide --compare origin/main`, commit the cache), the
-  tests, a playtest with the marsh by day and at dawn, and screenshots of the new ground in the final message.
-- **Plan it on the Plan panel first.**
+The eda-lore swap, batch 2: the service buildings. Plan it on the Plan panel first. The Brickworks (iteration 83) has its
+own hand-drawn sprite, `b_brickworks`, after the user's painting: keep it unless the user says otherwise.
+After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
+the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
 
 Built since iteration 68:
 - the Great Gate (item A), in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and `drawGreatGate`
@@ -118,7 +170,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (80 files, 506 tests at this writing; `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (81 files, 512 tests at this writing; `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -186,6 +238,19 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 81 (not yet said elsewhere)
+
+- **`painted.ts` is the way to copy a painting:** tile coordinates (tx, ty, z) and placed parts. A box's right face is its
+  tx = tx1 side (the road side), the left face its ty = ty1 side; a gable along 'x' shows its triangle on the right face,
+  along 'y' on the left. The anchor is the tile's top corner at (17, H − 17) on a 34-wide canvas (33 and H − 33 for a 2×2).
+- **Keep a sprite under its cap by its canvas:** the painter clips what falls above row 0, so a canvas of 33 rows holds a
+  craft at 2.8 citizens whatever its chimney smoke does.
+- **Side by side at 10× is the judge:** at 6× the eye forgives; at 10× a veranda three pixels deep vanishes and a bright
+  trim reads as a crack.
+- **The user's style question:** the set is 2:1 "isometric" pixel art, strictly dimetric (32×16 tiles, edges at 26.6°),
+  flat two-tone cel shading, a 1 px outline. The user's new house sheets are the same projection; the front-on paintings
+  of iteration 50 never were, which is why they fought the set.
 
 ## Learned in iteration 79 (not yet said elsewhere)
 

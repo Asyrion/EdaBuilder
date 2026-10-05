@@ -5,9 +5,9 @@
 //   node scripts/importSprites.mjs --islands <src> [white]   lists a sheet's islands, row-major, for picking by index
 // Entries (art/sources.json "sprites"): name, src, kind ('building' | 'prop' | 'ground' | 'vehicle'), w/h (footprint in tiles, buildings),
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
-// targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
+// targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue, maxBlob: drop lit patches larger than this many pixels } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), flap ({ wings: [{ poly, pivot, root, behind }], frames: [[{ rot, sy } per wing]], specks }: a wing beat cut from one painting, each frame written as <name>_1… with frame 0's crop, scale and anchor; iteration 76), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58), off (true: the entry is skipped, its painting having been redrawn in code; iteration 79).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), maxWidth (the sprite takes targetHeight unless that makes it wider than this; then it takes this width and the height follows: a wide house on a 1×1 tile; iteration 82), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), flap ({ wings: [{ poly, pivot, root, behind }], frames: [[{ rot, sy } per wing]], specks }: a wing beat cut from one painting, each frame written as <name>_1… with frame 0's crop, scale and anchor; iteration 76), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58), off (true: the entry is skipped, its painting having been redrawn in code; iteration 79).
 // A vehicle (the donkey carts, iteration 57) is scaled by scale (a fraction of the painting's pixels, set per sheet so every
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
@@ -85,8 +85,10 @@ for (const e of sources.sprites) {
     results.push({ e, kind, img: sharpen(small, e.sharpen ?? 0.6) });
     continue;
   }
-  const targetW = e.targetWidth ?? (e.targetHeight ? Math.max(1, Math.round((img.w * e.targetHeight) / img.h)) : (e.w + e.h) * 16 + 2);
-  const scaled = boxScale(img, targetW, e.targetHeight ?? 0);
+  let targetW = e.targetWidth ?? (e.targetHeight ? Math.max(1, Math.round((img.w * e.targetHeight) / img.h)) : (e.w + e.h) * 16 + 2);
+  let targetH = e.targetHeight ?? 0;
+  if (e.maxWidth && targetW > e.maxWidth) { targetW = e.maxWidth; targetH = Math.max(1, Math.round((img.h * e.maxWidth) / img.w)); } // too wide for its tile at that height: fit the width, the height follows (iteration 82)
+  const scaled = boxScale(img, targetW, targetH);
   results.push({ e, kind, img: sharpen(e.recolour ? recolour(scaled, e.recolour) : scaled, e.sharpen ?? 0.6) });
 }
 

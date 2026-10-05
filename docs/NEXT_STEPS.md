@@ -357,6 +357,15 @@
 - **The bot does not build it yet.** Teaching the bot to use it would be a balance change of its own, for later if
   wanted.
 
+## Done in iteration 82 (the eda-lore swap, batch 1: the zone houses)
+
+- **180 zone houses from the user's eda-lore sheets** (DESIGN §4.113), every people its own: the Vellish and Veshari all
+  48, the Tallowkin 43, the Grimmen 41; no painting used twice. Sorted to a people by material, to a zone by what the
+  house shows, to a level by its shape. `scripts/edaLoreHouses.mjs` holds the allocation.
+- The importer's `maxWidth` (a wide house fits its tile) and the glow's `maxBlob` (windows light at night, walls do not).
+- **Still to draw** (twelve slots keep their people's drawn house): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3,
+  arcane 3 v3; Tallowkin craft 3 v3, market 1 v2–v3, arcane 3 v2–v3.
+
 ## Done in iteration 80 (a brickworks drawn after the user's painting)
 
 - **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
@@ -986,20 +995,24 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The paintings redrawn in code, part 2** (DESIGN §4.110, if the user wants it after judging part 1): the craft levels
+1. **The eda-lore swap, batch 2: the service buildings** (HANDOFF.md "The eda-lore swap"; batch 1, the zone houses, done in
+   iteration 82): the 1×1 and 2×2 services from the user's sheets (the shrines, ward towers, lantern towers, castles,
+   graveyards, wells, the founding stakes), then batch 3 the props. Same pipeline and rules: no painting twice, judged old
+   beside new with a citizen. The brickworks (iteration 80) waits for the user to name its building.
+2. **The paintings redrawn in code, part 2** (DESIGN §4.110, if still wanted after the swap): the craft levels
    2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
-2. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the
+3. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the
    boneyard, the Lyceum, the Nexus, the spire, the Wick-Tower and the Hall of Wicks.
-3. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-4. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-5. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-6. **M18 part 1, the Fen-Nex** (§17.2).
+4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+5. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+6. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+7. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-7. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-8. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+8. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+9. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-9. **M19 part 2, the Belerial** (§17.3).
+10. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-10. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+11. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

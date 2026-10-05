@@ -4494,6 +4494,125 @@ gables read smaller than in the painting, and the yard's small things, at 98 pix
 - **Shown to the user:** the sprite at 8× beside the painting, at 3×, and in a running game by day and by night, standing
   in for a 3×3 building's sprite in that page only.
 - The sim is unchanged.
+### 4.112 The twelve redrawn again, each after its own painting (iteration 81)
+
+Art only, after the user's verdict on §4.110's sheet: "all the remade buildings look too similar; stick as close to the
+source as possible, just redraw them in your style." §4.110 built the redraws from `drawBuilding` specs, so every house
+had the same box, roof line, door spot and window grid. The paintings differ in composition: which way the gable faces, a
+wing or a porch, where the chimney stands, how many storeys, a veranda, a dormer, a balcony, the tree's side.
+
+**Compose, don't spec** (`src/render/painted.ts`). An `Iso` helper maps tile coordinates (tx, ty in 0–1, z up) to the
+sprite's pixels and offers the parts: a `box` with its own footprint and wall height (the left face dark, the right lit,
+the set's wall textures: log, timber, plaster, half-timber with braces, stone, brick, whitewash), a `gable` roof whose
+ridge runs along either axis (the gable shows on the right face for 'x', on the left face for 'y') with overhanging eaves
+and the set's roof textures, lean-to roofs from either face (porches, hoods, wings), a `veranda` (a railed deck), a
+`balcony`, a `dormer`, a `chimney` (stone or brick, with smoke), windows and doors (plank, arched, round) at any tile
+point, and the props: sign, flower box, lantern, bush, tree (round, conifer, autumn, birch), fence, woodpile, barrel,
+stepping stones, a striped awning with a counter of goods, a flag. Each of the twelve is then a short script that places
+those parts where its painting has them, in the set's style: 2:1 iso, the palette, flat two-tone faces, the 1 px outline,
+the front on the right face. The anchor is the tile's top corner, as `drawBuilding`'s.
+
+**The twelve:**
+- **Hearth level 2** (`wooden_houses`): v0 a tall two-storey plank house, gable to the front under a tile roof, a brick
+  chimney at the back, a porch roof with a lantern, a fence and a red bush on the left, a round tree at the right (48 px,
+  4 citizens); v1 a log cabin, gable to the front, a dark shingle roof with pale trim, a tall stone chimney at the left end,
+  a porch, a flower box under the paired window, a woodpile and a pine (44 px); v2 a low log cabin with its eaves to the
+  front and the gable to the right, a red tile roof, a brick chimney, a railed veranda with a hood over the door, a tree
+  at the left and bushes (42 px); v3 a log cabin with the gable at the left end, a dark shingle roof with a dormer, a stone
+  chimney, a wide flower-boxed window, a porch with two lanterns, bushes and a stone path (44 px).
+- **Craft level 1** (`general_craft`), a storey and a loft at 33 px (2.8 citizens): v0 the tan timber workshop with a
+  balcony over an arched door, a signboard, a stone chimney, flower boxes, a woodpile and a tree; v1 the red-roofed
+  cottage with a signboard under the gable, a railed porch, flower boxes, a copper door, a tree and a picket garden; v2
+  the half-timbered house with a green roof and a dormer, a brick chimney, two teal doors, a flower box, an autumn tree
+  and a fence; v3 the stone-and-timber house with a dark roof, a balcony hung with cloths, a signboard, an awning over the
+  door, a birch and a pine, a barrel.
+- **The depot** (`trade_houses`, 66×62, 5.2 citizens): a half-timbered hall jettied over a stone ground floor, a slate
+  gable to the front with a red tile cross-gable over the left wing, flags on the ridge, a stone chimney, a clock on the
+  gable, the signboard over an arched door, a lantern, a red-and-white and a blue-and-white awning with stalls of goods,
+  a thatched lean-to on the left face, barrels.
+- **The wells** keep §4.110's drawings.
+
+The Grimmen, Veshari and Tallowkin copies of the eight houses keep §4.110's spec builds through their own look functions:
+their looks are their own, not the paintings'.
+
+**Judged side by side** (`scripts/playtest81.mjs`: the painting from main's build on port 4174 beside the redraw, at 6×
+and at 10×, a citizen at each tile's corner; the street by day and night). The four hearths now differ in silhouette as
+the paintings do, and so do the crafts; what a 34 px sprite still cannot carry is the paintings' lettering, railings and
+foliage detail. **The merge waits for the user's word.**
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 81 test files with 512 tests (`tests/iteration81.test.ts`: the hand-drawn houses in the atlas
+  for the Vellish look and the spec builds for the peoples, the four hearths unlike in height, roof and chimney, the
+  yardstick, the paintings' named parts, the anchors, the outline closing every sprite), `npm run build`.
+- `scripts/playtest81.mjs`: no errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
+
+### 4.113 The eda-lore swap, batch 1: the zone houses, every people its own (iteration 82)
+
+Art only, the user's request at the close of iteration 81: swap as many of the game's buildings as the user's own
+repository `eda-lore` covers, the zone houses first. The repository's 36 unsorted sheets at its root (1024² each, several
+houses to a sheet, 2:1 dimetric and lit from the front right like the set) hold about 160 houses that fit the setting and
+about 20 towers; the glass boxes, igloos, the factory and the solar roofs do not, and the shrines, castles, graveyards and
+ward towers wait for batch 2. Twenty-two sheets are copied into `inspirations/eda-lore/` under descriptive names.
+
+**The user's two rules,** given while the plan was made: "every people should have different looking ones", and "no
+repeats of custom assets". So 4 peoples × 4 zones × 3 levels × 4 variants = 192 slots, each holding a painting no other
+slot holds. Where the sheets ran short, a slot keeps its people's drawn house (iteration 51's rule, an imported base being
+the look for everyone, is gone: `zoneSpriteName` now always names the people's own sprite).
+
+**How the houses were sorted.** By people, after their rules in `sprites.ts`: the Vellish the town (half-timber, tile,
+thatch and brick); the Grimmen stone and slate (keeps, moss huts, turf houses, stone smithies, the forge in the crystals);
+the Veshari plank, reed and log (the twenty wooden houses of one sheet, log cabins, turf and stilt houses, A-frames, the
+round thatched houses, the treehouses and the mushroom house for arcane); the Tallowkin tall and narrow (the villas,
+clock towers, the steampunk towers, the observatories, the pagodas, the glass domes). By zone, after the look: smithies,
+barns and workshops are crafts; shops, stalls and the houses with goods are markets; towers, laboratories, domes and
+shrines are arcane; dwellings are hearths. By level, after the shape: low and wide at level 1, two storeys at level 2,
+the grandest and tallest at level 3.
+
+**The importer** has a `maxWidth` key: a house takes its `targetHeight` unless that makes it wider than its tile (34 px);
+then it takes the tile's width and the height follows. Heights: level 1 31 px (2.8 citizens with the outline; the
+Tallowkin 36, 3.2), level 2 40 (3.5), level 3 45 (3.9), the arcane and the Tallowkin level 3 towers 56 (4.8).
+**The glow** keeps only small lit patches (`glowLayer`'s `maxBlob: 10`): the windows and lanterns light at night, a cream
+wall or a thatch roof does not (the first night shot lit whole whitewashed villas). Houses fronted on the left are
+mirrored (`flip`), 73 of them, judged sheet by sheet at full size. `scripts/edaLoreHouses.mjs` holds the allocation and
+writes the entries (`set: 'eda-lore-1'`); the sixteen older zone paintings are switched off (`off: true`).
+
+**The allocation** (sheet and island in `inspirations/eda-lore/`; ′ mirrored; — the people's drawn house):
+
+| People | Zone | Level 1 | Level 2 | Level 3 |
+|---|---|---|---|---|
+| Vellish | hearth | houses_12 2′, houses_12 3′, houses_12 0, houses_12 9′ | houses_labelled_16 1, plated_houses_4 0, plated_houses_4 2′, medieval_9 8 | houses_4 3′, lodges_labelled_16 2, houses_10 2, houses_4 2 |
+| Vellish | craft | smithies_labelled_12 1, smithies_labelled_12 55, smithies_grey_10 2, smithies_4 5 | houses_grey_16 15′, smithies_grey_10 4, smithies_4 1, smithies_4 6′ | smithies_plated_4 2, smithies_plated_4 3, smithies_grey_10 9, lodges_labelled_12 130′ |
+| Vellish | market | medieval_9 10, medieval_9 4, houses_labelled_16 125, shrines_16 3 | alchemy_towers_8 2′, lodges_labelled_12 2′, lodges_labelled_16 70′, houses_grey_16 0 | alchemy_labelled_6b 2, alchemy_labelled_6 64′, houses_12 6, lodges_labelled_16 54′ |
+| Vellish | arcane | houses_labelled_16 58′, houses_labelled_16 59′, houses_labelled_16 60′, shrines_16 9 | alchemy_towers_8 9, alchemy_labelled_6 2, alchemy_labelled_6b 3, houses_grey_16 14 | alchemy_towers_8 1, alchemy_labelled_8 51′, alchemy_labelled_6 3, alchemy_towers_8 8′ |
+| Grimmen | hearth | lodges_labelled_16 119′, houses_grey_16 5, houses_labelled_16 128′, plated_houses_4 3′ | houses_grey_16 13, houses_4 0, houses_labelled_16 127, houses_labelled_16 0′ | medieval_9 5, lodges_labelled_16 1, lodges_labelled_12 3′, houses_labelled_16 126 |
+| Grimmen | craft | smithies_grey_10 0′, smithies_grey_10 6, smithies_labelled_12 0′, smithies_labelled_12 53 | smithies_grey_10 5, smithies_grey_10 7, smithies_grey_10 3′, smithies_labelled_12 3 | smithies_labelled_12 2′, alchemy_labelled_6 63, alchemy_towers_8 10, smithies_labelled_12 54′ |
+| Grimmen | market | shrines_16 0′, shrines_16 22′, shrines_16 6, — | stone_houses_4 1′, stone_houses_4 3′, medieval_9 7, alchemy_labelled_8 52′ | towers_16 2′, lodges_labelled_16 3′, stone_houses_4 0′, houses_labelled_16 3′ |
+| Grimmen | arcane | shrines_16 4′, —, —, — | alchemy_labelled_6b 1, smithies_labelled_12 101′, —, — | alchemy_labelled_8 2, towers_16 3, towers_8 0, — |
+| Veshari | hearth | wooden_houses_20 0, houses_12 10, houses_12 11′, lodges_labelled_16 52′ | wooden_houses_20 9, wooden_houses_20 13, wooden_houses_20 16, wooden_houses_20 11′ | wooden_houses_20 1′, lodges_labelled_16 117, wooden_houses_20 7′, wooden_houses_20 8 |
+| Veshari | craft | smithies_labelled_12 52, smithies_grey_10 1, smithies_4 2, wooden_houses_20 4′ | smithies_grey_10 8′, lodges_labelled_16 68, houses_10 8, houses_grey_16 1 | wooden_houses_20 3′, smithies_plated_4 4′, lodges_labelled_12 128′, wooden_houses_20 10 |
+| Veshari | market | lodges_labelled_16 0, shrines_16 1′, alchemy_labelled_6 65′, houses_labelled_16 2 | alchemy_labelled_6b 48′, lodges_labelled_16 69′, wooden_houses_20 17, wooden_houses_20 15′ | wooden_houses_20 5, alchemy_labelled_8 53, wooden_houses_20 19′, wooden_houses_20 14 |
+| Veshari | arcane | houses_labelled_16 179′, lodges_labelled_16 116′, lodges_labelled_12 1′, shrines_16 5 | alchemy_towers_8 4, lodges_labelled_16 53, lodges_labelled_12 61′, wooden_houses_20 12 | alchemy_labelled_8 3, houses_10 3, lodges_labelled_16 118, lodges_labelled_12 60′ |
+| Tallowkin | hearth | houses_10 4, houses_10 7, houses_12 8′, houses_grey_16 2 | houses_labelled_16 182, houses_labelled_16 181, alchemy_towers_8 7, houses_10 9 | towers_16 7, alchemy_towers_8 3, lodges_labelled_16 55′, wooden_houses_20 2 |
+| Tallowkin | craft | alchemy_labelled_6b 47′, smithies_plated_4 5, shrines_16 8′, houses_grey_16 3 | alchemy_labelled_8 1, towers_8 2′, towers_16 12′, alchemy_labelled_8 0 | alchemy_labelled_6 1, towers_8 1, towers_16 10′, — |
+| Tallowkin | market | shrines_16 20′, shrines_16 10, —, — | towers_16 6, towers_8 5, alchemy_labelled_8 54′, towers_16 15 | towers_8 6, towers_16 4′, towers_8 7, medieval_9 6 |
+| Tallowkin | arcane | shrines_16 7, shrines_16 2, houses_4 1, houses_10 10 | alchemy_labelled_6b 49, towers_16 5′, lodges_labelled_12 59, lodges_labelled_12 129′ | towers_8 3, wooden_houses_20 18′, —, — |
+
+**Counts:** Vellish 48 of 48, Veshari 48, Tallowkin 43, Grimmen 41: 180 houses, none used twice. **Still to draw**
+(twelve slots): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3, arcane 3 v3; Tallowkin craft 3 v3, market 1
+v2–v3, arcane 3 v2–v3.
+
+**Judged** with `scripts/playtest82.mjs`: per people, the 48 houses over their diamonds with a citizen beside main's (port
+4174), each zone at 6×, and a block of all 48 on two streets by day and night at 3× and 6×. The twisted-metal altars first
+given to two Grimmen arcane slots read as scrap at 34 px and went back to batch 2.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 82 test files with 517 tests (`tests/iteration82.test.ts`: 180 houses from eda-lore, no
+  sheet-and-island pair twice, the count per people, every slot the people's own sprite and present, the tile width, the
+  centre anchor and the yardstick, the flip list), `npm run build`, `npm run art`.
+- `scripts/playtest82.mjs`: no errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged; the control seed `npx tsx scripts/balance.ts 42 150`
+  ends at 2,155 folk, as main.
 
 ### 4.114 The Brickworks: the drawing given a building of its own (iteration 83)
 
@@ -5792,6 +5911,13 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   follows only if the user says so.
 - *A building painted by the user is drawn in code, then waits for its building (iteration 80):* the brickworks is a
   registered sprite with no catalog entry, so the game is unchanged until the user names the building it belongs to.
+- *Compose, don't spec, when a painting is the design (iteration 81):* a spec gives every house the same box; a painting's
+  likeness is in its composition. `painted.ts` places boxes, gables along either axis, porches, verandas, dormers,
+  chimneys and props where the painting has them, in the set's style. The peoples keep their own looks for the same
+  houses: the painting is the Vellish look.
+- *Every people its own houses, and no painting twice (iteration 82, the user's rules):* a slot with no painting of its own
+  keeps its people's drawn house rather than borrow another's; the houses are sorted to a people by material, to a zone by
+  what they show, and to a level by their shape (a 1×1 tile takes a wide house only low).
 - *The brickworks is a building of its own, not a Craft level (iteration 83):* a Craft lot is 1×1 and the drawing is 3×3,
   so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
   tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
