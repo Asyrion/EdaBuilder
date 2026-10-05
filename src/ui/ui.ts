@@ -20,7 +20,7 @@ import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, H
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
 import { canBreed } from '../sim/breeding';
 import { WALKER_JOBS, walkersOf } from '../sim/walkers';
-import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
+import { brickworksNear, builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { CARAVAN_EVERY, caravanDue, caravanSurplus, heartTrust } from '../sim/events';
@@ -981,7 +981,7 @@ export class UI {
     if (def.zone === Zone.Arcane && b.stock <= 0.5 && b.age > 3) problems.push('No leystone: build a Crystal Mine in the hills with a road to this district.');
     rows.push(row('Mana', b.lit ? '<span class="ley">lit</span>' : '<span class="bad">unlit</span>'));
     rows.push(row('Water', b.watered ? '<span class="good">watered</span>' : '<span class="bad">dry</span>'));
-    if (b.state === 'building') { const ba = buildersAt(s, b); rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · ${ba.present} builder${ba.present === 1 ? '' : 's'} at work${ba.assigned > ba.present ? `, ${ba.assigned - ba.present} on the way` : ''}`)); if (def.category === 'zone') rows.pop(), rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · raised by the folk who will live here`)); else if (!ba.assigned && builderTarget(s) > 0) problems.push('No builder can reach this site by road from the Founding Stake; the folk raise it themselves at a quarter pace.'); }
+    if (b.state === 'building') { const ba = buildersAt(s, b); rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · ${ba.present} builder${ba.present === 1 ? '' : 's'} at work${ba.assigned > ba.present ? `, ${ba.assigned - ba.present} on the way` : ''}${brickworksNear(s, b) ? ' · bricks from the Brickworks (half again as fast)' : ''}`)); if (def.category === 'zone') rows.pop(), rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · raised by the folk who will live here`)); else if (!ba.assigned && builderTarget(s) > 0) problems.push('No builder can reach this site by road from the Founding Stake; the folk raise it themselves at a quarter pace.'); }
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
     if (b.kind === 'stormpeak') {

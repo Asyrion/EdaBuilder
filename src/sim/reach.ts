@@ -11,6 +11,7 @@ import { FOUNDRY_RADIUS, FORGE_WAKE_RADIUS } from './beasts';
 import { QUAY_REACH } from './vehicles';
 import { GLIMHOUSE_REACH, HOSPICE_REACH } from './growth';
 import { CARTERS_REACH } from './agents';
+import { BRICK_REACH } from './construction';
 import { GLOWVINE_REACH, MILL_SHARE_REACH, SEAT_WARMTH, WICKS_REACH } from './networks';
 import { SLUICE_FLOOD_REACH } from './weave';
 import { HOUND_REACH, HUNT_REACH } from './wild';
@@ -40,6 +41,7 @@ export const SECONDARY_REACH: Record<string, { r: number; label: string; square?
   hospice: [{ r: HOSPICE_REACH, label: 'draughts from markets', square: true }],
   cartersyard: [{ r: CARTERS_REACH, label: 'eases the roads', square: true }],
   hanginggardens: [{ r: GLOWVINE_REACH, label: 'glowvine alive' }],
+  brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 81)
   greatweir: [{ r: SLUICE_FLOOD_REACH, label: 'sluice floods', when: (b) => !!b.sluice }],
   lanternofwicks: [{ r: WICKS_REACH, label: 'halves spires' }],
   underkingseat: [{ r: SEAT_WARMTH, label: 'warms cradles' }],
