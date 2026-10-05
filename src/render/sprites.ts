@@ -4,6 +4,9 @@
  * any sprite by name via public/art/atlas.json (see atlas.ts).
  */
 import { Painter, h2 } from './painter';
+import { drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3, drawDepot, drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3 } from './painted';
+/** The zone houses drawn by hand after their paintings (iteration 80), by `${zone}_l${level}` then variant. */
+const PAINTED: Record<string, (() => { p: Painter; glow: Painter; ax: number; ay: number })[]> = { hearth_l2: [drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3], craft_l1: [drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3] };
 import { drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
@@ -2069,7 +2072,7 @@ export function generateSprites(): SpriteDef[] {
   // zoned buildings
   for (const z of ['hearth', 'market', 'craft', 'arcane'])
     for (let lvl = 1; lvl <= 3; lvl++)
-      for (let v = 0; v < 4; v++) { push(`${z}_l${lvl}_v${v}`, drawBuilding(zoneSpecs(z, lvl, v))); for (const p of ZONE_LOOKS) push(`${z}_l${lvl}_v${v}_${p}`, drawBuilding(zoneSpecs(z, lvl, v, p))); }
+      for (let v = 0; v < 4; v++) { const hand = PAINTED[`${z}_l${lvl}`]?.[v]; push(`${z}_l${lvl}_v${v}`, hand ? hand() : drawBuilding(zoneSpecs(z, lvl, v))); for (const p of ZONE_LOOKS) push(`${z}_l${lvl}_v${v}_${p}`, drawBuilding(zoneSpecs(z, lvl, v, p))); } // the level-2 hearths and level-1 crafts are drawn by hand after their paintings (iteration 80); the peoples keep their own looks
   // ruin
   {
     const p = new Painter(34, 26);
@@ -2105,6 +2108,7 @@ export function generateSprites(): SpriteDef[] {
   // service buildings
   for (const [key, spec] of Object.entries(SERVICE_SPECS)) {
     if (key === 'spire') push('b_spire', drawSpire());
+    else if (key === 'depot') push('b_depot', drawDepot()); // after the trade house painting (iteration 80)
     else if (key === 'well') push('b_well', drawWell());
     else if (key === 'seep') push('b_seep', drawSeep()); // the three wells after their paintings (iteration 79)
     else if (key === 'tidewell') push('b_tidewell', drawTidewell());
