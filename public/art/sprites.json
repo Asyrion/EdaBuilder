@@ -1439,6 +1439,20 @@
    "h": 18,
    "ax": 5,
    "ay": 19
+  },
+  "wyrm_fly_0": {
+   "file": "sprites/wyrm_fly_0.png",
+   "w": 63,
+   "h": 58,
+   "ax": 35,
+   "ay": 58
+  },
+  "wyrm_fly_1": {
+   "file": "sprites/wyrm_fly_0.png",
+   "w": 63,
+   "h": 58,
+   "ax": 35,
+   "ay": 59
   }
  }
 }

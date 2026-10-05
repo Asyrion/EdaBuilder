@@ -1,14 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 71 (a faster balance bar; DESIGN §4.102). Iterations 70 (two ways to lose, §4.101), 69
-(the Great Gate, §4.100) and 68 (the plan's gaps written down, §4.99, §17) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 72 (the wyrm redrawn after the user's painting; DESIGN §4.103). Iterations 71 (a faster
+balance bar, §4.102), 70 (two ways to lose, §4.101) and 69 (the Great Gate, §4.100) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.102 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.103 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -104,7 +104,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (73 files, 468 tests at this writing; `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (73 files, 468 tests at this writing; iteration 72 was art only; `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -253,6 +253,15 @@ Built since iteration 68:
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 72 (not yet said elsewhere)
+
+- **A painting with an enclosed background** (a loop, a ring of limbs) needs `holes: N` in its `art/sources.json` entry.
+  Without it, the white inside stays, because the key floods from the corners only.
+- **An uploaded painting the user gives** goes in `inspirations/<subject>/` as png (ImageMagick `convert` from webp).
+  It becomes a sprite by name in the manifest, which wins over the procedural sprite.
+- **Before and after shots:** `scripts/playtest72.mjs` shoots a build of the previous main on port 4174 beside this one
+  (a worktree of `origin/main`, `vite build --outDir`, `vite preview --outDir … --port 4174`).
 
 ## Learned in iteration 70 (not yet said elsewhere)
 

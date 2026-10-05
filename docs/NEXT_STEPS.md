@@ -349,6 +349,13 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 72 (the wyrm redrawn after the user's painting)
+
+- **The wyrm in flight is the user's painting,** a green serpent with an orange belly, horns and bat wings, imported
+  through `npm run art`. The importer gained `holes`, which keys background enclosed by the body.
+- **The coil around the node** (asleep, awake, dead) is redrawn in code in the painting's form and colours.
+- Art only: the control seed is unchanged (DESIGN §4.103).
+
 ## Done in iteration 71 (a faster balance bar)
 
 - **The cache:** the balance table caches runs by the files they read (`src/sim`, `src/data`, `src/core`) rather than by
