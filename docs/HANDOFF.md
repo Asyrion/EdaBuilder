@@ -8,7 +8,7 @@ Written at the close of iteration 71 (a faster balance bar; DESIGN §4.102). Ite
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.99 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.102 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -33,10 +33,26 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 ## The next item
 
 NEXT_STEPS item 1, **golem haulers** (DESIGN §17.4 C, §8.4).
-- The Golem Foundry fields slow, tireless carts that carry 30 and are not scared by hounds. They are drawn as
-  vehicles.
-- Bound golems are in `src/sim/beasts.ts`, carts in `src/render/carts.ts` and `vehicles.ts`.
-- Plan it on the Plan panel first.
+- **The promise:** the Golem Foundry fields slow, tireless carts that carry 30 and are not scared by hounds. They are
+  drawn as vehicles.
+- **Where things are:**
+  - **Bound golems:** `src/sim/beasts.ts`.
+    - A golem's duty is `'labour'` (unset; 12 hands, `GOLEM_LABOUR`), `'guard'` or `'works'`, set through
+      `setGolemDuty`, which the Foundry's panel calls.
+    - A hauler is naturally a fourth duty there.
+    - Their mana is `foundryMana` (`GOLEM_MANA`).
+  - **Carts:**
+    - The road carts are agents with a `variant`. `src/sim/vehicles.ts` already holds two other kinds: the floating cart
+      (`FLOAT_VARIANT`, no congestion) and the barge (`BARGE_VARIANT`).
+    - The cart sprite is picked in `src/render/carts.ts` (`cartSpriteName`).
+    - The cart's goods run is in `src/sim/agents.ts`.
+  - **Hounds:** the promise says haulers are "not scared by hounds". First find what hounds do to ordinary carts today
+    (the hound branch in `creatures.ts`, the carts in `agents.ts`). If nothing, the design must say what "scared" means.
+- **The art:** a new vehicle needs a sprite: procedural, or a painting through `npm run art` (`kind: 'vehicle'`). Show
+  the user screenshots, before and after.
+- **The bar:** it is a sim change, so it runs the wide bar. Since iteration 71, main's side comes from `balance/cache/`,
+  so only the branch side runs. Commit the cache file the bar writes, with the iteration.
+- **Plan it on the Plan panel first.**
 
 Built since iteration 68:
 - the Great Gate (item A), in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and `drawGreatGate`
@@ -67,6 +83,12 @@ Built since iteration 68:
     the main stream on day 10 sends Tallowkin 42 from 3,003 folk to 1,396, and Vellish 43 from 2,903
     to 1,579, each losing two gates. A single-seed row cannot show a change of a tenth (NEXT_STEPS
     item 2).
+- **The Tallowkin's floor** is not met at the 8-draw cap: 11.8 % of their folk in iteration 70, the same in 64. Their
+  runs swing too much for the bar to see a tenth. Report it as not met, as §4.101 does.
+- **The bot never wakes the wyrm** (it keeps spires off its node), so the wyrm's tribute, refusals and razing are never
+  exercised by the bar. Only the tests and playtests hold them.
+- **Hounds besiege some bot cities' edges all Hush** (Veshari 43: one march on all 30 nights). Since iteration 70 the
+  homes they besiege flee until the Thaw; the bar saw it as noise (Veshari −43). No bot city has lost to the hounds.
 - **The Grimmen fall in the Ember** (iterations 54 and 55): a third of the folk leave between days
   60 and 70 with no home abandoned (mana demand 340 to 218, happiness to 51). Worth a probe.
 - **Bugs fixed this session** that a future reader may meet in old notes:
