@@ -4495,6 +4495,43 @@ gables read smaller than in the painting, and the yard's small things, at 98 pix
   in for a 3×3 building's sprite in that page only.
 - The sim is unchanged.
 
+### 4.112 The Brickworks: the drawing given a building of its own (iteration 81)
+
+Iteration 80 drew a brickworks after the user's painting and gave it to no building (§4.111). The user then said: make it
+the level-3 Craft building or a new building type, as I prefer.
+
+**Why a new building:** a Craft lot is a 1×1 zone building at every level, and the drawing is a 3×3 hall with a house, a
+shed and a yard. Shrunk to one tile it would lose everything the painting has. So it became **the Brickworks**, a 3×3
+building unlocked at the Village (milestone 3), the "level 3" in the sense of when it comes.
+
+**What it does:**
+- **Bricks for the carts.** Ten hands make 6 goods a day, carted like a Craft works. It uses the `goodsRate` path the
+  Quarry and the Hanging Gardens use, so it scales with its hands and halves when unlit.
+- **Its own light.** The kiln lights it (`selfLit`), with no mana.
+- **Bricks for the builders, its one new rule.** A building site within `BRICK_REACH` = 12 tiles (centre to centre) of a
+  staffed Brickworks rises `BRICK_SPEED` = 1.5 times as fast. That covers the folk's own quarter pace as well as each
+  builder's share.
+  - A Brickworks still being raised, or one without hands, speeds nothing.
+  - Zone lots are unchanged: they rise in a day anyway.
+  - The ring "bricks for builders" shows the reach, and a site's Construction row says when the bricks reach it.
+- **The figures:** it costs 3,600 crowns, upkeep 30 a day, and takes three days to build.
+- **Saves:** there is no new state, so old saves load.
+
+**The bot does not build it.** Teaching the bot to use it would be a balance change of its own. The bar's runs therefore
+show what the catalog change alone does to a bot city.
+
+**Verified:**
+- `tests/iteration81.test.ts`, 5 tests: the entry and its unlock, the goods lit and unlit, the speed inside and outside
+  the reach and with an empty works, a works still being built and zone lots, and the ring.
+- `scripts/playtest81.mjs`:
+  - the Services tab at the Village and its tip, and the placing ghost with its ring;
+  - the Brickworks placed through the game's own action, by day and at night;
+  - its panel and ring;
+  - a site 8 tiles away against one beyond the reach, with no builders: 150 against 100 work in 400 ticks;
+  - three days of goods (23 made, all hands at work);
+  - no errors and no missing sprites.
+- **The wide bar:** BAR_RESULT
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5741,3 +5778,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   follows only if the user says so.
 - *A building painted by the user is drawn in code, then waits for its building (iteration 80):* the brickworks is a
   registered sprite with no catalog entry, so the game is unchanged until the user names the building it belongs to.
+- *The brickworks is a building of its own, not a Craft level (iteration 81):* a Craft lot is 1×1 and the drawing is 3×3,
+  so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
+  tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.

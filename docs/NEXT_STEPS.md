@@ -349,6 +349,14 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 81 (the Brickworks)
+
+- **The brickworks drawing became a building:** the Brickworks, 3×3, at the Village (DESIGN §4.112). It makes 6 goods
+  of brick a day for the carts, is lit by its kiln with no mana, and speeds every building site within 12 tiles by half
+  while it is staffed. It shows a ring of its reach and a line in a site's panel.
+- **The bot does not build it yet.** Teaching the bot to use it would be a balance change of its own, for later if
+  wanted.
+
 ## Done in iteration 80 (a brickworks drawn after the user's painting)
 
 - **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
