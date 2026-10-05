@@ -135,6 +135,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (!('wild' in o)) { state.wild = { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] }; state.agents = state.agents.filter((a) => a.herdId === undefined); } // a save from before the wild seeds its herds on its own land the next day (iteration 58)
   if (!('water' in o)) state.water = { fish: [], spawnUntil: -1, fishAt: [], closed: [] }; // a save from before the water: every shoal starts full (iteration 60)
   state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
+  state.wyrm.starved = state.wyrm.starved ?? 0; // the wyrm's refusals in a row and its razing flight (iteration 70)
+  state.wyrm.razing = state.wyrm.razing ?? false;
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
   if (!state.dustLit || state.dustLit.length !== state.w * state.h) state.dustLit = new Uint16Array(state.w * state.h);

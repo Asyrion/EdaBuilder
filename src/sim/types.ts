@@ -65,6 +65,12 @@ export const SERVICE_TYPES: ServiceType[] = [
 
 /** Where the Heart of Belregi is (iteration 69): not yet brought; set in the Great Gate; left with the Guardians; sold to the Crown;
  *  shared with the Uzulim. `step` counts the tales answered (the High Warden, the obelisks or their skip, the waking); `day` is the last. */
+/** What ended a charter (iteration 70). */
+export type LossKind = 'gloam' | 'restless' | 'crown' | 'wyrm' | 'hounds';
+/** The hounds' Hush (iteration 70): the year it belongs to, and the units (a painted district, or an unpainted march as 100 + its
+ *  sector) whose homes have half fled from the hounds this Hush. */
+export interface HushState { year: number; emptied: number[]; warned?: number[]; quarter?: number[] } // warned: units told of a second night; quarter: units told of a quarter fled
+
 export type HeartHeld = 'none' | 'set' | 'guardians' | 'sold' | 'shared';
 export interface HeartState { held: HeartHeld; step: number; day: number }
 
@@ -112,6 +118,9 @@ export interface Building {
   trophies?: number; // a lodge's trophies awaiting the Gloam road
   took?: number; // a lodge: the day it last brought in game
   tookSp?: string; // a lodge: what it brought in that day
+  hounded?: number; // a hearth: nights this Hush the hounds reached its door (iteration 70)
+  houndNight?: number; // the last such night's key
+  fled?: number; // a hearth whose folk fled the hounds: the Hush year it stands empty through (no move-ins until the Thaw)
   wolfDay?: number; // a hearth: the day the wolves took a hen (−6 happiness for five days)
   broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
   fish?: number; // a Fishers' Hut: today's catch, fresh; a market: fish on the shelves (iteration 60)
@@ -225,6 +234,8 @@ export interface WyrmState {
   askedBind: number; // day the binding was last offered, -1
   courted: boolean; // a lit Wyrm-Court has stood since the binding (iteration 53)
   courtDark: number; // days in a row the courted wyrm has had no lit Court
+  starved: number; // refusals in a row: a tribute paid, the binding or its death resets it; the third razes the Stake (iteration 70)
+  razing: boolean; // the third refusal's flight is on its way to the Founding Stake
 }
 
 export interface Materials {
@@ -456,6 +467,8 @@ export interface GameState {
   goodsSold: number;
   goodsShort: number; // markets that ran dry today
   gameOver: string | null;
+  lostTo?: LossKind; // what ended the charter (iteration 70)
+  hush: HushState; // the hounds' Hush: the units they emptied, reset at the Thaw (iteration 70)
   stats: {
     goodsDelivered: number;
     houndsKilled: number;
@@ -502,6 +515,9 @@ export interface GameState {
     hushPressureBreaks: number; // days of the current Hush with pressure >= 0.45
     wispRing: number;
     wyrmFlyovers: number;
+    wyrmStarvedMost: number; // the most refusals of the wyrm in a row (iteration 70)
+    houndFled: number; // homes whose folk fled the hounds in the Hush
+    houndEmptied: number; // districts (or marches) the hounds emptied
     gloamTiles: number;
     peakPopulation: number;
     councils: number; // petitions heard

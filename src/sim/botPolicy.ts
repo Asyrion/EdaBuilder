@@ -31,7 +31,7 @@ function modifierWeight(s: GameState, kind: Modifier['kind'], happyW: number): n
 
 /** What the city holds, in crowns: the purse, ten days of the ledger, the timed effects, favour, standings, dragons, goods and roofs. */
 export function worth(s: GameState): number {
-  if (s.gameOver) return -1e9;
+  if (s.gameOver || s.wyrm.razing) return -1e9; // the razing flight ends the charter when it lands (iteration 70)
   const next = s.milestone + 1;
   const underGate = s.faction === 'vellish' && next < milestonesOf(s).length && s.happiness < VELLISH_HAPPINESS(next) + 2;
   const happyW = Math.max(5, s.population * 0.02) * (underGate ? 3 : 1);

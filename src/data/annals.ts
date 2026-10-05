@@ -87,6 +87,8 @@ export const ANNALS: AnnalChapter[] = [
       { label: 'Gloam-hounds seen', stat: 'houndsTotal', note: 'Hounds that came out of the grey. The bot raises a wall every thirty.' },
       { label: 'Hound raids', stat: 'houndRaids', note: 'Hounds that reached a building and harried it.' },
       { label: 'Hounds killed', stat: 'houndsKilled', note: 'Hounds the Watch, the lodges and the dragons brought down.' },
+      { label: 'Homes fled from the hounds', stat: 'houndFled', note: 'Homes whose folk fled in the Hush after three nights of hounds at the door; they stood empty until the Thaw.' },
+      { label: 'Districts the hounds emptied', stat: 'houndEmptied', note: 'Districts (or, for homes in none, marches) with half their homes fled in one Hush. A third in the same Hush brings the Long Night early.' },
       { label: 'Pelts', stat: 'pelts', note: "Hound pelts from the Hunters' Lodges, sold on the Gloam road." },
       { label: 'Hides from game', stat: 'hides', note: "Hides of deer, elk, boar, goats, otters and wolves the lodges brought in (iteration 58)." },
       { label: 'Meat brought in', stat: 'meat', note: 'Meat for the markets\' shelves; what the shelves cannot take is salted for the Gloam road.' },
@@ -162,6 +164,7 @@ export const ANNALS: AnnalChapter[] = [
     rows: [
       { label: 'Tributes paid', stat: 'wyrmTributes', note: 'Tributes carried to the woken wyrm.' },
       { label: 'Flyovers', stat: 'wyrmFlyovers', note: 'Passes of the wyrm over the city.' },
+      { label: 'Most refusals in a row', stat: 'wyrmStarvedMost', note: 'The wyrm refused this many times running; the third brings it down on the Founding Stake.' },
       { label: 'Duels', stat: 'wyrmDuels', note: 'Great wyrms that rose to meet the Vein-Wyrm.' },
     ],
   },

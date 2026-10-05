@@ -145,6 +145,7 @@ export function dailyEconomy(state: GameState): void {
     else if (state.bankruptDays < DEBT_DAYS) pushMessage(state, `Debt warning: ${DEBT_DAYS - state.bankruptDays} day(s) until the Crown revokes your Charter.`, 'bad');
     if (state.bankruptDays >= DEBT_DAYS && !state.gameOver) {
       state.gameOver = 'The Crown revokes your Charter. A new Warden-Reeve will be sent, with a smaller purse.';
+      state.lostTo = 'crown';
       pushMessage(state, state.gameOver, 'bad');
     }
   } else state.bankruptDays = 0;

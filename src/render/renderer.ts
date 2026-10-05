@@ -1002,7 +1002,7 @@ export class Renderer {
         e.n++;
       }
     // per-district problems: unlit, dry, empty shelves
-    const prob = new Map<number, { unlit: number; dry: number; empty: number }>();
+    const prob = new Map<number, { unlit: number; dry: number; empty: number; fled: number }>();
     for (const b of state.buildings) {
       if (!b || b.state !== 'ok') continue;
       const def = BUILDING_BY_KEY[b.kind];
@@ -1010,7 +1010,8 @@ export class Renderer {
       const d = state.district[idx(b.x, b.y)];
       if (!d) continue;
       let p = prob.get(d);
-      if (!p) prob.set(d, (p = { unlit: 0, dry: 0, empty: 0 }));
+      if (!p) prob.set(d, (p = { unlit: 0, dry: 0, empty: 0, fled: 0 }));
+      if (b.fled !== undefined) p.fled++; // fled from the hounds until the Thaw (iteration 70)
       if (!b.lit) p.unlit++;
       if (!b.watered) p.dry++;
       if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) p.empty++;
@@ -1025,6 +1026,8 @@ export class Renderer {
       if (p?.unlit) bits.push(`${p.unlit} unlit`);
       if (p?.dry) bits.push(`${p.dry} dry`);
       if (p?.empty) bits.push(`${p.empty} empty`);
+      if (state.hush.emptied.includes(d)) bits.push('emptied by the hounds');
+      else if (p?.fled) bits.push(`${p.fled} fled the hounds`);
       const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
       const sx = Math.round(wx - this.camera.left);
       const sy = Math.round(wy - this.camera.top);

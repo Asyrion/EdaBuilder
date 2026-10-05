@@ -215,6 +215,8 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   if (zb.length < 4) return null;
   const u = unlit(s);
   const d = dry(s);
+  if (s.wyrm.starved >= 2 && (s.wyrm.state === 'awake' || s.wyrm.state === 'sleeping')) return { text: `The wyrm has been refused ${s.wyrm.starved} times running. Refuse it once more and it comes for the Founding Stake: pay its next tribute, in crowns or goods.`, focus: { center: 'wyrm' } };
+  if (s.hush.emptied.length > 0 && !s.gameOver) return { text: `The hounds have emptied ${s.hush.emptied.length} district${s.hush.emptied.length === 1 ? '' : 's'} this Hush. A third and the Long Night comes early: light and ward the dark homes near the Gloam, raise a Hunters' Lodge or a Warding Wall.`, focus: { overlay: 'ward' } };
   if (s.overdrawDays > 0) return { text: 'Mana overdrawn: a wild surge is coming. Build a Nexus or Thrum Font, or cut consumers.', focus: { build: 'nexus' } };
   if (s.treasury < 0) return { text: `The treasury is in debt, and a debt costs a crown in a hundred a day. Raise the tithe a little or cut upkeep; five days below ${Math.round(debtLine(s)).toLocaleString()} ends the Charter. The Budget panel offers the Crown's loan.`, focus: { panel: 'budget' } };
   if (u > zb.length * 0.25) return { text: `${u} buildings have no mana. Chain Ley Spires within 6 tiles of a node or another lit spire.`, focus: { overlay: 'mana' } };
