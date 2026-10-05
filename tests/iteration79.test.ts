@@ -24,9 +24,9 @@ describe('The paintings redrawn in code, part 1', () => {
   it('the twelve paintings are off: their entries say so, and the manifest no longer carries them', () => {
     for (const n of REDRAWN) {
       expect(sources.find((e) => e.name === n)?.off, n).toBe(true);
-      expect(manifest[n], n).toBeUndefined();
+      if (n.startsWith('b_')) expect(manifest[n], n).toBeUndefined(); // the zone houses carry the user's eda-lore houses since iteration 82
     }
-    expect(sources.filter((e) => e.off).length).toBe(12);
+    expect(sources.filter((e) => e.off).length).toBe(28); // and since iteration 82 the sixteen older zone paintings too
   });
   it('the redraws keep the citizen yardstick: the wells 1.5, the crafts 2.8, the hearths 4, the depot 5.5', () => {
     for (const n of ['b_well', 'b_seep', 'b_tidewell']) expect(opaqueHeight(get(n)) / 12, n).toBeLessThanOrEqual(1.5);

@@ -4547,6 +4547,73 @@ foliage detail. **The merge waits for the user's word.**
 - `scripts/playtest81.mjs`: no errors, no missing sprites.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
+### 4.113 The eda-lore swap, batch 1: the zone houses, every people its own (iteration 82)
+
+Art only, the user's request at the close of iteration 81: swap as many of the game's buildings as the user's own
+repository `eda-lore` covers, the zone houses first. The repository's 36 unsorted sheets at its root (1024² each, several
+houses to a sheet, 2:1 dimetric and lit from the front right like the set) hold about 160 houses that fit the setting and
+about 20 towers; the glass boxes, igloos, the factory and the solar roofs do not, and the shrines, castles, graveyards and
+ward towers wait for batch 2. Twenty-two sheets are copied into `inspirations/eda-lore/` under descriptive names.
+
+**The user's two rules,** given while the plan was made: "every people should have different looking ones", and "no
+repeats of custom assets". So 4 peoples × 4 zones × 3 levels × 4 variants = 192 slots, each holding a painting no other
+slot holds. Where the sheets ran short, a slot keeps its people's drawn house (iteration 51's rule, an imported base being
+the look for everyone, is gone: `zoneSpriteName` now always names the people's own sprite).
+
+**How the houses were sorted.** By people, after their rules in `sprites.ts`: the Vellish the town (half-timber, tile,
+thatch and brick); the Grimmen stone and slate (keeps, moss huts, turf houses, stone smithies, the forge in the crystals);
+the Veshari plank, reed and log (the twenty wooden houses of one sheet, log cabins, turf and stilt houses, A-frames, the
+round thatched houses, the treehouses and the mushroom house for arcane); the Tallowkin tall and narrow (the villas,
+clock towers, the steampunk towers, the observatories, the pagodas, the glass domes). By zone, after the look: smithies,
+barns and workshops are crafts; shops, stalls and the houses with goods are markets; towers, laboratories, domes and
+shrines are arcane; dwellings are hearths. By level, after the shape: low and wide at level 1, two storeys at level 2,
+the grandest and tallest at level 3.
+
+**The importer** has a `maxWidth` key: a house takes its `targetHeight` unless that makes it wider than its tile (34 px);
+then it takes the tile's width and the height follows. Heights: level 1 31 px (2.8 citizens with the outline; the
+Tallowkin 36, 3.2), level 2 40 (3.5), level 3 45 (3.9), the arcane and the Tallowkin level 3 towers 56 (4.8).
+**The glow** keeps only small lit patches (`glowLayer`'s `maxBlob: 10`): the windows and lanterns light at night, a cream
+wall or a thatch roof does not (the first night shot lit whole whitewashed villas). Houses fronted on the left are
+mirrored (`flip`), 73 of them, judged sheet by sheet at full size. `scripts/edaLoreHouses.mjs` holds the allocation and
+writes the entries (`set: 'eda-lore-1'`); the sixteen older zone paintings are switched off (`off: true`).
+
+**The allocation** (sheet and island in `inspirations/eda-lore/`; ′ mirrored; — the people's drawn house):
+
+| People | Zone | Level 1 | Level 2 | Level 3 |
+|---|---|---|---|---|
+| Vellish | hearth | houses_12 2′, houses_12 3′, houses_12 0, houses_12 9′ | houses_labelled_16 1, plated_houses_4 0, plated_houses_4 2′, medieval_9 8 | houses_4 3′, lodges_labelled_16 2, houses_10 2, houses_4 2 |
+| Vellish | craft | smithies_labelled_12 1, smithies_labelled_12 55, smithies_grey_10 2, smithies_4 5 | houses_grey_16 15′, smithies_grey_10 4, smithies_4 1, smithies_4 6′ | smithies_plated_4 2, smithies_plated_4 3, smithies_grey_10 9, lodges_labelled_12 130′ |
+| Vellish | market | medieval_9 10, medieval_9 4, houses_labelled_16 125, shrines_16 3 | alchemy_towers_8 2′, lodges_labelled_12 2′, lodges_labelled_16 70′, houses_grey_16 0 | alchemy_labelled_6b 2, alchemy_labelled_6 64′, houses_12 6, lodges_labelled_16 54′ |
+| Vellish | arcane | houses_labelled_16 58′, houses_labelled_16 59′, houses_labelled_16 60′, shrines_16 9 | alchemy_towers_8 9, alchemy_labelled_6 2, alchemy_labelled_6b 3, houses_grey_16 14 | alchemy_towers_8 1, alchemy_labelled_8 51′, alchemy_labelled_6 3, alchemy_towers_8 8′ |
+| Grimmen | hearth | lodges_labelled_16 119′, houses_grey_16 5, houses_labelled_16 128′, plated_houses_4 3′ | houses_grey_16 13, houses_4 0, houses_labelled_16 127, houses_labelled_16 0′ | medieval_9 5, lodges_labelled_16 1, lodges_labelled_12 3′, houses_labelled_16 126 |
+| Grimmen | craft | smithies_grey_10 0′, smithies_grey_10 6, smithies_labelled_12 0′, smithies_labelled_12 53 | smithies_grey_10 5, smithies_grey_10 7, smithies_grey_10 3′, smithies_labelled_12 3 | smithies_labelled_12 2′, alchemy_labelled_6 63, alchemy_towers_8 10, smithies_labelled_12 54′ |
+| Grimmen | market | shrines_16 0′, shrines_16 22′, shrines_16 6, — | stone_houses_4 1′, stone_houses_4 3′, medieval_9 7, alchemy_labelled_8 52′ | towers_16 2′, lodges_labelled_16 3′, stone_houses_4 0′, houses_labelled_16 3′ |
+| Grimmen | arcane | shrines_16 4′, —, —, — | alchemy_labelled_6b 1, smithies_labelled_12 101′, —, — | alchemy_labelled_8 2, towers_16 3, towers_8 0, — |
+| Veshari | hearth | wooden_houses_20 0, houses_12 10, houses_12 11′, lodges_labelled_16 52′ | wooden_houses_20 9, wooden_houses_20 13, wooden_houses_20 16, wooden_houses_20 11′ | wooden_houses_20 1′, lodges_labelled_16 117, wooden_houses_20 7′, wooden_houses_20 8 |
+| Veshari | craft | smithies_labelled_12 52, smithies_grey_10 1, smithies_4 2, wooden_houses_20 4′ | smithies_grey_10 8′, lodges_labelled_16 68, houses_10 8, houses_grey_16 1 | wooden_houses_20 3′, smithies_plated_4 4′, lodges_labelled_12 128′, wooden_houses_20 10 |
+| Veshari | market | lodges_labelled_16 0, shrines_16 1′, alchemy_labelled_6 65′, houses_labelled_16 2 | alchemy_labelled_6b 48′, lodges_labelled_16 69′, wooden_houses_20 17, wooden_houses_20 15′ | wooden_houses_20 5, alchemy_labelled_8 53, wooden_houses_20 19′, wooden_houses_20 14 |
+| Veshari | arcane | houses_labelled_16 179′, lodges_labelled_16 116′, lodges_labelled_12 1′, shrines_16 5 | alchemy_towers_8 4, lodges_labelled_16 53, lodges_labelled_12 61′, wooden_houses_20 12 | alchemy_labelled_8 3, houses_10 3, lodges_labelled_16 118, lodges_labelled_12 60′ |
+| Tallowkin | hearth | houses_10 4, houses_10 7, houses_12 8′, houses_grey_16 2 | houses_labelled_16 182, houses_labelled_16 181, alchemy_towers_8 7, houses_10 9 | towers_16 7, alchemy_towers_8 3, lodges_labelled_16 55′, wooden_houses_20 2 |
+| Tallowkin | craft | alchemy_labelled_6b 47′, smithies_plated_4 5, shrines_16 8′, houses_grey_16 3 | alchemy_labelled_8 1, towers_8 2′, towers_16 12′, alchemy_labelled_8 0 | alchemy_labelled_6 1, towers_8 1, towers_16 10′, — |
+| Tallowkin | market | shrines_16 20′, shrines_16 10, —, — | towers_16 6, towers_8 5, alchemy_labelled_8 54′, towers_16 15 | towers_8 6, towers_16 4′, towers_8 7, medieval_9 6 |
+| Tallowkin | arcane | shrines_16 7, shrines_16 2, houses_4 1, houses_10 10 | alchemy_labelled_6b 49, towers_16 5′, lodges_labelled_12 59, lodges_labelled_12 129′ | towers_8 3, wooden_houses_20 18′, —, — |
+
+**Counts:** Vellish 48 of 48, Veshari 48, Tallowkin 43, Grimmen 41: 180 houses, none used twice. **Still to draw**
+(twelve slots): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3, arcane 3 v3; Tallowkin craft 3 v3, market 1
+v2–v3, arcane 3 v2–v3.
+
+**Judged** with `scripts/playtest82.mjs`: per people, the 48 houses over their diamonds with a citizen beside main's (port
+4174), each zone at 6×, and a block of all 48 on two streets by day and night at 3× and 6×. The twisted-metal altars first
+given to two Grimmen arcane slots read as scrap at 34 px and went back to batch 2.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 82 test files with 517 tests (`tests/iteration82.test.ts`: 180 houses from eda-lore, no
+  sheet-and-island pair twice, the count per people, every slot the people's own sprite and present, the tile width, the
+  centre anchor and the yardstick, the flip list), `npm run build`, `npm run art`.
+- `scripts/playtest82.mjs`: no errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged; the control seed `npx tsx scripts/balance.ts 42 150`
+  ends at 2,155 folk, as main.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5797,3 +5864,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   likeness is in its composition. `painted.ts` places boxes, gables along either axis, porches, verandas, dormers,
   chimneys and props where the painting has them, in the set's style. The peoples keep their own looks for the same
   houses: the painting is the Vellish look.
+- *Every people its own houses, and no painting twice (iteration 82, the user's rules):* a slot with no painting of its own
+  keeps its people's drawn house rather than borrow another's; the houses are sorted to a people by material, to a zone by
+  what they show, and to a level by their shape (a 1×1 tile takes a wide house only low).

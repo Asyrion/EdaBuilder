@@ -349,6 +349,15 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 82 (the eda-lore swap, batch 1: the zone houses)
+
+- **180 zone houses from the user's eda-lore sheets** (DESIGN §4.113), every people its own: the Vellish and Veshari all
+  48, the Tallowkin 43, the Grimmen 41; no painting used twice. Sorted to a people by material, to a zone by what the
+  house shows, to a level by its shape. `scripts/edaLoreHouses.mjs` holds the allocation.
+- The importer's `maxWidth` (a wide house fits its tile) and the glow's `maxBlob` (windows light at night, walls do not).
+- **Still to draw** (twelve slots keep their people's drawn house): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3,
+  arcane 3 v3; Tallowkin craft 3 v3, market 1 v2–v3, arcane 3 v2–v3.
+
 ## Done in iteration 80 (a brickworks drawn after the user's painting)
 
 - **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
@@ -978,10 +987,10 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The eda-lore swap** (the user's request at the close of iteration 81; HANDOFF.md "The eda-lore swap"): the user's
-   repository `eda-lore` holds their own sprites in the set's 2:1 format; swap as many of the game's buildings and assets
-   as it covers, in batches (the zone houses first, then the services, then the props), each batch imported through
-   `art/sources.json` and `npm run art`, judged old beside new with a citizen, at the yardstick of §4.109.
+1. **The eda-lore swap, batch 2: the service buildings** (HANDOFF.md "The eda-lore swap"; batch 1, the zone houses, done in
+   iteration 82): the 1×1 and 2×2 services from the user's sheets (the shrines, ward towers, lantern towers, castles,
+   graveyards, wells, the founding stakes), then batch 3 the props. Same pipeline and rules: no painting twice, judged old
+   beside new with a citizen. The brickworks (iteration 80) waits for the user to name its building.
 2. **The paintings redrawn in code, part 2** (DESIGN §4.110, if still wanted after the swap): the craft levels
    2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
 3. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the

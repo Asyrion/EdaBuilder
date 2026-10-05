@@ -2,8 +2,8 @@
 
 Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
 sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
-as possible are to be replaced by them. Main stands at iteration 81 (the twelve paintings composed by hand, DESIGN §4.112, merged
-at the user's word); iteration 80 (a brickworks sprite drawn after the user's painting, §4.111, from a parallel session) is
+as possible are to be replaced by them. Main stands at iteration 82 (the eda-lore swap, batch 1: the zone houses, DESIGN §4.113); before it 81 (the twelve
+paintings composed by hand, §4.112); iteration 80 (a brickworks sprite drawn after the user's painting, §4.111, from a parallel session) is
 given to no building yet. Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
 §4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
 before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
@@ -55,6 +55,23 @@ the control seed (`npx tsx scripts/balance.ts 42 150`, 2,155 folk) for art-only 
 must read as one (outlines, crisp pixels), the buildings must stand right against the folk, and the game's buildings
 should look like the user's drawings.
 
+## Batch 1 done (iteration 82, DESIGN §4.113)
+
+- **The zone houses are the user's:** 180 houses from 22 of eda-lore's root sheets (copied to `inspirations/eda-lore/`),
+  every people its own, none used twice (the user's two rules, given in iteration 82). `zoneSpriteName` now always names
+  the people's own sprite; a slot without a painting keeps its people's drawn house.
+- **The allocation lives in `scripts/edaLoreHouses.mjs`** (sheet letter + island, `!` to mirror, `-` for a gap); rerun it
+  and `npm run art` after a change. `scripts/playtest82.mjs` sheets each people before and after and builds a street.
+- **Still to draw** (the user asked for this list): Grimmen market 1 v3, arcane 1 v1–v3, arcane 2 v2–v3, arcane 3 v3;
+  Tallowkin craft 3 v3, market 1 v2–v3, arcane 3 v2–v3.
+- **Left for batch 2** on the sheets: the shrines and altars of `shrines_16` not used (the metal altars, the crystal ones),
+  the ward towers (`image_1 (19)`), the lantern towers (`image_0 (17)`), the castles (`medieval_9` 3 and 9), the
+  graveyards, and the unused houses (`houses_10` 5, `lodges_labelled_16` 0, `houses_grey_16` 6, 7, 9, 10, 11,
+  `lodges_labelled_12` 0, `smithies_labelled_12` 99, 100, 103, `wooden_houses_20` 6).
+- **Learned:** a sheet's light-grey drop shadow needs `white: 200` (houses_12, houses_4, houses_grey_16,
+  smithies_grey_10); the auto glow lit whole cream walls until `maxBlob` kept only window-sized patches; a wide house on a
+  1×1 tile must come down in height (`maxWidth`), which is why low houses went to level 1.
+
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
@@ -87,7 +104,7 @@ user's painting and given to no building yet. Ask the user before assigning it.
 
 ## The next item
 
-The eda-lore swap above, batch 1: the zone houses. Plan it on the Plan panel first. One loose end for the user:
+The eda-lore swap, batch 2: the service buildings. Plan it on the Plan panel first. One loose end for the user:
 - **The brickworks** (`b_brickworks`, iteration 80) is given to no building; ask the user which building takes it.
 After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
 the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).

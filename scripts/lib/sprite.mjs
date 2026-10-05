@@ -137,7 +137,7 @@ export function colourCount(img) {
 }
 
 /** The night glow: warm, bright pixels (lit windows, lamps) copied onto a transparent layer. */
-export function glowLayer(img, { minLum = 0.6, warm = 40, hue = 'warm' } = {}) {
+export function glowLayer(img, { minLum = 0.6, warm = 40, hue = 'warm', maxBlob = 0 } = {}) {
   const { w, h, data } = img;
   const out = blank(w, h);
   let count = 0;
@@ -148,6 +148,21 @@ export function glowLayer(img, { minLum = 0.6, warm = 40, hue = 'warm' } = {}) {
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     const lit = hue === 'cool' ? b >= 180 && b - r >= warm : hue === 'any' ? Math.max(r, g, b) - Math.min(r, g, b) >= warm && Math.max(r, g, b) >= 180 : r >= 180 && r - b >= warm;
     if (lum >= minLum && lit) { out.data[o] = r; out.data[o + 1] = g; out.data[o + 2] = b; out.data[o + 3] = 255; count++; }
+  }
+  if (maxBlob) { // keep only small lit patches (windows, lanterns); a cream wall or a thatch roof is one large patch (iteration 82)
+    const seen = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      if (seen[i] || out.data[i * 4 + 3] === 0) continue;
+      const blob = [i]; seen[i] = 1;
+      for (let k = 0; k < blob.length; k++) {
+        const p = blob[k], x = p % w, y = (p - x) / w;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, q = ny * w + nx;
+          if (nx >= 0 && ny >= 0 && nx < w && ny < h && !seen[q] && out.data[q * 4 + 3] > 0) { seen[q] = 1; blob.push(q); }
+        }
+      }
+      if (blob.length > maxBlob) for (const p of blob) { out.data[p * 4 + 3] = 0; count--; }
+    }
   }
   return { img: out, count };
 }
