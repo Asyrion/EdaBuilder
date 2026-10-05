@@ -4213,6 +4213,44 @@ spines and bat wings, its body thrown into an S. The form was to match, not the 
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`): identical in every field to the cached run (2,130 folk). No
   sim file changed, so the bar's sim key is unchanged too.
 
+### 4.106 The wyrm's wings beat, and a bigger sleeping head (iteration 75)
+
+Art only, at the user's request after §4.105: the sleeping head a bit bigger, and wings that move while the wyrm flies.
+Before this, the two flight frames were the painting a pixel apart (`hop`), so only the whole body bobbed.
+
+**The beat is cut from the painting** by a new importer key, `flap` (`flapFrame` and `dropSpecks` in
+`scripts/lib/sprite.mjs`):
+- **Each wing** is a hand-set polygon in the painting's pixels with a shoulder pivot:
+  - the near wing over the upper-left;
+  - the far wing behind the neck, marked `behind`, so it is drawn only where the background shows.
+- **Each frame** turns every wing about its shoulder (`rot`, degrees) and squashes it toward the shoulder (`sy`), as a
+  wing seen edge-on.
+  - The place the wing leaves is painted background white, and the key takes it.
+  - The wing's root (`root`, 55 source pixels) is drawn in both places, so the back under the joint is never holed.
+  - Specks under 600 source pixels, left at the wing's old edge, are dropped.
+- **The wyrm's frames:** up (the painting), mid (16° and 0.82, the far wing 12° and 0.85), and down (32° and 0.62,
+  the far wing 24° and 0.7).
+- **One box for every frame:** all frames are cropped to their common box and scaled by one factor, and they share
+  frame 0's anchor. The body holds still while the wings move. A test holds the manifest to one size and anchor for
+  all three.
+- **The renderer** plays them up, mid, down, mid at six frames a second. Without frame 2 it falls back to two frames.
+- **Tuning:** the first sign turned the wings up toward the head, and a too-tight polygon left the wing's pale edge
+  behind. The polygons were widened and the sign flipped; the root and the speck filter closed the rest.
+
+**The sleeping head** is 1.7 times the base head (it was 1.2). It lies across the near coil with its eyes shut, its horns
+and outline scaled with it.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 76 test files with 487 tests (`tests/iteration75.test.ts`: the frames' shared size and anchor,
+  and `flapFrame` moving only a wing's paint), `npm run build`, and `npm run art:check`.
+- **`scripts/playtest75.mjs`:**
+  - the 6× sheet of the three frames;
+  - the sleeping wyrm before (main, on port 4174) and after;
+  - the wyrm in flight at three moments of the beat and at night;
+  - the renderer's frame index over a second, which plays 0, 1 and 2.
+  - No errors.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main. The control seed (`npx tsx scripts/balance.ts 42 150`) is identical to the cached run (2,130 folk).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5434,3 +5472,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *The wyrm in flight is the user's painting; the coil is drawn after it (iteration 74):* the painting is a flying pose,
   so it serves the sky as it is. The coil must wrap a node and split into halves round its stones, so it is drawn in
   code in the painting's colours and parts (scales, belly, spines, horns, bat wings) rather than cut from it.
+- *A wing beat is cut from one painting rather than painted again (iteration 75):* the importer turns each wing about its
+  shoulder inside a hand-set polygon and squashes it, so the beat keeps the painting's own pixels. All frames share one
+  crop, scale and anchor, so the body holds still. A second painting with the wings down would beat more cleanly, and
+  could replace frame 2 by name.

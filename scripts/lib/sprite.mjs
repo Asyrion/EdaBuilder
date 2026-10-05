@@ -388,3 +388,75 @@ export function checkSheet(entries, zoom = 4, cell = 110, cols = 10) {
   });
   return sheet;
 }
+
+/** Is (x, y) inside the polygon? (even-odd rule) */
+function inPoly(poly, x, y) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/** A wing beat (iteration 75): the painting with each wing's pixels (inside its hand-set polygon, in source pixels) turned
+ *  about its shoulder by `rot` degrees and squashed toward it by `sy`. The place the wing leaves is painted `white`, so the
+ *  background key takes it; the moved wing is drawn over the body, or, for a wing behind it (`behind`), only where the
+ *  background shows. Only the wing's paint moves: near-white pixels inside the polygon are background and stay behind. The
+ *  wing's `root` (a radius about the shoulder, in source pixels) is drawn in both places, so the joint never leaves a hole. */
+export function flapFrame(src, wings, frame, white = 235) {
+  const { w, h } = src;
+  const out = { w, h, data: new Uint8ClampedArray(src.data) };
+  const isBg = (d, i) => d[i] >= white && d[i + 1] >= white && d[i + 2] >= white;
+  const paint = (k) => { const i = k * 4; return src.data[i + 3] > 0 && !isBg(src.data, i); };
+  // lift every wing first, so one wing's move cannot copy another's old place
+  // the root (within `root` source pixels of the shoulder) stays where it is, so the back under the wing joint is never holed
+  for (const wg of wings) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (!inPoly(wg.poly, x + 0.5, y + 0.5) || !paint(y * w + x) || Math.hypot(x - wg.pivot[0], y - wg.pivot[1]) < (wg.root ?? 0)) continue;
+    const i = (y * w + x) * 4;
+    out.data[i] = out.data[i + 1] = out.data[i + 2] = 255; out.data[i + 3] = 255;
+  }
+  // far wings first, then near ones over them
+  const order = [...wings.keys()].sort((a, b) => Number(!!wings[b].behind) - Number(!!wings[a].behind));
+  for (const k of order) {
+    const wg = wings[k];
+    const f = frame[k] ?? { rot: 0, sy: 1 };
+    const t = (f.rot * Math.PI) / 180;
+    const c = Math.cos(t), s = Math.sin(t);
+    const [px, py] = wg.pivot;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      // inverse map: un-squash, then un-turn
+      const dx = x + 0.5 - px, dy = (y + 0.5 - py) / f.sy;
+      const sx = px + c * dx + s * dy, syy = py - s * dx + c * dy;
+      const ix = Math.floor(sx), iy = Math.floor(syy);
+      if (ix < 0 || iy < 0 || ix >= w || iy >= h || !inPoly(wg.poly, ix + 0.5, iy + 0.5) || !paint(iy * w + ix)) continue;
+      const o = (y * w + x) * 4;
+      if (wg.behind && !isBg(out.data, o)) continue;
+      const si = (iy * w + ix) * 4;
+      for (let q = 0; q < 4; q++) out.data[o + q] = src.data[si + q];
+    }
+  }
+  return out;
+}
+
+/** Drop opaque 8-connected islands smaller than `min` pixels (the specks a moved wing leaves at its old edge; iteration 75). */
+export function dropSpecks(img, min) {
+  const { w, h } = img;
+  const data = new Uint8ClampedArray(img.data);
+  const seen = new Uint8Array(w * h);
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || data[start * 4 + 3] === 0) continue;
+    const region = [start]; seen[start] = 1;
+    for (let k = 0; k < region.length; k++) {
+      const i = region[k], x = i % w, y = (i / w) | 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const j = ny * w + nx;
+        if (!seen[j] && data[j * 4 + 3] > 0) { seen[j] = 1; region.push(j); }
+      }
+    }
+    if (region.length < min) for (const i of region) data[i * 4 + 3] = 0;
+  }
+  return { w, h, data };
+}

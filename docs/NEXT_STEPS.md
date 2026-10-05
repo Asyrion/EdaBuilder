@@ -349,6 +349,13 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 75 (the wyrm's wings beat, and a bigger sleeping head)
+
+- **The flying wyrm beats its wings:** up, mid, down, mid at six frames a second. The frames are cut from the painting by
+  the importer's new `flap` key, with all frames sharing one size and anchor.
+- **The sleeping wyrm's head** is bigger (1.7 times the base head, from 1.2).
+- Art only: the sim files are unchanged (DESIGN §4.106).
+
 ## Done in iteration 74 (the wyrm redrawn after the user's painting)
 
 - **The wyrm in flight is the user's painting,** a green serpent with an orange belly, horns and bat wings, imported

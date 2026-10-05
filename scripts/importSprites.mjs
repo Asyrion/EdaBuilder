@@ -7,14 +7,14 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), flap ({ wings: [{ poly, pivot, root, behind }], frames: [[{ rot, sy } per wing]], specks }: a wing beat cut from one painting, each frame written as <name>_1… with frame 0's crop, scale and anchor; iteration 75), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58).
 // A vehicle (the donkey carts, iteration 57) is scaled by scale (a fraction of the painting's pixels, set per sheet so every
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
 // stop the background key.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
-import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
+import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
 /** The image mirrored left to right. */
 function mirror(img) {
@@ -46,6 +46,20 @@ const results = [];
 
 for (const e of sources.sprites) {
   const kind = e.kind ?? 'building';
+  if (e.flap) { // a wing beat (iteration 75): every frame keyed, cropped to the frames' common box and scaled by one factor, so the body holds still
+    const src = load(e.src);
+    const frames = [src, ...e.flap.frames.map((f) => flapFrame(src, e.flap.wings, f, e.white ?? 235))].map((f) => dropSpecks(keyBackground(f, e.white ?? 235, e.holes ?? 0), e.flap.specks ?? 600));
+    let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
+    for (const f of frames) { const c = crop(f); x0 = Math.min(x0, c.x0); y0 = Math.min(y0, c.y0); x1 = Math.max(x1, c.x0 + c.img.w - 1); y1 = Math.max(y1, c.y0 + c.img.h - 1); }
+    const box = [x0, y0, x1 - x0 + 1, y1 - y0 + 1];
+    const th = e.targetHeight ?? 24;
+    const tw = Math.max(1, Math.round((box[2] * th) / box[3]));
+    frames.forEach((f, k) => {
+      const small = boxScale(cropRect(f, box), tw, th);
+      results.push({ e: k === 0 ? e : { ...e, name: e.name.replace(/_0$/, `_${k}`) }, kind, img: sharpen(small, e.sharpen ?? 0.6), flapOf: k === 0 ? undefined : e.name });
+    });
+    continue;
+  }
   let img = e.rect ? keyBackground(cropRect(load(e.src), e.rect), e.white ?? 235, e.holes ?? 0) : keyBackground(load(e.src), e.white ?? 235, e.holes ?? 0);
   if (!e.rect && e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
   if (kind !== 'ground') img = crop(e.islands === 'keep' ? img : keepLargest(img)).img;
@@ -91,6 +105,7 @@ for (const r of results) {
   let anchor;
   if (kind === 'ground') anchor = { ax: 16, ay: 0 };
   else if (kind === 'vehicle') anchor = { ax: Math.round(sprite.w / 2), ay: sprite.h - 1 }; // wheels and hooves on the agent's point
+  else if (r.flapOf) anchor = manifest.sprites[r.flapOf] ? { ax: manifest.sprites[r.flapOf].ax, ay: manifest.sprites[r.flapOf].ay } : propAnchor(sprite, e.baseInset ?? 0); // a wing beat's frames share frame 0's anchor
   else if (kind === 'prop') { const auto = propAnchor(sprite, e.baseInset ?? 0); anchor = e.anchor && typeof e.anchor === 'object' ? e.anchor : auto; r.auto = auto; }
   else {
     const auto = e.anchor === 'centre' ? centreAnchor(e.w, e.h, sprite.w, sprite.h) : autoAnchor(e.w, e.h, sprite.h);

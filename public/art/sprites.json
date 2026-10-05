@@ -1448,11 +1448,18 @@
    "ay": 58
   },
   "wyrm_fly_1": {
-   "file": "sprites/wyrm_fly_0.png",
+   "file": "sprites/wyrm_fly_1.png",
    "w": 63,
    "h": 58,
    "ax": 35,
-   "ay": 59
+   "ay": 58
+  },
+  "wyrm_fly_2": {
+   "file": "sprites/wyrm_fly_2.png",
+   "w": 63,
+   "h": 58,
+   "ax": 35,
+   "ay": 58
   }
  }
 }

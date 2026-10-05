@@ -1,7 +1,7 @@
 import type { RgbaImage } from './png.mjs';
 export interface Island { x: number; y: number; w: number; h: number; n: number }
 export function blank(w: number, h: number): RgbaImage;
-export function keyBackground(img: RgbaImage, white?: number): RgbaImage;
+export function keyBackground(img: RgbaImage, white?: number, holes?: number): RgbaImage;
 export function keepLargest(img: RgbaImage): RgbaImage;
 export function crop(img: RgbaImage): { img: RgbaImage; x0: number; y0: number };
 export function boxScale(img: RgbaImage, targetW: number, targetH?: number): RgbaImage;
@@ -22,3 +22,6 @@ export function pad(img: RgbaImage, n?: number): RgbaImage;
 export function outline(img: RgbaImage, rgba?: number[]): RgbaImage;
 export function sharpen(img: RgbaImage, amount?: number): RgbaImage;
 export function recolour(img: RgbaImage, opts?: { hue?: number; sat?: number; light?: number }): RgbaImage;
+export interface FlapWing { poly: number[][]; pivot: number[]; root?: number; behind?: boolean }
+export function flapFrame(src: RgbaImage, wings: FlapWing[], frame: { rot: number; sy: number }[], white?: number): RgbaImage;
+export function dropSpecks(img: RgbaImage, min: number): RgbaImage;
