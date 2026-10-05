@@ -46,8 +46,8 @@ NEXT_STEPS item 1, **golem haulers** (DESIGN §17.4 C, §8.4).
       (`FLOAT_VARIANT`, no congestion) and the barge (`BARGE_VARIANT`).
     - The cart sprite is picked in `src/render/carts.ts` (`cartSpriteName`).
     - The cart's goods run is in `src/sim/agents.ts`.
-  - **Hounds:** they scare carts? Check the hound branch in `creatures.ts` and the carts' fear in `agents.ts` before
-    designing "not scared".
+  - **Hounds:** the promise says haulers are "not scared by hounds". First find what hounds do to ordinary carts today
+    (the hound branch in `creatures.ts`, the carts in `agents.ts`). If nothing, the design must say what "scared" means.
 - **The art:** a new vehicle needs a sprite: procedural, or a painting through `npm run art` (`kind: 'vehicle'`). Show
   the user screenshots, before and after.
 - **The bar:** it is a sim change, so it runs the wide bar. Since iteration 71, main's side comes from `balance/cache/`,
