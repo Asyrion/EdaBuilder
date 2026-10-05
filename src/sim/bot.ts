@@ -12,6 +12,7 @@ import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
 import { HUNT_REACH, LODGE_MEAT_KEEP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
 import { RELIC_KEEP, RELIC_PRICE } from './growth';
+import { roadTileOf } from './agents';
 import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
 import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
@@ -58,6 +59,7 @@ export class Bot {
   cuttersBuilt = 0;
   weirsBuilt = 0;
   fordsBridged = 0;
+  doorsPaved = 0; // market doors cobbled (iteration 75)
   private lastExpand = -99;
   /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
   goal: BotGoal | null = null;
@@ -111,6 +113,7 @@ export class Bot {
     if (s.loan > 0 && !this.goal && s.treasury >= s.loan + 2000) repayLoan(s);
     if (s.loan > 0) this.reserve = Math.max(this.reserve, s.loan);
     this.ensureGrid();
+    this.paveDoors();
     this.charterDistricts();
     this.zoneByDemand();
     this.keepWatered();
@@ -508,6 +511,27 @@ export class Bot {
     const s = this.s;
     for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0 && (z === undefined || s.zone[i] === z)) n++;
     return n;
+  }
+
+  /** A market trades by the road at its door (iteration 75): from Market Town, cobble one track-side market's door a day, the nearest
+   *  the centre first, when the treasury holds the tile and 500 more past the loan. A street, so it reads the treasury, not the purse. */
+  private paveDoors(): void {
+    const s = this.s;
+    if (s.milestone < 1) return;
+    let best: Building | null = null;
+    let bd = Infinity;
+    let door = -1;
+    forEachBuilding(s, (b) => {
+      if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
+      const i = roadTileOf(s, b);
+      if (i < 0 || s.road[i] !== RoadType.Track) return;
+      const d = Math.hypot(b.x - this.cx, b.y - this.cy);
+      if (d < bd) { bd = d; best = b; door = i; }
+    });
+    if (!best) return;
+    const cost = previewRoad(s, RoadType.Cobble, [door]).cost;
+    if (s.treasury < cost + 500 + Math.max(0, s.loan)) return;
+    if (buildRoad(s, RoadType.Cobble, [door]).ok) this.doorsPaved++;
   }
 
   /** Streets every 5 tiles in both directions within the current radius. */

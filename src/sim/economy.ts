@@ -7,6 +7,8 @@ import { Zone, type Building, type GameState } from './types';
 import { GROWING_HALLS, forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
+import { roadTileOf } from './agents';
+import { marketRoadMultAt } from './roads';
 import { litWonders } from './weave';
 
 // ---------- the Crown ----------
@@ -109,7 +111,7 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1) * (nearSquare(b) ? 1.15 : 1); break; }
+        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1) * (nearSquare(b) ? 1.15 : 1) * marketRoadMultAt(state, roadTileOf(state, b)); break; } // the road at the door counts (iteration 75)
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }

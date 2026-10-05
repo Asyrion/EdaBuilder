@@ -399,7 +399,7 @@ function inPoly(poly, x, y) {
   return inside;
 }
 
-/** A wing beat (iteration 75): the painting with each wing's pixels (inside its hand-set polygon, in source pixels) turned
+/** A wing beat (iteration 76): the painting with each wing's pixels (inside its hand-set polygon, in source pixels) turned
  *  about its shoulder by `rot` degrees and squashed toward it by `sy`. The place the wing leaves is painted `white`, so the
  *  background key takes it; the moved wing is drawn over the body, or, for a wing behind it (`behind`), only where the
  *  background shows. Only the wing's paint moves: near-white pixels inside the polygon are background and stay behind. The
@@ -439,7 +439,7 @@ export function flapFrame(src, wings, frame, white = 235) {
   return out;
 }
 
-/** Drop opaque 8-connected islands smaller than `min` pixels (the specks a moved wing leaves at its old edge; iteration 75). */
+/** Drop opaque 8-connected islands smaller than `min` pixels (the specks a moved wing leaves at its old edge; iteration 76). */
 export function dropSpecks(img, min) {
   const { w, h } = img;
   const data = new Uint8ClampedArray(img.data);

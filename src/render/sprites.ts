@@ -1008,7 +1008,7 @@ function drawWyrmCoil(st: 'sleeping' | 'awake' | 'dead'): { back: Painter; front
   if (st === 'sleeping') {
     // wings folded flat along the far coil, the head resting on the near coil at the front-left, eyes closed
     wing([cx + 6, cy - 18], [[cx - 22, cy - 24], [cx - 14, cy - 27], [cx - 4, cy - 28], [cx + 4, cy - 26]]);
-    head(cx - 52, cy + 15, false, 1.7); // a big head, the user asked (iteration 75): it lies across the near coil, eyes shut
+    head(cx - 52, cy + 15, false, 1.7); // a big head, the user asked (iteration 76): it lies across the near coil, eyes shut
   } else if (st === 'awake') {
     // wings half raised behind the coil
     wing([cx + 8, cy - 16], [[cx - 18, cy - 38], [cx - 8, cy - 43], [cx + 2, cy - 44], [cx + 10, cy - 40]]);
