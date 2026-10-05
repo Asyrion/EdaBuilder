@@ -1,4 +1,4 @@
-/** Iteration 74 (DESIGN 4.105, markets want a good road; AUDIT B40): the road at a market's door scales its tithe (a dirt track
+/** Iteration 75 (DESIGN 4.106, markets want a good road; AUDIT B40): the road at a market's door scales its tithe (a dirt track
  *  a tenth less, a fifth in the mud; cobbles in full; a lit Lantern-way or a Glowvine Lane a tenth more); the panel says so; the
  *  bot paves its market doors from Market Town. */
 import { describe, expect, it } from 'vitest';

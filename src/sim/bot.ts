@@ -59,7 +59,7 @@ export class Bot {
   cuttersBuilt = 0;
   weirsBuilt = 0;
   fordsBridged = 0;
-  doorsPaved = 0; // market doors cobbled (iteration 74)
+  doorsPaved = 0; // market doors cobbled (iteration 75)
   private lastExpand = -99;
   /** What the bot is saving for today, and the crowns it holds back for it (DESIGN 4.86). */
   goal: BotGoal | null = null;
@@ -513,7 +513,7 @@ export class Bot {
     return n;
   }
 
-  /** A market trades by the road at its door (iteration 74): from Market Town, cobble one track-side market's door a day, the nearest
+  /** A market trades by the road at its door (iteration 75): from Market Town, cobble one track-side market's door a day, the nearest
    *  the centre first, when the treasury holds the tile and 500 more past the loan. A street, so it reads the treasury, not the purse. */
   private paveDoors(): void {
     const s = this.s;

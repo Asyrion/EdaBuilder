@@ -349,14 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
-## Done in iteration 74 (markets want a good road)
+## Done in iteration 75 (markets want a good road)
 
 - **The rule:** the road at a market's door scales its tithe: a dirt track a tenth less (a fifth in the mud of the Thaw
   and the Hush), cobbles in full, a lit Lantern-way or a Glowvine Lane a tenth more, no road a fifth less. The market's
   panel has the row and a problem line; the Market desc, the help and the README say the numbers. AUDIT B40 closed.
 - **The bot paves:** from Market Town it cobbles one track-side market door a day, the nearest its centre first.
 - **The bar:** all four peoples +5.5 %, seen; the Grimmen +12.9 %, seen; Veshari 44 ends at the Weirhold where main
-  reached Vesh's Court (DESIGN §4.105).
+  reached Vesh's Court (DESIGN §4.106).
+
+## Done in iteration 74 (the wyrm redrawn after the user's painting)
+
+- **The wyrm in flight is the user's painting,** a green serpent with an orange belly, horns and bat wings, imported
+  through `npm run art`. The importer gained `holes`, which keys background enclosed by the body.
+- **The coil around the node** (asleep, awake, dead) is redrawn in code in the painting's form and colours.
+- Art only: the control seed is unchanged (DESIGN §4.105).
 
 ## Done in iteration 73 (the loose ends)
 

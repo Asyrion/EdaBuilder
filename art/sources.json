@@ -1802,6 +1802,18 @@
    "hop": true,
    "island": 32,
    "checked": true
+  },
+  {
+   "name": "wyrm_fly_0",
+   "kind": "prop",
+   "src": "inspirations/wyrm/wyrm_flight.png",
+   "targetHeight": 56,
+   "colors": 24,
+   "glow": false,
+   "hop": true,
+   "islands": "keep",
+   "holes": 400,
+   "checked": true
   }
  ]
 }

@@ -75,7 +75,7 @@ for the depth pass because the fix is a design.
 | B37 | Hall of Marvels | works unlit. | 44 |
 | B38 | Wyrms panel | "caravans buy them": wyrmfire and eggshell cannot be sold. | 44 (500 / 200 crowns) |
 | B39 | The Sleeping Wyrm | "half again as much each time": tribute grows linearly. | 44 (text) |
-| B40 | Market | "wants a good road": the road tier never touches markets. | ✅ iteration 74 (§4.105): the road at the door scales the market tithe |
+| B40 | Market | "wants a good road": the road tier never touches markets. | ✅ iteration 75 (§4.106): the road at the door scales the market tithe |
 | B41 | t_grown, the Mews | "four seasons": three. The airship "ten days": nine. | 44 (text / day) |
 | B42 | Wyrmcraft lines | "Tide swims the river", the Ember aura: text only. | M14 ✅ iteration 53 (§4.84: Tide dragons swim barges, the Ember aura acts) |
 

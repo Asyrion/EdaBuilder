@@ -4,7 +4,7 @@
 export function blank(w, h) { return { w, h, data: new Uint8ClampedArray(w * h * 4) }; }
 
 /** Key out the near-white background by flood fill from the four corners, so a white window inside the building survives. */
-export function keyBackground(img, white = 235) {
+export function keyBackground(img, white = 235, holes = 0) {
   const { w, h } = img;
   const data = new Uint8ClampedArray(img.data);
   const seen = new Uint8Array(w * h);
@@ -21,6 +21,22 @@ export function keyBackground(img, white = 235) {
       const j = ny * w + nx;
       if (!seen[j] && isBg(j)) { seen[j] = 1; stack.push(j); }
     }
+  }
+  // holes (iteration 74): a background region the outline encloses (the loop of a coiled wyrm) is keyed too when it holds at
+  // least `holes` pixels; smaller light patches are highlights and stay
+  if (holes > 0) for (let start = 0; start < w * h; start++) {
+    if (seen[start] || !isBg(start)) continue;
+    const region = [start]; seen[start] = 1;
+    for (let k = 0; k < region.length; k++) {
+      const i = region[k], x = i % w, y = (i / w) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const j = ny * w + nx;
+        if (!seen[j] && isBg(j)) { seen[j] = 1; region.push(j); }
+      }
+    }
+    if (region.length >= holes) for (const i of region) data[i * 4 + 3] = 0;
   }
   return { w, h, data };
 }
