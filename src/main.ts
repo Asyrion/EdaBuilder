@@ -9,6 +9,7 @@ import * as events from './sim/events';
 import * as scenario from './sim/scenario';
 import * as wild from './sim/wild';
 import * as water from './sim/water';
+import * as hounds from './sim/hounds';
 import { lineNest, raiseCradle } from './sim/wyrmcraft';
 import * as wyrmcraft from './sim/wyrmcraft';
 import * as beasts from './sim/beasts';
@@ -541,7 +542,7 @@ async function boot(): Promise<void> {
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
   await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, hounds, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
 }
