@@ -1,17 +1,17 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 76 (the wyrm's wings beat, and a bigger sleeping head; art only; DESIGN §4.107).
-Iteration 75 (markets want a good road, §4.106) was built in a parallel session and merged first; 74 (the wyrm redrawn,
-§4.105), 73 (the loose ends, §4.104) and 72 (golem haulers, §4.103) came before them. Two sessions at once means merging
-main before the PR and taking the next free numbers. Update this file whenever a session ends (see
-CLAUDE.md, "Session handoff").
+Written at the close of iteration 77 (the sprites faced and fitted; art only; DESIGN §4.108), the last of the single
+items of §17.4. Iteration 76 (the wyrm's wings beat, §4.107) came before it; 75 (markets want a good road, §4.106) was
+built in a parallel session and merged first; 74 (the wyrm redrawn, §4.105), 73 (the loose ends, §4.104) and 72 (golem
+haulers, §4.103) came before them. Two sessions at once means merging main before the PR and taking the next free
+numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.107 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.108 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -35,20 +35,19 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **the sprites faced and fitted** (DESIGN §17.4 F; the user's request in iteration 72). Art only.
-- **The ask:** check every building sprite in the game, painted and drawn, for its orientation and how it sits in its
-  tile square. The procedural buildings are the yardstick: door and gable on the right face, the footprint diamond filled
-  neatly. Correct the ones faced wrong or that look off.
-- **The tools:** `art/sources.json` (a painting's `flip`, `anchor`, `targetHeight`; `checked: true` once judged by eye),
-  `npm run art` (writes `public/art/sprites/*.png` and `sprites.json`; the outputs are committed), `npm run art:check`
-  (`shots/import_check.png`). `scripts/playtest65.mjs` writes sheets of named sprites from a running build, and
-  `scripts/playtest59.mjs` shoots a before build beside the after (`OLD_PORT`). Judge a facing at 5× or more (iteration
-  59's lesson). The flip list is pinned in `tests/iteration56.test.ts`; the hero paintings' scale in `tests/iteration56`
-  too (targetHeight = the procedural twin × 1.15, towers × 1.3, `anchor: 'centre'`).
-- **Known since iteration 59:** the head-on paintings (most level-2 hearths, the craft levels, the arcane level 2, the
-  last Stake stage) cannot turn their front to a road behind them; only new three-quarter paintings would.
-- **Verification:** the control seed (`npx tsx scripts/balance.ts 42 150`) for an art-only change, not the bar; a sheet
-  of every building before and after, in the final message, and in-game shots.
+NEXT_STEPS item 1, **M17 part 1, marsh terrain** (DESIGN §17.1 item 1). The first part of the first of the three
+milestones; a sim change, so it runs the wide bar.
+- **Generation:** a new `Terrain` value beside slow water (river bends, lake margins), never on the founding node. The
+  terrain is generated once per map (`src/sim/world.ts`; the water's bodies are worked out in `src/sim/water.ts`, M16).
+- **The look:** reed beds, standing pools and mist at dawn, by the procedural painter (`src/render/sprites.ts`,
+  `groundVariants`) or imported as a ground texture through `npm run art` (kind `ground`, a family sharing a palette).
+- **Rules:** nothing is built on marsh; a road may cross it as a causeway at a bridge's price; marsh breeds miasma (a field
+  the Fen-Nex and the deathcare will read); the reed-cutters of M16 cut it.
+- **The Drainage edict:** turns the marsh nearest the city to meadow, a few tiles a day, for a daily cost; the land loses
+  its reeds. Edicts live in `src/sim/edicts.ts`; the panel in `src/ui`.
+- **Saves:** old saves load with no marsh and the edict off (`save.ts` defaults).
+- **Verification:** the wide bar (`npx tsx scripts/table.ts --bar wide --compare origin/main`, commit the cache), the
+  tests, a playtest with the marsh by day and at dawn, and screenshots of the new ground in the final message.
 - **Plan it on the Plan panel first.**
 
 Built since iteration 68:
@@ -66,9 +65,8 @@ Built since iteration 68:
   `sextonsAbroad`/`brawlToday` in `guilds.ts`, `state.merchant` and `textFn` in `events.ts`.
 
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
-- **Single items** (the Great Gate, the two ways to lose, the golem haulers, the loose ends and markets and the road are
-  done; the wyrm was redrawn in iteration 74): **the sprites faced and fitted** (§17.4 F, added at the user's request in iteration 72: every building sprite
-  checked for its facing and its fit in the tile square, art only).
+- **Single items:** all done (the Great Gate, the two ways to lose, the golem haulers, the loose ends, markets and the
+  road, and the sprites faced and fitted in iteration 77; the wyrm was redrawn in iteration 74).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
   - **M18**, the Fen-Nex: the people, then their game;
@@ -110,7 +108,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (76 files, 489 tests at this writing; `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (78 files, 494 tests at this writing; `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -178,6 +176,19 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 77 (not yet said elsewhere)
+
+- **The survey tool:** `OLD_PORT=4174 node scripts/playtest77.mjs` draws every building sprite over its footprint diamond
+  (yellow; the right face red), each painted one beside its mirror, from the build on 4173 and main's build on 4174
+  (serve a copy of main's `dist` with `npx vite preview --port 4174 --outDir <copy>`). Run it after any import or
+  redraw; judge the doubtful ones at 10×.
+- **A painting's shape sets its height.** `targetHeight` scales a painting by height and the width follows, so a low,
+  wide painting (the Stake's stage 2) cannot be made as tall as its siblings without spilling past the tile; fit it to
+  the diamond's width and say so. The Stake's stages are no longer scaled by one factor (DESIGN §4.108).
+- **Facings were judged three times now** (iterations 56, 59, 77) with the same result: the painted zone houses are
+  head-on; only new three-quarter paintings would turn them to a road behind.
+- **The control seed is 2,155 folk** since iteration 75's market road (§4.107's "2,130" was written before that merge).
 
 ## Learned in iteration 76 (not yet said elsewhere)
 

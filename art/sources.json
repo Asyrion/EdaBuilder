@@ -20,7 +20,7 @@
    "colors": 24,
    "anchor": "centre",
    "checked": true,
-   "targetHeight": 57,
+   "targetHeight": 58,
    "flip": true
   },
   {
@@ -31,7 +31,7 @@
    "colors": 24,
    "anchor": "centre",
    "checked": true,
-   "targetHeight": 40,
+   "targetHeight": 48,
    "flip": true
   },
   {
@@ -1087,7 +1087,7 @@
     "warm": 40
    },
    "checked": true,
-   "targetHeight": 84,
+   "targetHeight": 112,
    "anchor": "centre"
   },
   {

@@ -4319,6 +4319,52 @@ and outline scaled with it.
   - No errors.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main. The control seed (`npx tsx scripts/balance.ts 42 150`) is identical to the cached run (2,130 folk).
 
+### 4.108 The sprites faced and fitted (iteration 77)
+
+Art only, §17.4 F, the last of the single items: the user asked in iteration 72 for every building sprite, painted and
+drawn, to be checked for its facing and for how it sits in its tile square, with the procedural set as the yardstick (door
+and gable on the right face, the footprint diamond filled neatly).
+
+**The survey** (`scripts/playtest77.mjs`, kept as the tool for the next art pass). From a running build it draws every
+building sprite over its footprint diamond (yellow; the right face red), each painted sprite beside its mirror, on three
+sheets: the 18 painted heroes at 5×, the 24 painted zone houses at 6×, and all 77 `b_` sprites at 3×; the 24 procedural
+zone houses and their 144 people's copies were shot the same way in the survey. Each was judged by eye at 4×, the doubtful
+ones at 10×.
+
+- **Facing: nothing to flip.** The painted zone houses are head-on or fronted lower-right, as §4.87 and §4.90 found; the
+  heroes face right (the Stake's stages, the depot, the yard, the Lyceum) or are symmetric (the wells, the towers, the
+  chapels, the boneyard, the Hall of Wicks); the procedural and hand-drawn set faces right by construction. The flip list of
+  `tests/iteration56.test.ts` stands.
+- **Fit: two sprites looked off.**
+  - **The Founding Stake at stage 2** (the brick hall on its lawn) was 55×42 where stage 1 was 55×59: the hall *shrank* at
+    the Burgh and grew again at the Free City (55×66). §4.87 scaled the four stages by one factor (0.8), and the stage 2
+    painting is a low, wide hall, so the factor left it small. It is now scaled to its diamond's width (`targetHeight` 48:
+    65×50), the widest of the four and 8 px taller than before; it is still 10 px shorter than stage 1 by the painting's
+    shape, which no scale can change without spilling past the tile. Stage 1 gains a pixel (`targetHeight` 58: 56×60) so
+    it stands level with stage 0 (55×60), not under it.
+  - **The Hall of Wicks** was 66×86 on a 96-wide 3×3 diamond: the castle stood on a small lawn in the middle of its tile
+    while every other 3×3 fills its diamond. `targetHeight` 112 makes it 88×114, a 4 px rim of tile each side, and in the
+    town it reads as the same mass as the Hall of Marvels and the Underking's Seat beside it.
+- **Everything else sits as the procedural set does:** the 1×1 zone houses 36 wide on a 32 diamond (the procedural ones
+  are 34), the heroes centred with their bases on the diamond's bottom edge, the towers narrow on purpose (the spire, the
+  Wick-Tower, the Nexus), the flat works flat (the quay, the landing, the weir, the quarry, the hatchery, the tide pool,
+  the salt font, the Ring, the square, the garden, the cradle, the Wyrm-Court).
+- **Noted, not changed:** the arcane level-2 variant 3 painting reads pale beside its three siblings (a colour matter,
+  not facing or fit), and the head-on paintings still cannot turn to a road behind them (§4.90).
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 78 test files with 494 tests (`tests/iteration77.test.ts`: the three tall Stake halls never
+  shrink and stage 2 fills its diamond's width, the Hall of Wicks fills its 3×3, no painted building spills more than 8 px
+  past its diamond, every building painting is `checked` and stands on the centre anchor; `tests/iteration56.test.ts`'s
+  height cap for the Hall is 116), `npm run build`, `npm run art` (three PNGs and their glows change, nothing else in the
+  manifest moves).
+- **`scripts/playtest77.mjs`** against the build and main's build on port 4174: the three sheets before and after; a town
+  on seed 77 with the Stake at its four stages (by milestone) beside the depot, the cistern and the yard, and the Hall of
+  Wicks between the two 3×3 wonders, day and night at 3×, before and after. No errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main. The control seed (`npx tsx scripts/balance.ts
+  42 150`) is main's own: 2,155 folk at day 150, the Burgh on day 42, the Free City on day 125 (§4.106 moved it from
+  2,130 with the market road; §4.107's "2,130" was written before that merge).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5118,7 +5164,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - The Wandering Merchant remembers past deals in state, not only in words (§11 item 4).
 - ✅ **E. Markets want a good road** (AUDIT B40; built in iteration 75, §4.106). The road tier at a market's door counts for
   its trade, as the Market's description promises.
-- **F. The sprites faced and fitted** (the user's request in iteration 72). Check every building sprite in the game, painted
+- ✅ **F. The sprites faced and fitted** (the user's request in iteration 72; done in iteration 77, §4.108). Check every building sprite in the game, painted
   and drawn, for its facing and how it sits in its tile square. The procedural set is the yardstick: door and gable on the
   right face, the footprint diamond filled neatly. Correct the ones faced wrong or that look off, by a flip, a new anchor or
   `targetHeight` in `art/sources.json`, or a redraw. Screenshots of every change, before and after. Art only: the control
@@ -5549,3 +5595,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   shoulder inside a hand-set polygon and squashes it, so the beat keeps the painting's own pixels. All frames share one
   crop, scale and anchor, so the body holds still. A second painting with the wings down would beat more cleanly, and
   could replace frame 2 by name.
+- *Fit by eye over the one-factor rule for the Stake's stages (iteration 77):* §4.87 scaled the four stage paintings by one
+  factor so they would keep their growth, but the stage 2 painting is low and wide, and one factor made the hall shrink at
+  the Burgh. Each stage is now fitted to its diamond on its own, and a test holds what the eye settled: the tall halls
+  never shrink, the wide one fills its width. A survey sheet of every sprite over its diamond, beside its mirror, is the
+  check to run after any import.
