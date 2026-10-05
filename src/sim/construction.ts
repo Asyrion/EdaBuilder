@@ -13,7 +13,7 @@ export const MAX_BUILDERS = 10;
 export const BUILDERS_PER_SITE = 3;
 export const BASE_RATE = 0.25; // work per tick with no builder present: the folk raise it themselves, slowly
 export const ZONE_RATE = 1; // zone buildings are raised by the folk who will live and work there: a day, no builders
-/** A working Brickworks within this many tiles (centre to centre) speeds a site by BRICK_SPEED (iteration 81, DESIGN 4.112). */
+/** A working Brickworks within this many tiles (centre to centre) speeds a site by BRICK_SPEED (iteration 83, DESIGN 4.114). */
 export const BRICK_REACH = 12;
 export const BRICK_SPEED = 1.5;
 

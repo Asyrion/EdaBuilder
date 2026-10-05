@@ -1,4 +1,4 @@
-/** Iteration 81 (DESIGN 4.112, the Brickworks): the drawing of iteration 80 given to a building of its own, 3×3 at the Village.
+/** Iteration 83 (DESIGN 4.114, the Brickworks): the drawing of iteration 80 given to a building of its own, 3×3 at the Village.
  *  Ten hands make goods of brick for the carts, the kiln lights it, and a building site within 12 tiles of a staffed one rises
  *  half again as fast; zone lots are untouched. */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

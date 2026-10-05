@@ -41,7 +41,7 @@ export const SECONDARY_REACH: Record<string, { r: number; label: string; square?
   hospice: [{ r: HOSPICE_REACH, label: 'draughts from markets', square: true }],
   cartersyard: [{ r: CARTERS_REACH, label: 'eases the roads', square: true }],
   hanginggardens: [{ r: GLOWVINE_REACH, label: 'glowvine alive' }],
-  brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 81)
+  brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 83)
   greatweir: [{ r: SLUICE_FLOOD_REACH, label: 'sluice floods', when: (b) => !!b.sluice }],
   lanternofwicks: [{ r: WICKS_REACH, label: 'halves spires' }],
   underkingseat: [{ r: SEAT_WARMTH, label: 'warms cradles' }],

@@ -1,7 +1,7 @@
-// Iteration 81 (the Brickworks): the Village's Services tab with the Brickworks and its tip; the placing ghost with its reach
+// Iteration 83 (the Brickworks): the Village's Services tab with the Brickworks and its tip; the placing ghost with its reach
 // ring; a Brickworks standing in a street, by day and at night (the kiln's glow), its panel with the ring of its builders'
 // reach; a site beside it rising half again as fast (its Construction row and the work done in a day, against a site beyond
-// the reach); its goods carted. No errors, no missing sprites. Screenshots go to shots/iter81_*.png.
+// the reach); its goods carted. No errors, no missing sprites. Screenshots go to shots/iter83_*.png.
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const errors = []; const warns = [];
@@ -11,7 +11,7 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + 
 await page.goto('http://localhost:4173/');
 await page.waitForFunction(() => window.__game && window.__wardlight && window.__wardlight.atlas);
 await page.waitForTimeout(600);
-const snap = async (name) => { await page.waitForTimeout(400); await page.screenshot({ path: `shots/iter81_${name}.png` }); };
+const snap = async (name) => { await page.waitForTimeout(400); await page.screenshot({ path: `shots/iter83_${name}.png` }); };
 const HIDE = () => { for (const id of ['toast', 'lesson', 'tasks', 'help', 'title']) document.getElementById(id)?.classList.add('hidden'); };
 
 const t = await page.evaluate(() => {

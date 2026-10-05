@@ -4495,7 +4495,7 @@ gables read smaller than in the painting, and the yard's small things, at 98 pix
   in for a 3×3 building's sprite in that page only.
 - The sim is unchanged.
 
-### 4.112 The Brickworks: the drawing given a building of its own (iteration 81)
+### 4.114 The Brickworks: the drawing given a building of its own (iteration 83)
 
 Iteration 80 drew a brickworks after the user's painting and gave it to no building (§4.111). The user then said: make it
 the level-3 Craft building or a new building type, as I prefer.
@@ -4521,9 +4521,9 @@ building unlocked at the Village (milestone 3), the "level 3" in the sense of wh
 show what the catalog change alone does to a bot city.
 
 **Verified:**
-- `tests/iteration81.test.ts`, 5 tests: the entry and its unlock, the goods lit and unlit, the speed inside and outside
+- `tests/iteration83.test.ts`, 5 tests: the entry and its unlock, the goods lit and unlit, the speed inside and outside
   the reach and with an empty works, a works still being built and zone lots, and the ring.
-- `scripts/playtest81.mjs`:
+- `scripts/playtest83.mjs`:
   - the Services tab at the Village and its tip, and the placing ghost with its ring;
   - the Brickworks placed through the game's own action, by day and at night;
   - its panel and ring;
@@ -5792,6 +5792,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   follows only if the user says so.
 - *A building painted by the user is drawn in code, then waits for its building (iteration 80):* the brickworks is a
   registered sprite with no catalog entry, so the game is unchanged until the user names the building it belongs to.
-- *The brickworks is a building of its own, not a Craft level (iteration 81):* a Craft lot is 1×1 and the drawing is 3×3,
+- *The brickworks is a building of its own, not a Craft level (iteration 83):* a Craft lot is 1×1 and the drawing is 3×3,
   so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
   tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
