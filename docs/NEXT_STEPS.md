@@ -362,7 +362,9 @@
   - A third district emptied in one Hush ends the charter.
   - Warnings come in the Chronicle, the Advisor, the home's panel and the Districts view.
 - **Every loss names its cause** on the game-over screen. The Annals add three rows.
-- BAR70N (DESIGN §4.101)
+- **The wide bar,** one people per job: within the noise for all four (Vellish −8, Grimmen +25, Veshari −43, Tallowkin
+  −1). It was met for three, and the Tallowkin's floor (11.8 %) is not met at the 8-draw cap. No bot city lost its charter
+  (DESIGN §4.101).
 
 ## Done in iteration 69 (the Great Gate and the Heart of Belregi)
 

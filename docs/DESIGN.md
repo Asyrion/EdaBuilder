@@ -3932,7 +3932,22 @@ and the Stake's day, or the three districts and the homes fled.
   - **Grimmen 44:** 2,665 (2,606).
   - **Veshari 43:** 2,556 (2,742).
   - None lost its charter.
-- **The wide bar:** BAR70
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main --peoples <one>`, one people per job from
+  a worktree of the sim's commit, about 4½ hours in all). No bot city lost its charter on either side.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 7 | 1,766 | 1,774 | −8 (−0.4 %) | 164 (9.3 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,408 | 1,383 | +25 (+1.8 %) | 115 (8.2 %) | met | within the noise |
+  | Veshari | 6 × 3 | 2,352 | 2,395 | −43 (−1.8 %) | 228 (9.6 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,913 | 1,914 | −1 (−0.1 %) | 226 (11.8 %) | **not met: at the cap of 8 draws** | within the noise |
+
+  - **The gates** are the same, run for run, but for one run each:
+    - Vellish reach the Free City in 19 of 42 runs (main 20) and the Beacon in 1 (main 2);
+    - the Tallowkin raise the Hall of Wicks in 32 of 48 (main 33).
+  - **The largest single change** is Veshari 43's first draw, 2,556 against 2,742: one march hounded all Hush long
+    lost the homes it besieged.
+  - **The Tallowkin's floor** stays above a tenth of their folk at eight draws a seed, as in iteration 64; it is not met.
 
 ## 7. Milestone plan
 
