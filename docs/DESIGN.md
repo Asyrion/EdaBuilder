@@ -4530,7 +4530,21 @@ show what the catalog change alone does to a bot city.
   - a site 8 tiles away against one beyond the reach, with no builders: 150 against 100 work in 400 ticks;
   - three days of goods (23 made, all hands at work);
   - no errors and no missing sprites.
-- **The wide bar:** BAR_RESULT
+- **The wide bar** (`--bar wide --compare origin/main`, 180 runs in 113 minutes): **bit-identical to main.** Every run
+  matches, draw for draw, and the bot never builds it.
+
+  | people | seeds × draws | floor (2·SE) | share of the mean | bar | this tree | origin/main | verdict |
+  |---|---|---|---|---|---|---|---|
+  | vellish | 6 × 5 | 196 | 9.6 % | met | 2,045 | 2,045 | +0, within the noise |
+  | grimmen | 6 × 3 | 117 | 7.3 % | met | 1,601 | 1,601 | +0, within the noise |
+  | veshari | 6 × 4 | 194 | 8.3 % | met | 2,339 | 2,339 | +0, within the noise |
+  | tallowkin | 6 × 3 | 170 | 8.5 % | met | 1,997 | 1,997 | +0, within the noise |
+
+  The gates are identical on both sides. The last gates reached are:
+  - Vellish: Free City 21/30 and Beacon 3/30.
+  - Grimmen: Underking's Hall 11/18 and Seat 3/18.
+  - Veshari: Sable Crown 16/24.
+  - Tallowkin: Lantern of Wicks 3/18.
 
 ## 7. Milestone plan
 
