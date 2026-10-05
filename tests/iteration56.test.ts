@@ -57,9 +57,9 @@ describe('Reach rings', () => {
 
 describe('The painted buildings at the procedural scale, facing the procedural way', () => {
   const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8')).sprites as Record<string, { w: number; h: number }>;
-  const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; targetHeight?: number; anchor?: unknown; flip?: boolean }[];
+  const sources = (JSON.parse(readFileSync('art/sources.json', 'utf8')).sprites as { name: string; kind?: string; targetHeight?: number; anchor?: unknown; flip?: boolean; off?: boolean }[]).filter((e) => !e.off); // the paintings switched off in iteration 79 stay on the record but not in the atlas
   it('no hero sprite towers over its tile any more (heights as measured against the procedural twins)', () => {
-    expect(manifest.b_well.h).toBeLessThanOrEqual(32);
+    // b_well is drawn in code since iteration 79 (its painting is off), so it is no longer in the manifest
     expect(manifest.b_spire.h).toBeLessThanOrEqual(53);
     expect(manifest.b_nexus.h).toBeLessThanOrEqual(60);
     expect(manifest.b_cistern.h).toBeLessThanOrEqual(64);
@@ -70,6 +70,6 @@ describe('The painted buildings at the procedural scale, facing the procedural w
     for (const e of sources) if (e.name.startsWith('b_') && e.targetHeight) expect(e.anchor, e.name).toBe('centre');
     // the donkey carts (kind 'vehicle') face right by their own rule (iteration 57)
     const flipped = sources.filter((e) => e.flip && e.kind !== 'vehicle').map((e) => e.name).sort();
-    expect(flipped).toEqual(['b_cartersyard', 'b_cistern', 'b_depot', 'b_lyceum', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2', 'hearth_l2_v0', 'market_l3_v1']);
+    expect(flipped).toEqual(['b_cartersyard', 'b_cistern', 'b_lyceum', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2', 'market_l3_v1']); // the depot and hearth_l2_v0 are drawn in code since iteration 79
   });
 });

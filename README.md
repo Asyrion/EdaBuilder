@@ -295,7 +295,10 @@ Charter as `.json`.
   was surveyed over its footprint diamond beside its mirror (iteration 77): the facings hold,
   and the Stake's stage 2 hall and the Hall of Wicks now fill their tiles. The small buildings
   are scaled to the citizen (iteration 78): a well is a citizen and a half, a lamp post or a
-  shrine two and a half, a shed or a cottage under three; the towers rise as they did.
+  shrine two and a half, a shed or a cottage under three; the towers rise as they did. Since
+  iteration 79 the wells, the level-2 hearths, the level-1 crafts and the depot are drawn in
+  code after their paintings (log and brick walls, porches, flower boxes, trees, fences,
+  dormers, stalls), crisp at the citizen scale and one set with the procedural buildings.
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
   tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its
   foot); the temple is a nave and portico that gains a bell tower and then a copper dome; the

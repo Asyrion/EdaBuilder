@@ -349,6 +349,16 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 79 (the paintings redrawn in code, part 1)
+
+- **Twelve paintings redrawn by the procedural painter after their designs**, in the set's own style: the three wells, the
+  four level-2 hearths, the four level-1 crafts and the depot. The painter gained log and brick walls and the paintings'
+  features (porch, flower box, bush, side tree, fence, woodpile, dormer, balcony, stalls). The paintings are switched off
+  (`off: true`), not deleted.
+- **Judged side by side** with the paintings (`scripts/playtest79.mjs`); the peoples' looks apply to the hearths and
+  crafts again.
+- Art only: the sim files are unchanged (DESIGN §4.110). Parts 2 and 3 are items 1 and 2 if the user wants them.
+
 ## Done in iteration 78 (the scale of things)
 
 - **The citizen is the yardstick for the small buildings** (a playtest finding: the well stood two and a half citizens
@@ -961,16 +971,20 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-2. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-4. **M18 part 1, the Fen-Nex** (§17.2).
+1. **The paintings redrawn in code, part 2** (DESIGN §4.110, if the user wants it after judging part 1): the craft levels
+   2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
+2. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the
+   boneyard, the Lyceum, the Nexus, the spire, the Wick-Tower and the Hall of Wicks.
+3. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+4. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+5. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+6. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+7. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-7. **M19 part 2, the Belerial** (§17.3).
+9. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+10. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

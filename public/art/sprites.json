@@ -332,28 +332,6 @@
    "ay": 28,
    "glow": "sprites/b_wicktower_glow.png"
   },
-  "b_well": {
-   "file": "sprites/b_well.png",
-   "w": 15,
-   "h": 18,
-   "ax": 8,
-   "ay": 7
-  },
-  "b_seep": {
-   "file": "sprites/b_seep.png",
-   "w": 12,
-   "h": 14,
-   "ax": 6,
-   "ay": 3
-  },
-  "b_tidewell": {
-   "file": "sprites/b_tidewell.png",
-   "w": 13,
-   "h": 16,
-   "ax": 7,
-   "ay": 5,
-   "glow": "sprites/b_tidewell_glow.png"
-  },
   "b_cistern": {
    "file": "sprites/b_cistern.png",
    "w": 49,
@@ -361,14 +339,6 @@
    "ax": 25,
    "ay": 29,
    "glow": "sprites/b_cistern_glow.png"
-  },
-  "b_depot": {
-   "file": "sprites/b_depot.png",
-   "w": 52,
-   "h": 50,
-   "ax": 26,
-   "ay": 17,
-   "glow": "sprites/b_depot_glow.png"
   },
   "b_cartersyard": {
    "file": "sprites/b_cartersyard.png",
@@ -409,70 +379,6 @@
    "ax": 30,
    "ay": 33,
    "glow": "sprites/b_lyceum_glow.png"
-  },
-  "hearth_l2_v0": {
-   "file": "sprites/hearth_l2_v0.png",
-   "w": 36,
-   "h": 36,
-   "ax": 17,
-   "ay": 19,
-   "glow": "sprites/hearth_l2_v0_glow.png"
-  },
-  "hearth_l2_v1": {
-   "file": "sprites/hearth_l2_v1.png",
-   "w": 36,
-   "h": 36,
-   "ax": 17,
-   "ay": 19,
-   "glow": "sprites/hearth_l2_v1_glow.png"
-  },
-  "hearth_l2_v2": {
-   "file": "sprites/hearth_l2_v2.png",
-   "w": 36,
-   "h": 36,
-   "ax": 17,
-   "ay": 19,
-   "glow": "sprites/hearth_l2_v2_glow.png"
-  },
-  "hearth_l2_v3": {
-   "file": "sprites/hearth_l2_v3.png",
-   "w": 36,
-   "h": 36,
-   "ax": 17,
-   "ay": 19,
-   "glow": "sprites/hearth_l2_v3_glow.png"
-  },
-  "craft_l1_v0": {
-   "file": "sprites/craft_l1_v0.png",
-   "w": 36,
-   "h": 30,
-   "ax": 17,
-   "ay": 13,
-   "glow": "sprites/craft_l1_v0_glow.png"
-  },
-  "craft_l1_v1": {
-   "file": "sprites/craft_l1_v1.png",
-   "w": 36,
-   "h": 30,
-   "ax": 17,
-   "ay": 13,
-   "glow": "sprites/craft_l1_v1_glow.png"
-  },
-  "craft_l1_v2": {
-   "file": "sprites/craft_l1_v2.png",
-   "w": 36,
-   "h": 30,
-   "ax": 17,
-   "ay": 13,
-   "glow": "sprites/craft_l1_v2_glow.png"
-  },
-  "craft_l1_v3": {
-   "file": "sprites/craft_l1_v3.png",
-   "w": 36,
-   "h": 30,
-   "ax": 17,
-   "ay": 13,
-   "glow": "sprites/craft_l1_v3_glow.png"
   },
   "craft_l2_v0": {
    "file": "sprites/craft_l2_v0.png",
