@@ -349,6 +349,13 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 80 (a brickworks drawn after the user's painting)
+
+- **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
+  arch, the house, the clay shed and the yard.
+- **Not given to a building yet,** at the user's choice. Assigning it is one line, a building's sprite name, or a new
+  Brickworks with rules of its own (DESIGN §4.111).
+
 ## Done in iteration 79 (the paintings redrawn in code, part 1)
 
 - **Twelve paintings redrawn by the procedural painter after their designs**, in the set's own style: the three wells, the
