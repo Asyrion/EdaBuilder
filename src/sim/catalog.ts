@@ -464,6 +464,12 @@ export const BUILDINGS: BuildingDef[] = [
     w: 2, h: 2, cost: 4800, upkeep: 40, manaUse: 0, unlock: 4, nearHills: true, selfLit: true, goodsRate: 6, landValue: 10,
     service: { type: 'health', radius: 8, strength: 0.4 },
   },
+  {
+    key: 'brickworks', name: 'Brickworks', category: 'service',
+    desc: 'A brick hall with a wood-fired kiln under its arch, a clay shed, racks and a yard. Ten hands make 6 goods of brick a day for the carts (half unlit), and every building site within 12 tiles rises half again as fast while it works. The kiln lights it with no mana.',
+    flavor: 'The clay is dug in the Thaw, dried through the Bloom and fired before the Hush. A Village is judged by its chimneys.',
+    w: 3, h: 3, cost: 3600, upkeep: 30, manaUse: 0, unlock: 3, selfLit: true, capacity: [10], goodsRate: 6,
+  },
 
   {
     key: 'ruindelve', name: 'Ruin Delve', category: 'service',
@@ -689,7 +695,7 @@ export const MILESTONES: Milestone[] = [
     text: 'Forty souls under your light. The Crown sends cobbles, a sexton and a healer, and grants you two districts: paint one and charter it a Hearth or Craft quarter.' },
   { name: 'Thorp', pop: 100, grant: 3000, unlocks: ['veshari', 'wardlantern', 'cistern', 'mothloft', 'smokehouse', 'weir'],
     text: 'A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise.' },
-  { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot'],
+  { name: 'Village', pop: 220, grant: 4500, unlocks: ['academy', 'watchhouse', 'square', 'depot', 'brickworks'],
     text: 'A village with a name on the Crown\'s maps. Scholars, a proper Watch and the carters\' guild follow.' },
   { name: 'Township', pop: 400, grant: 6000, unlocks: ['arcane', 'lantern', 'nexus', 'font', 'mine', 'cradle', 'tamerslodge'],
     text: 'The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised.' },

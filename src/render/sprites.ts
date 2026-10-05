@@ -2208,7 +2208,7 @@ export function generateSprites(): SpriteDef[] {
   for (let f = 0; f < 2; f++) { const w = drawWyrmFly(f); out.push({ name: `wyrm_fly_${f}`, p: w.p, glow: w.glow, ax: 30, ay: 34 }); }
   push('b_ring', drawRing());
   for (let st = 0; st < 4; st++) push(`b_worldtree_${st}`, drawWorldTree(st));
-  push('b_brickworks', drawBrickworks()); // drawn after the user's painting, given to no building yet
+  push('b_brickworks', drawBrickworks()); // drawn after the user's painting (iteration 80), the Brickworks (83)
   push('gate_2', drawGate(2));
   push('gate_3', drawGate(3));
   // creatures

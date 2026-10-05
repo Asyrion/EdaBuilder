@@ -2,9 +2,9 @@
 
 Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
 sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
-as possible are to be replaced by them. Main stands at iteration 82 (the eda-lore swap, batch 1: the zone houses, DESIGN §4.113); before it 81 (the twelve
-paintings composed by hand, §4.112); iteration 80 (a brickworks sprite drawn after the user's painting, §4.111, from a parallel session) is
-given to no building yet. Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
+as possible are to be replaced by them. Main stands at iteration 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, DESIGN §4.114,
+from a parallel session); before it 82 (the eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve
+paintings composed by hand, §4.112) and 80 (the brickworks sprite drawn after the user's painting, §4.111). Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
 §4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
 before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
@@ -99,13 +99,15 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
   Weir, the spawning run.
 - No milestone is open. The rest of the list is items, not milestones.
 
-**Iteration 80** (DESIGN §4.111, from the other session, art only) added `b_brickworks`: a brickworks drawn after the
-user's painting and given to no building yet. Ask the user before assigning it.
+**Iteration 80** (DESIGN §4.111, art only) added `b_brickworks`, a brickworks drawn after the user's painting.
+**Iteration 83** (DESIGN §4.114) gave it a building of its own: the Brickworks, 3×3, at the Village.
+- It makes 6 goods a day, lit by its kiln, and sites within 12 tiles rise half again as fast.
+- The bot does not build it.
 
 ## The next item
 
-The eda-lore swap, batch 2: the service buildings. Plan it on the Plan panel first. One loose end for the user:
-- **The brickworks** (`b_brickworks`, iteration 80) is given to no building; ask the user which building takes it.
+The eda-lore swap, batch 2: the service buildings. Plan it on the Plan panel first. The Brickworks (iteration 83) has its
+own hand-drawn sprite, `b_brickworks`, after the user's painting: keep it unless the user says otherwise.
 After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
 the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
 

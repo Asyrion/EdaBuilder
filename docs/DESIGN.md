@@ -4614,6 +4614,57 @@ given to two Grimmen arcane slots read as scrap at 34 px and went back to batch 
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged; the control seed `npx tsx scripts/balance.ts 42 150`
   ends at 2,155 folk, as main.
 
+### 4.114 The Brickworks: the drawing given a building of its own (iteration 83)
+
+Iteration 80 drew a brickworks after the user's painting and gave it to no building (§4.111). The user then said: make it
+the level-3 Craft building or a new building type, as I prefer.
+
+**Why a new building:** a Craft lot is a 1×1 zone building at every level, and the drawing is a 3×3 hall with a house, a
+shed and a yard. Shrunk to one tile it would lose everything the painting has. So it became **the Brickworks**, a 3×3
+building unlocked at the Village (milestone 3), the "level 3" in the sense of when it comes.
+
+**What it does:**
+- **Bricks for the carts.** Ten hands make 6 goods a day, carted like a Craft works. It uses the `goodsRate` path the
+  Quarry and the Hanging Gardens use, so it scales with its hands and halves when unlit.
+- **Its own light.** The kiln lights it (`selfLit`), with no mana.
+- **Bricks for the builders, its one new rule.** A building site within `BRICK_REACH` = 12 tiles (centre to centre) of a
+  staffed Brickworks rises `BRICK_SPEED` = 1.5 times as fast. That covers the folk's own quarter pace as well as each
+  builder's share.
+  - A Brickworks still being raised, or one without hands, speeds nothing.
+  - Zone lots are unchanged: they rise in a day anyway.
+  - The ring "bricks for builders" shows the reach, and a site's Construction row says when the bricks reach it.
+- **The figures:** it costs 3,600 crowns, upkeep 30 a day, and takes three days to build.
+- **Saves:** there is no new state, so old saves load.
+
+**The bot does not build it.** Teaching the bot to use it would be a balance change of its own. The bar's runs therefore
+show what the catalog change alone does to a bot city.
+
+**Verified:**
+- `tests/iteration83.test.ts`, 5 tests: the entry and its unlock, the goods lit and unlit, the speed inside and outside
+  the reach and with an empty works, a works still being built and zone lots, and the ring.
+- `scripts/playtest83.mjs`:
+  - the Services tab at the Village and its tip, and the placing ghost with its ring;
+  - the Brickworks placed through the game's own action, by day and at night;
+  - its panel and ring;
+  - a site 8 tiles away against one beyond the reach, with no builders: 150 against 100 work in 400 ticks;
+  - three days of goods (23 made, all hands at work);
+  - no errors and no missing sprites.
+- **The wide bar** (`--bar wide --compare origin/main`, 180 runs in 113 minutes): **bit-identical to main.** Every run
+  matches, draw for draw, and the bot never builds it.
+
+  | people | seeds × draws | floor (2·SE) | share of the mean | bar | this tree | origin/main | verdict |
+  |---|---|---|---|---|---|---|---|
+  | vellish | 6 × 5 | 196 | 9.6 % | met | 2,045 | 2,045 | +0, within the noise |
+  | grimmen | 6 × 3 | 117 | 7.3 % | met | 1,601 | 1,601 | +0, within the noise |
+  | veshari | 6 × 4 | 194 | 8.3 % | met | 2,339 | 2,339 | +0, within the noise |
+  | tallowkin | 6 × 3 | 170 | 8.5 % | met | 1,997 | 1,997 | +0, within the noise |
+
+  The gates are identical on both sides. The last gates reached are:
+  - Vellish: Free City 21/30 and Beacon 3/30.
+  - Grimmen: Underking's Hall 11/18 and Seat 3/18.
+  - Veshari: Sable Crown 16/24.
+  - Tallowkin: Lantern of Wicks 3/18.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5867,3 +5918,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Every people its own houses, and no painting twice (iteration 82, the user's rules):* a slot with no painting of its own
   keeps its people's drawn house rather than borrow another's; the houses are sorted to a people by material, to a zone by
   what they show, and to a level by their shape (a 1×1 tile takes a wide house only low).
+- *The brickworks is a building of its own, not a Craft level (iteration 83):* a Craft lot is 1×1 and the drawing is 3×3,
+  so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
+  tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
