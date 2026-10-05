@@ -4157,7 +4157,23 @@ line saying whether it is owed, since a tale's choices are one list.
   side from the cache). The bot raises no Sky-Dock, Court or Ring and never calls the brawl's fifth choice; the grey eggs
   and the merchant are what it can meet.
 
-TABLE_PENDING
+  Every pair is +0: the branch's 192 runs are bit for bit main's, so no bot city met a grey egg, a merchant's second
+  visit or any of the rest in 150 days. The bar still added draws where the floors asked (the Veshari to four a seed)
+  and both sides' cache files grew; both are committed.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 2 | 1,725 | 1,725 | +0 | 169 (9.8 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,430 | 1,430 | +0 | 143 (10.0 %) | met | within the noise |
+  | Veshari | 6 × 4 | 2,332 | 2,332 | +0 | 217 (9.3 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,887 | 1,887 | +0 | 218 (11.6 %) | **not met: at the cap of 8 draws** | within the noise |
+  | all | | 7,374 | 7,374 | +0 | 379 | | within the noise |
+
+  - **The gates** are the same, run for run.
+  - **The Tallowkin's floor** is 11.6 % of their folk at eight draws a seed, as in iterations 64, 70 and 72: not met.
+  - That the bar sees nothing is the honest result of five rules the bot never reaches: the grey eggs need a bot cradle at
+    the Gloam's edge (none in 192 runs), and the merchant's memory changes only her second visit's text and prices, which
+    the bot's policy reads the same way. The tests and the playtest hold the rules.
 
 ## 7. Milestone plan
 
