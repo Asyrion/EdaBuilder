@@ -4,20 +4,25 @@
  *  npx tsx scripts/table.ts [--bar wide] [--compare <ref>] [--ref <ref>] [--peoples vellish,grimmen,veshari,tallowkin]
  *                           [--seeds 42,43,44] [--draws 2] [--target 0.10] [--max-draws 8] [--days 150] [--jobs N]
  *                           [--no-cache] [--out shots/table.json]
+ *  npx tsx scripts/table.ts --import-cache <dir> --ref <sha>   (old commit-keyed run files of that commit into the cache)
  *
  *  --ref runs another git ref instead of the working tree; --compare runs both. A ref runs in a detached worktree in the temp dir
- *  with this tree's balance.ts and rolls.ts copied in (so both print the same json line), removed afterwards. Runs are cached in
- *  shots/table-cache by commit, runner and run: a ref's always, the working tree's when it has no uncommitted change under src/,
- *  scripts/ or public/. A table stopped part way resumes from the cache.
+ *  with this tree's balance.ts and rolls.ts copied in (so both print the same json line), removed afterwards.
+ *
+ *  The cache (iteration 71, DESIGN 4.102): runs are kept in balance/cache/<sim>-<runner>.json, committed with the iteration, keyed
+ *  by the sim key (a hash of every file under src/sim, src/data and src/core, and the node major version) and the runner's hash.
+ *  The same sim gives the same runs whatever the commit, so main's side of a bar is the previous iteration's branch side, and a
+ *  docs-, art- or UI-only change has nothing to run. A dirty working tree is keyed by its files' contents, so it is cached too. A
+ *  table stopped part way resumes. The four newest files are kept. --jobs defaults to every core.
  *
  *  --bar wide (the bar for a sim change since iteration 64): seeds 42–47, two draws, then rounds: every people whose floor (2·SE) is
  *  over the target share of its mean gets one more draw a seed on both sides, until each is under it or at the cap of draws. */
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { cpus, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { cacheKey, needMore, parseRun, renderBar, renderTable, type Run } from './tableStats';
+import { SIM_DIRS, cacheKey, needMore, parseLsTree, parseRun, pruneList, renderBar, renderTable, simKeyOf, type CacheFile, type Run } from './tableStats';
 
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const args = process.argv.slice(2);
@@ -29,9 +34,9 @@ const draws = Number(opt('draws', '2'));
 const target = Number(opt('target', '0.10'));
 const maxDraws = Number(opt('max-draws', wide ? '8' : String(draws)));
 const days = Number(opt('days', '150'));
-const jobs = Number(opt('jobs', String(Math.max(1, cpus().length - 1))));
+const jobs = Number(opt('jobs', String(Math.max(1, cpus().length)))); // every core since iteration 71
 const out = resolve(ROOT, opt('out', 'shots/table.json')!);
-const cacheDir = resolve(ROOT, 'shots/table-cache');
+const cacheDir = resolve(ROOT, 'balance/cache');
 const useCache = !args.includes('--no-cache');
 const compareRef = opt('compare');
 const ref = opt('ref');
@@ -50,12 +55,48 @@ function dropWorktree(dir: string): void {
   try { execFileSync('git', ['worktree', 'remove', '--force', dir], { cwd: ROOT, stdio: 'inherit' }); } catch { rmSync(dir, { recursive: true, force: true }); }
 }
 
-interface Side { label: string; dir: string; temp: boolean; sha?: string }
+interface Side { label: string; dir: string; temp: boolean; sim: string }
 interface Job { side: Side; people: string; seed: number; rolls: number }
+
+/** The sim key of a ref (from git's tree) or of the working tree (from the files as they are, committed or not). */
+function simKeyOfRef(r: string): string {
+  return simKeyOf(parseLsTree(execFileSync('git', ['ls-tree', '-r', r, '--', ...SIM_DIRS], { cwd: ROOT }).toString()), process.version);
+}
+function simKeyOfTree(): string {
+  const paths = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '--', ...SIM_DIRS], { cwd: ROOT }).toString().split('\n').filter((p) => p && existsSync(join(ROOT, p)));
+  const blobs = paths.length ? execFileSync('git', ['hash-object', '--', ...paths], { cwd: ROOT }).toString().trim().split('\n') : [];
+  return simKeyOf(paths.map((path, k) => ({ path, blob: blobs[k] })), process.version);
+}
+
+/** The cache files, read once and written back whole after every run (a stopped table resumes). */
+const files = new Map<string, CacheFile>();
+function cacheFile(name: string): CacheFile {
+  let f = files.get(name);
+  if (!f) {
+    const p = join(cacheDir, name);
+    f = existsSync(p) ? (JSON.parse(readFileSync(p, 'utf8')) as CacheFile) : { created: new Date().toISOString(), runs: {} };
+    files.set(name, f);
+  }
+  return f;
+}
+function saveCacheFile(name: string): void {
+  mkdirSync(cacheDir, { recursive: true });
+  const p = join(cacheDir, name);
+  writeFileSync(`${p}.tmp`, JSON.stringify(cacheFile(name), null, 0));
+  renameSync(`${p}.tmp`, p);
+}
+/** Keep the four newest cache files and any in use now. */
+function prune(inUse: string[]): void {
+  if (!existsSync(cacheDir)) return;
+  const list = readdirSync(cacheDir).filter((n) => n.endsWith('.json')).map((name) => ({ name, created: (JSON.parse(readFileSync(join(cacheDir, name), 'utf8')) as CacheFile).created }));
+  for (const name of pruneList(list, inUse)) { rmSync(join(cacheDir, name)); process.stderr.write(`cache: dropped ${name}\n`); }
+}
+
 let cached = 0;
 function runOne(j: Job): Promise<Run> {
-  const key = j.side.sha ? join(cacheDir, cacheKey({ sha: j.side.sha, runner, people: j.people, seed: j.seed, rolls: j.rolls, days }) + '.json') : null;
-  if (key && useCache && existsSync(key)) { cached++; return Promise.resolve({ ...(JSON.parse(readFileSync(key, 'utf8')) as Run), ref: j.side.label }); }
+  const key = cacheKey({ sim: j.side.sim, runner, people: j.people, seed: j.seed, rolls: j.rolls, days });
+  const hit = useCache ? cacheFile(key.file).runs[key.run] : undefined;
+  if (hit) { cached++; return Promise.resolve({ ...hit, ref: j.side.label }); }
   return new Promise((ok, fail) => {
     const p = spawn('npx', ['tsx', 'scripts/balance.ts', String(j.seed), String(days), '-', j.people, `roll=${j.rolls}`], { cwd: j.side.dir });
     let text = '';
@@ -64,7 +105,7 @@ function runOne(j: Job): Promise<Run> {
     p.on('close', (code) => {
       const r = parseRun(text);
       if (!r) return fail(new Error(`${j.side.label} ${j.people} ${j.seed} roll=${j.rolls} printed no json line (exit ${code}):\n${text.slice(-1500)}`));
-      if (key) { mkdirSync(cacheDir, { recursive: true }); writeFileSync(key, JSON.stringify(r)); }
+      if (useCache) { cacheFile(key.file).runs[key.run] = r; saveCacheFile(key.file); }
       ok({ ...r, ref: j.side.label });
     });
   });
@@ -86,17 +127,32 @@ async function pool(list: Job[], round: number): Promise<Run[]> {
   return res;
 }
 
-const sides: Side[] = [];
-const shaOf = (r: string) => execFileSync('git', ['rev-parse', `${r}^{commit}`], { cwd: ROOT }).toString().trim();
-if (ref) sides.push({ label: ref, dir: worktree(ref), temp: true, sha: shaOf(ref) });
-else {
-  // the working tree is cached too when nothing the runs read differs from HEAD (iteration 64: the first wide bar outran the
-  // two-hour limit of a background job; with every finished run cached, a rerun resumes where it was stopped)
-  const dirty = execFileSync('git', ['status', '--porcelain', '--', 'src', 'scripts', 'public', 'package.json'], { cwd: ROOT }).toString().trim();
-  sides.push({ label: 'this tree', dir: ROOT, temp: false, sha: dirty ? undefined : shaOf('HEAD') });
-  if (dirty) process.stderr.write('this tree has uncommitted changes: its runs are not cached (commit first to make a long table resumable)\n');
+// --import-cache <dir> --ref <sha>: the old commit-keyed files of one commit (shots/table-cache before iteration 71) into the cache
+const importDir = opt('import-cache');
+if (importDir) {
+  if (!ref) throw new Error('--import-cache needs --ref <the commit the runs were made on>');
+  const sha = execFileSync('git', ['rev-parse', `${ref}^{commit}`], { cwd: ROOT }).toString().trim();
+  const sim = simKeyOfRef(sha);
+  const head = `${sha.slice(0, 12)}-${runner.slice(0, 12)}-`;
+  let n = 0;
+  for (const name of readdirSync(importDir)) {
+    if (!name.startsWith(head) || !name.endsWith('.json')) continue;
+    const r = JSON.parse(readFileSync(join(importDir, name), 'utf8')) as Run;
+    const key = cacheKey({ sim, runner, people: r.people, seed: r.seed, rolls: r.rolls, days: r.days });
+    cacheFile(key.file).runs[key.run] = r;
+    n++;
+  }
+  if (n) saveCacheFile(cacheKey({ sim, runner, people: '', seed: 0, rolls: 0, days: 0 }).file);
+  console.log(`imported ${n} runs of ${sha.slice(0, 12)} under the sim key ${sim.slice(0, 12)} (this tree's: ${simKeyOfTree().slice(0, 12)})`);
+  process.exit(0);
 }
-if (compareRef) sides.push({ label: compareRef, dir: worktree(compareRef), temp: true, sha: shaOf(compareRef) });
+
+const sides: Side[] = [];
+if (ref) sides.push({ label: ref, dir: worktree(ref), temp: true, sim: simKeyOfRef(ref) });
+else sides.push({ label: 'this tree', dir: ROOT, temp: false, sim: simKeyOfTree() }); // keyed by its files, committed or not (iteration 71)
+if (compareRef) sides.push({ label: compareRef, dir: worktree(compareRef), temp: true, sim: simKeyOfRef(compareRef) });
+for (const s of sides) process.stderr.write(`${s.label}: sim ${s.sim.slice(0, 12)}${sides.length === 2 && sides[0].sim === sides[1].sim ? ' (the same sim on both sides: every pair is equal)' : ''}\n`);
+if (useCache) prune(sides.map((s) => cacheKey({ sim: s.sim, runner, people: '', seed: 0, rolls: 0, days: 0 }).file));
 try {
   const runs: Run[] = [];
   const have: Record<string, number> = Object.fromEntries(peoples.map((p) => [p, 0]));

@@ -3,6 +3,7 @@
  *  A seed's draws (roll 0, 1, 2, … extra rolls of the main stream on day 10) are the same map down different paths, so the spread
  *  inside a seed is the noise. σ is pooled within seeds; two refs are compared paired by seed, and a difference is "seen" only
  *  when it is more than twice its standard error. */
+import { createHash } from 'node:crypto';
 
 export interface Gate { name: string; day: number }
 export interface Run {
@@ -166,9 +167,34 @@ export function needMore(a: Run[], b: Run[] | undefined, target: number, maxDraw
   return out;
 }
 
-/** The cache's key for a ref's run: the commit, the runner's hash (balance.ts and rolls.ts), the run itself. */
-export function cacheKey(k: { sha: string; runner: string; people: string; seed: number; rolls: number; days: number }): string {
-  return `${k.sha.slice(0, 12)}-${k.runner.slice(0, 12)}-${k.people}-${k.seed}-r${k.rolls}-d${k.days}`;
+/** What a balance run reads (iteration 71): the sim, its data and the core (rng, noise). A run of the same files gives the same
+ *  numbers whatever the commit, so the cache is keyed by them, not by the commit a docs change would move. */
+export const SIM_DIRS = ['src/sim', 'src/data', 'src/core'];
+
+/** The sim key: a hash of every file a run reads (its path and git blob hash) and the node major version. The order of the
+ *  listing does not matter. */
+export function simKeyOf(files: { path: string; blob: string }[], node: string): string {
+  const lines = files.map((f) => `${f.path} ${f.blob}`).sort();
+  return createHash('sha1').update(`node ${node.replace(/^v/, '').split('.')[0]}\n`).update(lines.join('\n')).digest('hex');
+}
+
+/** `git ls-tree -r` output (`mode blob <hash>\t<path>`) as the sim key's listing. */
+export function parseLsTree(text: string): { path: string; blob: string }[] {
+  return text.split('\n').filter(Boolean).map((l) => { const [meta, path] = l.split('\t'); return { path, blob: meta.split(' ')[2] }; });
+}
+
+/** The cache's key for a run: the file of its sim version and runner (balance.ts and rolls.ts), and the run within it. */
+export function cacheKey(k: { sim: string; runner: string; people: string; seed: number; rolls: number; days: number }): { file: string; run: string } {
+  return { file: `${k.sim.slice(0, 12)}-${k.runner.slice(0, 12)}.json`, run: `${k.people}-${k.seed}-r${k.rolls}-d${k.days}` };
+}
+
+/** One committed cache file: every finished run of one sim version and runner. */
+export interface CacheFile { created: string; runs: Record<string, Run> }
+
+/** The cache files to delete: all but the `keep` newest, never one in use now. */
+export function pruneList(files: { name: string; created: string }[], inUse: string[], keep = 4): string[] {
+  const sorted = [...files].sort((a, b) => (a.created < b.created ? 1 : a.created > b.created ? -1 : a.name.localeCompare(b.name)));
+  return sorted.slice(keep).map((f) => f.name).filter((n) => !inUse.includes(n));
 }
 
 /** The bar's report: per people, the draws used, the floor reached against the target, met or at the cap (never rounded up). */

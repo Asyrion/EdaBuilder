@@ -349,6 +349,15 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 71 (a faster balance bar)
+
+- **The cache:** the balance table caches runs by the files they read (`src/sim`, `src/data`, `src/core`) rather than by
+  commit. It keeps them in `balance/cache/`, committed with each iteration, so main's side of the next bar is already run.
+  An uncommitted tree is cached too.
+- **All four cores** by default.
+- **The end-to-end bar** came back from the cache in 5 seconds (240 of 240 runs), reproducing iteration 70's numbers.
+  The next sim change should take under half the time it did (DESIGN §4.102).
+
 ## Done in iteration 70 (two ways to lose)
 
 - **The valley belongs to the wyrm.**

@@ -3949,6 +3949,59 @@ and the Stake's day, or the three districts and the homes fled.
     lost the homes it besieged.
   - **The Tallowkin's floor** stays above a tenth of their folk at eight draws a seed, as in iteration 64; it is not met.
 
+### 4.102 A faster balance bar (iteration 71)
+
+Tooling only, at the user's request after iteration 70's bar took about 4½ hours. What the bar measures is unchanged; it
+runs fewer runs and uses every core.
+
+**The waste.** Half of every bar re-ran origin/main. Those runs are deterministic, and are exactly the previous iteration's
+branch runs. They were thrown away for two reasons:
+- the cache was keyed by commit, so any commit moved it;
+- it lived in `shots/` and in temporary worktrees, so it died with the container.
+
+**The cache, keyed by what a run reads** (`scripts/table.ts`, `scripts/tableStats.ts`):
+- **The sim key** is a hash of every file under `src/sim`, `src/data` and `src/core`, and the node major version. Those
+  are the only folders a balance run reaches; a test holds the imports to them.
+  - For a ref it comes from `git ls-tree`, and for the working tree from `git hash-object` of the files as they are. So
+    an uncommitted tree is cached too, and the old "dirty trees are not cached" rule is gone.
+  - The runner's hash (`balance.ts`, `rolls.ts`) stays in the key.
+- **Where it lives:** the runs live in `balance/cache/<sim>-<runner>.json`, one file per sim version (about 50 KB for a
+  four-people bar), committed with the iteration.
+  - Each finished run is written at once, so a stopped table resumes.
+  - The four newest files are kept, and older ones are dropped by the table.
+- **The workflow:**
+  - After a merge, main's sim key is the branch's, so the next bar runs only the new branch side.
+  - A docs-, art- or UI-only change has the same key on both sides, and its whole bar comes from the cache.
+  - The table says so when both sides share a sim.
+- **The import:** `--import-cache <dir> --ref <sha>` brought in iteration 70's 120 branch runs from the old commit-keyed
+  files. They are today's main, sim key `92ea7c143717`.
+
+**All four cores:** `--jobs` now defaults to every core rather than all but one, about a third more throughput.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 73 test files with 468 tests, and `npm run build`.
+- **`tests/iteration71.test.ts`** (6 tests):
+  - the key moves with a file's blob, a new file and the node major version, and not with the listing's order;
+  - the runs' imports stay inside the keyed folders;
+  - git's tree and the files on disk give the same key;
+  - the cache key's shape;
+  - pruning keeps the four newest and any file in use;
+  - the committed files parse.
+- **`tests/iteration64.test.ts`'s** cache test now keys by the sim.
+- **The end-to-end bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`) on this branch took **5 seconds**,
+  with all 240 runs from the cache.
+  - It reproduces §4.101's branch means: Vellish 1,766, Grimmen 1,408, Veshari 2,352, Tallowkin 1,913.
+  - The same bar measured in §4.101 took about 4½ hours.
+  - Both sides now share the sim, so every pair is +0.
+- **The dirty-tree path:** a comment edited in `src/sim/hounds.ts` gave a new key, and its run was computed. Reverting the
+  edit brought the old key back, and the same run came from the cache. The probe's leftovers were removed.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): identical in every field to the cached iteration-70 run of
+  Vellish 42: 2,130 folk, the Burgh on day 41. The runner is untouched.
+
+What the saving will be on the next sim change: the main side (half the runs) comes from the cache, and the four cores add
+about a third. The estimate is under half of today's time, so about 1½–2 hours for a bar like §4.101's. The next sim
+change will show it.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5147,3 +5200,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   the door three nights. Homes in no district count by their march, so not painting districts is no shelter. The wyrm
   counts refusals in a row, not in all: any tribute paid forgives the past, and a great wyrm of one's own is the one
   answer to the razing in flight.
+- *Runs are cached by what they read, and the cache is committed (iteration 71):* the bar's runs are deterministic, so a
+  run of the same sim files is the same run whatever the commit. Keying by the files of `src/sim`, `src/data` and
+  `src/core` lets main's side of a bar be the previous iteration's branch side, and lets a change outside the sim cost
+  nothing. The cost is about 50 KB of committed JSON per sim version, four versions kept.

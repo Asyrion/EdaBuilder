@@ -36,11 +36,12 @@ describe('The wide bar', () => {
     const paired = floorShare(barComparison('veshari', bySeed(a).get('veshari')!, bySeed(b).get('veshari')!));
     expect(paired).toBeLessThan(alone);
   });
-  it('the cache key moves with the commit, the runner, the run and the days', () => {
-    const k = { sha: 'a'.repeat(40), runner: 'b'.repeat(40), people: 'vellish', seed: 42, rolls: 1, days: 150 };
-    const base = cacheKey(k);
-    for (const change of [{ sha: 'c'.repeat(40) }, { runner: 'd'.repeat(40) }, { people: 'grimmen' }, { seed: 43 }, { rolls: 2 }, { days: 30 }]) expect(cacheKey({ ...k, ...change })).not.toBe(base);
-    expect(cacheKey({ ...k })).toBe(base);
+  it('the cache key moves with the sim, the runner, the run and the days (keyed by the sim since iteration 71)', () => {
+    const k = { sim: 'a'.repeat(40), runner: 'b'.repeat(40), people: 'vellish', seed: 42, rolls: 1, days: 150 };
+    const id = (x: { file: string; run: string }) => `${x.file}#${x.run}`;
+    const base = id(cacheKey(k));
+    for (const change of [{ sim: 'c'.repeat(40) }, { runner: 'd'.repeat(40) }, { people: 'grimmen' }, { seed: 43 }, { rolls: 2 }, { days: 30 }]) expect(id(cacheKey({ ...k, ...change }))).not.toBe(base);
+    expect(id(cacheKey({ ...k }))).toBe(base);
   });
   it('the report says met, not met, or not met at the cap, and never rounds a cap up', () => {
     const md = renderBar([...people('grimmen', 10), ...people('vellish', 1500, 8), ...people('tallowkin', 1500, 3)], undefined, 0.1, 8);
