@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 72 (golem haulers)
+
+- **The hauler duty:** a bound Concord Warden can be put in harness at a Craft works within 20 of its foundry. A golem
+  cart appears at the works' door and carries up to 30 goods a trip (what the market has room for) at half a donkey's
+  pace, resting 20 ticks instead of a donkey's hundreds. It drinks the foundry's mana and is not labour. The works lost, a
+  surge, or any other duty ends it.
+- **Donkeys balk at hounds:** a donkey cart with a Gloam-hound within 4 tiles stands for 60 ticks; the carters complain
+  once a day. Floating carts, barges and haulers do not.
+- **Drawn as a vehicle:** a procedural blue-grey warden hauling a stone-wheeled wagon, mirrored when it heads left, its
+  eyes and rune lit at night.
+- The Foundry's panel, the catalog, the Annals, the help and the README say so. The bar's verdict is in DESIGN §4.103.
+
 ## Done in iteration 71 (a faster balance bar)
 
 - **The cache:** the balance table caches runs by the files they read (`src/sim`, `src/data`, `src/core`) rather than by
@@ -400,7 +412,7 @@
   - the marsh and the atoll;
   - the Great Gate;
   - the Fen-Nex and the Belerial as peoples;
-  - golem haulers;
+  - golem haulers (built in iteration 72);
   - two ways to lose;
   - a handful of loose ends;
   - markets and the road (AUDIT B40).
@@ -877,9 +889,9 @@ Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, mini
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
 vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
 war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
-lore-drop list of §11 are complete except what the iteration-68 audit found: golem haulers, the loose ends, and the
-swamp and atoll maps (items 1–2 and 4–6 below). The Great Gate was built in iteration 69 and the two ways to lose in
-iteration 70.
+lore-drop list of §11 are complete except what the iteration-68 audit found: the loose ends, and the
+swamp and atoll maps (item 1 and items 4–6 below). The Great Gate was built in iteration 69, the two ways to lose in
+iteration 70 and the golem haulers in iteration 72.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
@@ -893,15 +905,18 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first, then the milestones. Each numbered item is one iteration.
 
-1. **Golem haulers** (§17.4 C, §8.4). Foundry carts that carry 30 and are not scared by hounds.
-2. **Loose ends** (§17.4 D).
+1. **Loose ends** (§17.4 D).
    - The eggs go grey.
    - The Sky-Dock's wyvern.
    - Hatchling riders.
    - Sextons at the brawl, and the duel flown by the wyvern agent.
    - The Wandering Merchant's memory of past deals.
-3. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
+2. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
    change: the wide bar.
+3. **The sprites faced and fitted** (§17.4 F; the user's request in iteration 72). Check every building sprite in the game,
+   painted and drawn, for its orientation and how it sits in its tile square: the procedural buildings are the yardstick
+   (door and gable on the right face, the footprint diamond filled neatly). Correct the ones faced wrong or that look off:
+   a flip, a new anchor or `targetHeight` in `art/sources.json`, or a redraw. Screenshots before and after. Art only.
 4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
 5. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
 6. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
@@ -914,4 +929,4 @@ the single items first, then the milestones. Each numbered item is one iteration
 10. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-13. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+11. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

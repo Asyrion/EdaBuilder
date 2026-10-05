@@ -1321,6 +1321,47 @@ function cart(variant: number): Painter {
   return p;
 }
 
+/** A golem hauler (iteration 72): a Concord Warden in harness, walking right and dragging a stone-wheeled wagon with a high load.
+ *  The cart's scale (28 wide, 16 tall: a citizen and a half), the wheels and the feet on the anchor row; the eyes and the rune glow. */
+function golemHauler(): { p: Painter; glow: Painter } {
+  const p = new Painter(28, 18);
+  const glow = new Painter(28, 18);
+  // the wagon: a stone bed on two stone wheels, a heap of sacks and crates on it
+  p.rect(1, 9, 15, 4, 'stone2');
+  p.rect(1, 9, 15, 1, 'stone1');
+  p.rect(1, 9, 1, 4, 'stone1');
+  p.rect(15, 9, 1, 4, 'stone3');
+  p.rect(3, 5, 11, 4, 'cloth5');
+  p.rect(3, 5, 11, 1, 'cloth4');
+  p.rect(4, 3, 5, 2, 'green1');
+  p.px(5, 3, 'green2');
+  p.rect(9, 4, 4, 1, 'wood2');
+  p.rect(9, 3, 3, 1, 'wood1');
+  p.circle(4, 15, 2, 'stone1');
+  p.circle(12, 15, 2, 'stone1');
+  p.px(4, 15, 'ironDark');
+  p.px(12, 15, 'ironDark');
+  // the harness pole from the wagon to the warden's hand
+  p.rect(16, 10, 4, 1, 'ironDark');
+  // the warden: a squat stone giant, the golem_ look at the cart's scale
+  p.rect(18, 8, 2, 4, 'slate1'); // the back arm, on the pole
+  p.rect(20, 5, 6, 8, 'bluewash2'); // blue-grey stone, like the painted warden
+  p.rect(20, 5, 1, 8, 'slate1');
+  p.rect(25, 5, 1, 8, 'bluewash');
+  p.rect(21, 2, 4, 3, 'bluewash2');
+  p.px(22, 3, 'leyGlow');
+  p.px(24, 3, 'leyGlow');
+  glow.px(22, 3, 'leyGlow');
+  glow.px(24, 3, 'leyGlow');
+  p.rect(22, 7, 2, 2, 'rune');
+  glow.rect(22, 7, 2, 2, 'rune', 200);
+  p.rect(26, 6, 2, 6, 'bluewash'); // the front arm
+  p.rect(21, 13, 2, 4, 'slate1'); // the legs, one forward
+  p.rect(24, 12, 2, 5, 'bluewash2');
+  p.outline('outline');
+  return { p, glow };
+}
+
 function restlessSprite(variant: number, frame: number): { p: Painter; glow: Painter } {
   const p = new Painter(8, 12);
   const glow = new Painter(8, 12);
@@ -1874,6 +1915,7 @@ export function generateSprites(): SpriteDef[] {
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
     else out.push({ name: `cart_${v}`, p, ax: 9, ay: 11 });
   }
+  { const h = golemHauler(); out.push({ name: 'cart_6', p: h.p, glow: h.glow, ax: 14, ay: 17 }); } // the golem hauler (iteration 72)
   // war-tiger: long, striped, low; two stride frames
   for (let f = 0; f < 2; f++) {
     const p = new Painter(18, 10);

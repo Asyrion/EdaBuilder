@@ -30,7 +30,7 @@ import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
 import { FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
-import { BARGE_VARIANT, FLOAT_VARIANT, TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
+import { BARGE_VARIANT, FLOAT_VARIANT, GOLEM_LOAD, TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
@@ -54,7 +54,7 @@ import { advise, type Focus } from '../data/quests';
 import { ANNALS, type AnnalRow } from '../data/annals';
 import { WYRM_EATS, WYRM_LAIR_RADIUS, describeWyrm, wyrmEats, wyrmNode, wyrmTribute } from '../sim/wyrm';
 import { forecast } from '../sim/forecast';
-import { describeBeasts, boundGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
+import { describeBeasts, boundGolems, labourGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
 import { HUSH_CRAFT, glimhouseNear, treeStage, TREE_LEISURE_RADIUS, TREE_WARD_RADIUS } from '../sim/growth';
 import { seasonOf as seasonOfState } from '../sim/world';
 
@@ -112,7 +112,7 @@ export interface UiHost {
   lineNest(id: number): string | null;
   setBurnWyrmfire(on: boolean): void;
   toggleSluice(id: number): string | null;
-  setGolemDuty(id: number, duty: 'labour' | 'guard' | 'works', target: number): string | null;
+  setGolemDuty(id: number, duty: 'labour' | 'guard' | 'works' | 'haul', target: number): string | null;
   scatterDust(x: number, y: number): boolean;
   resolveEvent(choice: number, amount?: number): void;
   centerOn(x: number, y: number): void;
@@ -838,8 +838,10 @@ export class UI {
       if (GOLEM_HOUSES.includes(b.kind)) {
         const gs = s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'golem' && a.load > 0 && a.homeId === b.id);
         const works = postableWorks(s, b);
-        rows.push(row('Wardens', gs.length ? `${gs.length} bound here: labour (12 hands each), guard (a ward of ${GOLEM_GUARD_RADIUS} around the foundry) or posted to a works within ${GOLEM_POST_REACH}` : 'none bound here yet'));
-        for (const g of gs) rows.push(row(`Warden ${g.id}`, `<select data-golem="${g.id}"><option value="labour" ${!g.duty ? 'selected' : ''}>labour: 12 hands for the city</option><option value="guard" ${g.duty === 'guard' ? 'selected' : ''}>guard: ward ${GOLEM_GUARD_RADIUS} here</option>${works.map((w) => `<option value="works:${w.id}" ${g.duty === 'works' && g.targetId === w.id ? 'selected' : ''}>at the works (${w.x},${w.y}): 12 hands at its bench</option>`).join('')}</select>`));
+        rows.push(row('Wardens', gs.length ? `${gs.length} bound here: labour (12 hands each), guard (a ward of ${GOLEM_GUARD_RADIUS} around the foundry), posted to a works within ${GOLEM_POST_REACH}, or in harness hauling from one (${GOLEM_LOAD} goods a trip, slow, tireless, afraid of no hound)` : 'none bound here yet'));
+        for (const g of gs) rows.push(row(`Warden ${g.id}`, `<select data-golem="${g.id}"><option value="labour" ${!g.duty ? 'selected' : ''}>labour: 12 hands for the city</option><option value="guard" ${g.duty === 'guard' ? 'selected' : ''}>guard: ward ${GOLEM_GUARD_RADIUS} here</option>${works.map((w) => `<option value="works:${w.id}" ${g.duty === 'works' && g.targetId === w.id ? 'selected' : ''}>at the works (${w.x},${w.y}): 12 hands at its bench</option>`).join('')}${works.map((w) => `<option value="haul:${w.id}" ${g.duty === 'haul' && g.targetId === w.id ? 'selected' : ''}>haul from (${w.x},${w.y}): ${GOLEM_LOAD} a trip, slow, tireless, fears no hound</option>`).join('')}</select>`));
+        const hauls = s.stats.golemHauls;
+        if (hauls || gs.some((g) => g.duty === 'haul')) rows.push(row('Hauled', `${Math.round(hauls)} goods by wardens in harness${s.stats.cartsBalked ? `; the donkey carts have balked at hounds ${s.stats.cartsBalked} times` : ''}`));
       }
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
       if (def.waterRadius) {
@@ -941,7 +943,7 @@ export class UI {
       const due = caravanDue(s);
       rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods.toLocaleString()} sold so far for ${s.stats.caravanCrowns.toLocaleString()} crowns`));
     }
-    if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
+    if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${labourGolems(s) * GOLEM_LABOUR} hands of labour)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }
     if (MOORINGS.includes(b.kind)) { const qn = s.buildings.filter((o) => o && MOORINGS.includes(o.kind) && o.state === 'ok').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); rows.push(row('Moorings', `${qn} on the map`)); if (qn < 2) problems.push('A single mooring has nowhere to send a barge: build another on the same water.'); }
@@ -1032,7 +1034,7 @@ export class UI {
     el.querySelectorAll('select[data-golem]').forEach((sel) => {
       (sel as HTMLSelectElement).onchange = () => {
         const [duty, target] = (sel as HTMLSelectElement).value.split(':');
-        const why = this.host.setGolemDuty(Number((sel as HTMLElement).dataset.golem), duty as 'labour' | 'guard' | 'works', Number(target ?? -1));
+        const why = this.host.setGolemDuty(Number((sel as HTMLElement).dataset.golem), duty as 'labour' | 'guard' | 'works' | 'haul', Number(target ?? -1));
         if (why) this.toast(`<p class="bad">${why}</p>`, 2000);
         this.refreshInfo();
       };
@@ -1342,7 +1344,7 @@ export class UI {
             <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
             <li><b>Longwood and the Fen-Nex</b>: big forests hide <b>war-tigers</b> that hunt hearths by night (hunters, strong Watch or warden drakes kill them); the <b>Fen-Nex</b> fox-folk trade honestly half the time and may take a quarter of the city; a wild surge can leave a drifting <b>mana-storm</b> that warps buildings until wards dissolve it; the <b>Font of Quieting</b> (Free City) makes the dead easy to lay down.</li>
             <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; a lit <b>Drake Mews</b> sends <b>drake riders</b> to the restless and to fires; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus.</li>
-            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills (a delver drake halves it); a <b>Golem Foundry</b> (Burgh) binds them and its panel sets each one to labour, to guard the foundry or to work a Craft bench. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale; a <b>Rayscale Mirror</b> gets glim-dust instead). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
+            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills (a delver drake halves it); a <b>Golem Foundry</b> (Burgh) binds them and its panel sets each one to labour, to guard the foundry, to work a Craft bench or to <b>haul</b> from one: a stone cart of 30 goods, slow and tireless, that fears no hound (the donkey carts balk and stand when Gloam-hounds come within 4 tiles). A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale; a <b>Rayscale Mirror</b> gets glim-dust instead). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
             <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura (an Ember drake lifts Craft a tenth, a Sky wyvern speeds the carts, a Tide drake swims a barge a day) and every building in one names it; rare goods build the <b>Marvels</b> tab and have sinks of their own (the <b>Scale-Mail</b> edict, the Forge's fire, an eggshell-lined nest, glim-dust scattered on a dark lane from the Land tab, the caravan's share); the Gloam's pressure rises with the dead and falls with faith.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City, once a wyrm is awake) binds it as the city's guardian: lit, it halves the wyrm's appetite; dark two days, the wyrm sulks. Every lit <b>wonder hall</b> delights the city (+5) and lifts the next grant a tenth; the <b>Lantern of the Cores</b> takes the first 30 of a surge and cracks for 10 days.</li>
             <li><b>Walkers</b>: Watch Houses send watchmen, Boneyards sextons, Healer's Shrines healers, spires Tallowkin wardens (under their edict), Academies scholars to the delve, Tamer's Lodges tamers to the cradles, and shrines pilgrims to the temple. The streets they walk count as covered, and each does its job where it goes.</li>

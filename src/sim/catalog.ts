@@ -481,13 +481,13 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'golemfoundry', name: 'Golem Foundry', category: 'service',
-    desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden drinks 10 mana a day here and, from this panel, labours for 12 hands with no housing, stands guard (a ward of 6 around the foundry) or is posted to a Craft works within 20 to work its bench. A wild surge sets them loose again.',
+    desc: 'Binds Concord Wardens (stone giants that mining wakes in the hills) within 12 tiles. Each bound warden drinks 10 mana a day here and, from this panel, labours for 12 hands with no housing, stands guard (a ward of 6 around the foundry), is posted to a Craft works within 20 to work its bench, or hauls from one in harness: a stone cart of 30 goods, slow and tireless, that no Gloam-hound can scare (the donkey carts balk at hounds within 4 tiles). A wild surge sets them loose again.',
     flavor: 'The Concord built them to guard a city that is gone. They do not seem to mind the change of employer.',
     w: 2, h: 2, cost: 9000, upkeep: 80, manaUse: 8, unlock: 6, needsMana: true,
   },
   {
     key: 'forgetemple', name: 'Forge-Temple', category: 'service', faction: ['grimmen'],
-    desc: 'The Grimmen pray to the forge that made the Wardens. Binds Concord Wardens within 12 tiles like a foundry, and a Warden that mining wakes within 20 tiles of a lit Forge-Temple climbs out already bound. Faith within 8. Each bound warden labours for 12 hands and drinks 10 mana a day here. Needs mana.',
+    desc: 'The Grimmen pray to the forge that made the Wardens. Binds Concord Wardens within 12 tiles like a foundry, and a Warden that mining wakes within 20 tiles of a lit Forge-Temple climbs out already bound. Faith within 8. Each bound warden labours for 12 hands and drinks 10 mana a day here, or stands guard, works a bench or hauls a stone cart of 30 from a Craft works, like a foundry\'s. Needs mana.',
     flavor: 'The hammers keep time with something under the floor. The priests say it is the forge. The miners say it is not.',
     w: 2, h: 2, cost: 7500, upkeep: 70, manaUse: 6, unlock: 6, needsMana: true,
     service: { type: 'faith', radius: 8, strength: 0.5 },

@@ -11,7 +11,7 @@ import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, 
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
 import { reachesOf, type Reach } from '../sim/reach';
 import { zoneSpriteName } from './atlas';
-import { cartSpriteName } from './carts';
+import { cartMirrored, cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { faceLeft } from './facing';
 import { fordClosed, isFordTile } from '../sim/water';
@@ -713,7 +713,7 @@ export class Renderer {
           const s = this.atlas.get(`hound_${a.timer > 0 ? 0 : Math.floor(this.time * 8 + a.id) % 2}`);
           items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
           if (Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 6, vx: (Math.random() - 0.5) * 3, vy: -3, maxLife: 2, size: 1, color: PAL.gloam3, glow: false, kind: 'mote' });
-        } else if (sp === 'golem') {
+        } else if (sp === 'golem' && a.duty !== 'haul') { // a warden in harness is drawn as its cart (iteration 72)
           const s = this.atlas.get(`golem_${a.path.length ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
           items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow && a.load > 0 ? { s, x: wx, y: wy + 8, a: 0.8 } : undefined });
           if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
@@ -760,7 +760,8 @@ export class Renderer {
       else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
       else if (a.kind === AgentKind.Cart) name = cartSpriteName(a, cartCount);
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
-      const s = this.atlas.get(name);
+      const golemCart = a.kind === AgentKind.Cart && cartMirrored(a);
+      const s = golemCart ? this.atlas.mirrored(name) : this.atlas.get(name);
       const floating = a.kind === AgentKind.Cart && a.variant === 3;
       const bob = a.kind === AgentKind.Restless ? Math.sin(this.time * 3 + a.id) * 2 - 3 : floating ? Math.sin(this.time * 2.5 + a.id) * 1.5 - 5 : 0;
       if (floating && Math.random() < 0.2) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 10, vx: 0, vy: 3, maxLife: 0.5, size: 1, color: PAL.arcane2, glow: true, kind: 'spark' });
@@ -769,7 +770,7 @@ export class Renderer {
       items.push({
         d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob),
         occ: s && !restless && !floating ? { s, x: wx, y: wy + 8 + bob } : undefined,
-        g: s && (restless || (floating && s.glow)) ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined,
+        g: s && (restless || ((floating || a.variant === 6) && s.glow)) ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined,
       });
       if (restless) {
         lights.push({ x: wx, y: wy + 4, r: 18, c: PAL.restless, i: 0.5 });
