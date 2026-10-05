@@ -908,7 +908,8 @@ function drawWyvern(line: number, frame: number): { p: Painter; glow: Painter } 
 }
 
 
-/** The Vein-Wyrm coiled around a ley node. Returns back (behind the stones) and front halves. */
+/** The Vein-Wyrm coiled around a ley node, in the form of the user's painting (iteration 74, inspirations/wyrm): a green scaled
+ *  serpent with an orange-red belly, olive spines, cream horns and bat wings. Returns back (behind the stones) and front halves. */
 function drawWyrmCoil(st: 'sleeping' | 'awake' | 'dead'): { back: Painter; front: Painter; glowBack: Painter; glowFront: Painter } {
   const W = 104;
   const H = 72;
@@ -917,10 +918,15 @@ function drawWyrmCoil(st: 'sleeping' | 'awake' | 'dead'): { back: Painter; front
   const cx = 52;
   const cy = 44; // ring centre (the node's pool)
   const bone = st === 'dead';
-  const base: Col = bone ? 'bone' : 'stone2';
-  const dark: Col = bone ? 'whitewash2' : 'stone1';
-  const ridge: Col = bone ? 'whitewash' : 'stone3';
-  const rune: Col = bone ? 'ironDark' : 'ley2';
+  // the painting's colours: three greens, the belly's two oranges, the spines' olive, the horns' cream
+  const gDark = (bone ? 'whitewash2' : '#24502f') as Col;
+  const gMid = (bone ? 'bone' : '#3f8446') as Col;
+  const gLight = (bone ? 'whitewash' : '#6faa52') as Col;
+  const scale = (bone ? 'whitewash2' : '#2f6b3a') as Col;
+  const belly = '#d9542f' as Col;
+  const bellyLight = '#f08a50' as Col;
+  const spine = '#8a8f4a' as Col;
+  const horn = 'parchment' as Col;
   // ring body: an ellipse band, thick, with a gap at the front-right where the tail ends
   const rx = 44;
   const ry = 22;
@@ -933,44 +939,102 @@ function drawWyrmCoil(st: 'sleeping' | 'awake' | 'dead'): { back: Painter; front
       const ang = Math.atan2(v, u);
       if (bone && Math.floor((ang + Math.PI) / 0.28) % 3 === 1) continue; // gaps between ribs
       if (ang > 0.35 && ang < 0.95) continue; // the gap the tail leaves
-      // shading: top of the band lighter, ridge line along the middle
-      const band = (d - 0.62) / 0.38;
-      let c: Col = base;
-      if (band < 0.22) c = dark;
-      else if (band > 0.8) c = ridge;
-      if (!bone && band > 0.45 && band < 0.58 && Math.floor((ang + Math.PI) * 6) % 2 === 0) c = ridge; // scale ridges
-      if (!bone && band > 0.3 && band < 0.45 && Math.floor((ang + Math.PI) * 4) % 3 === 0) { c = rune; glow.px(x, y, 'ley1', 120); }
+      const band = (d - 0.62) / 0.38; // 0 at the inner edge, 1 at the outer
+      let c: Col;
+      if (!bone && band < 0.24) c = Math.floor((ang + Math.PI) * 9) % 2 === 0 ? belly : bellyLight; // the belly plates on the inner edge
+      else if (band > 0.82) c = v < 0 ? gLight : gDark; // the outer edge: lit on the far side, shadowed on the near
+      else {
+        c = band > 0.55 ? gLight : gMid;
+        // scales: a staggered row of small dark arcs
+        const sa = (ang + Math.PI) * 14 + (Math.floor(band * 6) % 2) * 0.5;
+        if (!bone && Math.abs(sa - Math.round(sa)) < 0.12 && Math.floor(band * 12) % 2 === 0) c = scale;
+      }
+      if (!bone && band > 0.4 && band < 0.5 && Math.floor((ang + Math.PI) * 4) % 5 === 0) glow.px(x, y, 'ley1', 90); // the Vein still runs in it
       p.px(x, y, c);
     }
-  // tail tip at the gap
-  p.line(cx + 38, cy + 10, cx + 46, cy + 4, base);
-  p.px(cx + 47, cy + 3, ridge);
+  // olive spines along the far half of the outer ridge
+  if (!bone) for (let k = 0; k < 14; k++) {
+    const a = Math.PI + 0.12 + k * 0.21;
+    if (a > Math.PI * 2 - 0.05) break;
+    const x = Math.round(cx + Math.cos(a) * rx * 0.99);
+    const y = Math.round(cy + Math.sin(a) * ry * 0.99);
+    p.px(x, y - 1, spine);
+    p.px(x, y - 2, spine);
+    p.px(x - 1, y - 1, spine);
+    p.px(x + (k % 2 ? 1 : 0), y - 3, 'parchment');
+  }
+  // the tail: out of the gap, curling up into a blade
+  const tailCol = bone ? 'bone' : gMid;
+  p.line(cx + 38, cy + 11, cx + 45, cy + 6, tailCol);
+  p.line(cx + 38, cy + 12, cx + 45, cy + 7, bone ? 'whitewash2' : gDark);
+  p.line(cx + 45, cy + 6, cx + 48, cy + 1, tailCol);
+  if (!bone) { p.poly([[cx + 47, cy + 2], [cx + 51, cy - 5], [cx + 49, cy + 3]], horn); p.poly([[cx + 46, cy + 3], [cx + 43, cy - 2], [cx + 48, cy + 1]], spine); }
+  /** A horned head facing left with its snout at (hx, hy), `k` times the base size: jaw open when awake, a skull when dead. Its
+   *  outline is drawn round it, so it reads against the coil it lies on. */
+  const head = (hx: number, hy: number, open: boolean, k = 1) => {
+    const P = (x: number, y: number): [number, number] => [Math.round(hx + x * k), Math.round(hy + y * k)];
+    const top = bone ? 'bone' : gMid;
+    const under = bone ? 'whitewash2' : gDark;
+    const skull = [P(0, 0), P(6, -4), P(15, -5), P(18, 1), P(12, 3), P(1, 2)];
+    const jaw = [P(1, 2), P(12, 3), P(11, 7), P(2, 7)];
+    if (open) p.poly(jaw, under);
+    p.poly(skull, top);
+    p.line(...P(2, -1), ...P(13, -3), bone ? 'whitewash' : gLight); // the lit brow
+    if (open) {
+      p.poly([P(2, 3), P(10, 3), P(9, 5), P(3, 5)], bone ? 'outline' : 'fire2'); // the mouth
+      if (!bone) for (const t of [3, 6, 9]) { p.px(...P(t, 3), 'parchment'); p.px(...P(t + 1, 5), 'parchment'); } // teeth
+    } else p.line(...P(1, 2), ...P(12, 3), under);
+    // the outline round skull and jaw
+    const ring = open ? [P(0, 0), P(6, -4), P(15, -5), P(18, 1), P(12, 3), P(11, 7), P(2, 7), P(1, 2)] : skull;
+    for (let e = 0; e < ring.length; e++) p.line(...ring[e], ...ring[(e + 1) % ring.length], 'outline');
+    // two cream horns swept back, and a smaller pair behind
+    p.line(...P(12, -5), ...P(20, -10), horn);
+    p.line(...P(13, -4), ...P(21, -9), horn);
+    p.line(...P(8, -4), ...P(11, -8), horn);
+    p.px(...P(2, -1), under); // the nostril
+    if (bone) { p.px(...P(9, -2), 'outline'); p.px(...P(10, -2), 'outline'); return; }
+    if (st === 'sleeping') { p.line(...P(8, -2), ...P(11, -2), 'outline'); return; } // the eye closed
+    p.px(...P(9, -2), 'fire1');
+    p.px(...P(10, -2), 'fire2');
+    const [ex, ey] = P(8, -3);
+    glow.rect(ex, ey, 5, 3, 'ember', 230);
+  };
+  /** A bat wing from its root, its fingers fanned toward `tips`: membrane between, cream claws at the tips. */
+  const wing = (root: [number, number], tips: [number, number][]) => {
+    if (bone) { for (const t of tips) p.line(root[0], root[1], t[0], t[1], 'bone'); return; }
+    for (let k = 0; k + 1 < tips.length; k++) p.poly([root, tips[k], [Math.round((tips[k][0] + tips[k + 1][0]) / 2), Math.round((tips[k][1] + tips[k + 1][1]) / 2) + 2], tips[k + 1]], k % 2 ? '#2c5a36' : '#3a7340');
+    for (const t of tips) { p.line(root[0], root[1], t[0], t[1], gLight); p.px(t[0], t[1], horn); }
+  };
   if (st === 'sleeping') {
-    // head resting on the ring at the front-left, eye closed
-    p.rect(cx - 40, cy + 6, 16, 8, base);
-    p.rect(cx - 44, cy + 8, 6, 5, base);
-    p.rect(cx - 40, cy + 12, 16, 2, dark);
-    p.line(cx - 34, cy + 9, cx - 31, cy + 9, 'outline'); // closed eye
-    p.px(cx - 29, cy + 5, ridge);
-    p.px(cx - 26, cy + 5, ridge);
+    // wings folded flat along the far coil, the head resting on the near coil at the front-left, eyes closed
+    wing([cx + 6, cy - 18], [[cx - 22, cy - 24], [cx - 14, cy - 27], [cx - 4, cy - 28], [cx + 4, cy - 26]]);
+    head(cx - 52, cy + 16, false, 1.2);
   } else if (st === 'awake') {
-    // neck rising from the back-right, head turned toward the city, eyes lit
-    p.rect(cx + 20, cy - 34, 8, 20, base);
-    p.rect(cx + 20, cy - 34, 2, 20, dark);
-    p.rect(cx + 14, cy - 42, 18, 9, base);
-    p.rect(cx + 10, cy - 39, 5, 5, base);
-    p.px(cx + 16, cy - 40, 'leyGlow');
-    p.px(cx + 20, cy - 40, 'leyGlow');
-    glow.rect(cx + 15, cy - 41, 7, 3, 'leyGlow', 220);
-    for (let k = 0; k < 4; k++) p.px(cx + 22 + k * 3, cy - 44, ridge);
-    p.px(cx + 31, cy - 37, ridge);
+    // wings half raised behind the coil
+    wing([cx + 8, cy - 16], [[cx - 18, cy - 38], [cx - 8, cy - 43], [cx + 2, cy - 44], [cx + 10, cy - 40]]);
+    // the neck rises from the near-right coil in an S, the belly showing on its inner curve; the head faces the city, jaw open
+    const neck: [number, number][] = [[cx + 30, cy + 10], [cx + 34, cy], [cx + 32, cy - 10], [cx + 24, cy - 18], [cx + 22, cy - 24], [cx + 23, cy - 27]];
+    for (let k = 0; k + 1 < neck.length; k++) {
+      const [x0, y0] = neck[k];
+      const [x1, y1] = neck[k + 1];
+      const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      for (let t = 0; t <= n; t++) {
+        const x = Math.round(x0 + ((x1 - x0) * t) / n);
+        const y = Math.round(y0 + ((y1 - y0) * t) / n);
+        p.rect(x - 5, y, 11, 1, gMid);
+        p.px(x - 5, y, 'outline');
+        p.px(x + 5, y, 'outline');
+        p.px(x + 4, y, gLight);
+        p.rect(x - 4, y, 3, 1, (y >> 1) % 2 ? belly : bellyLight); // the belly plates on the curve's inner side
+        if ((x + y) % 3 === 0) p.px(x + 1, y, scale);
+        if (t % 3 === 0) { p.px(x + 6, y, spine); p.px(x + 7, y - 1, spine); } // spines down the neck
+      }
+    }
+    head(cx + 2, cy - 30, true, 1.35);
   } else {
-    // skull at the front-left
-    p.rect(cx - 40, cy + 4, 14, 9, 'bone');
-    p.rect(cx - 44, cy + 7, 5, 5, 'bone');
-    p.px(cx - 35, cy + 7, 'outline');
-    p.px(cx - 31, cy + 7, 'outline');
-    p.rect(cx - 39, cy + 12, 12, 1, 'whitewash2');
+    // bones: the folded wing's fingers and a horned skull at the front-left
+    wing([cx + 6, cy - 18], [[cx - 22, cy - 24], [cx - 14, cy - 27], [cx - 4, cy - 28]]);
+    head(cx - 52, cy + 13, false, 1.2);
   }
   p.outline('outline');
   // split into back (above the ring centre) and front halves so the node's stones sit inside the coil

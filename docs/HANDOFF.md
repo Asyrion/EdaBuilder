@@ -1,15 +1,15 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 73 (the loose ends; DESIGN §4.104). Iterations 72 (golem haulers, §4.103), 71 (a faster
-balance bar, §4.102), 70 (two ways to lose, §4.101), 69 (the Great Gate, §4.100) and 68 (the plan's gaps written down,
-§4.99, §17) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 74 (the wyrm redrawn after the user's painting, art only; DESIGN §4.105). Iterations 73
+(the loose ends, §4.104), 72 (golem haulers, §4.103), 71 (a faster balance bar, §4.102) and 70 (two ways to lose, §4.101)
+came just before it. Iterations 72–73 and 74 were built in two sessions at once; 74 merged main and took the next numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.102 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.105 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -171,6 +171,15 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 74 (not yet said elsewhere)
+
+- **A painting with an enclosed background** (a loop, a ring of limbs) needs `holes: N` in its `art/sources.json` entry.
+  Without it, the white inside stays, because the key floods from the corners only.
+- **An uploaded painting the user gives** goes in `inspirations/<subject>/` as png (ImageMagick `convert` from webp).
+  It becomes a sprite by name in the manifest, which wins over the procedural sprite.
+- **Before and after shots:** `scripts/playtest74.mjs` shoots a build of the previous main on port 4174 beside this one
+  (a worktree of `origin/main`, `vite build --outDir`, `vite preview --outDir … --port 4174`).
 
 ## Learned in iteration 73 (not yet said elsewhere)
 

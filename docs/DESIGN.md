@@ -4175,6 +4175,44 @@ line saying whether it is owed, since a tale's choices are one list.
     the Gloam's edge (none in 192 runs), and the merchant's memory changes only her second visit's text and prices, which
     the bot's policy reads the same way. The tests and the playtest hold the rules.
 
+### 4.105 The wyrm redrawn after the user's painting (iteration 74)
+
+Art only, at the user's request. The user did not like the grey Vein-Wyrm and gave a painting, now in
+`inspirations/wyrm/wyrm_flight.png`: a green serpentine wyrm with an orange-red belly, cream horns and claws, olive
+spines and bat wings, its body thrown into an S. The form was to match, not the exact picture.
+
+**The flight is the painting** (`wyrm_fly_0`/`_1`):
+- It is imported through `npm run art` as a `prop` with `hop` (the second frame is a pixel higher) at a `targetHeight` of
+  56, which gives 63×58. Today's grey shape was 60×40.
+- The manifest wins over the procedural sprite by name, so the renderer did not change. It faces right like the old
+  sprite and is mirrored when the wyrm flies left.
+- **A new importer key, `holes`.** The key floods the background from the corners only, so the white inside the coil's
+  lower loop stayed white. `holes: N` (in `scripts/lib/sprite.mjs` `keyBackground`) also keys every enclosed background
+  region of at least N source pixels; smaller light patches are highlights and stay. The wyrm uses 400.
+
+**The coil around the node is redrawn in code** (`drawWyrmCoil`, the same 104×72 and the same back/front split):
+- **The ring:** green scales on the ring, the belly's orange plates on its inner edge, olive spines with cream tips
+  along the far ridge, and a tail curling into a blade.
+- **Asleep:** the wings lie folded along the far coil, and the head rests on the near coil with its eyes shut.
+- **Awake:** the wings are half raised. An S-necked head rises from the near-right coil, with its jaw open, cream
+  horns, and ember eyes on the glow layer.
+- **Dead:** the bones keep their ring of ribs, now with wing fingers and a horned skull.
+- **The heads** are outlined so they read against the coil they lie on.
+- **The ley:** faint runes stay on the glow layer, so it is still the Vein-Wyrm at night.
+- A first pass lost the sleeping and dead heads into the ring and drew the neck like a pole. The heads were outlined
+  and enlarged, and the neck thickened. The awake horns were clipped at the sprite's top edge until the head was
+  lowered.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 75 test files with 485 tests (after merging iterations 72–73), `npm run build`, and `npm run art:check` judged by eye (the entry
+  is now `checked`).
+- **`scripts/playtest74.mjs`** shoots a build of the previous main (port 4174) and this one (4173):
+  - a sheet at 4× of the three coils and both flight frames;
+  - in game at 3×: the wyrm asleep, awake and dead on its node, and in flight over the founding by day and by night.
+  - No errors.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): identical in every field to the cached run (2,130 folk). No
+  sim file changed, so the bar's sim key is unchanged too.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5393,3 +5431,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   sextons' choice is appended, not inserted, so every recorded choice keeps its index; the duel is a phase on the agent
   the great wyrm already has; the merchant's memory is four numbers in state and a text that reads them, with the owed
   favour listed always and refused until it is owed, since a tale's choices are one list.
+- *The wyrm in flight is the user's painting; the coil is drawn after it (iteration 74):* the painting is a flying pose,
+  so it serves the sky as it is. The coil must wrap a node and split into halves round its stones, so it is drawn in
+  code in the painting's colours and parts (scales, belly, spines, horns, bat wings) rather than cut from it.
