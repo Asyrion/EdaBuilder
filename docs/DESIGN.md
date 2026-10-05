@@ -4002,6 +4002,70 @@ What the saving will be on the next sim change: the main side (half the runs) co
 about a third. The estimate is under half of today's time, so about 1½–2 hours for a bar like §4.101's. The next sim
 change will show it.
 
+### 4.103 Golem haulers (iteration 72)
+
+NEXT_STEPS item 1, §17.4 C: the Golem Foundry's promise in §8.4, "slow, tireless carts that carry 30 and are not scared by
+hounds, drawn as vehicles".
+
+**What was missing.** A bound Concord Warden had three duties (labour, guard, works; §4.84). And hounds did nothing to carts:
+the hound branch in `creatures.ts` stalks buildings only, so "not scared by hounds" had nothing to bite on. This iteration
+adds both halves: the donkey carts balk at hounds, and the haulers do not.
+
+**The hauler duty** (`beasts.ts`, `vehicles.ts`, `agents.ts`):
+- A fourth duty, **haul**, set from the Foundry's or Forge-Temple's panel like *works*: to a Craft works within 20 of the
+  foundry that touches a road. The warden stands at the works, in harness, and a **golem cart** (cart variant 6) appears at
+  the works' door, homed there, carrying the warden's id.
+- It runs the ordinary cart's trip: waits for stock at its works and carries it to the hungriest market.
+  - **Thirty a trip:** it loads what the market has room for, up to 30 and never under 6 (a donkey loads 12 whatever the
+    room, and the market's cap throws the rest away).
+  - **Slow:** 0.45 against a donkey's 0.8; congestion slows it like any cart, and it counts 3 on the road.
+  - **Tireless:** 20 ticks at the market instead of 150 and up to 450 more, and it looks in at its works every 60 ticks
+    instead of 120. No roll where a donkey draws one: a city without haulers is bit-identical.
+  - It drinks the foundry's 10 mana like every bound warden, and is not labour.
+- **It ends** when the works is lost or loses its road (the warden walks back to labour, with a message), on any other
+  duty, and in a surge: the maddened warden drops its cart where it stands. A daily sync holds the carts to the wardens in
+  harness, and gives a warden whose cart was lost a new one.
+- **Drawn as a vehicle:** a procedural sprite at the carts' scale (28 × 17: a citizen and a half), a blue-grey stone warden
+  walking right with a stone-wheeled wagon behind, its eyes and rune glowing at night; the atlas's mirror when it heads
+  left. The warden itself is not drawn while in harness.
+
+**Donkeys balk at hounds** (`agents.ts`):
+- A moving donkey cart (the painted stone and goods carts, variants 0–2) with a Gloam-hound within **4 tiles** stops for
+  **60 ticks**, and tries again. The hounds abroad are gathered once a tick, only when one is out (30 at most, so at most
+  30 distance checks a cart).
+- Floating carts (no animal), barges (on the water) and golem haulers do not balk.
+- The carters complain once a day, naming the road: "The carters' donkeys balk at Gloam-hounds on the road at (x,y) and
+  will not go on. A Concord Warden in harness would."
+- `stats.cartsBalked` and `stats.golemHauls` are new Annals rows; the Foundry's panel shows both.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 74 test files with 476 tests, and `npm run build`.
+- **`tests/iteration72.test.ts`** (8 tests):
+  - the duty spawns the cart at the works' door with the warden's id, replaces rather than doubles it, and labour removes
+    it; a far works, a roadless works, no works and a wild warden are refused;
+  - a hauler loads 30, delivers it (the works 15 lighter, the market 30 fuller, the stat counted), rests 20 ticks, and
+    loads 8 for a market with room for 8;
+  - a works in ruin sends the warden back to labour with a message; a cart lost from the list comes back on the daily
+    sync; a surge drops it;
+  - a donkey cart and a stone cart two tiles from a hound stand for 60 ticks and count 2 balks and one message; a hauler
+    and a floating cart beside them move; a hound just past 4 tiles does not count; a street without hounds sets nothing;
+  - the sprite: 28 wide, 17 tall, feet and wheels on the anchor row, a glow; the name by variant and the mirror by heading;
+  - the catalog descs and the Annals rows;
+  - a save keeps the warden in harness and its cart; an old save without the counters loads them at zero.
+- **`scripts/playtest72.mjs`** in Chromium:
+  - a street with four Craft works, four Markets and a Golem Foundry, the warden put in harness through the sim;
+  - a real run: the first haul of 30 arrives at tick 794, the hauler rests 20 ticks, `golemHauls` 30;
+  - the street at 2× and 4× with haulers heading both ways beside donkey carts;
+  - midnight with two hounds by a donkey cart: it stands (timer 49 after 12 ticks, one balk, one message) while the
+    hauler beside it walks on;
+  - the Foundry panel with the haul options, the Hauled row and the hands of labour;
+  - a dusk brightness probe (no dark frame); no errors, no missing sprites.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim,
+  main's side from the cache). The bot stands no foundry, so **no bot city has a hauler**: the bar measures the balk rule
+  alone.
+
+TABLE_PENDING
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4125,7 +4189,7 @@ people, sleeping coiled around the deepest nodes. Rules:
 - **Drake riders** (Drake Mews): fast Watch agents that fly straight to the restless and
   to fires; visible in the sky layer with shadows.
 - **Golem haulers** (Golem Foundry): slow, tireless carts that carry 30 and are not
-  scared by hounds. Not built: item C of §17.4.
+  scared by hounds. Built in iteration 72 (§4.103): a warden's fourth duty, and the donkey carts balk at hounds.
 - **Airships** (Sky-Dock): the late-game trade route; a ship leaves each season with the
   city's surplus and returns with crowns, rare goods and a story event.
 - Rendering: a **sky layer** drawn after lighting with drop shadows on the ground; agent
@@ -4791,8 +4855,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - **The Long Night early:** a hound pack that empties three districts in one Hush brings the Long Night before its
     season.
   - Both show in the game-over screen and the Annals. This is a sim change, so it runs the wide bar.
-- **C. Golem haulers** (§8.4). The Golem Foundry fields slow, tireless carts that carry 30 and are not scared by
-  hounds. They are drawn as vehicles.
+- ✅ **C. Golem haulers** (§8.4; built in iteration 72, §4.103). The Golem Foundry fields slow, tireless carts that carry
+  30 and are not scared by hounds. They are drawn as vehicles.
 - **D. Loose ends.**
   - "The eggs go grey": the Gloam reaches a cradle (§8.6).
   - The Sky-Dock sends a wyvern instead of the airship: faster and without mana, but it may come back with a rival's
@@ -4802,6 +4866,11 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - The Wandering Merchant remembers past deals in state, not only in words (§11 item 4).
 - **E. Markets want a good road** (AUDIT B40). The road tier at a market's door counts for its trade, as the
   Market's description promises. This is a sim change, so it runs the wide bar.
+- **F. The sprites faced and fitted** (the user's request in iteration 72). Check every building sprite in the game, painted
+  and drawn, for its facing and how it sits in its tile square. The procedural set is the yardstick: door and gable on the
+  right face, the footprint diamond filled neatly. Correct the ones faced wrong or that look off, by a flip, a new anchor or
+  `targetHeight` in `art/sources.json`, or a redraw. Screenshots of every change, before and after. Art only: the control
+  seed, not the bar.
 
 ### 17.5 Dropped, on the record
 
@@ -5204,3 +5273,9 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   run of the same sim files is the same run whatever the commit. Keying by the files of `src/sim`, `src/data` and
   `src/core` lets main's side of a bar be the previous iteration's branch side, and lets a change outside the sim cost
   nothing. The cost is about 50 KB of committed JSON per sim version, four versions kept.
+- *The hauler is a cart with a warden's id, not a warden that carts (iteration 72):* the cart run in `agents.ts` already
+  knows roads, loads, markets and traffic, so a golem cart joins it as a variant with three rules of its own (30, slow,
+  tireless) and the warden stands at the works in harness. "Not scared by hounds" needed something to be scared: the
+  donkey carts now balk at a hound within 4 tiles, once a tick's look at the hounds abroad, with no roll, so every city
+  without hounds on its roads is bit-identical. A hauler loads what the market has room for, since 30 into a cap of 20
+  would throw a third away.

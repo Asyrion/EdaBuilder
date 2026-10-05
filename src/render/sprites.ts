@@ -1344,20 +1344,20 @@ function golemHauler(): { p: Painter; glow: Painter } {
   // the harness pole from the wagon to the warden's hand
   p.rect(16, 10, 4, 1, 'ironDark');
   // the warden: a squat stone giant, the golem_ look at the cart's scale
-  p.rect(18, 8, 2, 4, 'stone1'); // the back arm, on the pole
-  p.rect(20, 5, 6, 8, 'stone2');
-  p.rect(20, 5, 1, 8, 'stone1');
-  p.rect(25, 5, 1, 8, 'stone3');
-  p.rect(21, 2, 4, 3, 'stone2');
+  p.rect(18, 8, 2, 4, 'slate1'); // the back arm, on the pole
+  p.rect(20, 5, 6, 8, 'bluewash2'); // blue-grey stone, like the painted warden
+  p.rect(20, 5, 1, 8, 'slate1');
+  p.rect(25, 5, 1, 8, 'bluewash');
+  p.rect(21, 2, 4, 3, 'bluewash2');
   p.px(22, 3, 'leyGlow');
   p.px(24, 3, 'leyGlow');
   glow.px(22, 3, 'leyGlow');
   glow.px(24, 3, 'leyGlow');
   p.rect(22, 7, 2, 2, 'rune');
   glow.rect(22, 7, 2, 2, 'rune', 200);
-  p.rect(26, 6, 2, 6, 'stone3'); // the front arm
-  p.rect(21, 13, 2, 4, 'stone1'); // the legs, one forward
-  p.rect(24, 12, 2, 5, 'stone2');
+  p.rect(26, 6, 2, 6, 'bluewash'); // the front arm
+  p.rect(21, 13, 2, 4, 'slate1'); // the legs, one forward
+  p.rect(24, 12, 2, 5, 'bluewash2');
   p.outline('outline');
   return { p, glow };
 }
