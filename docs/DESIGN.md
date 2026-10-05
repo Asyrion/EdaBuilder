@@ -4002,7 +4002,180 @@ What the saving will be on the next sim change: the main side (half the runs) co
 about a third. The estimate is under half of today's time, so about 1½–2 hours for a bar like §4.101's. The next sim
 change will show it.
 
-### 4.103 The wyrm redrawn after the user's painting (iteration 72)
+### 4.103 Golem haulers (iteration 72)
+
+NEXT_STEPS item 1, §17.4 C: the Golem Foundry's promise in §8.4, "slow, tireless carts that carry 30 and are not scared by
+hounds, drawn as vehicles".
+
+**What was missing.** A bound Concord Warden had three duties (labour, guard, works; §4.84). And hounds did nothing to carts:
+the hound branch in `creatures.ts` stalks buildings only, so "not scared by hounds" had nothing to bite on. This iteration
+adds both halves: the donkey carts balk at hounds, and the haulers do not.
+
+**The hauler duty** (`beasts.ts`, `vehicles.ts`, `agents.ts`):
+- A fourth duty, **haul**, set from the Foundry's or Forge-Temple's panel like *works*: to a Craft works within 20 of the
+  foundry that touches a road. The warden stands at the works, in harness, and a **golem cart** (cart variant 6) appears at
+  the works' door, homed there, carrying the warden's id.
+- It runs the ordinary cart's trip: waits for stock at its works and carries it to the hungriest market.
+  - **Thirty a trip:** it loads what the market has room for, up to 30 and never under 6 (a donkey loads 12 whatever the
+    room, and the market's cap throws the rest away).
+  - **Slow:** 0.45 against a donkey's 0.8; congestion slows it like any cart, and it counts 3 on the road.
+  - **Tireless:** 20 ticks at the market instead of 150 and up to 450 more, and it looks in at its works every 60 ticks
+    instead of 120. No roll where a donkey draws one: a city without haulers is bit-identical.
+  - It drinks the foundry's 10 mana like every bound warden, and is not labour.
+- **It ends** when the works is lost or loses its road (the warden walks back to labour, with a message), on any other
+  duty, and in a surge: the maddened warden drops its cart where it stands. A daily sync holds the carts to the wardens in
+  harness, and gives a warden whose cart was lost a new one.
+- **Drawn as a vehicle:** a procedural sprite at the carts' scale (28 × 17: a citizen and a half), a blue-grey stone warden
+  walking right with a stone-wheeled wagon behind, its eyes and rune glowing at night; the atlas's mirror when it heads
+  left. The warden itself is not drawn while in harness.
+
+**Donkeys balk at hounds** (`agents.ts`):
+- A moving donkey cart (the painted stone and goods carts, variants 0–2) with a Gloam-hound within **4 tiles** stops for
+  **60 ticks**, and tries again. The hounds abroad are gathered once a tick, only when one is out (30 at most, so at most
+  30 distance checks a cart).
+- Floating carts (no animal), barges (on the water) and golem haulers do not balk.
+- The carters complain once a day, naming the road: "The carters' donkeys balk at Gloam-hounds on the road at (x,y) and
+  will not go on. A Concord Warden in harness would."
+- `stats.cartsBalked` and `stats.golemHauls` are new Annals rows; the Foundry's panel shows both.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 74 test files with 476 tests, and `npm run build`.
+- **`tests/iteration72.test.ts`** (8 tests):
+  - the duty spawns the cart at the works' door with the warden's id, replaces rather than doubles it, and labour removes
+    it; a far works, a roadless works, no works and a wild warden are refused;
+  - a hauler loads 30, delivers it (the works 15 lighter, the market 30 fuller, the stat counted), rests 20 ticks, and
+    loads 8 for a market with room for 8;
+  - a works in ruin sends the warden back to labour with a message; a cart lost from the list comes back on the daily
+    sync; a surge drops it;
+  - a donkey cart and a stone cart two tiles from a hound stand for 60 ticks and count 2 balks and one message; a hauler
+    and a floating cart beside them move; a hound just past 4 tiles does not count; a street without hounds sets nothing;
+  - the sprite: 28 wide, 17 tall, feet and wheels on the anchor row, a glow; the name by variant and the mirror by heading;
+  - the catalog descs and the Annals rows;
+  - a save keeps the warden in harness and its cart; an old save without the counters loads them at zero.
+- **`scripts/playtest72.mjs`** in Chromium:
+  - a street with four Craft works, four Markets and a Golem Foundry, the warden put in harness through the sim;
+  - a real run: the first haul of 30 arrives at tick 794, the hauler rests 20 ticks, `golemHauls` 30;
+  - the street at 2× and 4× with haulers heading both ways beside donkey carts;
+  - midnight with two hounds by a donkey cart: it stands (timer 49 after 12 ticks, one balk, one message) while the
+    hauler beside it walks on;
+  - the Foundry panel with the haul options, the Hauled row and the hands of labour;
+  - a dusk brightness probe (no dark frame); no errors, no missing sprites.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim,
+  main's side from the cache). The bot stands no foundry, so **no bot city has a hauler**: the bar measures the balk rule
+  alone.
+
+  240 runs, 120 from the cache, in 66 minutes on four cores. No bot city lost its charter on either side.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 7 | 1,771 | 1,766 | +5 (+0.3 %) | 171 (9.7 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,430 | 1,408 | +23 (+1.6 %) | 127 (9.0 %) | met | within the noise |
+  | Veshari | 6 × 3 | 2,367 | 2,352 | +15 (+0.6 %) | 234 (9.9 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,887 | 1,913 | −26 (−1.4 %) | 223 (11.7 %) | **not met: at the cap of 8 draws** | within the noise |
+  | all | | 7,455 | 7,439 | +17 (+0.2 %) | 387 | | within the noise |
+
+  - **The gates** move by a run or two, both ways: the Vellish reach the Free City in 22 of 42 runs (main 19) and the
+    Beacon in 2 (main 1); the Grimmen the Deephold in 11 of 12 (main 10); the Veshari Vesh's Court in 17 of 18 (main 18)
+    and the Sable Crown in 13 (main 12); the Tallowkin's Hall and Lantern of Wicks are the same, 32 and 12 of 48.
+  - **The balk rule is small in the bot's cities.** Most runs are identical to the last folk (every run whose hounds never
+    crossed a cart's road), and the rest part by a few goods on one night and drift from there. The largest single
+    changes are Veshari 44's third draw (1,097 against 1,545: it stops at the Weirhold) and Vellish 46's first (1,370
+    against 1,572), each one run of 42 or 18.
+  - **The Tallowkin's floor** is 11.7 % of their folk at eight draws a seed, as in iterations 64 and 70: not met.
+  - The branch's runs are in `balance/cache/1be0f4d08811-a8d78ee53ad3.json`, committed with the iteration.
+
+### 4.104 The loose ends (iteration 73)
+
+NEXT_STEPS item 1, §17.4 D: five small promises this document made and the code never kept, found by iteration 68's audit
+(§4.99). Each is a rule the player can see and decide about; together they were one iteration. Sim changes: the wide bar.
+
+**1. The eggs go grey** (§8.6; `wyrmcraft.ts` `dailyGreyEggs`, `hazards.ts` `gloamAtDoor`). A cradle with the Gloam at its
+door is a hazard for its eggs:
+- each day the Gloam stands there, the cradle's `grey` count rises; it resets when the Gloam is cut back;
+- the first day warns, naming the cradle: cut it back, three days and they turn;
+- on the third, every egg in it turns to the **Grey line** (the Ward-beast of §8.6; a crossed line or a trueblood's blood is
+  lost with it), counted in `eggsGreyed`. Hatchlings and older are not touched. The cradle's panel shows the count and the
+  days left, with a problem line; the Annals have the row.
+
+**2. The Sky-Dock's wyvern** (§8.6; `vehicles.ts`, `events.ts` `wyvern_tale`):
+- the Dock's panel has a button: send a wyvern instead of the airship, or the airship again (`airship.wyvern`, the
+  `skydock` op). It names the wyvern that would go: a wyvern-stage dragon with no role or a courier's, at home;
+- on day 3 of the season a wyvern takes up to **100** surplus goods (the airship 200) for **5 days** (the airship 10) and
+  **no mana**: the Dock need not be lit. With none at home the airship goes instead, if the Dock is lit;
+- the dragon is away (`voyage`: the day it returns): no agent, not fed and not hungry, no growth, no new role; the Wyrms
+  panel says so. The Dock gone, it finds its own way home;
+- home again it pays 1.6 × the season price like the airship, and one time in two **"The wyvern's return"**: a rival
+  wardlight's egg (ember, bone, glim or storm for 3,000, needs a cradle), a challenge for the Ring (a bout fought at once,
+  the champion's odds at three quarters and the purse doubled; no Ring or no champion, and it goes unanswered), or only
+  the story (happiness +4 for 15 days). `fightBout` is the one bout, shared with the seasonal one and drawing the same
+  rolls in the same order.
+
+**3. Hatchling riders cross the map** (§8.2; `wyrmcraft.ts` `setRole`, `creatures.ts` `mountTick`). A fourth role for a
+drake or older, **mount**, once a Wyrm-Court stands ("raised at the Court"): it flies the Drake Mews' rider's errands (the
+nearest restless laid, the nearest fire doused) over the **whole map**, from its cradle, at the riders' speed, and comes
+home. `riderRescues` counts it like a rider and `mountRescues` as its own. It is drawn as a rider in the sky layer with a
+shadow beneath.
+
+**4a. Sextons at the brawl** (§13.13; `guilds.ts`, `walkers.ts`). The brawl sets `guilds.brawlDay`; on that day and the
+next every sexton's errand is the Guildhall's square, logged and counted (`brawlsParted`) when it arrives. The brawl tale
+has a fifth choice, **"Let the sextons part them"**: with a sexton abroad both guilds +5 and the sextons +10 for no crowns;
+with none, nobody comes and the guilds are unmoved. The choice is last, so the four old ones keep their places in every
+replay and save.
+
+**4b. The duel flown** (§13.13; `wyrm.ts` `sendDuelist`, the wyvern branch in `creatures.ts`). A great wyrm meeting a
+hostile flyover sends its own flyer: phase 4, the duel. It chases the Vein-Wyrm's agent at altitude 48; at the first
+meeting a roar, and the old one is marked: it circles the city **half as long** (130 ticks for 260; a meeting during the
+circling halves what is left). When the wyrm lands the duelist goes home. The messages, the duel count and the fire cap's
+half are as they were.
+
+**5. The merchant's memory** (§11 item 4; `events.ts`, `state.merchant`). Visits, crowns spent, eggs bought and evenings
+of stories are kept in state, with a default for old saves. A tale may now carry a `textFn` beside its text: the
+merchant's reads the record on every visit after the first ("The wagon is back, for the third time…"). Her choices read it
+too: the egg is **sky** the first time, **storm** the second, **ember** after, and each egg bought takes a tenth off every
+price (down to half); "Only talk" counts an evening; **"Call in the favour"** is owed after two evenings (Longwood seeds for
+nothing, the evenings spent) and refused before. The Trade Depot's panel shows the record. The choice is always listed, its
+line saying whether it is owed, since a tale's choices are one list.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 75 test files with 485 tests, and `npm run build`.
+- **`tests/iteration73.test.ts`** (9 tests): the eggs turn on the third day and not before, a hatchling untouched, the
+  count reset, the Annals row and the cradle's desc, and the daily hook; the wyvern leaves on day 3 without a lit Dock
+  with 100, the dragon away, unfed and refusing a role, home in five days with the crowns, the agent back, the airship
+  instead with none at home and the Dock lit, and the mode saved; the tale's three choices (the egg's line and price, the
+  challenge unanswered without a Ring and fought with one, the story) and `fightBout`'s purse; the mount refused without a
+  Court or at the egg, a mounted drake laying a restless 50 tiles off and coming home; the sextons' errand reaching the
+  Guildhall, the fifth choice with and without a sexton abroad, the old choices in their places; the duelist's chase, the
+  meeting, the halved circling and the return; the merchant's record over six visits, sky then storm, the prices, the
+  favour refused and then owed; old saves' defaults and the `skydock` op.
+- **`scripts/playtest73.mjs`** in Chromium, six scenes: the cradle's panel with "at the door 1 day: the eggs turn grey in
+  2 days" and the warning, then both eggs grey; the Dock's button naming the wyvern, the run sent and the panel while it is
+  away; a mounted drake in the air over the Court with its shadow, and the restless 28 tiles east laid; a sexton at the
+  Guildhall's door on the brawl's day and the brawl tale's fifth choice ("1 sexton abroad with salt"); the Vein-Wyrm and the
+  city's sky wyvern side by side over the forest, met after 59 ticks; the merchant's third-visit dialog with the ember egg
+  at 3,200 and the favour owed. A dusk brightness probe, no errors, no missing sprites.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim, main's
+  side from the cache). The bot raises no Sky-Dock, Court or Ring and never calls the brawl's fifth choice; the grey eggs
+  and the merchant are what it can meet.
+
+  Every pair is +0: the branch's 192 runs are bit for bit main's, so no bot city met a grey egg, a merchant's second
+  visit or any of the rest in 150 days. The bar still added draws where the floors asked (the Veshari to four a seed)
+  and both sides' cache files grew; both are committed.
+
+  | people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+  |---|---|---|---|---|---|---|---|
+  | Vellish | 6 × 2 | 1,725 | 1,725 | +0 | 169 (9.8 %) | met | within the noise |
+  | Grimmen | 6 × 2 | 1,430 | 1,430 | +0 | 143 (10.0 %) | met | within the noise |
+  | Veshari | 6 × 4 | 2,332 | 2,332 | +0 | 217 (9.3 %) | met | within the noise |
+  | Tallowkin | 6 × 8 | 1,887 | 1,887 | +0 | 218 (11.6 %) | **not met: at the cap of 8 draws** | within the noise |
+  | all | | 7,374 | 7,374 | +0 | 379 | | within the noise |
+
+  - **The gates** are the same, run for run.
+  - **The Tallowkin's floor** is 11.6 % of their folk at eight draws a seed, as in iterations 64, 70 and 72: not met.
+  - That the bar sees nothing is the honest result of five rules the bot never reaches: the grey eggs need a bot cradle at
+    the Gloam's edge (none in 192 runs), and the merchant's memory changes only her second visit's text and prices, which
+    the bot's policy reads the same way. The tests and the playtest hold the rules.
+
+### 4.105 The wyrm redrawn after the user's painting (iteration 74)
 
 Art only, at the user's request. The user did not like the grey Vein-Wyrm and gave a painting, now in
 `inspirations/wyrm/wyrm_flight.png`: a green serpentine wyrm with an orange-red belly, cream horns and claws, olive
@@ -4031,9 +4204,9 @@ spines and bat wings, its body thrown into an S. The form was to match, not the 
   lowered.
 
 **Verified:**
-- `npx tsc --noEmit -p .`, 73 test files with 468 tests, `npm run build`, and `npm run art:check` judged by eye (the entry
+- `npx tsc --noEmit -p .`, 75 test files with 485 tests (after merging iterations 72–73), `npm run build`, and `npm run art:check` judged by eye (the entry
   is now `checked`).
-- **`scripts/playtest72.mjs`** shoots a build of the previous main (port 4174) and this one (4173):
+- **`scripts/playtest74.mjs`** shoots a build of the previous main (port 4174) and this one (4173):
   - a sheet at 4× of the three coils and both flight frames;
   - in game at 3×: the wyrm asleep, awake and dead on its node, and in flight over the founding by day and by night.
   - No errors.
@@ -4132,8 +4305,8 @@ people, sleeping coiled around the deepest nodes. Rules:
   (tribute of leystone) if unfed for ten days, sulking (no ward effect) until fed.
 - A wyrm may also **die** (age, or a player who starves it and refuses it): its bones
   become a **Wyrm-Bone Ossuary** site with the best deathcare in the game.
-- Later: **hatchlings** raised at the Court become drakes of a higher order that can carry
-  a rider across the map (see vehicles). Not built: item D of §17.4.
+- **Hatchlings** raised at the Court become drakes that carry a rider across the map (the
+  mount role; built in iteration 73, §4.104).
 
 ### 8.3 Magical buildings (new catalog entries, by unlock)
 
@@ -4163,7 +4336,7 @@ people, sleeping coiled around the deepest nodes. Rules:
 - **Drake riders** (Drake Mews): fast Watch agents that fly straight to the restless and
   to fires; visible in the sky layer with shadows.
 - **Golem haulers** (Golem Foundry): slow, tireless carts that carry 30 and are not
-  scared by hounds. Not built: item C of §17.4.
+  scared by hounds. Built in iteration 72 (§4.103): a warden's fourth duty, and the donkey carts balk at hounds.
 - **Airships** (Sky-Dock): the late-game trade route; a ship leaves each season with the
   city's surplus and returns with crowns, rare goods and a story event.
 - Rendering: a **sky layer** drawn after lighting with drop shadows on the ground; agent
@@ -4290,13 +4463,13 @@ streaks, grey motes, wisps, drips, lightning, lamp-glow). Flying bodies are draw
 sky layer with an elliptical shadow on the ground and a `altitude` offset that dips as
 they land.
 
-**Flying trade (the future).** A wyvern courier is a first vehicle. At Beacon of Eda the
+**Flying trade.** A wyvern courier is a first vehicle. At Beacon of Eda the
 **Sky-Dock** (8.3) can send a wyvern instead of an airship: faster, no mana, but the
-trade event may return a *rival wardlight's* egg offer or a challenge for the Ring. Not built: item D of §17.4.
+trade event may return a *rival wardlight's* egg offer or a challenge for the Ring. Built in iteration 73 (§4.104).
 
 **Failure and drama.** A starved wyrm-stage dragon leaves and returns wild after a season
-(tribute like 8.2). A cradle in a district that the Gloam reaches is a hazard event ("the
-eggs go grey"; not built: item D of §17.4). Two dragons of the same line at wyrm stage may
+(tribute like 8.2). A cradle with the Gloam at its door is a hazard ("the
+eggs go grey"; built in iteration 73, §4.104: three days, and the eggs turn to the grey line). Two dragons of the same line at wyrm stage may
 **nest**: a vein egg without an event. *Dropped:* breeding went cross-line instead (§4.48: the
 cradle refuses two of one line, "two of one line breed nothing new"; vein eggs come from the
 Sleeping Wyrm).
@@ -4334,7 +4507,7 @@ consistent with `EDA_LORE.md` §9.
    itself with bioluminescent vines (a **Glowvine Lane** road tier lit by plants, no
    mana). Unlocked by the storm caller's visit or by an Academy exchange event.
 4. ✅ **Belerial caravans** (the caravan and the Wandering Merchant; strider mounts are a
-   season's Watch bonus only, and the merchant's memory is words: M19 part 1 and item D of §17.4). Every season a caravan of riders on bipedal **striders** may
+   season's Watch bonus only: M19 part 1; the merchant's memory is in state since iteration 73, §4.104). Every season a caravan of riders on bipedal **striders** may
    reach the Trade Depot (needs a road to the map edge): sells rare goods, buys surplus
    at good prices, offers strider mounts (Watch reach +, later couriers) and, rarely, an
    egg. The **Wandering Merchant of Belerial** is a named recurring visitor with a
@@ -4567,8 +4740,7 @@ This closes M8, the deep dive. The next large steps are M10 Walkers and M11 Peop
 ### 13.13 Later
 
 Smaller follow-ups once walkers exist: scholars carry relic pieces (✅, the scholar walker), sextons
-attend the brawl, and the great wyrm's duel is flown by the wyvern agent itself (these two not built:
-item D of §17.4).
+attend the brawl, and the great wyrm's duel is flown by the wyvern agent itself (✅ both, iteration 73, §4.104).
 
 ## 14. Milestones ahead: walkers and peoples
 
@@ -4829,9 +5001,9 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - **The Long Night early:** a hound pack that empties three districts in one Hush brings the Long Night before its
     season.
   - Both show in the game-over screen and the Annals. This is a sim change, so it runs the wide bar.
-- **C. Golem haulers** (§8.4). The Golem Foundry fields slow, tireless carts that carry 30 and are not scared by
-  hounds. They are drawn as vehicles.
-- **D. Loose ends.**
+- ✅ **C. Golem haulers** (§8.4; built in iteration 72, §4.103). The Golem Foundry fields slow, tireless carts that carry
+  30 and are not scared by hounds. They are drawn as vehicles.
+- ✅ **D. Loose ends** (built in iteration 73, §4.104).
   - "The eggs go grey": the Gloam reaches a cradle (§8.6).
   - The Sky-Dock sends a wyvern instead of the airship: faster and without mana, but it may come back with a rival's
     egg offer or a challenge for the Ring (§8.6).
@@ -4840,6 +5012,11 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - The Wandering Merchant remembers past deals in state, not only in words (§11 item 4).
 - **E. Markets want a good road** (AUDIT B40). The road tier at a market's door counts for its trade, as the
   Market's description promises. This is a sim change, so it runs the wide bar.
+- **F. The sprites faced and fitted** (the user's request in iteration 72). Check every building sprite in the game, painted
+  and drawn, for its facing and how it sits in its tile square. The procedural set is the yardstick: door and gable on the
+  right face, the footprint diamond filled neatly. Correct the ones faced wrong or that look off, by a flip, a new anchor or
+  `targetHeight` in `art/sources.json`, or a redraw. Screenshots of every change, before and after. Art only: the control
+  seed, not the bar.
 
 ### 17.5 Dropped, on the record
 
@@ -5242,6 +5419,18 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   run of the same sim files is the same run whatever the commit. Keying by the files of `src/sim`, `src/data` and
   `src/core` lets main's side of a bar be the previous iteration's branch side, and lets a change outside the sim cost
   nothing. The cost is about 50 KB of committed JSON per sim version, four versions kept.
-- *The wyrm in flight is the user's painting; the coil is drawn after it (iteration 72):* the painting is a flying pose,
+- *The hauler is a cart with a warden's id, not a warden that carts (iteration 72):* the cart run in `agents.ts` already
+  knows roads, loads, markets and traffic, so a golem cart joins it as a variant with three rules of its own (30, slow,
+  tireless) and the warden stands at the works in harness. "Not scared by hounds" needed something to be scared: the
+  donkey carts now balk at a hound within 4 tiles, once a tick's look at the hounds abroad, with no roll, so every city
+  without hounds on its roads is bit-identical. A hauler loads what the market has room for, since 30 into a cap of 20
+  would throw a third away.
+- *Five loose ends in one iteration, each the smallest rule that bites (iteration 73):* the eggs turn to the grey line
+  rather than dying, so the hazard costs the chosen line and not the egg; the wyvern run reuses the airship's state machine
+  and books rather than a second one; a mount is a role with the rider's errands and no range, not a new creature; the
+  sextons' choice is appended, not inserted, so every recorded choice keeps its index; the duel is a phase on the agent
+  the great wyrm already has; the merchant's memory is four numbers in state and a text that reads them, with the owed
+  favour listed always and refused until it is owed, since a tale's choices are one list.
+- *The wyrm in flight is the user's painting; the coil is drawn after it (iteration 74):* the painting is a flying pose,
   so it serves the sky as it is. The coil must wrap a node and split into halves round its stones, so it is drawn in
   code in the painting's colours and parts (scales, belly, spines, horns, bat wings) rather than cut from it.

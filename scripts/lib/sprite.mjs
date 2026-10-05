@@ -22,7 +22,7 @@ export function keyBackground(img, white = 235, holes = 0) {
       if (!seen[j] && isBg(j)) { seen[j] = 1; stack.push(j); }
     }
   }
-  // holes (iteration 72): a background region the outline encloses (the loop of a coiled wyrm) is keyed too when it holds at
+  // holes (iteration 74): a background region the outline encloses (the loop of a coiled wyrm) is keyed too when it holds at
   // least `holes` pixels; smaller light patches are highlights and stay
   if (holes > 0) for (let start = 0; start < w * h; start++) {
     if (seen[start] || !isBg(start)) continue;

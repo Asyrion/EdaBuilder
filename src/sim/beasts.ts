@@ -7,6 +7,8 @@ import { effects } from './hazards';
 import { SEAM } from './growth';
 import { delverAt } from './wyrmcraft';
 import { Zone } from './types';
+import { GOLEM_LOAD, isGolemCart, pruneGolemCarts, spawnGolemCart } from './vehicles';
+import { roadTileOf } from './agents';
 
 export const GOLEM_LABOUR = 12; // jobs' worth of work per bound golem
 export const GOLEM_MANA = 10; // mana a day per bound golem at the foundry
@@ -46,30 +48,64 @@ export function worksGolems(s: GameState, b: Building): number {
   for (const a of s.agents) if (isGolem(a) && a.load > 0 && a.duty === 'works' && a.targetId === b.id) n++;
   return n;
 }
+/** Wardens in harness: each hauls a golem cart of 30 from the works at targetId (iteration 72). */
+export function haulerGolems(s: GameState): Agent[] {
+  return s.agents.filter((a) => isGolem(a) && a.load > 0 && a.duty === 'haul');
+}
 export const GOLEM_GUARD_RADIUS = 6;
 export const GOLEM_GUARD_STRENGTH = 0.6;
 export const GOLEM_POST_REACH = 20;
-/** Set a bound warden's duty: labour (the default), guard at its foundry (ward 6 there) or posted to a Craft works within 20 of the foundry. The reason it cannot, or null. */
-export function setGolemDuty(s: GameState, agentId: number, duty: 'labour' | 'guard' | 'works', targetId = -1): string | null {
+export type GolemDuty = 'labour' | 'guard' | 'works' | 'haul';
+/** Set a bound warden's duty: labour (the default), guard at its foundry (ward 6 there), posted to a Craft works within 20 of the foundry,
+ *  or in harness hauling from one (a golem cart of 30, slow, tireless, afraid of no hound; iteration 72). The reason it cannot, or null. */
+export function setGolemDuty(s: GameState, agentId: number, duty: GolemDuty, targetId = -1): string | null {
   const a = s.agents.find((x) => x.id === agentId && isGolem(x));
   if (!a) return 'No such warden';
   if (a.load === 0) return 'A wild warden takes no orders';
   const home = s.buildings.find((b) => b && b.id === a.homeId) ?? null;
-  if (duty === 'works') {
+  if (duty === 'works' || duty === 'haul') {
     const b = s.buildings.find((x) => x && x.id === targetId && BUILDING_BY_KEY[x.kind].zone === Zone.Craft && x.state === 'ok');
     if (!b) return 'Pick a Craft works';
     if (home && Math.hypot(b.x - home.x, b.y - home.y) > GOLEM_POST_REACH) return `Too far: a warden is posted within ${GOLEM_POST_REACH} of its foundry`;
-    a.duty = 'works';
+    const rt = duty === 'haul' ? roadTileOf(s, b) : 0;
+    if (rt < 0) return 'That works touches no road: nothing to haul on';
+    a.duty = duty;
     a.targetId = b.id;
     a.ax = b.x + (b.w - 1) / 2 + 0.5;
     a.ay = b.y + b.h + 0.5;
+    if (duty === 'haul') {
+      a.path = [];
+      a.x = a.ax;
+      a.y = a.ay;
+      s.agents = s.agents.filter((c) => !(isGolemCart(c) && c.golemId === a.id));
+      spawnGolemCart(s, a, b, rt);
+      return null;
+    }
   } else {
     a.duty = duty === 'guard' ? 'guard' : undefined;
     a.targetId = -1;
     if (home) { a.ax = home.x + 1; a.ay = home.y + 2.5; }
   }
   a.path = [];
+  pruneGolemCarts(s);
   return null;
+}
+/** Daily: a hauler whose works is gone, or has lost its road, goes back to labour; carts without a warden in harness go. */
+export function syncHaulers(s: GameState): void {
+  for (const a of haulerGolems(s)) {
+    const b = s.buildings.find((x) => x && x.id === a.targetId && x.state === 'ok');
+    if (b && roadTileOf(s, b) >= 0) {
+      if (!s.agents.some((c) => isGolemCart(c) && c.golemId === a.id)) spawnGolemCart(s, a, b, roadTileOf(s, b)); // its cart was lost (an old save, a trimmed list)
+      continue;
+    }
+    a.duty = undefined;
+    a.targetId = -1;
+    const home = s.buildings.find((x) => x && x.id === a.homeId) ?? null;
+    if (home) { a.ax = home.x + 1; a.ay = home.y + 2.5; }
+    a.path = [];
+    pushMessage(s, `A Concord Warden has nothing left to haul${b ? ' (its works has no road)' : ' (its works is gone)'} and walks back to the ${home ? BUILDING_BY_KEY[home.kind].name : 'foundry'} to labour.`, 'info', true, home ? { x: home.x, y: home.y } : undefined);
+  }
+  pruneGolemCarts(s);
 }
 /** Craft works a foundry's wardens may be posted to. */
 export function postableWorks(s: GameState, foundry: Building): Building[] {
@@ -102,6 +138,7 @@ function spawnGolem(s: GameState, x: number, y: number, bound = false): Agent {
 
 /** Daily: mines wake Concord Wardens in the hills nearby; foundries bind wild ones within reach. */
 export function dailyBeasts(s: GameState): void {
+  syncHaulers(s);
   const rng = rngOf(s);
   const fs = foundries(s);
   // 1. mining wakes wardens; near a lit Forge-Temple they climb out already bound
@@ -191,6 +228,7 @@ function creatureN(s: GameState, species: string): number {
 export function surgeMaddensGolems(s: GameState): number {
   let n = 0;
   for (const a of s.agents) if (isGolem(a) && a.load > 0) { a.load = 0; a.homeId = -1; a.duty = undefined; a.targetId = -1; n++; }
+  if (n) pruneGolemCarts(s); // the carts stand empty where the wardens dropped them
   if (n) illTiding(s);
   if (n) pushMessage(s, `${n} bound Concord Warden${n > 1 ? 's' : ''} break their binding in the surge and walk loose.`, 'bad', true);
   return n;
@@ -218,7 +256,7 @@ export function describeBeasts(s: GameState): string {
   const b = boundGolems(s);
   const r = creatureN(s, 'skyray');
   const bits: string[] = [];
-  if (w || b) { const g = guardGolems(s).length; const l = labourGolems(s); bits.push(`Concord Wardens: ${b} bound (${l * GOLEM_LABOUR} hands of labour${g ? `, ${g} on guard` : ''}${b - l - g ? `, ${b - l - g} posted to works` : ''}, ${Math.round(foundryMana(s))} mana), ${w} wild`); }
+  if (w || b) { const g = guardGolems(s).length; const l = labourGolems(s); const h = haulerGolems(s).length; bits.push(`Concord Wardens: ${b} bound (${l * GOLEM_LABOUR} hands of labour${g ? `, ${g} on guard` : ''}${h ? `, ${h} hauling ${GOLEM_LOAD} a trip` : ''}${b - l - g - h ? `, ${b - l - g - h} posted to works` : ''}, ${Math.round(foundryMana(s))} mana), ${w} wild`); }
   if (r) { const mirror = s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'skyray' && a.phase === 1 && (a.anchorId ?? -1) >= 0 && s.buildings.find((b) => b && b.id === a.anchorId)?.kind === 'raymirror'); bits.push(raysLured(s) ? (mirror ? `${r} skyrays circle the Mirror, shedding glim-dust` : `${r} skyrays circle the Beacon`) : `${r} skyrays are crossing the valley`); }
   if (s.materials.rayscale > 0) bits.push(`rayscale ${s.materials.rayscale.toFixed(1)} (artifacts +10%)`);
   return bits.join(' · ') || 'No wardens woken, no skyrays in sight.';

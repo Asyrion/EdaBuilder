@@ -95,7 +95,9 @@ main node.
     the Gloam will not cross it. The **minimap** (bottom right) jumps the camera where you click.
 14. **Beasts of the Concord and the sky** — mining wakes **Concord Wardens** in the hills;
     a **Golem Foundry** (Burgh) binds them into twelve hands of labour each, no housing,
-    ten mana a day; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
+    ten mana a day, or sets them to guard, to a Craft bench, or **in harness**: a stone
+    cart of 30 goods, slow and tireless, that fears no hound, where the donkey carts balk
+    and stand when Gloam-hounds come within four tiles; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
     a lit **Ley Beacon** keeps a school for the season (happiness, rayscale for the
     enchanters). A **Drake Mews** doubles Watch House reach. Three taming edicts trade
     one beast for another.
@@ -103,7 +105,12 @@ main node.
     (no congestion, a little mana). Two **Quays** on the same water send **barges** with
     goods from works to markets. A lit **Drake Mews** flies **riders** to the restless and
     to fires. At Beacon of Eda the **Sky-Dock** launches an **airship** each season with
-    your surplus; it returns with crowns and sometimes a story.
+    your surplus; it returns with crowns and sometimes a story. From its panel it sends a
+    **wyvern** of your own instead: half the load, back in five days, no mana, and one time
+    in two a rival wardlight follows it home with an egg to sell or a challenge for the
+    Ring. Once a Wyrm-Court stands a drake may be a **mount**: a Watch rider across the
+    whole map. A cradle with the Gloam at its door three days running sees its **eggs go
+    grey**, whatever line they were.
 16. **Longwood and the Fen-Nex** — on forest-heavy maps **war-tigers** stalk hearths by
     night; hunters, strong Watch or a warden drake's district kill them. The **Fen-Nex**
     fox-folk trade honestly half the time and may take a market district as their
@@ -203,7 +210,8 @@ Charter as `.json`.
 - Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
   caravans (every twelve days at a Trade Depot; the depot panel counts them down, and the Budget
   and the Annals count what they pay) and the
-  Wandering Merchant.
+  Wandering Merchant, who remembers every visit: the egg on offer changes, bought eggs cut
+  her prices, and two evenings of stories are a favour owed.
 - The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
 - The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
@@ -225,9 +233,9 @@ Charter as `.json`.
   the Cores takes the first 30 of a surge and cracks for ten days; the Great Weir's sluice
   trades a flooded bank for double mana; the Underking's Seat warms hatcheries; the
   Lantern of Wicks halves its spires' draw; a bound Concord Warden labours, guards its
-  foundry or works a Craft bench; the Gloam presses harder as the dead go unquieted and
+  foundry, works a Craft bench or hauls a stone cart of 30 that no hound scares; the Gloam presses harder as the dead go unquieted and
   eases under faith; the river freezes in the Hush.
-- The guild council: a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
+- The guild council (sextons walk to a brawl on the square and can part it): a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
   who petition for edicts every 20 days and pay boons or strike; festivals spend the city
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
@@ -343,8 +351,8 @@ Charter as `.json`.
   their tithe-free quarter (and fen-drake eggs), mana-storms after every surge, the Font
   of Quieting, and cameo visitors.
 - Vehicles: floating carts from level-3 Arcane workshops, barges between Quays, drake
-  riders from the Drake Mews, and the Sky-Dock's airship that trades the season's surplus
-  beyond the Gloam.
+  riders from the Drake Mews, mounted drakes once a Wyrm-Court stands, and the Sky-Dock's
+  airship (or a wyvern of your own) that trades the season's surplus beyond the Gloam.
 - Beasts of the Concord and the sky: Concord Wardens woken by mining and bound at the
   Golem Foundry into tireless labour, skyray schools kept by a Ley Beacon, the Drake
   Mews, and three taming edicts.

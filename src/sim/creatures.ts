@@ -188,6 +188,7 @@ export function updateCreatures(state: GameState): void {
   // ---- drakes: one visible agent per hatchling/drake, near its cradle or at its post
   for (const d of state.dragons) {
     if (d.stage < 1) continue;
+    if (d.voyage !== undefined) { state.agents = state.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId === d.id)); continue; } // away beyond the Gloam (iteration 73)
     const want: Species = d.stage >= 3 ? 'wyvern' : 'drake';
     const existing = state.agents.find((a) => a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId === d.id);
     if (existing && existing.species === want) continue;
@@ -280,7 +281,8 @@ export function tickCreatures(state: GameState): void {
         break;
       }
       case 'golem': {
-        // wild: a slow, unstoppable walk toward the city, then aimless; bound: paces by the foundry
+        // wild: a slow, unstoppable walk toward the city, then aimless; bound: paces by the foundry; in harness: its cart is the warden (iteration 72)
+        if (a.duty === 'haul') break;
         if (a.timer > 0) { a.timer--; break; }
         if (a.path.length === 0) {
           const bound = a.load > 0;
@@ -572,8 +574,10 @@ export function tickCreatures(state: GameState): void {
         if (!d) break;
         if (a.timer > 0) {
           a.timer--;
+          if (d.role === 'mount') a.alt = Math.max(0, (a.alt ?? 0) - 2);
           break;
         }
+        if (d.role === 'mount') { mountTick(state, a, ax, ay, dt, rng); break; } // a Watch rider on its back, anywhere on the map (iteration 73)
         // home: the cradle; posts: a district (warden) or a mine (delver)
         let hx = ax;
         let hy = ay;
@@ -653,7 +657,7 @@ export function tickCreatures(state: GameState): void {
           a.y = ty;
           a.path = [];
           if (a.phase === 1 && a.load === 2) { razeStake(state); a.load = 1; a.phase = 2; a.timer = 260; } // the third refusal: the Stake (iteration 70)
-          else if (a.phase === 1) { a.phase = 2; a.timer = hostile ? 260 : 200; }
+          else if (a.phase === 1) { a.phase = 2; a.timer = hostile ? (a.variant === 1 ? 130 : 260) : 200; } // met by the city's great wyrm, it turns first (iteration 73)
           else if (a.phase === 3) {
             state.agents = state.agents.filter((o) => o !== a);
             endFlyover(state, hostile);
@@ -693,6 +697,24 @@ export function tickCreatures(state: GameState): void {
         if (a.timer > 0) {
           a.timer--;
           a.alt = Math.max(0, alt - 2);
+          break;
+        }
+        if (a.phase === 4) {
+          // the duel (iteration 73): chase the Vein-Wyrm's flyer; at the first meeting a roar, and the old one turns first
+          const w = state.agents.find((o) => o.kind === AgentKind.Creature && o.species === 'wyrm');
+          if (!w) { a.phase = 0; a.load = 0; a.path = []; a.timer = 20; break; }
+          const dx = w.x - a.x;
+          const dy = w.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          const sp = a.speed * dt;
+          a.alt = Math.min(48, alt + 3);
+          if (dist > 2.5) { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
+          else if (a.load === 0) {
+            a.load = 1;
+            w.variant = 1;
+            if (w.phase === 2) w.timer = Math.ceil(w.timer / 2);
+            effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'roar', tick: state.tick });
+          } else { a.x += (dx / dist) * sp * 0.5; a.y += (dy / dist) * sp * 0.5; a.dir = dx > 0 ? 0 : 2; }
           break;
         }
         if (a.path.length === 0) {
@@ -806,6 +828,60 @@ export function mothBonus(state: GameState, b: Building): number {
 
 export function isCreatureWater(state: GameState, x: number, y: number): boolean {
   return inBounds(Math.floor(x), Math.floor(y)) && isWater(state.terrain[idx(Math.floor(x), Math.floor(y))]);
+}
+
+/** A mounted drake (role mount, iteration 73): the Drake Mews' rider's errands (lay the nearest restless, douse the nearest fire) with no
+ *  range, from its cradle; speed 3.2 in the air. Counts riderRescues like a rider, and mountRescues as its own. */
+export const MOUNT_SPEED = 3.2;
+function mountTick(state: GameState, a: Agent, ax: number, ay: number, dt: number, rng: Rng): void {
+  if (a.path.length === 0 && a.targetId < 0) {
+    let best = -1;
+    let bd = Infinity;
+    let bx = 0;
+    let by = 0;
+    let kind = 0;
+    for (const o of state.agents) {
+      if (o.kind !== AgentKind.Restless) continue;
+      const d = Math.hypot(o.x - a.x, o.y - a.y);
+      if (d < bd) { bd = d; best = o.id; bx = o.x; by = o.y; kind = 1; }
+    }
+    for (const b of state.buildings) {
+      if (!b || b.state !== 'burning') continue;
+      const d = Math.hypot(b.x - a.x, b.y - a.y);
+      if (d < bd) { bd = d; best = b.id; bx = b.x + 0.5; by = b.y + 0.5; kind = 2; }
+    }
+    if (best < 0) {
+      if (Math.hypot(a.x - ax, a.y - ay) > 1.5) a.path = [idx(Math.floor(ax), Math.floor(ay))];
+      else { a.timer = 40; return; }
+    } else {
+      a.targetId = best;
+      a.load = kind;
+      a.path = [idx(Math.floor(bx), Math.floor(by))];
+    }
+  } else if (a.path.length === 0) {
+    a.path = [idx(Math.floor(ax), Math.floor(ay))];
+    a.load = 0;
+  }
+  const tx = (a.path[0] % MAP_W) + 0.5;
+  const ty = ((a.path[0] / MAP_W) | 0) + 0.5;
+  const dx = tx - a.x;
+  const dy = ty - a.y;
+  const dist = Math.hypot(dx, dy);
+  const sp = MOUNT_SPEED * dt;
+  a.alt = dist > 2 ? Math.min(24, (a.alt ?? 0) + 3) : Math.max(0, (a.alt ?? 0) - 3);
+  if (dist <= sp) {
+    a.x = tx; a.y = ty; a.path = [];
+    if (a.load === 1) {
+      const n = state.agents.length;
+      state.agents = state.agents.filter((o) => o.id !== a.targetId);
+      if (state.agents.length < n) { state.stats.restlessLaid++; state.stats.riderRescues++; state.stats.mountRescues++; }
+    } else if (a.load === 2) {
+      const b = state.buildings.find((o) => o && o.id === a.targetId);
+      if (b && b.state === 'burning' && rng.chance(0.6)) { b.state = 'ok'; b.stateDays = 0; markDirty(state, b.x, b.y); state.stats.riderRescues++; state.stats.mountRescues++; }
+    }
+    if (a.load > 0) { a.load = 0; a.targetId = -1; a.path = [idx(Math.floor(ax), Math.floor(ay))]; }
+    else { a.targetId = -1; a.timer = 60 + rng.int(60); }
+  } else { a.x += (dx / dist) * sp; a.y += (dy / dist) * sp; a.dir = dx > 0 ? 0 : 2; }
 }
 
 /** Daily: Hunters' Lodges kill hounds within 12; strong Watch coverage drives them off. */

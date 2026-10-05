@@ -7,6 +7,7 @@
 import { buildRoad, buildWall, bulldoze, callRain, paintDistrict, paintZone, placeBuilding, placeGate, restoreSnapshot, scatterDust, setTax, takeSnapshot, terraform, toggleSluice, type Snapshot, type TerraformOp } from './actions';
 import { bumpRoadVersion } from './agents';
 import { setGolemDuty } from './beasts';
+import { toggleSkyDockWyvern } from './vehicles';
 import { foundDaughter } from './charter';
 import { construction } from './construction';
 import { runDev } from './dev';
@@ -90,6 +91,7 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   cradle: (s, _r, [id]) => { const why = raiseCradle(s, id); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   nest: (s, _r, [id]) => { const why = lineNest(s, id); return { ok: !why, reason: why }; },
   burnWyrmfire: (s, _r, [on]) => { s.burnWyrmfire = !!on; return { ok: true }; },
+  skydock: (s) => { const why = toggleSkyDockWyvern(s); return { ok: !why, reason: why }; },
   sluice: (s, _r, [id]) => { const why = toggleSluice(s, id); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   golem: (s, _r, [id, duty, target]) => { const why = setGolemDuty(s, id, duty, target ?? -1); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   quarry: (s, _r, [id, q]) => { const x = b(s, id); return { ok: !!x && setQuarry(s, x, q as 'hounds' | WildSpecies) }; },

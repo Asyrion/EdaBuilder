@@ -173,6 +173,12 @@ export const ANNALS: AnnalChapter[] = [
     rows: [
       { label: 'Concord Wardens woken', stat: 'golemsWoken', note: 'Golems the mines woke.' },
       { label: 'Concord Wardens bound', stat: 'golemsBound', note: 'Golems bound at a foundry.' },
+      { label: 'Hauled by wardens', stat: 'golemHauls', note: 'Goods the wardens in harness carried to the markets, 30 a trip (iteration 72).' },
+      { label: 'Carts balked', stat: 'cartsBalked', note: 'Times a donkey cart stopped for Gloam-hounds on the road. Wardens in harness do not.' },
+      { label: 'Eggs gone grey', stat: 'eggsGreyed', note: 'Eggs the Gloam turned grey in a cradle at its edge: three days at the door (iteration 73).' },
+      { label: "The Sky-Dock's wyvern runs", stat: 'wyvernVoyages', note: 'Seasons a wyvern flew the surplus beyond the Gloam instead of the airship (iteration 73).' },
+      { label: 'Rescues by mounted drakes', stat: 'mountRescues', note: 'Restless laid and fires doused by a drake with a Watch rider on it, anywhere on the map (iteration 73).' },
+      { label: 'Brawls parted by sextons', stat: 'brawlsParted', note: 'Sextons who reached a guild brawl on the square with their salt (iteration 73).' },
       { label: 'Skyray schools', stat: 'skyraySchools', note: 'Schools of skyrays that crossed the valley.' },
       { label: 'Rayscale shed', stat: 'rayscaleTotal', note: 'Rayscale from the rays circling a Ley Beacon.' },
       { label: 'Rider rescues', stat: 'riderRescues', note: 'The restless laid by drake riders from the Mews.' },
@@ -205,6 +211,7 @@ export const ANNALS: AnnalChapter[] = [
 /** Fields of `stats` that are timers, streaks or flags, not counters: they stay off the page, each for its reason. */
 export const ANNALS_INTERNAL: Partial<Record<StatKey, string>> = {
   lastCaravanDay: "the caravan's rhythm: the day it last halted",
+  lastBalkDay: "the day the carters last complained of hounds, so they complain once a day (iteration 72)",
   lastCaravanCrowns: "the caravan's last take, for the Budget's row",
   lastFeastDay: 'the day of the last Thaw feast, for the forecast',
   brownoutOpen: 'a flag while an overdraw is running',

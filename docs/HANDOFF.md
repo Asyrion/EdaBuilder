@@ -1,14 +1,15 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 72 (the wyrm redrawn after the user's painting; DESIGN §4.103). Iterations 71 (a faster
-balance bar, §4.102), 70 (two ways to lose, §4.101) and 69 (the Great Gate, §4.100) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 74 (the wyrm redrawn after the user's painting, art only; DESIGN §4.105). Iterations 73
+(the loose ends, §4.104), 72 (golem haulers, §4.103), 71 (a faster balance bar, §4.102) and 70 (two ways to lose, §4.101)
+came just before it. Iterations 72–73 and 74 were built in two sessions at once; 74 merged main and took the next numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.103 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.105 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -32,37 +33,35 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **golem haulers** (DESIGN §17.4 C, §8.4).
-- **The promise:** the Golem Foundry fields slow, tireless carts that carry 30 and are not scared by hounds. They are
-  drawn as vehicles.
-- **Where things are:**
-  - **Bound golems:** `src/sim/beasts.ts`.
-    - A golem's duty is `'labour'` (unset; 12 hands, `GOLEM_LABOUR`), `'guard'` or `'works'`, set through
-      `setGolemDuty`, which the Foundry's panel calls.
-    - A hauler is naturally a fourth duty there.
-    - Their mana is `foundryMana` (`GOLEM_MANA`).
-  - **Carts:**
-    - The road carts are agents with a `variant`. `src/sim/vehicles.ts` already holds two other kinds: the floating cart
-      (`FLOAT_VARIANT`, no congestion) and the barge (`BARGE_VARIANT`).
-    - The cart sprite is picked in `src/render/carts.ts` (`cartSpriteName`).
-    - The cart's goods run is in `src/sim/agents.ts`.
-  - **Hounds:** the promise says haulers are "not scared by hounds". First find what hounds do to ordinary carts today
-    (the hound branch in `creatures.ts`, the carts in `agents.ts`). If nothing, the design must say what "scared" means.
-- **The art:** a new vehicle needs a sprite: procedural, or a painting through `npm run art` (`kind: 'vehicle'`). Show
-  the user screenshots, before and after.
-- **The bar:** it is a sim change, so it runs the wide bar. Since iteration 71, main's side comes from `balance/cache/`,
-  so only the branch side runs. Commit the cache file the bar writes, with the iteration.
+NEXT_STEPS item 1, **markets want a good road** (DESIGN §17.4 E, AUDIT B40): the road tier at a market's door counts for
+its trade, as the Market's catalog description promises.
+- **Where things are:** the market's door is `roadTileOf(state, b)` in `src/sim/agents.ts`; the road tier at a tile is
+  `roadAt(state, i)` in `src/sim/roads.ts` (`ROAD_BY_TYPE[tier].speed`); a market's sales are in `src/sim/growth.ts`
+  (`dailyBuildings`, the market's tithe and stock) and its cap in `marketStockCap`. Read AUDIT.md B40 first for what
+  "counts for its trade" was meant to be, and the Market's desc in `src/sim/catalog.ts`.
+- **Decide the rule's size:** a tenth per tier is the kind of number the bar can see; say it in the market's panel
+  (`src/ui/ui.ts`, the zone rows) so the player can decide about it.
+- **The bar:** a sim change, and one the bot's cities all meet (every bot market has a road), so expect a verdict. The
+  bot upgrades roads? Check `src/sim/bot.ts` (grep `road`) before the design: if it never lays better than a track, the
+  rule only costs it.
 - **Plan it on the Plan panel first.**
 
 Built since iteration 68:
 - the Great Gate (item A), in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and `drawGreatGate`
   in `drawn.ts`;
 - the two ways to lose (item B), in iteration 70: `src/sim/hounds.ts`, `refuse`/`razeStake` in `wyrm.ts`, and
-  `state.lostTo`.
+  `state.lostTo`;
+- the golem haulers (item C), in iteration 72: the `'haul'` duty in `beasts.ts`, `GOLEM_VARIANT` and the balk constants
+  in `vehicles.ts`, the balk rule in `tickAgents` (`agents.ts`), the `cart_6` sprite in `sprites.ts`.
+- the loose ends (item D), in iteration 73: `dailyGreyEggs` and `fightBout` in `wyrmcraft.ts`, the wyvern run in
+  `vehicles.ts` (`sendWyvern`, `wyvernReturns`, `toggleSkyDockWyvern`), the mount role (`mountTick` in `creatures.ts`),
+  `sendDuelist` in `wyrm.ts` and the duel phase in the wyvern branch, the sextons' errand in `walkers.ts` and
+  `sextonsAbroad`/`brawlToday` in `guilds.ts`, `state.merchant` and `textFn` in `events.ts`.
 
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
-- **Three single items** (the Great Gate and the two ways to lose are done): golem haulers; loose ends; markets and the road
-  (AUDIT B40).
+- **Single items** (the Great Gate, the two ways to lose, the golem haulers and the loose ends are done): markets and the
+  road (AUDIT B40); then **the sprites faced and fitted** (§17.4 F, added at the user's request in iteration 72: every
+  building sprite checked for its facing and its fit in the tile square, art only).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
   - **M18**, the Fen-Nex: the people, then their game;
@@ -104,7 +103,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (73 files, 468 tests at this writing; iteration 72 was art only; `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (75 files, 485 tests at this writing; `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -172,6 +171,45 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 74 (not yet said elsewhere)
+
+- **A painting with an enclosed background** (a loop, a ring of limbs) needs `holes: N` in its `art/sources.json` entry.
+  Without it, the white inside stays, because the key floods from the corners only.
+- **An uploaded painting the user gives** goes in `inspirations/<subject>/` as png (ImageMagick `convert` from webp).
+  It becomes a sprite by name in the manifest, which wins over the procedural sprite.
+- **Before and after shots:** `scripts/playtest74.mjs` shoots a build of the previous main on port 4174 beside this one
+  (a worktree of `origin/main`, `vite build --outDir`, `vite preview --outDir … --port 4174`).
+
+## Learned in iteration 73 (not yet said elsewhere)
+
+- **A tale's text per city:** `EventDef.textFn` beside `text`; `textOf(e, s)` is what every firing path uses. Changing
+  `text` to a union broke a dozen tests that copy a def's text into `pendingEvent`, so the optional function is the way.
+- **A tale's choices are one list:** a choice cannot be shown only sometimes. Append new choices (the old indices are in
+  every replay and `firedEvents`) and let the desc say when the choice is refused.
+- **Dragon agents come from `updateCreatures`, every 50 ticks** (`t % 50 === 20`), not from the day's turn. A playtest or
+  test that needs a dragon's flyer ticks 60 or calls `updateCreatures(s)`.
+- **Painted Gloam near the founding node ends the charter** at the day's turn ("the Gloam reaches the founding node").
+  A playtest that paints Gloam by a cradle must clear it before running days.
+- **Save fills for every version** go after `MIGRATIONS` in `deserialize` (next to `wyrm.starved`), not inside
+  `MIGRATIONS[6]`, which runs only for version-6 saves.
+- **A dragon away** (`voyage` set) is skipped by the agent sync, by `dailyDragons`, by `setRole` and by `dockWyvern`;
+  `delete d.voyage` when it is home, so saves do not carry the key.
+- **Tests:** 75 files, 485 tests.
+
+## Learned in iteration 72 (not yet said elsewhere)
+
+- **A new vehicle is a cart variant.** `tickAgents`/`chooseTrip` in `agents.ts` run every road vehicle; a new one is a
+  `variant` with its rules behind `a.variant === X` checks, and `cartSpriteName` in `src/render/carts.ts` names its sprite.
+  Count it out of `dailyAgents`' cart target as the barges are, or the sync trims it.
+- **The sim's hound list for a rule that bites every tick:** gather the hounds once a tick, lazily (`houndsOut()` in
+  `tickAgents`), not per cart. There are at most 30.
+- **`atlas.mirrored(name)`** is the one-sprite way to face a vehicle left; the painted carts have `_l` twins instead.
+- **A procedural sprite beside a painting:** the painted Concord Warden is blue-grey stone, so the hauler's warden uses
+  `bluewash`/`slate1`, not the grey `stone` ramp, to read as the same creature.
+- **The market's cap throws away a load past it** (`m.stock = min(cap, …)` in `tickAgents`); a bigger cart must load to
+  the room, or it wastes.
+- **Tests:** 74 files, 476 tests.
 
 ## Learned in iteration 58 (not yet said elsewhere)
 
@@ -253,15 +291,6 @@ Built since iteration 68:
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
-
-## Learned in iteration 72 (not yet said elsewhere)
-
-- **A painting with an enclosed background** (a loop, a ring of limbs) needs `holes: N` in its `art/sources.json` entry.
-  Without it, the white inside stays, because the key floods from the corners only.
-- **An uploaded painting the user gives** goes in `inspirations/<subject>/` as png (ImageMagick `convert` from webp).
-  It becomes a sprite by name in the manifest, which wins over the procedural sprite.
-- **Before and after shots:** `scripts/playtest72.mjs` shoots a build of the previous main on port 4174 beside this one
-  (a worktree of `origin/main`, `vite build --outDir`, `vite preview --outDir … --port 4174`).
 
 ## Learned in iteration 70 (not yet said elsewhere)
 

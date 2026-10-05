@@ -29,8 +29,8 @@ import { PASS_ALMS, belregiReach, greatGateReach, passPilgrims, pilgrimsDue } fr
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
-import { FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
-import { BARGE_VARIANT, FLOAT_VARIANT, TIDE_REACH, swimsBarges, tideMooring } from '../sim/vehicles';
+import { GREY_EGG_DAYS, FEED_REACH, FORGE_BURN, GREAT_CRADLE_COST, GREAT_CRADLE_MANA, GREAT_CRADLE_MILESTONE, LINE_INFO, LODGE_REACH, LODGE_SEATS, REGRESS_AFTER, STAGE_DAYS, STAGE_NAMES, MAX_STAGE_NOW, WYRMFIRE_BURN, boutOdds, cradleCapacity, delverAt, dragonsIn, eats, feedingMarkets, forgeHot, isCradle, isGreatCradle, lodgeSeats, lodgesFor, marketsInReach, nextBoutDay, ringChampion, scaleMailOn, stageCap } from '../sim/wyrmcraft';
+import { BARGE_VARIANT, FLOAT_VARIANT, GOLEM_LOAD, TIDE_REACH, WYVERN_DAYS, WYVERN_LOAD, dockWyvern, swimsBarges, tideMooring } from '../sim/vehicles';
 import type { Training, DragonRole } from '../sim/types';
 import { DISTRICT_COLORS, ramps } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
@@ -54,7 +54,7 @@ import { advise, type Focus } from '../data/quests';
 import { ANNALS, type AnnalRow } from '../data/annals';
 import { WYRM_EATS, WYRM_LAIR_RADIUS, describeWyrm, wyrmEats, wyrmNode, wyrmTribute } from '../sim/wyrm';
 import { forecast } from '../sim/forecast';
-import { describeBeasts, boundGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
+import { describeBeasts, boundGolems, labourGolems, wildGolems, raysLured, GOLEM_GUARD_RADIUS, GOLEM_HOUSES, GOLEM_LABOUR, GOLEM_POST_REACH, postableWorks } from '../sim/beasts';
 import { HUSH_CRAFT, glimhouseNear, treeStage, TREE_LEISURE_RADIUS, TREE_WARD_RADIUS } from '../sim/growth';
 import { seasonOf as seasonOfState } from '../sim/world';
 
@@ -112,7 +112,8 @@ export interface UiHost {
   lineNest(id: number): string | null;
   setBurnWyrmfire(on: boolean): void;
   toggleSluice(id: number): string | null;
-  setGolemDuty(id: number, duty: 'labour' | 'guard' | 'works', target: number): string | null;
+  toggleSkyDock(): string | null;
+  setGolemDuty(id: number, duty: 'labour' | 'guard' | 'works' | 'haul', target: number): string | null;
   scatterDust(x: number, y: number): boolean;
   resolveEvent(choice: number, amount?: number): void;
   centerOn(x: number, y: number): void;
@@ -824,6 +825,7 @@ export class UI {
       if (def.manaUse) rows.push(row('Mana', seatWarmed(s, b) ? `none: warmed by the Underking's Seat (${manaUseOf(b)} without it)` : `${manaUseOf(b)} / day${b.lit ? '' : ' (unlit!)'}`));
       if (isCradle(b.kind)) {
         rows.push(row('Nests', `${dragonsIn(s, b.id).length} / ${cradleCapacity(b)}${isGreatCradle(b) ? ' (a Great Cradle)' : ''}`));
+        if (b.grey) { const eggs = dragonsIn(s, b.id).filter((d) => d.stage === 0 && d.line !== 'grey').length; rows.push(row('The Gloam', `<span class="bad">at the door ${b.grey} day${b.grey === 1 ? '' : 's'}${eggs ? `: the ${eggs === 1 ? 'egg turns' : 'eggs turn'} grey in ${Math.max(0, GREY_EGG_DAYS - b.grey)} day${GREY_EGG_DAYS - b.grey === 1 ? '' : 's'}` : ' (no eggs to grey)'}</span>`)); if (eggs) problems.push('The Gloam at the door: cut it back (a Ward Lantern, the wards) before the eggs turn grey.'); }
         const mk = marketsInReach(s, b);
         rows.push(row(`Markets within ${FEED_REACH}`, mk.length ? `${mk.length}, ${Math.round(mk.reduce((n, m) => n + m.stock, 0))} goods on their shelves` : '<span class="bad">none: its dragons will starve</span>'));
         const lg = lodgesFor(s, b);
@@ -838,8 +840,10 @@ export class UI {
       if (GOLEM_HOUSES.includes(b.kind)) {
         const gs = s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'golem' && a.load > 0 && a.homeId === b.id);
         const works = postableWorks(s, b);
-        rows.push(row('Wardens', gs.length ? `${gs.length} bound here: labour (12 hands each), guard (a ward of ${GOLEM_GUARD_RADIUS} around the foundry) or posted to a works within ${GOLEM_POST_REACH}` : 'none bound here yet'));
-        for (const g of gs) rows.push(row(`Warden ${g.id}`, `<select data-golem="${g.id}"><option value="labour" ${!g.duty ? 'selected' : ''}>labour: 12 hands for the city</option><option value="guard" ${g.duty === 'guard' ? 'selected' : ''}>guard: ward ${GOLEM_GUARD_RADIUS} here</option>${works.map((w) => `<option value="works:${w.id}" ${g.duty === 'works' && g.targetId === w.id ? 'selected' : ''}>at the works (${w.x},${w.y}): 12 hands at its bench</option>`).join('')}</select>`));
+        rows.push(row('Wardens', gs.length ? `${gs.length} bound here: labour (12 hands each), guard (a ward of ${GOLEM_GUARD_RADIUS} around the foundry), posted to a works within ${GOLEM_POST_REACH}, or in harness hauling from one (${GOLEM_LOAD} goods a trip, slow, tireless, afraid of no hound)` : 'none bound here yet'));
+        for (const g of gs) rows.push(row(`Warden ${g.id}`, `<select data-golem="${g.id}"><option value="labour" ${!g.duty ? 'selected' : ''}>labour: 12 hands for the city</option><option value="guard" ${g.duty === 'guard' ? 'selected' : ''}>guard: ward ${GOLEM_GUARD_RADIUS} here</option>${works.map((w) => `<option value="works:${w.id}" ${g.duty === 'works' && g.targetId === w.id ? 'selected' : ''}>at the works (${w.x},${w.y}): 12 hands at its bench</option>`).join('')}${works.map((w) => `<option value="haul:${w.id}" ${g.duty === 'haul' && g.targetId === w.id ? 'selected' : ''}>haul from (${w.x},${w.y}): ${GOLEM_LOAD} a trip, slow, tireless, fears no hound</option>`).join('')}</select>`));
+        const hauls = s.stats.golemHauls;
+        if (hauls || gs.some((g) => g.duty === 'haul')) rows.push(row('Hauled', `${Math.round(hauls)} goods by wardens in harness${s.stats.cartsBalked ? `; the donkey carts have balked at hounds ${s.stats.cartsBalked} times` : ''}`));
       }
       if (def.service) rows.push(row('Radius', `${b.kind === 'watchhouse' && mewsActive(s) ? `${def.service.radius * 2} tiles (the Drake Mews doubles it)` : `${def.service.radius} tiles`}`));
       if (def.waterRadius) {
@@ -937,15 +941,21 @@ export class UI {
     { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
     if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else { rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); const low = [...GUILD_IDS].sort((p, q) => s.guilds.standing[p] - s.guilds.standing[q])[0]; const inDays = Math.max(0, COUNCIL_SPACING - (s.day - s.guilds.lastCouncil)); rows.push(row('Next petition', `in ${inDays} day${inDays === 1 ? '' : 's'}, from the ${GUILDS[low].name} (standing ${Math.round(s.guilds.standing[low])})${s.guilds.standing[low] >= 60 ? ': content, so none' : ''}`)); } }
     if (b.kind === 'depot') {
+      if (s.merchant.visits) rows.push(row('The Wandering Merchant', `${s.merchant.visits} visit${s.merchant.visits === 1 ? '' : 's'}, ${s.merchant.spent.toLocaleString()} crowns spent, ${s.merchant.eggs} egg${s.merchant.eggs === 1 ? '' : 's'}${s.merchant.talks ? `, ${s.merchant.talks} evening${s.merchant.talks === 1 ? '' : 's'} of stories${s.merchant.talks >= 2 ? ' (a favour owed)' : ''}` : ''}`));
       const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
       const due = caravanDue(s);
       rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods.toLocaleString()} sold so far for ${s.stats.caravanCrowns.toLocaleString()} crowns`));
     }
-    if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${boundGolems(s) * GOLEM_LABOUR} hands)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
+    if (b.kind === 'golemfoundry' || b.kind === 'forgetemple') { rows.push(row('Wardens bound', `${boundGolems(s)} (${labourGolems(s) * GOLEM_LABOUR} hands of labour)`)); if (b.kind === 'forgetemple') rows.push(row('The forge', b.lit ? 'a Warden woken within 20 tiles climbs out bound' : 'unlit: the hammers are still')); if (wildGolems(s)) problems.push(`${wildGolems(s)} wild warden(s) walk the map; they bind within 12 tiles of a lit ${b.kind === 'forgetemple' ? 'Forge-Temple' : 'foundry'}.`); }
     if (b.kind === 'leybeacon') rows.push(row('Skyrays', raysLured(s) ? 'circling the beacon' : b.lit ? 'none in reach; schools cross in Bloom and Ember' : 'unlit: the beacon is silent'));
     if (b.kind === 'drakemews') { rows.push(row('Patrols', b.lit ? 'Watch Houses reach twice as far' : 'unlit: the drakes sleep')); rows.push(row('Riders', `${s.agents.filter((a) => a.kind === 3 && a.species === 'rider' && a.anchorId === b.id).length} aloft · ${s.stats.riderRescues} rescues`)); }
     if (MOORINGS.includes(b.kind)) { const qn = s.buildings.filter((o) => o && MOORINGS.includes(o.kind) && o.state === 'ok').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); rows.push(row('Moorings', `${qn} on the map`)); if (qn < 2) problems.push('A single mooring has nowhere to send a barge: build another on the same water.'); }
-    if (b.kind === 'skydock') { const air = s.airship; rows.push(row('Airship', air.status === 'away' ? `away, back in ${Math.max(0, 10 - (s.day - air.since))} days with ${Math.round(air.goods)} goods` : air.status === 'docked' ? `docked; leaves on day 3 of the season` : 'none')); rows.push(row('Voyages', `${s.stats.airshipVoyages} · ${s.stats.airshipCrowns} crowns earned`)); }
+    if (b.kind === 'skydock') {
+      const air = s.airship;
+      const wy = (air.wyvernId ?? -1) >= 0 ? s.dragons.find((d) => d.id === air.wyvernId) : null;
+      rows.push(row(wy ? 'Wyvern' : 'Airship', air.status === 'away' ? `${wy ? `${wy.name} is ` : ''}away, back in ${Math.max(0, (wy ? WYVERN_DAYS : 10) - (s.day - air.since))} days with ${Math.round(air.goods)} goods` : air.status === 'docked' ? `docked; ${air.wyvern ? `a wyvern leaves on day 3 of the season with up to ${WYVERN_LOAD} goods, no mana asked${dockWyvern(s) ? '' : ' (none at home: the airship goes instead, if the Dock is lit)'}` : 'the airship leaves on day 3 of the season'}` : 'none'));
+      rows.push(row('Voyages', `${s.stats.airshipVoyages} by airship, ${s.stats.wyvernVoyages} by wyvern · ${s.stats.airshipCrowns} crowns earned`));
+    }
     if (b.kind === 'portalarch') {
       const other = s.buildings.filter((o) => o && o.kind === 'portalarch' && o !== b) as Building[];
       rows.push(row('Paired', other.length ? (other[0].lit && b.lit ? `with the arch at (${other[0].x},${other[0].y}), open` : 'yes, but an arch is unlit') : 'no: raise a second arch'));
@@ -1029,10 +1039,18 @@ export class UI {
       btn.onclick = () => { const why = this.host.toggleSluice(b.id); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshInfo(); };
       el.appendChild(btn);
     }
+    if (b.kind === 'skydock' && b.state === 'ok') {
+      const btn = document.createElement('button');
+      const w = dockWyvern(s);
+      btn.textContent = s.airship.wyvern ? 'Send the airship again (200 goods, 10 days, needs the Dock lit)' : `Send a wyvern instead (${WYVERN_LOAD} goods, ${WYVERN_DAYS} days, no mana${w ? `: ${w.name} would go` : '; none at home to send yet'})`;
+      btn.style.width = '100%';
+      btn.onclick = () => { const why = this.host.toggleSkyDock(); if (why) this.toast(`<p class="bad">${why}</p>`, 2000); this.refreshInfo(); };
+      el.appendChild(btn);
+    }
     el.querySelectorAll('select[data-golem]').forEach((sel) => {
       (sel as HTMLSelectElement).onchange = () => {
         const [duty, target] = (sel as HTMLSelectElement).value.split(':');
-        const why = this.host.setGolemDuty(Number((sel as HTMLElement).dataset.golem), duty as 'labour' | 'guard' | 'works', Number(target ?? -1));
+        const why = this.host.setGolemDuty(Number((sel as HTMLElement).dataset.golem), duty as 'labour' | 'guard' | 'works' | 'haul', Number(target ?? -1));
         if (why) this.toast(`<p class="bad">${why}</p>`, 2000);
         this.refreshInfo();
       };
@@ -1341,8 +1359,8 @@ export class UI {
             <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
             <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
             <li><b>Longwood and the Fen-Nex</b>: big forests hide <b>war-tigers</b> that hunt hearths by night (hunters, strong Watch or warden drakes kill them); the <b>Fen-Nex</b> fox-folk trade honestly half the time and may take a quarter of the city; a wild surge can leave a drifting <b>mana-storm</b> that warps buildings until wards dissolve it; the <b>Font of Quieting</b> (Free City) makes the dead easy to lay down.</li>
-            <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; a lit <b>Drake Mews</b> sends <b>drake riders</b> to the restless and to fires; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus.</li>
-            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills (a delver drake halves it); a <b>Golem Foundry</b> (Burgh) binds them and its panel sets each one to labour, to guard the foundry or to work a Craft bench. A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale; a <b>Rayscale Mirror</b> gets glim-dust instead). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
+            <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; a lit <b>Drake Mews</b> sends <b>drake riders</b> to the restless and to fires; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus, or, from its panel, a <b>wyvern</b> of the city's own: half the load, back in five days, no mana, and one time in two it brings a rival wardlight's egg offer or a challenge for the Ring. Once a <b>Wyrm-Court</b> stands, a drake may be a <b>mount</b>: a Watch rider across the whole map. A cradle with the Gloam at its door three days running sees its <b>eggs go grey</b>; the <b>Wandering Merchant</b> remembers every visit (the egg on offer changes, bought eggs cut her prices, two evenings of stories are a favour owed); <b>sextons</b> walk to a guild brawl on the square and can part it.</li>
+            <li><b>Beasts of the Concord and the sky</b>: mining wakes <b>Concord Wardens</b> in the hills (a delver drake halves it); a <b>Golem Foundry</b> (Burgh) binds them and its panel sets each one to labour, to guard the foundry, to work a Craft bench or to <b>haul</b> from one: a stone cart of 30 goods, slow and tireless, that fears no hound (the donkey carts balk and stand when Gloam-hounds come within 4 tiles). A <b>Ley Beacon</b> keeps a school of <b>skyrays</b> for a season (happiness, rayscale; a <b>Rayscale Mirror</b> gets glim-dust instead). A <b>Drake Mews</b> doubles Watch House reach. Three taming edicts trade one beast for another.</li>
             <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; a cradle there attunes matching eggs; grown dragons radiate their line's aura (an Ember drake lifts Craft a tenth, a Sky wyvern speeds the carts, a Tide drake swims a barge a day) and every building in one names it; rare goods build the <b>Marvels</b> tab and have sinks of their own (the <b>Scale-Mail</b> edict, the Forge's fire, an eggshell-lined nest, glim-dust scattered on a dark lane from the Land tab, the caravan's share); the Gloam's pressure rises with the dead and falls with faith.</li>
             <li><b>The Sleeping Wyrm</b> coils around one distant node. Spires there wake it; awake, it wants tribute each season or it burns. A <b>Wyrm-Court</b> (Free City, once a wyrm is awake) binds it as the city's guardian: lit, it halves the wyrm's appetite; dark two days, the wyrm sulks. Every lit <b>wonder hall</b> delights the city (+5) and lifts the next grant a tenth; the <b>Lantern of the Cores</b> takes the first 30 of a surge and cracks for 10 days.</li>
             <li><b>Walkers</b>: Watch Houses send watchmen, Boneyards sextons, Healer's Shrines healers, spires Tallowkin wardens (under their edict), Academies scholars to the delve, Tamer's Lodges tamers to the cradles, and shrines pilgrims to the temple. The streets they walk count as covered, and each does its job where it goes.</li>
@@ -1728,6 +1746,8 @@ export class UI {
       const bits: string[] = [];
       if (d.stage === 0) bits.push(d.lined ? 'nest lined with eggshell: hatches a quarter faster' : `<button data-line="${d.id}" ${st.materials.eggshell >= 1 ? '' : 'disabled'} title="One eggshell: the egg warms a quarter faster">Line the nest (1 eggshell)</button>`);
       if (d.stage >= 1) bits.push(seat ? `seat at the lodge (${seat.x},${seat.y})` : `<span class="bad">no lodge seat${d.stage === 1 ? ': it will not grow' : ': grows at half pace' + (d.training === 'hard' ? ', scorches thrice as often' : '')}</span>`);
+      if (d.voyage !== undefined) bits.push(`<b>away on the Sky-Dock's run</b>, back on day ${d.voyage}`);
+      if (d.role === 'mount') bits.push(`a Watch rider on its back: flies to the restless and to fires anywhere on the map (${st.stats.mountRescues} rescues by mounts)`);
       if (d.stage >= 1 && cradle) {
         const mk = feedingMarkets(st, d, cradle);
         bits.push(d.role === 'warden' && d.roleTarget > 0 ? `eats ${eats(d)} a day from the ${mk.length} market${mk.length === 1 ? '' : 's'} of its district` : `eats ${eats(d)} a day from ${mk.length} market${mk.length === 1 ? '' : 's'} within ${FEED_REACH} of its cradle`);
@@ -1737,7 +1757,7 @@ export class UI {
       if (d.role === 'courier') bits.push(d.lastTrip ? `last trip: ${d.lastTrip.goods} goods from (${d.lastTrip.fx},${d.lastTrip.fy}) to (${d.lastTrip.tx},${d.lastTrip.ty}) on day ${d.lastTrip.day}` : 'no trip yet');
       if (d.role === 'champion' && d.stage >= 2) { const o = boutOdds(st, d, nextBoutDay(st)); bits.push(`<b>odds ${Math.round(o.chance * 100)} %</b> at the bout on day ${nextBoutDay(st)}${champ && champ.id !== d.id ? ` (${champ.name} fights first)` : ''}`); }
       const roleSel = d.stage >= 2
-        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
+        ? `<select data-role="${d.id}"><option value="none" ${d.role === 'none' ? 'selected' : ''}>No role</option>${d.stage >= 3 ? `<option value="courier:-1" ${d.role === 'courier' ? 'selected' : ''}>Courier (flies goods to empty markets)</option>` : ''}${hasRing ? `<option value="champion:-1" ${d.role === 'champion' ? 'selected' : ''}>Champion of the Wyrm-Ring</option>` : ''}${st.buildings.some((b) => b && b.kind === 'wyrmcourt' && b.state === 'ok') ? `<option value="mount:-1" ${d.role === 'mount' ? 'selected' : ''}>Mount: a Watch rider across the map</option>` : ''}${districts.map((k) => `<option value="warden:${k}" ${d.role === 'warden' && d.roleTarget === k ? 'selected' : ''}>Warden of ${(st.districtNames[k] || DISTRICT_NAMES[k - 1])}</option>`).join('')}${mines.map((m) => `<option value="delver:${m.id}" ${d.role === 'delver' && d.roleTarget === m.id ? 'selected' : ''}>Delver at mine (${m.x},${m.y})</option>`).join('')}</select>`
         : `<span class="muted">${d.stage === 0 ? 'in the egg' : 'too young for a role'}</span>`;
       return `<div class="dragon">
         <div><b>${d.name}</b> <span class="muted">the ${d.second ? `${LINE_INFO[d.line].name}-${LINE_INFO[d.second].name} ${d.trueblood ? 'trueblood' : 'crossed'}` : LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]}</span> · mood <span class="${d.mood < 30 ? 'bad' : d.mood > 60 ? 'good' : ''}">${Math.round(d.mood)}</span>${d.hungry >= 2 ? ' <span class="bad">hungry</span>' : ''}</div>

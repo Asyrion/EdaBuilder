@@ -349,12 +349,39 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
-## Done in iteration 72 (the wyrm redrawn after the user's painting)
+## Done in iteration 74 (the wyrm redrawn after the user's painting)
 
 - **The wyrm in flight is the user's painting,** a green serpent with an orange belly, horns and bat wings, imported
   through `npm run art`. The importer gained `holes`, which keys background enclosed by the body.
 - **The coil around the node** (asleep, awake, dead) is redrawn in code in the painting's form and colours.
-- Art only: the control seed is unchanged (DESIGN §4.103).
+- Art only: the control seed is unchanged (DESIGN §4.105).
+
+## Done in iteration 73 (the loose ends)
+
+- **The eggs go grey:** the Gloam three days at a cradle's door turns its eggs to the grey line; a warning on the first
+  day, the cradle's panel counts down, an Annals row.
+- **The Sky-Dock's wyvern:** from the Dock's panel a wyvern of the city flies the surplus instead of the airship: 100
+  goods, five days, no mana; it may bring a rival's egg offer or a challenge for the Ring (a bout at once, odds × ¾,
+  purse × 2).
+- **Hatchling riders cross the map:** the mount role, once a Wyrm-Court stands: a drake with a Watch rider flies to the
+  restless and to fires anywhere on the map.
+- **Sextons at the brawl:** they walk to the Guildhall on the brawl's day and can part it (a fifth choice); **the duel
+  flown:** the great wyrm's own flyer chases the Vein-Wyrm and the old one turns first.
+- **The merchant's memory** in state: her text and prices read the visits, the crowns, the eggs and the evenings of
+  stories; a favour owed after two.
+- The bar's verdict is in DESIGN §4.104.
+
+## Done in iteration 72 (golem haulers)
+
+- **The hauler duty:** a bound Concord Warden can be put in harness at a Craft works within 20 of its foundry. A golem
+  cart appears at the works' door and carries up to 30 goods a trip (what the market has room for) at half a donkey's
+  pace, resting 20 ticks instead of a donkey's hundreds. It drinks the foundry's mana and is not labour. The works lost, a
+  surge, or any other duty ends it.
+- **Donkeys balk at hounds:** a donkey cart with a Gloam-hound within 4 tiles stands for 60 ticks; the carters complain
+  once a day. Floating carts, barges and haulers do not.
+- **Drawn as a vehicle:** a procedural blue-grey warden hauling a stone-wheeled wagon, mirrored when it heads left, its
+  eyes and rune lit at night.
+- The Foundry's panel, the catalog, the Annals, the help and the README say so. The bar's verdict is in DESIGN §4.103.
 
 ## Done in iteration 71 (a faster balance bar)
 
@@ -407,7 +434,7 @@
   - the marsh and the atoll;
   - the Great Gate;
   - the Fen-Nex and the Belerial as peoples;
-  - golem haulers;
+  - golem haulers (built in iteration 72);
   - two ways to lose;
   - a handful of loose ends;
   - markets and the road (AUDIT B40).
@@ -884,9 +911,9 @@ Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, mini
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
 vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
 war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
-lore-drop list of §11 are complete except what the iteration-68 audit found: golem haulers, the loose ends, and the
-swamp and atoll maps (items 1–2 and 4–6 below). The Great Gate was built in iteration 69 and the two ways to lose in
-iteration 70.
+lore-drop list of §11 are complete except what the iteration-68 audit found: the
+swamp and atoll maps (items 3–5 below). The Great Gate was built in iteration 69, the two ways to lose in
+iteration 70, the golem haulers in iteration 72 and the loose ends in iteration 73.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
@@ -900,25 +927,22 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first, then the milestones. Each numbered item is one iteration.
 
-1. **Golem haulers** (§17.4 C, §8.4). Foundry carts that carry 30 and are not scared by hounds.
-2. **Loose ends** (§17.4 D).
-   - The eggs go grey.
-   - The Sky-Dock's wyvern.
-   - Hatchling riders.
-   - Sextons at the brawl, and the duel flown by the wyvern agent.
-   - The Wandering Merchant's memory of past deals.
-3. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
+1. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
    change: the wide bar.
-4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-5. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-6. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-7. **M18 part 1, the Fen-Nex** (§17.2).
+2. **The sprites faced and fitted** (§17.4 F; the user's request in iteration 72). Check every building sprite in the game,
+   painted and drawn, for its orientation and how it sits in its tile square: the procedural buildings are the yardstick
+   (door and gable on the right face, the footprint diamond filled neatly). Correct the ones faced wrong or that look off:
+   a flip, a new anchor or `targetHeight` in `art/sources.json`, or a redraw. Screenshots before and after. Art only.
+3. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+4. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+5. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+6. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-8. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-9. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+7. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-10. **M19 part 2, the Belerial** (§17.3).
+9. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-13. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+10. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
