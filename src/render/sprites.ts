@@ -7,7 +7,7 @@ import { Painter, h2 } from './painter';
 import { drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3, drawDepot, drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3 } from './painted';
 /** The zone houses drawn by hand after their paintings (iteration 81), by `${zone}_l${level}` then variant. */
 const PAINTED: Record<string, (() => { p: Painter; glow: Painter; ax: number; ay: number })[]> = { hearth_l2: [drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3], craft_l1: [drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3] };
-import { drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
+import { drawBrickworks, drawGreatGate, drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {
@@ -2208,6 +2208,7 @@ export function generateSprites(): SpriteDef[] {
   for (let f = 0; f < 2; f++) { const w = drawWyrmFly(f); out.push({ name: `wyrm_fly_${f}`, p: w.p, glow: w.glow, ax: 30, ay: 34 }); }
   push('b_ring', drawRing());
   for (let st = 0; st < 4; st++) push(`b_worldtree_${st}`, drawWorldTree(st));
+  push('b_brickworks', drawBrickworks()); // drawn after the user's painting, given to no building yet
   push('gate_2', drawGate(2));
   push('gate_3', drawGate(3));
   // creatures

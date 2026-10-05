@@ -33,6 +33,9 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
   Weir, the spawning run.
 - No milestone is open. The rest of the list is items, not milestones.
 
+**Iteration 80** (DESIGN §4.111, from the other session, art only) added `b_brickworks`: a brickworks drawn after the
+user's painting and given to no building yet. Ask the user before assigning it.
+
 ## The next item
 
 **Two things wait on the user:**

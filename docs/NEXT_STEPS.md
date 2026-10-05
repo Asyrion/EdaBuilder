@@ -357,6 +357,12 @@
   cross-gabled roof, awnings and stalls.
 - **Judged side by side** at 6× and 10× (`scripts/playtest81.mjs`). The merge waits for the user's word (DESIGN §4.112).
 - Art only: the sim files are unchanged.
+## Done in iteration 80 (a brickworks drawn after the user's painting)
+
+- **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
+  arch, the house, the clay shed and the yard.
+- **Not given to a building yet,** at the user's choice. Assigning it is one line, a building's sprite name, or a new
+  Brickworks with rules of its own (DESIGN §4.111).
 
 ## Done in iteration 79 (the paintings redrawn in code, part 1)
 

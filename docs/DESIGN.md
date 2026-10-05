@@ -4463,6 +4463,37 @@ the market crowd, the picket fences' every post). The user judges whether parts 
   at night, before and after. No errors, no missing sprites.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
+### 4.111 A brickworks drawn after the user's painting, not yet given to a building (iteration 80)
+
+Art only, at the user's request: a painting of a brickworks, recreated in procedural code as close to it as the game's 2:1
+view allows. The user chose "just the drawing for now", so no building uses it yet.
+
+**`drawBrickworks()`** (in `src/render/drawn.ts`, sprite `b_brickworks`) is drawn on the 3×3 frame with the §4.96 kit.
+- **The brick hall:** coursed brick, an orange tile roof with dark timber ridge and barge boards, a tie beam and corner
+  posts, and a smoking brick chimney. The arch has a brick ring and the kiln burning inside under its stone hood, with
+  the small oven beside it and stacked bricks.
+- **The house beside it:** brick with timber posts and rails, two lit windows, a plank door on stone steps, and a stone
+  chimney.
+- **The clay shed:** open, with clay heaps under its lean-to roof.
+- **The yard:** brick stacks and a drying rack, the bench and tools, spades against the wall, pots, a woodpile, the clay
+  cart, the stone path, and the fenced garden. A grass rim surrounds the earth.
+- **The night:** the kiln, the oven and the windows glow on the glow layer.
+- **The layout:** the painting's front is the sprite's right face, the side a building turns to its road.
+
+**Found while drawing:**
+- A gable roof's far slope faces away from the viewer. It must go down before the walls and the gable end, or it covers
+  the gable: the first draft lost both gables that way.
+- Deep, narrow buildings show their side walls and roof slopes rather than their fronts in this view. The hall and the
+  house were made wide and shallow, and their roofs lowered.
+
+**What it cannot copy:** the painting is a frontal elevation, and the game's view puts every front on a diagonal. The
+gables read smaller than in the painting, and the yard's small things, at 98 pixels wide, are only hints.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 80 test files with 506 tests after merging iteration 79, and `npm run build`.
+- **Shown to the user:** the sprite at 8× beside the painting, at 3×, and in a running game by day and by night, standing
+  in for a 3×3 building's sprite in that page only.
+- The sim is unchanged.
 ### 4.112 The twelve redrawn again, each after its own painting (iteration 81)
 
 Art only, after the user's verdict on §4.110's sheet: "all the remade buildings look too similar; stick as close to the
@@ -5760,6 +5791,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   the painting, a building is crisp at any size and one set with the procedural buildings. The paintings stay in
   `inspirations/` as the designs; `off: true` keeps their entries on the record. Part 1 is a trial of twelve; the rest
   follows only if the user says so.
+- *A building painted by the user is drawn in code, then waits for its building (iteration 80):* the brickworks is a
+  registered sprite with no catalog entry, so the game is unchanged until the user names the building it belongs to.
 - *Compose, don't spec, when a painting is the design (iteration 81):* a spec gives every house the same box; a painting's
   likeness is in its composition. `painted.ts` places boxes, gables along either axis, porches, verandas, dormers,
   chimneys and props where the painting has them, in the set's style. The peoples keep their own looks for the same
