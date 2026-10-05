@@ -1,17 +1,18 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 78 (the scale of things: the small buildings scaled to the citizen; art only; DESIGN
-§4.109), a playtest finding taken between the single items and M17. Iteration 77 (the sprites faced and fitted, §4.108)
-closed the single items of §17.4; 76 (the wyrm's wings beat, §4.107) came before it; 75 (markets want a good road, §4.106)
-was built in a parallel session and merged first. Two sessions at once means merging main before the PR and taking the
-next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 79 (the paintings redrawn in code, part 1: twelve buildings drawn by the procedural
+painter after their paintings, judged side by side; art only; DESIGN §4.110). Iteration 78 (the small buildings scaled to
+the citizen, §4.109) and 77 (the sprites faced and fitted, §4.108, the last single item of §17.4) came before it; 76 (the
+wyrm's wings beat, §4.107) before that; 75 (markets want a good road, §4.106) was built in a parallel session and merged
+first. Two sessions at once means merging main before the PR and taking the next free numbers. Update this file whenever
+a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.109 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.110 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -35,8 +36,11 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **M17 part 1, marsh terrain** (DESIGN §17.1 item 1). The first part of the first of the three
-milestones; a sim change, so it runs the wide bar.
+**The user decides first:** iteration 79 was a trial of twelve redraws (DESIGN §4.110). If the user wants the rest, NEXT_STEPS
+items 1 and 2 are parts 2 and 3 (the other 30 paintings, in the same manner: a `drawBuilding` spec per painting with the
+painter's features, bespoke drawing only for shapes no spec gives, `off: true` on the painting's entry, the side-by-side sheet
+of `scripts/playtest79.mjs` with the new names). If not, item 3, **M17 part 1, marsh terrain** (DESIGN §17.1 item 1), a sim
+change that runs the wide bar:
 - **Generation:** a new `Terrain` value beside slow water (river bends, lake margins), never on the founding node. The
   terrain is generated once per map (`src/sim/world.ts`; the water's bodies are worked out in `src/sim/water.ts`, M16).
 - **The look:** reed beds, standing pools and mist at dawn, by the procedural painter (`src/render/sprites.ts`,
@@ -109,7 +113,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (79 files, 501 tests at this writing; `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (80 files, 506 tests at this writing; `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -177,6 +181,21 @@ Built since iteration 68:
 - Finish what was started; say so when something is not met rather than rounding up.
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
+
+## Learned in iteration 79 (not yet said elsewhere)
+
+- **A painting is a design, the painter draws it:** `zoneSpecs` and `SERVICE_SPECS` take a `Partial<BuildingSpec>` per
+  painting (materials, roof, the features that name it); the painter's features (`porch`, `flowerBox`, `bush`, `sideTree`,
+  `fence`, `woodpile`, `dormer`, `balcony`, `stalls`, `brickChimney`) and walls (`log`, `brick`) cover the paintings seen so
+  far. Add a feature only when a painting needs it, in the manner of `fishRack`: a few flat polygons, no new shading.
+- **Switch a painting off with `off: true`** in `art/sources.json` and `git rm` its PNGs and glows; the importer skips it,
+  the atlas falls back to the code sprite. The tests that read the manifest filter `off` entries.
+- **Side by side needs two servers:** main's `dist` copied and served on 4174 holds the paintings; `scripts/playtest79.mjs`
+  grabs each sprite as a data URL from both and composes one sheet, a citizen beside each.
+- **Bright palette colours read as flags at 18 px** (the seep's first roof in `runeViolet`); use the set's muted pairs
+  (`bluewash2`/`deepPurple`, `copperRoof`/`copperRoof2`).
+- **The Pages deploy can sit queued for an hour** (iteration 78's run was cancelled by GitHub while queued, the re-run queued
+  again); re-run it (`actions_run_trigger`, `rerun_workflow_run`) and check later rather than waiting in the session.
 
 ## Learned in iteration 78 (not yet said elsewhere)
 

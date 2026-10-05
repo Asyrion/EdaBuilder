@@ -4404,6 +4404,65 @@ hand-drawn: its post lost 12 rows, the lamp and the base are as they were.
   before and after. No errors, no missing sprites.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
+### 4.110 The paintings redrawn in code, part 1: the wells, the level-2 hearths, the level-1 crafts and the depot (iteration 79)
+
+Art only, at the user's request after §4.109: "redraw every sprite currently in the game like you made the procedural ones,
+but copy our custom designs", in the same style as the procedural set. A painting scaled to a citizen and a half (the well
+of §4.109, 15 px wide) is a smudge; the procedural painter is crisp at any size. So the paintings become designs for the
+painter, and the painter draws the game. This is **part 1, a trial batch of twelve**, judged side by side with the paintings
+so the user can settle the direction before the rest (parts 2 and 3 are on the list).
+
+**The rule.** A redraw is a `drawBuilding` spec wherever a spec can give the shape (the same 2:1 faces, the same two-tone
+walls and roofs, the same windows, doors, chimneys and lantern posts, the 1 px outline, the door on the right face), so a
+redrawn hearth sits beside a Grimmen hearth as one set. Bespoke drawing only where no spec can give the shape (the wells),
+with the same primitives and flat shading as `drawWell` always had. Within that style each redraw keeps the painting's
+silhouette, materials, colours and the features that name it, at §4.109's citizen yardstick.
+
+**What was added to the painter** (`src/render/sprites.ts`), each a few flat polygons in the set's colours:
+- walls `log` (the timber wall with a seam under every third row and a knot now and then) and `brick` (the only new
+  colours, `brick1`/`brick2` in the palette); a `brickChimney`;
+- features `porch` (a lean-to roof over the door on two posts), `flowerBox` (a box of flowers under the ground-floor
+  windows), `bush`, `sideTree` (round, conifer or autumn, at the left corner), `fence` (pickets along the left front edge),
+  `woodpile`, `dormer` (a window on the front slope), `balcony` (a railing across the right face), `stalls` (a striped awning
+  and a counter of goods along the right face).
+
+**The twelve, from their paintings:**
+- **The well** (`wells/image_2(1)`): a mossy stone ring under a shingled roof on two posts, the bucket on the rim, a coil of
+  rope and a mound of earth beside it, cobbles under it. **The seep** (`image_1(1)`): the same well under a blue slate roof,
+  grass and flowers at its foot. **The tide-well** (`image_3(2)`): a shrine well, its water glowing blue, a green pagoda
+  roof with upturned eaves and a finial, runes on the arch, a lantern at each eave. Each 18 px (1.5 citizens), the ring's
+  base at the tile's centre (`wellRing`, `wellRoof`, `drawWell`, `drawSeep`, `drawTidewell`).
+- **The level-2 hearths** (`wooden_houses`): a plank house with a tile roof, a brick chimney, a porch, a lantern, a fence,
+  a bush and a tree (v0); a log cabin with a shingle roof, a porch, a flower box, a woodpile and a pine (v1); a log cabin
+  with a red tile roof, a brick chimney, a porch, a bush, a tree and a fence (v2); a log cabin with a dormer, a flower box, a
+  porch, a lantern and a bush (v3). 37–39 px (3.1–3.3 citizens; the Tallowkin wickhouses 3.6).
+- **The level-1 crafts** (`general_craft`): the tan workshop with a sign, a balcony, flower boxes, a woodpile and a round
+  tree (v0); the red-roofed cottage with a sign, a porch, flower boxes, a tree, a fence and a lantern (v1); the half-timbered
+  house with a green roof, a brick chimney, a dormer, a flower box, an autumn tree and a fence (v2); the stone house with a
+  slate roof, a sign, a balcony, a porch, a pine and a woodpile (v3). 33 px (2.8 citizens).
+- **The depot** (`trade_houses/image_0(1)`): a half-timbered hall on a slate roof with a dormer, a brick chimney, a sign, a
+  banner, a lantern, flower boxes, and the striped awning and counter of goods along its front. 66×59 (4.9 citizens).
+- **The peoples:** no painting is the look for everyone any more, so the Grimmen cut the four hearths and crafts in stone,
+  the Veshari in plank and reed, the Tallowkin as wickhouses, each keeping the painting's porch, tree, fence and dormer.
+
+**The paintings switched off, not deleted:** `off: true` in `art/sources.json` makes the importer skip the entry (the
+painting stays in `inspirations/`, the entry keeps its flip and heights for the record); the twelve PNGs and their glows
+are gone from `public/art/sprites/` and the manifest, so the atlas draws the code sprites.
+
+**Judged side by side** (`scripts/playtest79.mjs`: painting from main's build on port 4174, redraw from the build, each over
+its diamond with a citizen, at 6×): the redraws are crisp at the citizen scale and carry the paintings' materials, roof
+colours, trees, chimneys and porches; what a 34 px sprite cannot carry is the paintings' detail (the signboards' lettering,
+the market crowd, the picket fences' every post). The user judges whether parts 2 and 3 follow.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 80 test files with 506 tests (`tests/iteration79.test.ts`: the twelve off and out of the
+  manifest, the yardstick kept, the wells' anchors, the brick, the log seams and the tide-well's glow, every zone sprite of
+  every people present; `tests/iteration56`, `iteration77`, `iteration78` and `sprites.test.ts` skip the switched-off
+  paintings), `npm run build`, `npm run art`.
+- **`scripts/playtest79.mjs`**: the side-by-side sheet, the peoples' sheet, the street of §4.109 at 4× and 6× by day and
+  at night, before and after. No errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5643,3 +5702,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   its footprint is judged against its tile (§4.108); a well, a post or a shed is judged against the folk who use it, and
   may leave its tile half empty. Towers and wonders are free to rise. The survey sheet now stands a citizen beside every
   sprite, so the next import is judged both ways at once.
+- *The paintings become designs for the painter; the painter draws the game (iteration 79):* a painting scaled to the
+  citizen yardstick is a smudge, and a painting at the size it reads is too big against the folk. Redrawn in code after
+  the painting, a building is crisp at any size and one set with the procedural buildings. The paintings stay in
+  `inspirations/` as the designs; `off: true` keeps their entries on the record. Part 1 is a trial of twelve; the rest
+  follows only if the user says so.
