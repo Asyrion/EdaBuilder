@@ -61,6 +61,7 @@ export interface GuildState {
   lastCouncil: number; // day of the last petition
   pleasedDays: Record<GuildId, number>; // days in a row at or above BOON_AT; at HALL_DAYS the guild builds its hall
   lastWar: number; // day of the last brawl between rivals
+  brawlDay: number; // the day the last brawl fired, for the sextons who walk to the square (iteration 73)
   charters: GuildId[]; // rival pairs reconciled by charter, keyed by the first of the pair ('carters' | 'alchemists')
 }
 
@@ -100,7 +101,7 @@ export const BOON_AT = 70;
 export const STRIKE_AT = 25;
 
 export function initGuilds(): GuildState {
-  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 }, lastWar: 0, charters: [] };
+  return { standing: { carters: 50, alchemists: 50, spirewrights: 50, sextons: 50 }, demand: null, lastCouncil: 0, pleasedDays: { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 }, lastWar: 0, brawlDay: -1, charters: [] };
 }
 
 /** A lit, standing Guildhall seats the council. */
@@ -198,6 +199,7 @@ export function dailyGuilds(s: GameState): void {
         s.pendingEvent = { id: def.id, title: def.title, text: def.text, choices: def.choices.map((c) => ({ label: c.label, desc: typeof c.desc === 'function' ? c.desc(s) : c.desc })) };
         s.firedEvents.push(`${def.id}:?`);
         gs.lastWar = s.day;
+        gs.brawlDay = s.day; // the sextons walk to the square today and tomorrow (iteration 73)
         s.stats.guildWars++;
         return;
       }
@@ -265,8 +267,20 @@ function warEvent(a: GuildId): EventDef {
       { label: `Side with ${B}`, desc: `${B} +20, ${A} −10.`, apply: side(b, a) },
       { label: 'Call the Watch (300 crowns)', desc: 'Both guilds +5; happiness −3 for 5 days as the square is cleared with rods.', apply: (s) => { s.treasury -= 300; s.guilds.standing[a] = Math.min(100, s.guilds.standing[a] + 5); s.guilds.standing[b] = Math.min(100, s.guilds.standing[b] + 5); s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 5, label: 'The Watch cleared the square' }); return 'The Watch wades in. Nobody wins, which both guilds can live with.'; } },
       { label: 'Let them brawl', desc: 'A building by the Guildhall catches fire; happiness −6 for 10 days; neither guild is moved.', apply: (s) => { const hall = s.buildings.find((x) => x && x.kind === 'guildhall'); let burnt: Building | null = null; if (hall) for (const x of s.buildings) { if (x && x.state === 'ok' && BUILDING_BY_KEY[x.kind].category === 'zone' && Math.max(Math.abs(x.x - hall.x), Math.abs(x.y - hall.y)) <= 8) { burnt = x; break; } } if (burnt) { burnt.state = 'burning'; burnt.stateDays = 0; markDirty(s, burnt.x, burnt.y); s.stats.firesTotal++; } s.modifiers.push({ kind: 'happiness', value: -6, until: s.day + 10, label: 'The guild brawl' }); return burnt ? `A lamp goes over in the scuffle: fire at (${burnt.x},${burnt.y}). The guilds stop to watch it burn.` : 'They fight until dark and go home bruised.'; } },
+      { label: 'Let the sextons part them', desc: (s) => { const n = sextonsAbroad(s); return n ? `${n} sexton${n === 1 ? '' : 's'} abroad with salt: both guilds +5, the sextons +10, no crowns.` : 'No sexton is abroad: nobody comes, and the guilds are unmoved.'; }, apply: (s) => { const n = sextonsAbroad(s); if (!n) return 'The Watch looks for a sexton and finds the boneyard shut. The brawl runs its course and settles nothing.'; s.guilds.standing[a] = Math.min(100, s.guilds.standing[a] + 5); s.guilds.standing[b] = Math.min(100, s.guilds.standing[b] + 5); s.guilds.standing.sextons = Math.min(100, s.guilds.standing.sextons + 10); return `${n === 1 ? 'A sexton walks' : `${n} sextons walk`} into the square with the salt spoon held up, and nobody will throw a stave past it. Both guilds go home ashamed; the sextons are owed.`; } },
     ],
   };
+}
+
+/** Sextons out on the roads: the walkers of the boneyards, ossuaries and chapels (iteration 73). */
+export function sextonsAbroad(s: GameState): number {
+  let n = 0;
+  for (const a of s.agents) if (a.kind === AgentKind.Walker && (a.job === 'sexton' || a.job === 'stonesexton')) n++;
+  return n;
+}
+/** The square the brawl is on: the Guildhall. */
+export function brawlToday(s: GameState): boolean {
+  return s.guilds.brawlDay >= 0 && s.day - s.guilds.brawlDay <= 1;
 }
 
 export const WAR_EVENTS: EventDef[] = (['carters', 'alchemists'] as GuildId[]).map(warEvent);

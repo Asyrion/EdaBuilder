@@ -238,7 +238,7 @@ function hasBuildingNear(state: GameState, x: number, y: number, r: number, litO
   return false;
 }
 /** True if a Gloam tile touches the building's footprint (4-neighbourhood). */
-function gloamAtDoor(state: GameState, b: Building): boolean {
+export function gloamAtDoor(state: GameState, b: Building): boolean {
   for (let dy = -1; dy <= b.h; dy++)
     for (let dx = -1; dx <= b.w; dx++) {
       if ((dx === -1 || dx === b.w) && (dy === -1 || dy === b.h)) continue;

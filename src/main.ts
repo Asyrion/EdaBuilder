@@ -166,6 +166,7 @@ class Game {
       raiseCradle: (id) => { const why = this.cmd('cradle', id).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); } this.ui.refresh(); return why; },
       lineNest: (id) => { const why = this.cmd('nest', id).reason ?? null; if (!why) this.audio.click(); return why; },
       setBurnWyrmfire: (on) => { this.cmd('burnWyrmfire', on); this.audio.click(); },
+      toggleSkyDock: () => { const why = this.cmd('skydock').reason ?? null; if (!why) this.audio.click(); this.ui.refresh(); return why; },
       toggleSluice: (id) => { const why = this.cmd('sluice', id).reason ?? null; if (!why) this.audio.spire(); this.ui.refresh(); return why; },
       setGolemDuty: (id, duty, target) => { const why = this.cmd('golem', id, duty, target).reason ?? null; if (!why) this.audio.click(); return why; },
       scatterDust: (x, y) => { const r = this.cmd('dust', x, y); if (r.ok) { this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },

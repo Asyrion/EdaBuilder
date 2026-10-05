@@ -355,7 +355,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'cradle', name: 'Wyrm-Cradle', category: 'service',
-    desc: 'A stone nest warmed by the ley. Holds two dragon eggs (four as a Great Cradle, raised from its panel at the Burgh for 4,000 crowns and 4 more mana); hatchlings and drakes live here and eat from markets within 12 tiles. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Needs a ley node or spire within 6 to be raised at all.',
+    desc: 'A stone nest warmed by the ley. Holds two dragon eggs (four as a Great Cradle, raised from its panel at the Burgh for 4,000 crowns and 4 more mana); hatchlings and drakes live here and eat from markets within 12 tiles. Must be lit (a spire within 5 tiles) and drinks 8 mana a day, or the eggs go cold. Keep the Gloam from its door: three days of it and the eggs go grey, whatever line they were. Needs a ley node or spire within 6 to be raised at all.',
     flavor: 'The stones are laid in the spiral the grass makes around a node. Nobody taught the masons that; the eggs did.',
     w: 2, h: 2, cost: 3500, upkeep: 30, manaUse: 8, unlock: 4, needsMana: true,
     service: { type: 'leisure', radius: 5, strength: 0.3 },
@@ -440,7 +440,7 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'wyrmcourt', name: 'Wyrm-Court', category: 'wonder',
-    desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day, or 20 while the Court is lit; let the Court go dark two days and the wyrm sulks until it is lit again.',
+    desc: 'A ring of singing-stones where a Tallowkin Wyrm-Singer binds the woken wyrm to the city. Needs an awake wyrm, schooling (a third of folk educated) and 40 mana. A bound wyrm wards 30 tiles around its lair, keeps hounds away, lifts every heart by 10, and eats 40 goods a day, or 20 while the Court is lit; let the Court go dark two days and the wyrm sulks until it is lit again. With a Court standing, a drake may be set as a mount: a Watch rider that flies to the restless and to fires anywhere on the map.',
     flavor: 'The song has no words. The singers say the wyrm supplies them.',
     w: 3, h: 3, cost: 18000, upkeep: 150, manaUse: 40, needsMana: true, landValue: 12, unlock: 7, wonder: true,
   },
@@ -526,7 +526,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'skydock', name: 'Sky-Dock', category: 'wonder',
-    desc: 'A mooring tower for the airship of the wardlights. On the third day of each season the ship leaves with up to 200 surplus goods and returns ten days later with crowns at 1.6x the season price, and sometimes a tale. 30 mana.',
+    desc: 'A mooring tower for the airship of the wardlights. On the third day of each season the ship leaves with up to 200 surplus goods and returns ten days later with crowns at 1.6x the season price, and sometimes a tale. 30 mana. From its panel the Dock may send a wyvern of the city instead: 100 goods, back in five days, no mana, and one time in two a rival wardlight follows it home with an egg to sell or a challenge for the Ring.',
     flavor: 'The next lantern on the horizon has a dock like this one. That is how you know it is a lantern.',
     w: 2, h: 2, cost: 26000, upkeep: 150, manaUse: 30, unlock: 8, wonder: true, needsMana: true, landValue: 15,
   },

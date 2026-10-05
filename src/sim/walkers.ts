@@ -1,5 +1,6 @@
 /** Walkers: NPC kinds that embody a service by doing a visible job on the roads around their building. See DESIGN.md 4.62 and 14.1. */
 import { BUILDING_BY_KEY } from './catalog';
+import { brawlToday } from './guilds';
 /** A shrine whose pilgrim prayed at the Temple reaches half again as far for this many days. */
 export const CONSECRATED_DAYS = 10;
 import { mewsActive } from './beasts';
@@ -192,6 +193,17 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     onTile: (s, _a, i) => paintBonus(s, 'death', i, 0.06, 0.25),
     meets: [AgentKind.Restless],
     cap: 3,
+    // on a brawl's day it walks to the Guildhall's square with its salt and back (iteration 73); any other day it patrols as before
+    target: (s, a, anchor) => (a.phase === 1 || brawlToday(s) ? errandTarget(s, a, anchor, () => (brawlToday(s) ? nearestRoadOf(s, a, ['guildhall']) : -1)) : null),
+    onArrive: (s, a, i) => {
+      if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
+      if (brawlToday(s) && buildingsAt(s, i).some((b) => b.kind === 'guildhall')) {
+        a.phase = 1;
+        s.stats.brawlsParted++;
+        effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'bell', tick: s.tick });
+        logLine(a, 'Parted the brawl on the square with the salt spoon held up.');
+      }
+    },
     onMeet: (s, a, o) => {
       if (o.kind !== AgentKind.Restless || a.load >= 3) return false;
       a.load += 1;

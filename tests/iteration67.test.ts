@@ -102,7 +102,7 @@ describe('The commands', () => {
       tax: ['market', 9], edict: ['curfew', true, 0], loan: [], repay: [], sector: [0], deepen: [0], daughter: [0, 'Twin'],
       quarter: [1, null], lesson: ['districts'], priority: [-1, 0], renameDistrict: [1, 'A'], training: [-1, 'gentle'],
       vent: [-1], replate: [-1], rain: [-1], role: [-1, 'none', -1], cradle: [-1], nest: [-1], burnWyrmfire: [true],
-      sluice: [-1], golem: [-1, 'labour', -1], quarry: [-1, 'deer'], tale: [0, null], guild: ['carters'], dev: ['addcrowns', '100', f.x, f.y],
+      sluice: [-1], skydock: [], golem: [-1, 'labour', -1], quarry: [-1, 'deer'], tale: [0, null], guild: ['carters'], dev: ['addcrowns', '100', f.x, f.y],
     };
     for (const op of COMMAND_OPS) {
       expect(args[op], `a test call for ${op}`).toBeDefined();

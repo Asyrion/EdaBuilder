@@ -701,6 +701,12 @@ export class Renderer {
           sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
           if (a.variant === 0 && Math.random() < 0.1) this.particles.emit({ x: wx, y: wy + 4 - alt, vx: (Math.random() - 0.5) * 4, vy: 2, maxLife: 0.8, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
           if (a.variant === 4 && Math.random() < 0.2) this.particles.emit({ x: wx - 8, y: wy + 6 - alt, vx: -20, vy: 0, maxLife: 0.6, size: 1, color: PAL.flower3, glow: false, kind: 'mote' });
+        } else if (sp === 'drake' && state.dragons.find((x) => x.id === a.dragonId)?.role === 'mount') {
+          // a mounted drake (iteration 73): the rider sprite in the sky layer, a shadow beneath, its line's glow
+          const alt = a.alt ?? 0;
+          const s = this.atlas.get(`rider_${Math.floor(this.time * 6 + a.id) % 2}`);
+          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => { const ctx2 = this.ctx; ctx2.fillStyle = `rgba(10,8,16,${0.3 - alt / 220})`; ctx2.beginPath(); ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 10, 4, 0, 0, Math.PI * 2); ctx2.fill(); } });
+          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
         } else if (sp === 'drake') {
           const d = state.dragons.find((x) => x.id === a.dragonId);
           const stage = d && d.stage >= 2 ? 2 : 1;

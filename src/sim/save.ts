@@ -137,6 +137,12 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
   state.wyrm.starved = state.wyrm.starved ?? 0; // the wyrm's refusals in a row and its razing flight (iteration 70)
   state.wyrm.razing = state.wyrm.razing ?? false;
+  // the Sky-Dock's wyvern, the merchant's memory and the brawl's day (iteration 73): a save from before them starts at nothing
+  state.airship.wyvern = state.airship.wyvern ?? false;
+  state.airship.wyvernId = state.airship.wyvernId ?? -1;
+  state.airship.wyvernTale = state.airship.wyvernTale ?? 0;
+  state.merchant = state.merchant ?? { visits: 0, spent: 0, eggs: 0, talks: 0 };
+  state.guilds.brawlDay = state.guilds.brawlDay ?? -1;
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
   if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
   if (!state.dustLit || state.dustLit.length !== state.w * state.h) state.dustLit = new Uint16Array(state.w * state.h);
