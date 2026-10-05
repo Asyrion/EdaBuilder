@@ -4281,6 +4281,44 @@ Vellish 42 has 20 doors paved by day 60 (24 of its 48 markets on cobbles).
     (11.6 to 11.8 %), and still not met.
   - Both cache files are committed; main's grew by the draws the floors asked for.
 
+### 4.107 The wyrm's wings beat, and a bigger sleeping head (iteration 76)
+
+Art only, at the user's request after §4.105: the sleeping head a bit bigger, and wings that move while the wyrm flies.
+Before this, the two flight frames were the painting a pixel apart (`hop`), so only the whole body bobbed.
+
+**The beat is cut from the painting** by a new importer key, `flap` (`flapFrame` and `dropSpecks` in
+`scripts/lib/sprite.mjs`):
+- **Each wing** is a hand-set polygon in the painting's pixels with a shoulder pivot:
+  - the near wing over the upper-left;
+  - the far wing behind the neck, marked `behind`, so it is drawn only where the background shows.
+- **Each frame** turns every wing about its shoulder (`rot`, degrees) and squashes it toward the shoulder (`sy`), as a
+  wing seen edge-on.
+  - The place the wing leaves is painted background white, and the key takes it.
+  - The wing's root (`root`, 55 source pixels) is drawn in both places, so the back under the joint is never holed.
+  - Specks under 600 source pixels, left at the wing's old edge, are dropped.
+- **The wyrm's frames:** up (the painting), mid (16° and 0.82, the far wing 12° and 0.85), and down (32° and 0.62,
+  the far wing 24° and 0.7).
+- **One box for every frame:** all frames are cropped to their common box and scaled by one factor, and they share
+  frame 0's anchor. The body holds still while the wings move. A test holds the manifest to one size and anchor for
+  all three.
+- **The renderer** plays them up, mid, down, mid at six frames a second. Without frame 2 it falls back to two frames.
+- **Tuning:** the first sign turned the wings up toward the head, and a too-tight polygon left the wing's pale edge
+  behind. The polygons were widened and the sign flipped; the root and the speck filter closed the rest.
+
+**The sleeping head** is 1.7 times the base head (it was 1.2). It lies across the near coil with its eyes shut, its horns
+and outline scaled with it.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 77 test files with 491 tests after merging iteration 75 (`tests/iteration76.test.ts`: the frames' shared size and anchor,
+  and `flapFrame` moving only a wing's paint), `npm run build`, and `npm run art:check`.
+- **`scripts/playtest76.mjs`:**
+  - the 6× sheet of the three frames;
+  - the sleeping wyrm before (main, on port 4174) and after;
+  - the wyrm in flight at three moments of the beat and at night;
+  - the renderer's frame index over a second, which plays 0, 1 and 2.
+  - No errors.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main. The control seed (`npx tsx scripts/balance.ts 42 150`) is identical to the cached run (2,130 folk).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5507,3 +5545,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   cobble, a track is mud in the Thaw and the Hush), so every cobbled city is bit-identical. The bot got the lever the
   rule asks for, one door a day from the centre out, because a rule the bot can only lose by would measure its cost and
   not the game.
+- *A wing beat is cut from one painting rather than painted again (iteration 76):* the importer turns each wing about its
+  shoulder inside a hand-set polygon and squashes it, so the beat keeps the painting's own pixels. All frames share one
+  crop, scale and anchor, so the body holds still. A second painting with the wings down would beat more cleanly, and
+  could replace frame 2 by name.

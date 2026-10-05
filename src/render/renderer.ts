@@ -688,7 +688,9 @@ export class Renderer {
         } else if (sp === 'wyvern' || sp === 'wyrm') {
           const alt = a.alt ?? 0;
           const big = sp === 'wyrm';
-          const s = this.atlas.get(big ? `wyrm_fly_${Math.floor(this.time * 4 + a.id) % 2}` : `wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
+          // the wyrm's wing beat (iteration 76): up, mid, down, mid at six frames a second when the painting has its flap frames
+          const beat = this.atlas.has('wyrm_fly_2') ? [0, 1, 2, 1] : [0, 1];
+          const s = this.atlas.get(big ? `wyrm_fly_${beat[Math.floor(this.time * 6 + a.id) % beat.length]}` : `wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
           // ground shadow, in the depth-sorted pass
           items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
             const ctx2 = this.ctx;
