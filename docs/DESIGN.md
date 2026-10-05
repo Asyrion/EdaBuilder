@@ -4175,6 +4175,52 @@ line saying whether it is owed, since a tale's choices are one list.
     the Gloam's edge (none in 192 runs), and the merchant's memory changes only her second visit's text and prices, which
     the bot's policy reads the same way. The tests and the playtest hold the rules.
 
+### 4.105 Markets want a good road (iteration 74)
+
+NEXT_STEPS item 1, §17.4 E, AUDIT B40: the Market zone has promised since iteration 1 that it "wants shoppers, goods and a
+good road", and the road tier at a market's door had never touched anything. A road upgrade bought speed, capacity and
+land value; a market on a dirt track traded like one on a Lantern-way.
+
+**The rule** (`roads.ts` `marketRoadMultAt`, read by `computeLedger` in `economy.ts`). The road at a market's door (the
+tile its carts use, `roadTileOf`) scales the market's tithe by its tier as the sim reads it (`roadAt`: an unlit Lantern-way
+is cobble), with the mud rule tracks already have for speed:
+
+| at the door | trade |
+|---|---|
+| no road (a street bulldozed) | × 0.8 |
+| Dirt Track | × 0.9; × 0.8 in the mud of the Thaw and the Hush |
+| Cobbled Road | × 1.0 |
+| Lantern-way, lit | × 1.1 (unlit: a cobbled road) |
+| Glowvine Lane | × 1.1 |
+
+- Only the market tithe is scaled, beside the Lantern Levy, the Market quarter and the Market Square factors already there.
+  A city whose every market door is cobbled is bit-identical. Stock, carts and demand are untouched.
+- **What the player sees:** the market's panel has a row, "Road: at the door, Dirt Track: trade × 0.9, × 0.8 in the mud of
+  the Thaw and the Hush; a cobbled road trades in full, a lit Lantern-way a tenth more", and a problem line on a track. The
+  Market zone's desc, the help's goods line and the README say the numbers.
+
+**The bot** (`bot.ts` `paveDoors`, after `ensureGrid`): from Market Town (cobble unlocked) it cobbles the door of one
+track-side market a day, the nearest its centre first, when the treasury holds the tile's cost, 500 more and the loan. A
+street, so it reads the treasury and not the goal's purse. `buildRoad` draws no rng. Without the lever the rule would only have cost the bot, whose grid is tracks but for every tenth line; with it,
+Vellish 42 has 20 doors paved by day 60 (24 of its 48 markets on cobbles).
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 76 test files with 489 tests, and `npm run build`.
+- **`tests/iteration74.test.ts`** (4 tests): the factor per tier, the two mud seasons, cobbles that do not mud, an unlit
+  Lantern-way as cobbled, a lit one and a Glowvine Lane at 1.1, no road at 0.8; the panel's words for each; the Market
+  desc; two markets alike, one door cobbled, pay 0.95 of both cobbled (0.9 in the mud, 1.05 with a lit Lantern-way) with
+  the Craft and Hearth tithes untouched; the bot paves nothing before Market Town or when poor, then one door a day, the
+  nearest first, and stops when none is left.
+- **`scripts/playtest74.mjs`** in Chromium: a street with two markets, one on a track (its panel with the row and the
+  problem line) and one on cobbles; the Thaw's mud ("× 0.8 in the mud of this season"); a lit Lantern-way at 1.1 with the
+  Budget open (the market tithe 18.8 in the mud against 19.9 with the Lantern-way); a bot city (seed 42, Vellish) driven
+  to day 60: 20 doors paved, 24 of 48 markets on cobbles, the Burgh on day 54. A dusk brightness probe, no errors, no
+  missing sprites.
+- **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main` from a worktree of the committed sim, main's
+  side from the cache). Every bot city meets this rule, so the bar can see it either way.
+
+TABLE_PENDING
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -4972,8 +5018,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   - Hatchling riders cross the map (§8.2).
   - Sextons attend the brawl, and the great wyrm's duel is flown by the wyvern agent (§13.13).
   - The Wandering Merchant remembers past deals in state, not only in words (§11 item 4).
-- **E. Markets want a good road** (AUDIT B40). The road tier at a market's door counts for its trade, as the
-  Market's description promises. This is a sim change, so it runs the wide bar.
+- ✅ **E. Markets want a good road** (AUDIT B40; built in iteration 74, §4.105). The road tier at a market's door counts for
+  its trade, as the Market's description promises.
 - **F. The sprites faced and fitted** (the user's request in iteration 72). Check every building sprite in the game, painted
   and drawn, for its facing and how it sits in its tile square. The procedural set is the yardstick: door and gable on the
   right face, the footprint diamond filled neatly. Correct the ones faced wrong or that look off, by a flip, a new anchor or
@@ -5393,3 +5439,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   sextons' choice is appended, not inserted, so every recorded choice keeps its index; the duel is a phase on the agent
   the great wyrm already has; the merchant's memory is four numbers in state and a text that reads them, with the owed
   favour listed always and refused until it is owed, since a tale's choices are one list.
+- *A market's road counts for its tithe, and the bot paves (iteration 74):* the rule is a factor on the one number the
+  road at the door plainly touches, the market's trade, with the tiers the sim already reads (an unlit Lantern-way is
+  cobble, a track is mud in the Thaw and the Hush), so every cobbled city is bit-identical. The bot got the lever the
+  rule asks for, one door a day from the centre out, because a rule the bot can only lose by would measure its cost and
+  not the game.

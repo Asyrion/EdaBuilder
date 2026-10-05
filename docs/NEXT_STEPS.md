@@ -349,6 +349,14 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 74 (markets want a good road)
+
+- **The rule:** the road at a market's door scales its tithe: a dirt track a tenth less (a fifth in the mud of the Thaw
+  and the Hush), cobbles in full, a lit Lantern-way or a Glowvine Lane a tenth more, no road a fifth less. The market's
+  panel has the row and a problem line; the Market desc, the help and the README say the numbers. AUDIT B40 closed.
+- **The bot paves:** from Market Town it cobbles one track-side market door a day, the nearest its centre first.
+- The bar's verdict is in DESIGN §4.105.
+
 ## Done in iteration 73 (the loose ends)
 
 - **The eggs go grey:** the Gloam three days at a cradle's door turns its eggs to the grey line; a warning on the first
@@ -905,7 +913,7 @@ Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (
 vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
 war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
 lore-drop list of §11 are complete except what the iteration-68 audit found: the
-swamp and atoll maps (items 3–5 below). The Great Gate was built in iteration 69, the two ways to lose in
+swamp and atoll maps (items 2–4 below). The Great Gate was built in iteration 69, the two ways to lose in
 iteration 70, the golem haulers in iteration 72 and the loose ends in iteration 73.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
@@ -920,22 +928,20 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first, then the milestones. Each numbered item is one iteration.
 
-1. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
-   change: the wide bar.
-2. **The sprites faced and fitted** (§17.4 F; the user's request in iteration 72). Check every building sprite in the game,
+1. **The sprites faced and fitted** (§17.4 F; the user's request in iteration 72). Check every building sprite in the game,
    painted and drawn, for its orientation and how it sits in its tile square: the procedural buildings are the yardstick
    (door and gable on the right face, the footprint diamond filled neatly). Correct the ones faced wrong or that look off:
    a flip, a new anchor or `targetHeight` in `art/sources.json`, or a redraw. Screenshots before and after. Art only.
-3. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-4. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-5. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-6. **M18 part 1, the Fen-Nex** (§17.2).
+2. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+3. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+4. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+5. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-7. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-8. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+6. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+7. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-9. **M19 part 2, the Belerial** (§17.3).
+8. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-10. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+9. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
