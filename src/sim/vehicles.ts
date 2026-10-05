@@ -23,6 +23,8 @@ export const QUAY_REACH = 8;
 export const RIDER_RANGE = 40;
 export const AIRSHIP_LOAD = 200;
 export const AIRSHIP_DAYS = 10;
+export const WYVERN_LOAD = 100; // the Sky-Dock's wyvern carries half the airship's load (iteration 73)
+export const WYVERN_DAYS = 5; // and is back in half the time, needing no mana
 
 // ---------- floating carts ----------
 export function floatingTarget(s: GameState): number {
@@ -251,9 +253,66 @@ export function riderTarget(s: GameState): number {
 }
 
 // ---------- airship ----------
-export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number }
+export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number; wyvern?: boolean; wyvernId?: number; wyvernTale?: number }
 export function newAirship(): AirshipState {
-  return { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
+  return { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0, wyvern: false, wyvernId: -1, wyvernTale: 0 };
+}
+/** The wyvern the Dock would send: a wyvern-stage dragon with no role or a courier's, at home (iteration 73). */
+export function dockWyvern(s: GameState): Dragon | null {
+  return s.dragons.find((d) => d.stage >= 3 && (d.role === 'none' || d.role === 'courier') && d.voyage === undefined) ?? null;
+}
+/** The Dock's panel: send a wyvern instead of the airship, or the airship again. The reason it cannot, or null. */
+export function toggleSkyDockWyvern(s: GameState): string | null {
+  if (!skyDock(s)) return 'No Sky-Dock stands';
+  s.airship.wyvern = !s.airship.wyvern;
+  return null;
+}
+/** Surplus goods gathered from the works' shelves for a run beyond the Gloam, up to `cap`; nothing under 20. */
+function gatherSurplus(s: GameState, cap: number): number {
+  let goods = 0;
+  forEachBuilding(s, (b) => {
+    if (goods >= cap || !isGoodsSource(b) || b.state !== 'ok' || b.stock <= 10) return;
+    const t = Math.min(b.stock - 10, cap - goods);
+    b.stock -= t;
+    goods += t;
+  });
+  return goods;
+}
+/** Day 3 in wyvern mode: a wyvern flies the surplus out, no mana asked, back in WYVERN_DAYS. False when none could go. */
+function sendWyvern(s: GameState, dock: Building): boolean {
+  const air = s.airship;
+  const d = dockWyvern(s);
+  if (!d) return false;
+  const goods = gatherSurplus(s, WYVERN_LOAD);
+  if (goods < 20) return false;
+  air.status = 'away';
+  air.goods = goods;
+  air.since = s.day;
+  air.wyvernId = d.id;
+  d.voyage = s.day + WYVERN_DAYS;
+  s.agents = s.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId === d.id));
+  s.stats.wyvernVoyages++;
+  effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
+  pushMessage(s, `${d.name} takes the Sky-Dock's run with ${Math.round(goods)} goods in its panniers, for the wardlights beyond the Gloam. No mana, and back in ${WYVERN_DAYS} days.`, 'info', true, { x: dock.x, y: dock.y });
+  return true;
+}
+/** The wyvern is home: pay out, and one time in two it brings a tale of the rival wardlight. */
+function wyvernReturns(s: GameState, dock: Building | null): void {
+  const air = s.airship;
+  const crowns = Math.round(air.goods * s.trade.priceGoods * 1.6);
+  s.treasury += crowns;
+  s.stats.airshipCrowns += crowns;
+  const d = s.dragons.find((x) => x.id === air.wyvernId);
+  if (d) delete d.voyage;
+  air.wyvernId = -1;
+  air.status = 'docked';
+  const rng = rngOf(s);
+  const tale = rng.chance(0.5);
+  commitRng(s, rng);
+  if (tale) air.wyvernTale = s.day;
+  if (dock) effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
+  pushMessage(s, `${d ? d.name : 'The wyvern'} is home from beyond the Gloam: ${Math.round(air.goods)} goods sold for ${crowns} crowns.${tale ? ' It did not come back alone.' : ''}`, 'good', true, dock ? { x: dock.x, y: dock.y } : undefined);
+  air.goods = 0;
 }
 export function skyDock(s: GameState): Building | null {
   let out: Building | null = null;
@@ -265,16 +324,16 @@ export function skyDock(s: GameState): Building | null {
 export function dailyAirship(s: GameState): void {
   const dock = skyDock(s);
   const air = s.airship;
-  if (!dock) { if (air.status !== 'none') { air.status = 'none'; s.agents = s.agents.filter((a) => !(a.kind === AgentKind.Creature && a.species === 'airship')); } return; }
+  if (!dock) {
+    if (air.status !== 'none') { air.status = 'none'; s.agents = s.agents.filter((a) => !(a.kind === AgentKind.Creature && a.species === 'airship')); }
+    if ((air.wyvernId ?? -1) >= 0) { const d = s.dragons.find((x) => x.id === air.wyvernId); if (d) delete d.voyage; air.wyvernId = -1; air.goods = 0; } // the Dock gone, the wyvern finds its own way home
+    return;
+  }
   if (air.status === 'none') air.status = 'docked';
+  if (air.status === 'away' && (air.wyvernId ?? -1) >= 0) { if (s.day - air.since >= WYVERN_DAYS) wyvernReturns(s, dock); return; }
+  if (air.status === 'docked' && air.wyvern && s.day % 30 === 3 && sendWyvern(s, dock)) return; // the wyvern instead of the airship (iteration 73); with none to send, the airship goes if the Dock is lit
   if (air.status === 'docked' && dock.lit && s.day % 30 === 3) {
-    let goods = 0;
-    forEachBuilding(s, (b) => {
-      if (goods >= AIRSHIP_LOAD || !isGoodsSource(b) || b.state !== 'ok' || b.stock <= 10) return;
-      const t = Math.min(b.stock - 10, AIRSHIP_LOAD - goods);
-      b.stock -= t;
-      goods += t;
-    });
+    const goods = gatherSurplus(s, AIRSHIP_LOAD);
     if (goods < 20) return;
     air.status = 'away';
     air.goods = goods;

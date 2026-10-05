@@ -73,6 +73,8 @@ export interface HushState { year: number; emptied: number[]; warned?: number[];
 
 export type HeartHeld = 'none' | 'set' | 'guardians' | 'sold' | 'shared';
 export interface HeartState { held: HeartHeld; step: number; day: number }
+/** The Wandering Merchant's memory: visits made, crowns spent, eggs bought, visits spent only talking (iteration 73). */
+export interface MerchantState { visits: number; spent: number; eggs: number; talks: number }
 
 export type BuildingState = 'ok' | 'burning' | 'ruin' | 'abandoned' | 'building';
 
@@ -102,6 +104,7 @@ export interface Building {
   tended?: number; // day a healer last tended this home (+4 happiness that day)
   relit?: number; // lit by a lamplighter's candle until this day (the Tallowkin, iteration 52)
   visited?: number; // day a tamer last visited this cradle (growth ×1.1 that day)
+  grey?: number; // a cradle: days in a row the Gloam has stood at its door; at 3 the eggs go grey (iteration 73)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
   priority?: 0 | 1 | 2; // brownout tier: 0 essential, 1 normal, 2 dim (dark first); unset = by category
@@ -181,7 +184,7 @@ export interface WaterState {
 
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm' | 'fen';
 export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
-export type DragonRole = 'none' | 'warden' | 'delver' | 'courier' | 'champion';
+export type DragonRole = 'none' | 'warden' | 'delver' | 'courier' | 'champion' | 'mount'; // mount: a Watch rider across the whole map, once a Wyrm-Court stands (iteration 73)
 export type Training = 'gentle' | 'hard' | 'wild';
 
 export interface Dragon {
@@ -202,6 +205,7 @@ export interface Dragon {
   born: number; // day
   lastTrip?: { fx: number; fy: number; tx: number; ty: number; goods: number; day: number }; // a courier's last delivery (iteration 53)
   lined?: boolean; // an egg whose nest is lined with eggshell warms a quarter faster (iteration 53)
+  voyage?: number; // away on the Sky-Dock's run: the day it returns (iteration 73)
 }
 
 /** A dragon that left the city (starved, trained wild, its cradle gone): it returns after a season, wild, to ask a tribute. */
@@ -455,7 +459,8 @@ export interface GameState {
   daughter: { node: number; x: number; y: number; name: string; day: number; twin: number } | null;
   cleanDays: number; // inherited-collapse scenario: days in a row clean
   storms: { x: number; y: number; until: number; vx: number; vy: number }[];
-  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number };
+  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number; wyvern?: boolean; wyvernId?: number; wyvernTale?: number };
+  merchant: MerchantState; // the Wandering Merchant's record of past deals (iteration 73)
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
   modifiers: Modifier[];
@@ -487,6 +492,10 @@ export interface GameState {
     restlessTotal: number;
     houndsTotal: number;
     houndRaids: number;
+    eggsGreyed: number; // eggs the Gloam turned grey in their cradle (iteration 73)
+    wyvernVoyages: number; // the Sky-Dock's wyvern runs (iteration 73)
+    mountRescues: number; // restless laid and fires doused by mounted drakes (iteration 73)
+    brawlsParted: number; // sextons who reached a guild brawl on the square (iteration 73)
     golemHauls: number; // goods delivered by golem haulers (iteration 72)
     cartsBalked: number; // donkey carts that stopped for a hound (iteration 72)
     lastBalkDay: number; // the day the carters last complained of hounds (iteration 72)

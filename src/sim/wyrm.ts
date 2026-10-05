@@ -195,6 +195,7 @@ export function startFlyover(s: GameState, hostile: boolean, raze = false): void
   redraw(s);
   s.stats.wyrmFlyovers++;
   const gw = hostile ? greatWyrm(s) : null;
+  if (gw) sendDuelist(s); // the great wyrm's own agent flies to meet it (iteration 73)
   if (gw && raze) {
     // a great wyrm of the city's own meets the razing flight over the Stake: it turns, and the count starts again (iteration 70)
     const a = s.agents[s.agents.length - 1];
@@ -208,6 +209,20 @@ export function startFlyover(s: GameState, hostile: boolean, raze = false): void
   if (gw) { s.stats.wyrmDuels++; pushMessage(s, `${gw.name} rises from its cradle to meet the Vein-Wyrm over ${s.cityName}. Two shadows cross the valley; the old one turns first. Half the roofs it meant to burn are spared.`, 'milestone', true, { x: n.x, y: n.y }); return; }
   if (hostile) illTiding(s);
   pushMessage(s, hostile ? `The wyrm takes wing over ${s.cityName}. Its shadow is the size of a district.` : `The bound wyrm circles ${s.cityName} once, as it does each season. Glimmoths scatter like sparks.`, hostile ? 'bad' : 'info', true, { x: n.x, y: n.y });
+}
+
+/** The great wyrm's agent (a wyvern-stage flyer with its dragon's id) takes the duel: phase 4, chasing the Vein-Wyrm's agent (iteration 73). */
+export function sendDuelist(s: GameState): boolean {
+  const d = s.dragons.find((x) => x.stage >= 4 && x.voyage === undefined);
+  if (!d) return false;
+  const a = s.agents.find((o) => o.kind === AgentKind.Creature && (o.species === 'wyvern' || o.species === 'drake') && o.dragonId === d.id);
+  if (!a) return false;
+  a.phase = 4;
+  a.load = 0;
+  a.path = [];
+  a.timer = 0;
+  a.targetId = -1;
+  return true;
 }
 
 /** Called by the creature tick when the flying wyrm lands back on its node. */

@@ -4,7 +4,7 @@ import { bodyOf, ensureShoals, shoalCap } from './water';
 import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
-import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
+import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, fightBout, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, ringChampion, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
 import { hasAcademy } from './relics';
 import { canPlaceBuilding, commitRng, forEachBuilding, illTiding, placeBuildingRaw, pushMessage, rngOf, seasonOf } from './world';
 import { addFavour } from './economy';
@@ -23,10 +23,15 @@ export interface EventDef {
   id: string;
   title: string;
   text: string;
+  textFn?: (s: GameState) => string; // when set, the text for this city (the merchant's memory, iteration 73)
   when: (s: GameState) => boolean;
   once?: boolean; // never repeats
   priority?: boolean; // drawn before any other tale while it is eligible (a tale something else depends on)
   choices: { label: string; desc: string | ((s: GameState) => string); apply: (s: GameState, amount?: number) => string; slider?: { max: number; label: string } }[];
+}
+/** A tale's text for this city. */
+export function textOf(e: { text: string; textFn?: (s: GameState) => string }, s: GameState): string {
+  return e.textFn ? e.textFn(s) : e.text;
 }
 /** A choice's description for this city (a people may change the numbers). */
 export function descOf(c: { desc: string | ((s: GameState) => string) }, s: GameState): string {
@@ -471,12 +476,19 @@ const VISITORS: EventDef[] = [
   {
     id: 'merchant', title: 'The Wandering Merchant of Belerial',
     text: 'A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.',
+    textFn: (s) => {
+      const m = s.merchant;
+      if (!m.visits) return 'A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.';
+      const bought = m.eggs ? `${m.eggs === 1 ? 'an egg' : `${m.eggs} eggs`}${m.spent > m.eggs * 3000 ? ' and more' : ''}` : m.spent ? 'seeds and salts' : 'nothing yet';
+      return `The wagon is back, for the ${['second', 'third', 'fourth', 'fifth'][Math.min(3, m.visits - 1)]} time. The merchant remembers: ${m.visits} visit${m.visits === 1 ? '' : 's'}, ${m.spent.toLocaleString()} crowns, ${bought}${m.talks >= 2 ? ', and the stories you traded instead of coin. She says she owes you one' : m.talks ? ', and one evening of stories' : ''}. ${m.eggs ? `The basket holds ${m.eggs === 1 ? 'a storm egg this time' : 'an ember egg this time'}` : 'The white egg is still in its basket'}, ${m.eggs ? 'at a price for an old customer' : 'at the old price'}.`;
+    },
     when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay >= 10,
     choices: [
-      { label: 'The white egg (4,000 crowns)', desc: 'A sky egg: a wyvern-only line, the fastest courier. Needs a free cradle.', apply: (s) => { if (s.treasury < 4000) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, 'sky'); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= 4000; return `The egg is white as the plains at noon. The tamers name it ${d.name}.`; } },
-      { label: 'Longwood seeds (1,200 crowns)', desc: 'Goods production +20% for 30 days.', apply: (s) => { if (s.treasury < 1200) return 'Not enough crowns.'; s.treasury -= 1200; s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
-      { label: 'Ulum salts (600 crowns)', desc: 'Unquieted dead −30; health +10 for 15 days.', apply: (s) => { if (s.treasury < 600) return 'Not enough crowns.'; s.treasury -= 600; s.unquieted = Math.max(0, s.unquieted - 30); s.modifiers.push({ kind: 'health', value: 0.1, until: s.day + 15, label: 'Ulum salts' }); return 'Salt on every lip in the boneyard, and a cleaner cough in the low streets.'; } },
-      { label: 'Only talk', desc: 'No effect; the merchant remembers you.', apply: () => 'You trade stories: the Gates, the storm caller, a fox that was a man. The merchant leaves at dawn.' },
+      { label: 'The egg', desc: (s) => `${merchantEgg(s) === 'sky' ? 'A sky egg: a wyvern-only line, the fastest courier' : merchantEgg(s) === 'storm' ? 'A storm egg: the storm line, lightning in its wake' : 'An ember egg: the Craft line'}, ${merchantPrice(s, 4000).toLocaleString()} crowns${s.merchant.eggs ? ` (a tenth off for each egg bought: ${s.merchant.eggs})` : ''}. Needs a free cradle.`, apply: (s) => { const price = merchantPrice(s, 4000); const line = merchantEgg(s); if (s.treasury < price) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, line); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= price; s.merchant.spent += price; s.merchant.eggs++; merchantVisit(s); return `The egg is ${line === 'sky' ? 'white as the plains at noon' : line === 'storm' ? 'the blue of a sky before hail, and it hums' : 'warm as a hearthstone'}. The tamers name it ${d.name}.`; } },
+      { label: 'Longwood seeds', desc: (s) => `Goods production +20% for 30 days: ${merchantPrice(s, 1200).toLocaleString()} crowns.`, apply: (s) => { const price = merchantPrice(s, 1200); if (s.treasury < price) return 'Not enough crowns.'; s.treasury -= price; s.merchant.spent += price; merchantVisit(s); s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
+      { label: 'Ulum salts', desc: (s) => `Unquieted dead −30; health +10 for 15 days: ${merchantPrice(s, 600).toLocaleString()} crowns.`, apply: (s) => { const price = merchantPrice(s, 600); if (s.treasury < price) return 'Not enough crowns.'; s.treasury -= price; s.merchant.spent += price; merchantVisit(s); s.unquieted = Math.max(0, s.unquieted - 30); s.modifiers.push({ kind: 'health', value: 0.1, until: s.day + 15, label: 'Ulum salts' }); return 'Salt on every lip in the boneyard, and a cleaner cough in the low streets. The merchant counts it twice and writes your name in a book.'; } },
+      { label: 'Only talk', desc: 'No effect; the merchant remembers you, and two evenings of stories are a favour owed.', apply: (s) => { s.merchant.talks++; merchantVisit(s); return 'You trade stories: the Gates, the storm caller, a fox that was a man. The merchant leaves at dawn.'; } },
+      { label: 'Call in the favour', desc: (s) => (s.merchant.talks >= 2 ? `Owed for ${s.merchant.talks} evenings of stories: Longwood seeds for nothing (goods +20% for 30 days).` : `Not yet owed: two evenings of stories first (${s.merchant.talks} so far).`), apply: (s) => { if (s.merchant.talks < 2) { merchantVisit(s); return 'The merchant laughs. "One evening is not a debt." The wagon rolls on.'; } s.merchant.talks = 0; merchantVisit(s); s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds (a favour)' }); return 'She hands the seed-bag over without a word about price, and says the stories were worth more.'; } },
     ],
   },
 ];
@@ -491,6 +503,16 @@ export const WYRM_EVENTS: EventDef[] = [
       { label: 'Rayscale and glim-dust', desc: 'Rayscale +4 (artifacts +10% while it lasts); Craft goods +10% for 15 days.', apply: (s) => { s.airship.tale = 0; s.materials.rayscale += 4; s.modifiers.push({ kind: 'goods', value: 0.1, until: s.day + 15, label: 'Foreign reagents' }); return 'Crates of pale scale and a jar of dust that hums. The alchemists close the shutters for a week.'; } },
       { label: 'Passengers', desc: 'Up to 30 folk from the other wardlight move into empty hearths.', apply: (s) => { s.airship.tale = 0; return `${addResidents(s, 30)} folk step off the gondola with everything they own and a letter of introduction.`; } },
       { label: 'The story itself', desc: 'Happiness +5 for 20 days.', apply: (s) => { s.airship.tale = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: "The captain's story" }); return 'She tells it on the square at dusk. Nobody goes home until the spires dim.'; } },
+    ],
+  },
+  {
+    id: 'wyvern_tale', title: "The wyvern's return",
+    text: 'The wyvern came back from the wardlight beyond the Gloam with more than crowns. A rider from that city followed it in, with a basket under one arm and a challenge in the other hand: their Ring would like a bout with yours, and their tamers have an egg to sell.',
+    when: (s) => (s.airship.wyvernTale ?? 0) > 0 && !s.pendingEvent,
+    choices: [
+      { label: "The rival's egg (3,000 crowns)", desc: 'An ember, bone, glim or storm egg, if a cradle has room.', apply: (s) => { s.airship.wyvernTale = 0; if (s.treasury < 3000) return 'The purse is too light; the rider keeps the basket shut.'; const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim', 'storm'] as DragonLine[]); commitRng(s, rng); const d = addEgg(s, line); if (!d) return `No cradle has room for a ${LINE_INFO[line].name.toLowerCase()} egg; the rider takes it home again.`; s.treasury -= 3000; return `A ${LINE_INFO[line].name.toLowerCase()} egg from a cradle three lanterns east. The tamers name it ${d.name}.`; } },
+      { label: 'Take the challenge', desc: (s) => { const ring = s.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok'); const champ = ringChampion(s); return ring && champ ? `${champ.name} fights the rival's wyvern at the Ring today: the odds at three quarters, the purse doubled (${3000 * champ.stage} crowns).` : ring ? 'The Ring stands, but no champion is named: the challenge goes unanswered.' : 'No Wyrm-Ring stands: the challenge goes unanswered.'; }, apply: (s) => { s.airship.wyvernTale = 0; const ring = s.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok'); const champ = ringChampion(s); if (!ring || !champ) return 'The rider shrugs and rides home with the challenge unanswered. The story of it goes round the wardlights anyway.'; const rng = rngOf(s); const won = fightBout(s, champ, rng, 0.75, 2, "the rival wardlight's wyvern"); commitRng(s, rng); return won ? `${champ.name} meets the rival's wyvern over the Ring and sends it home bleeding. The purse is the richest the Ring has paid.` : `The rival's wyvern is a bigger beast than its rider let on. ${champ.name} is carried back to its cradle.`; } },
+      { label: 'Only the story', desc: 'Happiness +4 for 15 days.', apply: (s) => { s.airship.wyvernTale = 0; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 15, label: "The wyvern's story" }); return 'The rider tells it on the square: a city whose spires sing in a different key, and a wyvern of yours that would not be caught. Nobody goes home until the spires dim.'; } },
     ],
   },
   {
@@ -793,6 +815,18 @@ export function dailyGatePilgrims(s: GameState): void {
   s.stats.gateAlms += alms;
   pushMessage(s, lodged ? `Pilgrims of the Pass come through the Great Gate: ${lodged} lodge in ${s.cityName}'s empty homes and pay ${alms} crowns in alms.` : 'Pilgrims of the Pass come through the Great Gate, find no empty home, pray at the arch and walk on.', 'good');
 }
+/** The merchant's memory (iteration 73): the egg on offer is sky the first time, storm the second, ember after. */
+export function merchantEgg(s: GameState): DragonLine {
+  return s.merchant.eggs === 0 ? 'sky' : s.merchant.eggs === 1 ? 'storm' : 'ember';
+}
+/** A tenth off for each egg bought before, down to half. */
+export function merchantPrice(s: GameState, base: number): number {
+  return Math.round(base * Math.max(0.5, 1 - 0.1 * s.merchant.eggs));
+}
+function merchantVisit(s: GameState): void {
+  s.merchant.visits++;
+}
+
 export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, ...HEART_EVENTS, RIOT, DRAGON_RETURNS];
 
 /** Fires the calendar event of today, if any (once per year). */
@@ -805,7 +839,7 @@ export function maybeFireCalendar(s: GameState): void {
     if (e.season !== season || e.seasonDay !== dayOfSeason || !e.when(s)) continue;
     const tag = `${e.id}@${year}`;
     if (s.firedEvents.some((f) => f.startsWith(tag))) continue;
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: textOf(e, s), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${tag}:?`);
     s.lastEventDay = s.day;
     return;
@@ -816,7 +850,7 @@ export function maybeFireCalendar(s: GameState): void {
 export function maybeFireWyrm(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
   for (const e of WYRM_EVENTS) {
-    if (s.wyrm.state === 'none' && e.id !== 'airship_tale') continue; // the captain's story needs no wyrm
+    if (s.wyrm.state === 'none' && e.id !== 'airship_tale' && e.id !== 'wyvern_tale') continue; // the captain's story and the wyvern's need no wyrm
     if (!e.when(s)) continue;
     if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
     // the third asking after two refusals is the last (iteration 70)
@@ -850,7 +884,7 @@ export function maybeFireCaravan(s: GameState): void {
   if (s.stats.lastCaravanDay < 0) s.stats.lastCaravanDay = s.day - CARAVAN_EVERY / 2;
   if (s.day - s.stats.lastCaravanDay < CARAVAN_EVERY) return;
   const e = ALL_EVENTS.find((x) => x.id === 'caravan')!;
-  s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s), slider: c.slider })) };
+  s.pendingEvent = { id: e.id, title: e.title, text: textOf(e, s), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s), slider: c.slider })) };
   s.firedEvents.push(`${e.id}:?`);
   s.stats.lastCaravanDay = s.day;
 }
@@ -872,7 +906,7 @@ export function maybeFireEvent(s: GameState): void {
   const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = pool.find((x) => x.priority) ?? rng.pick(pool);
-    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: textOf(e, s), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.lastEventDay = s.day;
     s.firedEvents.push(`${e.id}:?`);
   }

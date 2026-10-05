@@ -6,10 +6,11 @@
 import { aspectAt } from './weave';
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, TICKS_PER_DAY, Zone, idx, type Building, type DepartedDragon, type Dragon, type DragonLine, type DragonRole, type GameState, type Training } from './types';
-import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf } from './world';
+import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, rngOf } from './world';
+import type { Rng } from '../core/rng';
 import { marketStockCap } from './agents';
 import { edictOn } from './edicts';
-import { igniteBuilding } from './hazards';
+import { gloamAtDoor, igniteBuilding } from './hazards';
 import { milestonesOf } from '../data/factions';
 
 export const STAGE_NAMES = ['egg', 'hatchling', 'drake', 'wyvern', 'wyrm'];
@@ -142,6 +143,8 @@ export function setRole(state: GameState, id: number, role: DragonRole, target =
   const d = state.dragons.find((x) => x.id === id);
   if (!d) return 'No such dragon';
   if (d.stage < 2) return 'Only a drake or older can take a role';
+  if (d.voyage !== undefined) return 'It is away beyond the Gloam on the Sky-Dock\'s run';
+  if (role === 'mount' && !state.buildings.some((b) => b && b.kind === 'wyrmcourt' && b.state === 'ok')) return 'Raise a Wyrm-Court first: a mount is raised at the Court';
   if (role === 'courier' && d.stage < 3) return 'Only a wyvern can fly goods';
   if (role === 'champion' && !state.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok')) return 'Build a Wyrm-Ring first';
   if (role === 'delver') {
@@ -244,8 +247,30 @@ function depart(state: GameState, d: Dragon, cradle: Building | null): void {
   state.departed.push({ name: d.name, line: d.line, stage: d.stage, day: state.day, x: cradle ? cradle.x : state.founding.x, y: cradle ? cradle.y : state.founding.y, returned: false });
 }
 
+/** The eggs go grey (iteration 73): a cradle with the Gloam at its door counts the days; at GREY_EGG_DAYS every egg in it turns to the
+ *  grey line, the chosen line lost. Hatchlings and older are not touched. The count resets when the Gloam is cut back. No rng. */
+export const GREY_EGG_DAYS = 3;
+export function dailyGreyEggs(state: GameState): void {
+  forEachBuilding(state, (c) => {
+    if (!isCradle(c.kind) || c.state !== 'ok') return;
+    if (!gloamAtDoor(state, c)) { if (c.grey) c.grey = 0; return; }
+    c.grey = (c.grey ?? 0) + 1;
+    const eggs = state.dragons.filter((d) => d.cradleId === c.id && d.stage === 0 && d.line !== 'grey');
+    if (!eggs.length) return;
+    if (c.grey < GREY_EGG_DAYS) {
+      if (c.grey === 1) pushMessage(state, `The Gloam stands at the door of the cradle at (${c.x},${c.y}) and the ${eggs.length === 1 ? 'egg in it is' : `${eggs.length} eggs in it are`} greying. Cut it back: ${GREY_EGG_DAYS} days and they turn.`, 'warn', true, { x: c.x, y: c.y });
+      return;
+    }
+    for (const d of eggs) { d.line = 'grey'; delete d.second; delete d.trueblood; }
+    state.stats.eggsGreyed += eggs.length;
+    illTiding(state);
+    pushMessage(state, `The ${eggs.length === 1 ? 'egg' : `${eggs.length} eggs`} in the cradle at (${c.x},${c.y}) ${eggs.length === 1 ? 'has' : 'have'} gone grey: ash-grey, half stone, cracked like a statue. What hatches will be of the Grey line, and the Gloam will part for it.`, 'bad', true, { x: c.x, y: c.y });
+  });
+}
+
 /** Daily dragon upkeep: warmth, food, growth, training mishaps, materials, roles. */
 export function dailyDragons(state: GameState): void {
+  dailyGreyEggs(state);
   const rng = rngOf(state);
   const gone: Dragon[] = [];
   const seats = lodgeSeats(state);
@@ -258,6 +283,7 @@ export function dailyDragons(state: GameState): void {
       pushMessage(state, d.stage === 0 ? `An egg went cold: its cradle is gone.` : `${d.name} the ${LINE_INFO[d.line].name} ${STAGE_NAMES[d.stage]} left: its cradle is gone.`, 'bad');
       continue;
     }
+    if (d.voyage !== undefined) continue; // away on the Sky-Dock's run: neither fed nor hungry, and it does not grow (iteration 73)
     const warm = cradle.lit;
     const asp = aspectAt(state, cradle.x, cradle.y);
     const attuned = asp === d.line || (!!d.second && asp === d.second);
@@ -439,12 +465,19 @@ export function seasonalBout(state: GameState): void {
     return;
   }
   const rng = rngOf(state);
+  fightBout(state, champ, rng);
+  commitRng(state, rng);
+}
+
+/** One bout at the Ring: the champion against a challenger, odds and purse scaled (a rival wardlight's challenge halves the odds' edge and
+ *  doubles the purse, iteration 73). Three rolls: ours, theirs and the challenger's name when none is given. */
+export function fightBout(state: GameState, champ: Dragon, rng: Rng, oddsScale = 1, purseScale = 1, named?: string): boolean {
   const odds = boutOdds(state, champ);
-  const ours = odds.ours + rng.next() * 40;
+  const ours = odds.ours * oddsScale + rng.next() * 40;
   const theirs = odds.theirs + rng.next() * 40;
-  const challenger = rng.pick(['a Gloam-grey drake with one eye', 'a marsh-wyrm of the Ulum', 'a Belerial rider\'s strider-drake', 'an ember wyvern from the Mahjula', 'a bone drake nobody will claim']);
+  const challenger = named ?? rng.pick(['a Gloam-grey drake with one eye', 'a marsh-wyrm of the Ulum', 'a Belerial rider\'s strider-drake', 'an ember wyvern from the Mahjula', 'a bone drake nobody will claim']);
   if (ours >= theirs) {
-    const purse = 1500 * champ.stage;
+    const purse = 1500 * champ.stage * purseScale;
     state.treasury += purse;
     state.stats.boutsWon++;
     state.modifiers.push({ kind: 'happiness', value: 8, until: state.day + 10, label: 'Ring victory' });
@@ -458,7 +491,7 @@ export function seasonalBout(state: GameState): void {
     state.modifiers.push({ kind: 'unrest', value: 0.05, until: state.day + 10, label: 'Ring defeat' });
     pushMessage(state, `THE RING: ${challenger} humbles ${champ.name} (the odds were ${Math.round(odds.chance * 100)} %), which limps back a ${STAGE_NAMES[champ.stage]}. The crowd is quiet.`, 'bad');
   }
-  commitRng(state, rng);
+  return ours >= theirs;
 }
 
 /** Courier pick: the fullest Craft works (or a stocked mine when enchanters wait) and the emptiest buyer. */
