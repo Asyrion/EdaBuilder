@@ -2,10 +2,9 @@
 
 Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
 sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
-as possible are to be replaced by them. Main stands at iteration 80 (a brickworks sprite drawn after the user's painting,
-DESIGN §4.111, from a parallel session; not given to a building yet). Iteration 81 (the twelve paintings composed by hand,
-§4.112) sits **unmerged** on the branch `claude/brave-keller-7m8z5l`, waiting for the user's word; the eda-lore sprites may
-make it moot. Before that: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
+as possible are to be replaced by them. Main stands at iteration 81 (the twelve paintings composed by hand, DESIGN §4.112, merged
+at the user's word); iteration 80 (a brickworks sprite drawn after the user's painting, §4.111, from a parallel session) is
+given to no building yet. Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
 §4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
 before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
@@ -45,8 +44,7 @@ fronted on the left gets `flip: true`).
   has peoples' looks;
 - `off: true` on an entry switches an old painting off (its code sprite shows); iteration 81's `src/render/painted.ts`
   hand-drawn houses and §4.110's spec houses give way to an import by the same name without any code change;
-- the side-by-side tool: `scripts/playtest81.mjs` (on the unmerged branch; `scripts/playtest79.mjs` on main does the same
-  for its twelve) draws the old sprite from a build of main served on port 4174 beside the new one from the build on 4173,
+- the side-by-side tool: `scripts/playtest81.mjs` draws the old sprite from a build of main served on port 4174 beside the new one from the build on 4173,
   each over its footprint diamond with a citizen; `scripts/playtest78.mjs` sheets every building with a citizen.
 - Tests to keep green when names move: `tests/iteration56.test.ts` (the flip list and height caps), `iteration77`
   (anchors), `iteration78` (the yardstick), `iteration79`/`sprites.test.ts` (which names are in the manifest).
@@ -89,10 +87,7 @@ user's painting and given to no building yet. Ask the user before assigning it.
 
 ## The next item
 
-The eda-lore swap above, batch 1: the zone houses. Plan it on the Plan panel first. Two loose ends for the user:
-- **Iteration 81's merge** (the twelve composed by hand, on `claude/brave-keller-7m8z5l`, merged with main and green): the
-  user judges its screenshots; if the eda-lore houses replace those twelve anyway, the branch can be dropped
-  (`git branch -D`), or merged first and overridden by the imports.
+The eda-lore swap above, batch 1: the zone houses. Plan it on the Plan panel first. One loose end for the user:
 - **The brickworks** (`b_brickworks`, iteration 80) is given to no building; ask the user which building takes it.
 After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
 the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
@@ -156,7 +151,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (80 files, 506 tests on main at this writing; 81 files, 512 with iteration 81's branch; `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (81 files, 512 tests at this writing; `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
