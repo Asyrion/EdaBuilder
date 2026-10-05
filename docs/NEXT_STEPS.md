@@ -349,14 +349,6 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
-## Done in iteration 81 (the twelve redrawn again, each after its own painting; not yet merged)
-
-- **Each of the twelve hand-drawn after its own painting** in `src/render/painted.ts` (an `Iso` helper: boxes, gables along
-  either axis, lean-tos, verandas, balconies, dormers, chimneys, doors, windows and props placed by tile coordinates), so
-  the four hearths and the four crafts differ in silhouette as their paintings do; the depot is a jettied hall with a
-  cross-gabled roof, awnings and stalls.
-- **Judged side by side** at 6× and 10× (`scripts/playtest81.mjs`). The merge waits for the user's word (DESIGN §4.112).
-- Art only: the sim files are unchanged.
 ## Done in iteration 80 (a brickworks drawn after the user's painting)
 
 - **A brickworks drawn in code** (`drawBrickworks`, sprite `b_brickworks`): the brick hall with the kiln burning in its
@@ -986,14 +978,12 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **More hearth looks from the user's house sheets** (the user's request in iteration 81: "more hearth styles, more
-   fantasy-like, with decorations"). The user sent four sheets of 2:1 houses (cottages, log cabins, half-timber, stone,
-   thatch, a treehouse, a Victorian house, barns) and two alchemist's-house dioramas; once they are in `inspirations/`,
-   import the fitting ones by island index (`node scripts/importSprites.mjs --islands <sheet>`) as hearth looks (eight a
-   level, picked by variant and tile parity in `zoneSpriteName`, no sim change), the barns as crafts, a diorama as the
-   Lyceum; scale to §4.109's yardstick; the sheets' drop shadows keyed out with a lower `white` threshold. Screenshots first.
-2. **The paintings redrawn in code, part 2** (DESIGN §4.110–§4.112, if the user wants it): the craft levels 2 and 3, the
-   arcane level 2, the market level 3, and the Stake's four stages, each composed after its painting in `painted.ts`.
+1. **The eda-lore swap** (the user's request at the close of iteration 81; HANDOFF.md "The eda-lore swap"): the user's
+   repository `eda-lore` holds their own sprites in the set's 2:1 format; swap as many of the game's buildings and assets
+   as it covers, in batches (the zone houses first, then the services, then the props), each batch imported through
+   `art/sources.json` and `npm run art`, judged old beside new with a citizen, at the yardstick of §4.109.
+2. **The paintings redrawn in code, part 2** (DESIGN §4.110, if still wanted after the swap): the craft levels
+   2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
 3. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the
    boneyard, the Lyceum, the Nexus, the spire, the Wick-Tower and the Hall of Wicks.
 4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
