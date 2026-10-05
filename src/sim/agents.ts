@@ -2,7 +2,7 @@
 import { effects } from './hazards';
 import { fordClosed } from './water';
 import { marketQuarterAt } from './districts';
-import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
+import { BARGE_VARIANT, CART_BALK_TICKS, CART_FEAR_REACH, FLOAT_VARIANT, GOLEM_LOAD, GOLEM_REST, GOLEM_VARIANT, deliverBarge, floatingCarts, floatingTarget, isDonkeyCart } from './vehicles';
 import { fontOfQuieting } from './lore';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
@@ -11,7 +11,7 @@ import { hallActive } from './guilds';
 /** Congestion within 10 of an active Carters' Yard is smoothed at this share. */
 export const CARTERS_EASE = 0.8;
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, rngOf } from './world';
+import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { edictOn } from './edicts';
 import { auraAt } from './weave';
 
@@ -220,7 +220,7 @@ export function dailyAgents(state: GameState): void {
   let carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT) carts++;
   }
   // remove agents whose home vanished
   state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.kind === AgentKind.Creature || a.homeId >= 0);
@@ -228,7 +228,7 @@ export function dailyAgents(state: GameState): void {
   carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT) carts++;
   }
   while (citizens > targetCitizens) {
     const i = state.agents.findIndex((a) => a.kind === AgentKind.Citizen);
@@ -237,7 +237,7 @@ export function dailyAgents(state: GameState): void {
     citizens--;
   }
   while (carts > targetCarts) {
-    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && !mines.some((m) => m.id === a.homeId));
+    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT && !mines.some((m) => m.id === a.homeId));
     if (i < 0) break;
     state.agents.splice(i, 1);
     carts--;
@@ -372,8 +372,9 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
     if (a.targetId === -1) {
       // wait for a load; then deliver to the hungriest reachable buyer (markets for goods, enchanters for leystone)
       const buyers = home.kind === 'mine' ? pools.arcanes : pools.markets;
+      const golem = a.variant === GOLEM_VARIANT;
       if (home.stock < 4 || !buyers.length) {
-        a.timer = 120;
+        a.timer = golem ? 60 : 120; // a warden in harness looks in twice as often (iteration 72)
         return;
       }
       let best: Building | null = null;
@@ -387,7 +388,7 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
         }
       }
       dest = best;
-      a.load = Math.min(12, home.stock);
+      a.load = Math.min(golem && best ? Math.min(GOLEM_LOAD, Math.max(6, marketStockCap(best) - best.stock)) : golem ? GOLEM_LOAD : 12, home.stock); // a warden loads what the market has room for, up to 30 (iteration 72)
     } else dest = home;
   } else {
     const atHome = a.targetId === -1 || a.targetId === home.id;
@@ -447,11 +448,25 @@ export function tickAgents(state: GameState): void {
     return pools;
   };
   const dt = 1 / TICKS_PER_SEC;
+  // the Gloam-hounds abroad this tick, for the donkeys to balk at (iteration 72); gathered once, only when one is out
+  let hounds: Agent[] | null = null;
+  const houndsOut = () => (hounds ??= state.agents.filter((h) => h.kind === AgentKind.Creature && h.species === 'hound'));
   for (const a of state.agents) {
     if (a.kind === AgentKind.Creature || a.kind === AgentKind.Builder || a.kind === AgentKind.Walker) continue;
     if (a.timer > 0) {
       a.timer--;
       continue;
+    }
+    if (a.kind === AgentKind.Cart && a.pathIdx < a.path.length && isDonkeyCart(a)) {
+      // a donkey cart balks at a hound within reach and stands; the floating carts, the barges and the golem haulers do not (iteration 72)
+      let scared = false;
+      for (const h of houndsOut()) if (Math.abs(h.x - a.x) <= CART_FEAR_REACH && Math.abs(h.y - a.y) <= CART_FEAR_REACH && Math.hypot(h.x - a.x, h.y - a.y) <= CART_FEAR_REACH) { scared = true; break; }
+      if (scared) {
+        a.timer = CART_BALK_TICKS;
+        state.stats.cartsBalked++;
+        if (state.stats.lastBalkDay !== state.day) { state.stats.lastBalkDay = state.day; pushMessage(state, `The carters' donkeys balk at Gloam-hounds on the road at (${Math.floor(a.x)},${Math.floor(a.y)}) and will not go on. A Concord Warden in harness would.`, 'warn', true, { x: Math.floor(a.x), y: Math.floor(a.y) }); }
+        continue;
+      }
     }
     if (a.pathIdx >= a.path.length && a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT) { a.homeId = -2; continue; }
     if (a.pathIdx >= a.path.length) {
@@ -497,7 +512,7 @@ export function tickAgents(state: GameState): void {
       }
       if (a.pathIdx >= a.path.length) {
         // arrived
-        a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : 150 + rng.int(450);
+        a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : a.kind === AgentKind.Cart && a.variant === GOLEM_VARIANT ? GOLEM_REST : 150 + rng.int(450); // a warden in harness does not rest (iteration 72)
         if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
           const m = buildingById(state, a.targetId);
           if (m && m.state === 'ok') {
@@ -505,6 +520,7 @@ export function tickAgents(state: GameState): void {
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
             state.stats.goodsDelivered += a.load;
+            if (a.variant === GOLEM_VARIANT) state.stats.golemHauls += a.load;
           }
           a.load = 0;
         }

@@ -280,7 +280,8 @@ export function tickCreatures(state: GameState): void {
         break;
       }
       case 'golem': {
-        // wild: a slow, unstoppable walk toward the city, then aimless; bound: paces by the foundry
+        // wild: a slow, unstoppable walk toward the city, then aimless; bound: paces by the foundry; in harness: its cart is the warden (iteration 72)
+        if (a.duty === 'haul') break;
         if (a.timer > 0) { a.timer--; break; }
         if (a.path.length === 0) {
           const bound = a.load > 0;

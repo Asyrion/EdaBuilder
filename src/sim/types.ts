@@ -270,7 +270,8 @@ export interface Agent {
   job?: string; // walkers: key into WALKER_JOBS
   log?: string[]; // walkers: what it did today, last three lines
   herdId?: number; // a wild animal's herd (iteration 58)
-  duty?: 'guard' | 'works'; // a bound golem's post: guard (ward 6 at its foundry) or works (12 hands at targetId); unset = labour (iteration 53)
+  duty?: 'guard' | 'works' | 'haul'; // a bound golem's post: guard (ward 6 at its foundry), works (12 hands at targetId) or haul (a golem cart from the works at targetId, iteration 72); unset = labour (iteration 53)
+  golemId?: number; // a golem hauler cart: the bound warden in its harness (iteration 72)
 }
 
 export interface TaxRates {
@@ -486,6 +487,9 @@ export interface GameState {
     restlessTotal: number;
     houndsTotal: number;
     houndRaids: number;
+    golemHauls: number; // goods delivered by golem haulers (iteration 72)
+    cartsBalked: number; // donkey carts that stopped for a hound (iteration 72)
+    lastBalkDay: number; // the day the carters last complained of hounds (iteration 72)
     wyrmTributes: number;
     relics: number;
     portalTrips: number;

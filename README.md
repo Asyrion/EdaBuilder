@@ -95,7 +95,9 @@ main node.
     the Gloam will not cross it. The **minimap** (bottom right) jumps the camera where you click.
 14. **Beasts of the Concord and the sky** — mining wakes **Concord Wardens** in the hills;
     a **Golem Foundry** (Burgh) binds them into twelve hands of labour each, no housing,
-    ten mana a day; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
+    ten mana a day, or sets them to guard, to a Craft bench, or **in harness**: a stone
+    cart of 30 goods, slow and tireless, that fears no hound, where the donkey carts balk
+    and stand when Gloam-hounds come within four tiles; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
     a lit **Ley Beacon** keeps a school for the season (happiness, rayscale for the
     enchanters). A **Drake Mews** doubles Watch House reach. Three taming edicts trade
     one beast for another.
@@ -225,7 +227,7 @@ Charter as `.json`.
   the Cores takes the first 30 of a surge and cracks for ten days; the Great Weir's sluice
   trades a flooded bank for double mana; the Underking's Seat warms hatcheries; the
   Lantern of Wicks halves its spires' draw; a bound Concord Warden labours, guards its
-  foundry or works a Craft bench; the Gloam presses harder as the dead go unquieted and
+  foundry, works a Craft bench or hauls a stone cart of 30 that no hound scares; the Gloam presses harder as the dead go unquieted and
   eases under faith; the river freezes in the Hush.
 - The guild council: a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
   who petition for edicts every 20 days and pay boons or strike; festivals spend the city

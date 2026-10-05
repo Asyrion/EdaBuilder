@@ -12,6 +12,12 @@ import { MOORINGS } from '../data/factions';
 
 export const FLOAT_VARIANT = 3; // cart variant: hovers, ignores congestion, 1 mana while moving
 export const BARGE_VARIANT = 4; // cart variant: travels water between quays
+export const GOLEM_VARIANT = 6; // cart variant: a Concord Warden in harness, hauling from one works (iteration 72)
+export const GOLEM_LOAD = 30; // goods a golem hauler carries a trip (a donkey cart carries 12)
+export const GOLEM_SPEED = 0.45; // a hauler's pace (a donkey cart's is 0.8)
+export const GOLEM_REST = 20; // ticks a hauler stands at a market before turning back (a donkey rests 150 + rng 450)
+export const CART_FEAR_REACH = 4; // a donkey cart balks with a Gloam-hound this near (tiles)
+export const CART_BALK_TICKS = 60; // and stands this long before it tries again
 export const BARGE_LOAD = 40;
 export const QUAY_REACH = 8;
 export const RIDER_RANGE = 40;
@@ -34,6 +40,32 @@ export function floatingMana(s: GameState): number {
   let n = 0;
   for (const a of s.agents) if (a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT && a.pathIdx < a.path.length) n++;
   return n;
+}
+
+// ---------- golem haulers (iteration 72) ----------
+export function isGolemCart(a: Agent): boolean {
+  return a.kind === AgentKind.Cart && a.variant === GOLEM_VARIANT;
+}
+/** The donkey carts (the stone cart 0 and the goods carts 1–2) are the ones a hound can scare; floating carts, barges and haulers are not. */
+export function isDonkeyCart(a: Agent): boolean {
+  return a.kind === AgentKind.Cart && a.variant <= 2;
+}
+/** A golem cart for a warden in harness at this works, standing on the works' road tile. No rng. */
+export function spawnGolemCart(s: GameState, golem: Agent, works: Building, roadTile: number): Agent {
+  const a: Agent = {
+    id: s.nextAgentId++, kind: AgentKind.Cart, x: (roadTile % MAP_W) + 0.5, y: ((roadTile / MAP_W) | 0) + 0.5, path: [], pathIdx: 0, speed: GOLEM_SPEED,
+    homeId: works.id, targetId: -1, timer: 0, variant: GOLEM_VARIANT, dir: 0, load: 0, golemId: golem.id,
+  };
+  s.agents.push(a);
+  return a;
+}
+/** Golem carts whose warden is gone, wild or off haul duty are removed; returns how many went. */
+export function pruneGolemCarts(s: GameState): number {
+  const haulers = new Set<number>();
+  for (const a of s.agents) if (a.kind === AgentKind.Creature && a.species === 'golem' && a.load > 0 && a.duty === 'haul') haulers.add(a.id);
+  const before = s.agents.length;
+  s.agents = s.agents.filter((a) => !isGolemCart(a) || (a.golemId !== undefined && haulers.has(a.golemId) && s.buildings.some((b) => b && b.id === a.homeId && b.state === 'ok')));
+  return before - s.agents.length;
 }
 
 // ---------- water pathfinding ----------
