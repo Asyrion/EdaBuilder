@@ -23,6 +23,7 @@ npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
 npx tsx scripts/balance.ts 42 150 - vellish roll=1   # the same run with one extra roll on day 10: another draw
 npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples × 3 seeds × 2 draws, paired, with a verdict
 npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until each people sees a tenth
+                                                            # (runs cached in balance/cache by the sim's files; commit it)
 npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond

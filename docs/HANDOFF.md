@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 70 (two ways to lose; DESIGN §4.101). Iterations 69 (the Great Gate, §4.100), 68
-(the plan's gaps written down, §4.99, §17) and 67 (replays, §4.98) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 71 (a faster balance bar; DESIGN §4.102). Iterations 70 (two ways to lose, §4.101), 69
+(the Great Gate, §4.100) and 68 (the plan's gaps written down, §4.99, §17) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
@@ -82,7 +82,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (72 files, 462 tests at this writing; `tests/iteration70.test.ts` is the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (73 files, 468 tests at this writing; `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -96,6 +96,12 @@ Built since iteration 68:
   because the title screen is hidden once a game runs; the panels open through
   `__game.ui.toggleBudget(true)` / `toggleEdicts(true)` and `ui.edictScope`; screenshots go
   to `shots/` (gitignored).
+- **The bar's cache (iteration 71):** runs are cached in `balance/cache/` by the sim's files, not the commit.
+  - **Commit that folder with the iteration;** the next bar then finds main's side already run.
+  - A table started on a dirty tree is cached by its contents.
+  - A bar whose sides share a sim prints "the same sim on both sides" and costs seconds.
+  - Runs left by probes (other days, other seeds) stay in the file, harmlessly. Delete a probe's whole file if it was only
+    a probe.
 - Balance: since iteration 64 the bar for a sim change is `npx tsx scripts/table.ts --bar wide --compare
   origin/main` (DESIGN §4.95): six seeds, draws added where the floor is over a tenth, every run cached. A full
   comparison takes about 2¼ hours, longer than a background job's two-hour limit. Commit first (the working tree is
