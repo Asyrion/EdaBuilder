@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 69 (the Great Gate and the Heart of Belregi; DESIGN §4.100). Iterations 68 (the
-plan's gaps written down, §4.99, §17), 67 (replays, §4.98) and 66 (keyboard focus, §4.97) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
+Written at the close of iteration 70 (two ways to lose; DESIGN §4.101). Iterations 69 (the Great Gate, §4.100), 68
+(the plan's gaps written down, §4.99, §17) and 67 (replays, §4.98) came just before it. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
 ## What the game is
 
@@ -32,19 +32,20 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-NEXT_STEPS item 1, **two ways to lose** (DESIGN §17.4 B, §8.5).
-- **The wyrm:** an unbound Sleeping Wyrm, starved of tribute, razes the Founding Stake. Tribute and refusal are in
-  `src/sim/wyrm.ts`.
-- **The Long Night early:** a hound pack that empties three districts in one Hush ends the charter. The game-over screen
-  is `ui.showGameOver`.
-- This is a sim change, so it runs the wide bar.
+NEXT_STEPS item 1, **golem haulers** (DESIGN §17.4 C, §8.4).
+- The Golem Foundry fields slow, tireless carts that carry 30 and are not scared by hounds. They are drawn as
+  vehicles.
+- Bound golems are in `src/sim/beasts.ts`, carts in `src/render/carts.ts` and `vehicles.ts`.
 - Plan it on the Plan panel first.
 
-The Great Gate (item A) was built in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and
-`drawGreatGate` in `drawn.ts`.
+Built since iteration 68:
+- the Great Gate (item A), in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and `drawGreatGate`
+  in `drawn.ts`;
+- the two ways to lose (item B), in iteration 70: `src/sim/hounds.ts`, `refuse`/`razeStake` in `wyrm.ts`, and
+  `state.lostTo`.
 
 **The list ahead** (written in iteration 68 from an audit of DESIGN.md against the code, in the user's order):
-- **Four single items** (the Great Gate is done): two ways to lose (§8.5); golem haulers; loose ends; markets and the road
+- **Three single items** (the Great Gate and the two ways to lose are done): golem haulers; loose ends; markets and the road
   (AUDIT B40).
 - **Then three milestones**, each part one iteration:
   - **M17**, the marsh and the atoll: marsh terrain and the Drainage edict, marsh-wyrms, the Patagoi Atoll;
@@ -81,7 +82,7 @@ The Great Gate (item A) was built in iteration 69: `src/sim/gate.ts`, `HEART_EVE
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (71 files, 451 tests at this writing; `tests/iteration69.test.ts` is the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (72 files, 462 tests at this writing; `tests/iteration70.test.ts` is the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -224,6 +225,21 @@ The Great Gate (item A) was built in iteration 69: `src/sim/gate.ts`, `HEART_EVE
   `OLD_PORT=4174 node scripts/playtest59.mjs` shoots both.
 - **Judging a painting's facing** needs 5× or more beside its mirror; at 3× the head-on houses
   read as left-fronted, which they are not.
+
+## Learned in iteration 70 (not yet said elsewhere)
+
+- **Probe before designing a rule that bites.** The probe (a tick loop with the bot, counting hound arrivals at hearth
+  doors by watching `a.timer` jump) showed that hounds besiege bot cities' edges for whole Hushes without harm. The rule
+  was shaped by that, and not after a bar.
+- **A hound's arrival** at its target is the harass branch in `creatures.ts` (`a.timer = 40 + rng.int(40)`). Anything
+  that reacts to a hound at a door hooks there, without a roll.
+- **The sim's day turns at mid-morning** (`timeOfDay`: tick 0 is 0.3), so a whole night lies in one `s.day`. The day is
+  a night's key.
+- **A loss needs `lostTo`** beside `gameOver`, or the game-over screen falls back to the Gloam's title.
+- **The bot's tale policy only sees the state right after a choice.** A choice whose cost comes later (the razing
+  flight) must leave a mark in state (`wyrm.razing`) for `worth` to read.
+- **The bar per people:** `--peoples <one>` keeps each background job under two hours. Iteration 70 ran the four
+  peoples as four jobs from one worktree, sharing its cache.
 
 ## Learned in iteration 69 (not yet said elsewhere)
 

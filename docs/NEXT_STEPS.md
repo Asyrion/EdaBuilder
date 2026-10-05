@@ -349,6 +349,21 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 70 (two ways to lose)
+
+- **The valley belongs to the wyrm.**
+  - The wyrm counts refusals in a row, and a tribute paid resets the count.
+  - The warnings come at the first refusal and the second, the Advisor speaks, and the third asking is *the last*.
+  - The third refusal sends it down on the Founding Stake, and the charter ends, unless a great wyrm of the city's own
+    meets it.
+- **The Long Night comes early.**
+  - In the Hush, three nights of hounds at a dark, unwarded home's door drive its folk out until the Thaw.
+  - Half a district's homes fled empties the district; homes in no district count by their march.
+  - A third district emptied in one Hush ends the charter.
+  - Warnings come in the Chronicle, the Advisor, the home's panel and the Districts view.
+- **Every loss names its cause** on the game-over screen. The Annals add three rows.
+- BAR70N (DESIGN §4.101)
+
 ## Done in iteration 69 (the Great Gate and the Heart of Belregi)
 
 - **The Great Gate,** a wonder of the Burgh, stands in the angle between a Belregi gate and its road (a corner counts).
@@ -851,45 +866,41 @@ Glowvine Lane; (13, done) Portal Arch, World Tree sapling, Ruins of Lukuku, mini
 Concord Wardens and the Golem Foundry, Drake Mews, skyrays and the Ley Beacon; (15, done)
 vehicles: floating carts, barges, drake riders, airships; (16, done) Fen-Nex visitors,
 war-tigers, mana-storms, Font of Quieting, cameos. The fantasy roadmap of §8 and the
-lore-drop list of §11 are complete except what the iteration-68 audit found: the
-two ways to lose, golem haulers, the loose ends, and the swamp and atoll maps (items 1–3 and 5–7 below). The Great
-Gate was built in iteration 69.
+lore-drop list of §11 are complete except what the iteration-68 audit found: golem haulers, the loose ends, and the
+swamp and atoll maps (items 1–2 and 4–6 below). The Great Gate was built in iteration 69 and the two ways to lose in
+iteration 70.
 
 ## Lore-drop follow-ups (see DESIGN.md §11)
 
 Done: wall gates (Belregi/Uzulim), Storm-Caller's Peak, Belerial caravans and the
 Wandering Merchant, Hanging Gardens and Glowvine Lanes, the Torrent Mill, the Ruins of
 Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the Great Gate and the Heart of Belregi
-(iteration 69). Not built: the swamp and atoll maps (items 5–7 below).
+(iteration 69). Not built: the swamp and atoll maps (items 4–6 below).
 
 ## Prioritized ideas for the next iteration
 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first, then the milestones. Each numbered item is one iteration.
 
-1. **Two ways to lose** (§17.4 B, §8.5).
-   - A starved, unbound Sleeping Wyrm razes the Founding Stake ("the valley belongs to the wyrm").
-   - A hound pack that empties three districts in one Hush brings the Long Night early.
-   - A sim change: the wide bar.
-2. **Golem haulers** (§17.4 C, §8.4). Foundry carts that carry 30 and are not scared by hounds.
-3. **Loose ends** (§17.4 D).
+1. **Golem haulers** (§17.4 C, §8.4). Foundry carts that carry 30 and are not scared by hounds.
+2. **Loose ends** (§17.4 D).
    - The eggs go grey.
    - The Sky-Dock's wyvern.
    - Hatchling riders.
    - Sextons at the brawl, and the duel flown by the wyvern agent.
    - The Wandering Merchant's memory of past deals.
-4. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
+3. **Markets want a good road** (§17.4 E, AUDIT B40). The road tier at a market's door counts for its trade. A sim
    change: the wide bar.
-5. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-6. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-7. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-8. **M18 part 1, the Fen-Nex** (§17.2).
+4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+5. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+6. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+7. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-9. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-10. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+8. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+9. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-11. **M19 part 2, the Belerial** (§17.3).
+10. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
 13. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
