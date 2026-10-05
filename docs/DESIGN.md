@@ -4494,6 +4494,58 @@ gables read smaller than in the painting, and the yard's small things, at 98 pix
 - **Shown to the user:** the sprite at 8× beside the painting, at 3×, and in a running game by day and by night, standing
   in for a 3×3 building's sprite in that page only.
 - The sim is unchanged.
+### 4.112 The twelve redrawn again, each after its own painting (iteration 81)
+
+Art only, after the user's verdict on §4.110's sheet: "all the remade buildings look too similar; stick as close to the
+source as possible, just redraw them in your style." §4.110 built the redraws from `drawBuilding` specs, so every house
+had the same box, roof line, door spot and window grid. The paintings differ in composition: which way the gable faces, a
+wing or a porch, where the chimney stands, how many storeys, a veranda, a dormer, a balcony, the tree's side.
+
+**Compose, don't spec** (`src/render/painted.ts`). An `Iso` helper maps tile coordinates (tx, ty in 0–1, z up) to the
+sprite's pixels and offers the parts: a `box` with its own footprint and wall height (the left face dark, the right lit,
+the set's wall textures: log, timber, plaster, half-timber with braces, stone, brick, whitewash), a `gable` roof whose
+ridge runs along either axis (the gable shows on the right face for 'x', on the left face for 'y') with overhanging eaves
+and the set's roof textures, lean-to roofs from either face (porches, hoods, wings), a `veranda` (a railed deck), a
+`balcony`, a `dormer`, a `chimney` (stone or brick, with smoke), windows and doors (plank, arched, round) at any tile
+point, and the props: sign, flower box, lantern, bush, tree (round, conifer, autumn, birch), fence, woodpile, barrel,
+stepping stones, a striped awning with a counter of goods, a flag. Each of the twelve is then a short script that places
+those parts where its painting has them, in the set's style: 2:1 iso, the palette, flat two-tone faces, the 1 px outline,
+the front on the right face. The anchor is the tile's top corner, as `drawBuilding`'s.
+
+**The twelve:**
+- **Hearth level 2** (`wooden_houses`): v0 a tall two-storey plank house, gable to the front under a tile roof, a brick
+  chimney at the back, a porch roof with a lantern, a fence and a red bush on the left, a round tree at the right (48 px,
+  4 citizens); v1 a log cabin, gable to the front, a dark shingle roof with pale trim, a tall stone chimney at the left end,
+  a porch, a flower box under the paired window, a woodpile and a pine (44 px); v2 a low log cabin with its eaves to the
+  front and the gable to the right, a red tile roof, a brick chimney, a railed veranda with a hood over the door, a tree
+  at the left and bushes (42 px); v3 a log cabin with the gable at the left end, a dark shingle roof with a dormer, a stone
+  chimney, a wide flower-boxed window, a porch with two lanterns, bushes and a stone path (44 px).
+- **Craft level 1** (`general_craft`), a storey and a loft at 33 px (2.8 citizens): v0 the tan timber workshop with a
+  balcony over an arched door, a signboard, a stone chimney, flower boxes, a woodpile and a tree; v1 the red-roofed
+  cottage with a signboard under the gable, a railed porch, flower boxes, a copper door, a tree and a picket garden; v2
+  the half-timbered house with a green roof and a dormer, a brick chimney, two teal doors, a flower box, an autumn tree
+  and a fence; v3 the stone-and-timber house with a dark roof, a balcony hung with cloths, a signboard, an awning over the
+  door, a birch and a pine, a barrel.
+- **The depot** (`trade_houses`, 66×62, 5.2 citizens): a half-timbered hall jettied over a stone ground floor, a slate
+  gable to the front with a red tile cross-gable over the left wing, flags on the ridge, a stone chimney, a clock on the
+  gable, the signboard over an arched door, a lantern, a red-and-white and a blue-and-white awning with stalls of goods,
+  a thatched lean-to on the left face, barrels.
+- **The wells** keep §4.110's drawings.
+
+The Grimmen, Veshari and Tallowkin copies of the eight houses keep §4.110's spec builds through their own look functions:
+their looks are their own, not the paintings'.
+
+**Judged side by side** (`scripts/playtest81.mjs`: the painting from main's build on port 4174 beside the redraw, at 6×
+and at 10×, a citizen at each tile's corner; the street by day and night). The four hearths now differ in silhouette as
+the paintings do, and so do the crafts; what a 34 px sprite still cannot carry is the paintings' lettering, railings and
+foliage detail. **The merge waits for the user's word.**
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 81 test files with 512 tests (`tests/iteration81.test.ts`: the hand-drawn houses in the atlas
+  for the Vellish look and the spec builds for the peoples, the four hearths unlike in height, roof and chimney, the
+  yardstick, the paintings' named parts, the anchors, the outline closing every sprite), `npm run build`.
+- `scripts/playtest81.mjs`: no errors, no missing sprites.
+- **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
 ## 7. Milestone plan
 
@@ -5741,3 +5793,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   follows only if the user says so.
 - *A building painted by the user is drawn in code, then waits for its building (iteration 80):* the brickworks is a
   registered sprite with no catalog entry, so the game is unchanged until the user names the building it belongs to.
+- *Compose, don't spec, when a painting is the design (iteration 81):* a spec gives every house the same box; a painting's
+  likeness is in its composition. `painted.ts` places boxes, gables along either axis, porches, verandas, dormers,
+  chimneys and props where the painting has them, in the set's style. The peoples keep their own looks for the same
+  houses: the painting is the Vellish look.
