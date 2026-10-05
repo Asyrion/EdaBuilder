@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
-Written at the close of iteration 80 (the twelve redrawn again, each composed by hand after its own painting; art only;
-DESIGN §4.111; **committed on the branch, not merged: the user judges the screenshots first**). Iteration 79 (the
+Written at the close of iteration 81 (the twelve redrawn again, each composed by hand after its own painting; art only;
+DESIGN §4.112; **committed on the branch, not merged: the user judges the screenshots first**). Iteration 79 (the
 paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen, §4.109) and 77 (the sprites faced
 and fitted, §4.108, the last single item of §17.4) came before it. Two sessions at once means merging main before the PR
 and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
@@ -11,7 +11,7 @@ and taking the next free numbers. Update this file whenever a session ends (see 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
 tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
 Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
-design lives in `docs/DESIGN.md` (sections 4.1–4.111 are one per iteration; §7 the milestone
+design lives in `docs/DESIGN.md` (sections 4.1–4.112 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
 
@@ -36,10 +36,10 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 ## The next item
 
 **Two things wait on the user:**
-1. **Iteration 80's merge.** Its PR is not opened; the branch `claude/brave-keller-7m8z5l` carries it on top of main. If the
-   user approves the side-by-side sheets (`shots/iter80_*` from `OLD_PORT=4174 node scripts/playtest80.mjs`), open the PR,
+1. **Iteration 81's merge.** Its PR is not opened; the branch `claude/brave-keller-7m8z5l` carries it on top of main. If the
+   user approves the side-by-side sheets (`shots/iter81_*` from `OLD_PORT=4174 node scripts/playtest81.mjs`), open the PR,
    merge, fast-forward, check the deploy. If not, the branch can be reset to main (`git reset --hard origin/main`).
-2. **The user's house sheets** (NEXT_STEPS item 1). In iteration 80 the user sent four sheets of 2:1 isometric houses and two
+2. **The user's house sheets** (NEXT_STEPS item 1). In iteration 81 the user sent four sheets of 2:1 isometric houses and two
    alchemist's-house dioramas in the chat, asking "can you use these?" They are the set's projection (2:1 dimetric, lit from
    the front right, each on a plain ground) and far better suited than the front-on paintings; the modern ones (glass boxes,
    igloos, a factory, a solar roof, an adobe house) do not fit the setting. **They must be saved into `inspirations/`
@@ -111,7 +111,7 @@ Built since iteration 68:
 
 ## Tools and conventions
 
-- Tests: `npx vitest run` (81 files, 512 tests at this writing; `tests/iteration80.test.ts` is the hand-drawn houses', `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
+- Tests: `npx vitest run` (81 files, 512 tests at this writing; `tests/iteration81.test.ts` is the hand-drawn houses', `tests/iteration79.test.ts` is the redraws', `tests/iteration78.test.ts` is the citizen yardstick, `tests/iteration77.test.ts` is the sprites' fit, `tests/iteration76.test.ts` the wing beat's, `tests/iteration75.test.ts` is the market road's, `tests/iteration73.test.ts` is the loose ends', `tests/iteration72.test.ts` is the haulers', `tests/iteration71.test.ts` is the bar cache's, `tests/iteration70.test.ts` the two losses', `tests/iteration69.test.ts` the Great Gate's, `tests/iteration67.test.ts` the replays',
   `tests/iteration66.test.ts` the
   keyboard's, `tests/iteration65.test.ts` the drawn art's, `tests/iteration64.test.ts` the wide bar's, `tests/iteration63.test.ts` the caravan's books, `tests/iteration62.test.ts` the balance table's, `tests/iteration61.test.ts` the bot's depot's, `tests/iteration60.test.ts` the water's, `tests/iteration59.test.ts` the facing's, `tests/iteration58.test.ts` the wild's, `tests/iteration57.test.ts` the carts'). Typecheck: `npx tsc --noEmit -p .`. Build: `npm run build`.
 - Playtests: `scripts/playtestNN.mjs` with Playwright (`executablePath:
@@ -180,7 +180,7 @@ Built since iteration 68:
 - Playtest findings arrive as lists; big ones become milestones with a design in DESIGN.md,
   small ones go into the next iteration.
 
-## Learned in iteration 80 (not yet said elsewhere)
+## Learned in iteration 81 (not yet said elsewhere)
 
 - **`painted.ts` is the way to copy a painting:** tile coordinates (tx, ty, z) and placed parts. A box's right face is its
   tx = tx1 side (the road side), the left face its ty = ty1 side; a gable along 'x' shows its triangle on the right face,

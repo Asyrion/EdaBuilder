@@ -4463,7 +4463,7 @@ the market crowd, the picket fences' every post). The user judges whether parts 
   at night, before and after. No errors, no missing sprites.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
-### 4.111 The twelve redrawn again, each after its own painting (iteration 80)
+### 4.112 The twelve redrawn again, each after its own painting (iteration 81)
 
 Art only, after the user's verdict on §4.110's sheet: "all the remade buildings look too similar; stick as close to the
 source as possible, just redraw them in your style." §4.110 built the redraws from `drawBuilding` specs, so every house
@@ -4504,16 +4504,16 @@ the front on the right face. The anchor is the tile's top corner, as `drawBuildi
 The Grimmen, Veshari and Tallowkin copies of the eight houses keep §4.110's spec builds through their own look functions:
 their looks are their own, not the paintings'.
 
-**Judged side by side** (`scripts/playtest80.mjs`: the painting from main's build on port 4174 beside the redraw, at 6×
+**Judged side by side** (`scripts/playtest81.mjs`: the painting from main's build on port 4174 beside the redraw, at 6×
 and at 10×, a citizen at each tile's corner; the street by day and night). The four hearths now differ in silhouette as
 the paintings do, and so do the crafts; what a 34 px sprite still cannot carry is the paintings' lettering, railings and
 foliage detail. **The merge waits for the user's word.**
 
 **Verified:**
-- `npx tsc --noEmit -p .`, 81 test files with 512 tests (`tests/iteration80.test.ts`: the hand-drawn houses in the atlas
+- `npx tsc --noEmit -p .`, 81 test files with 512 tests (`tests/iteration81.test.ts`: the hand-drawn houses in the atlas
   for the Vellish look and the spec builds for the peoples, the four hearths unlike in height, roof and chimney, the
   yardstick, the paintings' named parts, the anchors, the outline closing every sprite), `npm run build`.
-- `scripts/playtest80.mjs`: no errors, no missing sprites.
+- `scripts/playtest81.mjs`: no errors, no missing sprites.
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged from main; the control seed is §4.108's (2,155 folk).
 
 ## 7. Milestone plan
@@ -5760,7 +5760,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   the painting, a building is crisp at any size and one set with the procedural buildings. The paintings stay in
   `inspirations/` as the designs; `off: true` keeps their entries on the record. Part 1 is a trial of twelve; the rest
   follows only if the user says so.
-- *Compose, don't spec, when a painting is the design (iteration 80):* a spec gives every house the same box; a painting's
+- *Compose, don't spec, when a painting is the design (iteration 81):* a spec gives every house the same box; a painting's
   likeness is in its composition. `painted.ts` places boxes, gables along either axis, porches, verandas, dormers,
   chimneys and props where the painting has them, in the set's style. The peoples keep their own looks for the same
   houses: the painting is the Vellish look.

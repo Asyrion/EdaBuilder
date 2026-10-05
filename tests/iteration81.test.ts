@@ -1,4 +1,4 @@
-/** Iteration 80 (the twelve redrawn again, each after its own painting): the level-2 hearths, the level-1 crafts and the depot
+/** Iteration 81 (the twelve redrawn again, each after its own painting): the level-2 hearths, the level-1 crafts and the depot
  *  are composed by hand in src/render/painted.ts (boxes, gables along either axis, porches, verandas, dormers, chimneys and
  *  props where the painting has them), not built from one spec; the citizen yardstick holds; the outline closes them. */
 import { describe, expect, it } from 'vitest';

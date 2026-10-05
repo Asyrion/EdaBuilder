@@ -1,4 +1,4 @@
-/** The paintings redrawn by hand, each after its own painting (iteration 80). Iteration 79 built the redraws from drawBuilding
+/** The paintings redrawn by hand, each after its own painting (iteration 81). Iteration 79 built the redraws from drawBuilding
  *  specs, so every house had the same box, roof line and window grid; the paintings differ in composition. Here each sprite is
  *  a short script of placed parts on the tile: boxes with their own footprint and wall height, gable roofs whose ridge runs
  *  along either axis, porches, verandas, dormers, chimneys where the painting has them, and the props at its sides. The style

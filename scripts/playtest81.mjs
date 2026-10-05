@@ -1,9 +1,9 @@
 // Iteration 79 (the paintings redrawn in code, part 1): the twelve redrawn buildings side by side with their paintings. The
 // paintings come from the previous main served on OLD_PORT (default 4174), the redraws from the build on 4173; each pair stands
 // over its footprint diamond (yellow; the red edge is the right face) with a citizen at the tile's front corner, at 6×:
-//   shots/iter80_side_by_side.png   painting | redraw, for the three wells, the four level-2 hearths, the four level-1 crafts, the depot
-//   shots/iter80_{hearths,crafts,wells_depot}_10x.png   the same pairs at 10×, a row each
-//   shots/iter80_peoples.png        the redrawn hearths and crafts as the Grimmen, Veshari and Tallowkin build them (their spec functions
+//   shots/iter81_side_by_side.png   painting | redraw, for the three wells, the four level-2 hearths, the four level-1 crafts, the depot
+//   shots/iter81_{hearths,crafts,wells_depot}_10x.png   the same pairs at 10×, a row each
+//   shots/iter81_peoples.png        the redrawn hearths and crafts as the Grimmen, Veshari and Tallowkin build them (their spec functions
 //                                   apply again, now that no painting is the look for everyone)
 // then the street of iteration 78 at 4× and 6×, before and after; no errors, no missing sprites.
 import { chromium } from 'playwright';
@@ -93,7 +93,7 @@ async function shot(page, tag, name, x, y, zoom, tick) {
     for (const id of ['toast', 'lesson']) document.getElementById(id)?.classList.add('hidden');
   }, [x, y, zoom, tick]);
   await page.waitForTimeout(450);
-  await page.screenshot({ path: `shots/iter80_${tag}_${name}.png` });
+  await page.screenshot({ path: `shots/iter81_${tag}_${name}.png` });
 }
 
 const after = await open('4173');
@@ -104,16 +104,16 @@ if (before) {
   const rows = NAMES.map((n, i) => ({ items: [{ ...painted[i], label: `${n} painting` }, { ...redrawn[i], label: `${n} redrawn` }] }));
   // four pairs a row: the wells + depot, the hearths, the crafts
   const grouped = [rows.slice(0, 4), rows.slice(4, 8), rows.slice(8, 12)].map((g) => ({ items: g.flatMap((r) => r.items) }));
-  await sheet(after, grouped, 6, 'shots/iter80_side_by_side.png', FOOT);
-  await sheet(after, rows.slice(4, 8), 10, 'shots/iter80_hearths_10x.png', FOOT);
-  await sheet(after, rows.slice(8, 12), 10, 'shots/iter80_crafts_10x.png', FOOT);
-  await sheet(after, rows.slice(0, 4), 10, 'shots/iter80_wells_depot_10x.png', FOOT);
+  await sheet(after, grouped, 6, 'shots/iter81_side_by_side.png', FOOT);
+  await sheet(after, rows.slice(4, 8), 10, 'shots/iter81_hearths_10x.png', FOOT);
+  await sheet(after, rows.slice(8, 12), 10, 'shots/iter81_crafts_10x.png', FOOT);
+  await sheet(after, rows.slice(0, 4), 10, 'shots/iter81_wells_depot_10x.png', FOOT);
   console.log('side-by-side sheets written');
 } else console.log(`no server on ${OLD_PORT}: no side-by-side sheet`);
 const peoples = ['', '_grimmen', '_veshari', '_tallowkin'].map((p) => ({ items: [0, 1, 2, 3].map((v) => `hearth_l2_v${v}${p}`).concat([0, 1, 2, 3].map((v) => `craft_l1_v${v}${p}`)) }));
 const peopleRows = [];
 for (const r of peoples) peopleRows.push({ items: await grab(after, r.items) });
-await sheet(after, peopleRows, 5, 'shots/iter80_peoples.png', FOOT);
+await sheet(after, peopleRows, 5, 'shots/iter81_peoples.png', FOOT);
 console.log('peoples sheet written; redrawn', redrawn.map((r) => `${r.n} ${r.w}×${r.h}`).join(', '));
 for (const [page, tag] of [[after, 'after'], [before, 'before']]) {
   if (!page) continue;

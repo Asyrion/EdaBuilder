@@ -297,7 +297,7 @@ Charter as `.json`.
   are scaled to the citizen (iteration 78): a well is a citizen and a half, a lamp post or a
   shrine two and a half, a shed or a cottage under three; the towers rise as they did. Since
   iteration 79 the wells, the level-2 hearths, the level-1 crafts and the depot are drawn in
-  code after their paintings, and since iteration 80 each is composed by hand after its own
+  code after their paintings, and since iteration 81 each is composed by hand after its own
   painting (`src/render/painted.ts`: boxes, gables along either axis, porches, verandas,
   dormers, chimneys and props where the painting has them), crisp at the citizen scale and
   one set with the procedural buildings.

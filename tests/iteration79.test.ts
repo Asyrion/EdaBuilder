@@ -38,7 +38,7 @@ describe('The paintings redrawn in code, part 1', () => {
     for (const n of ['b_well', 'b_seep', 'b_tidewell']) { const d = get(n); expect(d.ay, n).toBe(d.p.h - 1 - 10); expect(d.ax).toBe(17); }
   });
   it("the paintings' materials are on the redraws: brick on the plank house's chimney, the log cabins' seams, the tide-well's glowing water", () => {
-    expect(has(get('hearth_l2_v0'), PAL.brick1)).toBe(true); // the plank house's brick chimney (the depot's is stone since iteration 80, as its painting has)
+    expect(has(get('hearth_l2_v0'), PAL.brick1)).toBe(true); // the plank house's brick chimney (the depot's is stone since iteration 81, as its painting has)
     const cabin = get('hearth_l2_v1');
     // a seam under every third log row on the left face: at least three outline-tinted rows below the eaves on one column
     let seams = 0;
