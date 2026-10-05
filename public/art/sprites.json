@@ -10,18 +10,18 @@
   },
   "b_stake_s1": {
    "file": "sprites/b_stake_s1.png",
-   "w": 55,
-   "h": 59,
+   "w": 56,
+   "h": 60,
    "ax": 28,
-   "ay": 26,
+   "ay": 27,
    "glow": "sprites/b_stake_s1_glow.png"
   },
   "b_stake_s2": {
    "file": "sprites/b_stake_s2.png",
-   "w": 55,
-   "h": 42,
-   "ax": 28,
-   "ay": 9,
+   "w": 65,
+   "h": 50,
+   "ax": 33,
+   "ay": 17,
    "glow": "sprites/b_stake_s2_glow.png"
   },
   "b_stake_s3": {
@@ -664,10 +664,10 @@
   },
   "b_hallofwicks": {
    "file": "sprites/b_hallofwicks.png",
-   "w": 66,
-   "h": 86,
-   "ax": 33,
-   "ay": 37,
+   "w": 88,
+   "h": 114,
+   "ax": 44,
+   "ay": 65,
    "glow": "sprites/b_hallofwicks_glow.png"
   },
   "cartp_goods_0": {

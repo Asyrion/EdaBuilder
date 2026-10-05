@@ -349,6 +349,15 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 77 (the sprites faced and fitted)
+
+- **Every building sprite surveyed** over its footprint diamond, each painted one beside its mirror
+  (`scripts/playtest77.mjs`, the tool for the next art pass): nothing to flip; the procedural set's facing holds.
+- **Two fits corrected:** the Founding Stake's stage 2 hall, which shrank at the Burgh, now fills its diamond's width
+  (65×50 from 55×42; stage 1 a pixel taller, level with stage 0); the Hall of Wicks fills its 3×3 diamond (88×114 from
+  66×86).
+- Art only: the sim files are unchanged (DESIGN §4.108). The last of the single items of §17.4; M17 is next.
+
 ## Done in iteration 76 (the wyrm's wings beat, and a bigger sleeping head)
 
 - **The flying wyrm beats its wings:** up, mid, down, mid at six frames a second. The frames are cut from the painting by
@@ -941,22 +950,18 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 ## Prioritized ideas for the next iteration
 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
-the single items first, then the milestones. Each numbered item is one iteration.
+the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The sprites faced and fitted** (§17.4 F; the user's request in iteration 72). Check every building sprite in the game,
-   painted and drawn, for its orientation and how it sits in its tile square: the procedural buildings are the yardstick
-   (door and gable on the right face, the footprint diamond filled neatly). Correct the ones faced wrong or that look off:
-   a flip, a new anchor or `targetHeight` in `art/sources.json`, or a redraw. Screenshots before and after. Art only.
-2. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-3. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-4. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-5. **M18 part 1, the Fen-Nex** (§17.2).
+1. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
+2. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+4. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-6. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-7. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-8. **M19 part 2, the Belerial** (§17.3).
+7. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-9. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

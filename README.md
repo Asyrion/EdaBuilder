@@ -291,7 +291,9 @@ Charter as `.json`.
   the city; every building has a sprite. The painted heroes stand at the height of their
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
   the whole set faces lower-right; every building then turns toward its road (a mirror when the
-  road runs past its left side), and the placement ghost turns with it.
+  road runs past its left side), and the placement ghost turns with it. Every building sprite
+  was surveyed over its footprint diamond beside its mirror (iteration 77): the facings hold,
+  and the Stake's stage 2 hall and the Hall of Wicks now fill their tiles.
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
   tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its
   foot); the temple is a nave and portico that gains a bell tower and then a copper dome; the

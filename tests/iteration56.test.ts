@@ -63,7 +63,7 @@ describe('The painted buildings at the procedural scale, facing the procedural w
     expect(manifest.b_spire.h).toBeLessThanOrEqual(53);
     expect(manifest.b_nexus.h).toBeLessThanOrEqual(60);
     expect(manifest.b_cistern.h).toBeLessThanOrEqual(64);
-    expect(manifest.b_hallofwicks.h).toBeLessThanOrEqual(90);
+    expect(manifest.b_hallofwicks.h).toBeLessThanOrEqual(116); // 114 since iteration 77: the castle fills its 3×3 diamond
     for (const k of [0, 1, 2, 3]) expect(manifest[`b_stake_s${k}`].h).toBeLessThanOrEqual(68);
   });
   it('a scaled hero stands centred on its tile, and the paintings fronted on the left face are mirrored', () => {
