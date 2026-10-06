@@ -55,6 +55,37 @@ function groundVariants(name: string, base: Col[], speck: Col[], density: number
   return out;
 }
 
+/** Marsh ground (iteration 85): moss and mud with dark standing pools, a glint on each, and reed stubble. */
+function marshGround(n: number): SpriteDef[] {
+  const out: SpriteDef[] = [];
+  for (let k = 0; k < n; k++) {
+    const p = diamond((u, v, px, py) => {
+      const pool = h2(px >> 2, py >> 1, 40 + k * 7) < 0.34 && h2((px + 2) >> 2, (py + 1) >> 1, 41 + k * 7) < 0.6;
+      if (pool) return h2(px, py, 44 + k) < 0.06 ? 'waterHi' : h2(px >> 1, py, 45 + k) < 0.5 ? 'water1' : 'water2';
+      const r = h2(px, py, 46 + k * 3);
+      if (r < 0.12) return r < 0.05 ? 'leaf2' : 'grass3';
+      return (['moss', 'forestFloor', 'dirt2', 'moss'] as Col[])[Math.floor(h2(px >> 1, py >> 1, 47 + k) * 4)];
+    });
+    out.push({ name: `marsh_${k}`, p, ax: 16, ay: 0 });
+  }
+  return out;
+}
+
+/** A reed clump (iteration 85): stems in two greens, bowed, with cattail heads; about a citizen tall. */
+function reeds(k: number): Painter {
+  const p = new Painter(11, 13);
+  const stems = 5 + k;
+  for (let j = 0; j < stems; j++) {
+    const x = 1 + Math.floor(h2(j, k, 61) * 9);
+    const top = 1 + Math.floor(h2(k, j, 62) * 5);
+    const lean = h2(j, j + k, 63) < 0.5 ? -1 : 1;
+    for (let y = 12; y >= top; y--) p.px(Math.max(0, Math.min(10, x + (y < top + 3 ? lean : 0))), y, j % 2 ? 'leaf2' : 'grass3');
+    if (h2(j, k, 64) < 0.5) { p.px(x, top, 'trunk'); p.px(x, top + 1, 'trunk'); }
+  }
+  p.outline('outline');
+  return p;
+}
+
 function waterFrames(name: string, base: Col, mid: Col, hi: Col, frames: number, seed: number): SpriteDef[] {
   const out: SpriteDef[] = [];
   for (let f = 0; f < frames; f++) {
@@ -1980,6 +2011,7 @@ export function generateSprites(): SpriteDef[] {
   out.push(...groundVariants('hills', ['rock1', 'rock2', 'hillGrass'], ['rock3', 'rock2'], 0.18, 4, 3));
   out.push(...groundVariants('shore', ['sand', 'sand2', 'sand'], ['sand2', 'grass3'], 0.1, 5, 2));
   out.push(...groundVariants('ruins', ['stone2', 'stone1', 'grass3', 'stone2'], ['stone3', 'outline', 'moss', 'grass2'], 0.16, 9, 3));
+  out.push(...marshGround(3)); // reed beds and standing pools (iteration 85)
   out.push(...groundVariants('gloam', ['gloam1', 'gloam2', 'gloamGrass', 'deepPurple'], ['gloam3', 'outline', 'bone'], 0.14, 6, 3));
   out.push(...waterFrames('water', 'water2', 'water3', 'waterHi', 4, 7));
   out.push(...waterFrames('deep', 'water1', 'water2', 'water3', 4, 8));
@@ -2051,6 +2083,7 @@ export function generateSprites(): SpriteDef[] {
   for (let i = 0; i < 2; i++) { const g = gloamTree(i); out.push({ name: `gloamtree_${i}`, p: g.p, glow: g.glow, ax: 8, ay: 22 }); }
   for (let i = 0; i < 2; i++) { const g = mushrooms(i); out.push({ name: `mushroom_${i}`, p: g.p, glow: g.glow, ax: 5, ay: 8 }); }
   for (let i = 0; i < 3; i++) out.push({ name: `rock_${i}`, p: rock(i), ax: 7, ay: 10 });
+  for (let i = 0; i < 3; i++) out.push({ name: `reeds_${i}`, p: reeds(i), ax: 5, ay: 12 }); // the marsh's reed beds (iteration 85)
   {
     const p = new Painter(10, 8);
     p.circle(5, 4, 3, 'leaf2');

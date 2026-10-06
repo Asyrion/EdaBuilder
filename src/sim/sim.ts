@@ -1,4 +1,5 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
+import { dailyDrainage } from './marsh';
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
 import { dailyHush } from './hounds';
@@ -97,6 +98,7 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyWild(state); // the herds, the wolves and the hunt for game (iteration 58)
     dailyHush(state); // the hounds' Hush: a new count, or the Thaw that lets the fled folk home (iteration 70)
     dailyWater(state); // the shoals, the fish, the reeds and the fords (iteration 60)
+    dailyDrainage(state); // the Drainage edict cuts the nearest marsh to meadow (iteration 85)
     dailyDaughter(state);
     dailyWeave(state);
     dailyGuilds(state);

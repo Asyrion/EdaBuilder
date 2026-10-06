@@ -18,6 +18,9 @@ export interface ActionResult {
   cost?: number;
 }
 
+/** A road across marsh is a causeway, at a bridge's price (iteration 85, DESIGN §17.1). */
+export const MARSH_CAUSEWAY = 4;
+
 export function roadTileCost(state: GameState, type: RoadType, i: number): number {
   const def = ROAD_BY_TYPE[type];
   const t = state.terrain[i];
@@ -30,6 +33,7 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   let cost = def.cost;
   if (t === Terrain.Water) cost *= type === RoadType.Track && fordable(state, i) ? FORD_COST : 4; // a track fords a narrow river (iteration 60); else a bridge
   if (t === Terrain.Hills) cost *= 3; // cut into rock
+  if (t === Terrain.Marsh) cost *= MARSH_CAUSEWAY; // a causeway at a bridge's price (iteration 85)
   if (t === Terrain.Forest) cost += 5;
   if (state.road[i] === type) return 0;
   if (state.road[i] && state.road[i] > type) return -1; // no downgrade by drawing
@@ -115,7 +119,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || (t === Terrain.Hills && !factionOf(state).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+      if (isWater(t) || (t === Terrain.Hills && !factionOf(state).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
       if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];
@@ -331,7 +335,7 @@ export function wallTileCost(state: GameState, i: number): number {
   if (isWater(t) || t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0 || state.road[i] || state.gloam[i]) return -1;
   if (state.wall[i]) return 0;
-  return t === Terrain.Hills ? WALL_COST * 2 : WALL_COST;
+  return t === Terrain.Hills || t === Terrain.Marsh ? WALL_COST * 2 : WALL_COST; // rock to cut, or a footing to sink in the marsh
 }
 
 export function previewWall(state: GameState, tiles: number[]): { cost: number; valid: boolean[] } {

@@ -31,6 +31,7 @@ export const PAL = {
   water2: '#3a78a8',
   water3: '#5aa0c8',
   waterHi: '#a8dcef',
+  mist: '#dfe8e4', // the marsh's dawn mist (iteration 85)
   // ley
   ley1: '#4fe3ff',
   ley2: '#2aa6d8',
