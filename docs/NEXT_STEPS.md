@@ -358,6 +358,7 @@
 - **The nest:** on Bloom's twentieth day a wyrm by marsh nests; a nest within 8 of a Quay gives the city a **tide egg**
   (one a Bloom; the Crown pays 1,500 crowns when no cradle has room). Tide eggs now have their second source.
 - Every roll is a side stream: the main stream never moves for the wyrms, only their effects do.
+- **The bar:** every people within the noise (all together +3.1 %).
 - A sprite of a serpent in three humps and a coil at the bridge; help, an Advisor line, the quest "Clear the bridge",
   Annals rows, a dev command.
 
@@ -1033,17 +1034,22 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
+1. **The quests that never complete** (the user's playtest after iteration 86: "See the Watch at work" never completed,
+   more than once). It waits for a watchman to kill a hound or lay a restless on his own patrol, which a well-kept city
+   prevents; and the sextons' layings count toward it too (`walkerLayings` is shared). Audit every quest: bot games of
+   every people on several maps to list the ones that never complete, and each `done` read for a threat or an accident
+   good play avoids; fix them with a test each.
+2. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-2. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-3. **M18 part 1, the Fen-Nex** (§17.2).
+3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+4. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-4. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-5. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-6. **M19 part 2, the Belerial** (§17.3).
+7. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-7. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

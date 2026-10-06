@@ -4806,6 +4806,79 @@ cores. It was resumed once from the cache when the background job hit its two-ho
   - **A known issue for a later probe** (HANDOFF). The user chose to ship it as it is.
 - **The Tallowkin's floor** is 10.5 % of their folk at the cap of eight draws a seed, not met, as since iteration 64.
 
+### 4.117 M17 part 2: the marsh-wyrms (iteration 86)
+
+A sim change, the second part of M17 (§17.1 item 2, the §8.1 row and the §8.6 tide row). eda-lore's canon has no
+marsh-wyrm and no sheet of one, so the game's own design is the source and the sprite is drawn in code.
+
+**The creature** (`src/sim/marshwyrms.ts`; the optional `state.marshWyrms`, so old saves need no default):
+- **When:** on Bloom's first day each body of water of at least `WYRM_MIN_BODY` (60) tiles gets
+  `1 + floor(tiles / WYRM_TILES)` wyrms (400 tiles a step), at most `WYRM_MAX` (3). They go back to the deep on the Ember's
+  first day, and their lairs and nests go with them.
+- **Each day in Bloom:** a wyrm swims up to `WYRM_SWIM` (6) tiles through its own water. A wyrm without a lair has a
+  `WYRM_LAIR_CHANCE` (1 in 5) of lairing under the nearest bridge within `WYRM_LAIR_REACH` (12). A bridge is a road on
+  water that is not a ford.
+- **Lairs:**
+  - **The crawl:** a lair tile runs at `WYRM_CRAWL` (a quarter) of its speed for the carts and the folk; `roadSpeedAt`
+    reads it, so the A* routes round it where it can.
+  - **Driven off:** a lair where the Veshari Hall's fire coverage is `WYRM_DRIVE` (0.3) or more is left, and the wyrm
+    swims away.
+  - **The Quay's ward:** no wyrm lairs within `QUAY_WARD` (10) tiles of a Quay, and a Quay raised later ends a lair in it.
+- **Nests:**
+  - On Bloom's 20th day each wyrm with marsh within 4 tiles nests on the nearest marsh.
+  - A nest within `NEST_QUAY_REACH` (8) of a Quay gives the city a tide egg, at most one a Bloom: the bargemen bring it in.
+  - With no free cradle, the Crown's assessor pays `NEST_EGG_PRICE` (1,500 crowns).
+  - Tide eggs now have their second source (§8.6).
+- **The rng:** every roll is a side stream, `hashString(seed:day:marshwyrm)`. The main stream never moves for the wyrms;
+  only their effects do (the crawl, a tide egg, a message).
+
+**The look and the voice:**
+- **Sprites:** `marshwyrm_0..1`, a teal serpent's back in three humps with a raised, finned head and a faint eye at night;
+  `marshwyrm_lair`, the wyrm coiled in the shallows beside the bridge.
+- **Messages:** one when the wyrms come, one for a lair and one for a wyrm driven off, each with its place in the Chronicle.
+- **Advisor:** a line while a lair stands.
+- **Ledger:** the quest "Clear the bridge" (400 crowns).
+- **Annals:** rows for lairs, wyrms driven off, tide eggs from nests and the marsh drained.
+- **Also:** a help entry, a dev command (Hazards: "Marsh-wyrm here"), and the Quay's and the Veshari Hall's text.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 86 test files with 541 tests, and `npm run build`.
+- `tests/iteration86.test.ts`:
+  - the wyrms come with Bloom by the size of the water and go with the Ember;
+  - a lair at a quarter speed;
+  - the Veshari Hall drives a wyrm off, and a Quay refuses a lair and ends one;
+  - a nest by a Quay gives a tide egg or the Crown's price, and away from one nothing;
+  - ten days of wyrms leave the main rng where it was;
+  - an old save loads.
+- The fresh game's stats start the four new counters at 0 (the Annals test reads every counter).
+- `scripts/playtest86.mjs` on seed 42 in Bloom:
+  - four wyrms in the water;
+  - a cobbled bridge over the river with a wyrm laired under it, by day and at night;
+  - a Veshari Hall raised beside it (its crew and water given, as a grown city has them): the next day the lair is gone,
+    the message says why, and "Clear the bridge" completes;
+  - no errors, no missing sprites.
+
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): 132 runs a side, resumed once from the
+cache when the background job hit its two-hour limit.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,067 | 2,029 | +37 (+1.8 %) | 195 (9.5 %) | met | within the noise |
+| Grimmen | 6 × 4 | 1,354 | 1,371 | −17 (−1.2 %) | 121 (8.9 %) | met | within the noise |
+| Veshari | 6 × 3 | 2,232 | 2,132 | +100 (+4.7 %) | 178 (8.2 %) | met | within the noise |
+| Tallowkin | 6 × 8 | 1,944 | 1,837 | +106 (+5.8 %) | 203 (10.7 %) | **not met: at the cap of 8 draws** | within the noise |
+| all | | 7,596 | 7,369 | +226 (+3.1 %) | 354 | | within the noise |
+
+- **The wyrms cost the bot's cities nothing the bar can see.** A lair slows one bridge for part of one season, and the bot
+  builds few bridges and many Veshari Halls.
+- **The gates** (this tree, main in brackets):
+  - Vellish: the Free City 30 of 42 (30), the Beacon 12 (11);
+  - Grimmen: the Deephold 20 of 24 (23), but at a median of day 57 against 125; the Underking's Hall 6 (6), the Seat 3 (3);
+  - Veshari: Vesh's Court 18 of 18 (17), the Sable Crown 10 (8);
+  - Tallowkin: the Hall of Wicks 33 of 48 (30), the Lantern of Wicks 16 (11).
+- **The Tallowkin's floor** is 10.7 % at the cap, not met, as since iteration 64.
+- **The marsh's Grimmen loss of iteration 85 stands:** main's Grimmen row here is iteration 85's (1,371 on four draws a seed).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6067,3 +6140,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Marsh is land you pay for twice (iteration 85):* a causeway to cross it at a bridge's price, an edict to drain it a few
   tiles a day. It is never within nine tiles of the founding, so the first streets are dry; past that, the city meets it at
   the water's edge. The bar sees the cost (Grimmen −16 %), and the user chose to keep it.
+- *A seasonal creature on its own rng (iteration 86):* the marsh-wyrms roll on a side stream keyed by the seed and the day,
+  as the weather does, so adding them moves the world only through what they do. A wyrm is answered with buildings the
+  player already has reasons to build (the Veshari Hall, the Quay), and the Quay's answer pays: a tide egg.

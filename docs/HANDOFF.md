@@ -137,10 +137,10 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-The next item is NEXT_STEPS item 2, M17 part 3: the Patagoi Atoll (DESIGN §17.1 item 3), a scenario charter of islands in
-open water with a goal, the bot and a row the balance table can run. Item 1 (new paintings for what is still drawn in code)
-waits on the user's sheets in eda-lore; check eda-lore for new image files first (iteration 86 found only lore commits).
-Plan it on the Plan panel first.
+The next item is NEXT_STEPS item 1, the quest audit (the user's word after iteration 86): "See the Watch at work" never
+completes in a well-kept city (it waits for a watchman to kill a hound or lay a restless, and shares the sextons' counter).
+Audit every quest the same way and fix them, a test each. After it, M17 part 3, the Patagoi Atoll. Plan it on the Plan
+panel first.
 
 ## Learned in iteration 86 (the marsh-wyrms, DESIGN §4.117)
 
