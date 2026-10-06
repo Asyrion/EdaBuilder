@@ -475,3 +475,33 @@ export function dropSpecks(img, min) {
   }
   return { w, h, data };
 }
+
+/** The top face of an isometric block painting onto the 32×16 tile (iteration 83): the face is the diamond as wide as the
+ *  block, its top vertex at the block's top (lifted by y, a fraction of the width, where tufts stand above it); shrink pulls the
+ *  sampling toward the centre so the rim and the side faces stay out. Transparent samples are skipped. */
+export function isoTopDiamond(img, { shrink = 0.12, y = 0 } = {}, W = 32, H = 16, sub = 4) {
+  const out = blank(W, H);
+  const fw = img.w, fh = img.w / 2, cx = img.w / 2, cy = y * img.w + fh / 2;
+  for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+    const dx = (px + 0.5 - W / 2) / (W / 2), dy = (py + 0.5 - H / 2) / (H / 2);
+    if (Math.abs(dx) + Math.abs(dy) > 1) continue;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let j = 0; j < sub; j++) for (let i = 0; i < sub; i++) {
+      const sx = cx + (dx + (i + 0.5 - sub / 2) / sub / (W / 2)) * (fw / 2) * (1 - shrink);
+      const sy = cy + (dy + (j + 0.5 - sub / 2) / sub / (H / 2)) * (fh / 2) * (1 - shrink);
+      const tx = Math.max(0, Math.min(img.w - 1, Math.floor(sx))), ty = Math.max(0, Math.min(img.h - 1, Math.floor(sy)));
+      const o = (ty * img.w + tx) * 4;
+      if (img.data[o + 3] < 128) continue;
+      r += img.data[o]; g += img.data[o + 1]; b += img.data[o + 2]; n++;
+    }
+    if (!n) continue;
+    const o = (py * W + px) * 4;
+    out.data[o] = Math.round(r / n); out.data[o + 1] = Math.round(g / n); out.data[o + 2] = Math.round(b / n); out.data[o + 3] = 255;
+  }
+  for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) { // a hole left by a transparent sample takes its row's neighbour
+    const o = (py * W + px) * 4; const dx = (px + 0.5 - W / 2) / (W / 2), dy = (py + 0.5 - H / 2) / (H / 2);
+    if (Math.abs(dx) + Math.abs(dy) > 1 || out.data[o + 3]) continue;
+    for (const q of [o - 4, o + 4, o - W * 4, o + W * 4]) if (q >= 0 && q < out.data.length && out.data[q + 3]) { out.data.set(out.data.slice(q, q + 4), o); break; }
+  }
+  return out;
+}

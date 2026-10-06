@@ -181,6 +181,16 @@ export function zoneSpriteName(_atlas: { imported: Set<string> }, kind: string, 
   return `${kind}_l${level}_v${variant % 4}${suffix}`;
 }
 
+/** A building's look (iteration 83): where the atlas holds `<base>_v0..N-1` (the user's paintings), one of them chosen by the
+ *  building's tile, the same every frame and every load; else the base sprite. `counts` caches N per base. */
+export function lookName(atlas: { countVariants(prefix: string): number }, base: string, x: number, y: number, counts?: Map<string, number>): string {
+  let n = counts?.get(base);
+  if (n === undefined) { n = atlas.countVariants(`${base}_v`); counts?.set(base, n); }
+  if (n === 0) return base;
+  const h = Math.imul(x + 1, 73856093) ^ Math.imul(y + 1, 19349663);
+  return `${base}_v${(h >>> 0) % n}`;
+}
+
 /** Shelf packing in the given order, from startY down, 1 px gutters. Pure, so a test can hold it to no overlaps. */
 export function shelfPack(items: { w: number; h: number }[], W = 1024, startY = 0): { pos: { x: number; y: number }[]; height: number } {
   let x = 0;

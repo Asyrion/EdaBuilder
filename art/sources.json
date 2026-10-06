@@ -207,7 +207,8 @@
    "inset": 0.14,
    "colors": 20,
    "glow": false,
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "tree_0",
@@ -429,7 +430,7 @@
    "checked": true
   },
   {
-   "name": "mushroom_3",
+   "name": "glowcap_0",
    "kind": "prop",
    "src": "inspirations/mushrooms/image_3(1).png",
    "island": 9,
@@ -444,7 +445,7 @@
    "checked": true
   },
   {
-   "name": "mushroom_4",
+   "name": "glowcap_1",
    "kind": "prop",
    "src": "inspirations/mushrooms/image_3(1).png",
    "island": 24,
@@ -459,7 +460,7 @@
    "checked": true
   },
   {
-   "name": "mushroom_5",
+   "name": "glowcap_2",
    "kind": "prop",
    "src": "inspirations/mushrooms/image_3(1).png",
    "island": 14,
@@ -486,7 +487,10 @@
     "minLum": 0.5,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "aliases": [
+    "b_spire_v0"
+   ]
   },
   {
    "name": "b_nexus",
@@ -516,7 +520,10 @@
     "minLum": 0.5,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "aliases": [
+    "b_wicktower_v0"
+   ]
   },
   {
    "name": "b_well",
@@ -630,7 +637,10 @@
    },
    "checked": true,
    "targetHeight": 58,
-   "anchor": "centre"
+   "anchor": "centre",
+   "aliases": [
+    "b_ossuary_v0"
+   ]
   },
   {
    "name": "b_sextonchapel",
@@ -645,7 +655,10 @@
    },
    "checked": true,
    "targetHeight": 54,
-   "anchor": "centre"
+   "anchor": "centre",
+   "aliases": [
+    "b_sextonchapel_v0"
+   ]
   },
   {
    "name": "b_boneyard",
@@ -660,7 +673,10 @@
    },
    "checked": true,
    "targetHeight": 49,
-   "anchor": "centre"
+   "anchor": "centre",
+   "aliases": [
+    "b_boneyard_v0"
+   ]
   },
   {
    "name": "b_lyceum",
@@ -980,7 +996,8 @@
     "minLum": 0.7,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "glimwood_1",
@@ -999,7 +1016,8 @@
     "minLum": 0.7,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "glimwood_2",
@@ -1018,7 +1036,8 @@
     "minLum": 0.7,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "glimwood_3",
@@ -1037,7 +1056,8 @@
     "minLum": 0.7,
     "warm": 40
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "gloamtree_0",
@@ -1056,7 +1076,8 @@
     "minLum": 0.35,
     "warm": 50
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "gloamtree_1",
@@ -1075,7 +1096,8 @@
     "minLum": 0.35,
     "warm": 50
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "gloamtree_2",
@@ -1094,7 +1116,8 @@
     "minLum": 0.35,
     "warm": 50
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "gloamtree_3",
@@ -1113,7 +1136,8 @@
     "minLum": 0.35,
     "warm": 50
    },
-   "checked": true
+   "checked": true,
+   "off": true
   },
   {
    "name": "b_hallofwicks",
@@ -3476,6 +3500,25 @@
    }
   },
   {
+   "name": "market_l1_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 17,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
    "name": "market_l2_v0_grimmen",
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/stone_houses_4.png",
@@ -3655,6 +3698,63 @@
    "flip": true
   },
   {
+   "name": "arcane_l1_v1_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 13,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l1_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 26,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
    "name": "arcane_l2_v0_grimmen",
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/alchemy_labelled_6b.png",
@@ -3692,6 +3792,44 @@
     "maxBlob": 10
    },
    "flip": true
+  },
+  {
+   "name": "arcane_l2_v2_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 56,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l2_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 40,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
   },
   {
    "name": "arcane_l3_v0_grimmen",
@@ -3736,6 +3874,25 @@
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/towers_8.png",
    "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v3_grimmen",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 1,
    "w": 1,
    "h": 1,
    "targetHeight": 56,
@@ -5136,6 +5293,25 @@
    "flip": true
   },
   {
+   "name": "craft_l3_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
    "name": "market_l1_v0_tallowkin",
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/shrines_16.png",
@@ -5160,6 +5336,44 @@
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/shrines_16.png",
    "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "market_l1_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 11,
    "w": 1,
    "h": 1,
    "targetHeight": 36,
@@ -5521,6 +5735,7712 @@
     "maxBlob": 10
    },
    "flip": true
+  },
+  {
+   "name": "arcane_l3_v2_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 50,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "arcane_l3_v3_tallowkin",
+   "set": "eda-lore-1",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 52,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 56,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "checked": true,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   }
+  },
+  {
+   "name": "tree_12",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "tree_13",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 34,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "tree_14",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "tree_15",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "tree_16",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "tree_17",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "tree_18",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 32,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "tree_19",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 34,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "tree_20",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "tree_21",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "tree_22",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 38,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "tree_23",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "tree_24",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 34,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "tree_25",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "tree_26",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "tree_27",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 38,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "tree_28",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_8.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "tree_29",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 34,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_8.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "tree_30",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_8.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "tree_31",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_8.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "tree_autumn_0",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "tree_autumn_1",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "tree_autumn_2",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "glimwood_0",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "glimwood_1",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_12.png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "glimwood_2",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "glimwood_3",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "glimwood_4",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "glimwood_5",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "glimwood_6",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "glimwood_7",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "glimwood_8",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "glimwood_9",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 30,
+   "baseInset": 2,
+   "colors": 20,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.65,
+    "warm": 40,
+    "maxBlob": 12
+   },
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "gloamtree_0",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "src": "inspirations/eda-lore/trees_12b.png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "gloamtree_1",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 28,
+   "baseInset": 2,
+   "colors": 12,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.35,
+    "warm": 50
+   },
+   "recolour": {
+    "hue": 160,
+    "sat": -0.05,
+    "light": -0.1
+   },
+   "src": "inspirations/eda-lore/trees_8.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_6",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_7",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "bush_8",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "bush_9",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "bush_10",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "bush_11",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "bush_12",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0(1).png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "bush_13",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_14",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_15",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_16",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "bush_17",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "bush_18",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_19",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "bush_20",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "bush_21",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "bush_22",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "bush_23",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "bush_24",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "bush_25",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "bush_26",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "bush_27",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "bush_28",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 19,
+   "checked": true
+  },
+  {
+   "name": "bush_29",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 20,
+   "checked": true
+  },
+  {
+   "name": "bush_30",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 22,
+   "checked": true
+  },
+  {
+   "name": "bush_31",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 23,
+   "checked": true
+  },
+  {
+   "name": "bush_32",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 24,
+   "checked": true
+  },
+  {
+   "name": "bush_33",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 25,
+   "checked": true
+  },
+  {
+   "name": "bush_34",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 26,
+   "checked": true
+  },
+  {
+   "name": "bush_35",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 27,
+   "checked": true
+  },
+  {
+   "name": "bush_36",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 28,
+   "checked": true
+  },
+  {
+   "name": "bush_37",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 29,
+   "checked": true
+  },
+  {
+   "name": "bush_38",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 30,
+   "checked": true
+  },
+  {
+   "name": "bush_39",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 31,
+   "checked": true
+  },
+  {
+   "name": "bush_40",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 32,
+   "checked": true
+  },
+  {
+   "name": "bush_41",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 33,
+   "checked": true
+  },
+  {
+   "name": "bush_42",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 34,
+   "checked": true
+  },
+  {
+   "name": "bush_43",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3.png",
+   "island": 35,
+   "checked": true
+  },
+  {
+   "name": "bush_44",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_45",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_46",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_47",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 24,
+   "checked": true
+  },
+  {
+   "name": "bush_48",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 25,
+   "checked": true
+  },
+  {
+   "name": "bush_49",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 26,
+   "checked": true
+  },
+  {
+   "name": "bush_50",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 27,
+   "checked": true
+  },
+  {
+   "name": "bush_51",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 56,
+   "checked": true
+  },
+  {
+   "name": "bush_52",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 58,
+   "checked": true
+  },
+  {
+   "name": "bush_53",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 80,
+   "checked": true
+  },
+  {
+   "name": "bush_54",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 81,
+   "checked": true
+  },
+  {
+   "name": "bush_55",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 82,
+   "checked": true
+  },
+  {
+   "name": "bush_56",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_0.png",
+   "island": 83,
+   "checked": true
+  },
+  {
+   "name": "bush_57",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_58",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_59",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_60",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "bush_61",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_1(1).png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "bush_62",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2(1).png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_63",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_64",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "bush_65",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_66",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "bush_67",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_68",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_69",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_70",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "bush_71",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "bush_72",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_73",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_2.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "bush_74",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_75",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_76",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_77",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "bush_78",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_79",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/bushes/image_3(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "bush_80",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_81",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "bush_82",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_83",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "bush_84",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "bush_85",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_86",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "bush_87",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "bush_88",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "bush_89",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "bush_90",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "bush_91",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "bush_92",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 20,
+   "checked": true
+  },
+  {
+   "name": "bush_93",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_23.png",
+   "island": 21,
+   "checked": true
+  },
+  {
+   "name": "bush_94",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_9.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "bush_95",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_9.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "bush_96",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_9.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "bush_97",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_9.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "bush_98",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_9.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "bush_99",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    8,
+    8,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_100",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    520,
+    8,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_101",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    776,
+    8,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_102",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    8,
+    264,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_103",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    520,
+    264,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_104",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    8,
+    520,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_105",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    264,
+    520,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_106",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    520,
+    520,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "bush_107",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 12,
+   "maxWidth": 20,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/bushes_grid_16.png",
+   "rect": [
+    8,
+    776,
+    240,
+    240
+   ],
+   "white": 215,
+   "checked": true
+  },
+  {
+   "name": "mushroom_3",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_4",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "mushroom_5",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "mushroom_6",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "mushroom_7",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "mushroom_8",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_9",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "mushroom_10",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "mushroom_11",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "mushroom_12",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "mushroom_13",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "mushroom_14",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "mushroom_15",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "mushroom_16",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 23,
+   "checked": true
+  },
+  {
+   "name": "mushroom_17",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 24,
+   "checked": true
+  },
+  {
+   "name": "mushroom_18",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 31,
+   "checked": true
+  },
+  {
+   "name": "mushroom_19",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 32,
+   "checked": true
+  },
+  {
+   "name": "mushroom_20",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 33,
+   "checked": true
+  },
+  {
+   "name": "mushroom_21",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 35,
+   "checked": true
+  },
+  {
+   "name": "mushroom_22",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 36,
+   "checked": true
+  },
+  {
+   "name": "mushroom_23",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 37,
+   "checked": true
+  },
+  {
+   "name": "mushroom_24",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 40,
+   "checked": true
+  },
+  {
+   "name": "mushroom_25",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 41,
+   "checked": true
+  },
+  {
+   "name": "mushroom_26",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 44,
+   "checked": true
+  },
+  {
+   "name": "mushroom_27",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 45,
+   "checked": true
+  },
+  {
+   "name": "mushroom_28",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 53,
+   "checked": true
+  },
+  {
+   "name": "mushroom_29",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 54,
+   "checked": true
+  },
+  {
+   "name": "mushroom_30",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 56,
+   "checked": true
+  },
+  {
+   "name": "mushroom_31",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 57,
+   "checked": true
+  },
+  {
+   "name": "mushroom_32",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 58,
+   "checked": true
+  },
+  {
+   "name": "mushroom_33",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 61,
+   "checked": true
+  },
+  {
+   "name": "mushroom_34",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 65,
+   "checked": true
+  },
+  {
+   "name": "mushroom_35",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 66,
+   "checked": true
+  },
+  {
+   "name": "mushroom_36",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 68,
+   "checked": true
+  },
+  {
+   "name": "mushroom_37",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 69,
+   "checked": true
+  },
+  {
+   "name": "mushroom_38",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 70,
+   "checked": true
+  },
+  {
+   "name": "mushroom_39",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_40",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "mushroom_41",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "mushroom_42",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "mushroom_43",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_44",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "mushroom_45",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "mushroom_46",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "mushroom_47",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "mushroom_48",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_49",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "mushroom_50",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "mushroom_51",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "mushroom_52",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "mushroom_53",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "mushroom_54",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "mushroom_55",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "mushroom_56",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "mushroom_57",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 19,
+   "checked": true
+  },
+  {
+   "name": "mushroom_58",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 20,
+   "checked": true
+  },
+  {
+   "name": "mushroom_59",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 21,
+   "checked": true
+  },
+  {
+   "name": "mushroom_60",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 23,
+   "checked": true
+  },
+  {
+   "name": "mushroom_61",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_62",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "mushroom_63",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_64",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "mushroom_65",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "mushroom_66",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "mushroom_67",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_68",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "mushroom_69",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "mushroom_70",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "mushroom_71",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "mushroom_72",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "mushroom_73",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_74",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "mushroom_75",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "mushroom_76",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "mushroom_77",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "mushroom_78",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "mushroom_79",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "mushroom_80",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 19,
+   "checked": true
+  },
+  {
+   "name": "mushroom_81",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 20,
+   "checked": true
+  },
+  {
+   "name": "mushroom_82",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 23,
+   "checked": true
+  },
+  {
+   "name": "mushroom_83",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 24,
+   "checked": true
+  },
+  {
+   "name": "mushroom_84",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 25,
+   "checked": true
+  },
+  {
+   "name": "mushroom_85",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 26,
+   "checked": true
+  },
+  {
+   "name": "mushroom_86",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 27,
+   "checked": true
+  },
+  {
+   "name": "mushroom_87",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 28,
+   "checked": true
+  },
+  {
+   "name": "mushroom_88",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 29,
+   "checked": true
+  },
+  {
+   "name": "mushroom_89",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 30,
+   "checked": true
+  },
+  {
+   "name": "mushroom_90",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 31,
+   "checked": true
+  },
+  {
+   "name": "mushroom_91",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_92",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "mushroom_93",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "mushroom_94",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_95",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "mushroom_96",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "mushroom_97",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "mushroom_98",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "mushroom_99",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 0,
+   "checked": true
+  },
+  {
+   "name": "mushroom_100",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "mushroom_101",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 7,
+   "checked": true
+  },
+  {
+   "name": "mushroom_102",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 8,
+   "checked": true
+  },
+  {
+   "name": "mushroom_103",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "mushroom_104",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 16,
+   "checked": true
+  },
+  {
+   "name": "mushroom_105",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "mushroom_106",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 19,
+   "checked": true
+  },
+  {
+   "name": "mushroom_107",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 21,
+   "checked": true
+  },
+  {
+   "name": "mushroom_108",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 25,
+   "checked": true
+  },
+  {
+   "name": "mushroom_109",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 26,
+   "checked": true
+  },
+  {
+   "name": "mushroom_110",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    8,
+    8,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "mushroom_111",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    520,
+    8,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "mushroom_112",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    776,
+    8,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "mushroom_113",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": false,
+   "src": "inspirations/eda-lore/trees_16.png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "glowcap_3",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "glowcap_4",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "glowcap_5",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "glowcap_6",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "glowcap_7",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "glowcap_8",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 18,
+   "checked": true
+  },
+  {
+   "name": "glowcap_9",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 19,
+   "checked": true
+  },
+  {
+   "name": "glowcap_10",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 20,
+   "checked": true
+  },
+  {
+   "name": "glowcap_11",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 22,
+   "checked": true
+  },
+  {
+   "name": "glowcap_12",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 34,
+   "checked": true
+  },
+  {
+   "name": "glowcap_13",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 42,
+   "checked": true
+  },
+  {
+   "name": "glowcap_14",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 43,
+   "checked": true
+  },
+  {
+   "name": "glowcap_15",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 47,
+   "checked": true
+  },
+  {
+   "name": "glowcap_16",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 51,
+   "checked": true
+  },
+  {
+   "name": "glowcap_17",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0(1).png",
+   "island": 55,
+   "checked": true
+  },
+  {
+   "name": "glowcap_18",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "glowcap_19",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 13,
+   "checked": true
+  },
+  {
+   "name": "glowcap_20",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_0.png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "glowcap_21",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "glowcap_22",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "glowcap_23",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "glowcap_24",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "glowcap_25",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "glowcap_26",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1(1).png",
+   "island": 22,
+   "checked": true
+  },
+  {
+   "name": "glowcap_27",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "glowcap_28",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "glowcap_29",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_1.png",
+   "island": 4,
+   "checked": true
+  },
+  {
+   "name": "glowcap_30",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 10,
+   "checked": true
+  },
+  {
+   "name": "glowcap_31",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 11,
+   "checked": true
+  },
+  {
+   "name": "glowcap_32",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 14,
+   "checked": true
+  },
+  {
+   "name": "glowcap_33",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 15,
+   "checked": true
+  },
+  {
+   "name": "glowcap_34",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 21,
+   "checked": true
+  },
+  {
+   "name": "glowcap_35",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 22,
+   "checked": true
+  },
+  {
+   "name": "glowcap_36",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 32,
+   "checked": true
+  },
+  {
+   "name": "glowcap_37",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 33,
+   "checked": true
+  },
+  {
+   "name": "glowcap_38",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 34,
+   "checked": true
+  },
+  {
+   "name": "glowcap_39",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 35,
+   "checked": true
+  },
+  {
+   "name": "glowcap_40",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 36,
+   "checked": true
+  },
+  {
+   "name": "glowcap_41",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 37,
+   "checked": true
+  },
+  {
+   "name": "glowcap_42",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 38,
+   "checked": true
+  },
+  {
+   "name": "glowcap_43",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 39,
+   "checked": true
+  },
+  {
+   "name": "glowcap_44",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 40,
+   "checked": true
+  },
+  {
+   "name": "glowcap_45",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2(1).png",
+   "island": 41,
+   "checked": true
+  },
+  {
+   "name": "glowcap_46",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 2,
+   "checked": true
+  },
+  {
+   "name": "glowcap_47",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "glowcap_48",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 5,
+   "checked": true
+  },
+  {
+   "name": "glowcap_49",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 9,
+   "checked": true
+  },
+  {
+   "name": "glowcap_50",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_2.png",
+   "island": 12,
+   "checked": true
+  },
+  {
+   "name": "glowcap_51",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 1,
+   "checked": true
+  },
+  {
+   "name": "glowcap_52",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_3.png",
+   "island": 3,
+   "checked": true
+  },
+  {
+   "name": "glowcap_53",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 6,
+   "checked": true
+  },
+  {
+   "name": "glowcap_54",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 17,
+   "checked": true
+  },
+  {
+   "name": "glowcap_55",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/mushrooms/image_3(1).png",
+   "island": 27,
+   "checked": true
+  },
+  {
+   "name": "glowcap_56",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    264,
+    8,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "glowcap_57",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    8,
+    520,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "glowcap_58",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    264,
+    520,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "glowcap_59",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "targetHeight": 10,
+   "maxWidth": 14,
+   "baseInset": 1,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.45,
+    "warm": 40,
+    "maxBlob": 30
+   },
+   "src": "inspirations/eda-lore/mushrooms_grid_8.png",
+   "rect": [
+    520,
+    520,
+    240,
+    496
+   ],
+   "white": 200,
+   "checked": true
+  },
+  {
+   "name": "grass_4",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 0,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "grass_5",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/eda-lore/grass_tiles_9.png",
+   "island": 0,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "grass_6",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "grass",
+   "src": "inspirations/eda-lore/grass_tiles_9.png",
+   "island": 1,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_3",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 1,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_4",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 3,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_5",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 9,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_6",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/eda-lore/grass_tiles_16.png",
+   "island": 0,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_7",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_2.png",
+   "island": 0,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "meadow_8",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "meadow",
+   "src": "inspirations/grass_tiles/image_2.png",
+   "island": 6,
+   "inset": 0.14,
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_3",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 7,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_4",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 15,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_5",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/eda-lore/grass_tiles_16.png",
+   "island": 12,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "forest_6",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "forest",
+   "src": "inspirations/eda-lore/grass_tiles_16.png",
+   "island": 14,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_3",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 4,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_4",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 5,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_5",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 10,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_6",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 14,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "hills_7",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "hills",
+   "src": "inspirations/eda-lore/grass_tiles_16.png",
+   "island": 3,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "shore_1",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "shore",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 11,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "ruins_3",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "ruins",
+   "src": "inspirations/grass_tiles/image_0.png",
+   "island": 2,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "ruins_4",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "ruins",
+   "src": "inspirations/eda-lore/grass_tiles_16.png",
+   "island": 10,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "ruins_5",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "ruins",
+   "src": "inspirations/eda-lore/grass_tiles_9.png",
+   "island": 2,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "ruins_6",
+   "set": "eda-lore-2",
+   "kind": "ground",
+   "family": "ruins",
+   "src": "inspirations/eda-lore/grass_tiles_9.png",
+   "island": 5,
+   "inset": 0.14,
+   "isoTop": {
+    "shrink": 0.18,
+    "y": 0.02
+   },
+   "colors": 20,
+   "glow": false,
+   "checked": true
+  },
+  {
+   "name": "boar_0",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "src": "inspirations/animals/image_3(1).png",
+   "island": 26,
+   "targetHeight": 9,
+   "colors": 20,
+   "glow": false,
+   "hop": true,
+   "checked": true
+  },
+  {
+   "name": "glimmoth_0",
+   "set": "eda-lore-2",
+   "kind": "prop",
+   "src": "inspirations/animals/image_2(1).png",
+   "island": 39,
+   "targetHeight": 7,
+   "colors": 16,
+   "glow": {
+    "hue": "any",
+    "minLum": 0.6,
+    "warm": 30
+   },
+   "hop": true,
+   "checked": true
+  },
+  {
+   "name": "b_well_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v6",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v7",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v8",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v9",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v10",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v11",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_5.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v12",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_5.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v13",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_5.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v14",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_5.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v15",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v16",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v17",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v18",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v19",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v20",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6b.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v21",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v22",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v23",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v24",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v25",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v26",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v27",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v28",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v29",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v30",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v31",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v32",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v33",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 7,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v34",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v35",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_well_v36",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 11,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_cut_15.png",
+   "island": 12,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_5.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v6",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v7",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v8",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_stone_9.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v9",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v10",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_seep_v11",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_6.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_9.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v6",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_6a.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v7",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v8",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_tidewell_v9",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/wells_wood_12.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 16,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "shift": {
+    "x": 0,
+    "y": 6
+   },
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 8,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v6",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 3,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v7",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v8",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v9",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 16,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_shrine_v10",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_stormpeak_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_stormpeak_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 9,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 45,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_stoneward_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_stoneward_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_12.png",
+   "island": 10,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_stoneward_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 5,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_candleshrine_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 28,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_healer_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 6,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_healer_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 14,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_healer_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/alchemists_house/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_healer_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/alchemists_house/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_healer_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/alchemists_house/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_eggshellfont_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_altars_12.png",
+   "island": 2,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 35,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_eggshellfont_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/shrines_16.png",
+   "island": 16,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 35,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_leybeacon_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 0,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 51,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_watchpost_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 51,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_watchpost_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 36,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wicktower_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 1,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 43,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_fishershut_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/wooden_houses/image_0(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_fishershut_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/wooden_houses/image_1(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_reedcutters_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/wooden_houses/image_2(1).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_smokehouse_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/wooden_houses/image_3(2).png",
+   "w": 1,
+   "h": 1,
+   "targetHeight": 31,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 0,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 1,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 3,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 4,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 5,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v6",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 7,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v7",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 8,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v8",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 9,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v9",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 11,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_boneyard_v10",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 12,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 49,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ossuary_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 2,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ossuary_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 6,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ossuary_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 14,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ossuary_v4",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 10,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ossuary_v5",
+   "set": "eda-lore-2",
+   "src": "inspirations/graveyards/image_2(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_sextonchapel_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 15,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 55,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_watergarden_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/cemeteries_16.png",
+   "island": 13,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 44,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_hunterslodge_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 2,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_hunterslodge_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 3,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_hunterslodge_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 6,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_hunterslodge_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 7,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_tamerslodge_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 11,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_tamerslodge_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/hunters_lodges_7.png",
+   "island": 12,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 50,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wyrmforge_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/forge/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 51,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_wyrmforge_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/forge/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 51,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_forgetemple_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/forge/image_2(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 52,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_golemfoundry_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/forge/image_3(2).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 58,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_depot_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/trade_houses/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 62,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_depot_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/trade_houses/image_2(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 62,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_depot_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/trade_houses/image_3(2).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 62,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wrightslodge_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/general_craft/image_0(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 52,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wrightslodge_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/general_craft/image_1(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 52,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wrightslodge_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/general_craft/image_2(1).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 52,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_wrightslodge_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/general_craft/image_3(2).png",
+   "w": 2,
+   "h": 2,
+   "targetHeight": 52,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_brickworks_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/brickmaker/image_0(1).png",
+   "w": 3,
+   "h": 3,
+   "targetHeight": 80,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_brickworks_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/brickmaker/image_1(1).png",
+   "w": 3,
+   "h": 3,
+   "targetHeight": 80,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_brickworks_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/brickmaker/image_2(1).png",
+   "w": 3,
+   "h": 3,
+   "targetHeight": 80,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_brickworks_v3",
+   "set": "eda-lore-2",
+   "src": "inspirations/craft_houses/brickmaker/image_3(2).png",
+   "w": 3,
+   "h": 3,
+   "targetHeight": 80,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_academy_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 2,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 62,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_spire_v1",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 54,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 47,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_spire_v2",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 4,
+   "w": 1,
+   "h": 1,
+   "targetHeight": 47,
+   "maxWidth": 34,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_drakemews_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 2,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 56,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_observatory_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 3,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 70,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_ruindelve_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 55,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 56,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_househall_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/magic_buildings_8.png",
+   "island": 57,
+   "w": 2,
+   "h": 2,
+   "targetHeight": 62,
+   "maxWidth": 66,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_lantern_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/light_towers_6.png",
+   "island": 2,
+   "w": 3,
+   "h": 3,
+   "targetHeight": 140,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "flip": true,
+   "checked": true
+  },
+  {
+   "name": "b_greatgate_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 0,
+   "w": 3,
+   "h": 3,
+   "targetHeight": 96,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_hallofmarvels_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 3,
+   "w": 3,
+   "h": 3,
+   "targetHeight": 80,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
+  },
+  {
+   "name": "b_grandacademy_v0",
+   "set": "eda-lore-2",
+   "src": "inspirations/eda-lore/lantern_towers_7.png",
+   "island": 6,
+   "w": 3,
+   "h": 3,
+   "targetHeight": 85,
+   "maxWidth": 98,
+   "anchor": "centre",
+   "colors": 24,
+   "sharpen": 0.8,
+   "glow": {
+    "minLum": 0.6,
+    "warm": 60,
+    "maxBlob": 10
+   },
+   "checked": true
   }
  ]
 }
