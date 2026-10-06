@@ -2351,23 +2351,32 @@ export function generateSprites(): SpriteDef[] {
     ot.rect(0, f === 0 ? 2 : 3, 2, 1, 'wood1');
     ot.outline('outline');
     out.push({ name: `otter_${f}`, p: ot, ax: 6, ay: 5 });
-    // a marsh-wyrm (iteration 86): an eel's back breaking the water in two humps, a finned head with a pale eye; the humps roll
-    const mw = new Painter(17, 7); const mwg = new Painter(17, 7);
-    const humps = f === 0 ? [[2, 3], [7, 2]] : [[3, 2], [8, 3]];
-    for (const [hx, hy] of humps) { mw.rect(hx, hy, 4, 7 - hy - 2, 'verdigris'); mw.rect(hx, hy, 4, 1, 'waterHi'); mw.px(hx + 1, hy - 1, 'leaf2'); }
-    mw.rect(12, 1, 4, 3, 'verdigris'); mw.rect(12, 1, 4, 1, 'waterHi'); mw.px(15, 2, 'flower1'); mwg.px(15, 2, 'flower1');
-    mw.px(12, 0, 'leaf2'); mw.px(13, 0, 'leaf2');
-    mw.rect(0, 5, 17, 1, 'water3'); mw.px(1, 4, 'waterHi'); mw.px(11, 5, 'waterHi');
+    // a marsh-wyrm (iteration 86): an eel-wyrm's back breaking the water in three humps, a finned head raised at the front with
+    // a pale eye and a dorsal frill; ripples where each hump goes under. The humps roll between the frames.
+    const mw = new Painter(26, 12); const mwg = new Painter(26, 12);
+    const hump = (cx: number, top: number) => {
+      for (let dx = -3; dx <= 3; dx++) { const h = top + Math.round((dx * dx) / 3); mw.rect(cx + dx, h, 1, 9 - h, 'verdigris'); mw.px(cx + dx, h, 'waterHi'); }
+      mw.px(cx - 1, top - 1, 'leaf2'); mw.px(cx + 1, top - 1, 'leaf2');
+      mw.rect(cx - 4, 9, 9, 1, 'water3');
+    };
+    if (f === 0) { hump(4, 6); hump(11, 4); } else { hump(5, 4); hump(12, 6); }
+    // the neck and head
+    mw.rect(17, 3, 3, 6, 'verdigris'); mw.rect(19, 1, 5, 3, 'verdigris'); mw.rect(19, 1, 5, 1, 'waterHi');
+    mw.px(24, 2, 'verdigris'); mw.px(22, 2, 'flower1'); mwg.px(22, 2, 'flower1');
+    mw.px(18, 0, 'leaf2'); mw.px(19, 0, 'leaf2'); mw.px(17, 2, 'leaf2'); mw.px(24, 3, 'outline');
+    mw.rect(15, 9, 8, 1, 'water3'); mw.px(1, 8, 'waterHi'); mw.px(23, 10, 'waterHi');
     mw.outline('outline');
-    out.push({ name: `marshwyrm_${f}`, p: mw, glow: mwg, ax: 8, ay: 5 });
+    out.push({ name: `marshwyrm_${f}`, p: mw, glow: mwg, ax: 13, ay: 9 });
     if (f === 0) {
-      // the lair (iteration 86): the wyrm coiled in the shadow under a bridge, ripples round it
-      const ml = new Painter(18, 8); const mlg = new Painter(18, 8);
-      ml.rect(2, 2, 13, 4, 'verdigris'); ml.rect(4, 3, 9, 2, 'water1'); ml.rect(2, 2, 13, 1, 'waterHi');
-      ml.rect(14, 1, 3, 3, 'verdigris'); ml.px(16, 2, 'flower1'); mlg.px(16, 2, 'flower1');
-      ml.rect(0, 6, 18, 1, 'water3'); ml.px(1, 5, 'waterHi'); ml.px(16, 6, 'waterHi');
+      // the lair (iteration 86): the wyrm coiled in the shallows beside the bridge, its head up and watching the carts
+      const ml = new Painter(24, 14); const mlg = new Painter(24, 14);
+      for (let a = 0; a < 40; a++) { const t = (a / 40) * Math.PI * 2; const x = 10 + Math.round(Math.cos(t) * 8); const y = 9 + Math.round(Math.sin(t) * 3); ml.rect(x, y, 2, 2, 'verdigris'); }
+      for (let a = 0; a < 24; a++) { const t = (a / 24) * Math.PI * 2; ml.px(10 + Math.round(Math.cos(t) * 4), 9 + Math.round(Math.sin(t) * 1.5), 'leaf2'); }
+      ml.rect(17, 3, 3, 6, 'verdigris'); ml.rect(18, 1, 5, 3, 'verdigris'); ml.rect(18, 1, 5, 1, 'waterHi'); ml.px(21, 2, 'flower1'); mlg.px(21, 2, 'flower1');
+      ml.px(17, 0, 'leaf2'); ml.px(18, 0, 'leaf2');
+      ml.rect(0, 12, 24, 1, 'water3'); ml.px(2, 11, 'waterHi'); ml.px(21, 13, 'waterHi');
       ml.outline('outline');
-      out.push({ name: 'marshwyrm_lair', p: ml, glow: mlg, ax: 9, ay: 6 });
+      out.push({ name: 'marshwyrm_lair', p: ml, glow: mlg, ax: 12, ay: 12 });
     }
     // heron: grey-blue, long legs and neck, a dagger bill
     const hn = new Painter(9, 14);

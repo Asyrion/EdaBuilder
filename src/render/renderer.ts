@@ -671,7 +671,7 @@ export class Renderer {
       const s = this.atlas.get(lair ? 'marshwyrm_lair' : `marshwyrm_${Math.floor(this.time * 2 + mw.id) % 2}`);
       const bob = Math.sin(this.time * 1.6 + mw.id) * (lair ? 0.4 : 1);
       const left = !lair && Math.floor(this.time / 6 + mw.id) % 2 === 0;
-      const y = wy + (lair ? 13 : 9) + bob;
+      const y = wy + (lair ? 12 : 10) + bob;
       items.push({ d: mw.x + mw.y - (lair ? 0.45 : 0.2), y: wy, fn: () => this.drawFacing(s, wx, y, left), g: s ? { s, x: wx, y, a: 0.8 } : undefined });
     }
     for (const a of state.agents) {
