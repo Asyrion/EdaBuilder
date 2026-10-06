@@ -201,6 +201,11 @@ Charter as `.json`.
   the land around it and feeds its wells half again, and the Water Garden stands on its shore. A
   Dirt Track over a narrow river is a ford: a third of a bridge's price, but under water in the
   Thaw's first ten days after a Hush unless a Weir holds it. One tale: the spawning run.
+- The marsh: reed beds and standing pools beside slow water, mist on them at dawn. Nothing is built
+  on marsh; a road crosses it as a causeway at a bridge's price, and it breeds miasma within two
+  tiles. Its reeds count twice for the Reed-Cutters. The Drainage edict (from the Village) cuts
+  the marsh nearest the city to meadow, three tiles a day, for 30 crowns a day and a little more
+  for every ten marsh tiles left.
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
   eggs arrive through events; hatch and train them into drakes and wyverns, set them as
   district wardens (fed by their district), mine delvers (wardens wake half as often),

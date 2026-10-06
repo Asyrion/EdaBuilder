@@ -1,15 +1,14 @@
 # Handoff: where Wardlight stands
 
-Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
-sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
-as possible are to be replaced by them. Main stands at iteration 84 (the eda-lore swap, batch 2: every other compatible asset, DESIGN §4.115);
-before it 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
+Written for a new session. The eda-lore swap (below) is done: the user's own sprites from `eda-lore` replaced every game
+asset they could. The milestones resume with M17. Main stands at iteration 85 (M17 part 1, the marsh, DESIGN §4.116); before it 84 (the eda-lore swap, batch 2: every
+other compatible asset, §4.115), 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
 eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks
 sprite drawn after the user's painting, §4.111). Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
 §4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
 before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
-## The eda-lore swap (the next session's work)
+## The eda-lore swap (done in iterations 82 and 84; kept for its method)
 
 **The source.** The user's repository `eda-lore` (connect it to the session: it must be among the session's repositories,
 or added with the session's `add_repo` tool; nothing of it is in this repository yet). It holds the user's own sprites in
@@ -137,10 +136,21 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-The eda-lore swap is done (iterations 82 and 84). The next item is NEXT_STEPS item 1: new paintings from the user for what
-is still drawn in code (above), or, if the user has none yet, M17 part 1, the marsh. Plan it on the Plan panel first.
-After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
-the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
+The next item is NEXT_STEPS item 2, M17 part 2: the marsh-wyrms (DESIGN §17.1 item 2), a sim change that runs the wide
+bar. Item 1 (new paintings for what is still drawn in code) waits on the user's sheets in eda-lore; check eda-lore for new
+files first. Plan it on the Plan panel first.
+
+## Learned in iteration 85 (the marsh, DESIGN §4.116)
+
+- **The marsh is `Terrain.Marsh = 9`**, marked in `generateTerrain` by `markMarsh` (its own noise, no rng) after the nodes and the
+  founding clearing. Every map changed, so every balance row moved; a test that ran a fixed seed to a date can meet a tale
+  earlier or later (iteration 10's Chronicle test now answers tales as they come).
+- **`src/sim/marsh.ts`** holds the Drainage edict's daily drain. It reads `s.edicts.drainage` directly, because `edicts.ts`
+  imports its prices (an import cycle would leave them undefined).
+- **The look is procedural** (`marshGround`, `reeds` in `sprites.ts`; the dawn mist in the renderer after the particles):
+  eda-lore has no marsh sheet. A user's marsh tiles would replace `marsh_N` by name.
+- **`scripts/playtest85.mjs`** finds the densest marsh near the founding and shoots it by day, at dawn and night, a causeway,
+  and the Drainage edict's five days (the terrain put back for the before frame).
 
 Built since iteration 68:
 - the Great Gate (item A), in iteration 69: `src/sim/gate.ts`, `HEART_EVENTS` in `events.ts`, and `drawGreatGate`
