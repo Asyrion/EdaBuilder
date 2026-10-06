@@ -206,6 +206,9 @@ Charter as `.json`.
   tiles. Its reeds count twice for the Reed-Cutters. The Drainage edict (from the Village) cuts
   the marsh nearest the city to meadow, three tiles a day, for 30 crowns a day and a little more
   for every ten marsh tiles left.
+- Marsh-wyrms: in Bloom eel-like wyrms come up the river and the lake. One may lair under a bridge,
+  and the carts on it crawl; a Veshari Hall covering the bridge drives it off, and none lairs
+  within ten tiles of a Quay. A wyrm's nest by a Quay gives the city a tide egg each Bloom.
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
   eggs arrive through events; hatch and train them into drakes and wyverns, set them as
   district wardens (fed by their district), mine delvers (wardens wake half as often),

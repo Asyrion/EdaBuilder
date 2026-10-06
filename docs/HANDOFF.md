@@ -1,7 +1,8 @@
 # Handoff: where Wardlight stands
 
 Written for a new session. The eda-lore swap (below) is done: the user's own sprites from `eda-lore` replaced every game
-asset they could. The milestones resume with M17. Main stands at iteration 85 (M17 part 1, the marsh, DESIGN §4.116); before it 84 (the eda-lore swap, batch 2: every
+asset they could. The milestones resume with M17. Main stands at iteration 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
+84 (the eda-lore swap, batch 2: every
 other compatible asset, §4.115), 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
 eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks
 sprite drawn after the user's painting, §4.111). Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
@@ -136,9 +137,22 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-The next item is NEXT_STEPS item 2, M17 part 2: the marsh-wyrms (DESIGN §17.1 item 2), a sim change that runs the wide
-bar. Item 1 (new paintings for what is still drawn in code) waits on the user's sheets in eda-lore; check eda-lore for new
-files first. Plan it on the Plan panel first.
+The next item is NEXT_STEPS item 1, the quest audit (the user's word after iteration 86): "See the Watch at work" never
+completes in a well-kept city (it waits for a watchman to kill a hound or lay a restless, and shares the sextons' counter).
+Audit every quest the same way and fix them, a test each. After it, M17 part 3, the Patagoi Atoll. Plan it on the Plan
+panel first.
+
+## Learned in iteration 86 (the marsh-wyrms, DESIGN §4.117)
+
+- **`src/sim/marshwyrms.ts`** holds the wyrms (`state.marshWyrms`, optional, so old saves load without a default). Every roll
+  is a side stream `hashString(seed:day:marshwyrm)`: the main rng never moves for them. Their effects (the crawl, the
+  messages, a tide egg) do move the world.
+- **The crawl** is read in `roadSpeedAt` (`roads.ts`) through a local check of `state.marshWyrms`, not an import of
+  `marshwyrms.ts` (roads.ts is imported by the sim's core; an import cycle would leave constants undefined).
+- **A playtest's Veshari Hall needs a crew and water:** an empty test town has neither, and services cover by their crew
+  (`crewFactor`) and halve when dry. `scripts/playtest86.mjs` sets both for the shot.
+- **A fresh game's stats** must list every counter (`tests/iteration55.test.ts` checks the Annals against `createGame`'s
+  stats), so new counters start at 0 in `world.ts` even when the type has them optional.
 
 ## Learned in iteration 85 (the marsh, DESIGN §4.116)
 
