@@ -3661,7 +3661,7 @@ Docs only: no code, test or art changed.
 - the swamp biome and the Patagoi Atoll (no marsh `Terrain`, no Drainage edict, no atoll scenario);
 - the Great Gate and the Heart of Belregi;
 - the Fen-Nex and the Belerial as peoples (`FactionId` holds four);
-- golem haulers, and marsh-wyrms as a creature;
+- golem haulers, and marsh-wyrms as a creature (both built since: iterations 72 and 86);
 - the two failure states of §8.5;
 - "the eggs go grey", and the Sky-Dock's wyvern;
 - hatchling riders;
@@ -3670,7 +3670,7 @@ Docs only: no code, test or art changed.
 **Partly built:**
 - **Strider mounts** are a 60-day Watch bonus, not couriers.
 - **The Wandering Merchant's memory** is flavour text.
-- **Tide eggs** come from a Veshari tale, not a marsh-wyrm nest.
+- **Tide eggs** came from a Veshari tale only, not a marsh-wyrm nest, until iteration 86 (§4.117) gave them the nest by a Quay.
 - **AUDIT B40** (markets and the road tier) is still open.
 
 **Stale notes, fixed:**
@@ -4867,7 +4867,7 @@ counter, and every magical building changes how the player plans.
 |---|---|---|---|
 | **Glimmoths** | swarm ley nodes and lit spires at night, all seasons | harmless; luminous ambient life; shed *glim-dust* | a **Moth-Loft** near a node harvests dust: Craft goods +20 % in radius |
 | **Thrumhares** | meadows by day | ambient; flee agents; a Garden makes them stay | none needed; hunters take a few for a small happiness bump |
-| **Marsh-wyrms** | rivers and lakes; Bloom | eel-like; one may lair under a bridge: carts on it slow to a crawl | Veshari Hall coverage drives it off; a **Quay** keeps them away for good (not built: M17 part 2, §17.1) |
+| **Marsh-wyrms** | rivers and lakes; Bloom | eel-like; one may lair under a bridge: carts on it slow to a crawl | Veshari Hall coverage drives it off; a **Quay** keeps them away for good (built in iteration 86, §4.117) |
 | **Gloam-hounds** | out of the Gloam at night; packs grow in the Hush | fast; harass outlying buildings (happiness, occasional damage); flee light | Ward Lanterns and Watch coverage; a **Hunters' Lodge** hunts them in radius |
 | **Wisps** | over Boneyards and the restless | benign lights; multiply when unquieted dead rise; guide the Watch to restless | deathcare; too many wisps is the early warning |
 | **Concord Wardens** | sleeping stone constructs in hills; woken by mining | wake and wander; hostile until *bound*; immune to fire and the Gloam | a **Golem Foundry** binds them: labour that needs no housing but drinks mana; a surge sends them mad |

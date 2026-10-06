@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 86 (M17 part 2: the marsh-wyrms)
+
+- **Marsh-wyrms** come up the rivers and the lake in Bloom (one to three to a body of water) and go with the Ember. They
+  swim, and one may **lair under a bridge**: the carts on it crawl at a quarter of their speed (DESIGN §4.117).
+- **The answers:** a Veshari Hall whose reach covers the bridge drives the wyrm off; none lairs within 10 tiles of a Quay,
+  and a Quay raised later ends a lair in its ward.
+- **The nest:** on Bloom's twentieth day a wyrm by marsh nests; a nest within 8 of a Quay gives the city a **tide egg**
+  (one a Bloom; the Crown pays 1,500 crowns when no cradle has room). Tide eggs now have their second source.
+- Every roll is a side stream: the main stream never moves for the wyrms, only their effects do.
+- A sprite of a serpent in three humps and a coil at the bridge; help, an Advisor line, the quest "Clear the bridge",
+  Annals rows, a dev command.
+
 ## Done in iteration 85 (M17 part 1: the marsh)
 
 - **Marsh terrain** beside slow water: low land within three tiles of a river or lake, in patches, never within nine
@@ -1024,15 +1036,14 @@ the single items first (all done by iteration 77), then the milestones. Each num
 1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-2. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-4. **M18 part 1, the Fen-Nex** (§17.2).
+2. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+3. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+4. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+5. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-7. **M19 part 2, the Belerial** (§17.3).
+6. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+7. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
