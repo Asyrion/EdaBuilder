@@ -58,7 +58,8 @@ props('bush_', 6, [
 ], BUSH);
 
 const M = 'inspirations/mushrooms/';
-const MUSH = { targetHeight: 10, maxWidth: 14, baseInset: 1, colors: 16, glow: false };
+// a mushroom stands well below a citizen's knee-to-hip: 5 px, 7 with the outline, against the citizen's 12 (the user's word after iteration 84)
+const MUSH = { targetHeight: 5, baseInset: 1, colors: 16, glow: false };
 const GLOW = { ...MUSH, glow: { hue: 'any', minLum: 0.45, warm: 40, maxBlob: 30 } };
 props('mushroom_', 3, [
   ...[0, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 17, 23, 24, 31, 32, 33, 35, 36, 37, 40, 41, 44, 45, 53, 54, 56, 57, 58, 61, 65, 66, 68, 69, 70].map((i) => [`${M}image_0(1).png`, i]),
@@ -172,6 +173,7 @@ for (const e of kept) if (BASE_LOOKS.includes(e.name) && !e.off) e.aliases = [`$
 for (const e of kept) {
   const m = /^mushroom_([345])$/.exec(e.name);
   if (m) e.name = `glowcap_${Number(m[1]) - 3}`;
+  if (/^(mushroom|glowcap)_\d+$/.test(e.name) && !e.set) e.targetHeight = MUSH.targetHeight; // iteration 50's six, at the same size
   if (/^(glimwood|gloamtree)_\d$/.test(e.name) && !e.set) e.off = true;
   if (e.name === 'shore_1' && !e.set) e.off = true; // grass_3's tile again: the shore takes a tile of its own
 }

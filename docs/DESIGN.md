@@ -4697,6 +4697,11 @@ The sim is untouched (`src/sim`, `src/data`, `src/core` unchanged).
 - **The twelve house gaps** of iteration 82 are filled (`scripts/edaLoreHouses.mjs`, sheets W–a): every people has 48 houses
   of its own.
 
+**The mushrooms brought down** (after the merge, the user's word: "the mushrooms are all too big, a mushroom is smaller than a
+human"): every mushroom and glowing cap, iteration 50's six included, stands 5 px (7 with the outline) against the
+citizen's 12, about half a person; they were 10 (12), as tall as the folk. `tests/iteration84.test.ts` holds them under 0.6
+citizens. The rest of the batch the user kept as it is, the Brickworks' brickmaker looks included.
+
 **Not used, and why:** the modern houses of batch 1; potted plants, planters and shaped topiary (a heart, a spiral, tiers in
 pots: no pot stands on open grass); the joke mushrooms (skull, lollipop, candy, metal, faces, clockwork, fire, ice, gold);
 the palms, cactus, baobab, bonsai, candy and Christmas trees (no desert or tropic, no festivity tree in the game); the
