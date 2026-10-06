@@ -353,6 +353,7 @@
 
 - **Marsh terrain** beside slow water: low land within three tiles of a river or lake, in patches, never within nine
   tiles of the founding (DESIGN §4.116). Reed beds and standing pools, mist at dawn.
+- **The bar:** all peoples −5.8 % (seen), the Grimmen −15.8 % (seen), the others within the noise; the user chose to ship.
 - **Its rules:** nothing is built or zoned on it; a road crosses it as a causeway at a bridge's price (4×), a Warding
   Wall at twice its price; it breeds miasma within two tiles; its reeds count twice for the Reed-Cutters.
 - **The Drainage edict** (from the Village): the marsh nearest the city becomes meadow, three tiles a day, for 30 crowns
@@ -919,6 +920,9 @@
   gates). 231 tests.
 
 ## Known issues
+
+- **The marsh costs the Grimmen bot a sixth of its folk** (iteration 85, DESIGN §4.116), seen past the noise; the cause is
+  the map, not the miasma, the causeway price or draining. Shipped at the user's word; worth a probe of the bot's purse.
 
 - **The bot after M14 part 5** (iteration 55, DESIGN §4.86).
   - **Folk:** the light-first rule costs Vellish seeds 42 and 44 a third and half of their folk

@@ -179,6 +179,11 @@ Built since iteration 68:
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
 
+- **The marsh costs the Grimmen bot a sixth of its folk** (iteration 85, DESIGN §4.116; seen past the noise; the user chose
+  to ship it). On seed 45 the city runs short of crowns by day 30 and stops spreading at radius 28. The miasma, the
+  causeway price and draining are not the cause (probed); the map with marsh is. Worth a day-by-day probe of the Grimmen
+  bot's purse.
+
 - **The bot after part 5.**
   - **Folk:** the light-first rule costs Vellish seeds 42 and 44 a third and half of their folk
     against iteration 54 (1,942 and 1,280). In exchange all three Vellish seeds take the Burgh by
