@@ -663,6 +663,17 @@ export class Renderer {
     // agents
     const cartPools = new Map<string, number>(); // the donkey-cart pools, counted once a frame (the paintings merge in after boot)
     const cartCount = (prefix: string): number => { let n = cartPools.get(prefix); if (n === undefined) { n = this.atlas.countVariants(prefix); cartPools.set(prefix, n); } return n; };
+    // the marsh-wyrms of Bloom (iteration 86): a back rolling in the water, or coiled under the bridge it lairs beneath
+    for (const mw of state.marshWyrms ?? []) {
+      if (mw.x < minX || mw.x > maxX + 1 || mw.y < minY || mw.y > maxY + 1) continue;
+      const [wx, wy] = tileToWorld(mw.x, mw.y);
+      const lair = mw.lair >= 0;
+      const s = this.atlas.get(lair ? 'marshwyrm_lair' : `marshwyrm_${Math.floor(this.time * 2 + mw.id) % 2}`);
+      const bob = Math.sin(this.time * 1.6 + mw.id) * (lair ? 0.4 : 1);
+      const left = !lair && Math.floor(this.time / 6 + mw.id) % 2 === 0;
+      const y = wy + (lair ? 13 : 9) + bob;
+      items.push({ d: mw.x + mw.y - (lair ? 0.45 : 0.2), y: wy, fn: () => this.drawFacing(s, wx, y, left), g: s ? { s, x: wx, y, a: 0.8 } : undefined });
+    }
     for (const a of state.agents) {
       // each walker keeps its own pace (its speed and its id), so a crowd on one road does not march in step
       const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;

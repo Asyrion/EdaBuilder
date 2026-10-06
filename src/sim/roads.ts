@@ -14,7 +14,16 @@ export function roadSpeedAt(s: GameState, i: number): number {
   const r = roadAt(s, i);
   if (!r) return 0;
   const season = Math.floor(s.day / DAYS_PER_SEASON) % 4;
-  return ROAD_BY_TYPE[r].speed * (r === RoadType.Track && (season === 0 || season === 3) ? MUD : 1);
+  return ROAD_BY_TYPE[r].speed * (r === RoadType.Track && (season === 0 || season === 3) ? MUD : 1) * (wyrmLaired(s, i) ? WYRM_CRAWL_SPEED : 1);
+}
+
+/** A marsh-wyrm under the bridge (iteration 86): the carts crawl. Read here, without importing marshwyrms.ts (a cycle). */
+export const WYRM_CRAWL_SPEED = 0.25;
+function wyrmLaired(s: GameState, i: number): boolean {
+  const ws = s.marshWyrms;
+  if (!ws) return false;
+  for (const w of ws) if (w.lair === i) return true;
+  return false;
 }
 
 /** The road at a market's door counts for its trade (iteration 75, AUDIT B40): the market tithe is scaled by the tier there,

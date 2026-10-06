@@ -231,7 +231,7 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     key: 'veshari', name: 'Veshari Hall', category: 'service',
-    desc: 'Water-mage fire brigade. Puts out fires within 12 tiles. Needs mana to call the water.',
+    desc: 'Water-mage fire brigade. Puts out fires within 12 tiles, and drives a marsh-wyrm from under a bridge it covers. Needs mana to call the water.',
     flavor: 'They arrive dripping, always, even in the Hush.',
     w: 2, h: 2, cost: 1600, capacity: [8], upkeep: 36, manaUse: 4, needsMana: true,
     service: { type: 'fire', radius: 12, strength: 1.0 }, unlock: 2,
@@ -513,7 +513,7 @@ export const BUILDINGS: BuildingDef[] = [
 
   {
     key: 'quay', name: 'Quay', category: 'service',
-    desc: 'A stone landing on the river or lake. Each day a barge carries up to 40 goods from works within 8 tiles to the markets around another Quay, along the water. Two quays on the same water make a trade route that no road congestion touches.',
+    desc: 'A stone landing on the river or lake. Each day a barge carries up to 40 goods from works within 8 tiles to the markets around another Quay, along the water. Two quays on the same water make a trade route that no road congestion touches. No marsh-wyrm lairs under a bridge within 10, and a wyrm\'s nest within 8 gives a tide egg in Bloom.',
     flavor: 'The Veshari say the river was theirs first. The bargemen say the river was nobody\'s.',
     w: 1, h: 1, cost: 3200, upkeep: 25, manaUse: 0, unlock: 3, nearWater: true,
   },

@@ -165,6 +165,15 @@ export interface Herd {
   prey: number; // a wolf pack: the hearth it stalks tonight (building id), -1
 }
 
+/** A marsh-wyrm (iteration 86, DESIGN §8.1): an eel-like wyrm of the rivers and lakes, out in Bloom. */
+export interface MarshWyrm {
+  id: number;
+  x: number;
+  y: number;
+  lair: number; // the bridge tile it lairs under, or -1
+  nest: number; // the marsh tile of its nest this Bloom, or -1
+}
+
 export interface WildState {
   herds: Herd[];
   nextId: number;
@@ -431,6 +440,7 @@ export interface GameState {
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
   trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
   wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
+  marshWyrms?: MarshWyrm[]; // the marsh-wyrms out in Bloom (marshwyrms.ts, iteration 86; absent in older saves)
   water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
   dragons: Dragon[];
   nextDragonId: number;
@@ -583,6 +593,9 @@ export interface GameState {
     homesThatched: number; // level-1 homes the reed-cutters thatched
     fordDaysClosed: number; // days a ford stood closed by high water
     marshDrained?: number; // marsh tiles the Drainage edict turned to meadow (iteration 85; absent in older saves)
+    wyrmsLaired?: number; // marsh-wyrms that laired under a bridge (iteration 86)
+    wyrmsDriven?: number; // marsh-wyrms the Veshari Hall or a Quay drove from their lair (iteration 86)
+    tideNests?: number; // tide eggs brought in from a marsh-wyrm nest by a Quay (iteration 86)
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
     gatePilgrims: number; // pilgrims of the Pass lodged through the Great Gate (iteration 69)
     gateAlms: number; // the alms they paid

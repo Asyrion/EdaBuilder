@@ -1,4 +1,5 @@
 /** Dev tools: commands for playtesting and checking mechanics. Every use is counted, marks the daily result, and writes one Chronicle line. See DESIGN.md 4.55. */
+import { lairFor } from './marshwyrms';
 import { ALL_EVENTS, descOf } from './events';
 import { milestonesOf } from '../data/factions';
 import { ASPECTS } from './weave';
@@ -94,6 +95,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   // hazards
   { id: 'hounds', group: 'Hazards', name: 'Hound pack here', desc: 'Four Gloam-hounds at the camera centre.', run: (s, _a, at) => { for (let k = 0; k < 4; k++) spawnCreature(s, 'hound', at.x + (k % 2), at.y + (k >> 1)); return 'Howling.'; } },
   { id: 'restless', group: 'Hazards', name: 'Restless here', desc: 'Three of the unquieted dead rise at the camera centre.', run: (s, _a, at) => { let n = 0; for (let k = 0; k < 3; k++) if (spawnRestless(s, at.x + k, at.y)) n++; return `${n} rise.`; } },
+  { id: 'marshwyrm', group: 'Hazards', name: 'Marsh-wyrm here', desc: 'A marsh-wyrm at the camera centre lairs under the nearest bridge (in any season, until Ember).', run: (s, _a, at) => { const w = { id: 900 + (s.marshWyrms?.length ?? 0), x: at.x, y: at.y, lair: -1, nest: -1 }; const i = lairFor(s, w); if (i < 0) return 'No bridge in reach.'; w.lair = i; w.x = i % s.w; w.y = (i / s.w) | 0; (s.marshWyrms ??= []).push(w); s.stats.wyrmsLaired = (s.stats.wyrmsLaired ?? 0) + 1; return 'Something long moves under the planks.'; } },
   { id: 'tiger', group: 'Hazards', name: 'War-tiger here', desc: 'A tiger of Longwood at the camera centre.', run: (s, _a, at) => { s.agents.push({ id: s.nextAgentId++, kind: AgentKind.Creature, x: at.x + 0.5, y: at.y + 0.5, path: [], pathIdx: 0, speed: 1.9, homeId: -1, targetId: -1, timer: 0, variant: 0, dir: 0, load: 0, species: 'tiger', anchorId: -1, ax: at.x + 0.5, ay: at.y + 0.5 }); s.stats.tigersTotal++; return 'Striped, silent.'; } },
   { id: 'storm', group: 'Hazards', name: 'Mana-storm here', desc: 'A storm starts at the camera centre.', run: (s, _a, at) => { startStorm(s, at.x, at.y); return 'The sky bruises.'; } },
   { id: 'surge', group: 'Hazards', name: 'Wild surge now', desc: 'The overdraw breaks loose today.', run: (s) => { s.overdrawDays = 6; dailySurge(s); return 'The ley lashes out.'; } },
