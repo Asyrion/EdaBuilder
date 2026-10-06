@@ -373,8 +373,8 @@ export class Renderer {
           }
         } else if (t === Terrain.Marsh) {
           // reed beds (iteration 85): one or two clumps on most marsh tiles
-          const n = h2(x, y, 70) < 0.25 ? 0 : h2(x, y, 71) < 0.5 ? 1 : 2;
-          for (let k = 0; k < n; k++) cache.props.push({ name: `reeds_${Math.floor(h2(x, y, 72 + k) * 3)}`, wx: wx + (h2(x, y, 74 + k) - 0.5) * 18, wy: wy + 9 + (h2(x, y, 76 + k) - 0.5) * 6, d: x + y, sway: h2(x, y, 78 + k) });
+          const n = h2(x, y, 70) < 0.15 ? 1 : h2(x, y, 71) < 0.5 ? 2 : 3;
+          for (let k = 0; k < n; k++) cache.props.push({ name: `reeds_${Math.floor(h2(x, y, 72 + k) * 3)}`, wx: wx + (h2(x, y, 74 + k) - 0.5) * 20, wy: wy + 9 + (h2(x, y, 76 + k) - 0.5) * 8, d: x + y, sway: h2(x, y, 78 + k) });
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.Ruins && state.bIndex[i] < 0 && !state.road[i]) {
@@ -854,10 +854,12 @@ export class Renderer {
           if (!inBounds(x, y) || state.terrain[idx(x, y)] !== Terrain.Marsh) continue;
           const [wx, wy] = tileToWorld(x, y);
           const drift = Math.sin(this.time * 0.4 + x * 0.9 + y * 0.6) * 4;
-          for (let k = 0; k < 3; k++) {
-            ctx.globalAlpha = mist * (0.16 + 0.1 * h2(x, y, 90 + k));
-            const w = 14 + Math.floor(h2(x, y, 93 + k) * 12);
-            ctx.fillRect(Math.round(wx - left - w / 2 + drift + (k - 1) * 6), Math.round(wy - top + 4 + k * 3), w, 2 + (k % 2));
+          for (let k = 0; k < 2; k++) {
+            ctx.globalAlpha = mist * (0.14 + 0.08 * h2(x, y, 90 + k));
+            const rx = 12 + h2(x, y, 93 + k) * 10;
+            ctx.beginPath();
+            ctx.ellipse(wx - left + drift + (k - 0.5) * 10, wy - top + 6 + k * 4, rx, rx * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
           }
         }
       ctx.globalAlpha = 1;
