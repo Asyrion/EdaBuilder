@@ -152,6 +152,10 @@ for (const people of (process.env.PEOPLES ?? 'vellish,grimmen,veshari,tallowkin'
     }
     if (t.forest && people === 'vellish') await shot(page, `shots/iter84_forest_${tag}_3x.png`, t.forest[0], t.forest[1], 3, 200);
     if (t.forest && people === 'vellish' && tag === 'after') await shot(page, `shots/iter84_forest_night_3x.png`, t.forest[0], t.forest[1], 3, 640);
+    if (t.forest && people === 'vellish') { // the mushrooms against the folk (the user's word: a mushroom is smaller than a person): citizens walk the forest's edge
+      await page.evaluate(([fx, fy]) => { const s = window.__game.state; for (let k = 0; k < 10; k++) s.agents.push({ id: 91000 + k, kind: 0, x: fx - 3 + (k % 5) * 1.3, y: fy - 1 + Math.floor(k / 5) * 1.5, path: [], pathIdx: 0, timer: 0, variant: k % 6, speed: 0, home: -1 }); }, t.forest);
+      await shot(page, `shots/iter84_forest_folk_${tag}_6x.png`, t.forest[0], t.forest[1], 6, 200);
+    }
   }
 }
 console.log('errors', errors.length ? errors : 'none', 'missing', warns.length ? warns : 'none');

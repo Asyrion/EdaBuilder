@@ -65,6 +65,8 @@ should look like the user's drawings.
   ages excepted). A new sheet's picks must be new islands.
 - **Learned:** isometric block tiles need `isoTop` (their top face is already the diamond); a sheet drawn on grid paper needs
   `white: 200` or the grid becomes the largest island; a narrow painting on a 2×2 must stand taller to fill its diamond.
+- **The user's verdict on batch 2:** most sprites liked; the mushrooms were too big and now stand half a citizen (5 px);
+  the Brickworks keeps the brickmaker paintings as its looks (answered: yes).
 
 ## Still drawn in code (the user asked for this list; new sheets from the user would replace these)
 
@@ -136,9 +138,7 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 ## The next item
 
 The eda-lore swap is done (iterations 82 and 84). The next item is NEXT_STEPS item 1: new paintings from the user for what
-is still drawn in code (above), or, if the user has none yet, M17 part 1, the marsh. Plan it on the Plan panel first. One
-question for the user: the Brickworks (iteration 83) now shows the user's four brickmaker paintings as its looks (iteration
-84, the user's "use every compatible asset"); its hand-drawn `b_brickworks` is the fallback. Ask whether to keep that.
+is still drawn in code (above), or, if the user has none yet, M17 part 1, the marsh. Plan it on the Plan panel first.
 After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
 the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
 

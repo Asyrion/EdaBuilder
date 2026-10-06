@@ -42,6 +42,9 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
       expect([m.ax, m.ay], e.name).toEqual([Math.round(m.w / 2) + (e.shift?.x ?? 0), m.h - 1 - f * 16 + (e.shift?.y ?? 0)]);
     }
   });
+  it('a mushroom is smaller than a person: every mushroom and glowing cap at most 0.6 citizens (the user\'s word after iteration 84)', () => {
+    for (const p of ['mushroom_', 'glowcap_']) for (let k = 0; k < count(p); k++) expect(manifest[`${p}${k}`].h / 12, `${p}${k}`).toBeLessThanOrEqual(0.6);
+  });
   it('the wells keep the yardstick (1.5 citizens) and stand in the middle of their tile', () => {
     for (const p of ['b_well_v', 'b_seep_v', 'b_tidewell_v']) for (let k = 0; k < count(p); k++) {
       const m = manifest[`${p}${k}`];

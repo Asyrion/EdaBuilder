@@ -357,6 +357,7 @@
 - **Props and ground:** 32 trees, 3 autumn trees, 10 glimwood, 108 bushes, 114 mushrooms, 60 glowing caps (their own pool
   near the nodes), the boar, and new grass, meadow, forest, hills, shore and ruins tiles (`isoTop` for the block sheets).
 - **The twelve house gaps filled:** every people has 48 zone houses of its own. No painting is used twice anywhere.
+- **The mushrooms brought down** after the user's look: half a citizen (7 px with the outline), not a citizen's height.
 - **Still drawn in code:** the list is in HANDOFF.md ("Still drawn in code").
 
 ## Done in iteration 83 (the Brickworks)
