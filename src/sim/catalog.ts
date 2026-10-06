@@ -669,7 +669,7 @@ export interface RoadDef {
 
 export const ROADS: RoadDef[] = [
   { type: RoadType.Track, key: 'track', name: 'Dirt Track', cost: 10, upkeep: 0.3, manaUse: 0, speed: 1.0, capacity: 60, landValue: 0, unlock: 0,
-    desc: 'Cheap and muddy. Slow, low capacity, and mud in the Thaw and the Hush slows it to six tenths. Bridges cost 4×, cuts through hills 3×.' },
+    desc: 'Cheap and muddy. Slow, low capacity, and mud in the Thaw and the Hush slows it to six tenths. Bridges and causeways over marsh cost 4×, cuts through hills 3×.' },
   { type: RoadType.Cobble, key: 'cobble', name: 'Cobbled Road', cost: 45, upkeep: 0.8, manaUse: 0, speed: 1.4, capacity: 160, landValue: 6, unlock: 1,
     desc: 'Faster and wider. Raises land value.' },
   { type: RoadType.Lantern, key: 'lantern', name: 'Lantern-way', cost: 130, upkeep: 1.5, manaUse: 1, speed: 1.7, capacity: 300, landValue: 14, unlock: 4,

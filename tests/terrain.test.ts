@@ -19,7 +19,7 @@ describe('terrain', () => {
   it('has water, forest, hills, ley nodes and rim gloam', () => {
     for (const seed of [1, 7, 42, 999]) {
       const t = generateTerrain(seed);
-      const counts = new Array(8).fill(0);
+      const counts = new Array(10).fill(0);
       for (let i = 0; i < t.terrain.length; i++) counts[t.terrain[i]]++;
       expect(counts[Terrain.Water] + counts[Terrain.DeepWater]).toBeGreaterThan(200);
       expect(counts[Terrain.Forest]).toBeGreaterThan(200);

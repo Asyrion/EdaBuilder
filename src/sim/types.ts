@@ -24,6 +24,7 @@ export const enum Terrain {
   Hills = 6,
   LeyNode = 7,
   Ruins = 8, // the Ruins of Lukuku: flagstones and broken columns; only a Ruin Delve may be built here
+  Marsh = 9, // reed beds and standing pools beside slow water: nothing is built on it, a road crosses it as a causeway (iteration 85)
 }
 
 export const enum Zone {
@@ -581,6 +582,7 @@ export interface GameState {
     fishCrowns: number; // crowns the Gloam road paid for smoked fish
     homesThatched: number; // level-1 homes the reed-cutters thatched
     fordDaysClosed: number; // days a ford stood closed by high water
+    marshDrained?: number; // marsh tiles the Drainage edict turned to meadow (iteration 85; absent in older saves)
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
     gatePilgrims: number; // pilgrims of the Pass lodged through the Great Gate (iteration 69)
     gateAlms: number; // the alms they paid

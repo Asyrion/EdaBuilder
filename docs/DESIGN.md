@@ -4721,6 +4721,91 @@ the grid-cut mushrooms keyed at 200 (the grid lines had made a frame the largest
   per tile and spread, the earlier paintings kept as v0, the flip list), `npm run build`, `npm run art`.
 - **The sim:** unchanged from main; the control seed `npx tsx scripts/balance.ts 42 150` ends at 2,155 folk, as main.
 
+### 4.116 M17 part 1: the marsh (iteration 85)
+
+A sim change, the first part of M17 (§17.1 item 1). NEXT_STEPS items 2 and 3 (the paintings redrawn in code) were dropped
+at the user's word: they would have replaced the user's own paintings with code drawings.
+
+**The terrain.** `Terrain.Marsh = 9`. `markMarsh` (`src/sim/terrain.ts`) runs after the ley nodes and the founding
+clearing, before the Ruins.
+- **Where:** land tiles (shore, grass, meadow or forest) within `MARSH_REACH` (3) of water, low in the height field (the
+  nearer the water, the wetter), where its own noise passes `MARSH_NOISE`.
+- **Where not:** within `MARSH_FOUNDING` (9) of the founding or 4 of a node.
+- **Determinism:** no rng is drawn, so the generator's stream and every later pass are unchanged; only the marsh tiles differ.
+- **Size:** patches at the lake's margins and along the river: 2.8–4.8 % of the land on seeds 42–47 and 1 and 7 (seed 42:
+  638 tiles).
+
+**The rules.**
+- **Building:** nothing is built or zoned on marsh. `isBuildableTerrain` never listed it, and `paintZone` and the bot's
+  hand-made filters now name it.
+- **Roads and walls:** a road across it is a **causeway** at a bridge's price (`MARSH_CAUSEWAY`, ×4), drawn on the bridge's
+  planks. A Warding Wall costs twice its price there, as on hills.
+- **Miasma:** every marsh tile adds a small cloud (`MARSH_MIASMA` 0.4 at its centre) within 2 tiles, in `updateMiasma`. Rain
+  thins it and the Lyceum damps it, like the works' smoke. It reaches health, happiness and land value through the
+  existing readers: a home beside a dense patch reads 15–30 of 255.
+- **Reeds:** a marsh tile counts twice as a reed bed for the Reed-Cutters (open shore once).
+
+**The Drainage edict** (`src/sim/marsh.ts`, city-wide, from the Village):
+- each day it turns the 3 marsh tiles nearest any building into meadow, ties broken by tile index, and draws no rng;
+- it costs 30 crowns a day plus 2 for every 10 marsh tiles left;
+- the land loses its reeds.
+
+`marsh.ts` reads `s.edicts.drainage` directly, because `edicts.ts` imports its prices. Old saves keep their saved terrain,
+which has no marsh, and the edict is off unless set. There is no new state field (only an optional `stats.marshDrained`).
+
+**The look** (procedural; eda-lore has no marsh sheet):
+- `marsh_0..2`: moss and dark standing pools with a glint;
+- `reeds_0..2`: reed clumps about a citizen tall, one to three on a marsh tile;
+- the dawn mist: soft pale banks drifting over the marsh, strongest at 0.27 of the day and gone 0.08 either side (`MIST_HOUR`, `MIST_SPAN`);
+- a moss colour on the minimap, a help entry and the Miasma view's text.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 85 test files with 536 tests, and `npm run build`.
+- `tests/iteration85.test.ts` covers:
+  - generation: the share, beside water, never near the founding, deterministic;
+  - not buildable or zonable;
+  - the causeway and wall prices;
+  - miasma from marsh only;
+  - reeds counted twice;
+  - drainage: the nearest tiles, the bill, nothing when off;
+  - a pre-marsh save.
+- Iteration 10's Chronicle test now answers tales as they come: seed 5's new map brings the white hart by day 23.
+- `scripts/playtest85.mjs`, seed 42's densest marsh near the founding:
+  - by day, at dawn (the mist) and at night;
+  - a causeway of four marsh tiles (810 crowns for 8 tiles of cobble);
+  - five days of drainage: 15 tiles drained, shot before and after;
+  - no errors, no missing sprites.
+
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): 252 runs a side, about four hours on three
+cores. It was resumed once from the cache when the background job hit its two-hour limit.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,029 | 1,930 | +99 (+5.1 %) | 195 (9.9 %) | met | within the noise |
+| Grimmen | 6 × 3 | 1,348 | 1,601 | −253 (−15.8 %) | 133 (9.0 %) | met | **seen** |
+| Veshari | 6 × 3 | 2,132 | 2,282 | −150 (−6.6 %) | 211 (9.5 %) | met | within the noise |
+| Tallowkin | 6 × 8 | 1,837 | 1,986 | −149 (−7.5 %) | 200 (10.5 %) | **not met: at the cap of 8 draws** | within the noise |
+| all | | 7,347 | 7,799 | −452 (−5.8 %) | 375 | | **seen** |
+
+- **The marsh costs the cities land by the water.** All four peoples together lose a seventeenth, past the noise; the
+  Grimmen lose a sixth, seen on their own row.
+- **The gates:**
+  - the Vellish reach the Free City in 30 of 42 runs (main 28) and the Beacon of Eda in 11 (main 3);
+  - the Grimmen reach the Deephold in 17 of 18 (main 17), but at a median of day 125 against 48, the Underking's Hall in
+    5 (main 11) and the Seat in 2 (main 3);
+  - the Veshari reach Vesh's Court in 17 of 18 (main 15) and the Sable Crown in 8 (main 11);
+  - the Tallowkin reach the Hall of Wicks in 30 of 48 (main 35) and the Lantern of Wicks in 11 (main 11), later (day 113
+    against 85).
+- **The Grimmen loss, probed on seed 45** (1,125 folk against main's 1,650):
+  - **Not the miasma, the causeway price or the missing drainage:** with the miasma set to 0 the seed ends at 1,110 folk,
+    with causeways at road price at 1,052. A bot rule that drained the marsh in its square made the six Grimmen seeds
+    1,405 against 1,437, so it was reverted.
+  - **The map itself:** with no marsh the seed ends at 1,650.
+  - **The mechanism:** the city runs short of crowns early (under 300 at days 30–40, against about 1,900), the bot stops
+    spreading at radius 28 (main 33, then 43), and the 1,000 folk the Deephold asks come at day 125.
+  - **A known issue for a later probe** (HANDOFF). The user chose to ship it as it is.
+- **The Tallowkin's floor** is 10.5 % of their folk at the cap of eight draws a seed, not met, as since iteration 64.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -5979,3 +6064,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
 - *A building may have many looks (iteration 84):* the user's sheets paint many wells, shrines and cemeteries; one sprite a
   building would waste them. The look is chosen by the tile, so a building never changes face and the sim never knows.
+- *Marsh is land you pay for twice (iteration 85):* a causeway to cross it at a bridge's price, an edict to drain it a few
+  tiles a day. It is never within nine tiles of the founding, so the first streets are dry; past that, the city meets it at
+  the water's edge. The bar sees the cost (Grimmen −16 %), and the user chose to keep it.

@@ -308,7 +308,8 @@ export function fishedOut(state: GameState, body: number): boolean {
 }
 
 // ---------- reeds and thatch ----------
-/** Reed beds: open shore within REED_REACH of the cutters, no building and no road on it. */
+/** Reed beds: open shore within REED_REACH of the cutters, no building and no road on it; a marsh tile is all reeds and
+ *  counts twice (iteration 85). */
 export function reedBeds(state: GameState, b: Building): number {
   let n = 0;
   for (let dy = -REED_REACH; dy <= REED_REACH; dy++)
@@ -317,7 +318,9 @@ export function reedBeds(state: GameState, b: Building): number {
       const y = b.y + dy;
       if (!inBounds(x, y) || dx * dx + dy * dy > REED_REACH * REED_REACH) continue;
       const i = idx(x, y);
-      if (state.terrain[i] === Terrain.Shore && state.bIndex[i] < 0 && !state.road[i]) n++;
+      if (state.bIndex[i] >= 0 || state.road[i]) continue;
+      if (state.terrain[i] === Terrain.Shore) n++;
+      else if (state.terrain[i] === Terrain.Marsh) n += 2;
     }
   return n;
 }

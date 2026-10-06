@@ -579,7 +579,7 @@ export class Bot {
           if (tier(i) !== want) continue;
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
-          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
+          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
           if (hillPass !== (t === Terrain.Hills && hillOK)) continue;
           if (!roadOnSide(s, x, y)) continue;
           // craft away from the centre, hearth near
@@ -1029,7 +1029,7 @@ export class Bot {
             for (let fx = 0; fx < def.w; fx++) {
               const i = idx(px + fx, py + fy);
               const t = s.terrain[i];
-              if (isWater(t) || (t === Terrain.Hills && !factionOf(s).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || s.road[i] || s.gloam[i]) {
+              if (isWater(t) || (t === Terrain.Hills && !factionOf(s).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh || s.road[i] || s.gloam[i]) {
                 ok = false;
                 break;
               }

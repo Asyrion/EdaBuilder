@@ -14,6 +14,8 @@ export interface EdictDef {
   cityOnly?: boolean; // read city-wide only: never offered or billed per district
 }
 
+import { DRAIN_BASE, DRAIN_PER_DAY, DRAIN_PER_TEN, drainageCost } from './marsh';
+
 export const EDICTS: EdictDef[] = [
   {
     key: 'beastmasters', name: "Beastmasters' Charter",
@@ -92,6 +94,12 @@ export const EDICTS: EdictDef[] = [
     desc: 'Free schooling for Grimmen and Tallowkin children. Educated share grows 50% faster. 0.2 crowns per resident per day.',
     flavor: 'The girl who reads leystone like a book now has forty classmates.',
     costPerDay: (s) => Math.round(s.population * 0.2), unlock: 3,
+  },
+  {
+    key: 'drainage', name: 'The Drainage',
+    desc: `Ditchers cut the marsh nearest the city to meadow, ${DRAIN_PER_DAY} tiles a day: no causeway needed there, no miasma from it, and land to build on. The land loses its reeds. ${DRAIN_BASE} crowns a day and ${DRAIN_PER_TEN} more for every ten marsh tiles left.`,
+    flavor: 'The fen gives up an acre a week and the frogs file a complaint.',
+    costPerDay: (s) => drainageCost(s), unlock: 3, cityOnly: true,
   },
   {
     key: 'deepcut', name: 'The Deep Cut', faction: ['grimmen'],

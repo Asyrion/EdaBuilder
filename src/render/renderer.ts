@@ -60,6 +60,10 @@ interface ChunkCache {
   lights: { x: number; y: number; r: number; c: string; i: number }[]; // static lights (ley nodes)
 }
 
+/** The marsh's dawn mist (iteration 85): strongest at MIST_HOUR of the day (0 = midnight), gone MIST_SPAN either side. */
+export const MIST_HOUR = 0.27;
+export const MIST_SPAN = 0.08;
+
 export class Renderer {
   screen: HTMLCanvasElement;
   sctx: CanvasRenderingContext2D;
@@ -105,7 +109,7 @@ export class Renderer {
     this.gloamTreeCount = Math.max(1, atlas.countVariants('gloamtree_'));
     this.glowcapCount = atlas.countVariants('glowcap_');
     this.autumnCount = atlas.countVariants('tree_autumn_');
-    for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
+    for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins', 'marsh']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
   }
 
   resize(): void {
@@ -227,6 +231,7 @@ export class Renderer {
       case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * this.groundCount.hills)}`);
       case Terrain.LeyNode: return this.atlas.get('grass_1');
       case Terrain.Ruins: return this.atlas.get(`ruins_${Math.floor(h2(x, y, 8) * this.groundCount.ruins)}`);
+      case Terrain.Marsh: return this.atlas.get(`marsh_${Math.floor(h2(x, y, 9) * this.groundCount.marsh)}`);
     }
     return null;
   }
@@ -303,8 +308,8 @@ export class Renderer {
                 ctx.fill();
                 ctx.globalAlpha = 1;
               }
-            } else if (isWater(t)) {
-              // bridge: draw plank base
+            } else if (isWater(t) || t === Terrain.Marsh) {
+              // bridge, or a causeway over the marsh (iteration 85): draw plank base
               ctx.fillStyle = PAL.wood1;
               ctx.beginPath();
               ctx.moveTo(dx, dy + 1);
@@ -366,6 +371,10 @@ export class Renderer {
             const mv = Math.floor(h2(x, y, 45) * (glow ? this.glowcapCount : this.mushroomCount));
             cache.props.push({ name: glow ? `glowcap_${mv}` : `mushroom_${mv}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
           }
+        } else if (t === Terrain.Marsh) {
+          // reed beds (iteration 85): one or two clumps on most marsh tiles
+          const n = h2(x, y, 70) < 0.15 ? 1 : h2(x, y, 71) < 0.5 ? 2 : 3;
+          for (let k = 0; k < n; k++) cache.props.push({ name: `reeds_${Math.floor(h2(x, y, 72 + k) * 3)}`, wx: wx + (h2(x, y, 74 + k) - 0.5) * 20, wy: wy + 9 + (h2(x, y, 76 + k) - 0.5) * 8, d: x + y, sway: h2(x, y, 78 + k) });
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.Ruins && state.bIndex[i] < 0 && !state.road[i]) {
@@ -836,6 +845,26 @@ export class Renderer {
     }
     ctx.globalAlpha = 1;
 
+    // mist on the marsh at dawn (iteration 85): pale banks that drift and thin as the morning goes
+    const mist = Math.max(0, 1 - Math.abs(tod - MIST_HOUR) / MIST_SPAN);
+    if (mist > 0.02 && !view.overlay) {
+      ctx.fillStyle = PAL.mist;
+      for (let y = minY; y <= maxY; y++)
+        for (let x = minX; x <= maxX; x++) {
+          if (!inBounds(x, y) || state.terrain[idx(x, y)] !== Terrain.Marsh) continue;
+          const [wx, wy] = tileToWorld(x, y);
+          const drift = Math.sin(this.time * 0.4 + x * 0.9 + y * 0.6) * 4;
+          for (let k = 0; k < 2; k++) {
+            ctx.globalAlpha = mist * (0.14 + 0.08 * h2(x, y, 90 + k));
+            const rx = 12 + h2(x, y, 93 + k) * 10;
+            ctx.beginPath();
+            ctx.ellipse(wx - left + drift + (k - 0.5) * 10, wy - top + 6 + k * 4, rx, rx * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      ctx.globalAlpha = 1;
+    }
+
     // lantern-way road lights
     if (night > 0.05) {
       for (let y = minY; y <= maxY; y++)
@@ -938,7 +967,7 @@ export class Renderer {
   private gloamTreeCount = 2;
   private glowcapCount = 0;
   private autumnCount = 0;
-  private groundCount: Record<string, number> = { grass: 4, meadow: 3, forest: 3, hills: 3, shore: 2, ruins: 3 };
+  private groundCount: Record<string, number> = { grass: 4, meadow: 3, forest: 3, hills: 3, shore: 2, ruins: 3, marsh: 3 };
   /** Looks per building kind: `b_<key>_v0..N-1` (iteration 83), counted on first use. */
   private looks = new Map<string, number>();
   private stakeStage = 0;

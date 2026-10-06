@@ -161,7 +161,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
     },
   },
   {
-    id: 'miasma', name: 'Miasma', key: 'm', desc: 'Alchemical fog from Craft districts. Lowers health and land value.',
+    id: 'miasma', name: 'Miasma', key: 'm', desc: 'Alchemical fog from Craft districts, and the marsh\'s own. Lowers health and land value.',
     legend: [['rgba(140,190,60,0.6)', 'miasma']],
     tile: (s, i) => (s.miasma[i] > 0 ? `rgba(140,190,60,${0.15 + (s.miasma[i] / 255) * 0.6})` : null),
   },

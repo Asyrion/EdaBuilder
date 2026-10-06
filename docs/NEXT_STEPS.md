@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 85 (M17 part 1: the marsh)
+
+- **Marsh terrain** beside slow water: low land within three tiles of a river or lake, in patches, never within nine
+  tiles of the founding (DESIGN §4.116). Reed beds and standing pools, mist at dawn.
+- **The bar:** all peoples −5.8 % (seen), the Grimmen −15.8 % (seen), the others within the noise; the user chose to ship.
+- **Its rules:** nothing is built or zoned on it; a road crosses it as a causeway at a bridge's price (4×), a Warding
+  Wall at twice its price; it breeds miasma within two tiles; its reeds count twice for the Reed-Cutters.
+- **The Drainage edict** (from the Village): the marsh nearest the city becomes meadow, three tiles a day, for 30 crowns
+  a day and 2 more for every ten marsh tiles left. The reeds go with it.
+- **Dropped at the user's word:** NEXT_STEPS items 2 and 3 (the paintings redrawn in code): they would replace the
+  user's own paintings with code drawings.
+
 ## Done in iteration 84 (the eda-lore swap, batch 2: every other compatible asset)
 
 - **Buildings take looks** (`b_<key>_v0..N-1`, one per building chosen by its tile): 145 looks for 37 buildings from the
@@ -909,6 +921,9 @@
 
 ## Known issues
 
+- **The marsh costs the Grimmen bot a sixth of its folk** (iteration 85, DESIGN §4.116), seen past the noise; the cause is
+  the map, not the miasma, the causeway price or draining. Shipped at the user's word; worth a probe of the bot's purse.
+
 - **The bot after M14 part 5** (iteration 55, DESIGN §4.86).
   - **Folk:** the light-first rule costs Vellish seeds 42 and 44 a third and half of their folk
     against iteration 54 (1,942 and 1,280 at day 150, from 3,060 and 2,739). They hold their
@@ -1009,20 +1024,15 @@ the single items first (all done by iteration 77), then the milestones. Each num
 1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-2. **The paintings redrawn in code, part 2** (DESIGN §4.110, if still wanted after the swap): the craft levels
-   2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
-3. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the
-   boneyard, the Lyceum, the Nexus, the spire, the Wick-Tower and the Hall of Wicks.
-4. **M17 part 1, marsh terrain** (§17.1). Generation, the look, the rules, the Drainage edict.
-5. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
-6. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-7. **M18 part 1, the Fen-Nex** (§17.2).
+2. **M17 part 2, marsh-wyrms** (§17.1). The bridge lair, the Hall and the Quay, and nests for tide eggs.
+3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+4. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-8. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-9. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-10. **M19 part 2, the Belerial** (§17.3).
+7. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-11. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
