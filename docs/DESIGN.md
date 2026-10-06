@@ -4614,7 +4614,57 @@ given to two Grimmen arcane slots read as scrap at 34 px and went back to batch 
 - **The sim:** `src/sim`, `src/data` and `src/core` are unchanged; the control seed `npx tsx scripts/balance.ts 42 150`
   ends at 2,155 folk, as main.
 
-### 4.114 The eda-lore swap, batch 2: every other compatible asset (iteration 83)
+### 4.114 The Brickworks: the drawing given a building of its own (iteration 83)
+
+Iteration 80 drew a brickworks after the user's painting and gave it to no building (§4.111). The user then said: make it
+the level-3 Craft building or a new building type, as I prefer.
+
+**Why a new building:** a Craft lot is a 1×1 zone building at every level, and the drawing is a 3×3 hall with a house, a
+shed and a yard. Shrunk to one tile it would lose everything the painting has. So it became **the Brickworks**, a 3×3
+building unlocked at the Village (milestone 3), the "level 3" in the sense of when it comes.
+
+**What it does:**
+- **Bricks for the carts.** Ten hands make 6 goods a day, carted like a Craft works. It uses the `goodsRate` path the
+  Quarry and the Hanging Gardens use, so it scales with its hands and halves when unlit.
+- **Its own light.** The kiln lights it (`selfLit`), with no mana.
+- **Bricks for the builders, its one new rule.** A building site within `BRICK_REACH` = 12 tiles (centre to centre) of a
+  staffed Brickworks rises `BRICK_SPEED` = 1.5 times as fast. That covers the folk's own quarter pace as well as each
+  builder's share.
+  - A Brickworks still being raised, or one without hands, speeds nothing.
+  - Zone lots are unchanged: they rise in a day anyway.
+  - The ring "bricks for builders" shows the reach, and a site's Construction row says when the bricks reach it.
+- **The figures:** it costs 3,600 crowns, upkeep 30 a day, and takes three days to build.
+- **Saves:** there is no new state, so old saves load.
+
+**The bot does not build it.** Teaching the bot to use it would be a balance change of its own. The bar's runs therefore
+show what the catalog change alone does to a bot city.
+
+**Verified:**
+- `tests/iteration83.test.ts`, 5 tests: the entry and its unlock, the goods lit and unlit, the speed inside and outside
+  the reach and with an empty works, a works still being built and zone lots, and the ring.
+- `scripts/playtest83.mjs`:
+  - the Services tab at the Village and its tip, and the placing ghost with its ring;
+  - the Brickworks placed through the game's own action, by day and at night;
+  - its panel and ring;
+  - a site 8 tiles away against one beyond the reach, with no builders: 150 against 100 work in 400 ticks;
+  - three days of goods (23 made, all hands at work);
+  - no errors and no missing sprites.
+- **The wide bar** (`--bar wide --compare origin/main`, 180 runs in 113 minutes): **bit-identical to main.** Every run
+  matches, draw for draw, and the bot never builds it.
+
+  | people | seeds × draws | floor (2·SE) | share of the mean | bar | this tree | origin/main | verdict |
+  |---|---|---|---|---|---|---|---|
+  | vellish | 6 × 5 | 196 | 9.6 % | met | 2,045 | 2,045 | +0, within the noise |
+  | grimmen | 6 × 3 | 117 | 7.3 % | met | 1,601 | 1,601 | +0, within the noise |
+  | veshari | 6 × 4 | 194 | 8.3 % | met | 2,339 | 2,339 | +0, within the noise |
+  | tallowkin | 6 × 3 | 170 | 8.5 % | met | 1,997 | 1,997 | +0, within the noise |
+
+  The gates are identical on both sides. The last gates reached are:
+  - Vellish: Free City 21/30 and Beacon 3/30.
+  - Grimmen: Underking's Hall 11/18 and Seat 3/18.
+  - Veshari: Sable Crown 16/24.
+  - Tallowkin: Lantern of Wicks 3/18.
+### 4.115 The eda-lore swap, batch 2: every other compatible asset (iteration 84)
 
 Art and render only, the user's request after batch 1: "use every compatible building, tree, well, bush or other asset that
 can be used in this game", then list what is still drawn in code. Batches 2 (services) and 3 (props) of NEXT_STEPS merged
@@ -4634,7 +4684,8 @@ The sim is untouched (`src/sim`, `src/data`, `src/core` unchanged).
   Reed-Cutters 1, Smokehouse 1 (the wooden houses); boneyards 11 and ossuaries 6 (the cemetery dioramas, the gothic chapel),
   Sextons' Chapel 2, Water Garden 1; Hunters' Lodge 4, Tamer's Lodge 2 (the hunters' lodges); Wyrmfire Forge 2, Forge-Temple
   1, Golem Foundry 1 (the forge paintings, the user's "blacksmith houses"); depots 3 (the trade houses), Spire-Wrights'
-  Lodge 4 (the general craft houses), the brickworks 4 (still given to no building); Academy, Drake Mews, Observatory, Ruin
+  Lodge 4 (the general craft houses), the Brickworks 4 (the brickmaker paintings; its hand-drawn sprite of iteration 83
+  stays the fallback); Academy, Drake Mews, Observatory, Ruin
   Delve, Hall of the Nine Houses, Ley Spire 2 more, the Lantern of Vell, the Great Gate, the Hall of Marvels and the Grand
   Academy one each.
 - **Props:** trees 32 (20 new: oaks, pines, birch, willows, cherries, apple, redwood, cypress), autumn trees 3, glimwood 10
@@ -4654,13 +4705,13 @@ fantasy beasts with no creature in the game (phoenix, unicorn, yeti, griffin, je
 salamander, armadillo, turtle, beetle, squirrel); the crystal ram as a goat and the dark bush as a dead tree (blobs at 11 px);
 the twisted-metal altars (scrap at 34 px).
 
-**Judged** with `scripts/playtest83.mjs`: every building's main sprite beside its looks over the footprint with a citizen,
+**Judged** with `scripts/playtest84.mjs`: every building's main sprite beside its looks over the footprint with a citizen,
 sheets of every prop pool and the ground, and a street of the new looks per people by day and night at 2× and 4×, a forest by
 a node. Fixed on the way: 28 looks fronted on the left mirrored; the narrow paintings on 2×2 footprints stood up taller;
 the grid-cut mushrooms keyed at 200 (the grid lines had made a frame the largest island). No errors, no missing sprites.
 
 **Verified:**
-- `npx tsc --noEmit -p .`, 83 test files with 524 tests (`tests/iteration83.test.ts`: no painting twice across the whole set,
+- `npx tsc --noEmit -p .`, 84 test files with 529 tests (`tests/iteration84.test.ts`: no painting twice across the whole set,
   the pools, every look a real building from v0 without a gap and centred, the wells under 1.5 citizens, the pick stable
   per tile and spread, the earlier paintings kept as v0, the flip list), `npm run build`, `npm run art`.
 - **The sim:** unchanged from main; the control seed `npx tsx scripts/balance.ts 42 150` ends at 2,155 folk, as main.
@@ -5918,5 +5969,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Every people its own houses, and no painting twice (iteration 82, the user's rules):* a slot with no painting of its own
   keeps its people's drawn house rather than borrow another's; the houses are sorted to a people by material, to a zone by
   what they show, and to a level by their shape (a 1×1 tile takes a wide house only low).
-- *A building may have many looks (iteration 83):* the user's sheets paint many wells, shrines and cemeteries; one sprite a
+- *The brickworks is a building of its own, not a Craft level (iteration 83):* a Craft lot is 1×1 and the drawing is 3×3,
+  so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
+  tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
+- *A building may have many looks (iteration 84):* the user's sheets paint many wells, shrines and cemeteries; one sprite a
   building would waste them. The look is chosen by the tile, so a building never changes face and the sim never knows.

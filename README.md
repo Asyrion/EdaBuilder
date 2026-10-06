@@ -89,7 +89,9 @@ main node.
     falling water; **Hanging Gardens** against hills make goods, health and light with no
     mana and unlock the **Glowvine Lane**; a **Glimhouse** keeps Craft works warm through
     the Hush (works otherwise make 20% less); the **Astral Observatory** forecasts the
-    week ahead in the Ledger.
+    week ahead in the Ledger. A **Brickworks** (Village, 3×3, drawn after the user's
+    painting) fires 6 goods of brick a day for the carts by its own kiln-light, and every
+    building site within 12 tiles rises half again as fast.
 13. **Longwood and Lukuku** — two **Portal Arches** (Market Town), both lit, let carts and
     folk step across the map. Somewhere in a forest lie the **Ruins of Lukuku**: a **Ruin
     Delve** there brings up relics (artifacts sell for more) and opens old doors. At Free
@@ -222,6 +224,8 @@ Charter as `.json`.
 - Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
   the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
+- The Brickworks (Village): goods of brick for the carts, lit by its own kiln, and building
+  sites within 12 tiles rise half again as fast.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
 - The ley-weave: every node has an aspect that changes the rules around it (Ember works,
@@ -302,7 +306,7 @@ Charter as `.json`.
   dormers, chimneys and props where the painting has them), crisp at the citizen scale and
   one set with the procedural buildings. Since iteration 82 the zone houses are the user's own
   houses from the eda-lore sheets, every people its own (192 houses, none used twice), and since
-  iteration 83 most service buildings carry several looks from the same sheets (37 wells, 11 shrines, 11 boneyards …),
+  iteration 84 most service buildings carry several looks from the same sheets (37 wells, 11 shrines, 11 boneyards …),
   chosen per building by its tile, with the user's trees, bushes, mushrooms and ground tiles in the wild.
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
   tower, a gallery, a lantern room whose crystal blazes at night, the keeper's house at its

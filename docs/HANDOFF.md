@@ -2,10 +2,10 @@
 
 Written for a new session whose job is **the eda-lore swap** (below): the user's own repository `eda-lore` holds many
 sprites in the set's format (2:1 isometric pixel art, drawn by the user), and as many of the game's buildings and assets
-as possible are to be replaced by them. Main stands at iteration 83 (the eda-lore swap, batch 2: every other compatible asset, DESIGN §4.114); before it 82 (batch 1,
-the zone houses, §4.113) and 81 (the twelve
-paintings composed by hand, §4.112); iteration 80 (a brickworks sprite drawn after the user's painting, §4.111, from a parallel session) is
-given to no building yet. Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
+as possible are to be replaced by them. Main stands at iteration 84 (the eda-lore swap, batch 2: every other compatible asset, DESIGN §4.115);
+before it 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
+eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks
+sprite drawn after the user's painting, §4.111). Before those: 79 (the paintings redrawn from specs, §4.110), 78 (the small buildings scaled to the citizen,
 §4.109), 77 (the sprites faced and fitted, §4.108, the last single item of §17.4). Two sessions at once means merging main
 before the PR and taking the next free numbers. Update this file whenever a session ends (see CLAUDE.md, "Session handoff").
 
@@ -56,12 +56,12 @@ the control seed (`npx tsx scripts/balance.ts 42 150`, 2,155 folk) for art-only 
 must read as one (outlines, crisp pixels), the buildings must stand right against the folk, and the game's buildings
 should look like the user's drawings.
 
-## Batch 2 done (iteration 83, DESIGN §4.114): the swap is complete
+## Batch 2 done (iteration 84, DESIGN §4.115): the swap is complete
 
 - **Every compatible painting of eda-lore is in the game.** Buildings take looks (`b_<key>_v0..N-1`, `lookName` in
   `src/render/atlas.ts`, picked by the tile); `scripts/edaLoreAssets.mjs` writes them and the props and ground; rerun it and
-  `npm run art` after a change. `scripts/playtest83.mjs` judges them. What was left out is listed with the reason in §4.114.
-- **No painting twice:** `tests/iteration83.test.ts` holds every src+island across the whole set to one name (a dragon's two
+  `npm run art` after a change. `scripts/playtest84.mjs` judges them. What was left out is listed with the reason in §4.114.
+- **No painting twice:** `tests/iteration84.test.ts` holds every src+island across the whole set to one name (a dragon's two
   ages excepted). A new sheet's picks must be new islands.
 - **Learned:** isometric block tiles need `isoTop` (their top face is already the diamond); a sheet drawn on grid paper needs
   `white: 200` or the grid becomes the largest island; a narrow painting on a 2×2 must stand taller to fill its diamond.
@@ -128,14 +128,17 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
   Weir, the spawning run.
 - No milestone is open. The rest of the list is items, not milestones.
 
-**Iteration 80** (DESIGN §4.111, from the other session, art only) added `b_brickworks`: a brickworks drawn after the
-user's painting and given to no building yet. Ask the user before assigning it.
+**Iteration 80** (DESIGN §4.111, art only) added `b_brickworks`, a brickworks drawn after the user's painting.
+**Iteration 83** (DESIGN §4.114) gave it a building of its own: the Brickworks, 3×3, at the Village.
+- It makes 6 goods a day, lit by its kiln, and sites within 12 tiles rise half again as fast.
+- The bot does not build it.
 
 ## The next item
 
-The eda-lore swap is done (iterations 82–83). The next item is NEXT_STEPS item 1: new paintings from the user for what is
-still drawn in code (above), or, if the user has none yet, M17 part 1, the marsh. Plan it on the Plan panel first. One loose end for the user:
-- **The brickworks** (`b_brickworks`, iteration 80) is given to no building; ask the user which building takes it.
+The eda-lore swap is done (iterations 82 and 84). The next item is NEXT_STEPS item 1: new paintings from the user for what
+is still drawn in code (above), or, if the user has none yet, M17 part 1, the marsh. Plan it on the Plan panel first. One
+question for the user: the Brickworks (iteration 83) now shows the user's four brickmaker paintings as its looks (iteration
+84, the user's "use every compatible asset"); its hand-drawn `b_brickworks` is the fallback. Ask whether to keep that.
 After the swap: NEXT_STEPS items 2–3 (the remaining paintings composed in `painted.ts`, if still wanted) and M17 part 1,
 the marsh (DESIGN §17.1 item 1, a sim change that runs the wide bar).
 
