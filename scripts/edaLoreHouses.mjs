@@ -5,7 +5,7 @@
 // '-' leaves the slot to its people's drawn house (no painting is used twice, the user's rule). The entries carry
 // set: 'eda-lore-1', so a rerun replaces them; the older zone paintings are switched off.
 import { readFileSync, writeFileSync } from 'node:fs';
-const SHEETS = { A: 'houses_12', B: 'alchemy_towers_8', C: 'medieval_9', D: 'smithies_grey_10', E: 'houses_10', F: 'alchemy_labelled_8', G: 'houses_labelled_16', H: 'smithies_plated_4', I: 'lodges_labelled_16', J: 'houses_grey_16', K: 'alchemy_labelled_6', L: 'stone_houses_4', M: 'smithies_4', N: 'towers_16', O: 'lodges_labelled_12', P: 'plated_houses_4', Q: 'alchemy_labelled_6b', R: 'houses_4', S: 'smithies_labelled_12', T: 'wooden_houses_20', U: 'towers_8', V: 'shrines_16' };
+const SHEETS = { A: 'houses_12', B: 'alchemy_towers_8', C: 'medieval_9', D: 'smithies_grey_10', E: 'houses_10', F: 'alchemy_labelled_8', G: 'houses_labelled_16', H: 'smithies_plated_4', I: 'lodges_labelled_16', J: 'houses_grey_16', K: 'alchemy_labelled_6', L: 'stone_houses_4', M: 'smithies_4', N: 'towers_16', O: 'lodges_labelled_12', P: 'plated_houses_4', Q: 'alchemy_labelled_6b', R: 'houses_4', S: 'smithies_labelled_12', T: 'wooden_houses_20', U: 'towers_8', V: 'shrines_16', W: 'shrines_12', X: 'shrines_altars_12', Y: 'lantern_towers_7', Z: 'light_towers_6', a: 'magic_buildings_8' }; // W–a: iteration 83's sheets, for the twelve gaps
 const WHITE = { A: 200, D: 200, J: 200, R: 200 }; // the sheets with a light-grey drop shadow
 const ALLOC = { // '-' = no painting of its own yet: the slot keeps its people's drawn house (no repeats, the user's rule)
   '': { // Vellish: the town, half-timber, tile and thatch, brick
@@ -17,8 +17,8 @@ const ALLOC = { // '-' = no painting of its own yet: the slot keeps its people's
   _grimmen: { // stone and slate, dug into the hill
     hearth: [['I119!', 'J5', 'G128!', 'P3!'], ['J13', 'R0', 'G127', 'G0!'], ['C5', 'I1', 'O3!', 'G126']],
     craft: [['D0!', 'D6', 'S0!', 'S53'], ['D5', 'D7', 'D3!', 'S3'], ['S2!', 'K63', 'B10', 'S54!']],
-    market: [['V0!', 'V22!', 'V6', '-'], ['L1!', 'L3!', 'C7', 'F52!'], ['N2!', 'I3!', 'L0!', 'G3!']],
-    arcane: [['V4!', '-', '-', '-'], ['Q1', 'S101!', '-', '-'], ['F2', 'N3', 'U0', '-']],
+    market: [['V0!', 'V22!', 'V6', 'X17'], ['L1!', 'L3!', 'C7', 'F52!'], ['N2!', 'I3!', 'L0!', 'G3!']],
+    arcane: [['V4!', 'W1', 'X13', 'V26'], ['Q1', 'S101!', 'a56', 'a1'], ['F2', 'N3', 'U0', 'Z1']],
   },
   _veshari: { // plank, reed and log, by the water
     hearth: [['T0', 'A10', 'A11!', 'I52!'], ['T9', 'T13', 'T16', 'T11!'], ['T1!', 'I117', 'T7!', 'T8']],
@@ -28,9 +28,9 @@ const ALLOC = { // '-' = no painting of its own yet: the slot keeps its people's
   },
   _tallowkin: { // tall and narrow, whitewash and plaster under cones, a lit window on every floor
     hearth: [['E4', 'E7', 'A8!', 'J2'], ['G182', 'G181', 'B7', 'E9'], ['N7', 'B3', 'I55!', 'T2']],
-    craft: [['Q47!', 'H5', 'V8!', 'J3'], ['F1', 'U2!', 'N12!', 'F0'], ['K1', 'U1', 'N10!', '-']],
-    market: [['V20!', 'V10', '-', '-'], ['N6', 'U5', 'F54!', 'N15'], ['U6', 'N4!', 'U7', 'C6']],
-    arcane: [['V7', 'V2', 'R1', 'E10'], ['Q49', 'N5!', 'O59', 'O129!'], ['U3', 'T18!', '-', '-']],
+    craft: [['Q47!', 'H5', 'V8!', 'J3'], ['F1', 'U2!', 'N12!', 'F0'], ['K1', 'U1', 'N10!', 'Y5']],
+    market: [['V20!', 'V10', 'W7', 'W11'], ['N6', 'U5', 'F54!', 'N15'], ['U6', 'N4!', 'U7', 'C6']],
+    arcane: [['V7', 'V2', 'R1', 'E10'], ['Q49', 'N5!', 'O59', 'O129!'], ['U3', 'T18!', 'Z50', 'Z52']],
   },
 };
 const FILE = 'art/sources.json';

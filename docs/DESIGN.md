@@ -4664,6 +4664,57 @@ show what the catalog change alone does to a bot city.
   - Grimmen: Underking's Hall 11/18 and Seat 3/18.
   - Veshari: Sable Crown 16/24.
   - Tallowkin: Lantern of Wicks 3/18.
+### 4.115 The eda-lore swap, batch 2: every other compatible asset (iteration 84)
+
+Art and render only, the user's request after batch 1: "use every compatible building, tree, well, bush or other asset that
+can be used in this game", then list what is still drawn in code. Batches 2 (services) and 3 (props) of NEXT_STEPS merged
+into this one iteration at the user's word.
+
+**Looks for any building.** A service building had one sprite, so one painting. Now `b_<key>_v0..N-1` in the atlas are its
+looks; `lookName` (`src/render/atlas.ts`) picks one per building by a hash of its tile, the same every frame and load, and
+the placement ghost shows the look the tile will get. Where a building has no looks, its `b_<key>` is drawn as before. A
+painting imported earlier stays its building's first look (an alias, `_v0`). The renderer counts the ground families, the
+autumn trees and the new `glowcap_` pool (the glowing mushrooms near a node, split from `mushroom_`) from the atlas at boot.
+The sim is untouched (`src/sim`, `src/data`, `src/core` unchanged).
+
+**What went in** (`scripts/edaLoreAssets.mjs`, entries `set: 'eda-lore-2'`; 25 new sheets in `inspirations/eda-lore/`):
+- **145 looks for 37 buildings:** wells 37, seeps 12, tide-wells 10 (the wells folder's 13 sheets, at 1.5 citizens with
+  the `shift` anchor); shrines 11, Storm-Caller's Peak 2, Stone Ward 3, Candle-Shrine 1, healers 5 (the pool shrines and the
+  three alchemist's houses), Eggshell Font 2, Ley Beacon 1, watch posts 2, the Wick-Tower's lantern tower; Fishers' Hut 2,
+  Reed-Cutters 1, Smokehouse 1 (the wooden houses); boneyards 11 and ossuaries 6 (the cemetery dioramas, the gothic chapel),
+  Sextons' Chapel 2, Water Garden 1; Hunters' Lodge 4, Tamer's Lodge 2 (the hunters' lodges); Wyrmfire Forge 2, Forge-Temple
+  1, Golem Foundry 1 (the forge paintings, the user's "blacksmith houses"); depots 3 (the trade houses), Spire-Wrights'
+  Lodge 4 (the general craft houses), the Brickworks 4 (the brickmaker paintings; its hand-drawn sprite of iteration 83
+  stays the fallback); Academy, Drake Mews, Observatory, Ruin
+  Delve, Hall of the Nine Houses, Ley Spire 2 more, the Lantern of Vell, the Great Gate, the Hall of Marvels and the Grand
+  Academy one each.
+- **Props:** trees 32 (20 new: oaks, pines, birch, willows, cherries, apple, redwood, cypress), autumn trees 3, glimwood 10
+  (the crystal, spiral, orb and jewel trees; the four recoloured tree paintings switched off, no painting twice), gloam trees
+  2 (the dark spruce and cypress, recoloured), bushes 108 (102 new), mushrooms 114 (111 new), glowing caps 60, the boar.
+- **Ground:** grass 7, meadow 9, forest 7, hills 8, shore 2, ruins 7. The isometric block sheets take a new importer mode,
+  `isoTop`, that samples the block's top face onto the tile (`isoTopDiamond` in `scripts/lib/sprite.mjs`); folding them as
+  squares put the block's sides on the tile as white specks. The shore's old tile was grass_3's again and is off.
+- **The twelve house gaps** of iteration 82 are filled (`scripts/edaLoreHouses.mjs`, sheets W–a): every people has 48 houses
+  of its own.
+
+**Not used, and why:** the modern houses of batch 1; potted plants, planters and shaped topiary (a heart, a spiral, tiers in
+pots: no pot stands on open grass); the joke mushrooms (skull, lollipop, candy, metal, faces, clockwork, fire, ice, gold);
+the palms, cactus, baobab, bonsai, candy and Christmas trees (no desert or tropic, no festivity tree in the game); the
+iso tiles with paths, rings, slabs and walls (a feature placed at random); the single graves (no single-grave slot); the
+fantasy beasts with no creature in the game (phoenix, unicorn, yeti, griffin, jellyfish, seahorse, owls, fox, cat, bat,
+salamander, armadillo, turtle, beetle, squirrel); the crystal ram as a goat and the dark bush as a dead tree (blobs at 11 px);
+the twisted-metal altars (scrap at 34 px).
+
+**Judged** with `scripts/playtest84.mjs`: every building's main sprite beside its looks over the footprint with a citizen,
+sheets of every prop pool and the ground, and a street of the new looks per people by day and night at 2× and 4×, a forest by
+a node. Fixed on the way: 28 looks fronted on the left mirrored; the narrow paintings on 2×2 footprints stood up taller;
+the grid-cut mushrooms keyed at 200 (the grid lines had made a frame the largest island). No errors, no missing sprites.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, 84 test files with 529 tests (`tests/iteration84.test.ts`: no painting twice across the whole set,
+  the pools, every look a real building from v0 without a gap and centred, the wells under 1.5 citizens, the pick stable
+  per tile and spread, the earlier paintings kept as v0, the flip list), `npm run build`, `npm run art`.
+- **The sim:** unchanged from main; the control seed `npx tsx scripts/balance.ts 42 150` ends at 2,155 folk, as main.
 
 ## 7. Milestone plan
 
@@ -5921,3 +5972,5 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *The brickworks is a building of its own, not a Craft level (iteration 83):* a Craft lot is 1×1 and the drawing is 3×3,
   so it became the Brickworks at the Village. It makes goods like the Quarry, and has one new rule: sites within 12
   tiles rise half again as fast. The bot leaves it alone, so the balance stays the bot's own.
+- *A building may have many looks (iteration 84):* the user's sheets paint many wells, shrines and cemeteries; one sprite a
+  building would waste them. The look is chosen by the tile, so a building never changes face and the sim never knows.

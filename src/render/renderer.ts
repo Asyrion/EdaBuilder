@@ -10,7 +10,7 @@ import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
 import { reachesOf, type Reach } from '../sim/reach';
-import { zoneSpriteName } from './atlas';
+import { lookName, zoneSpriteName } from './atlas';
 import { cartMirrored, cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { faceLeft } from './facing';
@@ -103,6 +103,9 @@ export class Renderer {
     this.mushroomCount = Math.max(1, atlas.countVariants('mushroom_'));
     this.glimwoodCount = Math.max(1, atlas.countVariants('glimwood_'));
     this.gloamTreeCount = Math.max(1, atlas.countVariants('gloamtree_'));
+    this.glowcapCount = atlas.countVariants('glowcap_');
+    this.autumnCount = atlas.countVariants('tree_autumn_');
+    for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
   }
 
   resize(): void {
@@ -217,13 +220,13 @@ export class Renderer {
     switch (t) {
       case Terrain.DeepWater: return this.atlas.get(`deep_${waterFrame}`);
       case Terrain.Water: return this.atlas.get(`water_${waterFrame}`);
-      case Terrain.Shore: return this.atlas.get(`shore_${Math.floor(h2(x, y, 5) * 2)}`);
-      case Terrain.Grass: return this.atlas.get(`grass_${Math.floor(h2(x, y, 1) * 4)}`);
-      case Terrain.Meadow: return this.atlas.get(`meadow_${Math.floor(h2(x, y, 2) * 3)}`);
-      case Terrain.Forest: return this.atlas.get(`forest_${Math.floor(h2(x, y, 3) * 3)}`);
-      case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * 3)}`);
+      case Terrain.Shore: return this.atlas.get(`shore_${Math.floor(h2(x, y, 5) * this.groundCount.shore)}`);
+      case Terrain.Grass: return this.atlas.get(`grass_${Math.floor(h2(x, y, 1) * this.groundCount.grass)}`);
+      case Terrain.Meadow: return this.atlas.get(`meadow_${Math.floor(h2(x, y, 2) * this.groundCount.meadow)}`);
+      case Terrain.Forest: return this.atlas.get(`forest_${Math.floor(h2(x, y, 3) * this.groundCount.forest)}`);
+      case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * this.groundCount.hills)}`);
       case Terrain.LeyNode: return this.atlas.get('grass_1');
-      case Terrain.Ruins: return this.atlas.get(`ruins_${Math.floor(h2(x, y, 8) * 3)}`);
+      case Terrain.Ruins: return this.atlas.get(`ruins_${Math.floor(h2(x, y, 8) * this.groundCount.ruins)}`);
     }
     return null;
   }
@@ -355,13 +358,13 @@ export class Renderer {
             const v = Math.floor(h2(x, y, 21 + k) * this.treeCount);
             const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
             const glim = nearNode && h2(x, y, 33 + k) < 0.6;
-            cache.props.push({ name: glim ? `glimwood_${v % this.glimwoodCount}` : h2(x, y, 30 + k) < 0.08 ? 'tree_autumn' : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
+            cache.props.push({ name: glim ? `glimwood_${v % this.glimwoodCount}` : h2(x, y, 30 + k) < 0.08 ? (this.autumnCount ? `tree_autumn_${Math.floor(h2(x, y, 31 + k) * this.autumnCount)}` : 'tree_autumn') : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
           }
           if (h2(x, y, 44) < 0.12) {
-            // six imported mushrooms: three woodland, three that glow (near a node, like glimwood); fewer: any of them
-            const glowing = this.mushroomCount >= 6;
-            const mv = Math.floor(h2(x, y, 45) * (glowing ? 3 : this.mushroomCount));
-            cache.props.push({ name: `mushroom_${glowing && nearNode ? 3 + mv : mv}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
+            // woodland mushrooms, and near a node the glowing caps (iteration 83: two pools, the user's mushrooms)
+            const glow = nearNode && this.glowcapCount > 0;
+            const mv = Math.floor(h2(x, y, 45) * (glow ? this.glowcapCount : this.mushroomCount));
+            cache.props.push({ name: glow ? `glowcap_${mv}` : `mushroom_${mv}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
           }
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
@@ -790,7 +793,7 @@ export class Renderer {
       const g = view.ghost;
       const def = BUILDING_BY_KEY[g.key];
       const [wx, wy] = tileToWorld(g.x, g.y);
-      const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : `b_${g.key}`;
+      const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : lookName(this.atlas, `b_${g.key}`, g.x, g.y, this.looks);
       const s = faceLeft(state, { x: g.x, y: g.y, w: def.w, h: def.h }) ? this.atlas.mirrored(gname) : this.atlas.get(gname);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
@@ -933,6 +936,11 @@ export class Renderer {
   private mushroomCount = 2;
   private glimwoodCount = 2;
   private gloamTreeCount = 2;
+  private glowcapCount = 0;
+  private autumnCount = 0;
+  private groundCount: Record<string, number> = { grass: 4, meadow: 3, forest: 3, hills: 3, shore: 2, ruins: 3 };
+  /** Looks per building kind: `b_<key>_v0..N-1` (iteration 83), counted on first use. */
+  private looks = new Map<string, number>();
   private stakeStage = 0;
 
   private spriteNameFor(b: Building): string {
@@ -942,7 +950,7 @@ export class Renderer {
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
     if (b.kind === 'cradle' && b.level >= 2 && this.atlas.has('b_greatcradle')) return 'b_greatcradle'; // the Great Cradle (iteration 53)
-    return `b_${b.kind}`;
+    return lookName(this.atlas, `b_${b.kind}`, b.x, b.y, this.looks);
   }
 
   private strokeFootprint(x: number, y: number, w: number, h: number): void {

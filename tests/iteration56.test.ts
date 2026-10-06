@@ -69,7 +69,7 @@ describe('The painted buildings at the procedural scale, facing the procedural w
   it('a scaled hero stands centred on its tile, and the paintings fronted on the left face are mirrored', () => {
     for (const e of sources) if (e.name.startsWith('b_') && e.targetHeight) expect(e.anchor, e.name).toBe('centre');
     // the donkey carts (kind 'vehicle') face right by their own rule (iteration 57)
-    const flipped = sources.filter((e) => e.flip && e.kind !== 'vehicle' && e.name.startsWith('b_')).map((e) => e.name).sort();
-    expect(flipped).toEqual(['b_cartersyard', 'b_cistern', 'b_lyceum', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2']); // the depot is drawn in code since iteration 79; the zone houses' flips are pinned in tests/iteration82.test.ts
+    const flipped = sources.filter((e) => e.flip && e.kind !== 'vehicle' && e.name.startsWith('b_') && !/_v\d+$/.test(e.name)).map((e) => e.name).sort();
+    expect(flipped).toEqual(['b_cartersyard', 'b_cistern', 'b_lyceum', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2']); // the depot is drawn in code since iteration 79; the zone houses' flips are pinned in tests/iteration82.test.ts, the buildings' looks' in iteration83
   });
 });

@@ -26,7 +26,7 @@ describe('The paintings redrawn in code, part 1', () => {
       expect(sources.find((e) => e.name === n)?.off, n).toBe(true);
       if (n.startsWith('b_')) expect(manifest[n], n).toBeUndefined(); // the zone houses carry the user's eda-lore houses since iteration 82
     }
-    expect(sources.filter((e) => e.off).length).toBe(28); // and since iteration 82 the sixteen older zone paintings too
+    expect(sources.filter((e) => e.off).length).toBe(37); // since iteration 82 the sixteen older zone paintings too, since 83 the eight recoloured tree paintings (glimwood, gloam trees) and the shore's repeat of a grass tile
   });
   it('the redraws keep the citizen yardstick: the wells 1.5, the crafts 2.8, the hearths 4, the depot 5.5', () => {
     for (const n of ['b_well', 'b_seep', 'b_tidewell']) expect(opaqueHeight(get(n)) / 12, n).toBeLessThanOrEqual(1.5);

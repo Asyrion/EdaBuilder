@@ -17,14 +17,14 @@ const drawn = new Set(generateSprites().map((d) => d.name));
 
 describe('The eda-lore swap, batch 1: the zone houses', () => {
   it('every zone painting comes from the user\'s eda-lore sheets, and no painting fills two slots', () => {
-    expect(houses.length).toBe(180);
+    expect(houses.length).toBe(192); // 180 in iteration 82, the twelve gaps filled from iteration 83's sheets
     for (const e of houses) { expect(e.src, e.name).toMatch(/^inspirations\/eda-lore\//); expect(e.aliases, e.name).toBeUndefined(); }
     const keys = houses.map((e) => `${e.src}#${e.island}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
-  it('each people has its own houses: the Vellish and Veshari all 48, the Grimmen 41, the Tallowkin 43', () => {
+  it('each people has its own houses, all 48 (the Grimmen 41 and the Tallowkin 43 until iteration 83 filled the gaps)', () => {
     const count = (p: string) => houses.filter((e) => (e.name.match(ZONE)![3] ?? '') === p).length;
-    expect(PEOPLES.map(count)).toEqual([48, 41, 48, 43]);
+    expect(PEOPLES.map(count)).toEqual([48, 48, 48, 48]);
   });
   it('a slot without a painting keeps its people\'s drawn house, never another people\'s painting', () => {
     const imported = new Set(Object.keys(manifest));

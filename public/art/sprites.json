@@ -130,13 +130,6 @@
    "ax": 16,
    "ay": 0
   },
-  "shore_1": {
-   "file": "sprites/shore_1.png",
-   "w": 32,
-   "h": 16,
-   "ax": 16,
-   "ay": 0
-  },
   "tree_0": {
    "file": "sprites/tree_0.png",
    "w": 33,
@@ -284,31 +277,39 @@
    "ax": 6,
    "ay": 11
   },
-  "mushroom_3": {
-   "file": "sprites/mushroom_3.png",
+  "glowcap_0": {
+   "file": "sprites/glowcap_0.png",
    "w": 10,
    "h": 12,
    "ax": 5,
    "ay": 11,
-   "glow": "sprites/mushroom_3_glow.png"
+   "glow": "sprites/glowcap_0_glow.png"
   },
-  "mushroom_4": {
-   "file": "sprites/mushroom_4.png",
+  "glowcap_1": {
+   "file": "sprites/glowcap_1.png",
    "w": 10,
    "h": 12,
    "ax": 6,
    "ay": 11,
-   "glow": "sprites/mushroom_4_glow.png"
+   "glow": "sprites/glowcap_1_glow.png"
   },
-  "mushroom_5": {
-   "file": "sprites/mushroom_5.png",
+  "glowcap_2": {
+   "file": "sprites/glowcap_2.png",
    "w": 11,
    "h": 12,
    "ax": 6,
    "ay": 11,
-   "glow": "sprites/mushroom_5_glow.png"
+   "glow": "sprites/glowcap_2_glow.png"
   },
   "b_spire": {
+   "file": "sprites/b_spire.png",
+   "w": 18,
+   "h": 51,
+   "ax": 9,
+   "ay": 34,
+   "glow": "sprites/b_spire_glow.png"
+  },
+  "b_spire_v0": {
    "file": "sprites/b_spire.png",
    "w": 18,
    "h": 51,
@@ -325,6 +326,14 @@
    "glow": "sprites/b_nexus_glow.png"
   },
   "b_wicktower": {
+   "file": "sprites/b_wicktower.png",
+   "w": 22,
+   "h": 45,
+   "ax": 11,
+   "ay": 28,
+   "glow": "sprites/b_wicktower_glow.png"
+  },
+  "b_wicktower_v0": {
    "file": "sprites/b_wicktower.png",
    "w": 22,
    "h": 45,
@@ -356,7 +365,23 @@
    "ay": 27,
    "glow": "sprites/b_ossuary_glow.png"
   },
+  "b_ossuary_v0": {
+   "file": "sprites/b_ossuary.png",
+   "w": 60,
+   "h": 60,
+   "ax": 30,
+   "ay": 27,
+   "glow": "sprites/b_ossuary_glow.png"
+  },
   "b_sextonchapel": {
+   "file": "sprites/b_sextonchapel.png",
+   "w": 57,
+   "h": 56,
+   "ax": 29,
+   "ay": 23,
+   "glow": "sprites/b_sextonchapel_glow.png"
+  },
+  "b_sextonchapel_v0": {
    "file": "sprites/b_sextonchapel.png",
    "w": 57,
    "h": 56,
@@ -372,6 +397,14 @@
    "ay": 18,
    "glow": "sprites/b_boneyard_glow.png"
   },
+  "b_boneyard_v0": {
+   "file": "sprites/b_boneyard.png",
+   "w": 50,
+   "h": 51,
+   "ax": 25,
+   "ay": 18,
+   "glow": "sprites/b_boneyard_glow.png"
+  },
   "b_lyceum": {
    "file": "sprites/b_lyceum.png",
    "w": 59,
@@ -379,66 +412,6 @@
    "ax": 30,
    "ay": 33,
    "glow": "sprites/b_lyceum_glow.png"
-  },
-  "glimwood_0": {
-   "file": "sprites/glimwood_0.png",
-   "w": 25,
-   "h": 32,
-   "ax": 13,
-   "ay": 30,
-   "glow": "sprites/glimwood_0_glow.png"
-  },
-  "glimwood_1": {
-   "file": "sprites/glimwood_1.png",
-   "w": 26,
-   "h": 32,
-   "ax": 13,
-   "ay": 30,
-   "glow": "sprites/glimwood_1_glow.png"
-  },
-  "glimwood_2": {
-   "file": "sprites/glimwood_2.png",
-   "w": 20,
-   "h": 32,
-   "ax": 10,
-   "ay": 30,
-   "glow": "sprites/glimwood_2_glow.png"
-  },
-  "glimwood_3": {
-   "file": "sprites/glimwood_3.png",
-   "w": 20,
-   "h": 32,
-   "ax": 11,
-   "ay": 30,
-   "glow": "sprites/glimwood_3_glow.png"
-  },
-  "gloamtree_0": {
-   "file": "sprites/gloamtree_0.png",
-   "w": 31,
-   "h": 30,
-   "ax": 16,
-   "ay": 28
-  },
-  "gloamtree_1": {
-   "file": "sprites/gloamtree_1.png",
-   "w": 29,
-   "h": 30,
-   "ax": 14,
-   "ay": 28
-  },
-  "gloamtree_2": {
-   "file": "sprites/gloamtree_2.png",
-   "w": 30,
-   "h": 30,
-   "ax": 15,
-   "ay": 28
-  },
-  "gloamtree_3": {
-   "file": "sprites/gloamtree_3.png",
-   "w": 29,
-   "h": 30,
-   "ax": 15,
-   "ay": 28
   },
   "b_hallofwicks": {
    "file": "sprites/b_hallofwicks.png",
@@ -1808,6 +1781,14 @@
    "ay": 16,
    "glow": "sprites/market_l1_v2_grimmen_glow.png"
   },
+  "market_l1_v3_grimmen": {
+   "file": "sprites/market_l1_v3_grimmen.png",
+   "w": 32,
+   "h": 33,
+   "ax": 16,
+   "ay": 16,
+   "glow": "sprites/market_l1_v3_grimmen_glow.png"
+  },
   "market_l2_v0_grimmen": {
    "file": "sprites/market_l2_v0_grimmen.png",
    "w": 36,
@@ -1877,6 +1858,29 @@
    "ay": 16,
    "glow": "sprites/arcane_l1_v0_grimmen_glow.png"
   },
+  "arcane_l1_v1_grimmen": {
+   "file": "sprites/arcane_l1_v1_grimmen.png",
+   "w": 26,
+   "h": 33,
+   "ax": 13,
+   "ay": 16
+  },
+  "arcane_l1_v2_grimmen": {
+   "file": "sprites/arcane_l1_v2_grimmen.png",
+   "w": 31,
+   "h": 33,
+   "ax": 16,
+   "ay": 16,
+   "glow": "sprites/arcane_l1_v2_grimmen_glow.png"
+  },
+  "arcane_l1_v3_grimmen": {
+   "file": "sprites/arcane_l1_v3_grimmen.png",
+   "w": 31,
+   "h": 33,
+   "ax": 16,
+   "ay": 16,
+   "glow": "sprites/arcane_l1_v3_grimmen_glow.png"
+  },
   "arcane_l2_v0_grimmen": {
    "file": "sprites/arcane_l2_v0_grimmen.png",
    "w": 32,
@@ -1891,6 +1895,20 @@
    "h": 41,
    "ax": 18,
    "ay": 24
+  },
+  "arcane_l2_v2_grimmen": {
+   "file": "sprites/arcane_l2_v2_grimmen.png",
+   "w": 31,
+   "h": 42,
+   "ax": 16,
+   "ay": 25
+  },
+  "arcane_l2_v3_grimmen": {
+   "file": "sprites/arcane_l2_v3_grimmen.png",
+   "w": 15,
+   "h": 42,
+   "ax": 8,
+   "ay": 25
   },
   "arcane_l3_v0_grimmen": {
    "file": "sprites/arcane_l3_v0_grimmen.png",
@@ -1913,6 +1931,13 @@
    "w": 24,
    "h": 58,
    "ax": 12,
+   "ay": 41
+  },
+  "arcane_l3_v3_grimmen": {
+   "file": "sprites/arcane_l3_v3_grimmen.png",
+   "w": 33,
+   "h": 58,
+   "ax": 17,
    "ay": 41
   },
   "hearth_l1_v0_veshari": {
@@ -2445,6 +2470,14 @@
    "ay": 29,
    "glow": "sprites/craft_l3_v2_tallowkin_glow.png"
   },
+  "craft_l3_v3_tallowkin": {
+   "file": "sprites/craft_l3_v3_tallowkin.png",
+   "w": 35,
+   "h": 58,
+   "ax": 18,
+   "ay": 41,
+   "glow": "sprites/craft_l3_v3_tallowkin_glow.png"
+  },
   "market_l1_v0_tallowkin": {
    "file": "sprites/market_l1_v0_tallowkin.png",
    "w": 29,
@@ -2460,6 +2493,20 @@
    "ax": 16,
    "ay": 21,
    "glow": "sprites/market_l1_v1_tallowkin_glow.png"
+  },
+  "market_l1_v2_tallowkin": {
+   "file": "sprites/market_l1_v2_tallowkin.png",
+   "w": 34,
+   "h": 38,
+   "ax": 17,
+   "ay": 21
+  },
+  "market_l1_v3_tallowkin": {
+   "file": "sprites/market_l1_v3_tallowkin.png",
+   "w": 34,
+   "h": 38,
+   "ax": 17,
+   "ay": 21
   },
   "market_l2_v0_tallowkin": {
    "file": "sprites/market_l2_v0_tallowkin.png",
@@ -2602,6 +2649,3471 @@
    "h": 30,
    "ax": 18,
    "ay": 13
+  },
+  "arcane_l3_v2_tallowkin": {
+   "file": "sprites/arcane_l3_v2_tallowkin.png",
+   "w": 36,
+   "h": 58,
+   "ax": 18,
+   "ay": 41,
+   "glow": "sprites/arcane_l3_v2_tallowkin_glow.png"
+  },
+  "arcane_l3_v3_tallowkin": {
+   "file": "sprites/arcane_l3_v3_tallowkin.png",
+   "w": 28,
+   "h": 58,
+   "ax": 14,
+   "ay": 41,
+   "glow": "sprites/arcane_l3_v3_tallowkin_glow.png"
+  },
+  "tree_12": {
+   "file": "sprites/tree_12.png",
+   "w": 23,
+   "h": 32,
+   "ax": 12,
+   "ay": 30
+  },
+  "tree_13": {
+   "file": "sprites/tree_13.png",
+   "w": 23,
+   "h": 36,
+   "ax": 12,
+   "ay": 34
+  },
+  "tree_14": {
+   "file": "sprites/tree_14.png",
+   "w": 26,
+   "h": 32,
+   "ax": 11,
+   "ay": 30
+  },
+  "tree_15": {
+   "file": "sprites/tree_15.png",
+   "w": 26,
+   "h": 32,
+   "ax": 14,
+   "ay": 30
+  },
+  "tree_16": {
+   "file": "sprites/tree_16.png",
+   "w": 25,
+   "h": 32,
+   "ax": 12,
+   "ay": 30
+  },
+  "tree_17": {
+   "file": "sprites/tree_17.png",
+   "w": 26,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_18": {
+   "file": "sprites/tree_18.png",
+   "w": 17,
+   "h": 34,
+   "ax": 9,
+   "ay": 32
+  },
+  "tree_19": {
+   "file": "sprites/tree_19.png",
+   "w": 22,
+   "h": 36,
+   "ax": 11,
+   "ay": 34
+  },
+  "tree_20": {
+   "file": "sprites/tree_20.png",
+   "w": 27,
+   "h": 32,
+   "ax": 12,
+   "ay": 30
+  },
+  "tree_21": {
+   "file": "sprites/tree_21.png",
+   "w": 29,
+   "h": 32,
+   "ax": 15,
+   "ay": 30
+  },
+  "tree_22": {
+   "file": "sprites/tree_22.png",
+   "w": 25,
+   "h": 40,
+   "ax": 13,
+   "ay": 38
+  },
+  "tree_23": {
+   "file": "sprites/tree_23.png",
+   "w": 27,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_24": {
+   "file": "sprites/tree_24.png",
+   "w": 22,
+   "h": 36,
+   "ax": 11,
+   "ay": 34
+  },
+  "tree_25": {
+   "file": "sprites/tree_25.png",
+   "w": 27,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_26": {
+   "file": "sprites/tree_26.png",
+   "w": 31,
+   "h": 32,
+   "ax": 16,
+   "ay": 30
+  },
+  "tree_27": {
+   "file": "sprites/tree_27.png",
+   "w": 17,
+   "h": 40,
+   "ax": 9,
+   "ay": 38
+  },
+  "tree_28": {
+   "file": "sprites/tree_28.png",
+   "w": 25,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_29": {
+   "file": "sprites/tree_29.png",
+   "w": 21,
+   "h": 36,
+   "ax": 11,
+   "ay": 34
+  },
+  "tree_30": {
+   "file": "sprites/tree_30.png",
+   "w": 24,
+   "h": 32,
+   "ax": 13,
+   "ay": 30
+  },
+  "tree_31": {
+   "file": "sprites/tree_31.png",
+   "w": 25,
+   "h": 32,
+   "ax": 11,
+   "ay": 30
+  },
+  "tree_autumn_0": {
+   "file": "sprites/tree_autumn_0.png",
+   "w": 29,
+   "h": 32,
+   "ax": 15,
+   "ay": 30
+  },
+  "tree_autumn_1": {
+   "file": "sprites/tree_autumn_1.png",
+   "w": 33,
+   "h": 32,
+   "ax": 17,
+   "ay": 30
+  },
+  "tree_autumn_2": {
+   "file": "sprites/tree_autumn_2.png",
+   "w": 29,
+   "h": 32,
+   "ax": 15,
+   "ay": 30
+  },
+  "glimwood_0": {
+   "file": "sprites/glimwood_0.png",
+   "w": 22,
+   "h": 32,
+   "ax": 11,
+   "ay": 30,
+   "glow": "sprites/glimwood_0_glow.png"
+  },
+  "glimwood_1": {
+   "file": "sprites/glimwood_1.png",
+   "w": 22,
+   "h": 32,
+   "ax": 11,
+   "ay": 30,
+   "glow": "sprites/glimwood_1_glow.png"
+  },
+  "glimwood_2": {
+   "file": "sprites/glimwood_2.png",
+   "w": 19,
+   "h": 32,
+   "ax": 9,
+   "ay": 30,
+   "glow": "sprites/glimwood_2_glow.png"
+  },
+  "glimwood_3": {
+   "file": "sprites/glimwood_3.png",
+   "w": 27,
+   "h": 32,
+   "ax": 14,
+   "ay": 30,
+   "glow": "sprites/glimwood_3_glow.png"
+  },
+  "glimwood_4": {
+   "file": "sprites/glimwood_4.png",
+   "w": 27,
+   "h": 32,
+   "ax": 14,
+   "ay": 30,
+   "glow": "sprites/glimwood_4_glow.png"
+  },
+  "glimwood_5": {
+   "file": "sprites/glimwood_5.png",
+   "w": 29,
+   "h": 32,
+   "ax": 15,
+   "ay": 30,
+   "glow": "sprites/glimwood_5_glow.png"
+  },
+  "glimwood_6": {
+   "file": "sprites/glimwood_6.png",
+   "w": 26,
+   "h": 32,
+   "ax": 13,
+   "ay": 30,
+   "glow": "sprites/glimwood_6_glow.png"
+  },
+  "glimwood_7": {
+   "file": "sprites/glimwood_7.png",
+   "w": 29,
+   "h": 32,
+   "ax": 15,
+   "ay": 30,
+   "glow": "sprites/glimwood_7_glow.png"
+  },
+  "glimwood_8": {
+   "file": "sprites/glimwood_8.png",
+   "w": 27,
+   "h": 32,
+   "ax": 13,
+   "ay": 30,
+   "glow": "sprites/glimwood_8_glow.png"
+  },
+  "glimwood_9": {
+   "file": "sprites/glimwood_9.png",
+   "w": 27,
+   "h": 32,
+   "ax": 13,
+   "ay": 30,
+   "glow": "sprites/glimwood_9_glow.png"
+  },
+  "gloamtree_0": {
+   "file": "sprites/gloamtree_0.png",
+   "w": 20,
+   "h": 30,
+   "ax": 10,
+   "ay": 28
+  },
+  "gloamtree_1": {
+   "file": "sprites/gloamtree_1.png",
+   "w": 10,
+   "h": 30,
+   "ax": 5,
+   "ay": 28
+  },
+  "bush_6": {
+   "file": "sprites/bush_6.png",
+   "w": 8,
+   "h": 14,
+   "ax": 4,
+   "ay": 13
+  },
+  "bush_7": {
+   "file": "sprites/bush_7.png",
+   "w": 13,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_8": {
+   "file": "sprites/bush_8.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_9": {
+   "file": "sprites/bush_9.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_10": {
+   "file": "sprites/bush_10.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_11": {
+   "file": "sprites/bush_11.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_12": {
+   "file": "sprites/bush_12.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_13": {
+   "file": "sprites/bush_13.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_14": {
+   "file": "sprites/bush_14.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_15": {
+   "file": "sprites/bush_15.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_16": {
+   "file": "sprites/bush_16.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_17": {
+   "file": "sprites/bush_17.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_18": {
+   "file": "sprites/bush_18.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_19": {
+   "file": "sprites/bush_19.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_20": {
+   "file": "sprites/bush_20.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_21": {
+   "file": "sprites/bush_21.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_22": {
+   "file": "sprites/bush_22.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_23": {
+   "file": "sprites/bush_23.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_24": {
+   "file": "sprites/bush_24.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_25": {
+   "file": "sprites/bush_25.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_26": {
+   "file": "sprites/bush_26.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_27": {
+   "file": "sprites/bush_27.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_28": {
+   "file": "sprites/bush_28.png",
+   "w": 18,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_29": {
+   "file": "sprites/bush_29.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_30": {
+   "file": "sprites/bush_30.png",
+   "w": 16,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_31": {
+   "file": "sprites/bush_31.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_32": {
+   "file": "sprites/bush_32.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_33": {
+   "file": "sprites/bush_33.png",
+   "w": 17,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_34": {
+   "file": "sprites/bush_34.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_35": {
+   "file": "sprites/bush_35.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_36": {
+   "file": "sprites/bush_36.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_37": {
+   "file": "sprites/bush_37.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_38": {
+   "file": "sprites/bush_38.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_39": {
+   "file": "sprites/bush_39.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_40": {
+   "file": "sprites/bush_40.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_41": {
+   "file": "sprites/bush_41.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_42": {
+   "file": "sprites/bush_42.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_43": {
+   "file": "sprites/bush_43.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_44": {
+   "file": "sprites/bush_44.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_45": {
+   "file": "sprites/bush_45.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_46": {
+   "file": "sprites/bush_46.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_47": {
+   "file": "sprites/bush_47.png",
+   "w": 25,
+   "h": 14,
+   "ax": 13,
+   "ay": 13
+  },
+  "bush_48": {
+   "file": "sprites/bush_48.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_49": {
+   "file": "sprites/bush_49.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_50": {
+   "file": "sprites/bush_50.png",
+   "w": 12,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_51": {
+   "file": "sprites/bush_51.png",
+   "w": 17,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_52": {
+   "file": "sprites/bush_52.png",
+   "w": 11,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_53": {
+   "file": "sprites/bush_53.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_54": {
+   "file": "sprites/bush_54.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_55": {
+   "file": "sprites/bush_55.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_56": {
+   "file": "sprites/bush_56.png",
+   "w": 21,
+   "h": 14,
+   "ax": 15,
+   "ay": 13
+  },
+  "bush_57": {
+   "file": "sprites/bush_57.png",
+   "w": 13,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_58": {
+   "file": "sprites/bush_58.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_59": {
+   "file": "sprites/bush_59.png",
+   "w": 17,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_60": {
+   "file": "sprites/bush_60.png",
+   "w": 12,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_61": {
+   "file": "sprites/bush_61.png",
+   "w": 16,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_62": {
+   "file": "sprites/bush_62.png",
+   "w": 12,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_63": {
+   "file": "sprites/bush_63.png",
+   "w": 17,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_64": {
+   "file": "sprites/bush_64.png",
+   "w": 13,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_65": {
+   "file": "sprites/bush_65.png",
+   "w": 23,
+   "h": 14,
+   "ax": 15,
+   "ay": 13
+  },
+  "bush_66": {
+   "file": "sprites/bush_66.png",
+   "w": 14,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_67": {
+   "file": "sprites/bush_67.png",
+   "w": 16,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_68": {
+   "file": "sprites/bush_68.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_69": {
+   "file": "sprites/bush_69.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_70": {
+   "file": "sprites/bush_70.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_71": {
+   "file": "sprites/bush_71.png",
+   "w": 22,
+   "h": 14,
+   "ax": 15,
+   "ay": 13
+  },
+  "bush_72": {
+   "file": "sprites/bush_72.png",
+   "w": 22,
+   "h": 14,
+   "ax": 11,
+   "ay": 13
+  },
+  "bush_73": {
+   "file": "sprites/bush_73.png",
+   "w": 18,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_74": {
+   "file": "sprites/bush_74.png",
+   "w": 17,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_75": {
+   "file": "sprites/bush_75.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_76": {
+   "file": "sprites/bush_76.png",
+   "w": 8,
+   "h": 14,
+   "ax": 4,
+   "ay": 13
+  },
+  "bush_77": {
+   "file": "sprites/bush_77.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_78": {
+   "file": "sprites/bush_78.png",
+   "w": 18,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_79": {
+   "file": "sprites/bush_79.png",
+   "w": 13,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_80": {
+   "file": "sprites/bush_80.png",
+   "w": 29,
+   "h": 14,
+   "ax": 13,
+   "ay": 13
+  },
+  "bush_81": {
+   "file": "sprites/bush_81.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_82": {
+   "file": "sprites/bush_82.png",
+   "w": 11,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_83": {
+   "file": "sprites/bush_83.png",
+   "w": 7,
+   "h": 14,
+   "ax": 4,
+   "ay": 13
+  },
+  "bush_84": {
+   "file": "sprites/bush_84.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_85": {
+   "file": "sprites/bush_85.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_86": {
+   "file": "sprites/bush_86.png",
+   "w": 16,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_87": {
+   "file": "sprites/bush_87.png",
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_88": {
+   "file": "sprites/bush_88.png",
+   "w": 14,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_89": {
+   "file": "sprites/bush_89.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_90": {
+   "file": "sprites/bush_90.png",
+   "w": 18,
+   "h": 14,
+   "ax": 13,
+   "ay": 13
+  },
+  "bush_91": {
+   "file": "sprites/bush_91.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_92": {
+   "file": "sprites/bush_92.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_93": {
+   "file": "sprites/bush_93.png",
+   "w": 19,
+   "h": 14,
+   "ax": 10,
+   "ay": 13
+  },
+  "bush_94": {
+   "file": "sprites/bush_94.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_95": {
+   "file": "sprites/bush_95.png",
+   "w": 18,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_96": {
+   "file": "sprites/bush_96.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_97": {
+   "file": "sprites/bush_97.png",
+   "w": 13,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_98": {
+   "file": "sprites/bush_98.png",
+   "w": 17,
+   "h": 14,
+   "ax": 11,
+   "ay": 13
+  },
+  "bush_99": {
+   "file": "sprites/bush_99.png",
+   "w": 13,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "bush_100": {
+   "file": "sprites/bush_100.png",
+   "w": 8,
+   "h": 14,
+   "ax": 4,
+   "ay": 13
+  },
+  "bush_101": {
+   "file": "sprites/bush_101.png",
+   "w": 19,
+   "h": 14,
+   "ax": 13,
+   "ay": 13
+  },
+  "bush_102": {
+   "file": "sprites/bush_102.png",
+   "w": 12,
+   "h": 14,
+   "ax": 6,
+   "ay": 13
+  },
+  "bush_103": {
+   "file": "sprites/bush_103.png",
+   "w": 16,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_104": {
+   "file": "sprites/bush_104.png",
+   "w": 17,
+   "h": 14,
+   "ax": 9,
+   "ay": 13
+  },
+  "bush_105": {
+   "file": "sprites/bush_105.png",
+   "w": 7,
+   "h": 14,
+   "ax": 4,
+   "ay": 13
+  },
+  "bush_106": {
+   "file": "sprites/bush_106.png",
+   "w": 15,
+   "h": 14,
+   "ax": 8,
+   "ay": 13
+  },
+  "bush_107": {
+   "file": "sprites/bush_107.png",
+   "w": 14,
+   "h": 14,
+   "ax": 7,
+   "ay": 13
+  },
+  "mushroom_3": {
+   "file": "sprites/mushroom_3.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_4": {
+   "file": "sprites/mushroom_4.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_5": {
+   "file": "sprites/mushroom_5.png",
+   "w": 14,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_6": {
+   "file": "sprites/mushroom_6.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_7": {
+   "file": "sprites/mushroom_7.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_8": {
+   "file": "sprites/mushroom_8.png",
+   "w": 13,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_9": {
+   "file": "sprites/mushroom_9.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_10": {
+   "file": "sprites/mushroom_10.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_11": {
+   "file": "sprites/mushroom_11.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_12": {
+   "file": "sprites/mushroom_12.png",
+   "w": 10,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_13": {
+   "file": "sprites/mushroom_13.png",
+   "w": 13,
+   "h": 12,
+   "ax": 8,
+   "ay": 11
+  },
+  "mushroom_14": {
+   "file": "sprites/mushroom_14.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_15": {
+   "file": "sprites/mushroom_15.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_16": {
+   "file": "sprites/mushroom_16.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_17": {
+   "file": "sprites/mushroom_17.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_18": {
+   "file": "sprites/mushroom_18.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_19": {
+   "file": "sprites/mushroom_19.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_20": {
+   "file": "sprites/mushroom_20.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_21": {
+   "file": "sprites/mushroom_21.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_22": {
+   "file": "sprites/mushroom_22.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_23": {
+   "file": "sprites/mushroom_23.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_24": {
+   "file": "sprites/mushroom_24.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_25": {
+   "file": "sprites/mushroom_25.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_26": {
+   "file": "sprites/mushroom_26.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_27": {
+   "file": "sprites/mushroom_27.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_28": {
+   "file": "sprites/mushroom_28.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_29": {
+   "file": "sprites/mushroom_29.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_30": {
+   "file": "sprites/mushroom_30.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_31": {
+   "file": "sprites/mushroom_31.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_32": {
+   "file": "sprites/mushroom_32.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_33": {
+   "file": "sprites/mushroom_33.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_34": {
+   "file": "sprites/mushroom_34.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_35": {
+   "file": "sprites/mushroom_35.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_36": {
+   "file": "sprites/mushroom_36.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_37": {
+   "file": "sprites/mushroom_37.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_38": {
+   "file": "sprites/mushroom_38.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_39": {
+   "file": "sprites/mushroom_39.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_40": {
+   "file": "sprites/mushroom_40.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_41": {
+   "file": "sprites/mushroom_41.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_42": {
+   "file": "sprites/mushroom_42.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_43": {
+   "file": "sprites/mushroom_43.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_44": {
+   "file": "sprites/mushroom_44.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_45": {
+   "file": "sprites/mushroom_45.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_46": {
+   "file": "sprites/mushroom_46.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_47": {
+   "file": "sprites/mushroom_47.png",
+   "w": 8,
+   "h": 12,
+   "ax": 4,
+   "ay": 11
+  },
+  "mushroom_48": {
+   "file": "sprites/mushroom_48.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_49": {
+   "file": "sprites/mushroom_49.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_50": {
+   "file": "sprites/mushroom_50.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_51": {
+   "file": "sprites/mushroom_51.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_52": {
+   "file": "sprites/mushroom_52.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_53": {
+   "file": "sprites/mushroom_53.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_54": {
+   "file": "sprites/mushroom_54.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_55": {
+   "file": "sprites/mushroom_55.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_56": {
+   "file": "sprites/mushroom_56.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_57": {
+   "file": "sprites/mushroom_57.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_58": {
+   "file": "sprites/mushroom_58.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_59": {
+   "file": "sprites/mushroom_59.png",
+   "w": 7,
+   "h": 12,
+   "ax": 4,
+   "ay": 11
+  },
+  "mushroom_60": {
+   "file": "sprites/mushroom_60.png",
+   "w": 8,
+   "h": 12,
+   "ax": 4,
+   "ay": 11
+  },
+  "mushroom_61": {
+   "file": "sprites/mushroom_61.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_62": {
+   "file": "sprites/mushroom_62.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_63": {
+   "file": "sprites/mushroom_63.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_64": {
+   "file": "sprites/mushroom_64.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_65": {
+   "file": "sprites/mushroom_65.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_66": {
+   "file": "sprites/mushroom_66.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_67": {
+   "file": "sprites/mushroom_67.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_68": {
+   "file": "sprites/mushroom_68.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_69": {
+   "file": "sprites/mushroom_69.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11
+  },
+  "mushroom_70": {
+   "file": "sprites/mushroom_70.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_71": {
+   "file": "sprites/mushroom_71.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_72": {
+   "file": "sprites/mushroom_72.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_73": {
+   "file": "sprites/mushroom_73.png",
+   "w": 14,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_74": {
+   "file": "sprites/mushroom_74.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_75": {
+   "file": "sprites/mushroom_75.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_76": {
+   "file": "sprites/mushroom_76.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_77": {
+   "file": "sprites/mushroom_77.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_78": {
+   "file": "sprites/mushroom_78.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_79": {
+   "file": "sprites/mushroom_79.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_80": {
+   "file": "sprites/mushroom_80.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_81": {
+   "file": "sprites/mushroom_81.png",
+   "w": 11,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_82": {
+   "file": "sprites/mushroom_82.png",
+   "w": 10,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_83": {
+   "file": "sprites/mushroom_83.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_84": {
+   "file": "sprites/mushroom_84.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_85": {
+   "file": "sprites/mushroom_85.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_86": {
+   "file": "sprites/mushroom_86.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_87": {
+   "file": "sprites/mushroom_87.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_88": {
+   "file": "sprites/mushroom_88.png",
+   "w": 10,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_89": {
+   "file": "sprites/mushroom_89.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_90": {
+   "file": "sprites/mushroom_90.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_91": {
+   "file": "sprites/mushroom_91.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_92": {
+   "file": "sprites/mushroom_92.png",
+   "w": 7,
+   "h": 12,
+   "ax": 4,
+   "ay": 11
+  },
+  "mushroom_93": {
+   "file": "sprites/mushroom_93.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_94": {
+   "file": "sprites/mushroom_94.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_95": {
+   "file": "sprites/mushroom_95.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_96": {
+   "file": "sprites/mushroom_96.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_97": {
+   "file": "sprites/mushroom_97.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_98": {
+   "file": "sprites/mushroom_98.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_99": {
+   "file": "sprites/mushroom_99.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_100": {
+   "file": "sprites/mushroom_100.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_101": {
+   "file": "sprites/mushroom_101.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_102": {
+   "file": "sprites/mushroom_102.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_103": {
+   "file": "sprites/mushroom_103.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_104": {
+   "file": "sprites/mushroom_104.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_105": {
+   "file": "sprites/mushroom_105.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_106": {
+   "file": "sprites/mushroom_106.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_107": {
+   "file": "sprites/mushroom_107.png",
+   "w": 13,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_108": {
+   "file": "sprites/mushroom_108.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "mushroom_109": {
+   "file": "sprites/mushroom_109.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11
+  },
+  "mushroom_110": {
+   "file": "sprites/mushroom_110.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_111": {
+   "file": "sprites/mushroom_111.png",
+   "w": 6,
+   "h": 12,
+   "ax": 3,
+   "ay": 11
+  },
+  "mushroom_112": {
+   "file": "sprites/mushroom_112.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11
+  },
+  "mushroom_113": {
+   "file": "sprites/mushroom_113.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "glowcap_3": {
+   "file": "sprites/glowcap_3.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_3_glow.png"
+  },
+  "glowcap_4": {
+   "file": "sprites/glowcap_4.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_4_glow.png"
+  },
+  "glowcap_5": {
+   "file": "sprites/glowcap_5.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_5_glow.png"
+  },
+  "glowcap_6": {
+   "file": "sprites/glowcap_6.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_6_glow.png"
+  },
+  "glowcap_7": {
+   "file": "sprites/glowcap_7.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_7_glow.png"
+  },
+  "glowcap_8": {
+   "file": "sprites/glowcap_8.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_8_glow.png"
+  },
+  "glowcap_9": {
+   "file": "sprites/glowcap_9.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_9_glow.png"
+  },
+  "glowcap_10": {
+   "file": "sprites/glowcap_10.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_10_glow.png"
+  },
+  "glowcap_11": {
+   "file": "sprites/glowcap_11.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_11_glow.png"
+  },
+  "glowcap_12": {
+   "file": "sprites/glowcap_12.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_12_glow.png"
+  },
+  "glowcap_13": {
+   "file": "sprites/glowcap_13.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_13_glow.png"
+  },
+  "glowcap_14": {
+   "file": "sprites/glowcap_14.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_14_glow.png"
+  },
+  "glowcap_15": {
+   "file": "sprites/glowcap_15.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_15_glow.png"
+  },
+  "glowcap_16": {
+   "file": "sprites/glowcap_16.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_16_glow.png"
+  },
+  "glowcap_17": {
+   "file": "sprites/glowcap_17.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_17_glow.png"
+  },
+  "glowcap_18": {
+   "file": "sprites/glowcap_18.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11
+  },
+  "glowcap_19": {
+   "file": "sprites/glowcap_19.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_19_glow.png"
+  },
+  "glowcap_20": {
+   "file": "sprites/glowcap_20.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_20_glow.png"
+  },
+  "glowcap_21": {
+   "file": "sprites/glowcap_21.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_21_glow.png"
+  },
+  "glowcap_22": {
+   "file": "sprites/glowcap_22.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_22_glow.png"
+  },
+  "glowcap_23": {
+   "file": "sprites/glowcap_23.png",
+   "w": 8,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_23_glow.png"
+  },
+  "glowcap_24": {
+   "file": "sprites/glowcap_24.png",
+   "w": 8,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_24_glow.png"
+  },
+  "glowcap_25": {
+   "file": "sprites/glowcap_25.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_25_glow.png"
+  },
+  "glowcap_26": {
+   "file": "sprites/glowcap_26.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_26_glow.png"
+  },
+  "glowcap_27": {
+   "file": "sprites/glowcap_27.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_27_glow.png"
+  },
+  "glowcap_28": {
+   "file": "sprites/glowcap_28.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_28_glow.png"
+  },
+  "glowcap_29": {
+   "file": "sprites/glowcap_29.png",
+   "w": 7,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_29_glow.png"
+  },
+  "glowcap_30": {
+   "file": "sprites/glowcap_30.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11,
+   "glow": "sprites/glowcap_30_glow.png"
+  },
+  "glowcap_31": {
+   "file": "sprites/glowcap_31.png",
+   "w": 8,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_31_glow.png"
+  },
+  "glowcap_32": {
+   "file": "sprites/glowcap_32.png",
+   "w": 9,
+   "h": 12,
+   "ax": 3,
+   "ay": 11,
+   "glow": "sprites/glowcap_32_glow.png"
+  },
+  "glowcap_33": {
+   "file": "sprites/glowcap_33.png",
+   "w": 12,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_33_glow.png"
+  },
+  "glowcap_34": {
+   "file": "sprites/glowcap_34.png",
+   "w": 8,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_34_glow.png"
+  },
+  "glowcap_35": {
+   "file": "sprites/glowcap_35.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_35_glow.png"
+  },
+  "glowcap_36": {
+   "file": "sprites/glowcap_36.png",
+   "w": 10,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_36_glow.png"
+  },
+  "glowcap_37": {
+   "file": "sprites/glowcap_37.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_37_glow.png"
+  },
+  "glowcap_38": {
+   "file": "sprites/glowcap_38.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_38_glow.png"
+  },
+  "glowcap_39": {
+   "file": "sprites/glowcap_39.png",
+   "w": 10,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_39_glow.png"
+  },
+  "glowcap_40": {
+   "file": "sprites/glowcap_40.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_40_glow.png"
+  },
+  "glowcap_41": {
+   "file": "sprites/glowcap_41.png",
+   "w": 11,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_41_glow.png"
+  },
+  "glowcap_42": {
+   "file": "sprites/glowcap_42.png",
+   "w": 9,
+   "h": 12,
+   "ax": 3,
+   "ay": 11,
+   "glow": "sprites/glowcap_42_glow.png"
+  },
+  "glowcap_43": {
+   "file": "sprites/glowcap_43.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_43_glow.png"
+  },
+  "glowcap_44": {
+   "file": "sprites/glowcap_44.png",
+   "w": 12,
+   "h": 12,
+   "ax": 7,
+   "ay": 11,
+   "glow": "sprites/glowcap_44_glow.png"
+  },
+  "glowcap_45": {
+   "file": "sprites/glowcap_45.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_45_glow.png"
+  },
+  "glowcap_46": {
+   "file": "sprites/glowcap_46.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_46_glow.png"
+  },
+  "glowcap_47": {
+   "file": "sprites/glowcap_47.png",
+   "w": 11,
+   "h": 12,
+   "ax": 6,
+   "ay": 11,
+   "glow": "sprites/glowcap_47_glow.png"
+  },
+  "glowcap_48": {
+   "file": "sprites/glowcap_48.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_48_glow.png"
+  },
+  "glowcap_49": {
+   "file": "sprites/glowcap_49.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_49_glow.png"
+  },
+  "glowcap_50": {
+   "file": "sprites/glowcap_50.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_50_glow.png"
+  },
+  "glowcap_51": {
+   "file": "sprites/glowcap_51.png",
+   "w": 9,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_51_glow.png"
+  },
+  "glowcap_52": {
+   "file": "sprites/glowcap_52.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_52_glow.png"
+  },
+  "glowcap_53": {
+   "file": "sprites/glowcap_53.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_53_glow.png"
+  },
+  "glowcap_54": {
+   "file": "sprites/glowcap_54.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_54_glow.png"
+  },
+  "glowcap_55": {
+   "file": "sprites/glowcap_55.png",
+   "w": 10,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_55_glow.png"
+  },
+  "glowcap_56": {
+   "file": "sprites/glowcap_56.png",
+   "w": 7,
+   "h": 12,
+   "ax": 4,
+   "ay": 11,
+   "glow": "sprites/glowcap_56_glow.png"
+  },
+  "glowcap_57": {
+   "file": "sprites/glowcap_57.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_57_glow.png"
+  },
+  "glowcap_58": {
+   "file": "sprites/glowcap_58.png",
+   "w": 7,
+   "h": 12,
+   "ax": 3,
+   "ay": 11,
+   "glow": "sprites/glowcap_58_glow.png"
+  },
+  "glowcap_59": {
+   "file": "sprites/glowcap_59.png",
+   "w": 9,
+   "h": 12,
+   "ax": 5,
+   "ay": 11,
+   "glow": "sprites/glowcap_59_glow.png"
+  },
+  "grass_4": {
+   "file": "sprites/grass_4.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "grass_5": {
+   "file": "sprites/grass_5.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "grass_6": {
+   "file": "sprites/grass_6.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_3": {
+   "file": "sprites/meadow_3.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_4": {
+   "file": "sprites/meadow_4.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_5": {
+   "file": "sprites/meadow_5.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_6": {
+   "file": "sprites/meadow_6.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_7": {
+   "file": "sprites/meadow_7.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "meadow_8": {
+   "file": "sprites/meadow_8.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_3": {
+   "file": "sprites/forest_3.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_4": {
+   "file": "sprites/forest_4.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_5": {
+   "file": "sprites/forest_5.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "forest_6": {
+   "file": "sprites/forest_6.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_3": {
+   "file": "sprites/hills_3.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_4": {
+   "file": "sprites/hills_4.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_5": {
+   "file": "sprites/hills_5.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_6": {
+   "file": "sprites/hills_6.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "hills_7": {
+   "file": "sprites/hills_7.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "shore_1": {
+   "file": "sprites/shore_1.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "ruins_3": {
+   "file": "sprites/ruins_3.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "ruins_4": {
+   "file": "sprites/ruins_4.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "ruins_5": {
+   "file": "sprites/ruins_5.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "ruins_6": {
+   "file": "sprites/ruins_6.png",
+   "w": 32,
+   "h": 16,
+   "ax": 16,
+   "ay": 0
+  },
+  "boar_0": {
+   "file": "sprites/boar_0.png",
+   "w": 12,
+   "h": 11,
+   "ax": 7,
+   "ay": 11
+  },
+  "boar_1": {
+   "file": "sprites/boar_0.png",
+   "w": 12,
+   "h": 11,
+   "ax": 7,
+   "ay": 12
+  },
+  "glimmoth_0": {
+   "file": "sprites/glimmoth_0.png",
+   "w": 10,
+   "h": 9,
+   "ax": 5,
+   "ay": 9,
+   "glow": "sprites/glimmoth_0_glow.png"
+  },
+  "glimmoth_1": {
+   "file": "sprites/glimmoth_0.png",
+   "w": 10,
+   "h": 9,
+   "ax": 5,
+   "ay": 10,
+   "glow": "sprites/glimmoth_0_glow.png"
+  },
+  "b_well_v0": {
+   "file": "sprites/b_well_v0.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v1": {
+   "file": "sprites/b_well_v1.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v1_glow.png"
+  },
+  "b_well_v2": {
+   "file": "sprites/b_well_v2.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v2_glow.png"
+  },
+  "b_well_v3": {
+   "file": "sprites/b_well_v3.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v4": {
+   "file": "sprites/b_well_v4.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v5": {
+   "file": "sprites/b_well_v5.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v5_glow.png"
+  },
+  "b_well_v6": {
+   "file": "sprites/b_well_v6.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_well_v6_glow.png"
+  },
+  "b_well_v7": {
+   "file": "sprites/b_well_v7.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_well_v8": {
+   "file": "sprites/b_well_v8.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v8_glow.png"
+  },
+  "b_well_v9": {
+   "file": "sprites/b_well_v9.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v9_glow.png"
+  },
+  "b_well_v10": {
+   "file": "sprites/b_well_v10.png",
+   "w": 10,
+   "h": 18,
+   "ax": 5,
+   "ay": 7
+  },
+  "b_well_v11": {
+   "file": "sprites/b_well_v11.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v12": {
+   "file": "sprites/b_well_v12.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v13": {
+   "file": "sprites/b_well_v13.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_well_v13_glow.png"
+  },
+  "b_well_v14": {
+   "file": "sprites/b_well_v14.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_well_v15": {
+   "file": "sprites/b_well_v15.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v15_glow.png"
+  },
+  "b_well_v16": {
+   "file": "sprites/b_well_v16.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_well_v16_glow.png"
+  },
+  "b_well_v17": {
+   "file": "sprites/b_well_v17.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v17_glow.png"
+  },
+  "b_well_v18": {
+   "file": "sprites/b_well_v18.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v19": {
+   "file": "sprites/b_well_v19.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v20": {
+   "file": "sprites/b_well_v20.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v21": {
+   "file": "sprites/b_well_v21.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7,
+   "glow": "sprites/b_well_v21_glow.png"
+  },
+  "b_well_v22": {
+   "file": "sprites/b_well_v22.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_well_v22_glow.png"
+  },
+  "b_well_v23": {
+   "file": "sprites/b_well_v23.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v24": {
+   "file": "sprites/b_well_v24.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v25": {
+   "file": "sprites/b_well_v25.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v26": {
+   "file": "sprites/b_well_v26.png",
+   "w": 10,
+   "h": 18,
+   "ax": 5,
+   "ay": 7,
+   "glow": "sprites/b_well_v26_glow.png"
+  },
+  "b_well_v27": {
+   "file": "sprites/b_well_v27.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v28": {
+   "file": "sprites/b_well_v28.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v29": {
+   "file": "sprites/b_well_v29.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v29_glow.png"
+  },
+  "b_well_v30": {
+   "file": "sprites/b_well_v30.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_well_v31": {
+   "file": "sprites/b_well_v31.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v32": {
+   "file": "sprites/b_well_v32.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v33": {
+   "file": "sprites/b_well_v33.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_well_v33_glow.png"
+  },
+  "b_well_v34": {
+   "file": "sprites/b_well_v34.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_well_v35": {
+   "file": "sprites/b_well_v35.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_well_v36": {
+   "file": "sprites/b_well_v36.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7,
+   "glow": "sprites/b_well_v36_glow.png"
+  },
+  "b_seep_v0": {
+   "file": "sprites/b_seep_v0.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_seep_v1": {
+   "file": "sprites/b_seep_v1.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_seep_v2": {
+   "file": "sprites/b_seep_v2.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_seep_v3": {
+   "file": "sprites/b_seep_v3.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_seep_v4": {
+   "file": "sprites/b_seep_v4.png",
+   "w": 16,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_seep_v5": {
+   "file": "sprites/b_seep_v5.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_seep_v6": {
+   "file": "sprites/b_seep_v6.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_seep_v7": {
+   "file": "sprites/b_seep_v7.png",
+   "w": 17,
+   "h": 18,
+   "ax": 9,
+   "ay": 7,
+   "glow": "sprites/b_seep_v7_glow.png"
+  },
+  "b_seep_v8": {
+   "file": "sprites/b_seep_v8.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_seep_v9": {
+   "file": "sprites/b_seep_v9.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_seep_v10": {
+   "file": "sprites/b_seep_v10.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_seep_v11": {
+   "file": "sprites/b_seep_v11.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_tidewell_v0": {
+   "file": "sprites/b_tidewell_v0.png",
+   "w": 10,
+   "h": 18,
+   "ax": 5,
+   "ay": 7,
+   "glow": "sprites/b_tidewell_v0_glow.png"
+  },
+  "b_tidewell_v1": {
+   "file": "sprites/b_tidewell_v1.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_tidewell_v2": {
+   "file": "sprites/b_tidewell_v2.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_tidewell_v2_glow.png"
+  },
+  "b_tidewell_v3": {
+   "file": "sprites/b_tidewell_v3.png",
+   "w": 13,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_tidewell_v4": {
+   "file": "sprites/b_tidewell_v4.png",
+   "w": 12,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_tidewell_v5": {
+   "file": "sprites/b_tidewell_v5.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7,
+   "glow": "sprites/b_tidewell_v5_glow.png"
+  },
+  "b_tidewell_v6": {
+   "file": "sprites/b_tidewell_v6.png",
+   "w": 11,
+   "h": 18,
+   "ax": 6,
+   "ay": 7
+  },
+  "b_tidewell_v7": {
+   "file": "sprites/b_tidewell_v7.png",
+   "w": 15,
+   "h": 18,
+   "ax": 8,
+   "ay": 7
+  },
+  "b_tidewell_v8": {
+   "file": "sprites/b_tidewell_v8.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_tidewell_v9": {
+   "file": "sprites/b_tidewell_v9.png",
+   "w": 14,
+   "h": 18,
+   "ax": 7,
+   "ay": 7
+  },
+  "b_shrine_v0": {
+   "file": "sprites/b_shrine_v0.png",
+   "w": 26,
+   "h": 30,
+   "ax": 13,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v0_glow.png"
+  },
+  "b_shrine_v1": {
+   "file": "sprites/b_shrine_v1.png",
+   "w": 26,
+   "h": 30,
+   "ax": 13,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v1_glow.png"
+  },
+  "b_shrine_v2": {
+   "file": "sprites/b_shrine_v2.png",
+   "w": 24,
+   "h": 30,
+   "ax": 12,
+   "ay": 13
+  },
+  "b_shrine_v3": {
+   "file": "sprites/b_shrine_v3.png",
+   "w": 26,
+   "h": 30,
+   "ax": 13,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v3_glow.png"
+  },
+  "b_shrine_v4": {
+   "file": "sprites/b_shrine_v4.png",
+   "w": 30,
+   "h": 30,
+   "ax": 15,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v4_glow.png"
+  },
+  "b_shrine_v5": {
+   "file": "sprites/b_shrine_v5.png",
+   "w": 26,
+   "h": 30,
+   "ax": 13,
+   "ay": 13
+  },
+  "b_shrine_v6": {
+   "file": "sprites/b_shrine_v6.png",
+   "w": 23,
+   "h": 30,
+   "ax": 12,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v6_glow.png"
+  },
+  "b_shrine_v7": {
+   "file": "sprites/b_shrine_v7.png",
+   "w": 19,
+   "h": 30,
+   "ax": 10,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v7_glow.png"
+  },
+  "b_shrine_v8": {
+   "file": "sprites/b_shrine_v8.png",
+   "w": 23,
+   "h": 30,
+   "ax": 12,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v8_glow.png"
+  },
+  "b_shrine_v9": {
+   "file": "sprites/b_shrine_v9.png",
+   "w": 29,
+   "h": 30,
+   "ax": 15,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v9_glow.png"
+  },
+  "b_shrine_v10": {
+   "file": "sprites/b_shrine_v10.png",
+   "w": 21,
+   "h": 30,
+   "ax": 11,
+   "ay": 13,
+   "glow": "sprites/b_shrine_v10_glow.png"
+  },
+  "b_stormpeak_v0": {
+   "file": "sprites/b_stormpeak_v0.png",
+   "w": 34,
+   "h": 47,
+   "ax": 17,
+   "ay": 30,
+   "glow": "sprites/b_stormpeak_v0_glow.png"
+  },
+  "b_stormpeak_v1": {
+   "file": "sprites/b_stormpeak_v1.png",
+   "w": 36,
+   "h": 41,
+   "ax": 18,
+   "ay": 24,
+   "glow": "sprites/b_stormpeak_v1_glow.png"
+  },
+  "b_stoneward_v0": {
+   "file": "sprites/b_stoneward_v0.png",
+   "w": 25,
+   "h": 30,
+   "ax": 13,
+   "ay": 13
+  },
+  "b_stoneward_v1": {
+   "file": "sprites/b_stoneward_v1.png",
+   "w": 27,
+   "h": 30,
+   "ax": 14,
+   "ay": 13,
+   "glow": "sprites/b_stoneward_v1_glow.png"
+  },
+  "b_stoneward_v2": {
+   "file": "sprites/b_stoneward_v2.png",
+   "w": 28,
+   "h": 30,
+   "ax": 14,
+   "ay": 13,
+   "glow": "sprites/b_stoneward_v2_glow.png"
+  },
+  "b_candleshrine_v0": {
+   "file": "sprites/b_candleshrine_v0.png",
+   "w": 26,
+   "h": 30,
+   "ax": 13,
+   "ay": 13
+  },
+  "b_healer_v0": {
+   "file": "sprites/b_healer_v0.png",
+   "w": 27,
+   "h": 33,
+   "ax": 14,
+   "ay": 16,
+   "glow": "sprites/b_healer_v0_glow.png"
+  },
+  "b_healer_v1": {
+   "file": "sprites/b_healer_v1.png",
+   "w": 31,
+   "h": 33,
+   "ax": 16,
+   "ay": 16
+  },
+  "b_healer_v2": {
+   "file": "sprites/b_healer_v2.png",
+   "w": 34,
+   "h": 33,
+   "ax": 17,
+   "ay": 16,
+   "glow": "sprites/b_healer_v2_glow.png"
+  },
+  "b_healer_v3": {
+   "file": "sprites/b_healer_v3.png",
+   "w": 30,
+   "h": 33,
+   "ax": 15,
+   "ay": 16,
+   "glow": "sprites/b_healer_v3_glow.png"
+  },
+  "b_healer_v4": {
+   "file": "sprites/b_healer_v4.png",
+   "w": 30,
+   "h": 33,
+   "ax": 15,
+   "ay": 16,
+   "glow": "sprites/b_healer_v4_glow.png"
+  },
+  "b_eggshellfont_v0": {
+   "file": "sprites/b_eggshellfont_v0.png",
+   "w": 33,
+   "h": 37,
+   "ax": 17,
+   "ay": 20
+  },
+  "b_eggshellfont_v1": {
+   "file": "sprites/b_eggshellfont_v1.png",
+   "w": 23,
+   "h": 37,
+   "ax": 12,
+   "ay": 20,
+   "glow": "sprites/b_eggshellfont_v1_glow.png"
+  },
+  "b_leybeacon_v0": {
+   "file": "sprites/b_leybeacon_v0.png",
+   "w": 25,
+   "h": 53,
+   "ax": 13,
+   "ay": 36,
+   "glow": "sprites/b_leybeacon_v0_glow.png"
+  },
+  "b_watchpost_v0": {
+   "file": "sprites/b_watchpost_v0.png",
+   "w": 23,
+   "h": 38,
+   "ax": 12,
+   "ay": 21,
+   "glow": "sprites/b_watchpost_v0_glow.png"
+  },
+  "b_watchpost_v1": {
+   "file": "sprites/b_watchpost_v1.png",
+   "w": 19,
+   "h": 38,
+   "ax": 10,
+   "ay": 21
+  },
+  "b_wicktower_v1": {
+   "file": "sprites/b_wicktower_v1.png",
+   "w": 31,
+   "h": 45,
+   "ax": 16,
+   "ay": 28,
+   "glow": "sprites/b_wicktower_v1_glow.png"
+  },
+  "b_fishershut_v0": {
+   "file": "sprites/b_fishershut_v0.png",
+   "w": 36,
+   "h": 30,
+   "ax": 18,
+   "ay": 13,
+   "glow": "sprites/b_fishershut_v0_glow.png"
+  },
+  "b_fishershut_v1": {
+   "file": "sprites/b_fishershut_v1.png",
+   "w": 36,
+   "h": 27,
+   "ax": 18,
+   "ay": 10,
+   "glow": "sprites/b_fishershut_v1_glow.png"
+  },
+  "b_reedcutters_v0": {
+   "file": "sprites/b_reedcutters_v0.png",
+   "w": 36,
+   "h": 28,
+   "ax": 18,
+   "ay": 11,
+   "glow": "sprites/b_reedcutters_v0_glow.png"
+  },
+  "b_smokehouse_v0": {
+   "file": "sprites/b_smokehouse_v0.png",
+   "w": 35,
+   "h": 33,
+   "ax": 18,
+   "ay": 16,
+   "glow": "sprites/b_smokehouse_v0_glow.png"
+  },
+  "b_boneyard_v1": {
+   "file": "sprites/b_boneyard_v1.png",
+   "w": 68,
+   "h": 50,
+   "ax": 34,
+   "ay": 17
+  },
+  "b_boneyard_v2": {
+   "file": "sprites/b_boneyard_v2.png",
+   "w": 57,
+   "h": 51,
+   "ax": 29,
+   "ay": 18
+  },
+  "b_boneyard_v3": {
+   "file": "sprites/b_boneyard_v3.png",
+   "w": 58,
+   "h": 51,
+   "ax": 29,
+   "ay": 18
+  },
+  "b_boneyard_v4": {
+   "file": "sprites/b_boneyard_v4.png",
+   "w": 60,
+   "h": 51,
+   "ax": 30,
+   "ay": 18,
+   "glow": "sprites/b_boneyard_v4_glow.png"
+  },
+  "b_boneyard_v5": {
+   "file": "sprites/b_boneyard_v5.png",
+   "w": 62,
+   "h": 51,
+   "ax": 31,
+   "ay": 18
+  },
+  "b_boneyard_v6": {
+   "file": "sprites/b_boneyard_v6.png",
+   "w": 55,
+   "h": 51,
+   "ax": 28,
+   "ay": 18
+  },
+  "b_boneyard_v7": {
+   "file": "sprites/b_boneyard_v7.png",
+   "w": 63,
+   "h": 51,
+   "ax": 32,
+   "ay": 18
+  },
+  "b_boneyard_v8": {
+   "file": "sprites/b_boneyard_v8.png",
+   "w": 65,
+   "h": 51,
+   "ax": 33,
+   "ay": 18
+  },
+  "b_boneyard_v9": {
+   "file": "sprites/b_boneyard_v9.png",
+   "w": 55,
+   "h": 51,
+   "ax": 28,
+   "ay": 18
+  },
+  "b_boneyard_v10": {
+   "file": "sprites/b_boneyard_v10.png",
+   "w": 62,
+   "h": 51,
+   "ax": 31,
+   "ay": 18,
+   "glow": "sprites/b_boneyard_v10_glow.png"
+  },
+  "b_ossuary_v1": {
+   "file": "sprites/b_ossuary_v1.png",
+   "w": 68,
+   "h": 58,
+   "ax": 34,
+   "ay": 25
+  },
+  "b_ossuary_v2": {
+   "file": "sprites/b_ossuary_v2.png",
+   "w": 68,
+   "h": 59,
+   "ax": 34,
+   "ay": 26
+  },
+  "b_ossuary_v3": {
+   "file": "sprites/b_ossuary_v3.png",
+   "w": 68,
+   "h": 58,
+   "ax": 34,
+   "ay": 25
+  },
+  "b_ossuary_v4": {
+   "file": "sprites/b_ossuary_v4.png",
+   "w": 68,
+   "h": 58,
+   "ax": 34,
+   "ay": 25
+  },
+  "b_ossuary_v5": {
+   "file": "sprites/b_ossuary_v5.png",
+   "w": 64,
+   "h": 60,
+   "ax": 32,
+   "ay": 27,
+   "glow": "sprites/b_ossuary_v5_glow.png"
+  },
+  "b_sextonchapel_v1": {
+   "file": "sprites/b_sextonchapel_v1.png",
+   "w": 65,
+   "h": 57,
+   "ax": 33,
+   "ay": 24
+  },
+  "b_watergarden_v0": {
+   "file": "sprites/b_watergarden_v0.png",
+   "w": 51,
+   "h": 46,
+   "ax": 26,
+   "ay": 13
+  },
+  "b_hunterslodge_v0": {
+   "file": "sprites/b_hunterslodge_v0.png",
+   "w": 52,
+   "h": 52,
+   "ax": 26,
+   "ay": 19,
+   "glow": "sprites/b_hunterslodge_v0_glow.png"
+  },
+  "b_hunterslodge_v1": {
+   "file": "sprites/b_hunterslodge_v1.png",
+   "w": 59,
+   "h": 52,
+   "ax": 30,
+   "ay": 19,
+   "glow": "sprites/b_hunterslodge_v1_glow.png"
+  },
+  "b_hunterslodge_v2": {
+   "file": "sprites/b_hunterslodge_v2.png",
+   "w": 57,
+   "h": 52,
+   "ax": 29,
+   "ay": 19,
+   "glow": "sprites/b_hunterslodge_v2_glow.png"
+  },
+  "b_hunterslodge_v3": {
+   "file": "sprites/b_hunterslodge_v3.png",
+   "w": 61,
+   "h": 52,
+   "ax": 31,
+   "ay": 19
+  },
+  "b_tamerslodge_v0": {
+   "file": "sprites/b_tamerslodge_v0.png",
+   "w": 60,
+   "h": 52,
+   "ax": 30,
+   "ay": 19,
+   "glow": "sprites/b_tamerslodge_v0_glow.png"
+  },
+  "b_tamerslodge_v1": {
+   "file": "sprites/b_tamerslodge_v1.png",
+   "w": 62,
+   "h": 52,
+   "ax": 31,
+   "ay": 19,
+   "glow": "sprites/b_tamerslodge_v1_glow.png"
+  },
+  "b_wyrmforge_v0": {
+   "file": "sprites/b_wyrmforge_v0.png",
+   "w": 61,
+   "h": 53,
+   "ax": 31,
+   "ay": 20,
+   "glow": "sprites/b_wyrmforge_v0_glow.png"
+  },
+  "b_wyrmforge_v1": {
+   "file": "sprites/b_wyrmforge_v1.png",
+   "w": 46,
+   "h": 53,
+   "ax": 23,
+   "ay": 20,
+   "glow": "sprites/b_wyrmforge_v1_glow.png"
+  },
+  "b_forgetemple_v0": {
+   "file": "sprites/b_forgetemple_v0.png",
+   "w": 64,
+   "h": 54,
+   "ax": 32,
+   "ay": 21,
+   "glow": "sprites/b_forgetemple_v0_glow.png"
+  },
+  "b_golemfoundry_v0": {
+   "file": "sprites/b_golemfoundry_v0.png",
+   "w": 58,
+   "h": 60,
+   "ax": 29,
+   "ay": 27,
+   "glow": "sprites/b_golemfoundry_v0_glow.png"
+  },
+  "b_depot_v0": {
+   "file": "sprites/b_depot_v0.png",
+   "w": 67,
+   "h": 64,
+   "ax": 34,
+   "ay": 31,
+   "glow": "sprites/b_depot_v0_glow.png"
+  },
+  "b_depot_v1": {
+   "file": "sprites/b_depot_v1.png",
+   "w": 66,
+   "h": 64,
+   "ax": 33,
+   "ay": 31,
+   "glow": "sprites/b_depot_v1_glow.png"
+  },
+  "b_depot_v2": {
+   "file": "sprites/b_depot_v2.png",
+   "w": 66,
+   "h": 64,
+   "ax": 33,
+   "ay": 31,
+   "glow": "sprites/b_depot_v2_glow.png"
+  },
+  "b_wrightslodge_v0": {
+   "file": "sprites/b_wrightslodge_v0.png",
+   "w": 68,
+   "h": 49,
+   "ax": 34,
+   "ay": 16,
+   "glow": "sprites/b_wrightslodge_v0_glow.png"
+  },
+  "b_wrightslodge_v1": {
+   "file": "sprites/b_wrightslodge_v1.png",
+   "w": 55,
+   "h": 54,
+   "ax": 28,
+   "ay": 21,
+   "glow": "sprites/b_wrightslodge_v1_glow.png"
+  },
+  "b_wrightslodge_v2": {
+   "file": "sprites/b_wrightslodge_v2.png",
+   "w": 54,
+   "h": 54,
+   "ax": 27,
+   "ay": 21,
+   "glow": "sprites/b_wrightslodge_v2_glow.png"
+  },
+  "b_wrightslodge_v3": {
+   "file": "sprites/b_wrightslodge_v3.png",
+   "w": 56,
+   "h": 54,
+   "ax": 28,
+   "ay": 21,
+   "glow": "sprites/b_wrightslodge_v3_glow.png"
+  },
+  "b_brickworks_v0": {
+   "file": "sprites/b_brickworks_v0.png",
+   "w": 99,
+   "h": 82,
+   "ax": 50,
+   "ay": 33,
+   "glow": "sprites/b_brickworks_v0_glow.png"
+  },
+  "b_brickworks_v1": {
+   "file": "sprites/b_brickworks_v1.png",
+   "w": 78,
+   "h": 82,
+   "ax": 39,
+   "ay": 33,
+   "glow": "sprites/b_brickworks_v1_glow.png"
+  },
+  "b_brickworks_v2": {
+   "file": "sprites/b_brickworks_v2.png",
+   "w": 87,
+   "h": 82,
+   "ax": 44,
+   "ay": 33,
+   "glow": "sprites/b_brickworks_v2_glow.png"
+  },
+  "b_brickworks_v3": {
+   "file": "sprites/b_brickworks_v3.png",
+   "w": 93,
+   "h": 82,
+   "ax": 47,
+   "ay": 33,
+   "glow": "sprites/b_brickworks_v3_glow.png"
+  },
+  "b_academy_v0": {
+   "file": "sprites/b_academy_v0.png",
+   "w": 49,
+   "h": 64,
+   "ax": 25,
+   "ay": 31
+  },
+  "b_spire_v1": {
+   "file": "sprites/b_spire_v1.png",
+   "w": 24,
+   "h": 49,
+   "ax": 12,
+   "ay": 32,
+   "glow": "sprites/b_spire_v1_glow.png"
+  },
+  "b_spire_v2": {
+   "file": "sprites/b_spire_v2.png",
+   "w": 24,
+   "h": 49,
+   "ax": 12,
+   "ay": 32
+  },
+  "b_drakemews_v0": {
+   "file": "sprites/b_drakemews_v0.png",
+   "w": 52,
+   "h": 58,
+   "ax": 26,
+   "ay": 25,
+   "glow": "sprites/b_drakemews_v0_glow.png"
+  },
+  "b_observatory_v0": {
+   "file": "sprites/b_observatory_v0.png",
+   "w": 40,
+   "h": 72,
+   "ax": 20,
+   "ay": 39,
+   "glow": "sprites/b_observatory_v0_glow.png"
+  },
+  "b_ruindelve_v0": {
+   "file": "sprites/b_ruindelve_v0.png",
+   "w": 52,
+   "h": 58,
+   "ax": 26,
+   "ay": 25,
+   "glow": "sprites/b_ruindelve_v0_glow.png"
+  },
+  "b_househall_v0": {
+   "file": "sprites/b_househall_v0.png",
+   "w": 50,
+   "h": 64,
+   "ax": 25,
+   "ay": 31,
+   "glow": "sprites/b_househall_v0_glow.png"
+  },
+  "b_lantern_v0": {
+   "file": "sprites/b_lantern_v0.png",
+   "w": 89,
+   "h": 142,
+   "ax": 45,
+   "ay": 93,
+   "glow": "sprites/b_lantern_v0_glow.png"
+  },
+  "b_greatgate_v0": {
+   "file": "sprites/b_greatgate_v0.png",
+   "w": 77,
+   "h": 98,
+   "ax": 39,
+   "ay": 49,
+   "glow": "sprites/b_greatgate_v0_glow.png"
+  },
+  "b_hallofmarvels_v0": {
+   "file": "sprites/b_hallofmarvels_v0.png",
+   "w": 100,
+   "h": 75,
+   "ax": 50,
+   "ay": 26,
+   "glow": "sprites/b_hallofmarvels_v0_glow.png"
+  },
+  "b_grandacademy_v0": {
+   "file": "sprites/b_grandacademy_v0.png",
+   "w": 95,
+   "h": 87,
+   "ax": 48,
+   "ay": 38,
+   "glow": "sprites/b_grandacademy_v0_glow.png"
   }
  }
 }

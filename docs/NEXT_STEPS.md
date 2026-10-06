@@ -349,6 +349,16 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 84 (the eda-lore swap, batch 2: every other compatible asset)
+
+- **Buildings take looks** (`b_<key>_v0..N-1`, one per building chosen by its tile): 145 looks for 37 buildings from the
+  user's sheets, among them 37 wells, 12 seeps, 10 tide-wells, 11 shrines, 11 boneyards, 6 ossuaries, the forge paintings
+  for the Wyrmfire Forge, the Forge-Temple and the Golem Foundry, the trade houses as depots (DESIGN §4.115).
+- **Props and ground:** 32 trees, 3 autumn trees, 10 glimwood, 108 bushes, 114 mushrooms, 60 glowing caps (their own pool
+  near the nodes), the boar, and new grass, meadow, forest, hills, shore and ruins tiles (`isoTop` for the block sheets).
+- **The twelve house gaps filled:** every people has 48 zone houses of its own. No painting is used twice anywhere.
+- **Still drawn in code:** the list is in HANDOFF.md ("Still drawn in code").
+
 ## Done in iteration 83 (the Brickworks)
 
 - **The brickworks drawing became a building:** the Brickworks, 3×3, at the Village (DESIGN §4.114). It makes 6 goods
@@ -995,10 +1005,9 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The eda-lore swap, batch 2: the service buildings** (HANDOFF.md "The eda-lore swap"; batch 1, the zone houses, done in
-   iteration 82): the 1×1 and 2×2 services from the user's sheets (the shrines, ward towers, lantern towers, castles,
-   graveyards, wells, the founding stakes), then batch 3 the props. Same pipeline and rules: no painting twice, judged old
-   beside new with a citizen. The brickworks (iteration 80) waits for the user to name its building.
+1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
+   vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
+   sheets.
 2. **The paintings redrawn in code, part 2** (DESIGN §4.110, if still wanted after the swap): the craft levels
    2 and 3, the arcane level 2, the market level 3, and the Stake's four stages, each after its painting in the set's style.
 3. **The paintings redrawn in code, part 3**: the cistern, the Carters' Yard, the Ossuary, the Sexton's Chapel, the

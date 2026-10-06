@@ -7,14 +7,14 @@
 // island (index into the sheet's islands) or rect [x, y, w, h], inset (fraction cut from each side, ground), targetWidth /
 // targetHeight, colors, family (ground variants that share a palette and a mean colour), glow ({ minLum, warm, hue, maxBlob: drop lit patches larger than this many pixels } or false),
 // glowSrc, white (background key), anchor ('auto' | 'centre' | { ax, ay }), baseInset (prop: px above the last row),
-// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), maxWidth (the sprite takes targetHeight unless that makes it wider than this; then it takes this width and the height follows: a wide house on a 1×1 tile; iteration 82), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), flap ({ wings: [{ poly, pivot, root, behind }], frames: [[{ rot, sy } per wing]], specks }: a wing beat cut from one painting, each frame written as <name>_1… with frame 0's crop, scale and anchor; iteration 76), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58), off (true: the entry is skipped, its painting having been redrawn in code; iteration 79).
+// recolour ({ hue degrees, sat, light }: glimwood from a birch), flip (mirror left to right: the set faces lower-right), sharpen (unsharp amount, default 0.6), outline (false to skip the dark 1 px outline), aliases [names], checked (true once judged by eye), maxWidth (the sprite takes targetHeight unless that makes it wider than this; then it takes this width and the height follows: a wide house on a 1×1 tile; iteration 82), holes (key enclosed background regions of at least this many source pixels, a coiled body's loop; iteration 74), flap ({ wings: [{ poly, pivot, root, behind }], frames: [[{ rot, sy } per wing]], specks }: a wing beat cut from one painting, each frame written as <name>_1… with frame 0's crop, scale and anchor; iteration 76), hop (a creature's `_0` painting also serves as its `_1` frame, a pixel higher: a gait bob; iteration 58), isoTop (ground: the painting is an isometric block whose top face is sampled onto the tile; { shrink, y } trims the edges and lifts the face, iteration 83), off (true: the entry is skipped, its painting having been redrawn in code; iteration 79).
 // A vehicle (the donkey carts, iteration 57) is scaled by scale (a fraction of the painting's pixels, set per sheet so every
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
 // stop the background key.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
-import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
+import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, isoTopDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
 /** The image mirrored left to right. */
 function mirror(img) {
@@ -65,6 +65,10 @@ for (const e of sources.sprites) {
   if (!e.rect && e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
   if (kind !== 'ground') img = crop(e.islands === 'keep' ? img : keepLargest(img)).img;
   if (e.flip) img = mirror(img); // a painting whose front is on its left face is mirrored, so the set faces lower-right with the procedural buildings (iteration 56)
+  if (kind === 'ground' && e.isoTop) { // an isometric block (iteration 83): its top face is already a 2:1 diamond, sampled straight onto the tile
+    results.push({ e, kind, img: isoTopDiamond(img, e.isoTop) });
+    continue;
+  }
   if (kind === 'ground') {
     const inset = e.inset ?? 0.12;
     const ix = Math.round(img.w * inset), iy = Math.round(img.h * inset);
