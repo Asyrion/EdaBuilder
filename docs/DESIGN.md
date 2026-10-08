@@ -4976,6 +4976,54 @@ plain HTML and JS page):
     keys a dirty tree by its files' contents when it starts, but each run reads the files when it starts.
 - The Tallowkin's floor is 10.6 % at the cap, not met, as since iteration 64.
 
+### 4.119 The dev board, part 2: the tracker and Send to Claude (iteration 88)
+
+Tooling, NEXT_STEPS item 1 (the user's ask of 2026-10-08). The board's project side: what is planned and done, GitHub's
+milestones and issues, the balance results, and a way to hand any task to Claude. No sim file changed, so the control
+seed is the balance check (rule 4).
+
+**The tracker** (`tools/devboard/tracker.ts`, read-only):
+- **Next steps tab:** the open list of `docs/NEXT_STEPS.md` in order, and every "Done in iteration NN", newest first. A
+  `§4.NN` chip opens that DESIGN section (`designIndex` lists the `### 4.NN` headings in the file's own order; §4.28
+  sits after §4.43, so the index keeps the file's order and the self-test checks each is found once).
+- **GitHub tab** (`github.ts`): milestones with their progress, issues filtered by state, milestone and label; new, edit,
+  comment, close, a new milestone and closing one. Through the logged-in `gh api`, the repository from `origin`, cached
+  for 12 s; on an error the last good data stays, marked stale, and a missing `gh` gives a line saying how to install it.
+- **Balance tab:** each `balance/cache` file as a chart of mean folk per people with ±2·SE whiskers (the seed means) and a
+  table per seed and draw (folk, last gate and its day). The file whose sim key is the working tree's is marked "this
+  tree" (`simKeyOf` from `scripts/tableStats.ts`).
+
+**Send to Claude** (`session.ts`, a port of the Azyrion Tamer board's): a dialog with the task (editable) and three ways out:
+- **Claude Code on this PC:** the `claude-cli://open` link with the checkout as `cwd` when the CLI's handler is
+  registered (Windows registry); else a new console running `claude "<task>"`; else the task goes to the clipboard with a
+  line on installing the CLI. A task over the link's 5,000 characters, or for a `.cmd` shim, goes to a file in the temp
+  folder and the prompt points at it.
+- **GitHub issue:** filed with the label `dev-board` (made once), for a cloud session to start from.
+- **Copy.**
+
+It is offered on every next-steps item (the repo's own first message: "Read CLAUDE.md and docs/HANDOFF.md, then continue
+with the next item …"), every issue, and every content card and editor (the entry's file, art status, checks and JSON). A
+send makes no commits.
+
+**The "New element" composer:** a kind (building, road, edict, event, quest, creature, other), a name, the idea, numbers,
+peoples and whether art is wanted, written as a task in the repo's process. For a building, "Create the entry now" saves
+it to `buildings.json` from the Ley Spire's data first, so the task says the data exists and what still needs code and
+art; its card shows "needs art".
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests, `npm run build`; the control seed (`npx tsx scripts/balance.ts 42 150`) equal to
+  main's: 2,442 folk, Free City on day 124, on both trees. The unit tests: 545 of 545.
+- `npm run devboard:selftest`: the NEXT_STEPS parser on a fixture and the real file, every DESIGN section indexed once,
+  the four balance files read with four peoples each; `toClaude` (terminal route with its task file, link route with a
+  long task's file pointer) and `toIssue` (the label) against a fake `gh`, `claude`, terminal and opener first on PATH;
+  the guards on every new POST route.
+- `scripts/playtest88.mjs` on the board run with the fakes: 10 open items and 85 done iterations; a DESIGN section opens;
+  a send reaches the fake terminal with the first message, and an issue is filed with its label; the GitHub tab, the
+  four balance charts and "this tree"; a card's task names its file; the composer creates a building that shows "needs
+  art", and its delete leaves `buildings.json` byte for byte as it was; no page errors.
+- Not checked here: the `claude-cli://` link and the console on Windows. The code path is the Tamer board's, which works
+  on the user's PC.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6243,3 +6291,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Content is data (iteration 87):* the buildings, roads, milestones and relic sets live in `src/data/content/*.json`, so the
   dev board (and a hand) can add and edit them without touching code; the rules stay in code. Text that sits beside logic
   (edicts, events, quests) moves later with its logic kept by id. The bar proves a pure move changes nothing.
+- *Send to Claude makes no commits (iteration 88):* the board hands a task to a Claude session (on the PC or as an issue)
+  and stops there; the session plans, verifies and ships by the standing process. The tracker only reads the docs and the
+  balance cache; the docs stay written by the iterations.

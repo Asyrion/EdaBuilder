@@ -19,6 +19,9 @@ import { BadRequest, Conflict, Content } from './content';
 import { CODE_KINDS, KINDS } from './kinds';
 import { hints, unions } from './schema';
 import type { Json } from './jsonspan';
+import { GhError, githubState, issueComment, issueWrite, milestoneWrite } from './github';
+import { toClaude, toIssue } from './session';
+import { balance, designIndex, designSection, nextSteps } from './tracker';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2), opt = (k: string, d: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -109,7 +112,7 @@ function body(req: IncomingMessage): Promise<Record<string, Json>> {
   });
 }
 
-const STATIC: Record<string, string> = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css' };
+const STATIC: Record<string, string> = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/project.js': 'project.js', '/style.css': 'style.css' };
 const TYPES: Record<string, string> = { html: 'text/html', js: 'text/javascript', css: 'text/css' };
 
 /** A sprite by name: the imported PNG (public/art/sprites.json names its file; variants may share one) first, else the one
@@ -155,6 +158,17 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       }
       return send(res, 200, { sig: `${content.signature()}.${artSig()}`, kinds, code, errors, unions: unions(ROOT), hints: hints(ROOT), art: await artStatus() });
     }
+    if (path === '/api/tracker') {
+      const ns = nextSteps(readFileSync(join(ROOT, 'docs/NEXT_STEPS.md'), 'utf8'));
+      const design = designIndex(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8')).map(({ id, title, iteration }) => ({ id, title, iteration }));
+      return send(res, 200, { ...ns, design, balance: balance(ROOT) });
+    }
+    const dm = /^\/api\/design\/(4\.\d+)$/.exec(path);
+    if (dm) {
+      const text = designSection(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8'), dm[1]);
+      return text ? send(res, 200, { id: dm[1], text }) : send(res, 404, { error: `no section ${dm[1]}` });
+    }
+    if (path === '/api/github') return send(res, 200, githubState(ROOT, url.searchParams.get('force') === '1'));
     if (path === '/api/refs') return send(res, 200, content.references(url.searchParams.get('kind') ?? '', url.searchParams.get('id') ?? ''));
     return send(res, 404, { error: 'not found' });
   }
@@ -169,6 +183,17 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     '/api/undo': () => content.undo(num('i')),
     '/api/validate': () => null,
   };
+  // the project side (iteration 88): GitHub and Send to Claude write nothing in the checkout and need no check after
+  const project: Record<string, () => unknown> = {
+    '/api/github/issue': () => issueWrite(ROOT, d as Record<string, unknown>),
+    '/api/github/comment': () => issueComment(ROOT, num('number'), str('body'), !!d.close),
+    '/api/github/milestone': () => milestoneWrite(ROOT, d as Record<string, unknown>),
+    '/api/send': () => (str('to') === 'issue' ? toIssue(ROOT, str('title'), str('text')) : toClaude(ROOT, str('text'), str('id'))),
+  };
+  if (project[path]) {
+    try { return send(res, 200, { ok: true, result: project[path]() }); }
+    catch (e) { return send(res, e instanceof GhError ? 502 : 400, { error: (e as Error).message }); }
+  }
   const fn = routes[path];
   if (!fn) return send(res, 404, { error: 'not found' });
   const result = fn();

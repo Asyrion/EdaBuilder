@@ -89,3 +89,22 @@ img.spr.big { height: 96px; }
 .looks figure { margin: 0; text-align: center; font-size: 11px; }
 .small { font-size: 12.5px; }
 .side ul { padding-left: 14px; }
+
+.grid.one { grid-template-columns: 1fr; }
+.card.wide { grid-column: span 2; }
+@media (max-width: 760px) { .card.wide { grid-column: auto; } }
+.n-badge { display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 9px; background: var(--chip); font-size: 12px; text-align: center; }
+a.chip { cursor: pointer; color: var(--accent); text-decoration: none; }
+details.done { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; margin: 4px 0; }
+details.done summary { cursor: pointer; list-style: revert; }
+details.done ul { margin: 6px 0; padding-left: 18px; font-size: 13px; }
+pre.design { white-space: pre-wrap; background: var(--code); padding: 12px; border-radius: 8px; max-height: 65vh; overflow-y: auto; font-size: 12.5px; }
+.bar { height: 6px; background: var(--chip); border-radius: 3px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.clip { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+svg.chart { width: 100%; max-width: 520px; height: auto; }
+svg.chart .ax, svg.chart .val { font: 12px system-ui, sans-serif; fill: var(--dim); }
+svg.chart .val { fill: var(--text); }
+svg.chart .bar-mark { fill: var(--accent); }
+svg.chart .whisker { stroke: var(--text); stroke-width: 2; stroke-linecap: round; opacity: .55; }
+.scroll { overflow-x: auto; }

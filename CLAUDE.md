@@ -49,7 +49,10 @@ answers (`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8771/` gives 2
 (`dev-board` in `.claude/launch.json`); never a second instance on another port. New content goes into
 `src/data/content/` (not code), and a new kind of content gets its entry in `tools/devboard/kinds.ts` in the same
 iteration. `npm run devboard:selftest` must pass when the board changes. The generic recipe is the skill
-`.claude/skills/game-dev-board/SKILL.md`. Its next parts are NEXT_STEPS items 1 and 2. The Tripo Studio and Aseprite
+`.claude/skills/game-dev-board/SKILL.md`. Its project tabs (`tracker.ts`, `github.ts`, `session.ts`, `public/project.js`)
+show NEXT_STEPS, GitHub and the balance cache, and "Send to Claude" hands a task to Claude Code on the user's PC or to a
+GitHub issue labelled `dev-board`; a send makes no commits, and a session started from one follows this process as any
+other. Its next part is NEXT_STEPS item 1. The Tripo Studio and Aseprite
 asset pipelines are still to be written into the docs; the board's pipeline registry (part 3) takes them as they come.
 
 ## Session handoff

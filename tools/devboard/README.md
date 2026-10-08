@@ -31,6 +31,16 @@ second one on another port.
   The code scan matches the key as any quoted string, so a short common key can be refused by an unrelated match; that
   errs on the side of keeping data the code needs.
 
+- **Project tabs** (DESIGN §4.119): **Next steps** (`docs/NEXT_STEPS.md`'s open list and the iterations done; a `§4.NN`
+  chip opens that DESIGN section), **GitHub** (milestones and issues through the logged-in `gh api`: add, edit, comment,
+  close, new and closed milestones; cached 12 s, stale data kept offline) and **Balance** (`balance/cache` as a chart of
+  mean folk ±2·SE per people, and a table per seed; the file of the working tree's sim key is marked "this tree").
+- **Send to Claude** on every next-steps item, issue, card and editor, and from **New element** (the composer): the task
+  (editable) goes to **Claude Code on this PC** (the `claude-cli://` link when the CLI's handler is registered, else a new
+  console running `claude "<task>"`; a long task goes to a file in the temp folder and the prompt points at it), to a
+  **GitHub issue** labelled `dev-board`, or to the clipboard. A send makes no commits. Without the CLI, the page copies
+  the task and says how to install it.
+
 Don't edit content on the board while a balance bar runs from the same checkout: each run reads the files when it
 starts, so an edit mid-bar leaks into the runs (DESIGN §4.118).
 
@@ -52,15 +62,17 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
 | `kinds.ts`, `hints.json`, `schema.ts` | what is shown and how its fields are edited |
 | `art.ts` | each building's looks and art status; the sprites drawn in code as PNG |
 | `validate.ts` | `validateContent` and the sprite rule, one `VALIDATE_JSON` line |
+| `tracker.ts` | NEXT_STEPS, the DESIGN index and sections, the balance cache (read-only) |
+| `github.ts` | milestones, issues, labels and their writes through `gh api` |
+| `session.ts` | Send to Claude: the `claude-cli://` link, a console, or a GitHub issue |
 | `selftest.ts` | edits every entry on a temp copy and restores it byte for byte; refusals; HTTP guards |
-| `public/` | the page (plain HTML, CSS and JS, no build step) |
+| `public/` | the page (plain HTML, CSS and JS, no build step; `project.js` the project tabs, the send dialog and the composer) |
 
-## Next (NEXT_STEPS items 1 and 2)
+## Next (NEXT_STEPS item 1)
 
-- **Part 2:**
-  - the tracker: NEXT_STEPS, GitHub milestones and issues, the balance cache;
-  - Send to Claude: Claude Code on the user's PC (the `claude-cli://` link or a new terminal), or a GitHub issue for a
-    cloud session.
+`ROADMAP.md` holds the board's roadmap (part 3, then 14 brainstormed ideas in three phases), and `NEXT_STEPS.md` the
+proposed order.
+
 - **Part 3:**
   - asset prompts: a brief, a draft from the house art rules, "Refine with Claude" (`claude -p`), kept in `art/prompts/`;
   - a pipeline registry: the paintings importer runs from the board. The Tripo Studio and Aseprite pipelines start as

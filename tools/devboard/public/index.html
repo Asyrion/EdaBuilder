@@ -12,6 +12,7 @@
   <h1>EdaBuilder <span>dev board</span></h1>
   <input id="q" type="search" placeholder="Search  ( / )" autocomplete="off">
   <button id="new" class="btn">New</button>
+  <button class="btn ghost" data-compose title="Write a task for a new game element and send it to Claude">New element</button>
   <span id="vchip" class="chip">checking…</span>
   <details id="undo"><summary class="btn ghost">Undo</summary><div id="undolist"></div></details>
   <span id="fresh" class="dim"></span>
@@ -21,5 +22,6 @@
 <div id="modal" hidden></div>
 <div id="toasts"></div>
 <script src="/app.js"></script>
+<script src="/project.js"></script>
 </body>
 </html>
