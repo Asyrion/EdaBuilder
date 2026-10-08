@@ -5084,7 +5084,49 @@ off.
 - The importer's panel warns that the balance bar must not run while an import or an entry save does (§4.118).
 
 **Verified:**
-BAR_PLACEHOLDER
+- `npx tsc --noEmit -p .`, the unit tests (88 files, 550 tests; `tests/iteration89.test.ts`: the text check over the
+  real files, a gap and a stray caught, the definitions carry their text; the yardstick and the draft's rules), and
+  `npm run build`.
+- **The text dump:** every text field of the four modules, before and after the move, byte for byte identical.
+- **In the game:** the Edicts panel of this build against main's build, for all four peoples at the last milestone:
+  the same text, character for character (`scripts/playtest89.mjs`, `GAME=1`).
+- `npm run devboard:selftest` (902 entries edited and restored, nine kinds):
+  - each text kind edited and restored byte for byte, with new, delete and rename refused;
+  - the text check over the real files, with a missing entry and a stray caught;
+  - a prompt written, edited, refused when stale, and undone (undo of a new prompt removes it); paths outside refused;
+  - paintings saved by a clean name and never overwritten, with non-PNG and paths outside `inspirations/` refused;
+  - Refine against a fake `claude -p`: the task on stdin, the answer parsed;
+  - the importer run on a copy with one painting and one entry: islands listed, the sprite in the manifest, a second
+    run refused while one runs;
+  - the guards on every new POST route.
+- `scripts/playtest89.mjs` on the board, with a fake `claude`, on the Quarry:
+  - a brief, the draft holding the rules, Refine (the prompt and note saved to `art/prompts/b_quarry.json`, read back
+    on reopening);
+  - a painting dropped (saved into `inspirations/board/`), island 0 clicked, the entry added, the import run (79 s,
+    done), `b_quarry` in the manifest and on the card, marked checked;
+  - the Tripo hand-off's task (the prompt, "not written into EdaBuilder's docs yet");
+  - the Art & pipelines tab;
+  - the Edicts tab text only (no Duplicate, no New, no Delete);
+  - an edict's name edited on the board, read back by the game's code in a fresh process, then undone with the file
+    clean;
+  - no page errors.
+  - The test art was then reverted.
+- **Not checked here:** `claude -p` with the user's login, and the Windows file picker. The fake proves the call, the
+  stdin and the parsing.
+
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): 132 runs a side, main's from the cache.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,067 | 2,067 | +0 (0.0 %) | 205 (9.9 %) | met | identical |
+| Grimmen | 6 × 4 | 1,354 | 1,354 | +0 (0.0 %) | 126 (9.3 %) | met | identical |
+| Veshari | 6 × 3 | 2,232 | 2,232 | +0 (0.0 %) | 181 (8.1 %) | met | identical |
+| Tallowkin | 6 × 8 | 1,944 | 1,944 | +0 (0.0 %) | 206 (10.6 %) | **not met: at the cap of 8 draws** | identical |
+| all | | 7,596 | 7,596 | +0 (0.0 %) | 365 | | identical |
+
+- **All 132 runs match main's:** folk, gates, treasury and depot day, run for run. The sim key changed (the code reads
+  its text from JSON) and nothing the simulation does did.
+- The Tallowkin's floor is 10.6 % at the cap, not met, as since iteration 64.
 
 ## 7. Milestone plan
 

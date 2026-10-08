@@ -31,7 +31,7 @@ const ArtUI = (() => {
       <pre class="log">${esc(run.log.slice(-12).join("\n"))}</pre>${run.state === "done" ? `<a class="btn small ghost" target="_blank" href="/shot/import_check.png?t=${run.ended}">Check sheet</a>` : ""}`;
   }
   function renderTab() {
-    if (!P) { load(); return '<p class="dim">Reading the pipelines…</p>'; }
+    if (!P || !L) { load(); return '<p class="dim">Reading the pipelines…</p>'; }
     const pipes = P.pipelines.map(p => `<div class="card"><h3>${esc(p.name)} <span class="chip ${p.runs === "board" ? "ok" : "warn"}">${p.runs === "board" ? "runs here" : "hand-off to Claude"}</span></h3>
       <div class="small">${esc(p.for)}</div>
       ${p.steps ? `<ol class="small">${p.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>` : `<p class="small dim">Not written into the docs yet: its button on a sprite's Art panel writes the task, and Claude works the pipeline out with you and writes it into docs/HANDOFF.md. Then it gets its steps here (tools/devboard/pipelines.json).</p>`}
