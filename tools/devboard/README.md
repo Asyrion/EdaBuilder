@@ -57,6 +57,9 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
 
 ## Next (NEXT_STEPS items 1 and 2)
 
+`ROADMAP.md` holds the board's roadmap (parts 2 and 3, then 14 brainstormed ideas in three phases), and `NEXT_STEPS.md`
+the proposed order.
+
 - **Part 2:**
   - the tracker: NEXT_STEPS, GitHub milestones and issues, the balance cache;
   - Send to Claude: Claude Code on the user's PC (the `claude-cli://` link or a new terminal), or a GitHub issue for a
