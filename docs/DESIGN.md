@@ -4956,7 +4956,25 @@ plain HTML and JS page):
   - a duplicated building shows "needs art" and its one problem, and its delete leaves the file clean;
   - no page errors.
 
-BAR_PLACEHOLDER
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): 132 runs a side, main's from the cache.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,067 | 2,067 | +0 (0.0 %) | 205 (9.9 %) | met | identical |
+| Grimmen | 6 × 4 | 1,354 | 1,354 | +0 (0.0 %) | 126 (9.3 %) | met | identical |
+| Veshari | 6 × 3 | 2,232 | 2,232 | +0 (0.0 %) | 181 (8.1 %) | met | identical |
+| Tallowkin | 6 × 8 | 1,944 | 1,944 | +0 (0.0 %) | 206 (10.6 %) | **not met: at the cap of 8 draws** | identical |
+| all | | 7,596 | 7,596 | +0 (0.0 %) | 365 | | identical |
+
+- **Every run matches main, folk for folk.** The gates, depot days and road and caravan crowns match too: the move
+  changed nothing the simulation reads.
+- **The first bar had two Grimmen runs differ** (seed 42, draws 0 and 1: 1,385 and 1,757 against main's 1,512 and 1,386).
+  - **The cause:** the board's browser test edited `buildings.json` while those runs were starting (a cost changed and
+    undone, a building made and deleted), and the runs read the edited file.
+  - **The fix:** run fresh on both trees, they gave main's numbers exactly. The two cached runs were dropped and run again.
+  - **The lesson:** don't edit the content (on the board or by hand) while a bar runs from the same checkout. The bar
+    keys a dirty tree by its files' contents when it starts, but each run reads the files when it starts.
+- The Tallowkin's floor is 10.6 % at the cap, not met, as since iteration 64.
 
 ## 7. Milestone plan
 

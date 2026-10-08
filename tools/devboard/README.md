@@ -31,6 +31,9 @@ second one on another port.
   The code scan matches the key as any quoted string, so a short common key can be refused by an unrelated match; that
   errs on the side of keeping data the code needs.
 
+Don't edit content on the board while a balance bar runs from the same checkout: each run reads the files when it
+starts, so an edit mid-bar leaks into the runs (DESIGN §4.118).
+
 A new building made on the board is data. A sprite (drawn in code or imported from a painting) and any new rule still
 need work outside the board; the card shows "needs art" until it has a sprite.
 

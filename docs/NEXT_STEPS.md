@@ -353,7 +353,7 @@
 
 - **The content is data:** the 82 buildings, 4 roads, 9 milestones and 4 relic sets moved from TypeScript arrays to
   `src/data/content/*.json`. The code reads them with the same types, so nothing else changed: the build menus of all four
-  peoples match main item for item, and the bar's runs match main's (DESIGN §4.118). `validateContent` checks the files.
+  peoples match main item for item, and all 132 of the bar's runs match main's folk for folk (DESIGN §4.118). `validateContent` checks the files.
 - **The dev board** (`npm run devboard`, http://127.0.0.1:8771): a tab per kind with each building's sprites (imported or
   drawn in code) and its art status; forms that save only what changed (a one-line diff), refuse a stale edit and can be
   undone; delete and rename refused while a key is still used; `validateContent` and the sprite rule after every save. A
