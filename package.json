@@ -10,7 +10,9 @@
     "test": "vitest run",
     "headless": "tsx scripts/headless.ts",
     "art": "node scripts/importSprites.mjs",
-    "art:check": "node scripts/importSprites.mjs --check"
+    "art:check": "node scripts/importSprites.mjs --check",
+    "devboard": "tsx tools/devboard/server.ts",
+    "devboard:selftest": "tsx tools/devboard/selftest.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

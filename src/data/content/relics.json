@@ -1,0 +1,26 @@
+[
+  {
+    "id": "lanterncores",
+    "name": "The Lantern-Cores of Vell",
+    "pieces": ["the first core", "the second core", "the third core"],
+    "bonus": "ley stores hold 60 more mana"
+  },
+  {
+    "id": "ninehouses",
+    "name": "The Seals of the Nine Houses",
+    "pieces": ["the seal of Harrow", "the seal of Vellane", "the seal of Oss"],
+    "bonus": "happiness +3 in every home"
+  },
+  {
+    "id": "saltspoons",
+    "name": "The Salt Spoons of Morrow",
+    "pieces": ["the long spoon", "the short spoon", "the broken spoon"],
+    "bonus": "deathcare quiets 10% more dead"
+  },
+  {
+    "id": "concordcharts",
+    "name": "The Concord Charts",
+    "pieces": ["the river chart", "the hill chart", "the star chart"],
+    "bonus": "sectors beyond the Charter cost a fifth less"
+  }
+]

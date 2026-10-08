@@ -4879,6 +4879,85 @@ cache when the background job hit its two-hour limit.
 - **The Tallowkin's floor** is 10.7 % at the cap, not met, as since iteration 64.
 - **The marsh's Grimmen loss of iteration 85 stands:** main's Grimmen row here is iteration 85's (1,371 on four draws a seed).
 
+### 4.118 The dev board, part 1: content as data (iteration 87)
+
+Tooling at the user's ask (2026-10-08): a local dev webpage, like the user's Azyrion Tamer board, to add and edit game
+elements, hand tasks to Claude, track the work and, later, write asset prompts and start the asset pipelines. Three
+iterations (NEXT_STEPS items 1 and 2 hold the other two). It goes ahead of the milestones without reordering them. The
+recipe is the `game-dev-board` skill (`.claude/skills/game-dev-board/SKILL.md`).
+
+**Content as data:**
+- The buildings (82), roads (4), milestones (9) and relic sets (4) moved from TypeScript arrays to `src/data/content/`
+  (`buildings.json`, `roads.json`, `milestones.json`, `relics.json`). The zone houses' `Z(...)` helper calls are written
+  out in full. `zone` and a road's `type` are stored by name (`"hearth"`, `"cobble"`) and mapped to the enums on load
+  (`ZONE_OF`, `ROAD_TYPE_OF` in `catalog.ts`).
+- `catalog.ts` and `relics.ts` export the same `BUILDINGS`, `BUILDING_BY_KEY`, `ROADS`, `MILESTONES` and `RELIC_SETS`,
+  with the same types, so no caller changed. The loaded values were compared with the old arrays: identical, key order
+  included.
+- The folder is under `src/data`, so the bar's sim key (`SIM_DIRS`) covers every content edit.
+- `src/sim/contentCheck.ts`'s `validateContent` checks:
+  - keys: unique, lower case;
+  - categories, services, peoples and relic sets: known;
+  - `unlock`: a milestone, or `NEVER` (99: a guild hall comes with its charter);
+  - every milestone `unlocks` entry: a building, road, zone or people, or the `lantern_wonder` slot each people's swap
+    table fills;
+  - milestones: rising folk;
+  - zone buildings: three capacities.
+- Edicts, events, quests and guilds keep their text beside their logic (`costPerDay`, `when`, `apply`, `done`). They stay
+  in code; part 3 moves their text to JSON and keeps the logic by id.
+
+**The board** (`tools/devboard/`, `npm run devboard`, http://127.0.0.1:8771; Node's standard library through tsx, a
+plain HTML and JS page):
+- **Tabs:** Buildings, Roads, Milestones and Relic sets are editable; Edicts, Events, Quests and Guilds are read-only,
+  scanned from their TypeScript (id, title, text, line).
+- **Building cards:**
+  - the looks the game would show, pixelated: the zone houses by level and variant, others `b_<key>` and its `_vN`.
+    Imported sprites come from `public/art/sprites.json`; the others are drawn by the painter (`art.ts` renders them to
+    PNG in the temp folder);
+  - an art status: `needs art`, `N imported` or `drawn in code`, the `art/sources.json` entries, unchecked ones, and
+    paintings missing from `inspirations/`.
+- **Forms** are built from the values, with choices from the string unions in `src/` and `tools/devboard/hints.json`.
+- **Safe writes:**
+  - a save rewrites only the changed span of the JSON (`jsonspan.ts`), so a one-number edit is a one-line diff;
+  - a diff preview comes first;
+  - a stale edit is refused (409);
+  - undo restores from backups outside the repository, each entry by a stable id;
+  - files are replaced atomically;
+  - delete and rename are refused while a key is used in the content or quoted in `src/`.
+- **After every save:** `validate.ts` runs `validateContent` and the rule of `tests/sprites.test.ts` (every non-zone
+  building has a `b_<key>` drawn in code) in a fresh process. A new building shows "needs art" until it has one.
+- **The guards:** 127.0.0.1 only, the Host header checked, writes need JSON and an `X-Dev-Board` header.
+
+**Later (the plan of iteration 87):**
+- Part 2 (NEXT_STEPS 1): the tracker (NEXT_STEPS, GitHub milestones and issues, the balance cache) and Send to Claude
+  (Claude Code on the user's PC, or a GitHub issue).
+- Part 3 (NEXT_STEPS 2): the prompt studio with "Refine with Claude", and the pipelines registry. The paintings importer
+  runs from the board. Tripo Studio and Aseprite start as hand-offs and become buttons once their pipelines are written
+  into the docs (the user's plan).
+
+**Verified:**
+- `npx tsc --noEmit -p .` (now including `tools/`), the unit tests with `tests/iteration87.test.ts` (the content is
+  valid; the enum mapping; a duplicate key, an unknown unlock, a zone house without levels and an unknown milestone unlock
+  are caught), and `npm run build`.
+- `scripts/playtest87.mjs`:
+  - this build's build menu against main's, every tab, for all four peoples at the last milestone: 84, 86, 85 and 86
+    tools, identical in name, cost and lock;
+  - a Ley Spire placed by the founding stake, with its sprite;
+  - no errors.
+- `npm run devboard:selftest`:
+  - each of the 95 entries edited on a temp copy (one line changed) and restored byte for byte;
+  - duplicate then delete leaves each file as it was;
+  - the refusals (a used key, a stale hash, an existing key, a bad key, a path outside the content folder, a foreign
+    Host, writes without the header);
+  - undo restores.
+- Playwright on the running board:
+  - every form read back untouched equals its data (95 of 95);
+  - a cost edit is a one-line diff, and undo restores the file;
+  - a duplicated building shows "needs art" and its one problem, and its delete leaves the file clean;
+  - no page errors.
+
+BAR_PLACEHOLDER
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6143,3 +6222,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *A seasonal creature on its own rng (iteration 86):* the marsh-wyrms roll on a side stream keyed by the seed and the day,
   as the weather does, so adding them moves the world only through what they do. A wyrm is answered with buildings the
   player already has reasons to build (the Veshari Hall, the Quay), and the Quay's answer pays: a tide egg.
+- *Content is data (iteration 87):* the buildings, roads, milestones and relic sets live in `src/data/content/*.json`, so the
+  dev board (and a hand) can add and edit them without touching code; the rules stay in code. Text that sits beside logic
+  (edicts, events, quests) moves later with its logic kept by id. The bar proves a pure move changes nothing.
