@@ -108,3 +108,15 @@ svg.chart .val { fill: var(--text); }
 svg.chart .bar-mark { fill: var(--accent); }
 svg.chart .whisker { stroke: var(--text); stroke-width: 2; stroke-linecap: round; opacity: .55; }
 .scroll { overflow-x: auto; }
+/* the art side (iteration 89) */
+.dialog.wide { width: min(1100px, 100%); }
+pre.log { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 11px; max-height: 180px; overflow: auto; white-space: pre-wrap; }
+.sheet { position: relative; display: inline-block; max-width: 100%; margin-bottom: 6px; }
+.sheet img { display: block; max-width: min(640px, 100%); image-rendering: pixelated; background: #fff; border-radius: 4px; }
+.sheet .box { position: absolute; border: 2px solid var(--accent); border-radius: 3px; cursor: pointer; box-sizing: border-box; }
+.sheet .box span { position: absolute; top: -2px; left: -2px; background: var(--accent); color: #fff; font-size: 10px; padding: 0 3px; border-radius: 3px 0 3px 0; }
+.sheet .box:hover, .sheet .box.on { border-color: var(--ok, #2e9d5b); background: color-mix(in srgb, var(--ok, #2e9d5b) 18%, transparent); }
+.sheet .box.on span { background: var(--ok, #2e9d5b); }
+.drop { margin-top: 6px; padding: 10px; border: 2px dashed var(--line); border-radius: 8px; font-size: 12px; }
+.entry { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.entry label { display: inline-flex; gap: 4px; align-items: center; }

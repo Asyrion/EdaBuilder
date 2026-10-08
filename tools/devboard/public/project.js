@@ -211,5 +211,5 @@ const ProjectUI = (() => {
     if (k) { gFilter[k] = ev.target.value; render("github", true); }
   });
 
-  return { handles, render, tabsHtml };
+  return { handles, render, tabsHtml, sendDialog };
 })();

@@ -19,6 +19,8 @@ export interface KindDef {
   summary: string[];
   /** Cards show the entry's sprite and art status (buildings). */
   art?: boolean;
+  /** Text whose logic stays in code by id (iteration 89): entries are edited, never created or deleted on the board. */
+  textOnly?: string;
   group: string;
 }
 
@@ -31,14 +33,20 @@ export const KINDS: Record<string, KindDef> = {
     summary: ['pop', 'grant', 'unlocks'] },
   relics: { title: 'Relic sets', group: 'Content', sources: [{ file: 'src/data/content/relics.json' }], shape: 'list', idKey: 'id', labelKey: 'name',
     summary: ['pieces', 'bonus'] },
+  edicts: { title: 'Edicts', group: 'Text', sources: [{ file: 'src/data/content/text/edicts.json' }], shape: 'map', labelKey: 'name',
+    summary: ['desc', 'flavor'], textOnly: 'src/sim/edicts.ts' },
+  events: { title: 'Events', group: 'Text', sources: [{ file: 'src/data/content/text/events.json' }], shape: 'map', labelKey: 'title',
+    summary: ['text'], textOnly: 'src/sim/events.ts' },
+  quests: { title: 'Quests', group: 'Text', sources: [{ file: 'src/data/content/text/quests.json' }], shape: 'map', labelKey: 'title',
+    summary: ['chapter', 'hint'], textOnly: 'src/data/quests.ts' },
+  guilds: { title: 'Guilds', group: 'Text', sources: [{ file: 'src/data/content/text/guilds.json' }], shape: 'map', labelKey: 'name',
+    summary: ['seal', 'desc', 'boon', 'strike'], textOnly: 'src/sim/guilds.ts' },
+  // by position: a sprite's switched-off entries (`off: true`) stay beside its live one, so names repeat
+  artsources: { title: 'Art sources', group: 'Art', sources: [{ file: 'art/sources.json', path: ['sprites'] }], shape: 'list',
+    labelKey: 'name', summary: ['src', 'island', 'kind', 'targetHeight', 'checked'] },
 };
 
-/** Content still written in code (text and logic together): shown read-only, scanned from the TypeScript (iteration 89 moves
-    their text to JSON). `id` and `title` name the fields that start an entry and give its title; `text` its description. */
+/** Content still written in code (text and logic together): shown read-only, scanned from the TypeScript. Empty since
+    iteration 89 moved the text of edicts, events, quests and guilds to JSON; kept for any kind that comes later. `id` and `title` name the fields that start an entry and give its title; `text` its description. */
 export interface CodeKind { title: string; file: string; id: string; title2: string; text: string[] }
-export const CODE_KINDS: Record<string, CodeKind> = {
-  edicts: { title: 'Edicts', file: 'src/sim/edicts.ts', id: 'key', title2: 'name', text: ['desc'] },
-  events: { title: 'Events', file: 'src/sim/events.ts', id: 'id', title2: 'title', text: ['text'] },
-  quests: { title: 'Quests', file: 'src/data/quests.ts', id: 'id', title2: 'title', text: ['hint'] },
-  guilds: { title: 'Guilds', file: 'src/sim/guilds.ts', id: 'id', title2: 'name', text: ['desc', 'boon'] },
-};
+export const CODE_KINDS: Record<string, CodeKind> = {};

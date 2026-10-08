@@ -15,7 +15,9 @@ second one on another port.
 ## What it does
 
 - **Tabs:** Buildings, Roads, Milestones and Relic sets (`src/data/content/*.json`) are editable. Edicts, Events, Quests
-  and Guilds are read-only, scanned from their TypeScript, until part 3 moves their text to JSON.
+  and Guilds (`src/data/content/text/*.json`, iteration 89) are **text only**: their wording is edited here, but each
+  one's logic is in code by id, so a new one, a delete or a rename is refused (Send to Claude). Art sources
+  (`art/sources.json`) are edited by position, since a sprite's switched-off entries keep its name.
 - **Building cards:**
   - the looks the game would show: the zone houses by level and variant, others `b_<key>` and its `_vN` variants. The
     imported ones (`public/art/sprites.json`) and the ones the painter draws in code (`art.ts` renders them to the temp
@@ -66,14 +68,35 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
 | `github.ts` | milestones, issues, labels and their writes through `gh api` |
 | `session.ts` | Send to Claude: the `claude-cli://` link, a console, or a GitHub issue |
 | `selftest.ts` | edits every entry on a temp copy and restores it byte for byte; refusals; HTTP guards |
-| `public/` | the page (plain HTML, CSS and JS, no build step; `project.js` the project tabs, the send dialog and the composer) |
+| `textCheck.ts` | the text kinds: every text the code reads is there, and every text is read |
+| `prompts.ts` | the prompt studio: house rules, yardstick, draft, lore, Refine with Claude (`claude -p` jobs) |
+| `pipelines.ts`, `pipelines.json` | the pipelines registry; the paintings importer's upload, islands and runs; hand-off tasks |
+| `public/` | the page (plain HTML, CSS and JS, no build step; `project.js` the project tabs, the send dialog and the composer; `art.js` the Art panel and the Art & pipelines tab) |
 
-## Next (NEXT_STEPS item 1)
+## The art side (iteration 89, DESIGN 4.120)
 
-`ROADMAP.md` holds the board's roadmap (part 3, then 14 brainstormed ideas in three phases), and `NEXT_STEPS.md` the
-proposed order.
+- **Art panel** (the Art button on a building card; any other sprite from the Art & pipelines tab):
+  - a brief;
+  - a draft from the house rules (`prompts.ts`: one subject on white, the isometric 2:1 view, the front on the right
+    face, the footprint and the citizen yardstick, the eda-lore look);
+  - **Refine with Claude:** `claude -p` in the background, with the building, its people and the lore that names it;
+    without the CLI the task opens in Send to Claude;
+  - saved as `art/prompts/<sprite>.json`, undoable.
+- **Pipelines** (`pipelines.json`, `pipelines.ts`):
+  - **The paintings importer runs here:**
+    1. drop a PNG (into `inspirations/<folder>/`, never over another) or choose one;
+    2. click its island on the sheet;
+    3. fill its `art/sources.json` entry;
+    4. run the import (`importSprites.mjs --check`, one at a time, about 90 s, its log on the page);
+    5. judge the sprite beside the code one and mark it checked; Send to Claude hands over the tests and the commit.
+  - **Tripo Studio and Aseprite** hand off to Claude, who works the pipeline out with you and writes it into
+    `docs/HANDOFF.md`. Then its entry gets `"runs": "board"` and `steps`, and the page shows them.
+- **Checks:** every text the code reads is in the JSON and every text is read (`textCheck.ts`); each prompt names a
+  sprite or building; no two live art sources share a name.
 
-- **Part 3:**
-  - asset prompts: a brief, a draft from the house art rules, "Refine with Claude" (`claude -p`), kept in `art/prompts/`;
-  - a pipeline registry: the paintings importer runs from the board. The Tripo Studio and Aseprite pipelines start as
-    hand-offs to Claude and become buttons once they are written into the docs (the user's plan).
+Don't run the balance bar while an import runs or the content is edited from the same checkout.
+
+## Next
+
+`ROADMAP.md` holds the board's roadmap (parts 1 to 3 built, then 14 brainstormed ideas in three phases), and
+`NEXT_STEPS.md` the proposed order.

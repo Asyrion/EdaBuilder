@@ -1,6 +1,8 @@
 /* EdaBuilder's dev board (iteration 87, DESIGN 4.118): a local web page to browse, create, edit and delete the game's content
    in src/data/content/ (buildings, roads, milestones, relic sets), with every building's sprites and art status, checked by
-   the game's own validateContent after every save. Edicts, events, quests and guilds are shown read-only from the code.
+   the game's own validateContent after every save. The project side (iteration 88): NEXT_STEPS, GitHub, balance, Send to
+   Claude. The art side (iteration 89): the text of edicts, events, quests and guilds, the prompt studio (prompts.ts) and
+   the pipelines (pipelines.ts: the paintings importer runs here, Tripo Studio and Aseprite hand off to Claude).
    Node's standard library only; the page is plain HTML and JS in tools/devboard/public/.
 
    Run:  npm run devboard                     then open http://127.0.0.1:8771
@@ -21,6 +23,8 @@ import { hints, unions } from './schema';
 import type { Json } from './jsonspan';
 import { GhError, githubState, issueComment, issueWrite, milestoneWrite } from './github';
 import { toClaude, toIssue } from './session';
+import { blank, draftFor, houseRules, jobOf, loreFor, promptFile, refineTask, startRefine, type PromptData } from './prompts';
+import { Busy, handoffTask, importState, islands, paintingPath, paintings, pipelines, runImport, savePainting } from './pipelines';
 import { balance, designIndex, designSection, nextSteps } from './tracker';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -107,12 +111,39 @@ function body(req: IncomingMessage): Promise<Record<string, Json>> {
     return Promise.reject(new Forbidden());
   return new Promise((ok, fail) => {
     let s = '';
-    req.on('data', (d) => { s += d; if (s.length > 2e6) req.destroy(); });
+    req.on('data', (d) => { s += d; if (s.length > 18e6) req.destroy(); });   // a painting comes as base64 (pipelines.ts MAX_UPLOAD)
     req.on('end', () => { try { ok(JSON.parse(s || '{}')); } catch { fail(new BadRequest('bad JSON')); } });
   });
 }
 
-const STATIC: Record<string, string> = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/project.js': 'project.js', '/style.css': 'style.css' };
+const STATIC: Record<string, string> = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/project.js': 'project.js', '/art.js': 'art.js', '/style.css': 'style.css' };
+
+// ---------------- the art side (iteration 89) ----------------
+
+interface BuildingRow { key: string; name: string; category: string; faction?: string[]; desc: string; flavor?: string; w: number; h: number }
+const buildingsNow = () => JSON.parse(readFileSync(join(ROOT, 'src/data/content/buildings.json'), 'utf8')) as BuildingRow[];
+/** The building a sprite belongs to: b_<key>, its looks _vN and stages _sN, or the key given. */
+function buildingOf(sprite: string, key?: string): BuildingRow | null {
+  const all = buildingsNow();
+  if (key) return all.find((b) => b.key === key) ?? null;
+  const m = /^b_(.+?)(?:_[vs]\d+)?$/.exec(sprite);
+  return m ? all.find((b) => b.key === m[1]) ?? all.find((b) => b.key === sprite.slice(2)) ?? null : null;
+}
+function promptState(sprite: string, key?: string, brief?: string | null) {
+  const file = promptFile(sprite), abs = join(ROOT, file), text = existsSync(abs) ? readFileSync(abs, 'utf8') : null;
+  const b = buildingOf(sprite, key);
+  const data: PromptData = text ? JSON.parse(text) : blank(sprite, b?.key);
+  return { file, text, data, building: b, draft: draftFor(b, sprite, brief ?? data.brief), rules: houseRules(b ?? undefined), lore: b ? loreFor(ROOT, b.name) : [] };
+}
+/** All prompts kept, newest first, for the Art tab. */
+function promptList() {
+  const dir = join(ROOT, 'art/prompts');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => {
+    try { const d = JSON.parse(readFileSync(join(dir, f), 'utf8')) as PromptData; return { sprite: d.sprite, building: d.building ?? null, refined: !!d.refined, pipeline: d.pipeline, mtime: statSync(join(dir, f)).mtimeMs }; }
+    catch { return { sprite: f.replace(/\.json$/, ''), building: null, refined: false, pipeline: '', mtime: 0, broken: true }; }
+  }).sort((a, b) => b.mtime - a.mtime);
+}
 const TYPES: Record<string, string> = { html: 'text/html', js: 'text/javascript', css: 'text/css' };
 
 /** A sprite by name: the imported PNG (public/art/sprites.json names its file; variants may share one) first, else the one
@@ -168,6 +199,24 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       const text = designSection(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8'), dm[1]);
       return text ? send(res, 200, { id: dm[1], text }) : send(res, 404, { error: `no section ${dm[1]}` });
     }
+    const pm = /^\/api\/prompt\/([A-Za-z][A-Za-z0-9_]*)$/.exec(path);
+    if (pm) return send(res, 200, promptState(pm[1], url.searchParams.get('building') || undefined, url.searchParams.get('brief')));
+    if (path === '/api/prompts') return send(res, 200, { prompts: promptList() });
+    const jm = /^\/api\/refine\/(\d+)$/.exec(path);
+    if (jm) { const j = jobOf(Number(jm[1])); return j ? send(res, 200, j) : send(res, 404, { error: 'no such job' }); }
+    if (path === '/api/pipelines') return send(res, 200, { pipelines: pipelines(ROOT), paintings: paintings(ROOT), run: importState() });
+    if (path === '/api/islands') {
+      try { return send(res, 200, { islands: islands(ROOT, url.searchParams.get('src') ?? '', Number(url.searchParams.get('white') ?? 235)) }); }
+      catch (e) { return send(res, 400, { error: (e as Error).message }); }
+    }
+    if (path === '/painting') {
+      try { const p = paintingPath(ROOT, url.searchParams.get('src') ?? ''); return existsSync(p) ? send(res, 200, readFileSync(p), 'image/png') : send(res, 404, { error: 'no painting' }); }
+      catch (e) { return send(res, 400, { error: (e as Error).message }); }
+    }
+    if (path === '/shot/import_check.png') {
+      const p = join(ROOT, 'shots/import_check.png');
+      return existsSync(p) ? send(res, 200, readFileSync(p), 'image/png') : send(res, 404, { error: 'no check sheet yet: run the import' });
+    }
     if (path === '/api/github') return send(res, 200, githubState(ROOT, url.searchParams.get('force') === '1'));
     if (path === '/api/refs') return send(res, 200, content.references(url.searchParams.get('kind') ?? '', url.searchParams.get('id') ?? ''));
     return send(res, 404, { error: 'not found' });
@@ -182,7 +231,34 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     '/api/delete': () => content.remove(str('kind'), num('src'), str('key'), str('hash')),
     '/api/undo': () => content.undo(num('i')),
     '/api/validate': () => null,
+    '/api/prompt/save': () => {
+      const sprite = str('sprite'), data = d.data as unknown as PromptData;
+      if (!data || typeof data !== 'object' || data.sprite !== sprite) throw new BadRequest('The prompt must name its sprite.');
+      const before = d.before == null ? null : str('before');
+      return content.writeFile(promptFile(sprite), before, JSON.stringify(data, null, 2) + '\n', `prompt ${sprite}`);
+    },
   };
+  // the art side (iteration 89): writes outside the content (a painting, a run of the importer) or none (a task)
+  const artRoutes: Record<string, () => unknown> = {
+    '/api/refine': () => {
+      const sprite = str('sprite'), b = buildingOf(sprite, d.building ? str('building') : undefined);
+      const task = refineTask(ROOT, b, sprite, { ...blank(sprite), ...(d.data as object) } as PromptData);
+      try { return { job: startRefine(ROOT, sprite, task) }; }
+      catch (e) { if ((e as Error).message === 'NO_CLI') return { noCli: true, task }; throw e; }
+    },
+    '/api/upload': () => ({ src: savePainting(ROOT, str('folder'), str('name'), str('data')) }),
+    '/api/pipeline/import': () => runImport(ROOT),
+    '/api/pipeline/handoff': () => {
+      const p = pipelines(ROOT).find((x) => x.id === str('pipeline'));
+      if (!p) throw new BadRequest(`no pipeline ${str('pipeline')}`);
+      const sprite = str('sprite'), b = buildingOf(sprite, d.building ? str('building') : undefined);
+      return { text: handoffTask(p, sprite, b ? `${b.name}, ${b.w}x${b.h}, ${b.category}` : '', str('prompt')), title: `${p.name}: art for ${sprite}` };
+    },
+  };
+  if (artRoutes[path]) {
+    try { return send(res, 200, { ok: true, result: artRoutes[path]() }); }
+    catch (e) { return send(res, e instanceof Busy ? 409 : 400, { error: (e as Error).message }); }
+  }
   // the project side (iteration 88): GitHub and Send to Claude write nothing in the checkout and need no check after
   const project: Record<string, () => unknown> = {
     '/api/github/issue': () => issueWrite(ROOT, d as Record<string, unknown>),

@@ -5,6 +5,7 @@ import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
 import { MOORINGS } from '../data/factions';
 import { canPlaceBuilding, markDirty, placeBuildingRaw, pushMessage } from './world';
+import GUILD_TEXT from '../data/content/text/guilds.json';
 
 export type GuildId = 'carters' | 'alchemists' | 'spirewrights' | 'sextons';
 export const GUILD_IDS: GuildId[] = ['carters', 'alchemists', 'spirewrights', 'sextons'];
@@ -22,36 +23,36 @@ export interface GuildDef {
 
 export const GUILDS: Record<GuildId, GuildDef> = {
   carters: {
-    id: 'carters', name: "The Carters' Guild", seal: 'a cart wheel',
-    desc: 'Pleased by a Trade Depot, a second quay and every open trade route; displeased by a city without a depot and by congested roads.',
+    id: 'carters', name: GUILD_TEXT.carters.name, seal: GUILD_TEXT.carters.seal,
+    desc: GUILD_TEXT.carters.desc,
     edict: 'imports',
-    boon: 'depots sell half again as much surplus each day',
-    strike: 'the yards work slow: depots sell half as much',
-    petition: 'The carters crowd the Guildhall steps with their caps in their hands. Their master says the markets run dry while his carts stand idle, and asks the Warden-Reeve to let the guild buy from the Gloam road.',
+    boon: GUILD_TEXT.carters.boon,
+    strike: GUILD_TEXT.carters.strike,
+    petition: GUILD_TEXT.carters.petition,
   },
   alchemists: {
-    id: 'alchemists', name: "The Alchemists' Guild", seal: 'a mortar',
-    desc: 'Pleased by five or more Craft yards and by the Herb Garden Edict; displeased when markets run dry of their goods.',
+    id: 'alchemists', name: GUILD_TEXT.alchemists.name, seal: GUILD_TEXT.alchemists.seal,
+    desc: GUILD_TEXT.alchemists.desc,
     edict: 'herbgardens',
-    boon: 'every Craft yard makes 8% more',
-    strike: 'the stills run cold: Craft yards make 10% less',
-    petition: 'The alchemists send a letter sealed in blue wax. Every yard in the city, they write, should keep a glimherb bed by law, miasma or no miasma, and they would like the Warden-Reeve to say so.',
+    boon: GUILD_TEXT.alchemists.boon,
+    strike: GUILD_TEXT.alchemists.strike,
+    petition: GUILD_TEXT.alchemists.petition,
   },
   spirewrights: {
-    id: 'spirewrights', name: 'The Spire-Wrights', seal: 'a blue obelisk',
-    desc: 'Pleased by a Ley Nexus and by Spire Wardens; displeased by every day of overdraw and by brownouts.',
+    id: 'spirewrights', name: GUILD_TEXT.spirewrights.name, seal: GUILD_TEXT.spirewrights.seal,
+    desc: GUILD_TEXT.spirewrights.desc,
     edict: 'wardens',
-    boon: 'ley stores hold a fifth more mana',
-    strike: 'ley stores leak: a fifth less mana held',
-    petition: 'The spire-wrights come at dusk, as they do. The spires have been run hot, they say, and nobody watches them at night. They ask for Tallowkin wardens on the city purse.',
+    boon: GUILD_TEXT.spirewrights.boon,
+    strike: GUILD_TEXT.spirewrights.strike,
+    petition: GUILD_TEXT.spirewrights.petition,
   },
   sextons: {
-    id: 'sextons', name: 'The Sextons of Morrow', seal: 'a salt spoon',
-    desc: 'Pleased by an Ossuary and by the Rite Subsidy; displeased when more than twenty dead lie unquieted.',
+    id: 'sextons', name: GUILD_TEXT.sextons.name, seal: GUILD_TEXT.sextons.seal,
+    desc: GUILD_TEXT.sextons.desc,
     edict: 'rites',
-    boon: 'boneyards and ossuaries quiet 15% more dead',
-    strike: 'the sextons work to rule: deathcare quiets 15% fewer',
-    petition: 'Hollis of the sextons stands in the Guildhall with his spoon of salt and says nothing for a long time. Then he says the city should pay for the rites it expects, and that the dead are counting.',
+    boon: GUILD_TEXT.sextons.boon,
+    strike: GUILD_TEXT.sextons.strike,
+    petition: GUILD_TEXT.sextons.petition,
   },
 };
 

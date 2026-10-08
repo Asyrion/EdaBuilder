@@ -28,7 +28,7 @@ npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an e
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
-npm run devboard   # the dev board, http://127.0.0.1:8771: content, sprites and art status; next steps, GitHub, balance; Send to Claude (tools/devboard)
+npm run devboard   # the dev board, http://127.0.0.1:8771: content, text, sprites and art; prompts and pipelines; next steps, GitHub, balance; Send to Claude (tools/devboard)
 npm run devboard:selftest   # the board's own checks
 ```
 
@@ -38,7 +38,11 @@ drawn in code, and its art status. Edits save only what changed, are checked by 
 can be undone. Its project tabs (DESIGN §4.119) show the next steps and the iterations done with their DESIGN sections,
 GitHub's milestones and issues (through `gh`) and the balance cache as charts. "Send to Claude" hands any item, issue or
 card to Claude Code on your PC or files it as a GitHub issue; "New element" writes the task for a new building, road,
-edict, event, quest or creature. Run one instance; it serves every session.
+edict, event, quest or creature. Its art side (DESIGN §4.120) keeps an image prompt per sprite in
+`art/prompts/` ("Refine with Claude" runs `claude -p`), runs the paintings importer from a card (drop a painting, pick its
+island, import, judge), and hands Tripo Studio and Aseprite off to Claude until their pipelines are written down. The
+wording of edicts, events, quests and guilds is edited there too (`src/data/content/text/`). Run one instance; it serves
+every session.
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
 push to `main`. The Vite base is relative, so it works from any sub-path.
@@ -438,12 +442,15 @@ src/render    palette, painter, sprites (procedural art), atlas, iso, camera, re
 src/ui        style.css, tools (input), ui (DOM panels)
 src/audio     procedural WebAudio
 src/data      flavor text, tips and the quest list; content/: buildings, roads, milestones and relic
-              sets as JSON (edited by hand or on the dev board)
+              sets as JSON (edited by hand or on the dev board); content/text/: the wording of edicts,
+              events, quests and guilds, read by the code by id
 tests         vitest suites
 scripts       headless balance run, Playwright screenshot/perf/playtest harnesses,
               importSprites (the art pipeline) and its lib (png codec, sprite steps)
-art           sources.json: which paintings become which sprites, with hand-set anchors
+art           sources.json: which paintings become which sprites, with hand-set anchors;
+              prompts/: the image prompt of each sprite (the dev board's prompt studio)
 public/art    the imported sprites and their manifest (shipped with the build)
 inspirations  reference paintings by building type (the style guide, DESIGN §5)
-tools/devboard  the dev board (server, lossless JSON edits, art status, checks, the page)
+tools/devboard  the dev board (server, lossless JSON edits, art status, checks, the tracker, Send to
+              Claude, the prompt studio and the pipelines, the page)
 ```

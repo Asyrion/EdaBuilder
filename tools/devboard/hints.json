@@ -25,5 +25,18 @@
   },
   "relics": {
     "bonus": { "help": "What the set gives once entire." }
+  },
+  "edicts": { "desc": { "text": true }, "flavor": { "text": true } },
+  "events": { "text": { "text": true }, "choices": { "help": "Each choice's label and description; a choice whose description is worked out for the city keeps it in code (src/sim/events.ts)." } },
+  "quests": { "hint": { "text": true } },
+  "guilds": { "desc": { "text": true }, "petition": { "text": true } },
+  "artsources": {
+    "src": { "help": "The painting, under inspirations/." },
+    "kind": { "values": ["building", "prop", "ground", "vehicle"] },
+    "island": { "help": "Which item of the sheet, row-major (the Art panel draws them over the painting)." },
+    "anchor": { "help": "'centre' for a building, 'auto', or { ax, ay }." },
+    "targetHeight": { "help": "Pixels tall, from the citizen yardstick (DESIGN 4.109; a citizen is 12 px)." },
+    "checked": { "help": "True once the check sheet has been judged by eye." },
+    "flip": { "help": "Mirror it: the front belongs on the right face (DESIGN 4.90)." }
   }
 }
