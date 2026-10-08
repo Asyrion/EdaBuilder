@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Founding Stake",
+    "pop": 0,
+    "grant": 0,
+    "unlocks": ["track", "hearth", "market", "craft", "well", "spire", "watchpost", "shrine"],
+    "text": "The Charter is nailed to the door. Light it, hold it, and make it pay."
+  },
+  {
+    "name": "Hamlet",
+    "pop": 40,
+    "grant": 2000,
+    "unlocks": ["cobble", "boneyard", "healer", "garden", "fishershut", "reedcutters"],
+    "text": "Forty souls under your light. The Crown sends cobbles, a sexton and a healer, and grants you two districts: paint one and charter it a Hearth or Craft quarter."
+  },
+  {
+    "name": "Thorp",
+    "pop": 100,
+    "grant": 3000,
+    "unlocks": ["veshari", "wardlantern", "cistern", "mothloft", "smokehouse", "weir"],
+    "text": "A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise."
+  },
+  {
+    "name": "Village",
+    "pop": 220,
+    "grant": 4500,
+    "unlocks": ["academy", "watchhouse", "square", "depot", "brickworks"],
+    "text": "A village with a name on the Crown's maps. Scholars, a proper Watch and the carters' guild follow."
+  },
+  {
+    "name": "Township",
+    "pop": 400,
+    "grant": 6000,
+    "unlocks": ["arcane", "lantern", "nexus", "font", "mine", "cradle", "tamerslodge"],
+    "text": "The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised."
+  },
+  {
+    "name": "Market Town",
+    "pop": 650,
+    "grant": 8000,
+    "unlocks": ["ossuary", "hospice", "guildhall", "watergarden"],
+    "text": "Carts from three valleys come to your market. The guilds petition for a hall."
+  },
+  {
+    "name": "Burgh",
+    "pop": 1000,
+    "grant": 11000,
+    "unlocks": ["temple", "grandacademy", "golemfoundry", "leybeacon", "drakemews", "greatgate"],
+    "text": "A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped."
+  },
+  {
+    "name": "Free City",
+    "pop": 1500,
+    "grant": 16000,
+    "unlocks": ["lantern_wonder", "wyrmcourt", "fontquieting"],
+    "text": "The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken."
+  },
+  {
+    "name": "Beacon of Eda",
+    "pop": 2200,
+    "grant": 25000,
+    "unlocks": ["skydock"],
+    "text": "Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley."
+  }
+]

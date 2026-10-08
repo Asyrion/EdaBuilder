@@ -1,14 +1,11 @@
 /** Relic sets from the Ruin Delve: every twelfth relic is a piece of a set; an Academy catalogues it. See DESIGN.md 4.49. */
 import { pushMessage, rngOf, commitRng } from './world';
 import type { GameState } from './types';
+import relicsJson from '../data/content/relics.json';
 
 export interface RelicSet { id: string; name: string; pieces: [string, string, string]; bonus: string }
-export const RELIC_SETS: RelicSet[] = [
-  { id: 'lanterncores', name: 'The Lantern-Cores of Vell', pieces: ['the first core', 'the second core', 'the third core'], bonus: 'ley stores hold 60 more mana' },
-  { id: 'ninehouses', name: 'The Seals of the Nine Houses', pieces: ['the seal of Harrow', 'the seal of Vellane', 'the seal of Oss'], bonus: 'happiness +3 in every home' },
-  { id: 'saltspoons', name: 'The Salt Spoons of Morrow', pieces: ['the long spoon', 'the short spoon', 'the broken spoon'], bonus: 'deathcare quiets 10% more dead' },
-  { id: 'concordcharts', name: 'The Concord Charts', pieces: ['the river chart', 'the hill chart', 'the star chart'], bonus: 'sectors beyond the Charter cost a fifth less' },
-];
+/** The sets, from src/data/content/relics.json (iteration 87, DESIGN 4.118). */
+export const RELIC_SETS = relicsJson as unknown as RelicSet[];
 export const RELICS_PER_PIECE = 12;
 
 export interface RelicState { pieces: Record<string, number>; uncatalogued: number; complete: string[]; lastRelics: number; idle?: number }

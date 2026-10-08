@@ -21,7 +21,9 @@ describe('The sim key', () => {
     expect(SIM_DIRS).toEqual(['src/sim', 'src/data', 'src/core']);
     // the scripts a run starts from import the sim and the data only, and those reach nothing past src/sim, src/data and src/core
     for (const f of ['scripts/balance.ts', 'scripts/rolls.ts']) for (const m of readFileSync(f, 'utf8').matchAll(/from '\.\.\/src\/([a-z]+)/g)) expect(SIM_DIRS).toContain(`src/${m[1]}`);
-    for (const dir of SIM_DIRS) for (const name of readdirSync(dir)) for (const m of readFileSync(`${dir}/${name}`, 'utf8').matchAll(/from '\.\.\/([a-z]+)\//g)) expect(SIM_DIRS).toContain(`src/${m[1]}`);
+    // (sub-folders too: src/data/content holds the content as JSON since iteration 87, which imports nothing)
+    const ts = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((d) => d.isDirectory() ? ts(`${dir}/${d.name}`) : d.name.endsWith('.ts') ? [`${dir}/${d.name}`] : []);
+    for (const dir of SIM_DIRS) for (const file of ts(dir)) for (const m of readFileSync(file, 'utf8').matchAll(/from '(?:\.\.\/)+([a-z]+)\//g)) if (m[1] !== 'content') expect(SIM_DIRS).toContain(`src/${m[1]}`);
   });
 
   it('is the same from git\'s tree and from the files on disk when they match', () => {

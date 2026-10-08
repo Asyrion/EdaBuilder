@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EdaBuilder dev board</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%237a4fd0%27/%3E%3C/svg%3E">
+</head>
+<body>
+<header>
+  <h1>EdaBuilder <span>dev board</span></h1>
+  <input id="q" type="search" placeholder="Search  ( / )" autocomplete="off">
+  <button id="new" class="btn">New</button>
+  <span id="vchip" class="chip">checking…</span>
+  <details id="undo"><summary class="btn ghost">Undo</summary><div id="undolist"></div></details>
+  <span id="fresh" class="dim"></span>
+</header>
+<nav id="tabs"></nav>
+<main id="main"><p class="dim">Loading…</p></main>
+<div id="modal" hidden></div>
+<div id="toasts"></div>
+<script src="/app.js"></script>
+</body>
+</html>

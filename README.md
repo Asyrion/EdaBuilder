@@ -28,7 +28,14 @@ npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an e
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
+npm run devboard   # the dev board, http://127.0.0.1:8771: browse and edit the content, sprites and art status (tools/devboard)
+npm run devboard:selftest   # the board's own checks
 ```
+
+**The dev board** (`tools/devboard/README.md`, DESIGN §4.118): a local page with a tab per kind of content (buildings,
+roads, milestones, relic sets; edicts, events, quests and guilds read-only). Each building shows its sprites, imported or
+drawn in code, and its art status. Edits save only what changed, are checked by `validateContent` and the sprite rule, and
+can be undone. Run one instance; it serves every session.
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
 push to `main`. The Vite base is relative, so it works from any sub-path.
@@ -421,16 +428,19 @@ Charter as `.json`.
 
 ```
 src/sim       simulation: types, terrain, world, actions, networks, services, growth,
-              economy, agents, hazards, sim (tick), save, bot, catalog (all game data)
+              economy, agents, hazards, sim (tick), save, bot, catalog (reads the content),
+              contentCheck (validateContent)
 src/render    palette, painter, sprites (procedural art), atlas, iso, camera, renderer,
               overlays, particles, lights
 src/ui        style.css, tools (input), ui (DOM panels)
 src/audio     procedural WebAudio
-src/data      flavor text, tips and the quest list
+src/data      flavor text, tips and the quest list; content/: buildings, roads, milestones and relic
+              sets as JSON (edited by hand or on the dev board)
 tests         vitest suites
 scripts       headless balance run, Playwright screenshot/perf/playtest harnesses,
               importSprites (the art pipeline) and its lib (png codec, sprite steps)
 art           sources.json: which paintings become which sprites, with hand-set anchors
 public/art    the imported sprites and their manifest (shipped with the build)
 inspirations  reference paintings by building type (the style guide, DESIGN §5)
+tools/devboard  the dev board (server, lossless JSON edits, art status, checks, the page)
 ```

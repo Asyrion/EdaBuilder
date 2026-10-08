@@ -1,0 +1,29 @@
+{
+  "_comment": "Field hints for the dev board's forms (tools/devboard/README.md). Per kind, a field path (dots between levels) maps to: enum (a string union type in src/, its values offered), values (a fixed list), keys (an object whose keys are that union's values), ref (the id of another kind), help (a line under the field), text (a long text). Fields without a hint get a widget from their values.",
+  "buildings": {
+    "category": { "enum": "BuildingCategory" },
+    "zone": { "values": ["hearth", "market", "craft", "arcane"], "help": "Zone buildings only: which zone it houses." },
+    "faction": { "enum": "FactionId", "help": "A people's own building; none ticked = every people." },
+    "service.type": { "enum": "ServiceType" },
+    "relic": { "ref": "relics", "help": "Needs this relic set entire (relics.ts)." },
+    "unlock": { "help": "The milestone (0 = Founding Stake ... 8); 99 = never by a milestone (a guild hall comes with its charter)." },
+    "capacity": { "help": "Residents or jobs per level, levels 1 to 3." },
+    "desc": { "text": true },
+    "flavor": { "text": true },
+    "cost": { "help": "Crowns to build." },
+    "upkeep": { "help": "Crowns per day." },
+    "manaUse": { "help": "Mana per day (zone: per level)." }
+  },
+  "roads": {
+    "type": { "values": ["track", "cobble", "lantern", "glowvine"] },
+    "requires": { "ref": "buildings" },
+    "desc": { "text": true }
+  },
+  "milestones": {
+    "unlocks": { "help": "Building, road or zone keys opened at this milestone (lantern_wonder: each people's own wonder)." },
+    "text": { "text": true }
+  },
+  "relics": {
+    "bonus": { "help": "What the set gives once entire." }
+  }
+}
