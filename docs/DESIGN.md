@@ -5012,7 +5012,7 @@ art; its card shows "needs art".
 
 **Verified:**
 - `npx tsc --noEmit -p .`, the unit tests, `npm run build`; the control seed (`npx tsx scripts/balance.ts 42 150`) equal to
-  main's.
+  main's: 2,442 folk, Free City on day 124, on both trees. The unit tests: 545 of 545.
 - `npm run devboard:selftest`: the NEXT_STEPS parser on a fixture and the real file, every DESIGN section indexed once,
   the four balance files read with four peoples each; `toClaude` (terminal route with its task file, link route with a
   long task's file pointer) and `toIssue` (the label) against a fake `gh`, `claude`, terminal and opener first on PATH;
