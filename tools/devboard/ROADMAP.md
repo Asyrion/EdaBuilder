@@ -1,8 +1,8 @@
 # Dev board roadmap (EdaBuilder)
 
 Written 2026-10-08. Part 1 is built (iteration 87, DESIGN §4.118): the content as data, and the board's content tabs,
-sprites, art status and safe editing. Part 2 is built (iteration 88, DESIGN §4.119). Part 3 is planned and comes next
-(`docs/NEXT_STEPS.md` item 1).
+sprites, art status and safe editing. Part 2 is built (iteration 88, DESIGN §4.119), and part 3 (iteration 89, DESIGN §4.120).
+The phases below are what may come next.
 Phases C to E are a brainstorm: nothing there is decided, and each idea becomes an iteration only when the user puts
 it on the list. Every iteration follows the standing process in CLAUDE.md: a plan first, the verification bar, docs,
 ship. `NEXT_STEPS.md` holds the proposed order.
@@ -17,7 +17,7 @@ Size: S (part of an iteration), M (one iteration), L (more than one).
 - **Send to Claude:** a "new game element" composer and a button on every card. The task goes to Claude Code on the
   user's PC (the `claude-cli://` link or a new terminal) or becomes a GitHub issue.
 
-## Part 3 · Asset prompts and pipelines (planned, next)
+## Part 3 · Asset prompts and pipelines (built, iteration 89)
 - **Prompt studio:** a brief, a draft from the house art rules, "Refine with Claude" (`claude -p` on the user's PC), and
   the prompts kept in `art/prompts/`.
 - **Pipeline registry:**
@@ -34,6 +34,7 @@ Size: S (part of an iteration), M (one iteration), L (more than one).
 2. **Islands picker for a new sheet (M).** Drop a sheet of paintings. The board runs `--islands`, shows each island
    numbered on the sheet, and lets the user click one to make an `art/sources.json` entry (footprint, `targetHeight`
    from the yardstick, anchor, flip). The check sheet follows before anything is marked `checked`.
+   *Part 3 built one island at a time on a sprite's Art panel; what remains is a whole sheet into many named entries.*
 3. **Coverage preview (M).** A building placed on a sample map in the headless sim, with its radii drawn: service
    coverage, light from spires, water from wells, miasma, land value. A new building's numbers are seen as areas, not
    just figures.

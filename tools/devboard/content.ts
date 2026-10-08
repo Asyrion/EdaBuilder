@@ -3,7 +3,7 @@
    (its hash), an id is deleted only when nothing uses it (data or code), every write keeps a backup outside the repository
    for undo, and files are replaced atomically. */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve, sep } from 'node:path';
 import { KINDS, type KindDef } from './kinds';
@@ -15,22 +15,38 @@ export class BadRequest extends Error {}
 export const ID_RE = /^[A-Za-z][A-Za-z0-9_]*$/;
 const BACKUPS = join(tmpdir(), 'edabuilder-devboard-backups');
 export const DATA = 'src/data/content';
+/** Where the board may write: the content, and the art folder (art/sources.json and the prompts, iteration 89). */
+export const WRITABLE = [DATA, 'art'];
 export const hashOf = (v: Json) => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(0, 16);
 
 export interface Entry { kind: string; src: number; key: string; id: string | null; label: string; hash: string; data: Json; n: number }
 interface Located { text: string; root: Node; col: Node; index: number; start: number; end: number; node: Node; keyStart?: number }
 
 export class Content {
-  private undoStack: { id: number; file: string; before: string; after: string; what: string; at: number }[] = [];
+  private undoStack: { id: number; file: string; before: string | null; after: string; what: string; at: number }[] = [];
   private undoNext = 1;   // undo entries keep their id, so a list the page drew earlier still names the right one
   constructor(readonly root: string) {}
 
   abs(file: string) {
-    const p = resolve(this.root, file), data = resolve(this.root, DATA);
-    if (!p.startsWith(data + sep)) throw new BadRequest(`refused path ${file}`);
+    const p = resolve(this.root, file);
+    if (!WRITABLE.some((d) => p.startsWith(resolve(this.root, d) + sep))) throw new BadRequest(`refused path ${file}`);
     return p;
   }
   read(file: string) { return readFileSync(this.abs(file), 'utf8'); }
+  /** A whole file written by the board outside the kinds (a prompt, an art/sources.json entry): backed up, atomic, undoable.
+      `before` is what the page last read (null for a new file); a file changed since is refused. */
+  writeFile(file: string, before: string | null, after: string, what: string) {
+    const p = this.abs(file), now = existsSync(p) ? readFileSync(p, 'utf8') : null;
+    if (now !== before) throw new Conflict(`${file} changed since you opened it (another session or a hand edit). Reload and try again.`);
+    if (now === after) return { changed: false };
+    mkdirSync(resolve(p, '..'), { recursive: true });
+    this.write(file, now, after, what);   // a new file's undo deletes it
+    return { changed: true };
+  }
+  private textOnly(name: string, what: string) {
+    const k = this.kind(name);
+    if (k.textOnly) throw new Conflict(`${k.title} are text only: each one's logic is in ${k.textOnly} by id, so ${what} needs code. Send it to Claude instead.`);
+  }
   kind(name: string): KindDef {
     const k = KINDS[name];
     if (!k) throw new BadRequest(`no kind ${name}`);
@@ -97,11 +113,11 @@ export class Content {
 
   // ---------------- writing ----------------
 
-  private write(file: string, before: string, after: string, what: string) {
+  private write(file: string, before: string | null, after: string, what: string) {
     JSON.parse(after); // never write a file the game can't read
     const p = this.abs(file);
     mkdirSync(BACKUPS, { recursive: true });
-    writeFileSync(join(BACKUPS, `${file.replace(/[\\/]/g, '_')}.${Date.now()}.bak`), before);
+    if (before !== null) writeFileSync(join(BACKUPS, `${file.replace(/[\\/]/g, '_')}.${Date.now()}.bak`), before);
     const tmp = `${p}.devboard.tmp`;
     writeFileSync(tmp, after);
     renameSync(tmp, p);
@@ -113,6 +129,7 @@ export class Content {
   private saved(name: string, src: number, key: string, data: Json, hash: string, newKey?: string) {
     const kind = this.kind(name), at = this.locate(kind, src, key);
     if (hashOf(at.node.value) !== hash) throw new Conflict(`"${key}" changed in the file since you opened it (another session or a hand edit). Reload and try again.`);
+    if (newKey && newKey !== key) this.textOnly(name, 'a rename');
     const st = styleOf(at.text);
     let body = patch(at.text, at.node, data, st), start = at.node.start;
     if (kind.shape === 'map' && newKey && newKey !== key) {
@@ -141,6 +158,7 @@ export class Content {
 
   /** A new entry, laid out like `like` (the entry it was duplicated from) or the collection's last entry. */
   create(name: string, src: number, data: Json, key?: string, like?: string) {
+    this.textOnly(name, 'a new entry');
     const kind = this.kind(name), { text, col } = this.collection(kind, src), st = styleOf(text);
     let id = key ?? '';
     if (kind.shape === 'list' && kind.idKey) id = String((data as Record<string, Json>)?.[kind.idKey] ?? '');
@@ -165,6 +183,7 @@ export class Content {
   }
 
   remove(name: string, src: number, key: string, hash: string) {
+    this.textOnly(name, 'a delete');
     const kind = this.kind(name), at = this.locate(kind, src, key);
     if (hashOf(at.node.value) !== hash) throw new Conflict(`"${key}" changed in the file since you opened it. Reload and try again.`);
     if (kind.shape === 'map' || kind.idKey) this.refuseIfUsed(name, key, 'delete');
@@ -187,6 +206,7 @@ export class Content {
     if (now !== u.after) throw new Conflict(`${u.file} changed after that save, so it can't be undone safely.`);
     this.undoStack.splice(i, 1);
     const p = this.abs(u.file), tmp = `${p}.devboard.tmp`;
+    if (u.before === null) { unlinkSync(p); return { undone: u.what }; }
     writeFileSync(tmp, u.before);
     renameSync(tmp, p);
     return { undone: u.what };

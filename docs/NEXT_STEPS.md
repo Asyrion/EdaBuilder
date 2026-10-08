@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 89 (the dev board, part 3: asset prompts, pipelines and the text as data)
+
+- **The text of edicts, events, quests and guilds is data** (`src/data/content/text/*.json`, 822 strings), read by the code
+  by id; the move changed no string (dumped before and after: identical), and the bar matches main (DESIGN §4.120). The
+  board edits them as text-only tabs; a new one still starts in code.
+- **The prompt studio:** an Art panel on every building (and any sprite by name): a brief, a draft from the house rules
+  (the yardstick, the front on the right, one subject on white), "Refine with Claude" (`claude -p`, or Send to Claude
+  without the CLI), kept in `art/prompts/`.
+- **The pipelines:** the paintings importer runs from the board (drop a painting, pick its island, its
+  `art/sources.json` entry, the import with its log, mark it checked); Tripo Studio and Aseprite hand off to Claude until
+  their pipelines are written into the docs (`tools/devboard/pipelines.json`).
+
 ## Done in iteration 88 (the dev board, part 2: the tracker and Send to Claude)
 
 - **Next steps, GitHub and Balance tabs** on the dev board: this list and the iterations done with their DESIGN sections;
@@ -1056,28 +1068,22 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The dev board, part 3: asset prompts and pipelines.** A prompt studio on every building and prop: a brief, a draft
-   from the house art rules, "Refine with Claude" (`claude -p` on the user's PC), prompts kept in `art/prompts/`. A
-   pipeline registry: the paintings importer runs from the board (a painting dropped on a card, its `art/sources.json`
-   entry, `npm run art` and the check sheet); the Tripo Studio and Aseprite pipelines start as hand-offs to Claude and
-   become buttons that run their own steps once they are written into the docs. The text of edicts, events, quests and
-   guilds moves to JSON (their logic stays in code by id).
-2. **The quests that never complete** (the user's playtest after iteration 86: "See the Watch at work" never completed,
+1. **The quests that never complete** (the user's playtest after iteration 86: "See the Watch at work" never completed,
    more than once). It waits for a watchman to kill a hound or lay a restless on his own patrol, which a well-kept city
    prevents; and the sextons' layings count toward it too (`walkerLayings` is shared). Audit every quest: bot games of
    every people on several maps to list the ones that never complete, and each `done` read for a threat or an accident
    good play avoids; fix them with a test each.
-3. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
+2. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-4. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-5. **M18 part 1, the Fen-Nex** (§17.2).
+3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+4. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-6. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-7. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-8. **M19 part 2, the Belerial** (§17.3).
+7. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-9. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

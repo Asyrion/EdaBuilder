@@ -75,7 +75,7 @@ function describe(values) {
 // ---------------- rendering ----------------
 
 function renderTabs() {
-  let html = `<button class="tab${tab === "overview" ? " on" : ""}" data-tab="overview">Overview</button>` + ProjectUI.tabsHtml();
+  let html = `<button class="tab${tab === "overview" ? " on" : ""}" data-tab="overview">Overview</button>` + ProjectUI.tabsHtml() + ArtUI.tabsHtml();
   let group = "";
   for (const [name, k] of kinds()) {
     if (k.group !== group) { html += '<span class="sep"></span>'; group = k.group; }
@@ -100,10 +100,10 @@ function renderChip() {
 function render() {
   if (!C) return;
   renderTabs(); renderChip();
-  if (tab !== "overview" && !kindOf(tab) && !C.code[tab] && !ProjectUI.handles(tab)) tab = "overview";
-  $("#new").hidden = tab === "overview" || !!C.code[tab] || ProjectUI.handles(tab);
+  if (tab !== "overview" && !kindOf(tab) && !C.code[tab] && !ProjectUI.handles(tab) && !ArtUI.handles(tab)) tab = "overview";
+  $("#new").hidden = tab === "overview" || !!C.code[tab] || ProjectUI.handles(tab) || ArtUI.handles(tab) || !!kindOf(tab)?.textOnly;
   $("#main").innerHTML = (staleWhileEditing ? '<div class="banner">The data changed on disk while you were editing. It reloads when you close the editor.</div>' : "")
-    + (tab === "overview" ? renderOverview() : ProjectUI.handles(tab) ? ProjectUI.render(tab) : C.code[tab] ? renderCode(tab) : renderKind(tab));
+    + (tab === "overview" ? renderOverview() : ProjectUI.handles(tab) ? ProjectUI.render(tab) : ArtUI.handles(tab) ? ArtUI.render(tab) : C.code[tab] ? renderCode(tab) : renderKind(tab));
 }
 
 function renderOverview() {
@@ -114,7 +114,7 @@ function renderOverview() {
     ${C.errors.length ? `<p class="err-text">${C.errors.map(esc).join("\n")}</p>` : ""}
     <h2>Checks</h2><p class="dim">Run after every save: validateContent and the art rule of tests/sprites.test.ts (tools/devboard/validate.ts). <button class="btn small" data-validate>Run now</button></p>
     <table class="over">${checks}</table>
-    <h2>Content in code</h2><p class="dim">${Object.values(C.code).map(k => `${esc(k.title)} (${k.entries.length}, <span class="mono">${esc(k.file)}</span>)`).join(" · ")}: shown read-only until their text moves to JSON (iteration 89).</p>`;
+    ${Object.keys(C.code).length ? `<h2>Content in code</h2><p class="dim">${Object.values(C.code).map(k => `${esc(k.title)} (${k.entries.length}, <span class="mono">${esc(k.file)}</span>)`).join(" · ")}: shown read-only.</p>` : ""}`;
 }
 
 function fmt(v) {
@@ -172,9 +172,9 @@ function renderKind(name) {
     return `<div class="card${errs.length ? " err" : ""}"><h3>${color}${esc(e.label)}</h3>
       <div class="id">${esc(e.id ?? "#" + e.n)}${k.sources.length > 1 ? " · " + esc(k.sources[e.src].label) : ""}</div>
       ${artHtml}<div class="sum">${sum}</div>${errs.length ? `<div class="errs">${errs.slice(0, 3).map(esc).join("<br>")}</div>` : ""}
-      <div class="acts"><button class="btn small" data-edit="${e.src}|${esc(e.key)}">Edit</button><button class="btn small ghost" data-dup="${e.src}|${esc(e.key)}">Duplicate</button><button class="btn small ghost" data-send-entry="${name}|${e.src}|${esc(e.key)}" title="Send a task about it to Claude">Send to Claude</button>${play ? `<a class="btn small ghost" target="_blank" rel="noopener" href="${esc(play)}" title="Start the game with it">▶ Play</a>` : ""}</div></div>`;
+      <div class="acts"><button class="btn small" data-edit="${e.src}|${esc(e.key)}">Edit</button>${k.textOnly ? "" : `<button class="btn small ghost" data-dup="${e.src}|${esc(e.key)}">Duplicate</button>`}<button class="btn small ghost" data-send-entry="${name}|${e.src}|${esc(e.key)}" title="Send a task about it to Claude">Send to Claude</button>${k.art ? `<button class="btn small ghost" data-art="${esc(ArtUI.spriteOf(e))}|${esc(e.id)}" title="Its prompt and art pipelines">Art</button>` : ""}${play ? `<a class="btn small ghost" target="_blank" rel="noopener" href="${esc(play)}" title="Start the game with it">▶ Play</a>` : ""}</div></div>`;
   }).join("");
-  return `<div class="toolbar"><strong>${esc(k.title)}</strong><span class="dim">${list.length} of ${k.entries.length}</span></div><div class="grid">${cards || '<p class="dim">Nothing matches.</p>'}</div>`;
+  return `<div class="toolbar"><strong>${esc(k.title)}</strong><span class="dim">${list.length} of ${k.entries.length}${k.textOnly ? ` · text only: each one's logic is in <span class="mono">${esc(k.textOnly)}</span> by id, so a new one or a delete needs code (Send to Claude)` : ""}</span></div><div class="grid">${cards || '<p class="dim">Nothing matches.</p>'}</div>`;
 }
 
 // ---------------- the editor ----------------
@@ -269,7 +269,7 @@ function drawEditor() {
       ${play ? `<h4>Play-test</h4><a class="btn small" target="_blank" rel="noopener" href="${esc(play)}">▶ Start the game with it</a>` : ""}
       ${k.art && entry ? artPanel(entry.id) : k.art ? '<h4>Art</h4><p class="dim">A new building needs a sprite: the game draws nothing for it until one is drawn in code or imported from a painting (asset prompts and pipelines: iteration 89).</p>' : ""}
       ${entry && errorsFor(kind, entry).length ? `<h4>Problems</h4><div class="err-text">${errorsFor(kind, entry).map(esc).join("\n")}</div>` : ""}</div></div>
-    <div class="foot"><span class="left">${entry ? `<button class="btn danger" data-delete>Delete</button><button class="btn ghost" data-dupe>Duplicate</button><button class="btn ghost" data-send-entry="${kind}|${entry.src}|${esc(entry.key)}">Send to Claude</button>` : ""}</span>
+    <div class="foot"><span class="left">${entry ? `${kindOf(kind).textOnly ? "" : '<button class="btn danger" data-delete>Delete</button><button class="btn ghost" data-dupe>Duplicate</button>'}<button class="btn ghost" data-send-entry="${kind}|${entry.src}|${esc(entry.key)}">Send to Claude</button>` : ""}</span>
       <button class="btn ghost" data-close>Cancel</button><button class="btn" data-preview>Preview change</button><button class="btn primary" data-save>${entry ? "Save" : "Create"}</button></div></div>`;
   $("#modal").hidden = false;
   if (entry && entry.id) api(`/api/refs?kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(entry.id)}`).then(r => {

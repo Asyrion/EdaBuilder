@@ -1,0 +1,76 @@
+{
+  "beastmasters": {
+    "name": "Beastmasters' Charter",
+    "desc": "Drakes and golems are fed from the city purse: cradles and foundries draw 40% less mana, but the tamers' scraps draw hounds: packs come 50% more often. 40 crowns/day.",
+    "flavor": "Everything that eats can be tamed. Everything that is tamed still eats."
+  },
+  "bounty": {
+    "name": "Hunters' Bounty",
+    "desc": "A crown a pelt. Hunters' Lodges clear hounds twice as far, the Watch kills them more often, and thrumhares vanish from the meadows (they are pelts too).",
+    "flavor": "The lodge door ran out of room for notches in a season."
+  },
+  "closeseason": {
+    "name": "The Close Season",
+    "desc": "Wardens of the chase: no lodge takes game in Bloom while the herds drop their young (its hunters guard against hounds instead), no lodge takes a herd below 6 head, and the herds breed a quarter faster. 10 crowns a day and 10 a lodge.",
+    "flavor": "The hart is the Crown's in Bloom and the cook's in Ember. The wardens of the chase keep the calendar."
+  },
+  "wyrmpeace": {
+    "name": "Wyrm-Peace",
+    "desc": "A standing offering at the wyrm's node: tribute is halved, and so is the ward of a bound wyrm's lair. 80 crowns/day.",
+    "flavor": "Half a hoard buys half a guardian. The wyrm can count."
+  },
+  "scalemail": {
+    "name": "Scale-Mail",
+    "desc": "The Watch wears dragon scale: unrest −5 % while scale is in the vault, and the mail wears 0.05 scale a day. No crowns; the vault pays.",
+    "flavor": "It turns a knife. It also turns heads, which the Warden-Reeve counts as the point."
+  },
+  "curfew": {
+    "name": "Night Curfew",
+    "desc": "The Watch clears the streets after dark. Unrest −10, restless cleared faster; happiness −4.",
+    "flavor": "\"Halt. Are you living? Then go home.\""
+  },
+  "draughts": {
+    "name": "Free Healing Draughts",
+    "desc": "Moonwort draughts for every household. Health +12; costs 0.3 crowns per resident per day.",
+    "flavor": "The alchemists grumble about the price. The children stop coughing."
+  },
+  "rites": {
+    "name": "Rite Subsidy",
+    "desc": "The city pays the sextons. Boneyards and Ossuaries quiet 50% more dead. 25 crowns/day per deathcare building.",
+    "flavor": "Salt on the lips, a coin on the eyes, and now a second coin for Hollis."
+  },
+  "wardens": {
+    "name": "Spire Wardens",
+    "desc": "Tallowkin wardens watch the spires day and night. Wild surges only strike above 1.5× overdraw. 60 crowns/day.",
+    "flavor": "They sleep in shifts under the obelisks and dream in blue."
+  },
+  "herbgardens": {
+    "name": "Herb Garden Edict",
+    "desc": "Every Craft yard must keep a glimherb bed. Goods production +25%, miasma +30%.",
+    "flavor": "The alchemist's breath grows sweeter and thicker."
+  },
+  "lanternlevy": {
+    "name": "Lantern Levy",
+    "desc": "Markets pay for the street lanterns. Market tithe +20%, market happiness −6.",
+    "flavor": "\"It Moves,\" says the guild seal. \"It Pays,\" says the Warden-Reeve."
+  },
+  "imports": {
+    "name": "Import Goods",
+    "desc": "The Trade Depot buys goods for markets with empty shelves at twice the export price. Needs a Trade Depot.",
+    "flavor": "Potions from Vell-on-Sable, sold at Vell-on-Sable prices."
+  },
+  "scholars": {
+    "name": "Scholars' Stipend",
+    "desc": "Free schooling for Grimmen and Tallowkin children. Educated share grows 50% faster. 0.2 crowns per resident per day.",
+    "flavor": "The girl who reads leystone like a book now has forty classmates."
+  },
+  "drainage": {
+    "name": "The Drainage",
+    "flavor": "The fen gives up an acre a week and the frogs file a complaint."
+  },
+  "deepcut": {
+    "name": "The Deep Cut",
+    "desc": "Halls on the hill dig a level deeper: a hill hearth reaches its third level without schooling and holds two more folk there. 1.5 crowns a day per hill hearth.",
+    "flavor": "Down is a direction the Vellish forget they have."
+  }
+}

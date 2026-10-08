@@ -2,7 +2,10 @@
    folder). Every entry of every kind loads; a one-number edit changes exactly one line and putting the value back restores
    the file byte for byte; a duplicate and its delete leave the file as it was; a used id can't be deleted; a stale hash
    is refused; undo restores; the HTTP guards refuse foreign hosts, writes without the board's header and paths out of
-   data/. Prints DEV BOARD SELFTEST OK or the failures. Run: npm run devboard:selftest (iteration 87, DESIGN 4.118). */
+   data/. Iteration 88 adds the project side (the parsers, Send to Claude against fakes); iteration 89 the art side: the
+   text kinds (edited and restored, never created or deleted), prompts (new, edited, undone), Refine with Claude against a
+   fake `claude -p`, a painting saved and refused, the importer run on a one-painting copy and its lock, the text check.
+   Prints DEV BOARD SELFTEST OK or the failures. Run: npm run devboard:selftest (iteration 87, DESIGN 4.118). */
 import { chmodSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -13,6 +16,9 @@ import type { Json } from './jsonspan';
 import { unions } from './schema';
 import { codeEntries, server } from './server';
 import { toClaude, toIssue } from './session';
+import { jobOf, parseRefined, startRefine } from './prompts';
+import { Busy, importState, islands, paintingPath, runImport, savePainting } from './pipelines';
+import { checkAllText, checkText } from './textCheck';
 import { balance, designIndex, designSection, nextSteps } from './tracker';
 
 const REPO = resolve(import.meta.dirname, '../..');
@@ -24,6 +30,7 @@ const throws = (fn: () => unknown, cls: new (...a: never[]) => Error, what: stri
 
 const tmp = mkdtempSync(join(tmpdir(), 'devboard-selftest-'));
 cpSync(join(REPO, 'src'), join(tmp, 'src'), { recursive: true });   // src/data/content and the code the reference scan reads
+cpSync(join(REPO, 'art/sources.json'), join(tmp, 'art/sources.json'));   // the art sources kind (iteration 89)
 const c = new Content(tmp);
 
 /** The path to the first number in a value, if any. */
@@ -62,8 +69,57 @@ for (const name of Object.keys(KINDS)) {
   }
 }
 
+// the text kinds (iteration 89): a text edit changes one line and putting it back restores the file
+for (const [name, k] of Object.entries(KINDS).filter(([, k]) => k.textOnly)) {
+  const e = c.entries(name).entries[0], file = join(tmp, k.sources[0].file), before = readFileSync(file, 'utf8');
+  const field = Object.keys(e.data as object).find((f) => typeof (e.data as Record<string, Json>)[f] === 'string')!;
+  const changed = { ...(e.data as object), [field]: 'Changed on the board.' };
+  c.save(name, 0, e.key, changed, e.hash);
+  const a = before.split('\n'), b = readFileSync(file, 'utf8').split('\n');
+  check(a.length === b.length && a.filter((l, i) => l !== b[i]).length === 1, `${name}: a text edit changes one line`);
+  check(checkText(name, JSON.parse(readFileSync(file, 'utf8')), readFileSync(join(tmp, KINDS[name].textOnly!), 'utf8')).length === 0, `${name}: the edited text still checks`);
+  c.save(name, 0, e.key, e.data, hashOf(changed));
+  check(readFileSync(file, 'utf8') === before, `${name}: putting the text back restores the file`);
+  throws(() => c.create(name, 0, e.data, 'selftestNew'), Conflict, `${name}: text only, a new entry is refused`);
+  throws(() => c.remove(name, 0, e.key, e.hash), Conflict, `${name}: text only, a delete is refused`);
+  throws(() => c.save(name, 0, e.key, e.data, e.hash, 'selftestRenamed'), Conflict, `${name}: text only, a rename is refused`);
+}
+{
+  check(checkAllText(REPO).length === 0, 'text: every text the code reads is there, and every text is read');
+  const ev = JSON.parse(readFileSync(join(REPO, 'src/data/content/text/events.json'), 'utf8')), src = readFileSync(join(REPO, 'src/sim/events.ts'), 'utf8');
+  const first = Object.keys(ev)[0];
+  const missing = { ...ev }; delete missing[first];
+  check(checkText('events', missing, src).some((x) => x.includes(`${first}.title`) && x.includes('would not load')), 'text: an entry the code reads, gone, is reported');
+  check(checkText('events', { ...ev, selftestStray: { title: 'x' } }, src).some((x) => x.includes('selftestStray.title') && x.includes('nothing')), 'text: an entry nothing reads is reported');
+}
+
+// prompts (iteration 89): a new file, an edit, a stale write refused, undo of the edit and of the new file
+{
+  const f = 'art/prompts/b_selftest.json', abs = join(tmp, f);
+  c.writeFile(f, null, '{"sprite":"b_selftest","brief":"a"}\n', 'prompt b_selftest');
+  check(existsSync(abs), 'prompts: a new prompt file is written');
+  throws(() => c.writeFile(f, null, '{}', 'x'), Conflict, 'prompts: a write over a file changed since is refused');
+  c.writeFile(f, '{"sprite":"b_selftest","brief":"a"}\n', '{"sprite":"b_selftest","brief":"b"}\n', 'prompt b_selftest');
+  c.undo(c.undoList()[0].i);
+  check(readFileSync(abs, 'utf8').includes('"a"'), 'prompts: undo restores the edit');
+  c.undo(c.undoList()[0].i);
+  check(!existsSync(abs), 'prompts: undo of a new prompt removes it');
+  throws(() => c.writeFile('docs/x.json', null, '{}', 'x'), BadRequest, 'prompts: a path outside src/data/content and art/ is refused');
+  check(parseRefined('PROMPT:\nA tower.\nNOTE:\nTaller.').prompt === 'A tower.' && parseRefined('just text').prompt === 'just text', 'prompts: the refined answer is parsed');
+}
+
+// paintings (iteration 89): saved under inspirations/, PNG only, never over another, nothing outside
+{
+  const png = readFileSync(join(REPO, 'inspirations/wells/image_0(1).png'));
+  const a = savePainting(tmp, 'selftest', 'My Well.png', png.toString('base64')), b = savePainting(tmp, 'selftest', 'My Well.png', png.toString('base64'));
+  check(a === 'inspirations/selftest/my_well.png' && b === 'inspirations/selftest/my_well_2.png', 'paintings: saved by a clean name, never over another');
+  throws(() => savePainting(tmp, 'selftest', 'x.png', Buffer.from('not a png').toString('base64')), Error, 'paintings: only PNG');
+  throws(() => savePainting(tmp, '../src', 'x.png', png.toString('base64')), Error, 'paintings: a folder outside inspirations/ is refused');
+  throws(() => paintingPath(tmp, 'inspirations/../src/x.png'), Error, 'paintings: a path outside inspirations/ is refused');
+}
+
 // duplicate and delete
-for (const [name, k] of Object.entries(KINDS)) {
+for (const [name, k] of Object.entries(KINDS).filter(([, k]) => !k.textOnly)) {
   const e = c.entries(name).entries[0], file = k.sources[e.src].file, before = readFileSync(join(tmp, file), 'utf8');
   const data = JSON.parse(JSON.stringify(e.data));
   const id = 'selftestCopy';
@@ -91,7 +147,7 @@ throws(() => c.create('buildings', 0, { key: 'bad id!' }), BadRequest, 'a malfor
 }
 check((unions(REPO).BuildingCategory ?? []).includes('wonder') && (unions(REPO).FactionId ?? []).includes('grimmen'), 'the string unions are read from src/');
 for (const name of Object.keys(CODE_KINDS)) check(codeEntries(name).length > 0, `the ${name} in code are found`);
-rmSync(tmp, { recursive: true, force: true });
+const tmpArt = tmp;   // removed after the importer's run below
 
 // the project side (iteration 88): the parsers over the real docs and cache, and Send to Claude against fakes
 {
@@ -106,7 +162,7 @@ rmSync(tmp, { recursive: true, force: true });
   check(nums.length === headings && new Set(nums).size === nums.length && nums.includes(1) && Math.max(...nums) >= 118, 'DESIGN: every 4.NN section is indexed once (in the file\'s own order)');
   check((designSection(readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8'), '4.118') ?? '').includes('content as data'), 'DESIGN: a section is read whole');
   const b = balance(REPO);
-  check(b.files.length > 0 && b.files.every((x) => Object.keys(x.stats).length === 4), 'balance: every cache file read, four peoples each');
+  check(b.files.length > 0 && b.files.every((x) => Object.keys(x.stats).length > 0) && b.files.some((x) => Object.keys(x.stats).length === 4), 'balance: every cache file read (a bar still running writes a partial one), a whole one with four peoples');
 
   const bin = mkdtempSync(join(tmpdir(), 'devboard-fakes-')), log = join(bin, 'log');
   const script = (name: string, body: string) => { writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`); chmodSync(join(bin, name), 0o755); };
@@ -154,10 +210,46 @@ server.listen(0, '127.0.0.1', async () => {
   check(await call(port, 'POST', '/api/delete', { ...h, 'Content-Type': 'application/json' }, '{}') === 403, 'a write without X-Dev-Board is refused');
   check(await call(port, 'POST', '/api/delete', { ...h, 'X-Dev-Board': '1', 'Content-Type': 'text/plain' }, '{}') === 403, 'a write that is not JSON is refused');
   check(await call(port, 'GET', '/../package.json', h) === 404, 'no files outside the page');
-  for (const p of ['/api/send', '/api/github/issue', '/api/github/comment', '/api/github/milestone'])
+  for (const p of ['/api/send', '/api/github/issue', '/api/github/comment', '/api/github/milestone', '/api/prompt/save', '/api/refine', '/api/upload', '/api/pipeline/import', '/api/pipeline/handoff'])
     check(await call(port, 'POST', p, { ...h, 'Content-Type': 'application/json' }, '{}') === 403, `${p} without X-Dev-Board is refused`);
   check(await call(port, 'GET', '/api/tracker', h) === 200 && await call(port, 'GET', '/api/design/4.118', h) === 200, 'the tracker and a DESIGN section are served');
+  check(await call(port, 'GET', '/api/pipelines', h) === 200 && await call(port, 'GET', '/api/prompt/b_spire', h) === 200 && await call(port, 'GET', '/api/prompts', h) === 200, 'the pipelines and a prompt are served');
+  check(await call(port, 'GET', '/painting?src=../package.json', h) === 400, 'no painting outside inspirations/');
   server.close();
+  await artRuns();
   if (fails.length) { console.log('DEV BOARD SELFTEST FAIL\n' + fails.slice(0, 40).join('\n')); process.exitCode = 1; }
   else console.log(`DEV BOARD SELFTEST OK (${edits} entries edited and restored, ${Object.keys(KINDS).length} kinds)`);
 });
+
+/** The art side's child processes (iteration 89): Refine with Claude against a fake `claude -p`, and the importer on a copy
+    holding one painting and one entry, with its lock. */
+async function artRuns() {
+  const until = async (ok: () => boolean, ms: number) => { const t = Date.now() + ms; while (!ok() && Date.now() < t) await new Promise((r) => setTimeout(r, 100)); };
+  const bin = mkdtempSync(join(tmpdir(), 'devboard-fakes-'));
+  writeFileSync(join(bin, 'claude'), `#!/bin/sh\ncat > ${join(bin, 'stdin')}\necho "claude $*" > ${join(bin, 'args')}\nprintf 'PROMPT:\\nA refined tower.\\nNOTE:\\nMade it taller.\\n'\n`);
+  chmodSync(join(bin, 'claude'), 0o755);
+  const path = process.env.PATH;
+  process.env.PATH = bin + ':' + path;
+  try {
+    const job = startRefine(REPO, 'b_spire', 'Refine this: a spire.');
+    await until(() => jobOf(job.id)!.state !== 'running', 10000);
+    const j = jobOf(job.id)!;
+    check(j.state === 'done' && j.prompt === 'A refined tower.' && j.note === 'Made it taller.', `refine: claude -p answers and is parsed (${j.state} ${j.error ?? ''})`);
+    check(readFileSync(join(bin, 'stdin'), 'utf8') === 'Refine this: a spire.' && /claude -p --output-format text/.test(readFileSync(join(bin, 'args'), 'utf8')), 'refine: the task goes on stdin, never in the arguments');
+  } finally { process.env.PATH = path; rmSync(bin, { recursive: true, force: true }); }
+
+  // the importer on a copy: one painting, one entry
+  const root = tmpArt;
+  cpSync(join(REPO, 'scripts/importSprites.mjs'), join(root, 'scripts/importSprites.mjs'));
+  cpSync(join(REPO, 'scripts/lib'), join(root, 'scripts/lib'), { recursive: true });
+  const src = 'inspirations/selftest/my_well.png';
+  writeFileSync(join(root, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_selftestwell', src, island: 0, w: 1, h: 1, targetHeight: 16, anchor: 'centre', shift: { x: 0, y: 6 } }] }, null, 1));
+  const isl = islands(root, src);
+  check(isl.length > 0 && isl[0].w > 100, 'importer: the sheet\'s islands are listed');
+  const run = runImport(root);
+  throws(() => runImport(root), Busy, 'importer: one run at a time');
+  await until(() => run.state !== 'running', 120000);
+  const manifest = existsSync(join(root, 'public/art/sprites.json')) ? JSON.parse(readFileSync(join(root, 'public/art/sprites.json'), 'utf8')) : { sprites: {} };
+  check(run.state === 'done' && !!manifest.sprites.b_selftestwell && importState() === run, `importer: the run writes the sprite into the manifest (${run.state}: ${run.log.slice(-2).join(' ')})`);
+  rmSync(root, { recursive: true, force: true });
+}

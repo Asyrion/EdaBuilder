@@ -5024,6 +5024,110 @@ art; its card shows "needs art".
 - Not checked here: the `claude-cli://` link and the console on Windows. The code path is the Tamer board's, which works
   on the user's PC.
 
+### 4.120 The dev board, part 3: asset prompts, pipelines and the text as data (iteration 89)
+
+Tooling, NEXT_STEPS item 1, the last of the board's three parts (the user's ask of 2026-10-08): "the asset prompt studio
+with 'Refine with Claude', and the pipeline buttons. The paintings importer will run straight from the board. Tripo
+Studio and Aseprite start as hand-offs to Claude until you write those pipelines into the docs." With it, iteration 87's
+plan: the text of edicts, events, quests and guilds as data.
+
+**The text as data:**
+- `src/data/content/text/{edicts,events,quests,guilds}.json` hold every fixed string by id: 15 edicts (name, desc,
+  flavor), 52 events (title, text, each choice's label and desc), 140 quests (chapter, title, hint) and 4 guilds (name,
+  seal, desc, boon, strike, petition). That is 822 strings in all.
+- The code reads them by id (`EVENT_TEXT.pilgrims.title`, `EVENT_TEXT.pilgrims.choices[0].label`). Each JSON is imported
+  typed, so a gap fails the type check.
+- Text worked out for the city stays in code, beside its logic: `textFn`, a choice's `desc` function, what `apply`
+  returns, and a template that quotes a tuning constant (the Drainage edict's numbers).
+- **How it moved:** a one-off script on the TypeScript AST, not kept. Every text field of the four modules was dumped
+  before and after (73,339 bytes, every definition in order): **byte for byte identical**.
+- `tools/devboard/textCheck.ts` reads both sides as files: every path the code reads must be a non-empty string, and
+  every string must be read. It runs in the board's checks and in `tests/iteration89.test.ts`.
+- **On the board:** the four kinds became editable tabs. They are text only: a new entry, a delete or a rename is
+  refused, since each needs its logic in code by id (Send to Claude).
+
+**The prompt studio** (`tools/devboard/prompts.ts`): an Art button on every building card opens its panel. The Art &
+pipelines tab opens any other sprite by name (a prop, a cart).
+- **The brief:** your words.
+- **The draft,** composed from the house rules:
+  - one subject on plain white (what the importer keys out);
+  - the isometric 2:1 view;
+  - the front on the right face (§4.90);
+  - the footprint, and the height in citizens from the yardstick (§4.109): 1.5 for a well, 2.5 for a shrine, 2.8 for a
+    one-tile shed (3.2 Tallowkin), 5.5 for a hall, free for a wonder;
+  - the eda-lore sheets' look;
+  - a one-people building's material.
+- **Refine with Claude:** `claude -p` runs in the background with the draft, the brief, the building, its people's lore
+  line and the lore paragraphs that name it (`docs/EDA_CITY_LORE.md`, `EDA_LORE.md`). The task goes on stdin, never in
+  the arguments. The answer (PROMPT / NOTE) fills the prompt and is saved.
+  - Without the CLI the same task opens in Send to Claude (§4.119), so a cloud session or a GitHub issue can do it.
+- **Kept in `art/prompts/<sprite>.json`:** brief, draft, prompt, note, the last ten refinements, and the pipeline
+  chosen. Saves are backed up and undoable (undo of a new prompt removes it). The check holds each file to a sprite or
+  building that exists.
+
+**The pipelines** (`tools/devboard/pipelines.json`, `pipelines.ts`): a registry; a pipeline runs on the board or hands
+off.
+- **The paintings importer runs on the board,** the steps of HANDOFF "The pipeline":
+  1. Drop a PNG (saved into `inspirations/<folder>/`, never over another), or choose a painting already there.
+  2. Its islands (`importSprites.mjs --islands`) are drawn as boxes over the sheet; click one, and raise `white` for a
+     grey shadow.
+  3. The `art/sources.json` entry: footprint, `targetHeight` from the yardstick, `anchor`, `flip`, `shift`. It is saved
+     through the lossless writer as the Art sources kind, keyed by position: a sprite's switched-off entries stay
+     beside its live one. A new check refuses two live entries of one name.
+  4. **Import:** `importSprites.mjs --check` runs one at a time; its log streams to the page, then the new sprite shows
+     beside the code one, with the check sheet.
+  5. **Checked:** a button marks the entry, and Send to Claude hands over the art tests and the commit.
+  - A full import takes about 90 s here, and leaves every committed sprite byte for byte as it was when nothing changed.
+- **Tripo Studio and Aseprite hand off:** a button writes the task (the prompt, the sprite, the house rules, and "work
+  the pipeline out with me and write it into docs/HANDOFF.md") and opens Send to Claude. Once a pipeline is written down,
+  its entry in `pipelines.json` gets `runs: "board"` and its steps, with no page code.
+- The importer's panel warns that the balance bar must not run while an import or an entry save does (§4.118).
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (88 files, 550 tests; `tests/iteration89.test.ts`: the text check over the
+  real files, a gap and a stray caught, the definitions carry their text; the yardstick and the draft's rules), and
+  `npm run build`.
+- **The text dump:** every text field of the four modules, before and after the move, byte for byte identical.
+- **In the game:** the Edicts panel of this build against main's build, for all four peoples at the last milestone:
+  the same text, character for character (`scripts/playtest89.mjs`, `GAME=1`).
+- `npm run devboard:selftest` (902 entries edited and restored, nine kinds):
+  - each text kind edited and restored byte for byte, with new, delete and rename refused;
+  - the text check over the real files, with a missing entry and a stray caught;
+  - a prompt written, edited, refused when stale, and undone (undo of a new prompt removes it); paths outside refused;
+  - paintings saved by a clean name and never overwritten, with non-PNG and paths outside `inspirations/` refused;
+  - Refine against a fake `claude -p`: the task on stdin, the answer parsed;
+  - the importer run on a copy with one painting and one entry: islands listed, the sprite in the manifest, a second
+    run refused while one runs;
+  - the guards on every new POST route.
+- `scripts/playtest89.mjs` on the board, with a fake `claude`, on the Quarry:
+  - a brief, the draft holding the rules, Refine (the prompt and note saved to `art/prompts/b_quarry.json`, read back
+    on reopening);
+  - a painting dropped (saved into `inspirations/board/`), island 0 clicked, the entry added, the import run (79 s,
+    done), `b_quarry` in the manifest and on the card, marked checked;
+  - the Tripo hand-off's task (the prompt, "not written into EdaBuilder's docs yet");
+  - the Art & pipelines tab;
+  - the Edicts tab text only (no Duplicate, no New, no Delete);
+  - an edict's name edited on the board, read back by the game's code in a fresh process, then undone with the file
+    clean;
+  - no page errors.
+  - The test art was then reverted.
+- **Not checked here:** `claude -p` with the user's login, and the Windows file picker. The fake proves the call, the
+  stdin and the parsing.
+
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`): 132 runs a side, main's from the cache.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,067 | 2,067 | +0 (0.0 %) | 205 (9.9 %) | met | identical |
+| Grimmen | 6 × 4 | 1,354 | 1,354 | +0 (0.0 %) | 126 (9.3 %) | met | identical |
+| Veshari | 6 × 3 | 2,232 | 2,232 | +0 (0.0 %) | 181 (8.1 %) | met | identical |
+| Tallowkin | 6 × 8 | 1,944 | 1,944 | +0 (0.0 %) | 206 (10.6 %) | **not met: at the cap of 8 draws** | identical |
+| all | | 7,596 | 7,596 | +0 (0.0 %) | 365 | | identical |
+
+- **All 132 runs match main's:** folk, gates, treasury and depot day, run for run. The sim key changed (the code reads
+  its text from JSON) and nothing the simulation does did.
+- The Tallowkin's floor is 10.6 % at the cap, not met, as since iteration 64.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6294,3 +6398,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Send to Claude makes no commits (iteration 88):* the board hands a task to a Claude session (on the PC or as an issue)
   and stops there; the session plans, verifies and ships by the standing process. The tracker only reads the docs and the
   balance cache; the docs stay written by the iterations.
+- *Text is data, logic stays by id (iteration 89):* the fixed strings of edicts, events, quests and guilds live in JSON
+  and the code reads them by id, so wording is edited without code, but a new edict or event still starts in code. Text
+  worked out for the city stays beside its logic. The board's pipelines are a registry: a pipeline not yet written into
+  the docs hands off to Claude, and becomes a button once it is.

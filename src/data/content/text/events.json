@@ -1,0 +1,798 @@
+{
+  "pilgrims": {
+    "title": "A caravan of pilgrims",
+    "text": "Forty Hearthfolk pilgrims of Aume arrive at the gate, footsore from the Gloam road. Their priest asks leave to settle under your light.",
+    "choices": [
+      {
+        "label": "Welcome them",
+        "desc": "Up to 40 folk move into empty homes; a month on they will ask for a shrine of their own."
+      },
+      {
+        "label": "Bless them and send them on",
+        "desc": "Nothing changes, but Aume remembers: happiness +3 for 10 days."
+      }
+    ]
+  },
+  "relic": {
+    "title": "A relic of the Concord",
+    "text": "Miners in the hills unearth a leystone lantern-core of the Aurel Concord, still faintly humming after three centuries.",
+    "choices": [
+      {
+        "label": "Sell it to the Crown",
+        "desc": "+3,000 crowns."
+      },
+      {
+        "label": "Give it to the scholars",
+        "desc": "Educated share +10% (needs an Academy) — otherwise it is studied by candle-eyed children for a small happiness boost."
+      },
+      {
+        "label": "Bury it with the Rite of Quieting",
+        "desc": "Unquieted dead −20."
+      }
+    ]
+  },
+  "guilds": {
+    "title": "The guilds petition",
+    "text": "The alchemists' and carters' guilds offer 1,500 crowns now in exchange for a Craft tithe of 6% for the next 20 days.",
+    "choices": [
+      {
+        "label": "Accept the bargain",
+        "desc": "+1,500 crowns; Craft tithe capped at 6% for 20 days."
+      },
+      {
+        "label": "Refuse",
+        "desc": "Unrest +8% for 10 days."
+      }
+    ]
+  },
+  "plague": {
+    "title": "A cough in the low streets",
+    "text": "A miasma-cough is spreading through the hearths nearest the stills. The healers ask for coin to brew quiet-water and moonwort.",
+    "choices": [
+      {
+        "label": "Fund the healers (2,000 crowns)",
+        "desc": "Health +15 for 20 days."
+      },
+      {
+        "label": "Let it run its course",
+        "desc": "Deaths ×2 for 12 days."
+      }
+    ]
+  },
+  "festival": {
+    "title": "A candle-eyed child",
+    "text": "A Tallowkin child is born in the hearth district with eyes like two lamps: the first born under your light. The folk want a festival.",
+    "choices": [
+      {
+        "label": "Hold the Thaw-day dance (800 crowns)",
+        "desc": "Happiness +8 for 12 days."
+      },
+      {
+        "label": "A quiet blessing only",
+        "desc": "No cost, no effect."
+      }
+    ]
+  },
+  "refugees": {
+    "title": "Grimmen out of the Gloam",
+    "text": "Sixty grey-skinned Grimmen walk out of the Gloam at dawn, unharmed by it, carrying their dead. They ask for hearths and a Boneyard for their kin.",
+    "choices": [
+      {
+        "label": "Take them in",
+        "desc": "Up to 60 folk move in; unquieted dead +15; unrest +5% for 8 days."
+      },
+      {
+        "label": "Turn them away",
+        "desc": "Happiness −4 for 10 days (the Hearthfolk are ashamed)."
+      }
+    ]
+  },
+  "collector": {
+    "title": "The Crown's collector",
+    "text": "A tax collector from Vell-on-Sable presents the Crown's seal and a ledger. The Charter, he notes, owes a tenth of the treasury.",
+    "choices": [
+      {
+        "label": "Pay the tenth",
+        "desc": "−10% of the treasury; the Crown's favour +5."
+      },
+      {
+        "label": "Plead the Gloam"
+      }
+    ]
+  },
+  "whitehart": {
+    "title": "The white hart",
+    "text": "The watch on the stake saw it at first light: a white hart grazing with the deer on the meadow, its antlers like frost on a branch. By noon half the city has climbed something to look. The lodge's master asks whether the Warden-Reeve wants its head.",
+    "choices": [
+      {
+        "label": "Hunt it",
+        "desc": "+400 crowns for its head (a trophy); every herd of deer loses 2 head; the folk call it an ill omen: happiness −3 for 20 days."
+      },
+      {
+        "label": "Let it run",
+        "desc": "The herds breed half again as fast for 60 days; happiness +2 for 20 days."
+      }
+    ]
+  },
+  "wolfwinter": {
+    "title": "The wolf winter",
+    "text": "The wolves are bold this Hush. They have taken hens from the hearths at the forest edge and their howling keeps the low streets awake. A deputation of goodwives waits on the stake's steps with a dead hen.",
+    "choices": [
+      {
+        "label": "Call a winter hunt (300 crowns)",
+        "desc": "Every pack within 30 of the stake loses half its head; their hides go to the nearest lodge."
+      },
+      {
+        "label": "Lamps on the folds (150 crowns)",
+        "desc": "Lanterns over every hen-house for 30 days: the wolves take no hens."
+      },
+      {
+        "label": "Let the wolves keep the deer",
+        "desc": "The packs thin the deer instead: every herd of deer loses a fifth; unrest +3 % for 15 days."
+      }
+    ]
+  },
+  "spawnrun": {
+    "title": "The spawning run",
+    "text": "The fishers came up from the bank at dawn shouting. The water below the huts is silver from bank to bank: the spawning run, the whole year's fish in one place for three days. The net-master asks whether to take it.",
+    "choices": [
+      {
+        "label": "Net the run",
+        "desc": "+300 crowns for the catch; the shoal of that water falls to two fifths of what it holds."
+      },
+      {
+        "label": "Let it spawn",
+        "desc": "The shoals regrow twice as fast for 60 days; happiness +1 for 20 days."
+      }
+    ]
+  },
+  "pilgrims_shrine": {
+    "title": "The pilgrims ask for a shrine",
+    "text": "A month under your light, the pilgrims of Aume come to the Founding Stake with their priest. They have no shrine of their own, they say, and the Vigils are far; they ask for one among their hearths, and offer to raise the walls themselves.",
+    "choices": [
+      {
+        "label": "Raise them a shrine (600 crowns)",
+        "desc": "A shrine of Aume stands among the hearths; happiness +3 for 15 days."
+      },
+      {
+        "label": "The Stake's hall is theirs on holy days",
+        "desc": "No shrine; happiness +1 for 20 days."
+      },
+      {
+        "label": "Refuse them",
+        "desc": "Happiness −4 for 10 days; Aume remembers."
+      }
+    ]
+  },
+  "lukuku_first": {
+    "title": "The first fall",
+    "text": "Under the Lukuku flagstones the diggers find a hall older than the Concord: a mosaic of a city with three lanterns, and a script no Academy reads. Whatever fell here fell twice.",
+    "choices": [
+      {
+        "label": "Catalogue it for the Academy",
+        "desc": "Educated share +5%; +1,000 crowns from the Crown for the finding."
+      },
+      {
+        "label": "Sell the mosaic",
+        "desc": "+4,000 crowns; the diggers are ashamed."
+      }
+    ]
+  },
+  "lukuku_door": {
+    "title": "The door under the flagstones",
+    "text": "The diggers have found a sealed door, warm to the touch, with the same script as the mosaic. The foreman says it hums in the same key as the ley. She would rather not open it. The Grimmen would rather not be asked.",
+    "choices": [
+      {
+        "label": "Seal it with the Rite of Quieting",
+        "desc": "Costs 1,500 crowns; unquieted dead −15; nothing comes out."
+      },
+      {
+        "label": "Open it",
+        "desc": "Half the time a hoard: +8,000 crowns and relics. Half the time the old dead: eight restless rise at the ruins and the unquieted +20."
+      }
+    ]
+  },
+  "relic_stolen": {
+    "title": "The relic is gone",
+    "text": "The Concord lantern-core has vanished from the Academy's warded case. A cult of the Undying Court is suspected; their marks are chalked on the door.",
+    "choices": [
+      {
+        "label": "Send the Watch after them (500 crowns)",
+        "desc": "Likely recovers the relic and its worth: +2,500 crowns."
+      },
+      {
+        "label": "Let it go",
+        "desc": "Unrest +6% for 12 days; the cult is emboldened."
+      }
+    ]
+  },
+  "guilds_return": {
+    "title": "The guilds return",
+    "text": "Pleased with the last bargain, the guilds propose a lasting one: a permanent Craft tithe cap of 8% in exchange for funding half of a Guildhall.",
+    "choices": [
+      {
+        "label": "Seal the pact",
+        "desc": "+1,500 crowns toward a Guildhall; Craft tithe capped at 8% for 120 days."
+      },
+      {
+        "label": "Decline",
+        "desc": "No effect."
+      }
+    ]
+  },
+  "grimmen_boneyard": {
+    "title": "A garden for the grey",
+    "text": "The Grimmen you took in ask to raise a Boneyard of their own for their carried dead. Their sextons will tend it; they ask only for the ground and the stone.",
+    "choices": [
+      {
+        "label": "Grant the ground (700 crowns)",
+        "desc": "A Boneyard is raised beside a road near the hearths; unquieted dead −15."
+      },
+      {
+        "label": "Refuse",
+        "desc": "Unquieted dead +10; unrest +5% for 10 days."
+      }
+    ]
+  },
+  "thawday": {
+    "title": "Thaw-day",
+    "text": "The ice has cracked on the river. By old Vellish custom the Warden-Reeve opens the Thaw with a feast on the square, or with a day of labour on the wards.",
+    "choices": [
+      {
+        "label": "A feast (300 crowns and 40 goods)",
+        "desc": "Markets give up to 40 goods from their shelves. Happiness +3 for 15 days everywhere, and +5 more in every district whose markets fed the feast. Under 10 goods it is a thin feast: +2 for 8 days."
+      },
+      {
+        "label": "A day on the wards",
+        "desc": "Every lit Ward Lantern burns back the Gloam once more today; happiness −2 for 5 days."
+      }
+    ]
+  },
+  "remembrance": {
+    "title": "The Remembrance",
+    "text": "Mid-Ember is the Remembrance of the Hollowing. Scholars ask to read the names of the nine houses aloud from the Founding Stake; the priests of Morrow would rather the names stayed buried.",
+    "choices": [
+      {
+        "label": "Read the names",
+        "desc": "Educated share +4%. The ley stirs: unquieted dead +12, or only +3 if an Ossuary holds the bones steady."
+      },
+      {
+        "label": "Keep the silence",
+        "desc": "Unquieted dead −6, or −15 with an Ossuary to lay them in; the Four Vigils are pleased: happiness +2 for 10 days."
+      }
+    ]
+  },
+  "vigil": {
+    "title": "The Hush vigil",
+    "text": "The first night of the Hush. Tradition asks every hearth to keep a lamp burning until dawn, so that the Gloam finds no dark window to whisper at.",
+    "choices": [
+      {
+        "label": "Keep the vigil"
+      },
+      {
+        "label": "Let folk sleep"
+      }
+    ]
+  },
+  "lanternfair": {
+    "title": "The Lantern Fair",
+    "text": "Mid-Bloom, and the Guildhall asks leave to hold the Lantern Fair: carters from three wardlights, alchemists hawking draughts, and buyers who pay Bloom prices and half again.",
+    "choices": [
+      {
+        "label": "Open the fair (500 crowns)",
+        "desc": "Export prices +50% for 6 days; the carters (+10) and alchemists (+5) are pleased."
+      },
+      {
+        "label": "Keep the gates shut",
+        "desc": "No cost; hounds are about and the Watch is glad of it. The carters sulk (−8)."
+      }
+    ]
+  },
+  "egg_first": {
+    "title": "The Crown's gift",
+    "text": "A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg \"so that the valley may learn what it is to keep a dragon\".",
+    "choices": [
+      {
+        "label": "Accept the egg"
+      },
+      {
+        "label": "Decline politely",
+        "desc": "+800 crowns from the Crown for your modesty; no egg."
+      }
+    ]
+  },
+  "egg_poachers": {
+    "title": "Poachers at the gate",
+    "text": "Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.",
+    "choices": [
+      {
+        "label": "Buy the egg (2,500 crowns)",
+        "desc": "An ember, bone or glim egg, if a cradle has room."
+      },
+      {
+        "label": "Arrest them",
+        "desc": "Unrest −3% for 10 days; 40% chance the egg is recovered anyway."
+      },
+      {
+        "label": "Send them away",
+        "desc": "Nothing changes."
+      }
+    ]
+  },
+  "assessor": {
+    "title": "The Crown's assessor",
+    "text": "A grey coach with the royal lantern on its door stops at the Ruin Delve. The assessor has a ledger, a loupe and a purse, and asks what the diggers have brought up.",
+    "choices": [
+      {
+        "label": "Sell the loose relics",
+        "desc": "90 crowns each, better than the depot pays; the Crown's favour rises a fifth a relic; the sextons mutter (−5)."
+      },
+      {
+        "label": "Sell the uncatalogued pieces",
+        "desc": "1,500 crowns for each set piece the Academy has not named; they are gone from the sets; the Crown's favour +3 each. Sextons −8."
+      },
+      {
+        "label": "Keep everything for the Academy",
+        "desc": "Educated share +2%; the assessor leaves empty-handed."
+      }
+    ]
+  },
+  "fennex": {
+    "title": "The Fen-Nex come to market",
+    "text": "Fox-folk in travelling cloaks, seven of them, or nine, or five: they change between counts. They trade honestly exactly half the time and are proud of it. Their speaker offers a deal, or a quarter of the city to make their own.",
+    "choices": [
+      {
+        "label": "Trade with them",
+        "desc": "Half the time +3,000 crowns; half the time −1,500 crowns and a week of grumbling."
+      },
+      {
+        "label": "Grant them a quarter",
+        "desc": "The district with the most markets becomes the Fen-Nex quarter: its markets pay no tithe but hold twice the goods. Needs a painted district with markets."
+      },
+      {
+        "label": "Turn them away",
+        "desc": "No effect, probably."
+      }
+    ]
+  },
+  "fennex_gift": {
+    "title": "A gift from the quarter",
+    "text": "The Fen-Nex speaker brings a basket to the Founding Stake: in it, an egg the colour of fox fur, warm and purring. \"Half our gifts are real,\" she says. \"Guess which half.\"",
+    "choices": [
+      {
+        "label": "Take the egg",
+        "desc": "A fen-drake egg, if a cradle has room; or a basket of leaves."
+      },
+      {
+        "label": "Decline",
+        "desc": "Nothing changes."
+      }
+    ]
+  },
+  "longwood_sighting": {
+    "title": "Something out of Longwood",
+    "text": "Woodcutters at the forest edge saw a creature no bestiary in Vell describes: antlered, luminous, walking on the mist. It looked at them for a long moment and went back into the trees.",
+    "choices": [
+      {
+        "label": "Let it be told",
+        "desc": "Happiness +3 for 12 days."
+      },
+      {
+        "label": "Send hunters after it (400 crowns)",
+        "desc": "It is never found; unrest −3% for 10 days (the hunt is a holiday)."
+      }
+    ]
+  },
+  "dr_jelly": {
+    "title": "Dr. Jelly",
+    "text": "An alchemist in a coat of many pockets, who introduces himself as Dr. Jelly and is very sorry about the name, offers one potion for 1,200 crowns. He will not say what it does. He is fairly sure it is not fatal.",
+    "choices": [
+      {
+        "label": "Buy the potion",
+        "desc": "A random large effect: crowns, happiness, schooling, or a mana headache."
+      },
+      {
+        "label": "Decline",
+        "desc": "He sells it to someone in the Craft district instead."
+      }
+    ]
+  },
+  "cloud_wizard": {
+    "title": "The Cloud Forest Wizard",
+    "text": "A wizard who smells of rain and moss offers to plant a grove of glimwood beside your founding node: trees that light themselves, as in the cloud forests of the far south. He asks only that nobody cut them.",
+    "choices": [
+      {
+        "label": "Let him plant",
+        "desc": "Twelve tiles near the founding node become glimwood forest: land value and happiness +4 for a season."
+      },
+      {
+        "label": "Thank him and decline",
+        "desc": "No effect."
+      }
+    ]
+  },
+  "asyrion": {
+    "title": "A traveller at the gate",
+    "text": "A quiet traveller stops at the Founding Stake, studies the spires for a long while as if checking them against a drawing, and asks nothing. Before leaving they set down a purse and a single line on a scrap of paper: \"It is good. Keep going.\"",
+    "choices": [
+      {
+        "label": "Keep the note",
+        "desc": "+500 crowns; happiness +2 for 10 days."
+      }
+    ]
+  },
+  "stormcaller": {
+    "title": "A storm caller of the Huruhui",
+    "text": "A traveller with white hair and glowing sigils on their arms asks for a hilltop to work from. They say the valleys beyond the Pass of Buluiain taught them to call rain, and that your Craft district smells like it needs some.",
+    "choices": [
+      {
+        "label": "Give them the hills",
+        "desc": "Rain over the whole city for 10 days (fires out, miasma washed, herbs thriving); educated share +2%. The Storm-Caller's Peak becomes buildable at Township."
+      },
+      {
+        "label": "Send them on to Vell-on-Sable",
+        "desc": "No Storm-Caller's Peak for this city: the stair needs its caller."
+      }
+    ]
+  },
+  "caravan": {
+    "title": "A caravan from the Plains of Belerial",
+    "text": "Dust on the Gloam road: riders on tall two-legged striders, banners the colour of the yellow plains, wagons behind. They halt at the Trade Depot and unroll their goods.",
+    "choices": [
+      {
+        "label": "Trade"
+      },
+      {
+        "label": "Sell rare goods"
+      },
+      {
+        "label": "Buy striders (2,000 crowns)",
+        "desc": "Mounted Watch patrols: watch coverage +0.2 everywhere for 60 days."
+      },
+      {
+        "label": "Auction the loose relics",
+        "desc": "The caravan bids 100 to 140 crowns a relic, above the Crown; one collector in three buys an uncatalogued piece for 2,500. Sextons −5."
+      },
+      {
+        "label": "Send them on",
+        "desc": "No effect."
+      }
+    ]
+  },
+  "merchant": {
+    "title": "The Wandering Merchant of Belerial",
+    "text": "A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.",
+    "choices": [
+      {
+        "label": "The egg"
+      },
+      {
+        "label": "Longwood seeds"
+      },
+      {
+        "label": "Ulum salts"
+      },
+      {
+        "label": "Only talk",
+        "desc": "No effect; the merchant remembers you, and two evenings of stories are a favour owed."
+      },
+      {
+        "label": "Call in the favour"
+      }
+    ]
+  },
+  "airship_tale": {
+    "title": "The captain's story",
+    "text": "The airship captain will not take her fee until she has told it: a wardlight three lanterns east whose spires sing in a different key, a market that trades in dreams, a wyrm that asked after yours by name. She has brought something back.",
+    "choices": [
+      {
+        "label": "Rayscale and glim-dust",
+        "desc": "Rayscale +4 (artifacts +10% while it lasts); Craft goods +10% for 15 days."
+      },
+      {
+        "label": "Passengers",
+        "desc": "Up to 30 folk from the other wardlight move into empty hearths."
+      },
+      {
+        "label": "The story itself",
+        "desc": "Happiness +5 for 20 days."
+      }
+    ]
+  },
+  "wyvern_tale": {
+    "title": "The wyvern's return",
+    "text": "The wyvern came back from the wardlight beyond the Gloam with more than crowns. A rider from that city followed it in, with a basket under one arm and a challenge in the other hand: their Ring would like a bout with yours, and their tamers have an egg to sell.",
+    "choices": [
+      {
+        "label": "The rival's egg (3,000 crowns)",
+        "desc": "An ember, bone, glim or storm egg, if a cradle has room."
+      },
+      {
+        "label": "Take the challenge"
+      },
+      {
+        "label": "Only the story",
+        "desc": "Happiness +4 for 15 days."
+      }
+    ]
+  },
+  "wyrm_tribute": {
+    "title": "The wyrm wants its due",
+    "text": "Its head rests on the ridge above the node, eyes like two ley-lamps. A Tallowkin who claims to understand it says the terms are simple: a tribute each season, rising, or it flies.",
+    "choices": [
+      {
+        "label": "Pay in crowns",
+        "desc": "Costs the current tribute; each tribute asks 750 crowns more than the last."
+      },
+      {
+        "label": "Pay in goods"
+      },
+      {
+        "label": "Refuse"
+      }
+    ]
+  },
+  "wyrm_binding": {
+    "title": "The song at the Court",
+    "text": "The Wyrm-Court is lit and the singers are ready. Tonight they can walk to the node and sing the binding: a night of song that ends, if the schools have taught them well, with a guardian.",
+    "choices": [
+      {
+        "label": "Sing the binding",
+        "desc": "Needs a third of the folk educated. Otherwise the singers falter and the wyrm demands tribute at once."
+      },
+      {
+        "label": "Not yet",
+        "desc": "Wait a season; the Court keeps its upkeep."
+      }
+    ]
+  },
+  "wyrm_sulks": {
+    "title": "The guardian sulks",
+    "text": "The markets have not fed the wyrm for ten days. It lies with its back to the city and the Gloam creeps a little closer each night. Its keeper says it would take leystone, or coin, as an apology.",
+    "choices": [
+      {
+        "label": "Send leystone (60)",
+        "desc": "Taken from Arcane workshops; the wyrm is content again at once."
+      },
+      {
+        "label": "Pay 3,000 crowns",
+        "desc": "Bought goods from Belerial are carted to it."
+      },
+      {
+        "label": "Let it sulk"
+      }
+    ]
+  },
+  "egg_vein": {
+    "title": "A vein egg",
+    "text": "The bound wyrm has been fed and content for a full season. At dawn the keepers find an egg on the warm stone of its node: ley-blue, veined with light, humming the note the spires hum.",
+    "choices": [
+      {
+        "label": "Keep the egg",
+        "desc": "Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown for 6,000 crowns."
+      },
+      {
+        "label": "Leave it with the wyrm",
+        "desc": "Happiness +5 for 20 days; the wyrm is grateful."
+      }
+    ]
+  },
+  "underking_envoy": {
+    "title": "The Underking's envoy",
+    "text": "A grey-cloaked envoy of the Underking comes up the ramp with two stone-faced wardens and a ledger of obligations older than the Crown. The deep holds ask what the Underhill sends them this year.",
+    "choices": [
+      {
+        "label": "Send 1,500 crowns",
+        "desc": "The deep holds open their galleries to your carts: happiness +4 for 15 days."
+      },
+      {
+        "label": "Send 30 goods",
+        "desc": "From the market shelves; happiness +2 for 10 days."
+      },
+      {
+        "label": "Refuse",
+        "desc": "The galleries close: happiness −4 for 12 days."
+      }
+    ]
+  },
+  "collapse": {
+    "title": "A gallery collapses",
+    "text": "A crack runs through the hill like a slow bell. The cutters say a gallery under the street is going, and there is an hour, perhaps two, to shore it.",
+    "choices": [
+      {
+        "label": "Shore it up (600 crowns)",
+        "desc": "The crews hold it; nothing falls."
+      },
+      {
+        "label": "Let it fall",
+        "desc": "One building on the hill is lost to ruin; the rubble counts two stone quarried."
+      }
+    ]
+  },
+  "true_leystone": {
+    "title": "A vein of true leystone",
+    "text": "The miners break into a seam that hums. True leystone, clear as water and warm as a hand: the Concord cut their Wardens from it. The Underhill has never found so much at once.",
+    "choices": [
+      {
+        "label": "Mine it",
+        "desc": "Every mine fills by 30 leystone; +3 scale for the Marvels."
+      },
+      {
+        "label": "Sell the news to the Crown",
+        "desc": "+2,500 crowns; the Crown sends its own cutters."
+      },
+      {
+        "label": "Leave it to the Veins",
+        "desc": "The seam stays in the hill: the ley nodes flow 10 more mana a day for ever."
+      }
+    ]
+  },
+  "tide_net": {
+    "title": "A tide egg in the net",
+    "text": "A fisher on the Sable hauls up something heavier than a fish: an egg the colour of deep water, finned along its seam. The pool-keepers are already arguing over who found it.",
+    "choices": [
+      {
+        "label": "Keep it",
+        "desc": "The egg goes to the Tide Pool."
+      },
+      {
+        "label": "Sell it to the Crown",
+        "desc": "+2,500 crowns."
+      },
+      {
+        "label": "Give it to the pool-keepers",
+        "desc": "Kept on the pool wall as a relic: +3 happiness for 20 days."
+      }
+    ]
+  },
+  "storm_egg": {
+    "title": "A storm egg",
+    "text": "When the mana-storm passed over the water it left something floating: an egg veined with violet lightning, humming like a struck bell. The pool-keepers wade out for it with a net on a pole.",
+    "choices": [
+      {
+        "label": "Keep it",
+        "desc": "The egg goes to the Tide Pool."
+      },
+      {
+        "label": "Sell it to the Crown",
+        "desc": "+3,000 crowns."
+      },
+      {
+        "label": "Let it hatch wild",
+        "desc": "A mana-storm breaks over the water for four days."
+      }
+    ]
+  },
+  "bargemen_strike": {
+    "title": "The bargemen's strike",
+    "text": "The bargemen have tied up every barge on the Sable and sit on the landings with their poles across their knees. They want rope-money: the river is theirs first, they say, and the Veshari only borrow it.",
+    "choices": [
+      {
+        "label": "Pay the rope-money",
+        "desc": "900 crowns; the barges cast off at dawn."
+      },
+      {
+        "label": "Let them sit",
+        "desc": "No barge sails for eight days; the carts manage."
+      }
+    ]
+  },
+  "wrights_strike": {
+    "title": "The spire-wrights' strike",
+    "text": "The spire-wrights have downed their chalk. Four spires stand on your light, they say, and every one was priced by the Crown and paid by the Tallowkin; the wrights want chalk-money of their own before another shard is set.",
+    "choices": [
+      {
+        "label": "Pay the chalk-money (700 crowns)",
+        "desc": "700 crowns; the chalk is back on the walls by dawn."
+      },
+      {
+        "label": "Let them sit",
+        "desc": "Spires and Wick-Towers cost half again for ten days."
+      }
+    ]
+  },
+  "surge_wickhouses": {
+    "title": "A surge in the wickhouses",
+    "text": "The wild surge ran down the lantern-ways and into the hearths: every candle in the wickhouses burns a hand high and blue, and the candle-eyed children will not sleep. The spire-wrights say it will pass. The mothers say snuff them.",
+    "choices": [
+      {
+        "label": "Snuff and relight (300 crowns)",
+        "desc": "300 crowns of tallow; +4 happiness for six days."
+      },
+      {
+        "label": "Let them burn bright",
+        "desc": "+15 % mana flow for six days; two hearths catch fire."
+      }
+    ]
+  },
+  "candle_child": {
+    "title": "The candle-eyed child",
+    "text": "A child of the wickhouses, her eyes two steady flames, has been found at the node at midnight, three nights running, reading the Veins aloud in a voice that is not hers. The spire-wrights want her at the node. Her mother wants her at the shrine.",
+    "choices": [
+      {
+        "label": "Let her read the Veins",
+        "desc": "A true vein: +10 mana at every node, for good."
+      },
+      {
+        "label": "Send her to the Candle-Shrine",
+        "desc": "The shrine schools her: the educated floor rises 2 %."
+      }
+    ]
+  },
+  "riot": {
+    "title": "A riot in the market",
+    "text": "Five days of shouting in the streets, and tonight the shouting has torches. A crowd is in the least-watched market, and the stalls are made of wood.",
+    "choices": [
+      {
+        "label": "Send the Watch"
+      },
+      {
+        "label": "Pay the Crown's peace (600 crowns)",
+        "desc": "Bread on the square and a Crown amnesty: no fire, and unrest −10 % for 10 days."
+      }
+    ]
+  },
+  "dragon_returns": {
+    "title": "A shadow over the cradle",
+    "text": "A dragon that left this city circles its old cradle at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.",
+    "choices": [
+      {
+        "label": "Pay its tribute"
+      },
+      {
+        "label": "Open a cradle"
+      },
+      {
+        "label": "Refuse it"
+      }
+    ]
+  },
+  "heart_warden": {
+    "title": "The High Warden of Belregi",
+    "text": "The High Warden of the Belregi Guardians comes through the Great Gate with a lead box under her cloak. In it is the Heart of Belregi.",
+    "choices": [
+      {
+        "label": "Set the Heart in the Great Gate"
+      },
+      {
+        "label": "Let the Guardians keep it"
+      },
+      {
+        "label": "Sell it to the Crown's assessor",
+        "desc": "+6,000 crowns and the Crown's favour +10. The Guardians close the Pass to you: no more pilgrims of the Pass, and the Great Gate wards at six tenths. The tales of the Heart end here."
+      }
+    ]
+  },
+  "heart_obelisks": {
+    "title": "The crimson obelisks",
+    "text": "Wardens of Uzulim, hooded, come to the Great Gate. The Heart, they say, belongs to the whole Pass, both its gates.",
+    "choices": [
+      {
+        "label": "Refuse them",
+        "desc": "The Heart stays whole in the Great Gate. Unrest +5 % for 15 days while the obelisks sulk."
+      },
+      {
+        "label": "Share the Heart"
+      },
+      {
+        "label": "Pay them off (2,500 crowns)",
+        "desc": "The Heart stays whole, and the Uzulim go home with a purse."
+      }
+    ]
+  },
+  "heart_wakes": {
+    "title": "The Heart of Belregi wakes",
+    "text": "The Hush, and the Heart of Belregi wakes. Whoever holds it, the old tales say, can ask the weather and the grey for a favour.",
+    "choices": [
+      {
+        "label": "Ask it to hold back the Gloam"
+      },
+      {
+        "label": "Ask it for rain and harvest"
+      },
+      {
+        "label": "Ask nothing of it"
+      }
+    ]
+  }
+}

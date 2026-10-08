@@ -1,0 +1,36 @@
+{
+  "_comment": "The dev board's asset pipelines (tools/devboard/README.md, DESIGN 4.120). runs: 'board' (its steps run on the board) or 'handoff' (a button writes the task for Claude and sends it through Send to Claude). A hand-off pipeline becomes a board pipeline once its steps are written into the docs: give it 'steps' and 'doc', and the page shows them with no new page code.",
+  "pipelines": [
+    {
+      "id": "paintings",
+      "name": "Paintings importer",
+      "runs": "board",
+      "doc": "docs/HANDOFF.md, The pipeline; the header of scripts/importSprites.mjs",
+      "for": "A painting (a generator's image, a sheet of the user's paintings) becomes the sprite of the same name.",
+      "steps": [
+        "Drop the painting on the card: it is saved into inspirations/<folder>/ (PNG, never overwriting).",
+        "Pick its island on the sheet (the importer's --islands, drawn over the painting); raise 'white' to about 200 to key out a light-grey shadow or grid paper.",
+        "Fill its art/sources.json entry: footprint, targetHeight from the yardstick, anchor 'centre', flip if fronted on the left, shift for a small object.",
+        "Import: npm run art -- --check writes public/art/sprites and sprites.json and the check sheet shots/import_check.png.",
+        "Judge it by eye beside the code sprite and the citizen; then mark it checked."
+      ],
+      "tests": ["tests/iteration56.test.ts", "tests/iteration77.test.ts", "tests/iteration78.test.ts", "tests/iteration84.test.ts", "tests/sprites.test.ts"]
+    },
+    {
+      "id": "tripo",
+      "name": "Tripo Studio",
+      "runs": "handoff",
+      "doc": null,
+      "for": "An image made from the prompt in Tripo Studio (Image tab), then brought in through the paintings importer.",
+      "task": "Make the art for this sprite with the Tripo Studio pipeline, using the prompt below. The pipeline is not written into EdaBuilder's docs yet: work it out with me (what I generate in Tripo Studio, how the images come to you, any steps before the paintings importer), run it for this sprite, and write the pipeline into docs/HANDOFF.md as a numbered list so the dev board can run it next time (tools/devboard/pipelines.json)."
+    },
+    {
+      "id": "aseprite",
+      "name": "Aseprite",
+      "runs": "handoff",
+      "doc": null,
+      "for": "A sprite drawn or redrawn in Aseprite (headless with --batch and Lua scripts, or by hand), at the game's pixel size.",
+      "task": "Make the art for this sprite with the Aseprite pipeline, using the prompt below as the brief. The pipeline is not written into EdaBuilder's docs yet: work it out with me (trace, redraw, export, install, as in my Azyrion Tamer project's tools/aseprite/redraw.py if it fits), show me every sprite at 8x before it goes into the game, and write the pipeline into docs/HANDOFF.md as a numbered list so the dev board can run it next time (tools/devboard/pipelines.json)."
+    }
+  ]
+}

@@ -52,8 +52,11 @@ iteration. `npm run devboard:selftest` must pass when the board changes. The gen
 `.claude/skills/game-dev-board/SKILL.md`. Its project tabs (`tracker.ts`, `github.ts`, `session.ts`, `public/project.js`)
 show NEXT_STEPS, GitHub and the balance cache, and "Send to Claude" hands a task to Claude Code on the user's PC or to a
 GitHub issue labelled `dev-board`; a send makes no commits, and a session started from one follows this process as any
-other. Its next part is NEXT_STEPS item 1. The Tripo Studio and Aseprite
-asset pipelines are still to be written into the docs; the board's pipeline registry (part 3) takes them as they come.
+other. Its art side (`prompts.ts`, `pipelines.ts`, `pipelines.json`, `textCheck.ts`, `public/art.js`) keeps image prompts in
+`art/prompts/`, runs the paintings importer and hands Tripo Studio and Aseprite off to Claude. The text of edicts, events,
+quests and guilds is in `src/data/content/text/` (read by id; a new one still starts in code). The Tripo Studio and
+Aseprite asset pipelines are still to be written into the docs: when one is, give its entry in
+`tools/devboard/pipelines.json` `"runs": "board"` and its steps.
 
 ## Session handoff
 
