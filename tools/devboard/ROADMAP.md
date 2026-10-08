@@ -1,14 +1,15 @@
 # Dev board roadmap (EdaBuilder)
 
 Written 2026-10-08. Part 1 is built (iteration 87, DESIGN §4.118): the content as data, and the board's content tabs,
-sprites, art status and safe editing. Parts 2 and 3 are planned and come next (`docs/NEXT_STEPS.md` items 1 and 2).
+sprites, art status and safe editing. Part 2 is built (iteration 88, DESIGN §4.119). Part 3 is planned and comes next
+(`docs/NEXT_STEPS.md` item 1).
 Phases C to E are a brainstorm: nothing there is decided, and each idea becomes an iteration only when the user puts
 it on the list. Every iteration follows the standing process in CLAUDE.md: a plan first, the verification bar, docs,
 ship. `NEXT_STEPS.md` holds the proposed order.
 
 Size: S (part of an iteration), M (one iteration), L (more than one).
 
-## Part 2 · The tracker and Send to Claude (planned, next)
+## Part 2 · The tracker and Send to Claude (built, iteration 88)
 - **NEXT_STEPS tab:** the ordered list and the iterations done, each linked to its DESIGN `§4.NN` section, shown in a
   side panel.
 - **GitHub tab:** milestones and issues on Asyrion/EdaBuilder through `gh` (list, add, edit, comment, close).
@@ -16,7 +17,7 @@ Size: S (part of an iteration), M (one iteration), L (more than one).
 - **Send to Claude:** a "new game element" composer and a button on every card. The task goes to Claude Code on the
   user's PC (the `claude-cli://` link or a new terminal) or becomes a GitHub issue.
 
-## Part 3 · Asset prompts and pipelines (planned)
+## Part 3 · Asset prompts and pipelines (planned, next)
 - **Prompt studio:** a brief, a draft from the house art rules, "Refine with Claude" (`claude -p` on the user's PC), and
   the prompts kept in `art/prompts/`.
 - **Pipeline registry:**

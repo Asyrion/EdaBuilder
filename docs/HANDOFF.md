@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
 Written for a new session. The eda-lore swap (below) is done: the user's own sprites from `eda-lore` replaced every game
-asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118; its parts 2 and 3 are NEXT_STEPS items 1 and 2), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
+asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 88 (the dev board, part 2: the Next steps, GitHub and Balance tabs, Send to Claude to Claude Code on the PC or a GitHub issue, the "New element" composer, DESIGN §4.119; part 3 is NEXT_STEPS item 1), 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
 84 (the eda-lore swap, batch 2: every
 other compatible asset, §4.115), 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
 eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks

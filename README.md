@@ -28,14 +28,17 @@ npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an e
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
-npm run devboard   # the dev board, http://127.0.0.1:8771: browse and edit the content, sprites and art status (tools/devboard)
+npm run devboard   # the dev board, http://127.0.0.1:8771: content, sprites and art status; next steps, GitHub, balance; Send to Claude (tools/devboard)
 npm run devboard:selftest   # the board's own checks
 ```
 
 **The dev board** (`tools/devboard/README.md`, DESIGN §4.118): a local page with a tab per kind of content (buildings,
 roads, milestones, relic sets; edicts, events, quests and guilds read-only). Each building shows its sprites, imported or
 drawn in code, and its art status. Edits save only what changed, are checked by `validateContent` and the sprite rule, and
-can be undone. Run one instance; it serves every session.
+can be undone. Its project tabs (DESIGN §4.119) show the next steps and the iterations done with their DESIGN sections,
+GitHub's milestones and issues (through `gh`) and the balance cache as charts. "Send to Claude" hands any item, issue or
+card to Claude Code on your PC or files it as a GitHub issue; "New element" writes the task for a new building, road,
+edict, event, quest or creature. Run one instance; it serves every session.
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
 push to `main`. The Vite base is relative, so it works from any sub-path.
