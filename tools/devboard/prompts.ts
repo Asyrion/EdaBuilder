@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { FACTIONS } from '../../src/data/factions';
 import { findClaude } from './session';
 
+/** Tripo's Image tab takes a prompt of at most 1000 characters. */
+export const TRIPO_MAX = 1000;
 export const SPRITE_RE = /^[A-Za-z][A-Za-z0-9_]*$/;
 export const promptFile = (sprite: string) => {
   if (!SPRITE_RE.test(sprite)) throw new Error(`"${sprite}" is not a sprite name`);
@@ -38,11 +40,13 @@ export function yardstick(b: Building): { citizens: string; px: number | null; w
 export function houseRules(b?: Building): string[] {
   const y = b ? yardstick(b) : null;
   return [
-    'One subject alone on a plain flat white background: no ground tile, no drop shadow, no frame, no text, nothing else in the picture.',
-    'Isometric 2:1 view from above (about 30 degrees down), so its footprint is a diamond twice as wide as it is deep.',
-    'The front (door, sign, open side) on the right-hand face; the left-hand face is the side wall.',
-    b ? `Footprint: ${b.w} by ${b.h} tiles. Height: ${y!.citizens === 'free' ? 'free, it may tower over the houses' : `at most ${y!.citizens} citizens tall (a citizen is a person 12 px tall; about ${y!.px} px in the game)`}: ${y!.why}.` : 'Size: as tall as it would stand beside a person 12 px tall.',
-    'Hand-painted modern pixel art in the look of the Eda lore sheets: crisp pixels, readable at small size, a dark outline, muted earthy colours, warm lantern light, blue ley-light accents.',
+    // positive phrasing only (a negation invites what it names; Tripo's exclusions go in its negative-prompt field), and
+    // short: the whole draft fits Tripo's 1000 characters (docs/ART_PIPELINES.md, the prompt rules)
+    'One subject, whole and alone, on a plain flat white background.',
+    'Isometric 2:1 view from above, about 30 degrees down.',
+    'Its front (door, sign, open side) on the right-hand face.',
+    b ? `Footprint: ${b.w} by ${b.h} tiles; ${y!.citizens === 'free' ? 'it may tower over the houses' : `about ${y!.citizens} people tall`} (${y!.why}).` : 'As tall as it would stand beside a person.',
+    'Crisp modern pixel art like the Eda lore sheets: a dark outline, muted earthy colours, warm lantern light, blue ley-light accents.',
   ];
 }
 
@@ -79,7 +83,9 @@ export function draftFor(b: Building | null, sprite: string, brief: string): str
     : `Isometric pixel-art game sprite for "${sprite}" in a dark-fantasy city-builder in the world of Eda. ${what}`;
   const people = b ? peopleOf(b) : [];
   const look = people.length === 1 ? [`Built by the ${PEOPLE_LOOK[people[0]]}`] : [];
-  return [head, ...look, ...houseRules(b ?? undefined)].join('\n');
+  const rest = [...look, ...houseRules(b ?? undefined)].join('\n');
+  const room = TRIPO_MAX - rest.length - 1; // the brief gives way first: the rules always fit
+  return `${head.length > room ? head.slice(0, Math.max(0, room - 1)).replace(/\s+\S*$/, '') + '…' : head}\n${rest}`;
 }
 
 /** The task for Claude: improve the draft into one prompt, with a short note on what changed. */
@@ -95,7 +101,7 @@ export function refineTask(root: string, b: Building | null, sprite: string, d: 
     ...(lore.length ? ['', 'Lore that names it:', ...lore.map((l) => `- ${l}`)] : []),
     ...(d.brief.trim() ? ['', `The designer's brief: ${d.brief.trim()}`] : []),
     '', 'The draft:', d.refined.trim() || d.draft.trim() || draftFor(b, sprite, d.brief),
-    '', 'Answer in exactly this form, nothing before or after:', 'PROMPT:', '<the improved prompt, one paragraph plus the house rules as short sentences>', 'NOTE:', '<one or two sentences: what you changed and why>',
+    '', 'Answer in exactly this form, nothing before or after:', 'PROMPT:', '<the improved prompt: under 1000 characters in all (Tripo\'s cap), positive phrasing only (a negation invites what it names), the house rules as short sentences>', 'NOTE:', '<one or two sentences: what you changed and why>',
   ].join('\n');
 }
 

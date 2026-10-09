@@ -24,7 +24,8 @@ import type { Json } from './jsonspan';
 import { GhError, githubState, issueComment, issueWrite, milestoneWrite } from './github';
 import { toClaude, toIssue } from './session';
 import { blank, draftFor, houseRules, jobOf, loreFor, promptFile, refineTask, startRefine, type PromptData } from './prompts';
-import { Busy, handoffTask, importState, islands, paintingPath, paintings, pipelines, runImport, savePainting } from './pipelines';
+import { Busy, asepriteState, handoffTask, importState, islands, paintingPath, paintings, pipelines, runAseprite, runImport, savePainting } from './pipelines';
+import { Busy as TripoBusy, generate, roundFile, roundState, roundsOf, whoami } from './tripo';
 import { balance, designIndex, designSection, nextSteps } from './tracker';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -213,6 +214,28 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       try { const p = paintingPath(ROOT, url.searchParams.get('src') ?? ''); return existsSync(p) ? send(res, 200, readFileSync(p), 'image/png') : send(res, 404, { error: 'no painting' }); }
       catch (e) { return send(res, 400, { error: (e as Error).message }); }
     }
+    // the Tripo and Aseprite pipelines (iteration 91)
+    if (path === '/api/tripo/whoami') return send(res, 200, await whoami());
+    if (path === '/api/tripo/rounds') {
+      try { const sp = url.searchParams.get('sprite') ?? ''; return send(res, 200, { rounds: roundsOf(ROOT, sp), current: roundState(sp) }); }
+      catch (e) { return send(res, 400, { error: (e as Error).message }); }
+    }
+    const tm = /^\/tripo\/(.+)$/.exec(path);
+    if (tm) {
+      try {
+        const p = roundFile(ROOT, decodeURIComponent(tm[1]));
+        const type = /\.webp$/i.test(p) ? 'image/webp' : /\.jpe?g$/i.test(p) ? 'image/jpeg' : 'image/png';
+        return existsSync(p) ? send(res, 200, readFileSync(p), type) : send(res, 404, { error: 'no such image' });
+      } catch (e) { return send(res, 400, { error: (e as Error).message }); }
+    }
+    if (path === '/api/aseprite') {
+      const sp = url.searchParams.get('sprite') ?? '';
+      if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(sp)) return send(res, 400, { error: 'bad sprite' });
+      const has = (f: string) => existsSync(join(ROOT, 'art/aseprite', f));
+      return send(res, 200, { run: asepriteState(), traced: has(`${sp}.aseprite`), tracePreview: has(`${sp}.trace_8x.png`), exported: has(`export/${sp}.png`), preview: has(`export/${sp}_8x.png`) });
+    }
+    const am = /^\/aseprite\/((?:export\/)?[A-Za-z][A-Za-z0-9_]*(?:\.trace|\.trace_8x)?\.png)$/.exec(path);
+    if (am) { const p = join(ROOT, 'art/aseprite', am[1]); return existsSync(p) ? send(res, 200, readFileSync(p), 'image/png') : send(res, 404, { error: 'not made yet' }); }
     if (path === '/shot/import_check.png') {
       const p = join(ROOT, 'shots/import_check.png');
       return existsSync(p) ? send(res, 200, readFileSync(p), 'image/png') : send(res, 404, { error: 'no check sheet yet: run the import' });
@@ -248,6 +271,8 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     },
     '/api/upload': () => ({ src: savePainting(ROOT, str('folder'), str('name'), str('data')) }),
     '/api/pipeline/import': () => runImport(ROOT),
+    '/api/tripo/generate': () => generate(ROOT, str('sprite'), str('prompt')),
+    '/api/aseprite/run': () => runAseprite(ROOT, str('sprite'), str('step'), !!d.force),
     '/api/pipeline/handoff': () => {
       const p = pipelines(ROOT).find((x) => x.id === str('pipeline'));
       if (!p) throw new BadRequest(`no pipeline ${str('pipeline')}`);
@@ -257,7 +282,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   };
   if (artRoutes[path]) {
     try { return send(res, 200, { ok: true, result: artRoutes[path]() }); }
-    catch (e) { return send(res, e instanceof Busy ? 409 : 400, { error: (e as Error).message }); }
+    catch (e) { return send(res, e instanceof Busy || e instanceof TripoBusy ? 409 : 400, { error: (e as Error).message }); }
   }
   // the project side (iteration 88): GitHub and Send to Claude write nothing in the checkout and need no check after
   const project: Record<string, () => unknown> = {

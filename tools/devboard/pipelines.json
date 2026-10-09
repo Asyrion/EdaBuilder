@@ -1,11 +1,11 @@
 {
-  "_comment": "The dev board's asset pipelines (tools/devboard/README.md, DESIGN 4.120). runs: 'board' (its steps run on the board) or 'handoff' (a button writes the task for Claude and sends it through Send to Claude). A hand-off pipeline becomes a board pipeline once its steps are written into the docs: give it 'steps' and 'doc', and the page shows them with no new page code.",
+  "_comment": "The dev board's asset pipelines (tools/devboard/README.md, docs/ART_PIPELINES.md, DESIGN 4.120 and 4.122). runs: 'board' (its steps run on the board) or 'handoff' (a button writes the task for Claude and sends it through Send to Claude). Every pipeline keeps its hand-off 'task' too, so a step can always go to Claude instead.",
   "pipelines": [
     {
       "id": "paintings",
       "name": "Paintings importer",
       "runs": "board",
-      "doc": "docs/HANDOFF.md, The pipeline; the header of scripts/importSprites.mjs",
+      "doc": "docs/ART_PIPELINES.md (the paintings importer); the header of scripts/importSprites.mjs",
       "for": "A painting (a generator's image, a sheet of the user's paintings) becomes the sprite of the same name.",
       "steps": [
         "Drop the painting on the card: it is saved into inspirations/<folder>/ (PNG, never overwriting).",
@@ -14,23 +14,50 @@
         "Import: npm run art -- --check writes public/art/sprites, the packed sheet in public/art/sheets, sprites.json and the check sheet shots/import_check.png (commit the sprites, the sheet and the manifest).",
         "Judge it by eye beside the code sprite and the citizen; then mark it checked."
       ],
-      "tests": ["tests/iteration56.test.ts", "tests/iteration77.test.ts", "tests/iteration78.test.ts", "tests/iteration84.test.ts", "tests/sprites.test.ts"]
+      "tests": [
+        "tests/iteration56.test.ts",
+        "tests/iteration77.test.ts",
+        "tests/iteration78.test.ts",
+        "tests/iteration84.test.ts",
+        "tests/sprites.test.ts"
+      ]
     },
     {
       "id": "tripo",
       "name": "Tripo Studio",
-      "runs": "handoff",
-      "doc": null,
-      "for": "An image made from the prompt in Tripo Studio (Image tab), then brought in through the paintings importer.",
-      "task": "Make the art for this sprite with the Tripo Studio pipeline, using the prompt below. The pipeline is not written into EdaBuilder's docs yet: work it out with me (what I generate in Tripo Studio, how the images come to you, any steps before the paintings importer), run it for this sprite, and write the pipeline into docs/HANDOFF.md as a numbered list so the dev board can run it next time (tools/devboard/pipelines.json)."
+      "runs": "board",
+      "doc": "docs/ART_PIPELINES.md (Tripo Studio); Azyrion Tamer docs 04 §2 and §11",
+      "for": "A painting made from the sprite's prompt with Nano Banana 2 in Tripo Studio, by you (Route 1) or by Claude through the Tripo CLI on your Studio credits (Route 2), then brought in through the paintings importer.",
+      "steps": [
+        "Write the prompt on the Art panel (refine it with Claude): under 1000 characters, positive phrasing, one subject on plain white, the isometric 2:1 view, the front on the right face, the yardstick height.",
+        "Route 1 (you): Tripo Studio, Image tab, Nano Banana 2, 1:1, 4 images; the house exclusions in the negative-prompt field. Drop the best one on the panel: it is saved as inspirations/tripo/<sprite>.png.",
+        "Route 2 (Claude): log in once in your own terminal (tripo auth login, about 2 h; the panel shows whoami). 'Generate 4' runs tripo image with Nano Banana 2 (about 8 credits a round) into art/tripo/<sprite>/round<n>/ (not committed).",
+        "Pick from the round's contact sheet: each image is measured (how much of it is the white the importer keys out, how flat its corners are, its size). Claude recommends one; another round rewrites the prompt where this one missed. 'Use this one' saves it as inspirations/tripo/<sprite>.png.",
+        "Then the paintings importer: its island, its art/sources.json entry, the import, judged by eye and marked checked."
+      ],
+      "task": "Make the art for this sprite with the Tripo Studio pipeline (docs/ART_PIPELINES.md), using the prompt below: ask me first which route (I generate in Tripo Studio, or you run the Tripo CLI on my credits), then bring the pick in through the paintings importer and show it to me in the game before it is committed."
     },
     {
       "id": "aseprite",
       "name": "Aseprite",
-      "runs": "handoff",
-      "doc": null,
-      "for": "A sprite drawn or redrawn in Aseprite (headless with --batch and Lua scripts, or by hand), at the game's pixel size.",
-      "task": "Make the art for this sprite with the Aseprite pipeline, using the prompt below as the brief. The pipeline is not written into EdaBuilder's docs yet: work it out with me (trace, redraw, export, install, as in my Azyrion Tamer project's tools/aseprite/redraw.py if it fits), show me every sprite at 8x before it goes into the game, and write the pipeline into docs/HANDOFF.md as a numbered list so the dev board can run it next time (tools/devboard/pipelines.json)."
+      "runs": "board",
+      "doc": "docs/ART_PIPELINES.md (Aseprite); Azyrion Tamer docs 06 §2b",
+      "for": "A sprite redrawn as clean, editable pixel art in Aseprite: indexed, a small palette, its edge in ink, stray pixels gone. The .aseprite is the source of truth from the first trace on.",
+      "steps": [
+        "Trace: the sprite as the game has it (imported, else drawn in code) becomes art/aseprite/<sprite>.aseprite (npx tsx scripts/aseprite.ts <sprite> trace). An .aseprite is never traced over without --force.",
+        "Edit it in Aseprite, by hand (Aseprite's path: ASEPRITE, else the Steam install).",
+        "Export: art/aseprite/export/<sprite>.png and its 8x preview (scripts/aseprite.ts <sprite> export).",
+        "Review: the 8x preview beside the sprite the game has now. Nothing is installed before you have seen it.",
+        "Install: its art/sources.json entry becomes pixel: true (taken as drawn), the old entry is switched off and kept, and the importer runs (scripts/aseprite.ts <sprite> install)."
+      ],
+      "tests": [
+        "tests/iteration56.test.ts",
+        "tests/iteration77.test.ts",
+        "tests/iteration78.test.ts",
+        "tests/iteration84.test.ts",
+        "tests/sprites.test.ts"
+      ],
+      "task": "Redraw this sprite with the Aseprite pipeline (docs/ART_PIPELINES.md) using the brief below: trace, the edits it needs, export, show me the 8x preview and the .aseprite before install, then install and show it in the game."
     }
   ]
 }

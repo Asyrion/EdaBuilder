@@ -12,6 +12,9 @@
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
 // stop the background key.
+// pixel: true (iteration 91, docs/ART_PIPELINES.md): a sprite drawn at its game size (an Aseprite export, transparent where
+// empty) is taken as drawn: cropped to its pixels and anchored, flipped if asked, never keyed, scaled, sharpened,
+// quantized or outlined.
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { decodePng, encodePng } from './lib/png.mjs';
@@ -65,6 +68,12 @@ for (const e of sources.sprites) {
     });
     continue;
   }
+  if (e.pixel) { // drawn at its game size (iteration 91): its own transparency, every pixel kept as drawn
+    let img = crop(load(e.src)).img;
+    if (e.flip) img = mirror(img);
+    results.push({ e, kind, img });
+    continue;
+  }
   let img = e.rect ? keyBackground(cropRect(load(e.src), e.rect), e.white ?? 235, e.holes ?? 0) : keyBackground(load(e.src), e.white ?? 235, e.holes ?? 0);
   if (!e.rect && e.island !== undefined) { const list = islands(img); const f = list[e.island]; if (!f) throw new Error(`${e.name}: island ${e.island} of ${list.length}`); img = cropRect(img, [f.x, f.y, f.w, f.h]); }
   if (kind !== 'ground') img = crop(e.islands === 'keep' ? img : keepLargest(img)).img;
@@ -111,8 +120,8 @@ for (const list of families.values()) {
 for (const r of results) {
   const { e, kind } = r;
   // buildings and props get the procedural set's dark outline (the sprite grows a pixel each side; the anchors follow)
-  const sprite = kind === 'ground' ? r.img : e.outline === false ? quantize(r.img, e.colors ?? 32) : outline(pad(quantize(r.img, e.colors ?? 32), 1));
-  if (kind !== 'ground' && e.outline !== false) r.img = pad(r.img, 1); // the glow source keeps the same frame
+  const sprite = kind === 'ground' || e.pixel ? r.img : e.outline === false ? quantize(r.img, e.colors ?? 32) : outline(pad(quantize(r.img, e.colors ?? 32), 1));
+  if (kind !== 'ground' && !e.pixel && e.outline !== false) r.img = pad(r.img, 1); // the glow source keeps the same frame
   let anchor;
   if (kind === 'ground') anchor = { ax: 16, ay: 0 };
   else if (kind === 'vehicle') anchor = { ax: Math.round(sprite.w / 2), ay: sprite.h - 1 }; // wheels and hooves on the agent's point

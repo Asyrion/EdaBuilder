@@ -62,15 +62,17 @@ export function paintings(root: string): Record<string, string[]> {
 
 // ---------------- the import run ----------------
 
-export interface Run { id: number; state: 'running' | 'done' | 'failed'; log: string[]; started: number; ended?: number; code?: number | null }
-let current: Run | null = null, last: Run | null = null, nextRun = 1;
+export interface Run { id: number; what: string; state: 'running' | 'done' | 'failed'; log: string[]; started: number; ended?: number; code?: number | null }
+let current: Run | null = null, nextRun = 1;
+const lastOf = new Map<string, Run>();
 
-/** `node scripts/importSprites.mjs --check` (what `npm run art -- --check` runs); one at a time. */
-export function runImport(root: string): Run {
-  if (current) throw new Busy('An import is running already; wait for it to finish.');
-  const run: Run = { id: nextRun++, state: 'running', log: [], started: Date.now() };
-  current = run;
-  const child = spawn(process.execPath, ['scripts/importSprites.mjs', '--check'], { cwd: root });
+/** A pipeline script in a child process, its log kept for the page. One at a time across the importer and the Aseprite
+    steps: both write the art the game loads (public/art, art/sources.json). */
+export function runScript(root: string, what: string, args: string[]): Run {
+  if (current) throw new Busy(`${current.what} is running already; wait for it to finish.`);
+  const run: Run = { id: nextRun++, what, state: 'running', log: [], started: Date.now() };
+  current = run; lastOf.set(what.split(' ')[0], run);
+  const child = spawn(process.execPath, args, { cwd: root });
   const take = (d: Buffer) => { for (const l of String(d).split('\n')) if (l.trim()) run.log.push(l); if (run.log.length > 2000) run.log.splice(0, run.log.length - 2000); };
   child.stdout.on('data', take);
   child.stderr.on('data', take);
@@ -78,13 +80,24 @@ export function runImport(root: string): Run {
     if (run.state !== 'running') return;
     if (err) run.log.push(err);
     Object.assign(run, { state: code === 0 ? 'done' : 'failed', code, ended: Date.now() });
-    last = run; current = null;
+    current = null;
   };
   child.on('error', (e) => end(null, e.message));
   child.on('close', (code) => end(code));
   return run;
 }
-export const importState = () => current ?? last;
+
+/** `node scripts/importSprites.mjs --check` (what `npm run art -- --check` runs). */
+export const runImport = (root: string) => runScript(root, 'import', ['scripts/importSprites.mjs', '--check']);
+
+/** An Aseprite step (scripts/aseprite.ts) for a sprite: trace, export or install (install runs the importer itself). */
+export function runAseprite(root: string, sprite: string, step: string, force = false): Run {
+  if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(sprite)) throw new Error(`"${sprite}" is not a sprite name`);
+  if (!['trace', 'export', 'install'].includes(step)) throw new Error(`no Aseprite step ${step}`);
+  return runScript(root, `aseprite ${step} ${sprite}`, ['--import', 'tsx', 'scripts/aseprite.ts', sprite, step, ...(force && step === 'trace' ? ['--force'] : [])]);
+}
+export const asepriteState = () => lastOf.get('aseprite') ?? null;
+export const importState = () => lastOf.get('import') ?? null;
 
 /** The hand-off task of a pipeline not yet written into the docs. */
 export function handoffTask(p: Pipeline, sprite: string, what: string, prompt: string): string {

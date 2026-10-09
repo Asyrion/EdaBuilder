@@ -120,3 +120,8 @@ pre.log { background: var(--bg); border: 1px solid var(--line); border-radius: 6
 .drop { margin-top: 6px; padding: 10px; border: 2px dashed var(--line); border-radius: 8px; font-size: 12px; }
 .entry { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .entry label { display: inline-flex; gap: 4px; align-items: center; }
+/* the Tripo round's contact sheet (iteration 91) */
+.contact { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+.contact figure { margin: 0; border: 1px solid var(--line); border-radius: 8px; padding: 6px; background: var(--bg); }
+.contact img { width: 100%; height: auto; display: block; border-radius: 4px; background: #fff; }
+.contact figcaption { margin-top: 4px; }

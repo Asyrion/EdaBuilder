@@ -53,10 +53,11 @@ iteration. `npm run devboard:selftest` must pass when the board changes. The gen
 show NEXT_STEPS, GitHub and the balance cache, and "Send to Claude" hands a task to Claude Code on the user's PC or to a
 GitHub issue labelled `dev-board`; a send makes no commits, and a session started from one follows this process as any
 other. Its art side (`prompts.ts`, `pipelines.ts`, `pipelines.json`, `textCheck.ts`, `public/art.js`) keeps image prompts in
-`art/prompts/`, runs the paintings importer and hands Tripo Studio and Aseprite off to Claude. The text of edicts, events,
-quests and guilds is in `src/data/content/text/` (read by id; a new one still starts in code). The Tripo Studio and
-Aseprite asset pipelines are still to be written into the docs: when one is, give its entry in
-`tools/devboard/pipelines.json` `"runs": "board"` and its steps.
+`art/prompts/` and runs the art pipelines. The text of edicts, events,
+quests and guilds is in `src/data/content/text/` (read by id; a new one still starts in code). The art pipelines (the paintings
+importer, Tripo Studio by hand or through the Tripo CLI, Aseprite) are written in `docs/ART_PIPELINES.md` and run from a
+sprite's Art panel (`tools/devboard/tripo.ts`, `scripts/aseprite.ts`); a change to one goes into that doc and
+`tools/devboard/pipelines.json` together.
 
 ## Session handoff
 

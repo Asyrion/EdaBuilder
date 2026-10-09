@@ -11,6 +11,8 @@ the Plan panel first, the verification bar, docs, ship (CLAUDE.md).
    Done when: a prompt is drafted, refined with Claude and saved with its building; the paintings importer runs from a
    card to a checked sprite; Tripo Studio and Aseprite hand off to Claude; the text of edicts, events, quests and
    guilds is edited as JSON with the bar identical to main.
+   The Tripo Studio and Aseprite pipelines, written into `docs/ART_PIPELINES.md` and run from the Art panel, followed in
+   iteration 91 (DESIGN §4.122).
 3. **Footprint and yardstick check on every card** (C #1). It is small, and it guards the art rules every import touches.
 4. **Islands picker for a new sheet** (C #2). Part 3 built the picker for one island (boxes over the sheet, the entry
    filled from it); what remains is a whole sheet at once: many islands into many entries, each named.

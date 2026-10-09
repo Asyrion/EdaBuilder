@@ -3,3 +3,8 @@ dist
 .vite
 shots
 *.log
+art/tripo
+art/aseprite/*.trace.lua
+art/aseprite/*.trace.png
+art/aseprite/*_8x.png
+art/aseprite/export/*_8x.png
