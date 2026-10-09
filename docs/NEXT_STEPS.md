@@ -349,6 +349,17 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 90 (a hotfix: the slow first load)
+
+- **The game starts in seconds again.** The page fetched about 1,100 sprite files one after another, so it stayed black
+  for a minute or two. `npm run art` now packs them into one sheet (`public/art/sheets/`, 2048 × 612, 609 KB) and the
+  page loads it at once. On a throttled line (100 ms, 10 Mbit/s): 2.6 s and 6 requests, against main's 119.4 s and
+  1,102 (DESIGN §4.121).
+- The atlas is cut from the sheet into the same layout, pixel for pixel the same as main's (all 1,250 sprites compared).
+  Without sheets, or if one fails, it loads the single files 24 at a time.
+- A loading line ("Unpacking the sprites… n %") stands on the page until the town is up, and shows the error if the
+  start fails.
+
 ## Done in iteration 89 (the dev board, part 3: asset prompts, pipelines and the text as data)
 
 - **The text of edicts, events, quests and guilds is data** (`src/data/content/text/*.json`, 822 strings), read by the code

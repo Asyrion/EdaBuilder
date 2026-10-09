@@ -11,7 +11,7 @@
         "Drop the painting on the card: it is saved into inspirations/<folder>/ (PNG, never overwriting).",
         "Pick its island on the sheet (the importer's --islands, drawn over the painting); raise 'white' to about 200 to key out a light-grey shadow or grid paper.",
         "Fill its art/sources.json entry: footprint, targetHeight from the yardstick, anchor 'centre', flip if fronted on the left, shift for a small object.",
-        "Import: npm run art -- --check writes public/art/sprites and sprites.json and the check sheet shots/import_check.png.",
+        "Import: npm run art -- --check writes public/art/sprites, the packed sheet in public/art/sheets, sprites.json and the check sheet shots/import_check.png (commit the sprites, the sheet and the manifest).",
         "Judge it by eye beside the code sprite and the citizen; then mark it checked."
       ],
       "tests": ["tests/iteration56.test.ts", "tests/iteration77.test.ts", "tests/iteration78.test.ts", "tests/iteration84.test.ts", "tests/sprites.test.ts"]
