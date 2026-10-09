@@ -1,4 +1,12 @@
 {
+ "sheets": [
+  {
+   "file": "sheets/sheet_0.63fbf930aed6.png",
+   "w": 2048,
+   "h": 612,
+   "hash": "63fbf930aed6"
+  }
+ ],
  "sprites": {
   "b_stake_s0": {
    "file": "sprites/b_stake_s0.png",
@@ -6,7 +14,15 @@
    "h": 60,
    "ax": 28,
    "ay": 27,
-   "glow": "sprites/b_stake_s0_glow.png"
+   "glow": "sprites/b_stake_s0_glow.png",
+   "sheet": 0,
+   "sx": 1072,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1128,
+   "gy": 143,
+   "gw": 55,
+   "gh": 60
   },
   "b_stake_s1": {
    "file": "sprites/b_stake_s1.png",
@@ -14,7 +30,15 @@
    "h": 60,
    "ax": 28,
    "ay": 27,
-   "glow": "sprites/b_stake_s1_glow.png"
+   "glow": "sprites/b_stake_s1_glow.png",
+   "sheet": 0,
+   "sx": 958,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1015,
+   "gy": 143,
+   "gw": 56,
+   "gh": 60
   },
   "b_stake_s2": {
    "file": "sprites/b_stake_s2.png",
@@ -22,7 +46,15 @@
    "h": 50,
    "ax": 33,
    "ay": 17,
-   "glow": "sprites/b_stake_s2_glow.png"
+   "glow": "sprites/b_stake_s2_glow.png",
+   "sheet": 0,
+   "sx": 1443,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1509,
+   "gy": 267,
+   "gw": 65,
+   "gh": 50
   },
   "b_stake_s3": {
    "file": "sprites/b_stake_s3.png",
@@ -30,252 +62,365 @@
    "h": 66,
    "ax": 28,
    "ay": 33,
-   "glow": "sprites/b_stake_s3_glow.png"
+   "glow": "sprites/b_stake_s3_glow.png",
+   "sheet": 0,
+   "sx": 1832,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1888,
+   "gy": 0,
+   "gw": 55,
+   "gh": 66
   },
   "grass_0": {
    "file": "sprites/grass_0.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1615,
+   "sy": 548
   },
   "grass_1": {
    "file": "sprites/grass_1.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1648,
+   "sy": 548
   },
   "grass_2": {
    "file": "sprites/grass_2.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1681,
+   "sy": 548
   },
   "grass_3": {
    "file": "sprites/grass_3.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1714,
+   "sy": 548
   },
   "meadow_0": {
    "file": "sprites/meadow_0.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 66,
+   "sy": 573
   },
   "meadow_1": {
    "file": "sprites/meadow_1.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 99,
+   "sy": 573
   },
   "meadow_2": {
    "file": "sprites/meadow_2.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 132,
+   "sy": 573
   },
   "forest_0": {
    "file": "sprites/forest_0.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1384,
+   "sy": 548
   },
   "forest_1": {
    "file": "sprites/forest_1.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1417,
+   "sy": 548
   },
   "forest_2": {
    "file": "sprites/forest_2.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1450,
+   "sy": 548
   },
   "hills_0": {
    "file": "sprites/hills_0.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1846,
+   "sy": 548
   },
   "hills_1": {
    "file": "sprites/hills_1.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1879,
+   "sy": 548
   },
   "hills_2": {
    "file": "sprites/hills_2.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1912,
+   "sy": 548
   },
   "shore_0": {
    "file": "sprites/shore_0.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 495,
+   "sy": 573
   },
   "tree_0": {
    "file": "sprites/tree_0.png",
    "w": 33,
    "h": 32,
    "ax": 16,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 222,
+   "sy": 484
   },
   "tree_1": {
    "file": "sprites/tree_1.png",
    "w": 31,
    "h": 32,
    "ax": 16,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 323,
+   "sy": 484
   },
   "tree_2": {
    "file": "sprites/tree_2.png",
    "w": 32,
    "h": 32,
    "ax": 16,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 290,
+   "sy": 484
   },
   "tree_3": {
    "file": "sprites/tree_3.png",
    "w": 31,
    "h": 32,
    "ax": 15,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 387,
+   "sy": 484
   },
   "tree_4": {
    "file": "sprites/tree_4.png",
    "w": 25,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1177,
+   "sy": 484
   },
   "tree_5": {
    "file": "sprites/tree_5.png",
    "w": 26,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1072,
+   "sy": 484
   },
   "tree_6": {
    "file": "sprites/tree_6.png",
    "w": 20,
    "h": 32,
    "ax": 10,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1344,
+   "sy": 484
   },
   "tree_7": {
    "file": "sprites/tree_7.png",
    "w": 20,
    "h": 32,
    "ax": 11,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1365,
+   "sy": 484
   },
   "tree_8": {
    "file": "sprites/tree_8.png",
    "w": 25,
    "h": 38,
    "ax": 13,
-   "ay": 36
+   "ay": 36,
+   "sheet": 0,
+   "sx": 1965,
+   "sy": 368
   },
   "tree_9": {
    "file": "sprites/tree_9.png",
    "w": 25,
    "h": 38,
    "ax": 13,
-   "ay": 36
+   "ay": 36,
+   "sheet": 0,
+   "sx": 1991,
+   "sy": 368
   },
   "tree_10": {
    "file": "sprites/tree_10.png",
    "w": 25,
    "h": 38,
    "ax": 13,
-   "ay": 36
+   "ay": 36,
+   "sheet": 0,
+   "sx": 1939,
+   "sy": 368
   },
   "tree_11": {
    "file": "sprites/tree_11.png",
    "w": 24,
    "h": 38,
    "ax": 12,
-   "ay": 36
+   "ay": 36,
+   "sheet": 0,
+   "sx": 2017,
+   "sy": 368
   },
   "bush_0": {
    "file": "sprites/bush_0.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 240,
+   "sy": 590
   },
   "bush_1": {
    "file": "sprites/bush_1.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 255,
+   "sy": 590
   },
   "bush_2": {
    "file": "sprites/bush_2.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 345,
+   "sy": 590
   },
   "bush_3": {
    "file": "sprites/bush_3.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 390,
+   "sy": 590
   },
   "bush_4": {
    "file": "sprites/bush_4.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 590
   },
   "bush_5": {
    "file": "sprites/bush_5.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 96,
+   "sy": 590
   },
   "mushroom_0": {
    "file": "sprites/mushroom_0.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 605
   },
   "mushroom_1": {
    "file": "sprites/mushroom_1.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1271,
+   "sy": 605
   },
   "mushroom_2": {
    "file": "sprites/mushroom_2.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 104,
+   "sy": 605
   },
   "glowcap_0": {
    "file": "sprites/glowcap_0.png",
@@ -283,7 +428,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_0_glow.png"
+   "glow": "sprites/glowcap_0_glow.png",
+   "sheet": 0,
+   "sx": 408,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 415,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_1": {
    "file": "sprites/glowcap_1.png",
@@ -291,7 +444,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_1_glow.png"
+   "glow": "sprites/glowcap_1_glow.png",
+   "sheet": 0,
+   "sx": 422,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 499,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_2": {
    "file": "sprites/glowcap_2.png",
@@ -299,7 +460,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_2_glow.png"
+   "glow": "sprites/glowcap_2_glow.png",
+   "sheet": 0,
+   "sx": 1884,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1956,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "b_spire": {
    "file": "sprites/b_spire.png",
@@ -307,7 +476,15 @@
    "h": 51,
    "ax": 9,
    "ay": 34,
-   "glow": "sprites/b_spire_glow.png"
+   "glow": "sprites/b_spire_glow.png",
+   "sheet": 0,
+   "sx": 1336,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1355,
+   "gy": 267,
+   "gw": 18,
+   "gh": 51
   },
   "b_spire_v0": {
    "file": "sprites/b_spire.png",
@@ -315,7 +492,15 @@
    "h": 51,
    "ax": 9,
    "ay": 34,
-   "glow": "sprites/b_spire_glow.png"
+   "glow": "sprites/b_spire_glow.png",
+   "sheet": 0,
+   "sx": 1336,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1355,
+   "gy": 267,
+   "gw": 18,
+   "gh": 51
   },
   "b_nexus": {
    "file": "sprites/b_nexus.png",
@@ -323,7 +508,15 @@
    "h": 57,
    "ax": 13,
    "ay": 24,
-   "glow": "sprites/b_nexus_glow.png"
+   "glow": "sprites/b_nexus_glow.png",
+   "sheet": 0,
+   "sx": 564,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 591,
+   "gy": 208,
+   "gw": 26,
+   "gh": 57
   },
   "b_wicktower": {
    "file": "sprites/b_wicktower.png",
@@ -331,7 +524,15 @@
    "h": 45,
    "ax": 11,
    "ay": 28,
-   "glow": "sprites/b_wicktower_glow.png"
+   "glow": "sprites/b_wicktower_glow.png",
+   "sheet": 0,
+   "sx": 707,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 730,
+   "gy": 320,
+   "gw": 22,
+   "gh": 45
   },
   "b_wicktower_v0": {
    "file": "sprites/b_wicktower.png",
@@ -339,7 +540,15 @@
    "h": 45,
    "ax": 11,
    "ay": 28,
-   "glow": "sprites/b_wicktower_glow.png"
+   "glow": "sprites/b_wicktower_glow.png",
+   "sheet": 0,
+   "sx": 707,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 730,
+   "gy": 320,
+   "gw": 22,
+   "gh": 45
   },
   "b_cistern": {
    "file": "sprites/b_cistern.png",
@@ -347,7 +556,15 @@
    "h": 62,
    "ax": 25,
    "ay": 29,
-   "glow": "sprites/b_cistern_glow.png"
+   "glow": "sprites/b_cistern_glow.png",
+   "sheet": 0,
+   "sx": 488,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 538,
+   "gy": 143,
+   "gw": 49,
+   "gh": 62
   },
   "b_cartersyard": {
    "file": "sprites/b_cartersyard.png",
@@ -355,7 +572,15 @@
    "h": 48,
    "ax": 26,
    "ay": 15,
-   "glow": "sprites/b_cartersyard_glow.png"
+   "glow": "sprites/b_cartersyard_glow.png",
+   "sheet": 0,
+   "sx": 1862,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1914,
+   "gy": 267,
+   "gw": 51,
+   "gh": 48
   },
   "b_ossuary": {
    "file": "sprites/b_ossuary.png",
@@ -363,7 +588,15 @@
    "h": 60,
    "ax": 30,
    "ay": 27,
-   "glow": "sprites/b_ossuary_glow.png"
+   "glow": "sprites/b_ossuary_glow.png",
+   "sheet": 0,
+   "sx": 718,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 779,
+   "gy": 143,
+   "gw": 60,
+   "gh": 60
   },
   "b_ossuary_v0": {
    "file": "sprites/b_ossuary.png",
@@ -371,7 +604,15 @@
    "h": 60,
    "ax": 30,
    "ay": 27,
-   "glow": "sprites/b_ossuary_glow.png"
+   "glow": "sprites/b_ossuary_glow.png",
+   "sheet": 0,
+   "sx": 718,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 779,
+   "gy": 143,
+   "gw": 60,
+   "gh": 60
   },
   "b_sextonchapel": {
    "file": "sprites/b_sextonchapel.png",
@@ -379,7 +620,15 @@
    "h": 56,
    "ax": 29,
    "ay": 23,
-   "glow": "sprites/b_sextonchapel_glow.png"
+   "glow": "sprites/b_sextonchapel_glow.png",
+   "sheet": 0,
+   "sx": 618,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 676,
+   "gy": 208,
+   "gw": 57,
+   "gh": 56
   },
   "b_sextonchapel_v0": {
    "file": "sprites/b_sextonchapel.png",
@@ -387,7 +636,15 @@
    "h": 56,
    "ax": 29,
    "ay": 23,
-   "glow": "sprites/b_sextonchapel_glow.png"
+   "glow": "sprites/b_sextonchapel_glow.png",
+   "sheet": 0,
+   "sx": 618,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 676,
+   "gy": 208,
+   "gw": 57,
+   "gh": 56
   },
   "b_boneyard": {
    "file": "sprites/b_boneyard.png",
@@ -395,7 +652,15 @@
    "h": 51,
    "ax": 25,
    "ay": 18,
-   "glow": "sprites/b_boneyard_glow.png"
+   "glow": "sprites/b_boneyard_glow.png",
+   "sheet": 0,
+   "sx": 1197,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1248,
+   "gy": 267,
+   "gw": 50,
+   "gh": 51
   },
   "b_boneyard_v0": {
    "file": "sprites/b_boneyard.png",
@@ -403,7 +668,15 @@
    "h": 51,
    "ax": 25,
    "ay": 18,
-   "glow": "sprites/b_boneyard_glow.png"
+   "glow": "sprites/b_boneyard_glow.png",
+   "sheet": 0,
+   "sx": 1197,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1248,
+   "gy": 267,
+   "gw": 50,
+   "gh": 51
   },
   "b_lyceum": {
    "file": "sprites/b_lyceum.png",
@@ -411,7 +684,15 @@
    "h": 66,
    "ax": 30,
    "ay": 33,
-   "glow": "sprites/b_lyceum_glow.png"
+   "glow": "sprites/b_lyceum_glow.png",
+   "sheet": 0,
+   "sx": 1712,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1772,
+   "gy": 0,
+   "gw": 59,
+   "gh": 66
   },
   "b_hallofwicks": {
    "file": "sprites/b_hallofwicks.png",
@@ -419,798 +700,1145 @@
    "h": 114,
    "ax": 44,
    "ay": 65,
-   "glow": "sprites/b_hallofwicks_glow.png"
+   "glow": "sprites/b_hallofwicks_glow.png",
+   "sheet": 0,
+   "sx": 180,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 269,
+   "gy": 0,
+   "gw": 88,
+   "gh": 114
   },
   "cartp_goods_0": {
    "file": "sprites/cartp_goods_0.png",
    "w": 23,
    "h": 13,
    "ax": 12,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 818,
+   "sy": 590
   },
   "cartp_goods_0_l": {
    "file": "sprites/cartp_goods_0_l.png",
    "w": 23,
    "h": 13,
    "ax": 11,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 842,
+   "sy": 590
   },
   "cartp_goods_1": {
    "file": "sprites/cartp_goods_1.png",
    "w": 23,
    "h": 16,
    "ax": 12,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 561,
+   "sy": 573
   },
   "cartp_goods_1_l": {
    "file": "sprites/cartp_goods_1_l.png",
    "w": 23,
    "h": 16,
    "ax": 11,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 585,
+   "sy": 573
   },
   "cartp_goods_2": {
    "file": "sprites/cartp_goods_2.png",
    "w": 23,
    "h": 16,
    "ax": 12,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 609,
+   "sy": 573
   },
   "cartp_goods_2_l": {
    "file": "sprites/cartp_goods_2_l.png",
    "w": 23,
    "h": 16,
    "ax": 11,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 633,
+   "sy": 573
   },
   "cartp_goods_3": {
    "file": "sprites/cartp_goods_3.png",
    "w": 23,
    "h": 13,
    "ax": 12,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 866,
+   "sy": 590
   },
   "cartp_goods_3_l": {
    "file": "sprites/cartp_goods_3_l.png",
    "w": 23,
    "h": 13,
    "ax": 11,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 890,
+   "sy": 590
   },
   "cartp_goods_4": {
    "file": "sprites/cartp_goods_4.png",
    "w": 23,
    "h": 16,
    "ax": 12,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 657,
+   "sy": 573
   },
   "cartp_goods_4_l": {
    "file": "sprites/cartp_goods_4_l.png",
    "w": 23,
    "h": 16,
    "ax": 11,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 681,
+   "sy": 573
   },
   "cartp_goods_5": {
    "file": "sprites/cartp_goods_5.png",
    "w": 24,
    "h": 14,
    "ax": 12,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 950,
+   "sy": 573
   },
   "cartp_goods_5_l": {
    "file": "sprites/cartp_goods_5_l.png",
    "w": 24,
    "h": 14,
    "ax": 12,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 975,
+   "sy": 573
   },
   "cartp_goods_6": {
    "file": "sprites/cartp_goods_6.png",
    "w": 23,
    "h": 15,
    "ax": 12,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 718,
+   "sy": 573
   },
   "cartp_goods_6_l": {
    "file": "sprites/cartp_goods_6_l.png",
    "w": 23,
    "h": 15,
    "ax": 11,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 742,
+   "sy": 573
   },
   "cartp_goods_7": {
    "file": "sprites/cartp_goods_7.png",
    "w": 23,
    "h": 15,
    "ax": 12,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 766,
+   "sy": 573
   },
   "cartp_goods_7_l": {
    "file": "sprites/cartp_goods_7_l.png",
    "w": 23,
    "h": 15,
    "ax": 11,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 790,
+   "sy": 573
   },
   "cartp_goods_8": {
    "file": "sprites/cartp_goods_8.png",
    "w": 18,
    "h": 11,
    "ax": 9,
-   "ay": 10
+   "ay": 10,
+   "sheet": 0,
+   "sx": 1706,
+   "sy": 590
   },
   "cartp_goods_8_l": {
    "file": "sprites/cartp_goods_8_l.png",
    "w": 18,
    "h": 11,
    "ax": 9,
-   "ay": 10
+   "ay": 10,
+   "sheet": 0,
+   "sx": 1725,
+   "sy": 590
   },
   "cartp_goods_9": {
    "file": "sprites/cartp_goods_9.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1458,
+   "sy": 590
   },
   "cartp_goods_9_l": {
    "file": "sprites/cartp_goods_9_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1478,
+   "sy": 590
   },
   "cartp_goods_10": {
    "file": "sprites/cartp_goods_10.png",
    "w": 19,
    "h": 15,
    "ax": 10,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 814,
+   "sy": 573
   },
   "cartp_goods_10_l": {
    "file": "sprites/cartp_goods_10_l.png",
    "w": 19,
    "h": 15,
    "ax": 9,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 834,
+   "sy": 573
   },
   "cartp_goods_11": {
    "file": "sprites/cartp_goods_11.png",
    "w": 19,
    "h": 15,
    "ax": 10,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 854,
+   "sy": 573
   },
   "cartp_goods_11_l": {
    "file": "sprites/cartp_goods_11_l.png",
    "w": 19,
    "h": 15,
    "ax": 9,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 874,
+   "sy": 573
   },
   "cartp_goods_12": {
    "file": "sprites/cartp_goods_12.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1218,
+   "sy": 590
   },
   "cartp_goods_12_l": {
    "file": "sprites/cartp_goods_12_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1238,
+   "sy": 590
   },
   "cartp_goods_13": {
    "file": "sprites/cartp_goods_13.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1258,
+   "sy": 590
   },
   "cartp_goods_13_l": {
    "file": "sprites/cartp_goods_13_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1278,
+   "sy": 590
   },
   "cartp_goods_14": {
    "file": "sprites/cartp_goods_14.png",
    "w": 18,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1618,
+   "sy": 590
   },
   "cartp_goods_14_l": {
    "file": "sprites/cartp_goods_14_l.png",
    "w": 18,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1637,
+   "sy": 590
   },
   "cartp_goods_15": {
    "file": "sprites/cartp_goods_15.png",
    "w": 18,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1656,
+   "sy": 590
   },
   "cartp_goods_15_l": {
    "file": "sprites/cartp_goods_15_l.png",
    "w": 18,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1675,
+   "sy": 590
   },
   "cartp_goods_16": {
    "file": "sprites/cartp_goods_16.png",
    "w": 19,
    "h": 13,
    "ax": 10,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 914,
+   "sy": 590
   },
   "cartp_goods_16_l": {
    "file": "sprites/cartp_goods_16_l.png",
    "w": 19,
    "h": 13,
    "ax": 9,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 934,
+   "sy": 590
   },
   "cartp_goods_17": {
    "file": "sprites/cartp_goods_17.png",
    "w": 20,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1142,
+   "sy": 573
   },
   "cartp_goods_17_l": {
    "file": "sprites/cartp_goods_17_l.png",
    "w": 20,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1163,
+   "sy": 573
   },
   "cartp_goods_18": {
    "file": "sprites/cartp_goods_18.png",
    "w": 19,
    "h": 13,
    "ax": 10,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 954,
+   "sy": 590
   },
   "cartp_goods_18_l": {
    "file": "sprites/cartp_goods_18_l.png",
    "w": 19,
    "h": 13,
    "ax": 9,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 974,
+   "sy": 590
   },
   "cartp_goods_19": {
    "file": "sprites/cartp_goods_19.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1298,
+   "sy": 590
   },
   "cartp_goods_19_l": {
    "file": "sprites/cartp_goods_19_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1318,
+   "sy": 590
   },
   "cartp_goods_20": {
    "file": "sprites/cartp_goods_20.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1338,
+   "sy": 590
   },
   "cartp_goods_20_l": {
    "file": "sprites/cartp_goods_20_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1358,
+   "sy": 590
   },
   "cartp_goods_21": {
    "file": "sprites/cartp_goods_21.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1378,
+   "sy": 590
   },
   "cartp_goods_21_l": {
    "file": "sprites/cartp_goods_21_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1398,
+   "sy": 590
   },
   "cartp_goods_22": {
    "file": "sprites/cartp_goods_22.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1284,
+   "sy": 573
   },
   "cartp_goods_22_l": {
    "file": "sprites/cartp_goods_22_l.png",
    "w": 19,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1304,
+   "sy": 573
   },
   "cartp_goods_23": {
    "file": "sprites/cartp_goods_23.png",
    "w": 19,
    "h": 13,
    "ax": 10,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 994,
+   "sy": 590
   },
   "cartp_goods_23_l": {
    "file": "sprites/cartp_goods_23_l.png",
    "w": 19,
    "h": 13,
    "ax": 9,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1014,
+   "sy": 590
   },
   "cartp_goods_24": {
    "file": "sprites/cartp_goods_24.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1418,
+   "sy": 590
   },
   "cartp_goods_24_l": {
    "file": "sprites/cartp_goods_24_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1438,
+   "sy": 590
   },
   "cartp_goods_25": {
    "file": "sprites/cartp_goods_25.png",
    "w": 19,
    "h": 13,
    "ax": 10,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1034,
+   "sy": 590
   },
   "cartp_goods_25_l": {
    "file": "sprites/cartp_goods_25_l.png",
    "w": 19,
    "h": 13,
    "ax": 9,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1054,
+   "sy": 590
   },
   "cartp_goods_26": {
    "file": "sprites/cartp_goods_26.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1324,
+   "sy": 573
   },
   "cartp_goods_26_l": {
    "file": "sprites/cartp_goods_26_l.png",
    "w": 19,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1344,
+   "sy": 573
   },
   "cartp_stone_0": {
    "file": "sprites/cartp_stone_0.png",
    "w": 24,
    "h": 14,
    "ax": 12,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1000,
+   "sy": 573
   },
   "cartp_stone_0_l": {
    "file": "sprites/cartp_stone_0_l.png",
    "w": 24,
    "h": 14,
    "ax": 12,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1025,
+   "sy": 573
   },
   "cartp_stone_1": {
    "file": "sprites/cartp_stone_1.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1498,
+   "sy": 590
   },
   "cartp_stone_1_l": {
    "file": "sprites/cartp_stone_1_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1518,
+   "sy": 590
   },
   "cartp_stone_2": {
    "file": "sprites/cartp_stone_2.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1538,
+   "sy": 590
   },
   "cartp_stone_2_l": {
    "file": "sprites/cartp_stone_2_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1558,
+   "sy": 590
   },
   "cartp_stone_3": {
    "file": "sprites/cartp_stone_3.png",
    "w": 19,
    "h": 12,
    "ax": 10,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1578,
+   "sy": 590
   },
   "cartp_stone_3_l": {
    "file": "sprites/cartp_stone_3_l.png",
    "w": 19,
    "h": 12,
    "ax": 9,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1598,
+   "sy": 590
   },
   "deer_0": {
    "file": "sprites/deer_0.png",
    "w": 12,
    "h": 16,
    "ax": 5,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 705,
+   "sy": 573
   },
   "deer_1": {
    "file": "sprites/deer_0.png",
    "w": 12,
    "h": 16,
    "ax": 5,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 705,
+   "sy": 573
   },
   "elk_0": {
    "file": "sprites/elk_0.png",
    "w": 13,
    "h": 19,
    "ax": 6,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 100,
+   "sy": 548
   },
   "elk_1": {
    "file": "sprites/elk_0.png",
    "w": 13,
    "h": 19,
    "ax": 6,
-   "ay": 20
+   "ay": 20,
+   "sheet": 0,
+   "sx": 100,
+   "sy": 548
   },
   "wolf_0": {
    "file": "sprites/wolf_0.png",
    "w": 16,
    "h": 13,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1091,
+   "sy": 590
   },
   "wolf_1": {
    "file": "sprites/wolf_0.png",
    "w": 16,
    "h": 13,
    "ax": 9,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1091,
+   "sy": 590
   },
   "hound_0": {
    "file": "sprites/hound_0.png",
    "w": 16,
    "h": 13,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1074,
+   "sy": 590
   },
   "hound_1": {
    "file": "sprites/hound_0.png",
    "w": 16,
    "h": 13,
    "ax": 10,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1074,
+   "sy": 590
   },
   "golem_0": {
    "file": "sprites/golem_0.png",
    "w": 25,
    "h": 24,
    "ax": 12,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 548
   },
   "golem_1": {
    "file": "sprites/golem_0.png",
    "w": 25,
    "h": 24,
    "ax": 12,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 548
   },
   "thrumhare_0": {
    "file": "sprites/thrumhare_0.png",
    "w": 9,
    "h": 10,
    "ax": 2,
-   "ay": 10
+   "ay": 10,
+   "sheet": 0,
+   "sx": 1757,
+   "sy": 590
   },
   "thrumhare_1": {
    "file": "sprites/thrumhare_0.png",
    "w": 9,
    "h": 10,
    "ax": 2,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1757,
+   "sy": 590
   },
   "wisp_0": {
    "file": "sprites/wisp_0.png",
    "w": 11,
    "h": 12,
    "ax": 5,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1694,
+   "sy": 590
   },
   "wisp_1": {
    "file": "sprites/wisp_0.png",
    "w": 11,
    "h": 12,
    "ax": 5,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1694,
+   "sy": 590
   },
   "skyray_0": {
    "file": "sprites/skyray_0.png",
    "w": 22,
    "h": 18,
    "ax": 11,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 114,
+   "sy": 548
   },
   "skyray_1": {
    "file": "sprites/skyray_0.png",
    "w": 22,
    "h": 18,
    "ax": 11,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 114,
+   "sy": 548
   },
   "dragon_0_1_0": {
    "file": "sprites/dragon_0_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1179,
+   "sy": 590
   },
   "dragon_0_1_1": {
    "file": "sprites/dragon_0_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 7,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1179,
+   "sy": 590
   },
   "dragon_0_2_0": {
    "file": "sprites/dragon_0_2_0.png",
    "w": 17,
    "h": 18,
    "ax": 9,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 250,
+   "sy": 548
   },
   "dragon_0_2_1": {
    "file": "sprites/dragon_0_2_0.png",
    "w": 17,
    "h": 18,
    "ax": 9,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 250,
+   "sy": 548
   },
   "dragon_1_1_0": {
    "file": "sprites/dragon_1_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1123,
+   "sy": 590
   },
   "dragon_1_1_1": {
    "file": "sprites/dragon_1_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 7,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1123,
+   "sy": 590
   },
   "dragon_1_2_0": {
    "file": "sprites/dragon_1_2_0.png",
    "w": 17,
    "h": 18,
    "ax": 9,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 268,
+   "sy": 548
   },
   "dragon_1_2_1": {
    "file": "sprites/dragon_1_2_0.png",
    "w": 17,
    "h": 18,
    "ax": 9,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 268,
+   "sy": 548
   },
   "dragon_2_1_0": {
    "file": "sprites/dragon_2_1_0.png",
    "w": 14,
    "h": 13,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1108,
+   "sy": 590
   },
   "dragon_2_1_1": {
    "file": "sprites/dragon_2_1_0.png",
    "w": 14,
    "h": 13,
    "ax": 6,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1108,
+   "sy": 590
   },
   "dragon_2_2_0": {
    "file": "sprites/dragon_2_2_0.png",
    "w": 19,
    "h": 18,
    "ax": 9,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 137,
+   "sy": 548
   },
   "dragon_2_2_1": {
    "file": "sprites/dragon_2_2_0.png",
    "w": 19,
    "h": 18,
    "ax": 9,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 137,
+   "sy": 548
   },
   "dragon_3_1_0": {
    "file": "sprites/dragon_3_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1137,
+   "sy": 590
   },
   "dragon_3_1_1": {
    "file": "sprites/dragon_3_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 7,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1137,
+   "sy": 590
   },
   "dragon_3_2_0": {
    "file": "sprites/dragon_3_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 11,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 157,
+   "sy": 548
   },
   "dragon_3_2_1": {
    "file": "sprites/dragon_3_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 11,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 157,
+   "sy": 548
   },
   "dragon_4_1_0": {
    "file": "sprites/dragon_4_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1192,
+   "sy": 590
   },
   "dragon_4_1_1": {
    "file": "sprites/dragon_4_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 7,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1192,
+   "sy": 590
   },
   "dragon_4_2_0": {
    "file": "sprites/dragon_4_2_0.png",
    "w": 16,
    "h": 18,
    "ax": 9,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 303,
+   "sy": 548
   },
   "dragon_4_2_1": {
    "file": "sprites/dragon_4_2_0.png",
    "w": 16,
    "h": 18,
    "ax": 9,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 303,
+   "sy": 548
   },
   "dragon_6_1_0": {
    "file": "sprites/dragon_6_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1151,
+   "sy": 590
   },
   "dragon_6_1_1": {
    "file": "sprites/dragon_6_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 8,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1151,
+   "sy": 590
   },
   "dragon_6_2_0": {
    "file": "sprites/dragon_6_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 13,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 176,
+   "sy": 548
   },
   "dragon_6_2_1": {
    "file": "sprites/dragon_6_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 13,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 176,
+   "sy": 548
   },
   "dragon_7_1_0": {
    "file": "sprites/dragon_7_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 5,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1165,
+   "sy": 590
   },
   "dragon_7_1_1": {
    "file": "sprites/dragon_7_1_0.png",
    "w": 13,
    "h": 13,
    "ax": 5,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1165,
+   "sy": 590
   },
   "dragon_7_2_0": {
    "file": "sprites/dragon_7_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 8,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 195,
+   "sy": 548
   },
   "dragon_7_2_1": {
    "file": "sprites/dragon_7_2_0.png",
    "w": 18,
    "h": 18,
    "ax": 8,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 195,
+   "sy": 548
   },
   "dragon_8_1_0": {
    "file": "sprites/dragon_8_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1205,
+   "sy": 590
   },
   "dragon_8_1_1": {
    "file": "sprites/dragon_8_1_0.png",
    "w": 12,
    "h": 13,
    "ax": 4,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1205,
+   "sy": 590
   },
   "dragon_8_2_0": {
    "file": "sprites/dragon_8_2_0.png",
    "w": 16,
    "h": 18,
    "ax": 5,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 320,
+   "sy": 548
   },
   "dragon_8_2_1": {
    "file": "sprites/dragon_8_2_0.png",
    "w": 16,
    "h": 18,
    "ax": 5,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 320,
+   "sy": 548
   },
   "wyrm_fly_0": {
    "file": "sprites/wyrm_fly_0.png",
    "w": 63,
    "h": 58,
    "ax": 35,
-   "ay": 58
+   "ay": 58,
+   "sheet": 0,
+   "sx": 1460,
+   "sy": 143
   },
   "wyrm_fly_1": {
    "file": "sprites/wyrm_fly_1.png",
    "w": 63,
    "h": 58,
    "ax": 35,
-   "ay": 58
+   "ay": 58,
+   "sheet": 0,
+   "sx": 1524,
+   "sy": 143
   },
   "wyrm_fly_2": {
    "file": "sprites/wyrm_fly_2.png",
    "w": 63,
    "h": 58,
    "ax": 35,
-   "ay": 58
+   "ay": 58,
+   "sheet": 0,
+   "sx": 1588,
+   "sy": 143
   },
   "hearth_l1_v0": {
    "file": "sprites/hearth_l1_v0.png",
@@ -1218,7 +1846,15 @@
    "h": 30,
    "ax": 18,
    "ay": 13,
-   "glow": "sprites/hearth_l1_v0_glow.png"
+   "glow": "sprites/hearth_l1_v0_glow.png",
+   "sheet": 0,
+   "sx": 1870,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1907,
+   "gy": 484,
+   "gw": 36,
+   "gh": 30
   },
   "hearth_l1_v1": {
    "file": "sprites/hearth_l1_v1.png",
@@ -1226,7 +1862,15 @@
    "h": 29,
    "ax": 18,
    "ay": 12,
-   "glow": "sprites/hearth_l1_v1_glow.png"
+   "glow": "sprites/hearth_l1_v1_glow.png",
+   "sheet": 0,
+   "sx": 1048,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1085,
+   "gy": 517,
+   "gw": 36,
+   "gh": 29
   },
   "hearth_l1_v2": {
    "file": "sprites/hearth_l1_v2.png",
@@ -1234,21 +1878,35 @@
    "h": 32,
    "ax": 18,
    "ay": 15,
-   "glow": "sprites/hearth_l1_v2_glow.png"
+   "glow": "sprites/hearth_l1_v2_glow.png",
+   "sheet": 0,
+   "sx": 148,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 185,
+   "gy": 484,
+   "gw": 36,
+   "gh": 32
   },
   "hearth_l1_v3": {
    "file": "sprites/hearth_l1_v3.png",
    "w": 36,
    "h": 28,
    "ax": 18,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1677,
+   "sy": 517
   },
   "hearth_l2_v0": {
    "file": "sprites/hearth_l2_v0.png",
    "w": 36,
    "h": 41,
    "ax": 18,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 625,
+   "sy": 368
   },
   "hearth_l2_v1": {
    "file": "sprites/hearth_l2_v1.png",
@@ -1256,7 +1914,15 @@
    "h": 34,
    "ax": 18,
    "ay": 17,
-   "glow": "sprites/hearth_l2_v1_glow.png"
+   "glow": "sprites/hearth_l2_v1_glow.png",
+   "sheet": 0,
+   "sx": 1500,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1537,
+   "gy": 411,
+   "gw": 36,
+   "gh": 34
   },
   "hearth_l2_v2": {
    "file": "sprites/hearth_l2_v2.png",
@@ -1264,7 +1930,15 @@
    "h": 33,
    "ax": 18,
    "ay": 16,
-   "glow": "sprites/hearth_l2_v2_glow.png"
+   "glow": "sprites/hearth_l2_v2_glow.png",
+   "sheet": 0,
+   "sx": 1888,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1925,
+   "gy": 411,
+   "gw": 36,
+   "gh": 33
   },
   "hearth_l2_v3": {
    "file": "sprites/hearth_l2_v3.png",
@@ -1272,7 +1946,15 @@
    "h": 33,
    "ax": 18,
    "ay": 16,
-   "glow": "sprites/hearth_l2_v3_glow.png"
+   "glow": "sprites/hearth_l2_v3_glow.png",
+   "sheet": 0,
+   "sx": 1962,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1999,
+   "gy": 411,
+   "gw": 36,
+   "gh": 33
   },
   "hearth_l3_v0": {
    "file": "sprites/hearth_l3_v0.png",
@@ -1280,7 +1962,15 @@
    "h": 34,
    "ax": 18,
    "ay": 17,
-   "glow": "sprites/hearth_l3_v0_glow.png"
+   "glow": "sprites/hearth_l3_v0_glow.png",
+   "sheet": 0,
+   "sx": 1574,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1611,
+   "gy": 411,
+   "gw": 36,
+   "gh": 34
   },
   "hearth_l3_v1": {
    "file": "sprites/hearth_l3_v1.png",
@@ -1288,21 +1978,35 @@
    "h": 39,
    "ax": 18,
    "ay": 22,
-   "glow": "sprites/hearth_l3_v1_glow.png"
+   "glow": "sprites/hearth_l3_v1_glow.png",
+   "sheet": 0,
+   "sx": 891,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 928,
+   "gy": 368,
+   "gw": 36,
+   "gh": 39
   },
   "hearth_l3_v2": {
    "file": "sprites/hearth_l3_v2.png",
    "w": 36,
    "h": 41,
    "ax": 18,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 662,
+   "sy": 368
   },
   "hearth_l3_v3": {
    "file": "sprites/hearth_l3_v3.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1270,
+   "sy": 517
   },
   "craft_l1_v0": {
    "file": "sprites/craft_l1_v0.png",
@@ -1310,7 +2014,15 @@
    "h": 33,
    "ax": 13,
    "ay": 16,
-   "glow": "sprites/craft_l1_v0_glow.png"
+   "glow": "sprites/craft_l1_v0_glow.png",
+   "sheet": 0,
+   "sx": 1938,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1965,
+   "gy": 450,
+   "gw": 26,
+   "gh": 33
   },
   "craft_l1_v1": {
    "file": "sprites/craft_l1_v1.png",
@@ -1318,7 +2030,15 @@
    "h": 29,
    "ax": 18,
    "ay": 12,
-   "glow": "sprites/craft_l1_v1_glow.png"
+   "glow": "sprites/craft_l1_v1_glow.png",
+   "sheet": 0,
+   "sx": 937,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 974,
+   "gy": 517,
+   "gw": 36,
+   "gh": 29
   },
   "craft_l1_v2": {
    "file": "sprites/craft_l1_v2.png",
@@ -1326,7 +2046,15 @@
    "h": 33,
    "ax": 14,
    "ay": 16,
-   "glow": "sprites/craft_l1_v2_glow.png"
+   "glow": "sprites/craft_l1_v2_glow.png",
+   "sheet": 0,
+   "sx": 1603,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1632,
+   "gy": 450,
+   "gw": 28,
+   "gh": 33
   },
   "craft_l1_v3": {
    "file": "sprites/craft_l1_v3.png",
@@ -1334,14 +2062,25 @@
    "h": 33,
    "ax": 17,
    "ay": 16,
-   "glow": "sprites/craft_l1_v3_glow.png"
+   "glow": "sprites/craft_l1_v3_glow.png",
+   "sheet": 0,
+   "sx": 673,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 707,
+   "gy": 450,
+   "gw": 33,
+   "gh": 33
   },
   "craft_l2_v0": {
    "file": "sprites/craft_l2_v0.png",
    "w": 36,
    "h": 34,
    "ax": 18,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 1352,
+   "sy": 411
   },
   "craft_l2_v1": {
    "file": "sprites/craft_l2_v1.png",
@@ -1349,49 +2088,75 @@
    "h": 27,
    "ax": 18,
    "ay": 10,
-   "glow": "sprites/craft_l2_v1_glow.png"
+   "glow": "sprites/craft_l2_v1_glow.png",
+   "sheet": 0,
+   "sx": 1825,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1862,
+   "gy": 517,
+   "gw": 36,
+   "gh": 27
   },
   "craft_l2_v2": {
    "file": "sprites/craft_l2_v2.png",
    "w": 36,
    "h": 42,
    "ax": 18,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 864,
+   "sy": 320
   },
   "craft_l2_v3": {
    "file": "sprites/craft_l2_v3.png",
    "w": 36,
    "h": 37,
    "ax": 18,
-   "ay": 20
+   "ay": 20,
+   "sheet": 0,
+   "sx": 179,
+   "sy": 411
   },
   "craft_l3_v0": {
    "file": "sprites/craft_l3_v0.png",
    "w": 36,
    "h": 34,
    "ax": 18,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 1389,
+   "sy": 411
   },
   "craft_l3_v1": {
    "file": "sprites/craft_l3_v1.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1777,
+   "sy": 411
   },
   "craft_l3_v2": {
    "file": "sprites/craft_l3_v2.png",
    "w": 36,
    "h": 46,
    "ax": 18,
-   "ay": 29
+   "ay": 29,
+   "sheet": 0,
+   "sx": 532,
+   "sy": 320
   },
   "craft_l3_v3": {
    "file": "sprites/craft_l3_v3.png",
    "w": 36,
    "h": 36,
    "ax": 18,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 705,
+   "sy": 411
   },
   "market_l1_v0": {
    "file": "sprites/market_l1_v0.png",
@@ -1399,7 +2164,15 @@
    "h": 19,
    "ax": 18,
    "ay": 2,
-   "glow": "sprites/market_l1_v0_glow.png"
+   "glow": "sprites/market_l1_v0_glow.png",
+   "sheet": 0,
+   "sx": 26,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 63,
+   "gy": 548,
+   "gw": 36,
+   "gh": 19
   },
   "market_l1_v1": {
    "file": "sprites/market_l1_v1.png",
@@ -1407,14 +2180,25 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/market_l1_v1_glow.png"
+   "glow": "sprites/market_l1_v1_glow.png",
+   "sheet": 0,
+   "sx": 1202,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1234,
+   "gy": 450,
+   "gw": 31,
+   "gh": 33
   },
   "market_l1_v2": {
    "file": "sprites/market_l1_v2.png",
    "w": 36,
    "h": 25,
    "ax": 18,
-   "ay": 8
+   "ay": 8,
+   "sheet": 0,
+   "sx": 1973,
+   "sy": 517
   },
   "market_l1_v3": {
    "file": "sprites/market_l1_v3.png",
@@ -1422,7 +2206,15 @@
    "h": 33,
    "ax": 14,
    "ay": 16,
-   "glow": "sprites/market_l1_v3_glow.png"
+   "glow": "sprites/market_l1_v3_glow.png",
+   "sheet": 0,
+   "sx": 1801,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1829,
+   "gy": 450,
+   "gw": 27,
+   "gh": 33
   },
   "market_l2_v0": {
    "file": "sprites/market_l2_v0.png",
@@ -1430,7 +2222,15 @@
    "h": 42,
    "ax": 18,
    "ay": 25,
-   "glow": "sprites/market_l2_v0_glow.png"
+   "glow": "sprites/market_l2_v0_glow.png",
+   "sheet": 0,
+   "sx": 901,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 938,
+   "gy": 320,
+   "gw": 36,
+   "gh": 42
   },
   "market_l2_v1": {
    "file": "sprites/market_l2_v1.png",
@@ -1438,21 +2238,35 @@
    "h": 37,
    "ax": 18,
    "ay": 20,
-   "glow": "sprites/market_l2_v1_glow.png"
+   "glow": "sprites/market_l2_v1_glow.png",
+   "sheet": 0,
+   "sx": 216,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 253,
+   "gy": 411,
+   "gw": 36,
+   "gh": 37
   },
   "market_l2_v2": {
    "file": "sprites/market_l2_v2.png",
    "w": 36,
    "h": 34,
    "ax": 18,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 1648,
+   "sy": 411
   },
   "market_l2_v3": {
    "file": "sprites/market_l2_v3.png",
    "w": 36,
    "h": 39,
    "ax": 18,
-   "ay": 22
+   "ay": 22,
+   "sheet": 0,
+   "sx": 1002,
+   "sy": 368
   },
   "market_l3_v0": {
    "file": "sprites/market_l3_v0.png",
@@ -1460,7 +2274,15 @@
    "h": 47,
    "ax": 17,
    "ay": 30,
-   "glow": "sprites/market_l3_v0_glow.png"
+   "glow": "sprites/market_l3_v0_glow.png",
+   "sheet": 0,
+   "sx": 284,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 318,
+   "gy": 320,
+   "gw": 33,
+   "gh": 47
   },
   "market_l3_v1": {
    "file": "sprites/market_l3_v1.png",
@@ -1468,42 +2290,65 @@
    "h": 43,
    "ax": 18,
    "ay": 26,
-   "glow": "sprites/market_l3_v1_glow.png"
+   "glow": "sprites/market_l3_v1_glow.png",
+   "sheet": 0,
+   "sx": 790,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 827,
+   "gy": 320,
+   "gw": 36,
+   "gh": 43
   },
   "market_l3_v2": {
    "file": "sprites/market_l3_v2.png",
    "w": 36,
    "h": 28,
    "ax": 18,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1714,
+   "sy": 517
   },
   "market_l3_v3": {
    "file": "sprites/market_l3_v3.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 111,
+   "sy": 450
   },
   "arcane_l1_v0": {
    "file": "sprites/arcane_l1_v0.png",
    "w": 35,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 148,
+   "sy": 450
   },
   "arcane_l1_v1": {
    "file": "sprites/arcane_l1_v1.png",
    "w": 33,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 537,
+   "sy": 450
   },
   "arcane_l1_v2": {
    "file": "sprites/arcane_l1_v2.png",
    "w": 34,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 328,
+   "sy": 450
   },
   "arcane_l1_v3": {
    "file": "sprites/arcane_l1_v3.png",
@@ -1511,7 +2356,15 @@
    "h": 30,
    "ax": 18,
    "ay": 13,
-   "glow": "sprites/arcane_l1_v3_glow.png"
+   "glow": "sprites/arcane_l1_v3_glow.png",
+   "sheet": 0,
+   "sx": 1537,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1574,
+   "gy": 484,
+   "gw": 36,
+   "gh": 30
   },
   "arcane_l2_v0": {
    "file": "sprites/arcane_l2_v0.png",
@@ -1519,14 +2372,25 @@
    "h": 42,
    "ax": 12,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v0_glow.png"
+   "glow": "sprites/arcane_l2_v0_glow.png",
+   "sheet": 0,
+   "sx": 131,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 155,
+   "gy": 368,
+   "gw": 23,
+   "gh": 42
   },
   "arcane_l2_v1": {
    "file": "sprites/arcane_l2_v1.png",
    "w": 34,
    "h": 42,
    "ax": 17,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1335,
+   "sy": 320
   },
   "arcane_l2_v2": {
    "file": "sprites/arcane_l2_v2.png",
@@ -1534,7 +2398,15 @@
    "h": 42,
    "ax": 18,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v2_glow.png"
+   "glow": "sprites/arcane_l2_v2_glow.png",
+   "sheet": 0,
+   "sx": 975,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1011,
+   "gy": 320,
+   "gw": 35,
+   "gh": 42
   },
   "arcane_l2_v3": {
    "file": "sprites/arcane_l2_v3.png",
@@ -1542,7 +2414,15 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/arcane_l2_v3_glow.png"
+   "glow": "sprites/arcane_l2_v3_glow.png",
+   "sheet": 0,
+   "sx": 631,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 668,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "arcane_l3_v0": {
    "file": "sprites/arcane_l3_v0.png",
@@ -1550,7 +2430,15 @@
    "h": 58,
    "ax": 14,
    "ay": 41,
-   "glow": "sprites/arcane_l3_v0_glow.png"
+   "glow": "sprites/arcane_l3_v0_glow.png",
+   "sheet": 0,
+   "sx": 315,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 343,
+   "gy": 208,
+   "gw": 27,
+   "gh": 58
   },
   "arcane_l3_v1": {
    "file": "sprites/arcane_l3_v1.png",
@@ -1558,7 +2446,15 @@
    "h": 52,
    "ax": 18,
    "ay": 35,
-   "glow": "sprites/arcane_l3_v1_glow.png"
+   "glow": "sprites/arcane_l3_v1_glow.png",
+   "sheet": 0,
+   "sx": 342,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 379,
+   "gy": 267,
+   "gw": 36,
+   "gh": 52
   },
   "arcane_l3_v2": {
    "file": "sprites/arcane_l3_v2.png",
@@ -1566,7 +2462,15 @@
    "h": 55,
    "ax": 18,
    "ay": 38,
-   "glow": "sprites/arcane_l3_v2_glow.png"
+   "glow": "sprites/arcane_l3_v2_glow.png",
+   "sheet": 0,
+   "sx": 734,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 771,
+   "gy": 208,
+   "gw": 36,
+   "gh": 55
   },
   "arcane_l3_v3": {
    "file": "sprites/arcane_l3_v3.png",
@@ -1574,14 +2478,25 @@
    "h": 54,
    "ax": 18,
    "ay": 37,
-   "glow": "sprites/arcane_l3_v3_glow.png"
+   "glow": "sprites/arcane_l3_v3_glow.png",
+   "sheet": 0,
+   "sx": 1348,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1385,
+   "gy": 208,
+   "gw": 36,
+   "gh": 54
   },
   "hearth_l1_v0_grimmen": {
    "file": "sprites/hearth_l1_v0_grimmen.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1851,
+   "sy": 411
   },
   "hearth_l1_v1_grimmen": {
    "file": "sprites/hearth_l1_v1_grimmen.png",
@@ -1589,7 +2504,15 @@
    "h": 33,
    "ax": 17,
    "ay": 16,
-   "glow": "sprites/hearth_l1_v1_grimmen_glow.png"
+   "glow": "sprites/hearth_l1_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 775,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 809,
+   "gy": 450,
+   "gw": 33,
+   "gh": 33
   },
   "hearth_l1_v2_grimmen": {
    "file": "sprites/hearth_l1_v2_grimmen.png",
@@ -1597,7 +2520,15 @@
    "h": 25,
    "ax": 18,
    "ay": 8,
-   "glow": "sprites/hearth_l1_v2_grimmen_glow.png"
+   "glow": "sprites/hearth_l1_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1899,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1936,
+   "gy": 517,
+   "gw": 36,
+   "gh": 25
   },
   "hearth_l1_v3_grimmen": {
    "file": "sprites/hearth_l1_v3_grimmen.png",
@@ -1605,7 +2536,15 @@
    "h": 33,
    "ax": 18,
    "ay": 16,
-   "glow": "sprites/hearth_l1_v3_grimmen_glow.png"
+   "glow": "sprites/hearth_l1_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 256,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 292,
+   "gy": 450,
+   "gw": 35,
+   "gh": 33
   },
   "hearth_l2_v0_grimmen": {
    "file": "sprites/hearth_l2_v0_grimmen.png",
@@ -1613,28 +2552,45 @@
    "h": 38,
    "ax": 18,
    "ay": 21,
-   "glow": "sprites/hearth_l2_v0_grimmen_glow.png"
+   "glow": "sprites/hearth_l2_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1150,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1187,
+   "gy": 368,
+   "gw": 36,
+   "gh": 38
   },
   "hearth_l2_v1_grimmen": {
    "file": "sprites/hearth_l2_v1_grimmen.png",
    "w": 35,
    "h": 42,
    "ax": 18,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1227,
+   "sy": 320
   },
   "hearth_l2_v2_grimmen": {
    "file": "sprites/hearth_l2_v2_grimmen.png",
    "w": 29,
    "h": 42,
    "ax": 15,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1798,
+   "sy": 320
   },
   "hearth_l2_v3_grimmen": {
    "file": "sprites/hearth_l2_v3_grimmen.png",
    "w": 36,
    "h": 38,
    "ax": 18,
-   "ay": 21
+   "ay": 21,
+   "sheet": 0,
+   "sx": 1298,
+   "sy": 368
   },
   "hearth_l3_v0_grimmen": {
    "file": "sprites/hearth_l3_v0_grimmen.png",
@@ -1642,14 +2598,25 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/hearth_l3_v0_grimmen_glow.png"
+   "glow": "sprites/hearth_l3_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 816,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 853,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "hearth_l3_v1_grimmen": {
    "file": "sprites/hearth_l3_v1_grimmen.png",
    "w": 36,
    "h": 39,
    "ax": 18,
-   "ay": 22
+   "ay": 22,
+   "sheet": 0,
+   "sx": 965,
+   "sy": 368
   },
   "hearth_l3_v2_grimmen": {
    "file": "sprites/hearth_l3_v2_grimmen.png",
@@ -1657,7 +2624,15 @@
    "h": 47,
    "ax": 18,
    "ay": 30,
-   "glow": "sprites/hearth_l3_v2_grimmen_glow.png"
+   "glow": "sprites/hearth_l3_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1966,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 2003,
+   "gy": 267,
+   "gw": 36,
+   "gh": 47
   },
   "hearth_l3_v3_grimmen": {
    "file": "sprites/hearth_l3_v3_grimmen.png",
@@ -1665,14 +2640,25 @@
    "h": 47,
    "ax": 17,
    "ay": 30,
-   "glow": "sprites/hearth_l3_v3_grimmen_glow.png"
+   "glow": "sprites/hearth_l3_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 216,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 250,
+   "gy": 320,
+   "gw": 33,
+   "gh": 47
   },
   "craft_l1_v0_grimmen": {
    "file": "sprites/craft_l1_v0_grimmen.png",
    "w": 27,
    "h": 33,
    "ax": 14,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1717,
+   "sy": 450
   },
   "craft_l1_v1_grimmen": {
    "file": "sprites/craft_l1_v1_grimmen.png",
@@ -1680,7 +2666,15 @@
    "h": 33,
    "ax": 17,
    "ay": 16,
-   "glow": "sprites/craft_l1_v1_grimmen_glow.png"
+   "glow": "sprites/craft_l1_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 605,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 639,
+   "gy": 450,
+   "gw": 33,
+   "gh": 33
   },
   "craft_l1_v2_grimmen": {
    "file": "sprites/craft_l1_v2_grimmen.png",
@@ -1688,28 +2682,45 @@
    "h": 33,
    "ax": 15,
    "ay": 16,
-   "glow": "sprites/craft_l1_v2_grimmen_glow.png"
+   "glow": "sprites/craft_l1_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1454,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1484,
+   "gy": 450,
+   "gw": 29,
+   "gh": 33
   },
   "craft_l1_v3_grimmen": {
    "file": "sprites/craft_l1_v3_grimmen.png",
    "w": 33,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 741,
+   "sy": 450
   },
   "craft_l2_v0_grimmen": {
    "file": "sprites/craft_l2_v0_grimmen.png",
    "w": 36,
    "h": 28,
    "ax": 18,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1603,
+   "sy": 517
   },
   "craft_l2_v1_grimmen": {
    "file": "sprites/craft_l2_v1_grimmen.png",
    "w": 36,
    "h": 41,
    "ax": 18,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 514,
+   "sy": 368
   },
   "craft_l2_v2_grimmen": {
    "file": "sprites/craft_l2_v2_grimmen.png",
@@ -1717,14 +2728,25 @@
    "h": 42,
    "ax": 18,
    "ay": 25,
-   "glow": "sprites/craft_l2_v2_grimmen_glow.png"
+   "glow": "sprites/craft_l2_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1119,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1155,
+   "gy": 320,
+   "gw": 35,
+   "gh": 42
   },
   "craft_l2_v3_grimmen": {
    "file": "sprites/craft_l2_v3_grimmen.png",
    "w": 36,
    "h": 40,
    "ax": 18,
-   "ay": 23
+   "ay": 23,
+   "sheet": 0,
+   "sx": 773,
+   "sy": 368
   },
   "craft_l3_v0_grimmen": {
    "file": "sprites/craft_l3_v0_grimmen.png",
@@ -1732,7 +2754,15 @@
    "h": 47,
    "ax": 18,
    "ay": 30,
-   "glow": "sprites/craft_l3_v0_grimmen_glow.png"
+   "glow": "sprites/craft_l3_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 74,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 110,
+   "gy": 320,
+   "gw": 35,
+   "gh": 47
   },
   "craft_l3_v1_grimmen": {
    "file": "sprites/craft_l3_v1_grimmen.png",
@@ -1740,14 +2770,25 @@
    "h": 41,
    "ax": 18,
    "ay": 24,
-   "glow": "sprites/craft_l3_v1_grimmen_glow.png"
+   "glow": "sprites/craft_l3_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 551,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 588,
+   "gy": 368,
+   "gw": 36,
+   "gh": 41
   },
   "craft_l3_v2_grimmen": {
    "file": "sprites/craft_l3_v2_grimmen.png",
    "w": 36,
    "h": 39,
    "ax": 18,
-   "ay": 22
+   "ay": 22,
+   "sheet": 0,
+   "sx": 854,
+   "sy": 368
   },
   "craft_l3_v3_grimmen": {
    "file": "sprites/craft_l3_v3_grimmen.png",
@@ -1755,7 +2796,15 @@
    "h": 32,
    "ax": 18,
    "ay": 15,
-   "glow": "sprites/craft_l3_v3_grimmen_glow.png"
+   "glow": "sprites/craft_l3_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 74,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 111,
+   "gy": 484,
+   "gw": 36,
+   "gh": 32
   },
   "market_l1_v0_grimmen": {
    "file": "sprites/market_l1_v0_grimmen.png",
@@ -1763,7 +2812,15 @@
    "h": 33,
    "ax": 15,
    "ay": 16,
-   "glow": "sprites/market_l1_v0_grimmen_glow.png"
+   "glow": "sprites/market_l1_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1514,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1544,
+   "gy": 450,
+   "gw": 29,
+   "gh": 33
   },
   "market_l1_v1_grimmen": {
    "file": "sprites/market_l1_v1_grimmen.png",
@@ -1771,7 +2828,15 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/market_l1_v1_grimmen_glow.png"
+   "glow": "sprites/market_l1_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 910,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 943,
+   "gy": 450,
+   "gw": 32,
+   "gh": 33
   },
   "market_l1_v2_grimmen": {
    "file": "sprites/market_l1_v2_grimmen.png",
@@ -1779,7 +2844,15 @@
    "h": 33,
    "ax": 14,
    "ay": 16,
-   "glow": "sprites/market_l1_v2_grimmen_glow.png"
+   "glow": "sprites/market_l1_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1745,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1773,
+   "gy": 450,
+   "gw": 27,
+   "gh": 33
   },
   "market_l1_v3_grimmen": {
    "file": "sprites/market_l1_v3_grimmen.png",
@@ -1787,7 +2860,15 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/market_l1_v3_grimmen_glow.png"
+   "glow": "sprites/market_l1_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 976,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1009,
+   "gy": 450,
+   "gw": 32,
+   "gh": 33
   },
   "market_l2_v0_grimmen": {
    "file": "sprites/market_l2_v0_grimmen.png",
@@ -1795,14 +2876,25 @@
    "h": 29,
    "ax": 18,
    "ay": 12,
-   "glow": "sprites/market_l2_v0_grimmen_glow.png"
+   "glow": "sprites/market_l2_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1307,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1344,
+   "gy": 517,
+   "gw": 36,
+   "gh": 29
   },
   "market_l2_v1_grimmen": {
    "file": "sprites/market_l2_v1_grimmen.png",
    "w": 36,
    "h": 37,
    "ax": 18,
-   "ay": 20
+   "ay": 20,
+   "sheet": 0,
+   "sx": 290,
+   "sy": 411
   },
   "market_l2_v2_grimmen": {
    "file": "sprites/market_l2_v2_grimmen.png",
@@ -1810,7 +2902,15 @@
    "h": 42,
    "ax": 18,
    "ay": 25,
-   "glow": "sprites/market_l2_v2_grimmen_glow.png"
+   "glow": "sprites/market_l2_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1263,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1299,
+   "gy": 320,
+   "gw": 35,
+   "gh": 42
   },
   "market_l2_v3_grimmen": {
    "file": "sprites/market_l2_v3_grimmen.png",
@@ -1818,7 +2918,15 @@
    "h": 42,
    "ax": 13,
    "ay": 25,
-   "glow": "sprites/market_l2_v3_grimmen_glow.png"
+   "glow": "sprites/market_l2_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 27,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 54,
+   "gy": 368,
+   "gw": 26,
+   "gh": 42
   },
   "market_l3_v0_grimmen": {
    "file": "sprites/market_l3_v0_grimmen.png",
@@ -1826,7 +2934,15 @@
    "h": 47,
    "ax": 16,
    "ay": 30,
-   "glow": "sprites/market_l3_v0_grimmen_glow.png"
+   "glow": "sprites/market_l3_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 352,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 384,
+   "gy": 320,
+   "gw": 31,
+   "gh": 47
   },
   "market_l3_v1_grimmen": {
    "file": "sprites/market_l3_v1_grimmen.png",
@@ -1834,21 +2950,35 @@
    "h": 38,
    "ax": 18,
    "ay": 21,
-   "glow": "sprites/market_l3_v1_grimmen_glow.png"
+   "glow": "sprites/market_l3_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1335,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1372,
+   "gy": 368,
+   "gw": 36,
+   "gh": 38
   },
   "market_l3_v2_grimmen": {
    "file": "sprites/market_l3_v2_grimmen.png",
    "w": 36,
    "h": 44,
    "ax": 18,
-   "ay": 27
+   "ay": 27,
+   "sheet": 0,
+   "sx": 753,
+   "sy": 320
   },
   "market_l3_v3_grimmen": {
    "file": "sprites/market_l3_v3_grimmen.png",
    "w": 36,
    "h": 39,
    "ax": 18,
-   "ay": 22
+   "ay": 22,
+   "sheet": 0,
+   "sx": 1113,
+   "sy": 368
   },
   "arcane_l1_v0_grimmen": {
    "file": "sprites/arcane_l1_v0_grimmen.png",
@@ -1856,14 +2986,25 @@
    "h": 33,
    "ax": 10,
    "ay": 16,
-   "glow": "sprites/arcane_l1_v0_grimmen_glow.png"
+   "glow": "sprites/arcane_l1_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1992,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 2013,
+   "gy": 450,
+   "gw": 20,
+   "gh": 33
   },
   "arcane_l1_v1_grimmen": {
    "file": "sprites/arcane_l1_v1_grimmen.png",
    "w": 26,
    "h": 33,
    "ax": 13,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1857,
+   "sy": 450
   },
   "arcane_l1_v2_grimmen": {
    "file": "sprites/arcane_l1_v2_grimmen.png",
@@ -1871,7 +3012,15 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/arcane_l1_v2_grimmen_glow.png"
+   "glow": "sprites/arcane_l1_v2_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1042,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1074,
+   "gy": 450,
+   "gw": 31,
+   "gh": 33
   },
   "arcane_l1_v3_grimmen": {
    "file": "sprites/arcane_l1_v3_grimmen.png",
@@ -1879,7 +3028,15 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/arcane_l1_v3_grimmen_glow.png"
+   "glow": "sprites/arcane_l1_v3_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1106,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1138,
+   "gy": 450,
+   "gw": 31,
+   "gh": 33
   },
   "arcane_l2_v0_grimmen": {
    "file": "sprites/arcane_l2_v0_grimmen.png",
@@ -1887,28 +3044,45 @@
    "h": 42,
    "ax": 16,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v0_grimmen_glow.png"
+   "glow": "sprites/arcane_l2_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 1578,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1611,
+   "gy": 320,
+   "gw": 32,
+   "gh": 42
   },
   "arcane_l2_v1_grimmen": {
    "file": "sprites/arcane_l2_v1_grimmen.png",
    "w": 36,
    "h": 41,
    "ax": 18,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 329,
+   "sy": 368
   },
   "arcane_l2_v2_grimmen": {
    "file": "sprites/arcane_l2_v2_grimmen.png",
    "w": 31,
    "h": 42,
    "ax": 16,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1644,
+   "sy": 320
   },
   "arcane_l2_v3_grimmen": {
    "file": "sprites/arcane_l2_v3_grimmen.png",
    "w": 15,
    "h": 42,
    "ax": 8,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 313,
+   "sy": 368
   },
   "arcane_l3_v0_grimmen": {
    "file": "sprites/arcane_l3_v0_grimmen.png",
@@ -1916,7 +3090,15 @@
    "h": 58,
    "ax": 13,
    "ay": 41,
-   "glow": "sprites/arcane_l3_v0_grimmen_glow.png"
+   "glow": "sprites/arcane_l3_v0_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 371,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 398,
+   "gy": 208,
+   "gw": 26,
+   "gh": 58
   },
   "arcane_l3_v1_grimmen": {
    "file": "sprites/arcane_l3_v1_grimmen.png",
@@ -1924,105 +3106,155 @@
    "h": 52,
    "ax": 18,
    "ay": 35,
-   "glow": "sprites/arcane_l3_v1_grimmen_glow.png"
+   "glow": "sprites/arcane_l3_v1_grimmen_glow.png",
+   "sheet": 0,
+   "sx": 416,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 453,
+   "gy": 267,
+   "gw": 36,
+   "gh": 52
   },
   "arcane_l3_v2_grimmen": {
    "file": "sprites/arcane_l3_v2_grimmen.png",
    "w": 24,
    "h": 58,
    "ax": 12,
-   "ay": 41
+   "ay": 41,
+   "sheet": 0,
+   "sx": 425,
+   "sy": 208
   },
   "arcane_l3_v3_grimmen": {
    "file": "sprites/arcane_l3_v3_grimmen.png",
    "w": 33,
    "h": 58,
    "ax": 17,
-   "ay": 41
+   "ay": 41,
+   "sheet": 0,
+   "sx": 2010,
+   "sy": 143
   },
   "hearth_l1_v0_veshari": {
    "file": "sprites/hearth_l1_v0_veshari.png",
    "w": 36,
    "h": 31,
    "ax": 18,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1426,
+   "sy": 484
   },
   "hearth_l1_v1_veshari": {
    "file": "sprites/hearth_l1_v1_veshari.png",
    "w": 36,
    "h": 28,
    "ax": 18,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1640,
+   "sy": 517
   },
   "hearth_l1_v2_veshari": {
    "file": "sprites/hearth_l1_v2_veshari.png",
    "w": 36,
    "h": 31,
    "ax": 18,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1463,
+   "sy": 484
   },
   "hearth_l1_v3_veshari": {
    "file": "sprites/hearth_l1_v3_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1122,
+   "sy": 517
   },
   "hearth_l2_v0_veshari": {
    "file": "sprites/hearth_l2_v0_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1159,
+   "sy": 517
   },
   "hearth_l2_v1_veshari": {
    "file": "sprites/hearth_l2_v1_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1196,
+   "sy": 517
   },
   "hearth_l2_v2_veshari": {
    "file": "sprites/hearth_l2_v2_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1233,
+   "sy": 517
   },
   "hearth_l2_v3_veshari": {
    "file": "sprites/hearth_l2_v3_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 517
   },
   "hearth_l3_v0_veshari": {
    "file": "sprites/hearth_l3_v0_veshari.png",
    "w": 36,
    "h": 24,
    "ax": 18,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 2010,
+   "sy": 517
   },
   "hearth_l3_v1_veshari": {
    "file": "sprites/hearth_l3_v1_veshari.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 450
   },
   "hearth_l3_v2_veshari": {
    "file": "sprites/hearth_l3_v2_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 37,
+   "sy": 517
   },
   "hearth_l3_v3_veshari": {
    "file": "sprites/hearth_l3_v3_veshari.png",
    "w": 36,
    "h": 31,
    "ax": 18,
-   "ay": 14
+   "ay": 14,
+   "sheet": 0,
+   "sx": 1500,
+   "sy": 484
   },
   "craft_l1_v0_veshari": {
    "file": "sprites/craft_l1_v0_veshari.png",
@@ -2030,91 +3262,135 @@
    "h": 29,
    "ax": 18,
    "ay": 12,
-   "glow": "sprites/craft_l1_v0_veshari_glow.png"
+   "glow": "sprites/craft_l1_v0_veshari_glow.png",
+   "sheet": 0,
+   "sx": 863,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 900,
+   "gy": 517,
+   "gw": 36,
+   "gh": 29
   },
   "craft_l1_v1_veshari": {
    "file": "sprites/craft_l1_v1_veshari.png",
    "w": 32,
    "h": 33,
    "ax": 16,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 877,
+   "sy": 450
   },
   "craft_l1_v2_veshari": {
    "file": "sprites/craft_l1_v2_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1759,
+   "sy": 484
   },
   "craft_l1_v3_veshari": {
    "file": "sprites/craft_l1_v3_veshari.png",
    "w": 36,
    "h": 32,
    "ax": 18,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 484
   },
   "craft_l2_v0_veshari": {
    "file": "sprites/craft_l2_v0_veshari.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1703,
+   "sy": 411
   },
   "craft_l2_v1_veshari": {
    "file": "sprites/craft_l2_v1_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1796,
+   "sy": 484
   },
   "craft_l2_v2_veshari": {
    "file": "sprites/craft_l2_v2_veshari.png",
    "w": 36,
    "h": 37,
    "ax": 18,
-   "ay": 20
+   "ay": 20,
+   "sheet": 0,
+   "sx": 142,
+   "sy": 411
   },
   "craft_l2_v3_veshari": {
    "file": "sprites/craft_l2_v3_veshari.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1740,
+   "sy": 411
   },
   "craft_l3_v0_veshari": {
    "file": "sprites/craft_l3_v0_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1833,
+   "sy": 484
   },
   "craft_l3_v1_veshari": {
    "file": "sprites/craft_l3_v1_veshari.png",
    "w": 36,
    "h": 33,
    "ax": 18,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1814,
+   "sy": 411
   },
   "craft_l3_v2_veshari": {
    "file": "sprites/craft_l3_v2_veshari.png",
    "w": 36,
    "h": 32,
    "ax": 18,
-   "ay": 15
+   "ay": 15,
+   "sheet": 0,
+   "sx": 37,
+   "sy": 484
   },
   "craft_l3_v3_veshari": {
    "file": "sprites/craft_l3_v3_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1011,
+   "sy": 517
   },
   "market_l1_v0_veshari": {
    "file": "sprites/market_l1_v0_veshari.png",
    "w": 33,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 843,
+   "sy": 450
   },
   "market_l1_v1_veshari": {
    "file": "sprites/market_l1_v1_veshari.png",
@@ -2122,7 +3398,15 @@
    "h": 33,
    "ax": 16,
    "ay": 16,
-   "glow": "sprites/market_l1_v1_veshari_glow.png"
+   "glow": "sprites/market_l1_v1_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1266,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1298,
+   "gy": 450,
+   "gw": 31,
+   "gh": 33
   },
   "market_l1_v2_veshari": {
    "file": "sprites/market_l1_v2_veshari.png",
@@ -2130,7 +3414,15 @@
    "h": 33,
    "ax": 18,
    "ay": 16,
-   "glow": "sprites/market_l1_v2_veshari_glow.png"
+   "glow": "sprites/market_l1_v2_veshari_glow.png",
+   "sheet": 0,
+   "sx": 37,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 74,
+   "gy": 450,
+   "gw": 36,
+   "gh": 33
   },
   "market_l1_v3_veshari": {
    "file": "sprites/market_l1_v3_veshari.png",
@@ -2138,7 +3430,15 @@
    "h": 33,
    "ax": 17,
    "ay": 16,
-   "glow": "sprites/market_l1_v3_veshari_glow.png"
+   "glow": "sprites/market_l1_v3_veshari_glow.png",
+   "sheet": 0,
+   "sx": 433,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 468,
+   "gy": 450,
+   "gw": 34,
+   "gh": 33
   },
   "market_l2_v0_veshari": {
    "file": "sprites/market_l2_v0_veshari.png",
@@ -2146,7 +3446,15 @@
    "h": 42,
    "ax": 17,
    "ay": 25,
-   "glow": "sprites/market_l2_v0_veshari_glow.png"
+   "glow": "sprites/market_l2_v0_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1510,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1544,
+   "gy": 320,
+   "gw": 33,
+   "gh": 42
   },
   "market_l2_v1_veshari": {
    "file": "sprites/market_l2_v1_veshari.png",
@@ -2154,14 +3462,25 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/market_l2_v1_veshari_glow.png"
+   "glow": "sprites/market_l2_v1_veshari_glow.png",
+   "sheet": 0,
+   "sx": 890,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 927,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "market_l2_v2_veshari": {
    "file": "sprites/market_l2_v2_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 74,
+   "sy": 517
   },
   "market_l2_v3_veshari": {
    "file": "sprites/market_l2_v3_veshari.png",
@@ -2169,14 +3488,25 @@
    "h": 29,
    "ax": 18,
    "ay": 12,
-   "glow": "sprites/market_l2_v3_veshari_glow.png"
+   "glow": "sprites/market_l2_v3_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1381,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1418,
+   "gy": 517,
+   "gw": 36,
+   "gh": 29
   },
   "market_l3_v0_veshari": {
    "file": "sprites/market_l3_v0_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 111,
+   "sy": 517
   },
   "market_l3_v1_veshari": {
    "file": "sprites/market_l3_v1_veshari.png",
@@ -2184,42 +3514,65 @@
    "h": 47,
    "ax": 16,
    "ay": 30,
-   "glow": "sprites/market_l3_v1_veshari_glow.png"
+   "glow": "sprites/market_l3_v1_veshari_glow.png",
+   "sheet": 0,
+   "sx": 416,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 448,
+   "gy": 320,
+   "gw": 31,
+   "gh": 47
   },
   "market_l3_v2_veshari": {
    "file": "sprites/market_l3_v2_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1455,
+   "sy": 517
   },
   "market_l3_v3_veshari": {
    "file": "sprites/market_l3_v3_veshari.png",
    "w": 36,
    "h": 29,
    "ax": 18,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1492,
+   "sy": 517
   },
   "arcane_l1_v0_veshari": {
    "file": "sprites/arcane_l1_v0_veshari.png",
    "w": 33,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 503,
+   "sy": 450
   },
   "arcane_l1_v1_veshari": {
    "file": "sprites/arcane_l1_v1_veshari.png",
    "w": 33,
    "h": 33,
    "ax": 17,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 571,
+   "sy": 450
   },
   "arcane_l1_v2_veshari": {
    "file": "sprites/arcane_l1_v2_veshari.png",
    "w": 28,
    "h": 33,
    "ax": 14,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1574,
+   "sy": 450
   },
   "arcane_l1_v3_veshari": {
    "file": "sprites/arcane_l1_v3_veshari.png",
@@ -2227,7 +3580,15 @@
    "h": 33,
    "ax": 13,
    "ay": 16,
-   "glow": "sprites/arcane_l1_v3_veshari_glow.png"
+   "glow": "sprites/arcane_l1_v3_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1884,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1911,
+   "gy": 450,
+   "gw": 26,
+   "gh": 33
   },
   "arcane_l2_v0_veshari": {
    "file": "sprites/arcane_l2_v0_veshari.png",
@@ -2235,7 +3596,15 @@
    "h": 42,
    "ax": 13,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v0_veshari_glow.png"
+   "glow": "sprites/arcane_l2_v0_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1996,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 0,
+   "gy": 368,
+   "gw": 26,
+   "gh": 42
   },
   "arcane_l2_v1_veshari": {
    "file": "sprites/arcane_l2_v1_veshari.png",
@@ -2243,7 +3612,15 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/arcane_l2_v1_veshari_glow.png"
+   "glow": "sprites/arcane_l2_v1_veshari_glow.png",
+   "sheet": 0,
+   "sx": 557,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 594,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "arcane_l2_v2_veshari": {
    "file": "sprites/arcane_l2_v2_veshari.png",
@@ -2251,14 +3628,25 @@
    "h": 41,
    "ax": 18,
    "ay": 24,
-   "glow": "sprites/arcane_l2_v2_veshari_glow.png"
+   "glow": "sprites/arcane_l2_v2_veshari_glow.png",
+   "sheet": 0,
+   "sx": 366,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 403,
+   "gy": 368,
+   "gw": 36,
+   "gh": 41
   },
   "arcane_l2_v3_veshari": {
    "file": "sprites/arcane_l2_v3_veshari.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1611,
+   "sy": 484
   },
   "arcane_l3_v0_veshari": {
    "file": "sprites/arcane_l3_v0_veshari.png",
@@ -2266,7 +3654,15 @@
    "h": 54,
    "ax": 18,
    "ay": 37,
-   "glow": "sprites/arcane_l3_v0_veshari_glow.png"
+   "glow": "sprites/arcane_l3_v0_veshari_glow.png",
+   "sheet": 0,
+   "sx": 1274,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1311,
+   "gy": 208,
+   "gw": 36,
+   "gh": 54
   },
   "arcane_l3_v1_veshari": {
    "file": "sprites/arcane_l3_v1_veshari.png",
@@ -2274,21 +3670,35 @@
    "h": 40,
    "ax": 18,
    "ay": 23,
-   "glow": "sprites/arcane_l3_v1_veshari_glow.png"
+   "glow": "sprites/arcane_l3_v1_veshari_glow.png",
+   "sheet": 0,
+   "sx": 699,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 736,
+   "gy": 368,
+   "gw": 36,
+   "gh": 40
   },
   "arcane_l3_v2_veshari": {
    "file": "sprites/arcane_l3_v2_veshari.png",
    "w": 36,
    "h": 35,
    "ax": 18,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 1056,
+   "sy": 411
   },
   "arcane_l3_v3_veshari": {
    "file": "sprites/arcane_l3_v3_veshari.png",
    "w": 36,
    "h": 34,
    "ax": 18,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 1241,
+   "sy": 411
   },
   "hearth_l1_v0_tallowkin": {
    "file": "sprites/hearth_l1_v0_tallowkin.png",
@@ -2296,7 +3706,15 @@
    "h": 34,
    "ax": 18,
    "ay": 17,
-   "glow": "sprites/hearth_l1_v0_tallowkin_glow.png"
+   "glow": "sprites/hearth_l1_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1426,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1463,
+   "gy": 411,
+   "gw": 36,
+   "gh": 34
   },
   "hearth_l1_v1_tallowkin": {
    "file": "sprites/hearth_l1_v1_tallowkin.png",
@@ -2304,7 +3722,15 @@
    "h": 38,
    "ax": 18,
    "ay": 21,
-   "glow": "sprites/hearth_l1_v1_tallowkin_glow.png"
+   "glow": "sprites/hearth_l1_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1409,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1445,
+   "gy": 368,
+   "gw": 35,
+   "gh": 38
   },
   "hearth_l1_v2_tallowkin": {
    "file": "sprites/hearth_l1_v2_tallowkin.png",
@@ -2312,7 +3738,15 @@
    "h": 30,
    "ax": 18,
    "ay": 13,
-   "glow": "sprites/hearth_l1_v2_tallowkin_glow.png"
+   "glow": "sprites/hearth_l1_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1944,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1981,
+   "gy": 484,
+   "gw": 36,
+   "gh": 30
   },
   "hearth_l1_v3_tallowkin": {
    "file": "sprites/hearth_l1_v3_tallowkin.png",
@@ -2320,14 +3754,25 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/hearth_l1_v3_tallowkin_glow.png"
+   "glow": "sprites/hearth_l1_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 742,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 779,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "hearth_l2_v0_tallowkin": {
    "file": "sprites/hearth_l2_v0_tallowkin.png",
    "w": 35,
    "h": 42,
    "ax": 18,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1191,
+   "sy": 320
   },
   "hearth_l2_v1_tallowkin": {
    "file": "sprites/hearth_l2_v1_tallowkin.png",
@@ -2335,7 +3780,15 @@
    "h": 38,
    "ax": 18,
    "ay": 21,
-   "glow": "sprites/hearth_l2_v1_tallowkin_glow.png"
+   "glow": "sprites/hearth_l2_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1224,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1261,
+   "gy": 368,
+   "gw": 36,
+   "gh": 38
   },
   "hearth_l2_v2_tallowkin": {
    "file": "sprites/hearth_l2_v2_tallowkin.png",
@@ -2343,7 +3796,15 @@
    "h": 42,
    "ax": 11,
    "ay": 25,
-   "glow": "sprites/hearth_l2_v2_tallowkin_glow.png"
+   "glow": "sprites/hearth_l2_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 225,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 248,
+   "gy": 368,
+   "gw": 22,
+   "gh": 42
   },
   "hearth_l2_v3_tallowkin": {
    "file": "sprites/hearth_l2_v3_tallowkin.png",
@@ -2351,7 +3812,15 @@
    "h": 42,
    "ax": 15,
    "ay": 25,
-   "glow": "sprites/hearth_l2_v3_tallowkin_glow.png"
+   "glow": "sprites/hearth_l2_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1676,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1707,
+   "gy": 320,
+   "gw": 30,
+   "gh": 42
   },
   "hearth_l3_v0_tallowkin": {
    "file": "sprites/hearth_l3_v0_tallowkin.png",
@@ -2359,7 +3828,15 @@
    "h": 49,
    "ax": 18,
    "ay": 32,
-   "glow": "sprites/hearth_l3_v0_tallowkin_glow.png"
+   "glow": "sprites/hearth_l3_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1713,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1750,
+   "gy": 267,
+   "gw": 36,
+   "gh": 49
   },
   "hearth_l3_v1_tallowkin": {
    "file": "sprites/hearth_l3_v1_tallowkin.png",
@@ -2367,21 +3844,35 @@
    "h": 58,
    "ax": 12,
    "ay": 41,
-   "glow": "sprites/hearth_l3_v1_tallowkin_glow.png"
+   "glow": "sprites/hearth_l3_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 450,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 474,
+   "gy": 208,
+   "gw": 23,
+   "gh": 58
   },
   "hearth_l3_v2_tallowkin": {
    "file": "sprites/hearth_l3_v2_tallowkin.png",
    "w": 28,
    "h": 58,
    "ax": 14,
-   "ay": 41
+   "ay": 41,
+   "sheet": 0,
+   "sx": 286,
+   "sy": 208
   },
   "hearth_l3_v3_tallowkin": {
    "file": "sprites/hearth_l3_v3_tallowkin.png",
    "w": 36,
    "h": 52,
    "ax": 18,
-   "ay": 35
+   "ay": 35,
+   "sheet": 0,
+   "sx": 490,
+   "sy": 267
   },
   "craft_l1_v0_tallowkin": {
    "file": "sprites/craft_l1_v0_tallowkin.png",
@@ -2389,7 +3880,15 @@
    "h": 38,
    "ax": 17,
    "ay": 21,
-   "glow": "sprites/craft_l1_v0_tallowkin_glow.png"
+   "glow": "sprites/craft_l1_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1481,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1516,
+   "gy": 368,
+   "gw": 34,
+   "gh": 38
   },
   "craft_l1_v1_tallowkin": {
    "file": "sprites/craft_l1_v1_tallowkin.png",
@@ -2397,7 +3896,15 @@
    "h": 35,
    "ax": 18,
    "ay": 18,
-   "glow": "sprites/craft_l1_v1_tallowkin_glow.png"
+   "glow": "sprites/craft_l1_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1093,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1130,
+   "gy": 411,
+   "gw": 36,
+   "gh": 35
   },
   "craft_l1_v2_tallowkin": {
    "file": "sprites/craft_l1_v2_tallowkin.png",
@@ -2405,7 +3912,15 @@
    "h": 38,
    "ax": 16,
    "ay": 21,
-   "glow": "sprites/craft_l1_v2_tallowkin_glow.png"
+   "glow": "sprites/craft_l1_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1751,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1783,
+   "gy": 368,
+   "gw": 31,
+   "gh": 38
   },
   "craft_l1_v3_tallowkin": {
    "file": "sprites/craft_l1_v3_tallowkin.png",
@@ -2413,7 +3928,15 @@
    "h": 34,
    "ax": 18,
    "ay": 17,
-   "glow": "sprites/craft_l1_v3_tallowkin_glow.png"
+   "glow": "sprites/craft_l1_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1278,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1315,
+   "gy": 411,
+   "gw": 36,
+   "gh": 34
   },
   "craft_l2_v0_tallowkin": {
    "file": "sprites/craft_l2_v0_tallowkin.png",
@@ -2421,7 +3944,15 @@
    "h": 42,
    "ax": 10,
    "ay": 25,
-   "glow": "sprites/craft_l2_v0_tallowkin_glow.png"
+   "glow": "sprites/craft_l2_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 271,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 292,
+   "gy": 368,
+   "gw": 20,
+   "gh": 42
   },
   "craft_l2_v1_tallowkin": {
    "file": "sprites/craft_l2_v1_tallowkin.png",
@@ -2429,7 +3960,15 @@
    "h": 42,
    "ax": 11,
    "ay": 25,
-   "glow": "sprites/craft_l2_v1_tallowkin_glow.png"
+   "glow": "sprites/craft_l2_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 179,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 202,
+   "gy": 368,
+   "gw": 22,
+   "gh": 42
   },
   "craft_l2_v2_tallowkin": {
    "file": "sprites/craft_l2_v2_tallowkin.png",
@@ -2437,7 +3976,15 @@
    "h": 42,
    "ax": 17,
    "ay": 25,
-   "glow": "sprites/craft_l2_v2_tallowkin_glow.png"
+   "glow": "sprites/craft_l2_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1440,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1475,
+   "gy": 320,
+   "gw": 34,
+   "gh": 42
   },
   "craft_l2_v3_tallowkin": {
    "file": "sprites/craft_l2_v3_tallowkin.png",
@@ -2445,7 +3992,15 @@
    "h": 42,
    "ax": 15,
    "ay": 25,
-   "glow": "sprites/craft_l2_v3_tallowkin_glow.png"
+   "glow": "sprites/craft_l2_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1738,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1768,
+   "gy": 320,
+   "gw": 29,
+   "gh": 42
   },
   "craft_l3_v0_tallowkin": {
    "file": "sprites/craft_l3_v0_tallowkin.png",
@@ -2453,14 +4008,25 @@
    "h": 58,
    "ax": 16,
    "ay": 41,
-   "glow": "sprites/craft_l3_v0_tallowkin_glow.png"
+   "glow": "sprites/craft_l3_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 100,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 132,
+   "gy": 208,
+   "gw": 31,
+   "gh": 58
   },
   "craft_l3_v1_tallowkin": {
    "file": "sprites/craft_l3_v1_tallowkin.png",
    "w": 33,
    "h": 58,
    "ax": 17,
-   "ay": 41
+   "ay": 41,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 208
   },
   "craft_l3_v2_tallowkin": {
    "file": "sprites/craft_l3_v2_tallowkin.png",
@@ -2468,7 +4034,15 @@
    "h": 46,
    "ax": 18,
    "ay": 29,
-   "glow": "sprites/craft_l3_v2_tallowkin_glow.png"
+   "glow": "sprites/craft_l3_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 569,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 606,
+   "gy": 320,
+   "gw": 36,
+   "gh": 46
   },
   "craft_l3_v3_tallowkin": {
    "file": "sprites/craft_l3_v3_tallowkin.png",
@@ -2476,7 +4050,15 @@
    "h": 58,
    "ax": 18,
    "ay": 41,
-   "glow": "sprites/craft_l3_v3_tallowkin_glow.png"
+   "glow": "sprites/craft_l3_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1938,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1974,
+   "gy": 143,
+   "gw": 35,
+   "gh": 58
   },
   "market_l1_v0_tallowkin": {
    "file": "sprites/market_l1_v0_tallowkin.png",
@@ -2484,7 +4066,15 @@
    "h": 38,
    "ax": 15,
    "ay": 21,
-   "glow": "sprites/market_l1_v0_tallowkin_glow.png"
+   "glow": "sprites/market_l1_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1879,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1909,
+   "gy": 368,
+   "gw": 29,
+   "gh": 38
   },
   "market_l1_v1_tallowkin": {
    "file": "sprites/market_l1_v1_tallowkin.png",
@@ -2492,21 +4082,35 @@
    "h": 38,
    "ax": 16,
    "ay": 21,
-   "glow": "sprites/market_l1_v1_tallowkin_glow.png"
+   "glow": "sprites/market_l1_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1815,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1847,
+   "gy": 368,
+   "gw": 31,
+   "gh": 38
   },
   "market_l1_v2_tallowkin": {
    "file": "sprites/market_l1_v2_tallowkin.png",
    "w": 34,
    "h": 38,
    "ax": 17,
-   "ay": 21
+   "ay": 21,
+   "sheet": 0,
+   "sx": 1551,
+   "sy": 368
   },
   "market_l1_v3_tallowkin": {
    "file": "sprites/market_l1_v3_tallowkin.png",
    "w": 34,
    "h": 38,
    "ax": 17,
-   "ay": 21
+   "ay": 21,
+   "sheet": 0,
+   "sx": 1586,
+   "sy": 368
   },
   "market_l2_v0_tallowkin": {
    "file": "sprites/market_l2_v0_tallowkin.png",
@@ -2514,7 +4118,15 @@
    "h": 42,
    "ax": 14,
    "ay": 25,
-   "glow": "sprites/market_l2_v0_tallowkin_glow.png"
+   "glow": "sprites/market_l2_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1828,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1857,
+   "gy": 320,
+   "gw": 28,
+   "gh": 42
   },
   "market_l2_v1_tallowkin": {
    "file": "sprites/market_l2_v1_tallowkin.png",
@@ -2522,7 +4134,15 @@
    "h": 42,
    "ax": 12,
    "ay": 25,
-   "glow": "sprites/market_l2_v1_tallowkin_glow.png"
+   "glow": "sprites/market_l2_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 81,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 106,
+   "gy": 368,
+   "gw": 24,
+   "gh": 42
   },
   "market_l2_v2_tallowkin": {
    "file": "sprites/market_l2_v2_tallowkin.png",
@@ -2530,7 +4150,15 @@
    "h": 42,
    "ax": 14,
    "ay": 25,
-   "glow": "sprites/market_l2_v2_tallowkin_glow.png"
+   "glow": "sprites/market_l2_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1886,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1914,
+   "gy": 320,
+   "gw": 27,
+   "gh": 42
   },
   "market_l2_v3_tallowkin": {
    "file": "sprites/market_l2_v3_tallowkin.png",
@@ -2538,7 +4166,15 @@
    "h": 39,
    "ax": 18,
    "ay": 22,
-   "glow": "sprites/market_l2_v3_tallowkin_glow.png"
+   "glow": "sprites/market_l2_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1039,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1076,
+   "gy": 368,
+   "gw": 36,
+   "gh": 39
   },
   "market_l3_v0_tallowkin": {
    "file": "sprites/market_l3_v0_tallowkin.png",
@@ -2546,7 +4182,15 @@
    "h": 58,
    "ax": 16,
    "ay": 41,
-   "glow": "sprites/market_l3_v0_tallowkin_glow.png"
+   "glow": "sprites/market_l3_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 164,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 196,
+   "gy": 208,
+   "gw": 31,
+   "gh": 58
   },
   "market_l3_v1_tallowkin": {
    "file": "sprites/market_l3_v1_tallowkin.png",
@@ -2554,14 +4198,25 @@
    "h": 47,
    "ax": 18,
    "ay": 30,
-   "glow": "sprites/market_l3_v1_tallowkin_glow.png"
+   "glow": "sprites/market_l3_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 0,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 37,
+   "gy": 320,
+   "gw": 36,
+   "gh": 47
   },
   "market_l3_v2_tallowkin": {
    "file": "sprites/market_l3_v2_tallowkin.png",
    "w": 36,
    "h": 51,
    "ax": 18,
-   "ay": 34
+   "ay": 34,
+   "sheet": 0,
+   "sx": 1299,
+   "sy": 267
   },
   "market_l3_v3_tallowkin": {
    "file": "sprites/market_l3_v3_tallowkin.png",
@@ -2569,7 +4224,15 @@
    "h": 37,
    "ax": 18,
    "ay": 20,
-   "glow": "sprites/market_l3_v3_tallowkin_glow.png"
+   "glow": "sprites/market_l3_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 327,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 364,
+   "gy": 411,
+   "gw": 36,
+   "gh": 37
   },
   "arcane_l1_v0_tallowkin": {
    "file": "sprites/arcane_l1_v0_tallowkin.png",
@@ -2577,7 +4240,15 @@
    "h": 38,
    "ax": 16,
    "ay": 21,
-   "glow": "sprites/arcane_l1_v0_tallowkin_glow.png"
+   "glow": "sprites/arcane_l1_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1687,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1719,
+   "gy": 368,
+   "gw": 31,
+   "gh": 38
   },
   "arcane_l1_v1_tallowkin": {
    "file": "sprites/arcane_l1_v1_tallowkin.png",
@@ -2585,7 +4256,15 @@
    "h": 38,
    "ax": 16,
    "ay": 21,
-   "glow": "sprites/arcane_l1_v1_tallowkin_glow.png"
+   "glow": "sprites/arcane_l1_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1621,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 1654,
+   "gy": 368,
+   "gw": 32,
+   "gh": 38
   },
   "arcane_l1_v2_tallowkin": {
    "file": "sprites/arcane_l1_v2_tallowkin.png",
@@ -2593,7 +4272,15 @@
    "h": 36,
    "ax": 18,
    "ay": 19,
-   "glow": "sprites/arcane_l1_v2_tallowkin_glow.png"
+   "glow": "sprites/arcane_l1_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 483,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 520,
+   "gy": 411,
+   "gw": 36,
+   "gh": 36
   },
   "arcane_l1_v3_tallowkin": {
    "file": "sprites/arcane_l1_v3_tallowkin.png",
@@ -2601,7 +4288,15 @@
    "h": 34,
    "ax": 18,
    "ay": 17,
-   "glow": "sprites/arcane_l1_v3_tallowkin_glow.png"
+   "glow": "sprites/arcane_l1_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1167,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 1204,
+   "gy": 411,
+   "gw": 36,
+   "gh": 34
   },
   "arcane_l2_v0_tallowkin": {
    "file": "sprites/arcane_l2_v0_tallowkin.png",
@@ -2609,7 +4304,15 @@
    "h": 42,
    "ax": 13,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v0_tallowkin_glow.png"
+   "glow": "sprites/arcane_l2_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1942,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1969,
+   "gy": 320,
+   "gw": 26,
+   "gh": 42
   },
   "arcane_l2_v1_tallowkin": {
    "file": "sprites/arcane_l2_v1_tallowkin.png",
@@ -2617,7 +4320,15 @@
    "h": 37,
    "ax": 18,
    "ay": 20,
-   "glow": "sprites/arcane_l2_v1_tallowkin_glow.png"
+   "glow": "sprites/arcane_l2_v1_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 68,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 105,
+   "gy": 411,
+   "gw": 36,
+   "gh": 37
   },
   "arcane_l2_v2_tallowkin": {
    "file": "sprites/arcane_l2_v2_tallowkin.png",
@@ -2625,7 +4336,15 @@
    "h": 42,
    "ax": 17,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v2_tallowkin_glow.png"
+   "glow": "sprites/arcane_l2_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1370,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1405,
+   "gy": 320,
+   "gw": 34,
+   "gh": 42
   },
   "arcane_l2_v3_tallowkin": {
    "file": "sprites/arcane_l2_v3_tallowkin.png",
@@ -2633,7 +4352,15 @@
    "h": 42,
    "ax": 18,
    "ay": 25,
-   "glow": "sprites/arcane_l2_v3_tallowkin_glow.png"
+   "glow": "sprites/arcane_l2_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1047,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 1083,
+   "gy": 320,
+   "gw": 35,
+   "gh": 42
   },
   "arcane_l3_v0_tallowkin": {
    "file": "sprites/arcane_l3_v0_tallowkin.png",
@@ -2641,14 +4368,25 @@
    "h": 58,
    "ax": 16,
    "ay": 41,
-   "glow": "sprites/arcane_l3_v0_tallowkin_glow.png"
+   "glow": "sprites/arcane_l3_v0_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 34,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 67,
+   "gy": 208,
+   "gw": 32,
+   "gh": 58
   },
   "arcane_l3_v1_tallowkin": {
    "file": "sprites/arcane_l3_v1_tallowkin.png",
    "w": 36,
    "h": 30,
    "ax": 18,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1648,
+   "sy": 484
   },
   "arcane_l3_v2_tallowkin": {
    "file": "sprites/arcane_l3_v2_tallowkin.png",
@@ -2656,7 +4394,15 @@
    "h": 58,
    "ax": 18,
    "ay": 41,
-   "glow": "sprites/arcane_l3_v2_tallowkin_glow.png"
+   "glow": "sprites/arcane_l3_v2_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 1864,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1901,
+   "gy": 143,
+   "gw": 36,
+   "gh": 58
   },
   "arcane_l3_v3_tallowkin": {
    "file": "sprites/arcane_l3_v3_tallowkin.png",
@@ -2664,168 +4410,245 @@
    "h": 58,
    "ax": 14,
    "ay": 41,
-   "glow": "sprites/arcane_l3_v3_tallowkin_glow.png"
+   "glow": "sprites/arcane_l3_v3_tallowkin_glow.png",
+   "sheet": 0,
+   "sx": 228,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 257,
+   "gy": 208,
+   "gw": 28,
+   "gh": 58
   },
   "tree_12": {
    "file": "sprites/tree_12.png",
    "w": 23,
    "h": 32,
    "ax": 12,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1228,
+   "sy": 484
   },
   "tree_13": {
    "file": "sprites/tree_13.png",
    "w": 23,
    "h": 36,
    "ax": 12,
-   "ay": 34
+   "ay": 34,
+   "sheet": 0,
+   "sx": 964,
+   "sy": 411
   },
   "tree_14": {
    "file": "sprites/tree_14.png",
    "w": 26,
    "h": 32,
    "ax": 11,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 991,
+   "sy": 484
   },
   "tree_15": {
    "file": "sprites/tree_15.png",
    "w": 26,
    "h": 32,
    "ax": 14,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1018,
+   "sy": 484
   },
   "tree_16": {
    "file": "sprites/tree_16.png",
    "w": 25,
    "h": 32,
    "ax": 12,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1099,
+   "sy": 484
   },
   "tree_17": {
    "file": "sprites/tree_17.png",
    "w": 26,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1045,
+   "sy": 484
   },
   "tree_18": {
    "file": "sprites/tree_18.png",
    "w": 17,
    "h": 34,
    "ax": 9,
-   "ay": 32
+   "ay": 32,
+   "sheet": 0,
+   "sx": 1685,
+   "sy": 411
   },
   "tree_19": {
    "file": "sprites/tree_19.png",
    "w": 22,
    "h": 36,
    "ax": 11,
-   "ay": 34
+   "ay": 34,
+   "sheet": 0,
+   "sx": 988,
+   "sy": 411
   },
   "tree_20": {
    "file": "sprites/tree_20.png",
    "w": 27,
    "h": 32,
    "ax": 12,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 853,
+   "sy": 484
   },
   "tree_21": {
    "file": "sprites/tree_21.png",
    "w": 29,
    "h": 32,
    "ax": 15,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 539,
+   "sy": 484
   },
   "tree_22": {
    "file": "sprites/tree_22.png",
    "w": 25,
    "h": 40,
    "ax": 13,
-   "ay": 38
+   "ay": 38,
+   "sheet": 0,
+   "sx": 810,
+   "sy": 368
   },
   "tree_23": {
    "file": "sprites/tree_23.png",
    "w": 27,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 881,
+   "sy": 484
   },
   "tree_24": {
    "file": "sprites/tree_24.png",
    "w": 22,
    "h": 36,
    "ax": 11,
-   "ay": 34
+   "ay": 34,
+   "sheet": 0,
+   "sx": 1011,
+   "sy": 411
   },
   "tree_25": {
    "file": "sprites/tree_25.png",
    "w": 27,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 909,
+   "sy": 484
   },
   "tree_26": {
    "file": "sprites/tree_26.png",
    "w": 31,
    "h": 32,
    "ax": 16,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 355,
+   "sy": 484
   },
   "tree_27": {
    "file": "sprites/tree_27.png",
    "w": 17,
    "h": 40,
    "ax": 9,
-   "ay": 38
+   "ay": 38,
+   "sheet": 0,
+   "sx": 836,
+   "sy": 368
   },
   "tree_28": {
    "file": "sprites/tree_28.png",
    "w": 25,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1125,
+   "sy": 484
   },
   "tree_29": {
    "file": "sprites/tree_29.png",
    "w": 21,
    "h": 36,
    "ax": 11,
-   "ay": 34
+   "ay": 34,
+   "sheet": 0,
+   "sx": 1034,
+   "sy": 411
   },
   "tree_30": {
    "file": "sprites/tree_30.png",
    "w": 24,
    "h": 32,
    "ax": 13,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1203,
+   "sy": 484
   },
   "tree_31": {
    "file": "sprites/tree_31.png",
    "w": 25,
    "h": 32,
    "ax": 11,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 1151,
+   "sy": 484
   },
   "tree_autumn_0": {
    "file": "sprites/tree_autumn_0.png",
    "w": 29,
    "h": 32,
    "ax": 15,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 569,
+   "sy": 484
   },
   "tree_autumn_1": {
    "file": "sprites/tree_autumn_1.png",
    "w": 33,
    "h": 32,
    "ax": 17,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 256,
+   "sy": 484
   },
   "tree_autumn_2": {
    "file": "sprites/tree_autumn_2.png",
    "w": 29,
    "h": 32,
    "ax": 15,
-   "ay": 30
+   "ay": 30,
+   "sheet": 0,
+   "sx": 599,
+   "sy": 484
   },
   "glimwood_0": {
    "file": "sprites/glimwood_0.png",
@@ -2833,7 +4656,15 @@
    "h": 32,
    "ax": 11,
    "ay": 30,
-   "glow": "sprites/glimwood_0_glow.png"
+   "glow": "sprites/glimwood_0_glow.png",
+   "sheet": 0,
+   "sx": 1252,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1275,
+   "gy": 484,
+   "gw": 22,
+   "gh": 32
   },
   "glimwood_1": {
    "file": "sprites/glimwood_1.png",
@@ -2841,7 +4672,15 @@
    "h": 32,
    "ax": 11,
    "ay": 30,
-   "glow": "sprites/glimwood_1_glow.png"
+   "glow": "sprites/glimwood_1_glow.png",
+   "sheet": 0,
+   "sx": 1298,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1321,
+   "gy": 484,
+   "gw": 22,
+   "gh": 32
   },
   "glimwood_2": {
    "file": "sprites/glimwood_2.png",
@@ -2849,7 +4688,15 @@
    "h": 32,
    "ax": 9,
    "ay": 30,
-   "glow": "sprites/glimwood_2_glow.png"
+   "glow": "sprites/glimwood_2_glow.png",
+   "sheet": 0,
+   "sx": 1386,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1406,
+   "gy": 484,
+   "gw": 19,
+   "gh": 32
   },
   "glimwood_3": {
    "file": "sprites/glimwood_3.png",
@@ -2857,7 +4704,15 @@
    "h": 32,
    "ax": 14,
    "ay": 30,
-   "glow": "sprites/glimwood_3_glow.png"
+   "glow": "sprites/glimwood_3_glow.png",
+   "sheet": 0,
+   "sx": 629,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 657,
+   "gy": 484,
+   "gw": 27,
+   "gh": 32
   },
   "glimwood_4": {
    "file": "sprites/glimwood_4.png",
@@ -2865,7 +4720,15 @@
    "h": 32,
    "ax": 14,
    "ay": 30,
-   "glow": "sprites/glimwood_4_glow.png"
+   "glow": "sprites/glimwood_4_glow.png",
+   "sheet": 0,
+   "sx": 685,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 713,
+   "gy": 484,
+   "gw": 27,
+   "gh": 32
   },
   "glimwood_5": {
    "file": "sprites/glimwood_5.png",
@@ -2873,7 +4736,15 @@
    "h": 32,
    "ax": 15,
    "ay": 30,
-   "glow": "sprites/glimwood_5_glow.png"
+   "glow": "sprites/glimwood_5_glow.png",
+   "sheet": 0,
+   "sx": 419,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 449,
+   "gy": 484,
+   "gw": 29,
+   "gh": 32
   },
   "glimwood_6": {
    "file": "sprites/glimwood_6.png",
@@ -2881,7 +4752,15 @@
    "h": 32,
    "ax": 13,
    "ay": 30,
-   "glow": "sprites/glimwood_6_glow.png"
+   "glow": "sprites/glimwood_6_glow.png",
+   "sheet": 0,
+   "sx": 937,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 964,
+   "gy": 484,
+   "gw": 26,
+   "gh": 32
   },
   "glimwood_7": {
    "file": "sprites/glimwood_7.png",
@@ -2889,7 +4768,15 @@
    "h": 32,
    "ax": 15,
    "ay": 30,
-   "glow": "sprites/glimwood_7_glow.png"
+   "glow": "sprites/glimwood_7_glow.png",
+   "sheet": 0,
+   "sx": 479,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 509,
+   "gy": 484,
+   "gw": 29,
+   "gh": 32
   },
   "glimwood_8": {
    "file": "sprites/glimwood_8.png",
@@ -2897,7 +4784,15 @@
    "h": 32,
    "ax": 13,
    "ay": 30,
-   "glow": "sprites/glimwood_8_glow.png"
+   "glow": "sprites/glimwood_8_glow.png",
+   "sheet": 0,
+   "sx": 741,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 769,
+   "gy": 484,
+   "gw": 27,
+   "gh": 32
   },
   "glimwood_9": {
    "file": "sprites/glimwood_9.png",
@@ -2905,1512 +4800,2165 @@
    "h": 32,
    "ax": 13,
    "ay": 30,
-   "glow": "sprites/glimwood_9_glow.png"
+   "glow": "sprites/glimwood_9_glow.png",
+   "sheet": 0,
+   "sx": 797,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 825,
+   "gy": 484,
+   "gw": 27,
+   "gh": 32
   },
   "gloamtree_0": {
    "file": "sprites/gloamtree_0.png",
    "w": 20,
    "h": 30,
    "ax": 10,
-   "ay": 28
+   "ay": 28,
+   "sheet": 0,
+   "sx": 791,
+   "sy": 517
   },
   "gloamtree_1": {
    "file": "sprites/gloamtree_1.png",
    "w": 10,
    "h": 30,
    "ax": 5,
-   "ay": 28
+   "ay": 28,
+   "sheet": 0,
+   "sx": 852,
+   "sy": 517
   },
   "bush_6": {
    "file": "sprites/bush_6.png",
    "w": 8,
    "h": 14,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 784,
+   "sy": 590
   },
   "bush_7": {
    "file": "sprites/bush_7.png",
    "w": 13,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 643,
+   "sy": 590
   },
   "bush_8": {
    "file": "sprites/bush_8.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 555,
+   "sy": 590
   },
   "bush_9": {
    "file": "sprites/bush_9.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 192,
+   "sy": 590
   },
   "bush_10": {
    "file": "sprites/bush_10.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1823,
+   "sy": 573
   },
   "bush_11": {
    "file": "sprites/bush_11.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 285,
+   "sy": 590
   },
   "bush_12": {
    "file": "sprites/bush_12.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 300,
+   "sy": 590
   },
   "bush_13": {
    "file": "sprites/bush_13.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 315,
+   "sy": 590
   },
   "bush_14": {
    "file": "sprites/bush_14.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1855,
+   "sy": 573
   },
   "bush_15": {
    "file": "sprites/bush_15.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1602,
+   "sy": 573
   },
   "bush_16": {
    "file": "sprites/bush_16.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1871,
+   "sy": 573
   },
   "bush_17": {
    "file": "sprites/bush_17.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1204,
+   "sy": 573
   },
   "bush_18": {
    "file": "sprites/bush_18.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1887,
+   "sy": 573
   },
   "bush_19": {
    "file": "sprites/bush_19.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 330,
+   "sy": 590
   },
   "bush_20": {
    "file": "sprites/bush_20.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1903,
+   "sy": 573
   },
   "bush_21": {
    "file": "sprites/bush_21.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1619,
+   "sy": 573
   },
   "bush_22": {
    "file": "sprites/bush_22.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1919,
+   "sy": 573
   },
   "bush_23": {
    "file": "sprites/bush_23.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1935,
+   "sy": 573
   },
   "bush_24": {
    "file": "sprites/bush_24.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 360,
+   "sy": 590
   },
   "bush_25": {
    "file": "sprites/bush_25.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1951,
+   "sy": 573
   },
   "bush_26": {
    "file": "sprites/bush_26.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 375,
+   "sy": 590
   },
   "bush_27": {
    "file": "sprites/bush_27.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1967,
+   "sy": 573
   },
   "bush_28": {
    "file": "sprites/bush_28.png",
    "w": 18,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1364,
+   "sy": 573
   },
   "bush_29": {
    "file": "sprites/bush_29.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1636,
+   "sy": 573
   },
   "bush_30": {
    "file": "sprites/bush_30.png",
    "w": 16,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1653,
+   "sy": 573
   },
   "bush_31": {
    "file": "sprites/bush_31.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 405,
+   "sy": 590
   },
   "bush_32": {
    "file": "sprites/bush_32.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1983,
+   "sy": 573
   },
   "bush_33": {
    "file": "sprites/bush_33.png",
    "w": 17,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1477,
+   "sy": 573
   },
   "bush_34": {
    "file": "sprites/bush_34.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1999,
+   "sy": 573
   },
   "bush_35": {
    "file": "sprites/bush_35.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1670,
+   "sy": 573
   },
   "bush_36": {
    "file": "sprites/bush_36.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 420,
+   "sy": 590
   },
   "bush_37": {
    "file": "sprites/bush_37.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 2015,
+   "sy": 573
   },
   "bush_38": {
    "file": "sprites/bush_38.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 2031,
+   "sy": 573
   },
   "bush_39": {
    "file": "sprites/bush_39.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 435,
+   "sy": 590
   },
   "bush_40": {
    "file": "sprites/bush_40.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1224,
+   "sy": 573
   },
   "bush_41": {
    "file": "sprites/bush_41.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1687,
+   "sy": 573
   },
   "bush_42": {
    "file": "sprites/bush_42.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 16,
+   "sy": 590
   },
   "bush_43": {
    "file": "sprites/bush_43.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 450,
+   "sy": 590
   },
   "bush_44": {
    "file": "sprites/bush_44.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 32,
+   "sy": 590
   },
   "bush_45": {
    "file": "sprites/bush_45.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 465,
+   "sy": 590
   },
   "bush_46": {
    "file": "sprites/bush_46.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 48,
+   "sy": 590
   },
   "bush_47": {
    "file": "sprites/bush_47.png",
    "w": 25,
    "h": 14,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 924,
+   "sy": 573
   },
   "bush_48": {
    "file": "sprites/bush_48.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 64,
+   "sy": 590
   },
   "bush_49": {
    "file": "sprites/bush_49.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 80,
+   "sy": 590
   },
   "bush_50": {
    "file": "sprites/bush_50.png",
    "w": 12,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 712,
+   "sy": 590
   },
   "bush_51": {
    "file": "sprites/bush_51.png",
    "w": 17,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1495,
+   "sy": 573
   },
   "bush_52": {
    "file": "sprites/bush_52.png",
    "w": 11,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 751,
+   "sy": 590
   },
   "bush_53": {
    "file": "sprites/bush_53.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 480,
+   "sy": 590
   },
   "bush_54": {
    "file": "sprites/bush_54.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 495,
+   "sy": 590
   },
   "bush_55": {
    "file": "sprites/bush_55.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 112,
+   "sy": 590
   },
   "bush_56": {
    "file": "sprites/bush_56.png",
    "w": 21,
    "h": 14,
    "ax": 15,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1120,
+   "sy": 573
   },
   "bush_57": {
    "file": "sprites/bush_57.png",
    "w": 13,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 615,
+   "sy": 590
   },
   "bush_58": {
    "file": "sprites/bush_58.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 128,
+   "sy": 590
   },
   "bush_59": {
    "file": "sprites/bush_59.png",
    "w": 17,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1513,
+   "sy": 573
   },
   "bush_60": {
    "file": "sprites/bush_60.png",
    "w": 12,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 725,
+   "sy": 590
   },
   "bush_61": {
    "file": "sprites/bush_61.png",
    "w": 16,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1704,
+   "sy": 573
   },
   "bush_62": {
    "file": "sprites/bush_62.png",
    "w": 12,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 738,
+   "sy": 590
   },
   "bush_63": {
    "file": "sprites/bush_63.png",
    "w": 17,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1531,
+   "sy": 573
   },
   "bush_64": {
    "file": "sprites/bush_64.png",
    "w": 13,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 629,
+   "sy": 590
   },
   "bush_65": {
    "file": "sprites/bush_65.png",
    "w": 23,
    "h": 14,
    "ax": 15,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1050,
+   "sy": 573
   },
   "bush_66": {
    "file": "sprites/bush_66.png",
    "w": 14,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 510,
+   "sy": 590
   },
   "bush_67": {
    "file": "sprites/bush_67.png",
    "w": 16,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1721,
+   "sy": 573
   },
   "bush_68": {
    "file": "sprites/bush_68.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1738,
+   "sy": 573
   },
   "bush_69": {
    "file": "sprites/bush_69.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 525,
+   "sy": 590
   },
   "bush_70": {
    "file": "sprites/bush_70.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 540,
+   "sy": 590
   },
   "bush_71": {
    "file": "sprites/bush_71.png",
    "w": 22,
    "h": 14,
    "ax": 15,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1074,
+   "sy": 573
   },
   "bush_72": {
    "file": "sprites/bush_72.png",
    "w": 22,
    "h": 14,
    "ax": 11,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1097,
+   "sy": 573
   },
   "bush_73": {
    "file": "sprites/bush_73.png",
    "w": 18,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1383,
+   "sy": 573
   },
   "bush_74": {
    "file": "sprites/bush_74.png",
    "w": 17,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1549,
+   "sy": 573
   },
   "bush_75": {
    "file": "sprites/bush_75.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1755,
+   "sy": 573
   },
   "bush_76": {
    "file": "sprites/bush_76.png",
    "w": 8,
    "h": 14,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 793,
+   "sy": 590
   },
   "bush_77": {
    "file": "sprites/bush_77.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1772,
+   "sy": 573
   },
   "bush_78": {
    "file": "sprites/bush_78.png",
    "w": 18,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1402,
+   "sy": 573
   },
   "bush_79": {
    "file": "sprites/bush_79.png",
    "w": 13,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 657,
+   "sy": 590
   },
   "bush_80": {
    "file": "sprites/bush_80.png",
    "w": 29,
    "h": 14,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 894,
+   "sy": 573
   },
   "bush_81": {
    "file": "sprites/bush_81.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 570,
+   "sy": 590
   },
   "bush_82": {
    "file": "sprites/bush_82.png",
    "w": 11,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 763,
+   "sy": 590
   },
   "bush_83": {
    "file": "sprites/bush_83.png",
    "w": 7,
    "h": 14,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 810,
+   "sy": 590
   },
   "bush_84": {
    "file": "sprites/bush_84.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 144,
+   "sy": 590
   },
   "bush_85": {
    "file": "sprites/bush_85.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 585,
+   "sy": 590
   },
   "bush_86": {
    "file": "sprites/bush_86.png",
    "w": 16,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1789,
+   "sy": 573
   },
   "bush_87": {
    "file": "sprites/bush_87.png",
    "w": 15,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 160,
+   "sy": 590
   },
   "bush_88": {
    "file": "sprites/bush_88.png",
    "w": 14,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 600,
+   "sy": 590
   },
   "bush_89": {
    "file": "sprites/bush_89.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 176,
+   "sy": 590
   },
   "bush_90": {
    "file": "sprites/bush_90.png",
    "w": 18,
    "h": 14,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1421,
+   "sy": 573
   },
   "bush_91": {
    "file": "sprites/bush_91.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 208,
+   "sy": 590
   },
   "bush_92": {
    "file": "sprites/bush_92.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1244,
+   "sy": 573
   },
   "bush_93": {
    "file": "sprites/bush_93.png",
    "w": 19,
    "h": 14,
    "ax": 10,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1264,
+   "sy": 573
   },
   "bush_94": {
    "file": "sprites/bush_94.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 224,
+   "sy": 590
   },
   "bush_95": {
    "file": "sprites/bush_95.png",
    "w": 18,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1440,
+   "sy": 573
   },
   "bush_96": {
    "file": "sprites/bush_96.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1806,
+   "sy": 573
   },
   "bush_97": {
    "file": "sprites/bush_97.png",
    "w": 13,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 671,
+   "sy": 590
   },
   "bush_98": {
    "file": "sprites/bush_98.png",
    "w": 17,
    "h": 14,
    "ax": 11,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1567,
+   "sy": 573
   },
   "bush_99": {
    "file": "sprites/bush_99.png",
    "w": 13,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 685,
+   "sy": 590
   },
   "bush_100": {
    "file": "sprites/bush_100.png",
    "w": 8,
    "h": 14,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 775,
+   "sy": 590
   },
   "bush_101": {
    "file": "sprites/bush_101.png",
    "w": 19,
    "h": 14,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1184,
+   "sy": 573
   },
   "bush_102": {
    "file": "sprites/bush_102.png",
    "w": 12,
    "h": 14,
    "ax": 6,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 699,
+   "sy": 590
   },
   "bush_103": {
    "file": "sprites/bush_103.png",
    "w": 16,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1585,
+   "sy": 573
   },
   "bush_104": {
    "file": "sprites/bush_104.png",
    "w": 17,
    "h": 14,
    "ax": 9,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1459,
+   "sy": 573
   },
   "bush_105": {
    "file": "sprites/bush_105.png",
    "w": 7,
    "h": 14,
    "ax": 4,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 802,
+   "sy": 590
   },
   "bush_106": {
    "file": "sprites/bush_106.png",
    "w": 15,
    "h": 14,
    "ax": 8,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 1839,
+   "sy": 573
   },
   "bush_107": {
    "file": "sprites/bush_107.png",
    "w": 14,
    "h": 14,
    "ax": 7,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 270,
+   "sy": 590
   },
   "mushroom_3": {
    "file": "sprites/mushroom_3.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 144,
+   "sy": 605
   },
   "mushroom_4": {
    "file": "sprites/mushroom_4.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 200,
+   "sy": 605
   },
   "mushroom_5": {
    "file": "sprites/mushroom_5.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1807,
+   "sy": 590
   },
   "mushroom_6": {
    "file": "sprites/mushroom_6.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1010,
+   "sy": 605
   },
   "mushroom_7": {
    "file": "sprites/mushroom_7.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1031,
+   "sy": 605
   },
   "mushroom_8": {
    "file": "sprites/mushroom_8.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1843,
+   "sy": 590
   },
   "mushroom_9": {
    "file": "sprites/mushroom_9.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1122,
+   "sy": 605
   },
   "mushroom_10": {
    "file": "sprites/mushroom_10.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 835,
+   "sy": 605
   },
   "mushroom_11": {
    "file": "sprites/mushroom_11.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 842,
+   "sy": 605
   },
   "mushroom_12": {
    "file": "sprites/mushroom_12.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 849,
+   "sy": 605
   },
   "mushroom_13": {
    "file": "sprites/mushroom_13.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 80,
+   "sy": 605
   },
   "mushroom_14": {
    "file": "sprites/mushroom_14.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 856,
+   "sy": 605
   },
   "mushroom_15": {
    "file": "sprites/mushroom_15.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 88,
+   "sy": 605
   },
   "mushroom_16": {
    "file": "sprites/mushroom_16.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 863,
+   "sy": 605
   },
   "mushroom_17": {
    "file": "sprites/mushroom_17.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 870,
+   "sy": 605
   },
   "mushroom_18": {
    "file": "sprites/mushroom_18.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 96,
+   "sy": 605
   },
   "mushroom_19": {
    "file": "sprites/mushroom_19.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 877,
+   "sy": 605
   },
   "mushroom_20": {
    "file": "sprites/mushroom_20.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 884,
+   "sy": 605
   },
   "mushroom_21": {
    "file": "sprites/mushroom_21.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 112,
+   "sy": 605
   },
   "mushroom_22": {
    "file": "sprites/mushroom_22.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 891,
+   "sy": 605
   },
   "mushroom_23": {
    "file": "sprites/mushroom_23.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 120,
+   "sy": 605
   },
   "mushroom_24": {
    "file": "sprites/mushroom_24.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 898,
+   "sy": 605
   },
   "mushroom_25": {
    "file": "sprites/mushroom_25.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 905,
+   "sy": 605
   },
   "mushroom_26": {
    "file": "sprites/mushroom_26.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 128,
+   "sy": 605
   },
   "mushroom_27": {
    "file": "sprites/mushroom_27.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 912,
+   "sy": 605
   },
   "mushroom_28": {
    "file": "sprites/mushroom_28.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 919,
+   "sy": 605
   },
   "mushroom_29": {
    "file": "sprites/mushroom_29.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 136,
+   "sy": 605
   },
   "mushroom_30": {
    "file": "sprites/mushroom_30.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 152,
+   "sy": 605
   },
   "mushroom_31": {
    "file": "sprites/mushroom_31.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 926,
+   "sy": 605
   },
   "mushroom_32": {
    "file": "sprites/mushroom_32.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 160,
+   "sy": 605
   },
   "mushroom_33": {
    "file": "sprites/mushroom_33.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1798,
+   "sy": 590
   },
   "mushroom_34": {
    "file": "sprites/mushroom_34.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 168,
+   "sy": 605
   },
   "mushroom_35": {
    "file": "sprites/mushroom_35.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 176,
+   "sy": 605
   },
   "mushroom_36": {
    "file": "sprites/mushroom_36.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 184,
+   "sy": 605
   },
   "mushroom_37": {
    "file": "sprites/mushroom_37.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 192,
+   "sy": 605
   },
   "mushroom_38": {
    "file": "sprites/mushroom_38.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 933,
+   "sy": 605
   },
   "mushroom_39": {
    "file": "sprites/mushroom_39.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 940,
+   "sy": 605
   },
   "mushroom_40": {
    "file": "sprites/mushroom_40.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 208,
+   "sy": 605
   },
   "mushroom_41": {
    "file": "sprites/mushroom_41.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 216,
+   "sy": 605
   },
   "mushroom_42": {
    "file": "sprites/mushroom_42.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 947,
+   "sy": 605
   },
   "mushroom_43": {
    "file": "sprites/mushroom_43.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 954,
+   "sy": 605
   },
   "mushroom_44": {
    "file": "sprites/mushroom_44.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 224,
+   "sy": 605
   },
   "mushroom_45": {
    "file": "sprites/mushroom_45.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 961,
+   "sy": 605
   },
   "mushroom_46": {
    "file": "sprites/mushroom_46.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 968,
+   "sy": 605
   },
   "mushroom_47": {
    "file": "sprites/mushroom_47.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1295,
+   "sy": 605
   },
   "mushroom_48": {
    "file": "sprites/mushroom_48.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 975,
+   "sy": 605
   },
   "mushroom_49": {
    "file": "sprites/mushroom_49.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 982,
+   "sy": 605
   },
   "mushroom_50": {
    "file": "sprites/mushroom_50.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 232,
+   "sy": 605
   },
   "mushroom_51": {
    "file": "sprites/mushroom_51.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 989,
+   "sy": 605
   },
   "mushroom_52": {
    "file": "sprites/mushroom_52.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 240,
+   "sy": 605
   },
   "mushroom_53": {
    "file": "sprites/mushroom_53.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 248,
+   "sy": 605
   },
   "mushroom_54": {
    "file": "sprites/mushroom_54.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 256,
+   "sy": 605
   },
   "mushroom_55": {
    "file": "sprites/mushroom_55.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 996,
+   "sy": 605
   },
   "mushroom_56": {
    "file": "sprites/mushroom_56.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 264,
+   "sy": 605
   },
   "mushroom_57": {
    "file": "sprites/mushroom_57.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1003,
+   "sy": 605
   },
   "mushroom_58": {
    "file": "sprites/mushroom_58.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 272,
+   "sy": 605
   },
   "mushroom_59": {
    "file": "sprites/mushroom_59.png",
    "w": 4,
    "h": 7,
    "ax": 2,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1329,
+   "sy": 605
   },
   "mushroom_60": {
    "file": "sprites/mushroom_60.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1301,
+   "sy": 605
   },
   "mushroom_61": {
    "file": "sprites/mushroom_61.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 280,
+   "sy": 605
   },
   "mushroom_62": {
    "file": "sprites/mushroom_62.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1816,
+   "sy": 590
   },
   "mushroom_63": {
    "file": "sprites/mushroom_63.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 288,
+   "sy": 605
   },
   "mushroom_64": {
    "file": "sprites/mushroom_64.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1017,
+   "sy": 605
   },
   "mushroom_65": {
    "file": "sprites/mushroom_65.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 296,
+   "sy": 605
   },
   "mushroom_66": {
    "file": "sprites/mushroom_66.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1825,
+   "sy": 590
   },
   "mushroom_67": {
    "file": "sprites/mushroom_67.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1024,
+   "sy": 605
   },
   "mushroom_68": {
    "file": "sprites/mushroom_68.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 304,
+   "sy": 605
   },
   "mushroom_69": {
    "file": "sprites/mushroom_69.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1307,
+   "sy": 605
   },
   "mushroom_70": {
    "file": "sprites/mushroom_70.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 312,
+   "sy": 605
   },
   "mushroom_71": {
    "file": "sprites/mushroom_71.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1038,
+   "sy": 605
   },
   "mushroom_72": {
    "file": "sprites/mushroom_72.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 320,
+   "sy": 605
   },
   "mushroom_73": {
    "file": "sprites/mushroom_73.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1834,
+   "sy": 590
   },
   "mushroom_74": {
    "file": "sprites/mushroom_74.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1045,
+   "sy": 605
   },
   "mushroom_75": {
    "file": "sprites/mushroom_75.png",
    "w": 7,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 328,
+   "sy": 605
   },
   "mushroom_76": {
    "file": "sprites/mushroom_76.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 336,
+   "sy": 605
   },
   "mushroom_77": {
    "file": "sprites/mushroom_77.png",
    "w": 6,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1052,
+   "sy": 605
   },
   "mushroom_78": {
    "file": "sprites/mushroom_78.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 344,
+   "sy": 605
   },
   "mushroom_79": {
    "file": "sprites/mushroom_79.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 352,
+   "sy": 605
   },
   "mushroom_80": {
    "file": "sprites/mushroom_80.png",
    "w": 6,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1059,
+   "sy": 605
   },
   "mushroom_81": {
    "file": "sprites/mushroom_81.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1066,
+   "sy": 605
   },
   "mushroom_82": {
    "file": "sprites/mushroom_82.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1073,
+   "sy": 605
   },
   "mushroom_83": {
    "file": "sprites/mushroom_83.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 360,
+   "sy": 605
   },
   "mushroom_84": {
    "file": "sprites/mushroom_84.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1080,
+   "sy": 605
   },
   "mushroom_85": {
    "file": "sprites/mushroom_85.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1087,
+   "sy": 605
   },
   "mushroom_86": {
    "file": "sprites/mushroom_86.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1094,
+   "sy": 605
   },
   "mushroom_87": {
    "file": "sprites/mushroom_87.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1101,
+   "sy": 605
   },
   "mushroom_88": {
    "file": "sprites/mushroom_88.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1108,
+   "sy": 605
   },
   "mushroom_89": {
    "file": "sprites/mushroom_89.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1115,
+   "sy": 605
   },
   "mushroom_90": {
    "file": "sprites/mushroom_90.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 368,
+   "sy": 605
   },
   "mushroom_91": {
    "file": "sprites/mushroom_91.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1129,
+   "sy": 605
   },
   "mushroom_92": {
    "file": "sprites/mushroom_92.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1313,
+   "sy": 605
   },
   "mushroom_93": {
    "file": "sprites/mushroom_93.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 376,
+   "sy": 605
   },
   "mushroom_94": {
    "file": "sprites/mushroom_94.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1136,
+   "sy": 605
   },
   "mushroom_95": {
    "file": "sprites/mushroom_95.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1143,
+   "sy": 605
   },
   "mushroom_96": {
    "file": "sprites/mushroom_96.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1150,
+   "sy": 605
   },
   "mushroom_97": {
    "file": "sprites/mushroom_97.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 384,
+   "sy": 605
   },
   "mushroom_98": {
    "file": "sprites/mushroom_98.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 392,
+   "sy": 605
   },
   "mushroom_99": {
    "file": "sprites/mushroom_99.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 400,
+   "sy": 605
   },
   "mushroom_100": {
    "file": "sprites/mushroom_100.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 8,
+   "sy": 605
   },
   "mushroom_101": {
    "file": "sprites/mushroom_101.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1277,
+   "sy": 605
   },
   "mushroom_102": {
    "file": "sprites/mushroom_102.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 16,
+   "sy": 605
   },
   "mushroom_103": {
    "file": "sprites/mushroom_103.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 24,
+   "sy": 605
   },
   "mushroom_104": {
    "file": "sprites/mushroom_104.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 32,
+   "sy": 605
   },
   "mushroom_105": {
    "file": "sprites/mushroom_105.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 40,
+   "sy": 605
   },
   "mushroom_106": {
    "file": "sprites/mushroom_106.png",
    "w": 8,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1789,
+   "sy": 590
   },
   "mushroom_107": {
    "file": "sprites/mushroom_107.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 48,
+   "sy": 605
   },
   "mushroom_108": {
    "file": "sprites/mushroom_108.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 56,
+   "sy": 605
   },
   "mushroom_109": {
    "file": "sprites/mushroom_109.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 64,
+   "sy": 605
   },
   "mushroom_110": {
    "file": "sprites/mushroom_110.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1283,
+   "sy": 605
   },
   "mushroom_111": {
    "file": "sprites/mushroom_111.png",
    "w": 4,
    "h": 7,
    "ax": 2,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1324,
+   "sy": 605
   },
   "mushroom_112": {
    "file": "sprites/mushroom_112.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1289,
+   "sy": 605
   },
   "mushroom_113": {
    "file": "sprites/mushroom_113.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 72,
+   "sy": 605
   },
   "glowcap_3": {
    "file": "sprites/glowcap_3.png",
@@ -4418,7 +6966,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_3_glow.png"
+   "glow": "sprites/glowcap_3_glow.png",
+   "sheet": 0,
+   "sx": 534,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 597,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_4": {
    "file": "sprites/glowcap_4.png",
@@ -4426,7 +6982,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_4_glow.png"
+   "glow": "sprites/glowcap_4_glow.png",
+   "sheet": 0,
+   "sx": 604,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 695,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_5": {
    "file": "sprites/glowcap_5.png",
@@ -4434,7 +6998,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_5_glow.png"
+   "glow": "sprites/glowcap_5_glow.png",
+   "sheet": 0,
+   "sx": 702,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 800,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_6": {
    "file": "sprites/glowcap_6.png",
@@ -4442,14 +7014,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_6_glow.png"
+   "glow": "sprites/glowcap_6_glow.png",
+   "sheet": 0,
+   "sx": 807,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 814,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_7": {
    "file": "sprites/glowcap_7.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 821,
+   "sy": 605
   },
   "glowcap_8": {
    "file": "sprites/glowcap_8.png",
@@ -4457,21 +7040,35 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_8_glow.png"
+   "glow": "sprites/glowcap_8_glow.png",
+   "sheet": 0,
+   "sx": 1259,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1265,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_9": {
    "file": "sprites/glowcap_9.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 828,
+   "sy": 605
   },
   "glowcap_10": {
    "file": "sprites/glowcap_10.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 429,
+   "sy": 605
   },
   "glowcap_11": {
    "file": "sprites/glowcap_11.png",
@@ -4479,7 +7076,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_11_glow.png"
+   "glow": "sprites/glowcap_11_glow.png",
+   "sheet": 0,
+   "sx": 1157,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1163,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_12": {
    "file": "sprites/glowcap_12.png",
@@ -4487,14 +7092,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_12_glow.png"
+   "glow": "sprites/glowcap_12_glow.png",
+   "sheet": 0,
+   "sx": 436,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 443,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_13": {
    "file": "sprites/glowcap_13.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 450,
+   "sy": 605
   },
   "glowcap_14": {
    "file": "sprites/glowcap_14.png",
@@ -4502,14 +7118,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_14_glow.png"
+   "glow": "sprites/glowcap_14_glow.png",
+   "sheet": 0,
+   "sx": 457,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 464,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_15": {
    "file": "sprites/glowcap_15.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 471,
+   "sy": 605
   },
   "glowcap_16": {
    "file": "sprites/glowcap_16.png",
@@ -4517,14 +7144,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_16_glow.png"
+   "glow": "sprites/glowcap_16_glow.png",
+   "sheet": 0,
+   "sx": 478,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 485,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_17": {
    "file": "sprites/glowcap_17.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 492,
+   "sy": 605
   },
   "glowcap_18": {
    "file": "sprites/glowcap_18.png",
@@ -4532,7 +7170,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_18_glow.png"
+   "glow": "sprites/glowcap_18_glow.png",
+   "sheet": 0,
+   "sx": 1852,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1860,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_19": {
    "file": "sprites/glowcap_19.png",
@@ -4540,7 +7186,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_19_glow.png"
+   "glow": "sprites/glowcap_19_glow.png",
+   "sheet": 0,
+   "sx": 1868,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1876,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_20": {
    "file": "sprites/glowcap_20.png",
@@ -4548,7 +7202,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_20_glow.png"
+   "glow": "sprites/glowcap_20_glow.png",
+   "sheet": 0,
+   "sx": 1892,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1900,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_21": {
    "file": "sprites/glowcap_21.png",
@@ -4556,7 +7218,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_21_glow.png"
+   "glow": "sprites/glowcap_21_glow.png",
+   "sheet": 0,
+   "sx": 506,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 513,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_22": {
    "file": "sprites/glowcap_22.png",
@@ -4564,7 +7234,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_22_glow.png"
+   "glow": "sprites/glowcap_22_glow.png",
+   "sheet": 0,
+   "sx": 1908,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1916,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_23": {
    "file": "sprites/glowcap_23.png",
@@ -4572,7 +7250,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_23_glow.png"
+   "glow": "sprites/glowcap_23_glow.png",
+   "sheet": 0,
+   "sx": 1169,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1175,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_24": {
    "file": "sprites/glowcap_24.png",
@@ -4580,7 +7266,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_24_glow.png"
+   "glow": "sprites/glowcap_24_glow.png",
+   "sheet": 0,
+   "sx": 1181,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1187,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_25": {
    "file": "sprites/glowcap_25.png",
@@ -4588,7 +7282,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_25_glow.png"
+   "glow": "sprites/glowcap_25_glow.png",
+   "sheet": 0,
+   "sx": 520,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 527,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_26": {
    "file": "sprites/glowcap_26.png",
@@ -4596,7 +7298,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_26_glow.png"
+   "glow": "sprites/glowcap_26_glow.png",
+   "sheet": 0,
+   "sx": 1924,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1932,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_27": {
    "file": "sprites/glowcap_27.png",
@@ -4604,7 +7314,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_27_glow.png"
+   "glow": "sprites/glowcap_27_glow.png",
+   "sheet": 0,
+   "sx": 1193,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1199,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_28": {
    "file": "sprites/glowcap_28.png",
@@ -4612,14 +7330,25 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_28_glow.png"
+   "glow": "sprites/glowcap_28_glow.png",
+   "sheet": 0,
+   "sx": 1940,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1948,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_29": {
    "file": "sprites/glowcap_29.png",
    "w": 4,
    "h": 7,
    "ax": 2,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1319,
+   "sy": 605
   },
   "glowcap_30": {
    "file": "sprites/glowcap_30.png",
@@ -4627,7 +7356,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_30_glow.png"
+   "glow": "sprites/glowcap_30_glow.png",
+   "sheet": 0,
+   "sx": 1964,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1972,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_31": {
    "file": "sprites/glowcap_31.png",
@@ -4635,7 +7372,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_31_glow.png"
+   "glow": "sprites/glowcap_31_glow.png",
+   "sheet": 0,
+   "sx": 1205,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1211,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_32": {
    "file": "sprites/glowcap_32.png",
@@ -4643,14 +7388,25 @@
    "h": 7,
    "ax": 2,
    "ay": 6,
-   "glow": "sprites/glowcap_32_glow.png"
+   "glow": "sprites/glowcap_32_glow.png",
+   "sheet": 0,
+   "sx": 541,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 548,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_33": {
    "file": "sprites/glowcap_33.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1980,
+   "sy": 590
   },
   "glowcap_34": {
    "file": "sprites/glowcap_34.png",
@@ -4658,7 +7414,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_34_glow.png"
+   "glow": "sprites/glowcap_34_glow.png",
+   "sheet": 0,
+   "sx": 1217,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1223,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_35": {
    "file": "sprites/glowcap_35.png",
@@ -4666,7 +7430,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_35_glow.png"
+   "glow": "sprites/glowcap_35_glow.png",
+   "sheet": 0,
+   "sx": 555,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 562,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_36": {
    "file": "sprites/glowcap_36.png",
@@ -4674,7 +7446,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_36_glow.png"
+   "glow": "sprites/glowcap_36_glow.png",
+   "sheet": 0,
+   "sx": 569,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 576,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_37": {
    "file": "sprites/glowcap_37.png",
@@ -4682,21 +7462,35 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_37_glow.png"
+   "glow": "sprites/glowcap_37_glow.png",
+   "sheet": 0,
+   "sx": 1988,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1996,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_38": {
    "file": "sprites/glowcap_38.png",
    "w": 6,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 583,
+   "sy": 605
   },
   "glowcap_39": {
    "file": "sprites/glowcap_39.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 590,
+   "sy": 605
   },
   "glowcap_40": {
    "file": "sprites/glowcap_40.png",
@@ -4704,7 +7498,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_40_glow.png"
+   "glow": "sprites/glowcap_40_glow.png",
+   "sheet": 0,
+   "sx": 611,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 618,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_41": {
    "file": "sprites/glowcap_41.png",
@@ -4712,7 +7514,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_41_glow.png"
+   "glow": "sprites/glowcap_41_glow.png",
+   "sheet": 0,
+   "sx": 2004,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 2012,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_42": {
    "file": "sprites/glowcap_42.png",
@@ -4720,21 +7530,35 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_42_glow.png"
+   "glow": "sprites/glowcap_42_glow.png",
+   "sheet": 0,
+   "sx": 625,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 632,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_43": {
    "file": "sprites/glowcap_43.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 639,
+   "sy": 605
   },
   "glowcap_44": {
    "file": "sprites/glowcap_44.png",
    "w": 7,
    "h": 7,
    "ax": 4,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 2020,
+   "sy": 590
   },
   "glowcap_45": {
    "file": "sprites/glowcap_45.png",
@@ -4742,7 +7566,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_45_glow.png"
+   "glow": "sprites/glowcap_45_glow.png",
+   "sheet": 0,
+   "sx": 646,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 653,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_46": {
    "file": "sprites/glowcap_46.png",
@@ -4750,7 +7582,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_46_glow.png"
+   "glow": "sprites/glowcap_46_glow.png",
+   "sheet": 0,
+   "sx": 660,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 667,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_47": {
    "file": "sprites/glowcap_47.png",
@@ -4758,7 +7598,15 @@
    "h": 7,
    "ax": 4,
    "ay": 6,
-   "glow": "sprites/glowcap_47_glow.png"
+   "glow": "sprites/glowcap_47_glow.png",
+   "sheet": 0,
+   "sx": 2028,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 2036,
+   "gy": 590,
+   "gw": 7,
+   "gh": 7
   },
   "glowcap_48": {
    "file": "sprites/glowcap_48.png",
@@ -4766,14 +7614,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_48_glow.png"
+   "glow": "sprites/glowcap_48_glow.png",
+   "sheet": 0,
+   "sx": 674,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 681,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_49": {
    "file": "sprites/glowcap_49.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 688,
+   "sy": 605
   },
   "glowcap_50": {
    "file": "sprites/glowcap_50.png",
@@ -4781,7 +7640,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_50_glow.png"
+   "glow": "sprites/glowcap_50_glow.png",
+   "sheet": 0,
+   "sx": 1229,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1235,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_51": {
    "file": "sprites/glowcap_51.png",
@@ -4789,7 +7656,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_51_glow.png"
+   "glow": "sprites/glowcap_51_glow.png",
+   "sheet": 0,
+   "sx": 709,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 716,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_52": {
    "file": "sprites/glowcap_52.png",
@@ -4797,7 +7672,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_52_glow.png"
+   "glow": "sprites/glowcap_52_glow.png",
+   "sheet": 0,
+   "sx": 723,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 730,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_53": {
    "file": "sprites/glowcap_53.png",
@@ -4805,14 +7688,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_53_glow.png"
+   "glow": "sprites/glowcap_53_glow.png",
+   "sheet": 0,
+   "sx": 737,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 744,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_54": {
    "file": "sprites/glowcap_54.png",
    "w": 6,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 751,
+   "sy": 605
   },
   "glowcap_55": {
    "file": "sprites/glowcap_55.png",
@@ -4820,7 +7714,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_55_glow.png"
+   "glow": "sprites/glowcap_55_glow.png",
+   "sheet": 0,
+   "sx": 758,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 765,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_56": {
    "file": "sprites/glowcap_56.png",
@@ -4828,7 +7730,15 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_56_glow.png"
+   "glow": "sprites/glowcap_56_glow.png",
+   "sheet": 0,
+   "sx": 1241,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 1247,
+   "gy": 605,
+   "gw": 5,
+   "gh": 7
   },
   "glowcap_57": {
    "file": "sprites/glowcap_57.png",
@@ -4836,14 +7746,25 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_57_glow.png"
+   "glow": "sprites/glowcap_57_glow.png",
+   "sheet": 0,
+   "sx": 772,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 779,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "glowcap_58": {
    "file": "sprites/glowcap_58.png",
    "w": 5,
    "h": 7,
    "ax": 3,
-   "ay": 6
+   "ay": 6,
+   "sheet": 0,
+   "sx": 1253,
+   "sy": 605
   },
   "glowcap_59": {
    "file": "sprites/glowcap_59.png",
@@ -4851,182 +7772,265 @@
    "h": 7,
    "ax": 3,
    "ay": 6,
-   "glow": "sprites/glowcap_59_glow.png"
+   "glow": "sprites/glowcap_59_glow.png",
+   "sheet": 0,
+   "sx": 786,
+   "sy": 605,
+   "gsheet": 0,
+   "gx": 793,
+   "gy": 605,
+   "gw": 6,
+   "gh": 7
   },
   "grass_4": {
    "file": "sprites/grass_4.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1747,
+   "sy": 548
   },
   "grass_5": {
    "file": "sprites/grass_5.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1780,
+   "sy": 548
   },
   "grass_6": {
    "file": "sprites/grass_6.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1813,
+   "sy": 548
   },
   "meadow_3": {
    "file": "sprites/meadow_3.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 165,
+   "sy": 573
   },
   "meadow_4": {
    "file": "sprites/meadow_4.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 198,
+   "sy": 573
   },
   "meadow_5": {
    "file": "sprites/meadow_5.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 231,
+   "sy": 573
   },
   "meadow_6": {
    "file": "sprites/meadow_6.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 264,
+   "sy": 573
   },
   "meadow_7": {
    "file": "sprites/meadow_7.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 297,
+   "sy": 573
   },
   "meadow_8": {
    "file": "sprites/meadow_8.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 330,
+   "sy": 573
   },
   "forest_3": {
    "file": "sprites/forest_3.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1483,
+   "sy": 548
   },
   "forest_4": {
    "file": "sprites/forest_4.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1516,
+   "sy": 548
   },
   "forest_5": {
    "file": "sprites/forest_5.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1549,
+   "sy": 548
   },
   "forest_6": {
    "file": "sprites/forest_6.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1582,
+   "sy": 548
   },
   "hills_3": {
    "file": "sprites/hills_3.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1945,
+   "sy": 548
   },
   "hills_4": {
    "file": "sprites/hills_4.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 1978,
+   "sy": 548
   },
   "hills_5": {
    "file": "sprites/hills_5.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 2011,
+   "sy": 548
   },
   "hills_6": {
    "file": "sprites/hills_6.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 0,
+   "sy": 573
   },
   "hills_7": {
    "file": "sprites/hills_7.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 33,
+   "sy": 573
   },
   "shore_1": {
    "file": "sprites/shore_1.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 528,
+   "sy": 573
   },
   "ruins_3": {
    "file": "sprites/ruins_3.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 363,
+   "sy": 573
   },
   "ruins_4": {
    "file": "sprites/ruins_4.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 396,
+   "sy": 573
   },
   "ruins_5": {
    "file": "sprites/ruins_5.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 429,
+   "sy": 573
   },
   "ruins_6": {
    "file": "sprites/ruins_6.png",
    "w": 32,
    "h": 16,
    "ax": 16,
-   "ay": 0
+   "ay": 0,
+   "sheet": 0,
+   "sx": 462,
+   "sy": 573
   },
   "boar_0": {
    "file": "sprites/boar_0.png",
    "w": 12,
    "h": 11,
    "ax": 7,
-   "ay": 11
+   "ay": 11,
+   "sheet": 0,
+   "sx": 1744,
+   "sy": 590
   },
   "boar_1": {
    "file": "sprites/boar_0.png",
    "w": 12,
    "h": 11,
    "ax": 7,
-   "ay": 12
+   "ay": 12,
+   "sheet": 0,
+   "sx": 1744,
+   "sy": 590
   },
   "glimmoth_0": {
    "file": "sprites/glimmoth_0.png",
@@ -5034,7 +8038,15 @@
    "h": 9,
    "ax": 5,
    "ay": 9,
-   "glow": "sprites/glimmoth_0_glow.png"
+   "glow": "sprites/glimmoth_0_glow.png",
+   "sheet": 0,
+   "sx": 1767,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1778,
+   "gy": 590,
+   "gw": 10,
+   "gh": 9
   },
   "glimmoth_1": {
    "file": "sprites/glimmoth_0.png",
@@ -5042,14 +8054,25 @@
    "h": 9,
    "ax": 5,
    "ay": 10,
-   "glow": "sprites/glimmoth_0_glow.png"
+   "glow": "sprites/glimmoth_0_glow.png",
+   "sheet": 0,
+   "sx": 1767,
+   "sy": 590,
+   "gsheet": 0,
+   "gx": 1778,
+   "gy": 590,
+   "gw": 10,
+   "gh": 9
   },
   "b_well_v0": {
    "file": "sprites/b_well_v0.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 806,
+   "sy": 548
   },
   "b_well_v1": {
    "file": "sprites/b_well_v1.png",
@@ -5057,7 +8080,15 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v1_glow.png"
+   "glow": "sprites/b_well_v1_glow.png",
+   "sheet": 0,
+   "sx": 539,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 554,
+   "gy": 548,
+   "gw": 14,
+   "gh": 18
   },
   "b_well_v2": {
    "file": "sprites/b_well_v2.png",
@@ -5065,21 +8096,35 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v2_glow.png"
+   "glow": "sprites/b_well_v2_glow.png",
+   "sheet": 0,
+   "sx": 569,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 629,
+   "gy": 548,
+   "gw": 14,
+   "gh": 18
   },
   "b_well_v3": {
    "file": "sprites/b_well_v3.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 644,
+   "sy": 548
   },
   "b_well_v4": {
    "file": "sprites/b_well_v4.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 689,
+   "sy": 548
   },
   "b_well_v5": {
    "file": "sprites/b_well_v5.png",
@@ -5087,7 +8132,15 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v5_glow.png"
+   "glow": "sprites/b_well_v5_glow.png",
+   "sheet": 0,
+   "sx": 974,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 988,
+   "gy": 548,
+   "gw": 13,
+   "gh": 18
   },
   "b_well_v6": {
    "file": "sprites/b_well_v6.png",
@@ -5095,14 +8148,25 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_well_v6_glow.png"
+   "glow": "sprites/b_well_v6_glow.png",
+   "sheet": 0,
+   "sx": 1305,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1317,
+   "gy": 548,
+   "gw": 11,
+   "gh": 18
   },
   "b_well_v7": {
    "file": "sprites/b_well_v7.png",
    "w": 15,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 433,
+   "sy": 548
   },
   "b_well_v8": {
    "file": "sprites/b_well_v8.png",
@@ -5110,7 +8174,15 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v8_glow.png"
+   "glow": "sprites/b_well_v8_glow.png",
+   "sheet": 0,
+   "sx": 704,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 719,
+   "gy": 548,
+   "gw": 14,
+   "gh": 18
   },
   "b_well_v9": {
    "file": "sprites/b_well_v9.png",
@@ -5118,28 +8190,45 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v9_glow.png"
+   "glow": "sprites/b_well_v9_glow.png",
+   "sheet": 0,
+   "sx": 734,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 749,
+   "gy": 548,
+   "gw": 14,
+   "gh": 18
   },
   "b_well_v10": {
    "file": "sprites/b_well_v10.png",
    "w": 10,
    "h": 18,
    "ax": 5,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1351,
+   "sy": 548
   },
   "b_well_v11": {
    "file": "sprites/b_well_v11.png",
    "w": 11,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1269,
+   "sy": 548
   },
   "b_well_v12": {
    "file": "sprites/b_well_v12.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 820,
+   "sy": 548
   },
   "b_well_v13": {
    "file": "sprites/b_well_v13.png",
@@ -5147,14 +8236,25 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_well_v13_glow.png"
+   "glow": "sprites/b_well_v13_glow.png",
+   "sheet": 0,
+   "sx": 1054,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1067,
+   "gy": 548,
+   "gw": 12,
+   "gh": 18
   },
   "b_well_v14": {
    "file": "sprites/b_well_v14.png",
    "w": 15,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 369,
+   "sy": 548
   },
   "b_well_v15": {
    "file": "sprites/b_well_v15.png",
@@ -5162,7 +8262,15 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v15_glow.png"
+   "glow": "sprites/b_well_v15_glow.png",
+   "sheet": 0,
+   "sx": 834,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 848,
+   "gy": 548,
+   "gw": 13,
+   "gh": 18
   },
   "b_well_v16": {
    "file": "sprites/b_well_v16.png",
@@ -5170,7 +8278,15 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_well_v16_glow.png"
+   "glow": "sprites/b_well_v16_glow.png",
+   "sheet": 0,
+   "sx": 1080,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1093,
+   "gy": 548,
+   "gw": 12,
+   "gh": 18
   },
   "b_well_v17": {
    "file": "sprites/b_well_v17.png",
@@ -5178,28 +8294,45 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v17_glow.png"
+   "glow": "sprites/b_well_v17_glow.png",
+   "sheet": 0,
+   "sx": 862,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 876,
+   "gy": 548,
+   "gw": 13,
+   "gh": 18
   },
   "b_well_v18": {
    "file": "sprites/b_well_v18.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1106,
+   "sy": 548
   },
   "b_well_v19": {
    "file": "sprites/b_well_v19.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 890,
+   "sy": 548
   },
   "b_well_v20": {
    "file": "sprites/b_well_v20.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 584,
+   "sy": 548
   },
   "b_well_v21": {
    "file": "sprites/b_well_v21.png",
@@ -5207,7 +8340,15 @@
    "h": 18,
    "ax": 8,
    "ay": 7,
-   "glow": "sprites/b_well_v21_glow.png"
+   "glow": "sprites/b_well_v21_glow.png",
+   "sheet": 0,
+   "sx": 385,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 401,
+   "gy": 548,
+   "gw": 15,
+   "gh": 18
   },
   "b_well_v22": {
    "file": "sprites/b_well_v22.png",
@@ -5215,28 +8356,45 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_well_v22_glow.png"
+   "glow": "sprites/b_well_v22_glow.png",
+   "sheet": 0,
+   "sx": 1119,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1132,
+   "gy": 548,
+   "gw": 12,
+   "gh": 18
   },
   "b_well_v23": {
    "file": "sprites/b_well_v23.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 599,
+   "sy": 548
   },
   "b_well_v24": {
    "file": "sprites/b_well_v24.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1145,
+   "sy": 548
   },
   "b_well_v25": {
    "file": "sprites/b_well_v25.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1158,
+   "sy": 548
   },
   "b_well_v26": {
    "file": "sprites/b_well_v26.png",
@@ -5244,21 +8402,35 @@
    "h": 18,
    "ax": 5,
    "ay": 7,
-   "glow": "sprites/b_well_v26_glow.png"
+   "glow": "sprites/b_well_v26_glow.png",
+   "sheet": 0,
+   "sx": 1362,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1373,
+   "gy": 548,
+   "gw": 10,
+   "gh": 18
   },
   "b_well_v27": {
    "file": "sprites/b_well_v27.png",
    "w": 11,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1281,
+   "sy": 548
   },
   "b_well_v28": {
    "file": "sprites/b_well_v28.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 614,
+   "sy": 548
   },
   "b_well_v29": {
    "file": "sprites/b_well_v29.png",
@@ -5266,28 +8438,45 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v29_glow.png"
+   "glow": "sprites/b_well_v29_glow.png",
+   "sheet": 0,
+   "sx": 904,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 918,
+   "gy": 548,
+   "gw": 13,
+   "gh": 18
   },
   "b_well_v30": {
    "file": "sprites/b_well_v30.png",
    "w": 11,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1293,
+   "sy": 548
   },
   "b_well_v31": {
    "file": "sprites/b_well_v31.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 932,
+   "sy": 548
   },
   "b_well_v32": {
    "file": "sprites/b_well_v32.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 659,
+   "sy": 548
   },
   "b_well_v33": {
    "file": "sprites/b_well_v33.png",
@@ -5295,21 +8484,35 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_well_v33_glow.png"
+   "glow": "sprites/b_well_v33_glow.png",
+   "sheet": 0,
+   "sx": 1171,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1184,
+   "gy": 548,
+   "gw": 12,
+   "gh": 18
   },
   "b_well_v34": {
    "file": "sprites/b_well_v34.png",
    "w": 15,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 417,
+   "sy": 548
   },
   "b_well_v35": {
    "file": "sprites/b_well_v35.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 674,
+   "sy": 548
   },
   "b_well_v36": {
    "file": "sprites/b_well_v36.png",
@@ -5317,56 +8520,85 @@
    "h": 18,
    "ax": 7,
    "ay": 7,
-   "glow": "sprites/b_well_v36_glow.png"
+   "glow": "sprites/b_well_v36_glow.png",
+   "sheet": 0,
+   "sx": 946,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 960,
+   "gy": 548,
+   "gw": 13,
+   "gh": 18
   },
   "b_seep_v0": {
    "file": "sprites/b_seep_v0.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 449,
+   "sy": 548
   },
   "b_seep_v1": {
    "file": "sprites/b_seep_v1.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 464,
+   "sy": 548
   },
   "b_seep_v2": {
    "file": "sprites/b_seep_v2.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 764,
+   "sy": 548
   },
   "b_seep_v3": {
    "file": "sprites/b_seep_v3.png",
    "w": 15,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 337,
+   "sy": 548
   },
   "b_seep_v4": {
    "file": "sprites/b_seep_v4.png",
    "w": 16,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 286,
+   "sy": 548
   },
   "b_seep_v5": {
    "file": "sprites/b_seep_v5.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1028,
+   "sy": 548
   },
   "b_seep_v6": {
    "file": "sprites/b_seep_v6.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 479,
+   "sy": 548
   },
   "b_seep_v7": {
    "file": "sprites/b_seep_v7.png",
@@ -5374,35 +8606,55 @@
    "h": 18,
    "ax": 9,
    "ay": 7,
-   "glow": "sprites/b_seep_v7_glow.png"
+   "glow": "sprites/b_seep_v7_glow.png",
+   "sheet": 0,
+   "sx": 214,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 232,
+   "gy": 548,
+   "gw": 17,
+   "gh": 18
   },
   "b_seep_v8": {
    "file": "sprites/b_seep_v8.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 494,
+   "sy": 548
   },
   "b_seep_v9": {
    "file": "sprites/b_seep_v9.png",
    "w": 11,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1197,
+   "sy": 548
   },
   "b_seep_v10": {
    "file": "sprites/b_seep_v10.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1002,
+   "sy": 548
   },
   "b_seep_v11": {
    "file": "sprites/b_seep_v11.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1015,
+   "sy": 548
   },
   "b_tidewell_v0": {
    "file": "sprites/b_tidewell_v0.png",
@@ -5410,14 +8662,25 @@
    "h": 18,
    "ax": 5,
    "ay": 7,
-   "glow": "sprites/b_tidewell_v0_glow.png"
+   "glow": "sprites/b_tidewell_v0_glow.png",
+   "sheet": 0,
+   "sx": 1329,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1340,
+   "gy": 548,
+   "gw": 10,
+   "gh": 18
   },
   "b_tidewell_v1": {
    "file": "sprites/b_tidewell_v1.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 778,
+   "sy": 548
   },
   "b_tidewell_v2": {
    "file": "sprites/b_tidewell_v2.png",
@@ -5425,21 +8688,35 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_tidewell_v2_glow.png"
+   "glow": "sprites/b_tidewell_v2_glow.png",
+   "sheet": 0,
+   "sx": 1209,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1221,
+   "gy": 548,
+   "gw": 11,
+   "gh": 18
   },
   "b_tidewell_v3": {
    "file": "sprites/b_tidewell_v3.png",
    "w": 13,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 792,
+   "sy": 548
   },
   "b_tidewell_v4": {
    "file": "sprites/b_tidewell_v4.png",
    "w": 12,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1041,
+   "sy": 548
   },
   "b_tidewell_v5": {
    "file": "sprites/b_tidewell_v5.png",
@@ -5447,35 +8724,55 @@
    "h": 18,
    "ax": 6,
    "ay": 7,
-   "glow": "sprites/b_tidewell_v5_glow.png"
+   "glow": "sprites/b_tidewell_v5_glow.png",
+   "sheet": 0,
+   "sx": 1233,
+   "sy": 548,
+   "gsheet": 0,
+   "gx": 1245,
+   "gy": 548,
+   "gw": 11,
+   "gh": 18
   },
   "b_tidewell_v6": {
    "file": "sprites/b_tidewell_v6.png",
    "w": 11,
    "h": 18,
    "ax": 6,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 1257,
+   "sy": 548
   },
   "b_tidewell_v7": {
    "file": "sprites/b_tidewell_v7.png",
    "w": 15,
    "h": 18,
    "ax": 8,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 353,
+   "sy": 548
   },
   "b_tidewell_v8": {
    "file": "sprites/b_tidewell_v8.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 509,
+   "sy": 548
   },
   "b_tidewell_v9": {
    "file": "sprites/b_tidewell_v9.png",
    "w": 14,
    "h": 18,
    "ax": 7,
-   "ay": 7
+   "ay": 7,
+   "sheet": 0,
+   "sx": 524,
+   "sy": 548
   },
   "b_shrine_v0": {
    "file": "sprites/b_shrine_v0.png",
@@ -5483,7 +8780,15 @@
    "h": 30,
    "ax": 13,
    "ay": 13,
-   "glow": "sprites/b_shrine_v0_glow.png"
+   "glow": "sprites/b_shrine_v0_glow.png",
+   "sheet": 0,
+   "sx": 411,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 438,
+   "gy": 517,
+   "gw": 26,
+   "gh": 30
   },
   "b_shrine_v1": {
    "file": "sprites/b_shrine_v1.png",
@@ -5491,14 +8796,25 @@
    "h": 30,
    "ax": 13,
    "ay": 13,
-   "glow": "sprites/b_shrine_v1_glow.png"
+   "glow": "sprites/b_shrine_v1_glow.png",
+   "sheet": 0,
+   "sx": 465,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 492,
+   "gy": 517,
+   "gw": 26,
+   "gh": 30
   },
   "b_shrine_v2": {
    "file": "sprites/b_shrine_v2.png",
    "w": 24,
    "h": 30,
    "ax": 12,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 626,
+   "sy": 517
   },
   "b_shrine_v3": {
    "file": "sprites/b_shrine_v3.png",
@@ -5506,7 +8822,15 @@
    "h": 30,
    "ax": 13,
    "ay": 13,
-   "glow": "sprites/b_shrine_v3_glow.png"
+   "glow": "sprites/b_shrine_v3_glow.png",
+   "sheet": 0,
+   "sx": 519,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 546,
+   "gy": 517,
+   "gw": 26,
+   "gh": 30
   },
   "b_shrine_v4": {
    "file": "sprites/b_shrine_v4.png",
@@ -5514,14 +8838,25 @@
    "h": 30,
    "ax": 15,
    "ay": 13,
-   "glow": "sprites/b_shrine_v4_glow.png"
+   "glow": "sprites/b_shrine_v4_glow.png",
+   "sheet": 0,
+   "sx": 148,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 179,
+   "gy": 517,
+   "gw": 30,
+   "gh": 30
   },
   "b_shrine_v5": {
    "file": "sprites/b_shrine_v5.png",
    "w": 26,
    "h": 30,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 573,
+   "sy": 517
   },
   "b_shrine_v6": {
    "file": "sprites/b_shrine_v6.png",
@@ -5529,7 +8864,15 @@
    "h": 30,
    "ax": 12,
    "ay": 13,
-   "glow": "sprites/b_shrine_v6_glow.png"
+   "glow": "sprites/b_shrine_v6_glow.png",
+   "sheet": 0,
+   "sx": 651,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 675,
+   "gy": 517,
+   "gw": 23,
+   "gh": 30
   },
   "b_shrine_v7": {
    "file": "sprites/b_shrine_v7.png",
@@ -5537,7 +8880,15 @@
    "h": 30,
    "ax": 10,
    "ay": 13,
-   "glow": "sprites/b_shrine_v7_glow.png"
+   "glow": "sprites/b_shrine_v7_glow.png",
+   "sheet": 0,
+   "sx": 812,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 832,
+   "gy": 517,
+   "gw": 19,
+   "gh": 30
   },
   "b_shrine_v8": {
    "file": "sprites/b_shrine_v8.png",
@@ -5545,7 +8896,15 @@
    "h": 30,
    "ax": 12,
    "ay": 13,
-   "glow": "sprites/b_shrine_v8_glow.png"
+   "glow": "sprites/b_shrine_v8_glow.png",
+   "sheet": 0,
+   "sx": 699,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 723,
+   "gy": 517,
+   "gw": 23,
+   "gh": 30
   },
   "b_shrine_v9": {
    "file": "sprites/b_shrine_v9.png",
@@ -5553,7 +8912,15 @@
    "h": 30,
    "ax": 15,
    "ay": 13,
-   "glow": "sprites/b_shrine_v9_glow.png"
+   "glow": "sprites/b_shrine_v9_glow.png",
+   "sheet": 0,
+   "sx": 210,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 240,
+   "gy": 517,
+   "gw": 29,
+   "gh": 30
   },
   "b_shrine_v10": {
    "file": "sprites/b_shrine_v10.png",
@@ -5561,7 +8928,15 @@
    "h": 30,
    "ax": 11,
    "ay": 13,
-   "glow": "sprites/b_shrine_v10_glow.png"
+   "glow": "sprites/b_shrine_v10_glow.png",
+   "sheet": 0,
+   "sx": 747,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 769,
+   "gy": 517,
+   "gw": 21,
+   "gh": 30
   },
   "b_stormpeak_v0": {
    "file": "sprites/b_stormpeak_v0.png",
@@ -5569,7 +8944,15 @@
    "h": 47,
    "ax": 17,
    "ay": 30,
-   "glow": "sprites/b_stormpeak_v0_glow.png"
+   "glow": "sprites/b_stormpeak_v0_glow.png",
+   "sheet": 0,
+   "sx": 146,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 181,
+   "gy": 320,
+   "gw": 34,
+   "gh": 47
   },
   "b_stormpeak_v1": {
    "file": "sprites/b_stormpeak_v1.png",
@@ -5577,14 +8960,25 @@
    "h": 41,
    "ax": 18,
    "ay": 24,
-   "glow": "sprites/b_stormpeak_v1_glow.png"
+   "glow": "sprites/b_stormpeak_v1_glow.png",
+   "sheet": 0,
+   "sx": 440,
+   "sy": 368,
+   "gsheet": 0,
+   "gx": 477,
+   "gy": 368,
+   "gw": 36,
+   "gh": 41
   },
   "b_stoneward_v0": {
    "file": "sprites/b_stoneward_v0.png",
    "w": 25,
    "h": 30,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 600,
+   "sy": 517
   },
   "b_stoneward_v1": {
    "file": "sprites/b_stoneward_v1.png",
@@ -5592,7 +8986,15 @@
    "h": 30,
    "ax": 14,
    "ay": 13,
-   "glow": "sprites/b_stoneward_v1_glow.png"
+   "glow": "sprites/b_stoneward_v1_glow.png",
+   "sheet": 0,
+   "sx": 328,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 356,
+   "gy": 517,
+   "gw": 27,
+   "gh": 30
   },
   "b_stoneward_v2": {
    "file": "sprites/b_stoneward_v2.png",
@@ -5600,14 +9002,25 @@
    "h": 30,
    "ax": 14,
    "ay": 13,
-   "glow": "sprites/b_stoneward_v2_glow.png"
+   "glow": "sprites/b_stoneward_v2_glow.png",
+   "sheet": 0,
+   "sx": 270,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 299,
+   "gy": 517,
+   "gw": 28,
+   "gh": 30
   },
   "b_candleshrine_v0": {
    "file": "sprites/b_candleshrine_v0.png",
    "w": 26,
    "h": 30,
    "ax": 13,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 384,
+   "sy": 517
   },
   "b_healer_v0": {
    "file": "sprites/b_healer_v0.png",
@@ -5615,14 +9028,25 @@
    "h": 33,
    "ax": 14,
    "ay": 16,
-   "glow": "sprites/b_healer_v0_glow.png"
+   "glow": "sprites/b_healer_v0_glow.png",
+   "sheet": 0,
+   "sx": 1661,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1689,
+   "gy": 450,
+   "gw": 27,
+   "gh": 33
   },
   "b_healer_v1": {
    "file": "sprites/b_healer_v1.png",
    "w": 31,
    "h": 33,
    "ax": 16,
-   "ay": 16
+   "ay": 16,
+   "sheet": 0,
+   "sx": 1170,
+   "sy": 450
   },
   "b_healer_v2": {
    "file": "sprites/b_healer_v2.png",
@@ -5630,7 +9054,15 @@
    "h": 33,
    "ax": 17,
    "ay": 16,
-   "glow": "sprites/b_healer_v2_glow.png"
+   "glow": "sprites/b_healer_v2_glow.png",
+   "sheet": 0,
+   "sx": 363,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 398,
+   "gy": 450,
+   "gw": 34,
+   "gh": 33
   },
   "b_healer_v3": {
    "file": "sprites/b_healer_v3.png",
@@ -5638,7 +9070,15 @@
    "h": 33,
    "ax": 15,
    "ay": 16,
-   "glow": "sprites/b_healer_v3_glow.png"
+   "glow": "sprites/b_healer_v3_glow.png",
+   "sheet": 0,
+   "sx": 1330,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1361,
+   "gy": 450,
+   "gw": 30,
+   "gh": 33
   },
   "b_healer_v4": {
    "file": "sprites/b_healer_v4.png",
@@ -5646,14 +9086,25 @@
    "h": 33,
    "ax": 15,
    "ay": 16,
-   "glow": "sprites/b_healer_v4_glow.png"
+   "glow": "sprites/b_healer_v4_glow.png",
+   "sheet": 0,
+   "sx": 1392,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 1423,
+   "gy": 450,
+   "gw": 30,
+   "gh": 33
   },
   "b_eggshellfont_v0": {
    "file": "sprites/b_eggshellfont_v0.png",
    "w": 33,
    "h": 37,
    "ax": 17,
-   "ay": 20
+   "ay": 20,
+   "sheet": 0,
+   "sx": 401,
+   "sy": 411
   },
   "b_eggshellfont_v1": {
    "file": "sprites/b_eggshellfont_v1.png",
@@ -5661,7 +9112,15 @@
    "h": 37,
    "ax": 12,
    "ay": 20,
-   "glow": "sprites/b_eggshellfont_v1_glow.png"
+   "glow": "sprites/b_eggshellfont_v1_glow.png",
+   "sheet": 0,
+   "sx": 435,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 459,
+   "gy": 411,
+   "gw": 23,
+   "gh": 37
   },
   "b_leybeacon_v0": {
    "file": "sprites/b_leybeacon_v0.png",
@@ -5669,7 +9128,15 @@
    "h": 53,
    "ax": 13,
    "ay": 36,
-   "glow": "sprites/b_leybeacon_v0_glow.png"
+   "glow": "sprites/b_leybeacon_v0_glow.png",
+   "sheet": 0,
+   "sx": 1640,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1666,
+   "gy": 208,
+   "gw": 25,
+   "gh": 53
   },
   "b_watchpost_v0": {
    "file": "sprites/b_watchpost_v0.png",
@@ -5677,14 +9144,25 @@
    "h": 38,
    "ax": 12,
    "ay": 21,
-   "glow": "sprites/b_watchpost_v0_glow.png"
+   "glow": "sprites/b_watchpost_v0_glow.png",
+   "sheet": 0,
+   "sx": 0,
+   "sy": 411,
+   "gsheet": 0,
+   "gx": 24,
+   "gy": 411,
+   "gw": 23,
+   "gh": 38
   },
   "b_watchpost_v1": {
    "file": "sprites/b_watchpost_v1.png",
    "w": 19,
    "h": 38,
    "ax": 10,
-   "ay": 21
+   "ay": 21,
+   "sheet": 0,
+   "sx": 48,
+   "sy": 411
   },
   "b_wicktower_v1": {
    "file": "sprites/b_wicktower_v1.png",
@@ -5692,7 +9170,15 @@
    "h": 45,
    "ax": 16,
    "ay": 28,
-   "glow": "sprites/b_wicktower_v1_glow.png"
+   "glow": "sprites/b_wicktower_v1_glow.png",
+   "sheet": 0,
+   "sx": 643,
+   "sy": 320,
+   "gsheet": 0,
+   "gx": 675,
+   "gy": 320,
+   "gw": 31,
+   "gh": 45
   },
   "b_fishershut_v0": {
    "file": "sprites/b_fishershut_v0.png",
@@ -5700,7 +9186,15 @@
    "h": 30,
    "ax": 18,
    "ay": 13,
-   "glow": "sprites/b_fishershut_v0_glow.png"
+   "glow": "sprites/b_fishershut_v0_glow.png",
+   "sheet": 0,
+   "sx": 1685,
+   "sy": 484,
+   "gsheet": 0,
+   "gx": 1722,
+   "gy": 484,
+   "gw": 36,
+   "gh": 30
   },
   "b_fishershut_v1": {
    "file": "sprites/b_fishershut_v1.png",
@@ -5708,7 +9202,15 @@
    "h": 27,
    "ax": 18,
    "ay": 10,
-   "glow": "sprites/b_fishershut_v1_glow.png"
+   "glow": "sprites/b_fishershut_v1_glow.png",
+   "sheet": 0,
+   "sx": 1751,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1788,
+   "gy": 517,
+   "gw": 36,
+   "gh": 27
   },
   "b_reedcutters_v0": {
    "file": "sprites/b_reedcutters_v0.png",
@@ -5716,7 +9218,15 @@
    "h": 28,
    "ax": 18,
    "ay": 11,
-   "glow": "sprites/b_reedcutters_v0_glow.png"
+   "glow": "sprites/b_reedcutters_v0_glow.png",
+   "sheet": 0,
+   "sx": 1529,
+   "sy": 517,
+   "gsheet": 0,
+   "gx": 1566,
+   "gy": 517,
+   "gw": 36,
+   "gh": 28
   },
   "b_smokehouse_v0": {
    "file": "sprites/b_smokehouse_v0.png",
@@ -5724,28 +9234,45 @@
    "h": 33,
    "ax": 18,
    "ay": 16,
-   "glow": "sprites/b_smokehouse_v0_glow.png"
+   "glow": "sprites/b_smokehouse_v0_glow.png",
+   "sheet": 0,
+   "sx": 184,
+   "sy": 450,
+   "gsheet": 0,
+   "gx": 220,
+   "gy": 450,
+   "gw": 35,
+   "gh": 33
   },
   "b_boneyard_v1": {
    "file": "sprites/b_boneyard_v1.png",
    "w": 68,
    "h": 50,
    "ax": 34,
-   "ay": 17
+   "ay": 17,
+   "sheet": 0,
+   "sx": 1374,
+   "sy": 267
   },
   "b_boneyard_v2": {
    "file": "sprites/b_boneyard_v2.png",
    "w": 57,
    "h": 51,
    "ax": 29,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 1027,
+   "sy": 267
   },
   "b_boneyard_v3": {
    "file": "sprites/b_boneyard_v3.png",
    "w": 58,
    "h": 51,
    "ax": 29,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 968,
+   "sy": 267
   },
   "b_boneyard_v4": {
    "file": "sprites/b_boneyard_v4.png",
@@ -5753,42 +9280,65 @@
    "h": 51,
    "ax": 30,
    "ay": 18,
-   "glow": "sprites/b_boneyard_v4_glow.png"
+   "glow": "sprites/b_boneyard_v4_glow.png",
+   "sheet": 0,
+   "sx": 846,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 907,
+   "gy": 267,
+   "gw": 60,
+   "gh": 51
   },
   "b_boneyard_v5": {
    "file": "sprites/b_boneyard_v5.png",
    "w": 62,
    "h": 51,
    "ax": 31,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 783,
+   "sy": 267
   },
   "b_boneyard_v6": {
    "file": "sprites/b_boneyard_v6.png",
    "w": 55,
    "h": 51,
    "ax": 28,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 1085,
+   "sy": 267
   },
   "b_boneyard_v7": {
    "file": "sprites/b_boneyard_v7.png",
    "w": 63,
    "h": 51,
    "ax": 32,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 593,
+   "sy": 267
   },
   "b_boneyard_v8": {
    "file": "sprites/b_boneyard_v8.png",
    "w": 65,
    "h": 51,
    "ax": 33,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 527,
+   "sy": 267
   },
   "b_boneyard_v9": {
    "file": "sprites/b_boneyard_v9.png",
    "w": 55,
    "h": 51,
    "ax": 28,
-   "ay": 18
+   "ay": 18,
+   "sheet": 0,
+   "sx": 1141,
+   "sy": 267
   },
   "b_boneyard_v10": {
    "file": "sprites/b_boneyard_v10.png",
@@ -5796,35 +9346,55 @@
    "h": 51,
    "ax": 31,
    "ay": 18,
-   "glow": "sprites/b_boneyard_v10_glow.png"
+   "glow": "sprites/b_boneyard_v10_glow.png",
+   "sheet": 0,
+   "sx": 657,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 720,
+   "gy": 267,
+   "gw": 62,
+   "gh": 51
   },
   "b_ossuary_v1": {
    "file": "sprites/b_ossuary_v1.png",
    "w": 68,
    "h": 58,
    "ax": 34,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1253,
+   "sy": 143
   },
   "b_ossuary_v2": {
    "file": "sprites/b_ossuary_v2.png",
    "w": 68,
    "h": 59,
    "ax": 34,
-   "ay": 26
+   "ay": 26,
+   "sheet": 0,
+   "sx": 1184,
+   "sy": 143
   },
   "b_ossuary_v3": {
    "file": "sprites/b_ossuary_v3.png",
    "w": 68,
    "h": 58,
    "ax": 34,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1322,
+   "sy": 143
   },
   "b_ossuary_v4": {
    "file": "sprites/b_ossuary_v4.png",
    "w": 68,
    "h": 58,
    "ax": 34,
-   "ay": 25
+   "ay": 25,
+   "sheet": 0,
+   "sx": 1391,
+   "sy": 143
   },
   "b_ossuary_v5": {
    "file": "sprites/b_ossuary_v5.png",
@@ -5832,21 +9402,35 @@
    "h": 60,
    "ax": 32,
    "ay": 27,
-   "glow": "sprites/b_ossuary_v5_glow.png"
+   "glow": "sprites/b_ossuary_v5_glow.png",
+   "sheet": 0,
+   "sx": 588,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 653,
+   "gy": 143,
+   "gw": 64,
+   "gh": 60
   },
   "b_sextonchapel_v1": {
    "file": "sprites/b_sextonchapel_v1.png",
    "w": 65,
    "h": 57,
    "ax": 33,
-   "ay": 24
+   "ay": 24,
+   "sheet": 0,
+   "sx": 498,
+   "sy": 208
   },
   "b_watergarden_v0": {
    "file": "sprites/b_watergarden_v0.png",
    "w": 51,
    "h": 46,
    "ax": 26,
-   "ay": 13
+   "ay": 13,
+   "sheet": 0,
+   "sx": 480,
+   "sy": 320
   },
   "b_hunterslodge_v0": {
    "file": "sprites/b_hunterslodge_v0.png",
@@ -5854,7 +9438,15 @@
    "h": 52,
    "ax": 26,
    "ay": 19,
-   "glow": "sprites/b_hunterslodge_v0_glow.png"
+   "glow": "sprites/b_hunterslodge_v0_glow.png",
+   "sheet": 0,
+   "sx": 236,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 289,
+   "gy": 267,
+   "gw": 52,
+   "gh": 52
   },
   "b_hunterslodge_v1": {
    "file": "sprites/b_hunterslodge_v1.png",
@@ -5862,7 +9454,15 @@
    "h": 52,
    "ax": 30,
    "ay": 19,
-   "glow": "sprites/b_hunterslodge_v1_glow.png"
+   "glow": "sprites/b_hunterslodge_v1_glow.png",
+   "sheet": 0,
+   "sx": 0,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 60,
+   "gy": 267,
+   "gw": 59,
+   "gh": 52
   },
   "b_hunterslodge_v2": {
    "file": "sprites/b_hunterslodge_v2.png",
@@ -5870,14 +9470,25 @@
    "h": 52,
    "ax": 29,
    "ay": 19,
-   "glow": "sprites/b_hunterslodge_v2_glow.png"
+   "glow": "sprites/b_hunterslodge_v2_glow.png",
+   "sheet": 0,
+   "sx": 120,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 178,
+   "gy": 267,
+   "gw": 57,
+   "gh": 52
   },
   "b_hunterslodge_v3": {
    "file": "sprites/b_hunterslodge_v3.png",
    "w": 61,
    "h": 52,
    "ax": 31,
-   "ay": 19
+   "ay": 19,
+   "sheet": 0,
+   "sx": 1818,
+   "sy": 208
   },
   "b_tamerslodge_v0": {
    "file": "sprites/b_tamerslodge_v0.png",
@@ -5885,7 +9496,15 @@
    "h": 52,
    "ax": 30,
    "ay": 19,
-   "glow": "sprites/b_tamerslodge_v0_glow.png"
+   "glow": "sprites/b_tamerslodge_v0_glow.png",
+   "sheet": 0,
+   "sx": 1880,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1941,
+   "gy": 208,
+   "gw": 60,
+   "gh": 52
   },
   "b_tamerslodge_v1": {
    "file": "sprites/b_tamerslodge_v1.png",
@@ -5893,7 +9512,15 @@
    "h": 52,
    "ax": 31,
    "ay": 19,
-   "glow": "sprites/b_tamerslodge_v1_glow.png"
+   "glow": "sprites/b_tamerslodge_v1_glow.png",
+   "sheet": 0,
+   "sx": 1692,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1755,
+   "gy": 208,
+   "gw": 62,
+   "gh": 52
   },
   "b_wyrmforge_v0": {
    "file": "sprites/b_wyrmforge_v0.png",
@@ -5901,7 +9528,15 @@
    "h": 53,
    "ax": 31,
    "ay": 20,
-   "glow": "sprites/b_wyrmforge_v0_glow.png"
+   "glow": "sprites/b_wyrmforge_v0_glow.png",
+   "sheet": 0,
+   "sx": 1422,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1484,
+   "gy": 208,
+   "gw": 61,
+   "gh": 53
   },
   "b_wyrmforge_v1": {
    "file": "sprites/b_wyrmforge_v1.png",
@@ -5909,7 +9544,15 @@
    "h": 53,
    "ax": 23,
    "ay": 20,
-   "glow": "sprites/b_wyrmforge_v1_glow.png"
+   "glow": "sprites/b_wyrmforge_v1_glow.png",
+   "sheet": 0,
+   "sx": 1546,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1593,
+   "gy": 208,
+   "gw": 46,
+   "gh": 53
   },
   "b_forgetemple_v0": {
    "file": "sprites/b_forgetemple_v0.png",
@@ -5917,7 +9560,15 @@
    "h": 54,
    "ax": 32,
    "ay": 21,
-   "glow": "sprites/b_forgetemple_v0_glow.png"
+   "glow": "sprites/b_forgetemple_v0_glow.png",
+   "sheet": 0,
+   "sx": 808,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 873,
+   "gy": 208,
+   "gw": 64,
+   "gh": 54
   },
   "b_golemfoundry_v0": {
    "file": "sprites/b_golemfoundry_v0.png",
@@ -5925,7 +9576,15 @@
    "h": 60,
    "ax": 29,
    "ay": 27,
-   "glow": "sprites/b_golemfoundry_v0_glow.png"
+   "glow": "sprites/b_golemfoundry_v0_glow.png",
+   "sheet": 0,
+   "sx": 840,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 899,
+   "gy": 143,
+   "gw": 58,
+   "gh": 60
   },
   "b_depot_v0": {
    "file": "sprites/b_depot_v0.png",
@@ -5933,7 +9592,15 @@
    "h": 64,
    "ax": 34,
    "ay": 31,
-   "glow": "sprites/b_depot_v0_glow.png"
+   "glow": "sprites/b_depot_v0_glow.png",
+   "sheet": 0,
+   "sx": 1944,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 0,
+   "gy": 143,
+   "gw": 67,
+   "gh": 64
   },
   "b_depot_v1": {
    "file": "sprites/b_depot_v1.png",
@@ -5941,7 +9608,15 @@
    "h": 64,
    "ax": 33,
    "ay": 31,
-   "glow": "sprites/b_depot_v1_glow.png"
+   "glow": "sprites/b_depot_v1_glow.png",
+   "sheet": 0,
+   "sx": 68,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 135,
+   "gy": 143,
+   "gw": 66,
+   "gh": 64
   },
   "b_depot_v2": {
    "file": "sprites/b_depot_v2.png",
@@ -5949,7 +9624,15 @@
    "h": 64,
    "ax": 33,
    "ay": 31,
-   "glow": "sprites/b_depot_v2_glow.png"
+   "glow": "sprites/b_depot_v2_glow.png",
+   "sheet": 0,
+   "sx": 202,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 269,
+   "gy": 143,
+   "gw": 66,
+   "gh": 64
   },
   "b_wrightslodge_v0": {
    "file": "sprites/b_wrightslodge_v0.png",
@@ -5957,7 +9640,15 @@
    "h": 49,
    "ax": 34,
    "ay": 16,
-   "glow": "sprites/b_wrightslodge_v0_glow.png"
+   "glow": "sprites/b_wrightslodge_v0_glow.png",
+   "sheet": 0,
+   "sx": 1575,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1644,
+   "gy": 267,
+   "gw": 68,
+   "gh": 49
   },
   "b_wrightslodge_v1": {
    "file": "sprites/b_wrightslodge_v1.png",
@@ -5965,7 +9656,15 @@
    "h": 54,
    "ax": 28,
    "ay": 21,
-   "glow": "sprites/b_wrightslodge_v1_glow.png"
+   "glow": "sprites/b_wrightslodge_v1_glow.png",
+   "sheet": 0,
+   "sx": 1052,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1108,
+   "gy": 208,
+   "gw": 55,
+   "gh": 54
   },
   "b_wrightslodge_v2": {
    "file": "sprites/b_wrightslodge_v2.png",
@@ -5973,7 +9672,15 @@
    "h": 54,
    "ax": 27,
    "ay": 21,
-   "glow": "sprites/b_wrightslodge_v2_glow.png"
+   "glow": "sprites/b_wrightslodge_v2_glow.png",
+   "sheet": 0,
+   "sx": 1164,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 1219,
+   "gy": 208,
+   "gw": 54,
+   "gh": 54
   },
   "b_wrightslodge_v3": {
    "file": "sprites/b_wrightslodge_v3.png",
@@ -5981,7 +9688,15 @@
    "h": 54,
    "ax": 28,
    "ay": 21,
-   "glow": "sprites/b_wrightslodge_v3_glow.png"
+   "glow": "sprites/b_wrightslodge_v3_glow.png",
+   "sheet": 0,
+   "sx": 938,
+   "sy": 208,
+   "gsheet": 0,
+   "gx": 995,
+   "gy": 208,
+   "gw": 56,
+   "gh": 54
   },
   "b_brickworks_v0": {
    "file": "sprites/b_brickworks_v0.png",
@@ -5989,7 +9704,15 @@
    "h": 82,
    "ax": 50,
    "ay": 33,
-   "glow": "sprites/b_brickworks_v0_glow.png"
+   "glow": "sprites/b_brickworks_v0_glow.png",
+   "sheet": 0,
+   "sx": 706,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 806,
+   "gy": 0,
+   "gw": 99,
+   "gh": 82
   },
   "b_brickworks_v1": {
    "file": "sprites/b_brickworks_v1.png",
@@ -5997,7 +9720,15 @@
    "h": 82,
    "ax": 39,
    "ay": 33,
-   "glow": "sprites/b_brickworks_v1_glow.png"
+   "glow": "sprites/b_brickworks_v1_glow.png",
+   "sheet": 0,
+   "sx": 1270,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1349,
+   "gy": 0,
+   "gw": 78,
+   "gh": 82
   },
   "b_brickworks_v2": {
    "file": "sprites/b_brickworks_v2.png",
@@ -6005,7 +9736,15 @@
    "h": 82,
    "ax": 44,
    "ay": 33,
-   "glow": "sprites/b_brickworks_v2_glow.png"
+   "glow": "sprites/b_brickworks_v2_glow.png",
+   "sheet": 0,
+   "sx": 1094,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1182,
+   "gy": 0,
+   "gw": 87,
+   "gh": 82
   },
   "b_brickworks_v3": {
    "file": "sprites/b_brickworks_v3.png",
@@ -6013,14 +9752,25 @@
    "h": 82,
    "ax": 47,
    "ay": 33,
-   "glow": "sprites/b_brickworks_v3_glow.png"
+   "glow": "sprites/b_brickworks_v3_glow.png",
+   "sheet": 0,
+   "sx": 906,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1000,
+   "gy": 0,
+   "gw": 93,
+   "gh": 82
   },
   "b_academy_v0": {
    "file": "sprites/b_academy_v0.png",
    "w": 49,
    "h": 64,
    "ax": 25,
-   "ay": 31
+   "ay": 31,
+   "sheet": 0,
+   "sx": 438,
+   "sy": 143
   },
   "b_spire_v1": {
    "file": "sprites/b_spire_v1.png",
@@ -6028,14 +9778,25 @@
    "h": 49,
    "ax": 12,
    "ay": 32,
-   "glow": "sprites/b_spire_v1_glow.png"
+   "glow": "sprites/b_spire_v1_glow.png",
+   "sheet": 0,
+   "sx": 1787,
+   "sy": 267,
+   "gsheet": 0,
+   "gx": 1812,
+   "gy": 267,
+   "gw": 24,
+   "gh": 49
   },
   "b_spire_v2": {
    "file": "sprites/b_spire_v2.png",
    "w": 24,
    "h": 49,
    "ax": 12,
-   "ay": 32
+   "ay": 32,
+   "sheet": 0,
+   "sx": 1837,
+   "sy": 267
   },
   "b_drakemews_v0": {
    "file": "sprites/b_drakemews_v0.png",
@@ -6043,7 +9804,15 @@
    "h": 58,
    "ax": 26,
    "ay": 25,
-   "glow": "sprites/b_drakemews_v0_glow.png"
+   "glow": "sprites/b_drakemews_v0_glow.png",
+   "sheet": 0,
+   "sx": 1652,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1705,
+   "gy": 143,
+   "gw": 52,
+   "gh": 58
   },
   "b_observatory_v0": {
    "file": "sprites/b_observatory_v0.png",
@@ -6051,7 +9820,15 @@
    "h": 72,
    "ax": 20,
    "ay": 39,
-   "glow": "sprites/b_observatory_v0_glow.png"
+   "glow": "sprites/b_observatory_v0_glow.png",
+   "sheet": 0,
+   "sx": 1630,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1671,
+   "gy": 0,
+   "gw": 40,
+   "gh": 72
   },
   "b_ruindelve_v0": {
    "file": "sprites/b_ruindelve_v0.png",
@@ -6059,7 +9836,15 @@
    "h": 58,
    "ax": 26,
    "ay": 25,
-   "glow": "sprites/b_ruindelve_v0_glow.png"
+   "glow": "sprites/b_ruindelve_v0_glow.png",
+   "sheet": 0,
+   "sx": 1758,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 1811,
+   "gy": 143,
+   "gw": 52,
+   "gh": 58
   },
   "b_househall_v0": {
    "file": "sprites/b_househall_v0.png",
@@ -6067,7 +9852,15 @@
    "h": 64,
    "ax": 25,
    "ay": 31,
-   "glow": "sprites/b_househall_v0_glow.png"
+   "glow": "sprites/b_househall_v0_glow.png",
+   "sheet": 0,
+   "sx": 336,
+   "sy": 143,
+   "gsheet": 0,
+   "gx": 387,
+   "gy": 143,
+   "gw": 50,
+   "gh": 64
   },
   "b_lantern_v0": {
    "file": "sprites/b_lantern_v0.png",
@@ -6075,7 +9868,15 @@
    "h": 142,
    "ax": 45,
    "ay": 93,
-   "glow": "sprites/b_lantern_v0_glow.png"
+   "glow": "sprites/b_lantern_v0_glow.png",
+   "sheet": 0,
+   "sx": 0,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 90,
+   "gy": 0,
+   "gw": 89,
+   "gh": 142
   },
   "b_greatgate_v0": {
    "file": "sprites/b_greatgate_v0.png",
@@ -6083,7 +9884,15 @@
    "h": 98,
    "ax": 39,
    "ay": 49,
-   "glow": "sprites/b_greatgate_v0_glow.png"
+   "glow": "sprites/b_greatgate_v0_glow.png",
+   "sheet": 0,
+   "sx": 358,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 436,
+   "gy": 0,
+   "gw": 77,
+   "gh": 98
   },
   "b_hallofmarvels_v0": {
    "file": "sprites/b_hallofmarvels_v0.png",
@@ -6091,7 +9900,15 @@
    "h": 75,
    "ax": 50,
    "ay": 26,
-   "glow": "sprites/b_hallofmarvels_v0_glow.png"
+   "glow": "sprites/b_hallofmarvels_v0_glow.png",
+   "sheet": 0,
+   "sx": 1428,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 1529,
+   "gy": 0,
+   "gw": 100,
+   "gh": 75
   },
   "b_grandacademy_v0": {
    "file": "sprites/b_grandacademy_v0.png",
@@ -6099,7 +9916,15 @@
    "h": 87,
    "ax": 48,
    "ay": 38,
-   "glow": "sprites/b_grandacademy_v0_glow.png"
+   "glow": "sprites/b_grandacademy_v0_glow.png",
+   "sheet": 0,
+   "sx": 514,
+   "sy": 0,
+   "gsheet": 0,
+   "gx": 610,
+   "gy": 0,
+   "gw": 95,
+   "gh": 87
   }
  }
 }

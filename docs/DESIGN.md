@@ -5128,6 +5128,94 @@ off.
   its text from JSON) and nothing the simulation does did.
 - The Tallowkin's floor is 10.6 % at the cap, not met, as since iteration 64.
 
+### 4.121 The slow first load: the sprites ship as one sheet (iteration 90, a hotfix)
+
+The user's report after iteration 89: "The game does not load right now", then "after some time it loads, it just takes
+ages". No sim code was involved.
+
+**The cause:**
+- `SpriteAtlas.mergeOverrides` fetched every imported sprite PNG **one after another** (`await loadImage` in a loop).
+- The eda-lore swap (iterations 82 and 84) raised the count from 227 files to 1,097: 834 manifest entries, plus their
+  glows and mirrored twins.
+- Locally that costs about 5 s. Over the internet each file waits a full round trip, so the page stayed black for a
+  minute or two before `boot()` created the game.
+
+**The fix:**
+- **Packed at build time.** `npm run art` (`scripts/importSprites.mjs`) still writes the single PNGs. It then packs every
+  distinct image into sheets `public/art/sheets/sheet_N.<hash>.png`, at most 2048 × 2048 each (`packSheets` in
+  `scripts/lib/sprite.mjs`). Sprites, glows and mirrored twins are all packed; aliases and hop frames share their
+  source's place. Today's 1,060 images fit **one sheet, 2048 × 612, 609 KB**.
+- **What the manifest gains.** `sheets: [{ file, w, h, hash }]`, and on each entry `sheet, sx, sy`, plus
+  `gsheet, gx, gy, gw, gh` for its glow. `file` and `glow` stay, so the dev board and the tests that read the single PNGs
+  work as before.
+- **Loaded at once.** The atlas fetches the sheets together (`Promise.all`). A sheet's name carries its content hash, and
+  the manifest is fetched `no-cache`, so no cache and no host can hand a new manifest an old sheet. An old manifest asks
+  for a sheet that is gone, gets a 404, and falls back to the single files below.
+- **The same atlas as before.** Each entry is cut from its sheet into the same 1,024-wide shelf packing as before, in the
+  same order and at the same sizes, so the atlas comes out **pixel for pixel the same**.
+- **The fallbacks:**
+  - A manifest without sheets (an older one) loads the single files, now 24 at a time instead of one at a time. A single
+    file is asked for with the hash of the sheet that holds it (`?v=`), so the browser's cache cannot hand back an old
+    one.
+  - A sheet that fails to load, or loads at the wrong size, sends only its own entries to the single files.
+  - A single file that fails leaves its drawn sprite, as before.
+- **Never a blank screen.** `index.html` shows a line ("Lighting the wards…", "Unpacking the sprites…", "Raising the
+  town…") until the game exists. In the fallback it counts the sprites up ("… n %", never backwards). If the start
+  fails, the line says why; if the game's script itself fails to load (a stale page after a deploy), it says to reload.
+  It sits above the title screen and never takes a click.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (89 files, 557 tests) and `npm run build`. `tests/iteration90.test.ts` checks:
+  - the manifest's sheets are at most 2048 × 2048, and each hash is its file's;
+  - each sheet's file name carries its hash;
+  - every sprite and every glow in its sheet equals its own PNG, byte for byte;
+  - files that share a name share one place in the sheet;
+  - `packSheets` never overlaps two items, starts a new sheet when one is full, and refuses an item too big for a sheet;
+  - in a stand-in browser:
+    - with sheets, only the sheets are fetched, and every sprite and glow is cut from its own place in them;
+    - a failed sheet, or no sheets at all, loads the single files at most 24 at a time, into the same rects, with a
+      progress count that never goes back;
+    - a sheet of the wrong size is refused like a failed one;
+    - an entry whose glow sheet fails loads body and glow as single files, while the others are still cut;
+    - a failed single file leaves the drawn sprite in place; a failed glow file leaves the sprite without its glow.
+- `npm run art` run again: every committed sprite PNG came out byte for byte the same; only the manifest and the new
+  sheet changed.
+- **`scripts/playtest90.mjs`,** main's build (port 4174) against this one (4173):
+  - **The load on a throttled line** (CDP: 100 ms latency, 10 Mbit/s, no cache), from navigation to the game:
+
+    | build | time to the game | requests | transferred |
+    |---|---|---|---|
+    | main | 118.5 s | 1,102 | 1.2 MB |
+    | this | **2.0 s** | **6** | 0.9 MB |
+
+    (A first run, before the review fixes: 119.4 s against 2.6 s.) The pass condition requires the sheet itself, not
+    the fallback: fewer than 40 requests and no failed sheet.
+  - **The atlas, read back from both builds:** the same size (1024 × 3319) and the same pixels across the whole canvas.
+    All 1,250 sprites (834 imported) have the same rect and the same body and glow pixels. No sprite exists in one
+    build and not the other.
+  - The loading line seen while the sheet arrives, and gone once the game stands. A town of 24 houses by day, all its
+    sprites drawn (`shots/iter90_loading.png`, `iter90_town_2x.png`).
+  - **The failure paths in a real browser:** with the sheet refused, the single files load instead (3.0 s unthrottled)
+    and all 834 imported sprites arrive. With the game's script refused, the line reads "Wardlight could not load.
+    Reload the page."
+  - No page errors, no missing sprites.
+- **The review** (a workflow, five lenses: packing, cache safety, failure paths, tests, the whole diff) raised 17
+  findings, none a blocker. All 17 were fixed in this iteration:
+  - the hash moved from `?v=` into the sheet's file name (GitHub Pages ignores queries, so an old manifest could cut
+    from a new sheet of the same height);
+  - the single files are asked for with the hash of the sheet that holds them;
+  - the progress count can no longer jump back;
+  - the line paints "Raising the town…", sits above the title screen, and reports a script that failed to load;
+  - the tests now cover every fallback, and the playtest requires the sheet path.
+  The adversarial verification was stopped part way: its verifiers read the working tree, where the fixes had already
+  landed, so they judged the fixed code rather than the reviewed commit.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): 2,442 folk at milestone 7, the same as main's run, whose summary matches character for character. `src/sim` is
+  untouched.
+- **Not checked here:** the deployed site itself (github.io is blocked from this sandbox). The throttled run stands in
+  for it.
+- The single PNGs still ship in the build (4.3 MB), though the game no longer fetches them; the tools and the tests read
+  them. Fifteen of them (glowcap glows from an earlier import) appear in no manifest; the importer never deletes.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6402,3 +6490,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   and the code reads them by id, so wording is edited without code, but a new edict or event still starts in code. Text
   worked out for the city stays beside its logic. The board's pipelines are a registry: a pipeline not yet written into
   the docs hands off to Claude, and becomes a button once it is.
+- *Ship the art as sheets, not as a thousand files (iteration 90):* the browser asks for one packed sheet (by content
+  hash) instead of a thousand PNGs. The single files stay as the importer's output and the tools' input. The atlas is
+  cut from the sheet into the same layout as before, so the change is invisible except for the time it saves; a page
+  with no sheet, or a failed one, still loads the files, 24 at a time.

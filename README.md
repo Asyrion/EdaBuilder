@@ -25,7 +25,7 @@ npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples 
 npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until each people sees a tenth
                                                             # (runs cached in balance/cache by the sim's files; commit it)
 npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
-npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites)
+npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites, packed into public/art/sheets; commit both)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
 npm run devboard   # the dev board, http://127.0.0.1:8771: content, text, sprites and art; prompts and pipelines; next steps, GitHub, balance; Send to Claude (tools/devboard)
@@ -417,8 +417,9 @@ Charter as `.json`.
 - Sprites are generated at startup into an atlas with a manifest. `public/art/sprites.json`
   lists per-sprite PNG overrides (with a footprint anchor and an optional glow) that are
   merged over the procedural atlas by name; `npm run art` makes them from the reference
-  paintings in `inspirations/` as `art/sources.json` says. Drop `public/art/atlas.png` +
-  `atlas.json` to replace the whole set instead.
+  paintings in `inspirations/` as `art/sources.json` says, and packs them into one or a few
+  sheets (`public/art/sheets/`) that the page loads at once, with a loading line until the
+  town is up. Drop `public/art/atlas.png` + `atlas.json` to replace the whole set instead.
 - Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (hounds
   howl, the wyrm roars, barges ring, skyrays sing) panned by where they happen, and
   generative ambient music that follows day, night, season and danger (Menu to toggle).

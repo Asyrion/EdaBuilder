@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
 Written for a new session. The eda-lore swap (below) is done: the user's own sprites from `eda-lore` replaced every game
-asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 89 (the dev board, part 3: the text of edicts, events, quests and guilds as data in `src/data/content/text/`, the prompt studio with Refine with Claude in `art/prompts/`, the paintings importer run from the board, Tripo Studio and Aseprite as hand-offs, DESIGN §4.120; the board is complete, NEXT_STEPS item 1 is the quests that never complete), 88 (the dev board, part 2: the Next steps, GitHub and Balance tabs, Send to Claude, the "New element" composer, DESIGN §4.119), 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
+asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 90 (a hotfix: the sprites ship packed in one sheet, `public/art/sheets/`, loaded at once, after the user found the first load took minutes; `npm run art` writes the sheet, so commit `public/art/sheets/` and `sprites.json` with every import; DESIGN §4.121), 89 (the dev board, part 3: the text of edicts, events, quests and guilds as data in `src/data/content/text/`, the prompt studio with Refine with Claude in `art/prompts/`, the paintings importer run from the board, Tripo Studio and Aseprite as hand-offs, DESIGN §4.120; the board is complete, NEXT_STEPS item 1 is the quests that never complete), 88 (the dev board, part 2: the Next steps, GitHub and Balance tabs, Send to Claude, the "New element" composer, DESIGN §4.119), 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
 84 (the eda-lore swap, batch 2: every
 other compatible asset, §4.115), 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
 eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks
@@ -38,7 +38,8 @@ fronted on the left gets `flip: true`).
 - an entry in `art/sources.json`: `name` (the sprite to replace), `src`, `island`, `w`/`h` (the footprint in tiles),
   `targetHeight` from the yardstick, `anchor: 'centre'`, `flip` if fronted on the left, `shift: { x: 0, y: 6 }` for a
   small object that should stand in the tile's middle, `checked: true` once judged; the importer sharpens and outlines;
-- `npm run art` writes `public/art/sprites/*.png` and `sprites.json` (committed); the atlas merges them over the
+- `npm run art` writes `public/art/sprites/*.png`, `sprites.json` and the packed sheet(s) in `public/art/sheets/` (all
+  committed; the page loads only the sheets, iteration 90); the atlas merges them over the
   procedural sprites by name at boot (`SpriteAtlas.mergeOverrides`), so a replaced procedural sprite needs no code;
 - a zone house imported under its base name (`hearth_l2_v0`) is the look for every people (`zoneSpriteName` skips the
   `_grimmen`/`_veshari`/`_tallowkin` copies when the base is imported); keep that, or import per people if the repository
