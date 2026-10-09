@@ -47,7 +47,7 @@ import { ASPECT_INFO, AURA_INFO, WEATHER_WORD, aspectAt, aurasAt, pressureWord }
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { UNBINDABLE, keepFocusThroughRebuilds, roving, watchDialogs, watchRegions } from './focus';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
-import { QUESTS } from '../data/quests';
+import { QUESTS, questStatus } from '../data/quests';
 import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
@@ -531,7 +531,7 @@ export class UI {
     }
     const quests = activeQuests(s, 3, this.lessonOpen ? 'Districts' : undefined);
     list.innerHTML = quests.length
-      ? quests.map((q, i) => `<div class="q ${i === 0 ? 'now' : ''}"><div class="t"><span class="ch">${q.chapter}</span> ${q.title}${q.reward ? ` <span class="rw">+${q.reward}</span>` : ''}</div><div class="h">${q.hint}${q.focus ? ` <button class="show" data-q="${q.id}">Show me</button>` : ''}</div></div>`).join('')
+      ? quests.map((q, i) => `<div class="q ${i === 0 ? 'now' : ''}"><div class="t"><span class="ch">${q.chapter}</span> ${q.title}${q.reward ? ` <span class="rw">+${q.reward}</span>` : ''}</div><div class="h">${q.hint}${q.focus ? ` <button class="show" data-q="${q.id}">Show me</button>` : ''}</div>${((st) => (st ? `<div class="st">◦ ${st}</div>` : ''))(questStatus(s, q))}</div>`).join('')
       : '<div class="flavor">The Ledger is complete. Vell remembers your name.</div>';
     list.querySelectorAll('button.show').forEach((b) => {
       (b as HTMLButtonElement).onclick = () => {
@@ -1335,6 +1335,7 @@ export class UI {
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>N</kbd> Annals · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
+            <li><b>The Charter's Ledger</b> (top left) lists your next tasks. Under each, a blue line says what it still needs right now: not built yet, being built and how far, built but unlit, or a count against its target.</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
             <li><b>Replays</b>: the Menu's <b>Export replay</b> saves every command of this charter since it was founded (a charter loaded from a save starts none); the title screen's <b>Watch a replay</b> plays such a file again. The map and panels can be read but not changed; <b>Skip to end</b> runs it to its last day and says whether it matches its recording.</li>
