@@ -1,186 +1,111 @@
-/** Iteration 91 (NEXT_STEPS item 1, DESIGN §4.122): the quests that never complete. An audit of all 140 Charter tasks found
- *  13 that a well-played city could not finish, or whose text sent the player the wrong way; each is held here. */
+// Iteration 91 (DESIGN 4.122, docs/ART_PIPELINES.md): the Tripo Studio and Aseprite pipelines. The importer's `pixel: true`
+// takes a drawn sprite as drawn; the Aseprite trace makes an indexed image with its edge in ink; install switches the old
+// entry off; the Tripo CLI's output is read for its task id and its result.
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createGame, placeBuildingRaw } from '../src/sim/world';
-import { recomputeAll, run } from '../src/sim/sim';
-import { buildRoad, roadPath } from '../src/sim/actions';
-import { BREED_DAY, canBreed, dailyBreeding } from '../src/sim/breeding';
-import { addEgg, cradleAccepts } from '../src/sim/wyrmcraft';
-import { QUESTS } from '../src/data/quests';
-import { checkQuests } from '../src/sim/quests';
-import { deserialize, serialize } from '../src/sim/save';
-import { DAYS_PER_SEASON, TICKS_PER_DAY, type Building, type GameState } from '../src/sim/types';
-import { flatten } from './helpers';
+import { decodePng, encodePng } from '../scripts/lib/png.mjs';
+import { installEntries, luaData, render, trace, type Img } from '../scripts/aseprite';
+import { resultOf, taskIdOf } from '../tools/devboard/tripo';
+import { draftFor, TRIPO_MAX } from '../tools/devboard/prompts';
+import { BUILDINGS } from '../src/sim/catalog';
 
-const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
-function town(seed = 41, faction?: Parameters<typeof createGame>[3]) {
-  const s = createGame(seed, 'Audit', 'valley', faction);
-  const f = s.founding;
-  flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
-  return s;
+/** A 6×6 drawing on transparency: a 4×4 block of two colours, a speck in the corner. */
+function drawing(): Img {
+  const w = 6, h = 6, data = new Uint8ClampedArray(w * h * 4);
+  const set = (x: number, y: number, c: number[]) => data.set([...c, 255], (y * w + x) * 4);
+  for (let y = 1; y < 5; y++) for (let x = 1; x < 5; x++) set(x, y, x < 3 ? [200, 60, 40] : [60, 120, 200]);
+  set(5, 5, [250, 250, 250]); // a speck with no opaque neighbour
+  return { w, h, data };
 }
-/** A finished building of this kind, for a quest condition that only counts them. */
-const stands = (s: GameState, kind: string) => s.buildings.push({ id: 9000 + s.buildings.length, kind, x: 0, y: 0, state: 'ok', level: 1, lit: true } as unknown as Building);
 
-describe('Iteration 91: the Watch and the sexton count their rounds, not the threats they meet', () => {
-  it('a Watch Post on a road completes "See the Watch at work" in a quiet city, and sextons no longer count', () => {
-    const s = town();
-    const f = s.founding;
-    buildRoad(s, 1, roadPath(f.x - 8, f.y + 2, f.x + 8, f.y + 2, false));
-    const post = placeBuildingRaw(s, 'watchpost', f.x + 2, f.y + 3)!;
-    post.state = 'ok'; post.work = 0; post.lit = true;
-    recomputeAll(s);
-    s.stats.walkerLayings = 5; // a sexton's layings
-    expect(Q('w_patrol').done(s)).toBe(false);
-    run(s, TICKS_PER_DAY * 4);
-    expect(s.stats.watchRounds).toBeGreaterThan(0);
-    expect(s.stats.walkerKills).toBe(0);
-    expect(s.questsDone).toContain('w_patrol');
-  });
-
-  it('a Boneyard on a road completes the sexton\'s task by its rounds, with no restless at all', () => {
-    const s = town();
-    const f = s.founding;
-    buildRoad(s, 1, roadPath(f.x - 8, f.y + 2, f.x + 8, f.y + 2, false));
-    const yard = placeBuildingRaw(s, 'boneyard', f.x - 3, f.y + 3)!;
-    yard.state = 'ok'; yard.work = 0; yard.lit = true;
-    recomputeAll(s);
-    run(s, TICKS_PER_DAY * 4);
-    expect(s.stats.restlessLaid).toBe(0);
-    expect(s.stats.sextonRounds).toBeGreaterThan(0);
-    expect(s.questsDone).toContain('w_sexton');
-  });
-
-  it('old saves get the new counters at zero', () => {
-    const s = town();
-    const raw = JSON.parse(serialize(s));
-    delete raw.stats.watchRounds; delete raw.stats.sextonRounds;
-    const r = deserialize(JSON.stringify(raw), (seed) => createGame(seed));
-    expect(r.stats.watchRounds).toBe(0);
-    expect(r.stats.sextonRounds).toBe(0);
+describe('the importer takes a pixel: true sprite as drawn', () => {
+  it('keeps every pixel, crops to them and anchors it', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'iter91-')), script = resolve('scripts/importSprites.mjs');
+    try {
+      mkdirSync(join(dir, 'art'), { recursive: true });
+      const img = drawing();
+      img.data.set([0, 0, 0, 0], (5 * 6 + 5) * 4); // without the speck: the crop is the 4×4 block
+      writeFileSync(join(dir, 'art/drawn.png'), encodePng(img));
+      writeFileSync(join(dir, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_test', src: 'art/drawn.png', pixel: true, w: 1, h: 1, anchor: 'centre', checked: true, glow: false }] }));
+      execFileSync(process.execPath, [script], { cwd: dir, stdio: 'pipe' });
+      const out = decodePng(readFileSync(join(dir, 'public/art/sprites/b_test.png')));
+      expect([out.w, out.h]).toEqual([4, 4]);
+      for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
+        const a = (y * 4 + x) * 4, b = ((y + 1) * 6 + x + 1) * 4;
+        expect([...out.data.subarray(a, a + 4)]).toEqual([...img.data.subarray(b, b + 4)]);
+      }
+      const m = JSON.parse(readFileSync(join(dir, 'public/art/sprites.json'), 'utf8')).sprites.b_test;
+      expect([m.w, m.h]).toEqual([4, 4]);
+      expect(Number.isInteger(m.ax) && Number.isInteger(m.ay)).toBe(true);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 });
 
-describe('Iteration 91: tasks that good play used to close off', () => {
-  it('a Great Weir standing when the first Hush ends weathers the flood', () => {
-    const s = town(41, 'veshari');
-    stands(s, 'greatweir');
-    s.day = 4 * DAYS_PER_SEASON - 1;
-    expect(Q('v_flood').done(s)).toBe(false);
-    s.day = 4 * DAYS_PER_SEASON;
-    expect(Q('v_flood').done(s)).toBe(true);
+describe('the Aseprite trace', () => {
+  const t = trace(drawing(), 24);
+  it('makes an indexed image: index 0 clear, index 1 the ink (the darkest), the edge in ink, a speck gone', () => {
+    expect(t.palette[0]).toEqual([0, 0, 0]);
+    const at = (x: number, y: number) => t.idx[y * t.w + x];
+    expect(at(5, 5)).toBe(0);
+    expect(at(0, 0)).toBe(0);
+    for (const [x, y] of [[1, 1], [4, 1], [1, 4], [4, 4], [2, 1]]) expect(at(x, y)).toBe(1);
+    expect(at(2, 2)).not.toBe(1); // inside keeps its colour
+    expect(at(2, 2)).not.toBe(at(3, 2)); // two colours inside
   });
-
-  it('the duel stays closed while the Vein-Wyrm is bound: a bound wyrm never flies over in anger', () => {
-    const s = town();
-    s.stats.greatWyrms = 1;
-    s.wyrm.state = 'awake';
-    expect(Q('k_duel').when(s)).toBe(true);
-    s.wyrm.state = 'bound';
-    expect(Q('k_duel').when(s)).toBe(false);
+  it('renders and writes the Lua table build_sprite.lua reads', () => {
+    const img = render(t);
+    expect(img.data[3]).toBe(0);
+    const lua = luaData('b_test', t);
+    expect(lua).toMatch(/^return \{/);
+    expect(lua).toMatch(/w = 6, h = 6/);
+    expect((lua.match(/"[0-9a-v]{6}"/g) ?? []).length).toBe(6);
   });
-
-  it('"Clear the bridge" is open only while a wyrm lairs', () => {
-    const s = town();
-    s.stats.wyrmsLaired = 1;
-    s.marshWyrms = [{ id: 1, x: 5, y: 5, lair: 1234, nest: -1 }];
-    expect(Q('w_wyrm').when(s)).toBe(true);
-    s.marshWyrms[0].lair = -1; // Bloom ended, or the bridge was guarded: the task leaves the Ledger
-    expect(Q('w_wyrm').when(s)).toBe(false);
-    s.stats.wyrmsDriven = 1; // a drive-off ends the lair in the same stroke, and still pays
-    checkQuests(s);
-    expect(s.questsDone).toContain('w_wyrm');
-  });
-
-  it('every people\'s cradle takes the vein egg', () => {
-    for (const kind of ['cradle', 'hatchery', 'tidepool']) expect(cradleAccepts({ kind } as Building, 'vein')).toBe(true);
-    expect(cradleAccepts({ kind: 'hatchery' } as Building, 'tide')).toBe(false);
-  });
-
-  it('a lit Guildhall seats the council and opens the guild chapter, petition or none', () => {
-    const s = town();
-    s.milestone = 5;
-    expect(Q('k_council').done(s)).toBe(false);
-    const f = s.founding;
-    const hall = placeBuildingRaw(s, 'guildhall', f.x + 4, f.y + 6)!;
-    hall.state = 'ok'; hall.lit = true;
-    expect(s.stats.councils).toBe(0);
-    expect(Q('k_council').done(s)).toBe(true);
-    expect(Q('k_boon').when(s)).toBe(true);
-    expect(Q('k_hall').when(s)).toBe(true);
+  it('cuts a many-coloured sprite to the palette asked for', () => {
+    const w = 16, h = 16, data = new Uint8ClampedArray(w * h * 4);
+    for (let i = 0; i < w * h; i++) data.set([(i * 37) % 256, (i * 91) % 256, (i * 13) % 256, 255], i * 4);
+    expect(trace({ w, h, data }, 8).palette.length).toBeLessThanOrEqual(9);
   });
 });
 
-describe('Iteration 91: breeding weighs every pair', () => {
-  function cradleTown() {
-    const s = town();
-    const f = s.founding;
-    const c = placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3)!;
-    c.level = 2; // a Great Cradle: four slots
-    recomputeAll(s);
-    return { s, c };
-  }
-  it('a Great Cradle of ember, ember and vein (attuned to vein) breeds the vein and an ember', () => {
-    const { s, c } = cradleTown();
-    const ds = [addEgg(s, 'ember')!, addEgg(s, 'ember')!, addEgg(s, 'vein')!];
-    for (const d of ds) { d.stage = 2; d.mood = 80; }
-    const chk = canBreed(s, c);
-    expect(chk.ok).toBe(true);
-    expect(chk.line).toBe('vein');
-    expect(chk.second).toBe('ember');
-    s.day = BREED_DAY;
-    c.lit = true;
-    dailyBreeding(s);
-    const egg = s.dragons[3];
-    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'ember', undefined]);
-    expect(s.stats.crossEggs).toBe(1);
-  });
-  it('mirror crosses still lay a trueblood, and a plain dragon with a crossed one of its line breeds nothing', () => {
-    const { s, c } = cradleTown();
-    const a = addEgg(s, 'vein')!; const b = addEgg(s, 'ember')!;
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    a.second = 'ember'; b.second = 'vein';
-    const chk = canBreed(s, c);
-    expect([chk.ok, chk.line, chk.second, chk.trueblood]).toEqual([true, 'vein', 'ember', true]);
-    b.line = 'vein'; b.second = undefined; // plain vein beside vein+ember: the egg would copy the crossed parent
-    expect(canBreed(s, c).ok).toBe(false);
-  });
-  it('two crossed dragons of one first line and different second lines lay a trueblood', () => {
-    const { s, c } = cradleTown();
-    const a = addEgg(s, 'vein')!; const b = addEgg(s, 'vein')!;
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    expect(canBreed(s, c).ok).toBe(false); // two of one line, uncrossed: nothing new
-    a.second = 'grey'; b.second = 'sky';
-    const chk = canBreed(s, c);
-    expect(chk.ok).toBe(true);
-    expect(chk.trueblood).toBe(true);
-    expect(chk.line).toBe('vein');
-    expect(chk.second).toBe('sky');
-    s.day = BREED_DAY;
-    c.lit = true;
-    dailyBreeding(s);
-    const egg = s.dragons[2];
-    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'sky', true]);
-    expect(s.stats.truebloods).toBe(1);
-    a.second = 'sky'; // the same lines exactly
-    expect(canBreed(s, c).ok).toBe(false);
+describe('install', () => {
+  it('switches the live entry off, keeps it, and adds the pixel entry with its footprint and anchor', () => {
+    const list = [{ name: 'b_well', src: 'inspirations/old.png', w: 1, h: 1, anchor: 'centre', shift: { x: 0, y: 6 }, checked: true }, { name: 'tree_1', src: 'x.png', kind: 'prop' }];
+    const { list: out, entry } = installEntries(list, 'b_well', { w: 2, h: 2 });
+    expect(out.find((e) => e.src === 'inspirations/old.png')!.off).toBe(true);
+    expect(entry).toMatchObject({ name: 'b_well', src: 'art/aseprite/export/b_well.png', pixel: true, w: 1, h: 1, anchor: 'centre', shift: { x: 0, y: 6 } });
+    expect(out.filter((e) => e.name === 'b_well' && !e.off)).toHaveLength(1);
+    // installing again replaces the pixel entry instead of adding a second
+    expect(installEntries(out, 'b_well', { w: 2, h: 2 }).list.filter((e) => e.name === 'b_well' && !e.off)).toHaveLength(1);
+    // a prop keeps its kind and gets no footprint
+    expect(installEntries(list, 'tree_1', { w: 1, h: 1 }).entry).toMatchObject({ kind: 'prop', pixel: true });
   });
 });
 
-describe('Iteration 91: the text says what completes the task', () => {
-  it('names the four markets, the Weir, the stirring, each people\'s Beacon gate and the Grimmen\'s cutting', () => {
-    expect(Q('o_full').title + Q('o_full').hint).toMatch(/four/i);
-    expect(Q('v_flood').hint).toMatch(/Great Weir/);
-    expect(Q('v_find').title).toMatch(/Stir/);
-    expect(Q('c_beacon').hint).toMatch(/your people's gate/);
-    expect(Q('c_beacon').focus).toBeUndefined(); // no "Show me" to a Lantern three peoples cannot build
-    expect(Q('g_burn').hint).toMatch(/stone-sexton/);
+describe('the Tripo CLI', () => {
+  it('reads the task id from its "Task created" line', () => {
+    expect(taskIdOf('Submitting…\nTask created: 4f2a9c1e-77b0-4c1e-9a33-2d1b0f6c7e10\nWaiting')).toBe('4f2a9c1e-77b0-4c1e-9a33-2d1b0f6c7e10');
+    expect(taskIdOf('✔ Task created (id: abc12345def)')).toBe('abc12345def');
+    expect(taskIdOf('{"task_id":"zz-99887766"}')).toBe('zz-99887766');
+    expect(taskIdOf('error: not logged in')).toBeNull();
   });
-  it('the four-market task stays on the Ledger while the shelves are full', () => {
-    const s = town();
-    s.goodsShort = 0;
-    expect(Q('o_full').when(s)).toBe(false);
-    for (let k = 0; k < 4; k++) stands(s, 'market');
-    expect(Q('o_full').when(s)).toBe(true);
+  it('reads the status and the urls wherever the result nests them', () => {
+    expect(resultOf('{"status":"running"}')).toEqual({ status: 'running', urls: [] });
+    expect(resultOf('{"data":{"status":"success","urls":["https://a/1.webp","https://a/2.webp"]}}').urls).toHaveLength(2);
+    expect(resultOf('{"status":"SUCCESS","images":[{"url":"https://a/1.png"}]}')).toEqual({ status: 'success', urls: ['https://a/1.png'] });
+  });
+});
+
+describe('the board\'s draft prompt keeps the prompt rules', () => {
+  it('every building\'s draft fits Tripo\'s 1000 characters and names no negation', () => {
+    for (const b of BUILDINGS) {
+      const d = draftFor(b as never, `b_${b.key}`, '');
+      expect(d.length, b.key).toBeLessThanOrEqual(TRIPO_MAX);
+      expect(d, b.key).not.toMatch(/\bno (text|ground|shadow|frame)\b/i);
+      expect(d, b.key).toMatch(/plain flat white background/);
+    }
+    expect(draftFor(BUILDINGS[0] as never, 'b_x', 'word '.repeat(400)).length).toBeLessThanOrEqual(TRIPO_MAX); // a long brief gives way
   });
 });

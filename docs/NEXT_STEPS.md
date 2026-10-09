@@ -349,10 +349,10 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
-## Done in iteration 91 (the quests that never complete)
+## Done in iteration 92 (the quests that never complete)
 
 - **"See the Watch at work" completes:** a watchman's first round does it, hounds or no hounds. "See a sexton walk the
-  rounds" likewise. Before, both waited for a threat that a well-kept city prevents (DESIGN §4.122).
+  rounds" likewise. Before, both waited for a threat that a well-kept city prevents (DESIGN §4.123).
 - **An audit of all 140 Charter tasks:**
   - `scripts/questCensus.ts` plays bot games and lists the tasks never done.
   - A workflow traced every task into the sim, with each flag checked by a refuter: 13 confirmed and fixed.
@@ -360,6 +360,16 @@
     council, breeding in a Great Cradle and the bloodline. The text of the four-market task, the Grimmen's Gloam, the
     Sleeping Wyrm and the Beacon was rewritten.
 - New Annals rows: Watch rounds and Sexton rounds.
+## Done in iteration 91 (the Tripo Studio and Aseprite pipelines)
+
+- **Written into the docs:** `docs/ART_PIPELINES.md` holds the paintings importer, Tripo Studio (Route 1, you generate in
+  Studio; Route 2, Claude generates through the Tripo CLI on your credits) and Aseprite (trace, edit, export, review,
+  install). DESIGN §4.122. Ossuary's `docs/assets.md` got the same two pipelines for its own art.
+- **Run from the board** (a building's Art panel):
+  - Tripo: the login state, "Generate 4", the round's contact sheet measured, "Use this one" into the importer;
+  - Aseprite: trace, export, the 8× previews, install after the review tick.
+  - A drawn sprite is taken as drawn: the importer's new `pixel: true`.
+- **Fixed:** the board's draft prompt is now always under Tripo's 1000 characters and free of negations.
 
 ## Done in iteration 90 (a hotfix: the slow first load)
 

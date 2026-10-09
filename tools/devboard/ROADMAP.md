@@ -24,7 +24,7 @@ Size: S (part of an iteration), M (one iteration), L (more than one).
   - the paintings importer runs from the board: drop a painting on a card, it gets its `art/sources.json` entry, then
     `npm run art` and the check sheet;
   - Tripo Studio and Aseprite start as hand-offs to Claude, and become buttons once the user writes those pipelines into
-    the docs.
+    the docs. *Written and built in iteration 91 (`docs/ART_PIPELINES.md`, DESIGN §4.122).*
 - **Text to JSON:** the text of edicts, events, quests and guilds moves to JSON, with the logic kept in code by id.
 
 ## Phase C · See the city before you play it

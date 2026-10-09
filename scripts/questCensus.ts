@@ -1,4 +1,4 @@
-/** Quest census (iteration 91): which Charter tasks a bot game completes. Usage: npx tsx scripts/questCensus.ts seed days faction scenario
+/** Quest census (iteration 92): which Charter tasks a bot game completes. Usage: npx tsx scripts/questCensus.ts seed days faction scenario
  *  Prints one json line: the quests done with their day, and the ones never done (with whether `when` ever held). */
 import { createGame } from '../src/sim/world';
 import { run } from '../src/sim/sim';

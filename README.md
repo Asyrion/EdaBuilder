@@ -41,7 +41,8 @@ GitHub's milestones and issues (through `gh`) and the balance cache as charts. "
 card to Claude Code on your PC or files it as a GitHub issue; "New element" writes the task for a new building, road,
 edict, event, quest or creature. Its art side (DESIGN §4.120) keeps an image prompt per sprite in
 `art/prompts/` ("Refine with Claude" runs `claude -p`), runs the paintings importer from a card (drop a painting, pick its
-island, import, judge), and hands Tripo Studio and Aseprite off to Claude until their pipelines are written down. The
+island, import, judge), Tripo Studio (you in Studio, or Claude through the Tripo CLI: a round of four, measured, the pick
+into the importer) and Aseprite (trace, export, an 8× review, install); `docs/ART_PIPELINES.md` has all three. The
 wording of edicts, events, quests and guilds is edited there too (`src/data/content/text/`). Run one instance; it serves
 every session.
 

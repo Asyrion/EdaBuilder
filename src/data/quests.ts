@@ -43,7 +43,7 @@ const belregiGates = (s: GameState) => { for (let i = 0; i < s.wall.length; i++)
 const zoneBuildings = (s: GameState, z?: Zone) => s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok' && (z === undefined || BUILDING_BY_KEY[b.kind].zone === z)) as NonNullable<GameState['buildings'][number]>[];
 const unlit = (s: GameState) => zoneBuildings(s).filter((b) => !b.lit).length;
 const dry = (s: GameState) => zoneBuildings(s).filter((b) => !b.watered).length;
-/** The guild council sits once a lit Guildhall stands, petition or none (iteration 91: a contented council never petitions). */
+/** The guild council sits once a lit Guildhall stands, petition or none (iteration 92: a contented council never petitions). */
 const councilSeated = (s: GameState) => hasCouncil(s) || s.stats.councils > 0;
 const districts = (s: GameState) => { for (let i = 0; i < s.district.length; i++) if (s.district[i]) return true; return false; };
 
