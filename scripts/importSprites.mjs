@@ -12,8 +12,10 @@
 // donkey stands the same height), faces right after any flip, is anchored at the bottom centre, and with mirrored: true also
 // writes <name>_l, the left-facing twin. A rect is cut from the raw sheet and keyed after, so a sheet's grid lines cannot
 // stop the background key.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { decodePng, encodePng } from './lib/png.mjs';
+import { packSheets } from './lib/sprite.mjs';
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, isoTopDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
 /** The image mirrored left to right. */
@@ -39,8 +41,10 @@ if (args[0] === '--islands') {
 
 const sources = JSON.parse(readFileSync('art/sources.json', 'utf8'));
 mkdirSync('public/art/sprites', { recursive: true });
-const manifest = { sprites: {} };
+const manifest = { sheets: [], sprites: {} };
 const sheet = [];
+const pngs = new Map(); // every file written this run → its image, packed into the sheets at the end (iteration 90)
+const put = (file, img) => { writeFileSync(`public/art/${file}`, encodePng(img)); pngs.set(file, img); };
 const families = new Map(); // family → [{ e, img }] for the shared quantize
 const results = [];
 
@@ -122,24 +126,54 @@ for (const r of results) {
   }
   if (!e.checked && !check) console.warn(`  ${e.name}: not yet checked by eye (run with --check, judge the sheet, set "checked": true)`);
   const entry = { file: `sprites/${e.name}.png`, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay };
-  writeFileSync(`public/art/${entry.file}`, encodePng(sprite));
+  put(entry.file, sprite);
   let glowCount = 0;
   if (e.glow !== false && kind !== 'ground' && kind !== 'vehicle') {
     const glow = e.glowSrc ? { img: e.flip ? mirror(decodePng(readFileSync(e.glowSrc))) : decodePng(readFileSync(e.glowSrc)), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
-    if (glow.count > 0) { entry.glow = `sprites/${e.name}_glow.png`; writeFileSync(`public/art/${entry.glow}`, encodePng(glow.img)); glowCount = glow.count; }
+    if (glow.count > 0) { entry.glow = `sprites/${e.name}_glow.png`; put(entry.glow, glow.img); glowCount = glow.count; }
   }
   manifest.sprites[e.name] = entry;
   for (const a of e.aliases ?? []) manifest.sprites[a] = { ...entry };
   if (e.hop) manifest.sprites[e.name.replace(/_0$/, '_1')] = { ...entry, ay: entry.ay + 1 }; // a painting is one frame: the second stands a pixel higher, a gait bob (iteration 58)
   if (e.mirrored) { // the left-facing twin: the same pixels mirrored, the anchor mirrored with them (w − ax)
     const twin = { file: `sprites/${e.name}_l.png`, w: sprite.w, h: sprite.h, ax: sprite.w - anchor.ax, ay: anchor.ay };
-    writeFileSync(`public/art/${twin.file}`, encodePng(mirror(sprite)));
+    put(twin.file, mirror(sprite));
     manifest.sprites[`${e.name}_l`] = twin;
   }
   sheet.push({ kind: kind === 'vehicle' ? 'prop' : kind, img: sprite, w: sprite.w, h: sprite.h, ax: anchor.ax, ay: anchor.ay, w_t: e.w ?? 1, h_t: e.h ?? 1 });
   const autoText = r.auto ? ` (auto ${r.auto.ax},${r.auto.ay})` : '';
   console.log(`${e.name.padEnd(16)} ${kind.padEnd(8)} ${String(sprite.w).padStart(3)}×${String(sprite.h).padEnd(3)} anchor ${anchor.ax},${anchor.ay}${autoText} colours ${colourCount(sprite)} glow px ${glowCount}${e.checked ? '' : ' (unchecked)'}`);
 }
+
+// The sheets (iteration 90): every distinct image (a sprite, its glow, a mirrored twin; aliases and hop frames share their
+// source's file) packed into a few sheets, so the page loads three images instead of a thousand. Tallest first, then by
+// path, so a run gives the same sheets every time. Each entry learns where its pixels sit (sheet, sx, sy; gsheet, gx, gy,
+// gw, gh for the glow); `file` and `glow` stay for the tools and tests that read the single PNGs. A sheet's hash is its
+// content's, and the page asks for `file?v=hash`, so a cached old sheet never meets a new manifest.
+const files = [...pngs.keys()].sort((a, b) => pngs.get(b).h - pngs.get(a).h || pngs.get(b).w - pngs.get(a).w || (a < b ? -1 : a > b ? 1 : 0));
+const packed = packSheets(files.map((f) => pngs.get(f)), 2048, 2048);
+const at = new Map(files.map((f, i) => [f, packed.pos[i]]));
+mkdirSync('public/art/sheets', { recursive: true });
+for (const f of readdirSync('public/art/sheets')) if (/^sheet_\d+\.png$/.test(f)) rmSync(`public/art/sheets/${f}`);
+packed.sheets.forEach((size, n) => {
+  const img = { w: size.w, h: size.h, data: new Uint8ClampedArray(size.w * size.h * 4) };
+  files.forEach((f, i) => {
+    const p = packed.pos[i];
+    if (p.sheet !== n) return;
+    const src = pngs.get(f);
+    for (let y = 0; y < src.h; y++) img.data.set(src.data.subarray(y * src.w * 4, (y + 1) * src.w * 4), ((p.y + y) * size.w + p.x) * 4);
+  });
+  const bytes = encodePng(img);
+  const file = `sheets/sheet_${n}.png`;
+  writeFileSync(`public/art/${file}`, bytes);
+  manifest.sheets.push({ file, w: size.w, h: size.h, hash: createHash('sha256').update(bytes).digest('hex').slice(0, 12) });
+});
+for (const entry of Object.values(manifest.sprites)) {
+  const p = at.get(entry.file);
+  Object.assign(entry, { sheet: p.sheet, sx: p.x, sy: p.y });
+  if (entry.glow) { const g = at.get(entry.glow); const img = pngs.get(entry.glow); Object.assign(entry, { gsheet: g.sheet, gx: g.x, gy: g.y, gw: img.w, gh: img.h }); }
+}
+console.log(`sheets: ${manifest.sheets.map((s) => `${s.file} ${s.w}×${s.h}`).join(', ')} (${files.length} images)`);
 writeFileSync('public/art/sprites.json', JSON.stringify(manifest, null, 1) + '\n');
 if (check) {
   if (!existsSync('shots')) mkdirSync('shots');

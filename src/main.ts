@@ -540,12 +540,21 @@ class Game {
 
 async function boot(): Promise<void> {
   const base = import.meta.env.BASE_URL;
+  const line = document.getElementById('boot'); // the page's loading line (iteration 90): never a blank screen while the art loads
+  const say = (text: string) => { if (line) line.textContent = text; };
+  say('Unpacking the sprites…');
   const override = await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
-  await atlas.mergeOverrides(base); // imported sprites (public/art/sprites.json) over either atlas
+  await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
+  say('Raising the town…');
   (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, hounds, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
+  line?.remove();
 }
 
-boot();
+boot().catch((err) => {
+  console.error(err);
+  const line = document.getElementById('boot');
+  if (line) line.textContent = `Wardlight could not start: ${err instanceof Error ? err.message : String(err)}`;
+});

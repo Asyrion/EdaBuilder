@@ -116,10 +116,13 @@ export class SpriteAtlas {
 
   /**
    * Per-sprite overrides (iteration 49): public/art/sprites.json lists PNGs made by scripts/importSprites.mjs
-   * ({ sprites: { name: { file, glow?, w, h, ax, ay } } }). Each is packed below the current atlas and replaces the
-   * sprite of that name; a file that fails to load leaves the generated sprite in place. Resolves to the count merged.
+   * ({ sheets?, sprites: { name: { file, glow?, w, h, ax, ay, sheet?, sx?, sy?, gsheet?, gx?, gy?, gw?, gh? } } }). Each is
+   * packed below the current atlas and replaces the sprite of that name; a file that fails to load leaves the generated
+   * sprite in place. Since iteration 90 the pixels come from a few sheets loaded at once (a thousand single files, fetched
+   * one after another, kept the page blank for a minute over the internet); a manifest without sheets, or an entry whose
+   * sheet failed, loads its single files, 24 at a time. `onProgress` hears each finished request. Resolves to the count merged.
    */
-  async mergeOverrides(base: string): Promise<number> {
+  async mergeOverrides(base: string, onProgress?: (done: number, total: number) => void): Promise<number> {
     let manifest: ImportManifest;
     try {
       const res = await fetch(`${base}art/sprites.json`, { cache: 'no-cache' });
@@ -128,32 +131,57 @@ export class SpriteAtlas {
     } catch {
       return 0;
     }
-    const loaded: { name: string; img: HTMLImageElement; glow: HTMLImageElement | null; e: ImportEntry }[] = [];
-    for (const [name, e] of Object.entries(manifest.sprites ?? {})) {
+    const entries = Object.entries(manifest.sprites ?? {});
+    const sheetList = manifest.sheets ?? [];
+    let done = 0;
+    let total = sheetList.length;
+    const tick = () => onProgress?.(++done, total);
+    const sheets = await Promise.all(sheetList.map((s) =>
+      loadImage(`${base}art/${s.file}?v=${s.hash}`)
+        .then((img) => { if (img.width !== s.w || img.height !== s.h) throw new Error('size'); return img; })
+        .catch(() => { console.warn('sprite sheet failed to load', s.file); return null; })
+        .finally(tick)));
+    // each entry's pixels: a cut from its sheet, or (no sheet, or its sheet failed) its single files
+    const cuts: (Loaded | null)[] = entries.map(([, e]) => {
+      const body = e.sheet !== undefined ? sheets[e.sheet] : null;
+      if (!body) return null;
+      if (!e.glow) return { body: { src: body, x: e.sx ?? 0, y: e.sy ?? 0, w: e.w, h: e.h }, glow: null };
+      const glow = e.gsheet !== undefined ? sheets[e.gsheet] : null;
+      if (!glow) return null;
+      return { body: { src: body, x: e.sx ?? 0, y: e.sy ?? 0, w: e.w, h: e.h }, glow: { src: glow, x: e.gx ?? 0, y: e.gy ?? 0, w: e.gw ?? e.w, h: e.gh ?? e.h } };
+    });
+    const single = entries.map((_, i) => i).filter((i) => !cuts[i]);
+    total += single.length;
+    await pool(24, single.map((i) => async () => {
+      const [name, e] = entries[i];
       try {
         const img = await loadImage(`${base}art/${e.file}`);
         const glow = e.glow ? await loadImage(`${base}art/${e.glow}`).catch(() => null) : null;
-        loaded.push({ name, img, glow, e });
+        cuts[i] = { body: whole(img), glow: glow && whole(glow) };
       } catch {
         console.warn('imported sprite failed to load', name);
       }
-    }
+      tick();
+    }));
+    const loaded = entries.flatMap(([name, e], i) => { const c = cuts[i]; return c ? [{ name, e, ...c }] : []; });
     if (!loaded.length) return 0;
     const items: { w: number; h: number }[] = [];
-    for (const l of loaded) { items.push({ w: l.img.width, h: l.img.height }); if (l.glow) items.push({ w: l.glow.width, h: l.glow.height }); }
+    for (const l of loaded) { items.push(l.body); if (l.glow) items.push(l.glow); }
     const startY = this.image.height + 1;
     const { pos, height } = shelfPack(items, 1024, startY);
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = height;
     const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false; // every cut is copied 1:1
     ctx.drawImage(this.image, 0, 0);
+    const draw = (c: Cut, at: { x: number; y: number }) => ctx.drawImage(c.src, c.x, c.y, c.w, c.h, at.x, at.y, c.w, c.h);
     let k = 0;
     for (const l of loaded) {
       const p = pos[k++];
-      ctx.drawImage(l.img, p.x, p.y);
-      const rect: SpriteRect = { x: p.x, y: p.y, w: l.img.width, h: l.img.height, ax: l.e.ax, ay: l.e.ay };
-      if (l.glow) { const g = pos[k++]; ctx.drawImage(l.glow, g.x, g.y); rect.glow = { x: g.x, y: g.y }; }
+      draw(l.body, p);
+      const rect: SpriteRect = { x: p.x, y: p.y, w: l.body.w, h: l.body.h, ax: l.e.ax, ay: l.e.ay };
+      if (l.glow) { const g = pos[k++]; draw(l.glow, g); rect.glow = { x: g.x, y: g.y }; }
       this.sprites[l.name] = rect;
       this.imported.add(l.name);
       this.missing.delete(l.name);
@@ -163,8 +191,38 @@ export class SpriteAtlas {
   }
 }
 
-export interface ImportEntry { file: string; glow?: string; w: number; h: number; ax: number; ay: number }
-export interface ImportManifest { sprites: Record<string, ImportEntry> }
+export interface ImportEntry {
+  file: string;
+  glow?: string;
+  w: number;
+  h: number;
+  ax: number;
+  ay: number;
+  /** Where the pixels sit in manifest.sheets (iteration 90): the body at sheet/sx/sy, the glow at gsheet/gx/gy, gw × gh. */
+  sheet?: number;
+  sx?: number;
+  sy?: number;
+  gsheet?: number;
+  gx?: number;
+  gy?: number;
+  gw?: number;
+  gh?: number;
+}
+/** A sheet of imported sprites (iteration 90): its hash is its content's, asked for as `file?v=hash`. */
+export interface ImportSheet { file: string; w: number; h: number; hash: string }
+export interface ImportManifest { sheets?: ImportSheet[]; sprites: Record<string, ImportEntry> }
+
+/** A piece of an image: a sheet's rect, or a whole single file. */
+interface Cut { src: CanvasImageSource; x: number; y: number; w: number; h: number }
+interface Loaded { body: Cut; glow: Cut | null }
+const whole = (img: HTMLImageElement): Cut => ({ src: img, x: 0, y: 0, w: img.width, h: img.height });
+
+/** Runs the jobs at most n at a time. */
+async function pool(n: number, jobs: (() => Promise<void>)[]): Promise<void> {
+  let next = 0;
+  const worker = async () => { while (next < jobs.length) await jobs[next++](); };
+  await Promise.all(Array.from({ length: Math.min(n, jobs.length) }, worker));
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

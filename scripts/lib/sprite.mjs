@@ -505,3 +505,22 @@ export function isoTopDiamond(img, { shrink = 0.12, y = 0 } = {}, W = 32, H = 16
   }
   return out;
 }
+
+/** Shelf packing into sheets (iteration 90): the items in the given order, left to right with 1 px gutters, a new shelf when
+ *  a row is full and a new sheet when a shelf would pass H. The same shelves as the atlas's shelfPack, cut into sheets W
+ *  wide and at most H tall. Returns each item's { sheet, x, y } and each sheet's { w, h } (h the tallest item's bottom). */
+export function packSheets(items, W = 2048, H = 2048) {
+  const pos = [];
+  const sizes = [];
+  let sheet = 0, x = 0, y = 0, shelf = 0;
+  for (const it of items) {
+    if (it.w > W || it.h > H) throw new Error(`packSheets: an item ${it.w}×${it.h} is larger than a sheet ${W}×${H}`);
+    if (x > 0 && x + it.w > W) { x = 0; y += shelf + 1; shelf = 0; }
+    if (y + it.h > H) { sheet++; x = 0; y = 0; shelf = 0; }
+    pos.push({ sheet, x, y });
+    sizes[sheet] = { w: W, h: Math.max(sizes[sheet]?.h ?? 0, y + it.h) };
+    x += it.w + 1;
+    shelf = Math.max(shelf, it.h);
+  }
+  return { pos, sheets: sizes };
+}
