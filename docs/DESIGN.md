@@ -5347,7 +5347,7 @@ by a refuter) confirmed six findings, all fixed:
 - the bridge test's last assertion was vacuous.
 
 **Verified:**
-- `npx tsc --noEmit -p .`, the unit tests (90 files, 573 tests) and `npm run build`. `tests/iteration92.test.ts` has a
+- `npx tsc --noEmit -p .`, the unit tests (91 files, 581 tests, after merging main) and `npm run build`. `tests/iteration92.test.ts` has a
   test per fix, among them:
   - a quiet city with a Watch Post completes w_patrol in days, with no kill;
   - a Boneyard completes w_sexton with no restless;
