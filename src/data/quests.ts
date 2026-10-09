@@ -1,7 +1,8 @@
 import { isCradle } from '../sim/wyrmcraft';
 import { isFordTile } from '../sim/water';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
-import { AgentKind, Terrain, Zone, idx, type GameState } from '../sim/types';
+import { AgentKind, DAYS_PER_SEASON, Terrain, Zone, idx, type GameState } from '../sim/types';
+import { hasCouncil } from '../sim/guilds';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { factionKey, litShare, stoneQuarried, type FactionId, moorings } from './factions';
 import { chose } from '../sim/events';
@@ -42,6 +43,8 @@ const belregiGates = (s: GameState) => { for (let i = 0; i < s.wall.length; i++)
 const zoneBuildings = (s: GameState, z?: Zone) => s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok' && (z === undefined || BUILDING_BY_KEY[b.kind].zone === z)) as NonNullable<GameState['buildings'][number]>[];
 const unlit = (s: GameState) => zoneBuildings(s).filter((b) => !b.lit).length;
 const dry = (s: GameState) => zoneBuildings(s).filter((b) => !b.watered).length;
+/** The guild council sits once a lit Guildhall stands, petition or none (iteration 91: a contented council never petitions). */
+const councilSeated = (s: GameState) => hasCouncil(s) || s.stats.councils > 0;
 const districts = (s: GameState) => { for (let i = 0; i < s.district.length; i++) if (s.district[i]) return true; return false; };
 
 export const QUESTS: QuestDef[] = [
@@ -75,7 +78,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'g_heart', chapter: QUEST_TEXT.g_heart.chapter, title: QUEST_TEXT.g_heart.title, hint: QUEST_TEXT.g_heart.hint, when: (s) => has(s, 'greatgate'), done: (s) => s.heart.step >= 1, focus: { center: 'greatgate' }, reward: 1000, priority: 19 },
   // Goods
   { id: 'o_cart', chapter: QUEST_TEXT.o_cart.chapter, title: QUEST_TEXT.o_cart.title, hint: QUEST_TEXT.o_cart.hint, when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
-  { id: 'o_full', chapter: QUEST_TEXT.o_full.chapter, title: QUEST_TEXT.o_full.title, hint: QUEST_TEXT.o_full.hint, when: (s) => s.goodsShort > 0, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
+  { id: 'o_full', chapter: QUEST_TEXT.o_full.chapter, title: QUEST_TEXT.o_full.title, hint: QUEST_TEXT.o_full.hint, when: (s) => s.goodsShort > 0 || zoneBuildings(s, Zone.Market).length > 3, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
   { id: 'o_depot', chapter: QUEST_TEXT.o_depot.chapter, title: QUEST_TEXT.o_depot.title, hint: QUEST_TEXT.o_depot.hint, when: (s) => s.milestone >= 3, done: (s) => has(s, 'depot'), focus: { build: 'depot' }, reward: 700, priority: 20 },
   { id: 'o_caravan', chapter: QUEST_TEXT.o_caravan.chapter, title: QUEST_TEXT.o_caravan.title, hint: QUEST_TEXT.o_caravan.hint, when: (s) => has(s, 'depot'), done: (s) => s.stats.caravanGoods >= 200, reward: 900, priority: 21 },
   // Schooling and the arcane
@@ -130,7 +133,7 @@ export const QUESTS: QuestDef[] = [
   // the water (iteration 60)
   { id: 'w_fish', chapter: QUEST_TEXT.w_fish.chapter, title: QUEST_TEXT.w_fish.title, hint: QUEST_TEXT.w_fish.hint, when: (s) => s.milestone >= 1, done: (s) => s.water.fishAt.length > 0, focus: { build: 'fishershut' }, reward: 400, priority: 57 },
   { id: 'w_thatch', chapter: QUEST_TEXT.w_thatch.chapter, title: QUEST_TEXT.w_thatch.title, hint: QUEST_TEXT.w_thatch.hint, when: (s) => s.milestone >= 1, done: (s) => s.stats.homesThatched >= 10, focus: { build: 'reedcutters' }, reward: 400, priority: 58 },
-  { id: 'w_wyrm', chapter: QUEST_TEXT.w_wyrm.chapter, title: QUEST_TEXT.w_wyrm.title, hint: QUEST_TEXT.w_wyrm.hint, when: (s) => (s.stats.wyrmsLaired ?? 0) > 0, done: (s) => (s.stats.wyrmsDriven ?? 0) > 0, focus: { build: 'veshari' }, reward: 400, priority: 57 },
+  { id: 'w_wyrm', chapter: QUEST_TEXT.w_wyrm.chapter, title: QUEST_TEXT.w_wyrm.title, hint: QUEST_TEXT.w_wyrm.hint, when: (s) => (s.marshWyrms ?? []).some((w) => w.lair >= 0), done: (s) => (s.stats.wyrmsDriven ?? 0) > 0, focus: { build: 'veshari' }, reward: 400, priority: 57 },
   { id: 'w_ford', chapter: QUEST_TEXT.w_ford.chapter, title: QUEST_TEXT.w_ford.title, hint: QUEST_TEXT.w_ford.hint, when: (s) => s.milestone >= 1 && s.day >= 5, done: (s) => { for (let i = 0; i < s.road.length; i++) if (s.road[i] && isFordTile(s, i)) return true; return false; }, focus: { tool: 'road' }, reward: 300, priority: 58 },
   // Longwood and the Fen-Nex
   { id: 'n_tiger', chapter: QUEST_TEXT.n_tiger.chapter, title: QUEST_TEXT.n_tiger.title, hint: QUEST_TEXT.n_tiger.hint, when: (s) => s.stats.tigersTotal > 0, done: (s) => s.stats.tigersKilled > 0, focus: { build: 'hunterslodge' }, reward: 1200, priority: 58 },
@@ -141,11 +144,11 @@ export const QUESTS: QuestDef[] = [
   { id: 'y_marvel', chapter: QUEST_TEXT.y_marvel.chapter, title: QUEST_TEXT.y_marvel.title, hint: QUEST_TEXT.y_marvel.hint, when: (s) => s.milestone >= 4 && (s.materials.scale > 0 || s.materials.rayscale > 0 || s.materials.glimdust > 0), done: (s) => s.stats.marvels > 0, focus: { build: 'scaleward' }, reward: 1000, priority: 49 },
   { id: 'y_quiet', chapter: QUEST_TEXT.y_quiet.chapter, title: QUEST_TEXT.y_quiet.title, hint: QUEST_TEXT.y_quiet.hint, when: (s) => s.day >= 60, done: (s) => s.stats.quietHush > 0, focus: { build: 'shrine' }, reward: 1500, priority: 42 },
   // The guilds, the feast and the routes
-  { id: 'k_council', chapter: QUEST_TEXT.k_council.chapter, title: QUEST_TEXT.k_council.title, hint: QUEST_TEXT.k_council.hint, when: (s) => s.milestone >= 5, done: (s) => s.stats.councils > 0, focus: { build: 'guildhall' }, reward: 500, priority: 50 },
-  { id: 'k_boon', chapter: QUEST_TEXT.k_boon.chapter, title: QUEST_TEXT.k_boon.title, hint: QUEST_TEXT.k_boon.hint, when: (s) => s.stats.councils > 0, done: (s) => Object.values(s.guilds.standing).some((v) => v >= 70), focus: { panel: 'edicts' }, reward: 1000, priority: 51 },
+  { id: 'k_council', chapter: QUEST_TEXT.k_council.chapter, title: QUEST_TEXT.k_council.title, hint: QUEST_TEXT.k_council.hint, when: (s) => s.milestone >= 5, done: (s) => councilSeated(s), focus: { build: 'guildhall' }, reward: 500, priority: 50 },
+  { id: 'k_boon', chapter: QUEST_TEXT.k_boon.chapter, title: QUEST_TEXT.k_boon.title, hint: QUEST_TEXT.k_boon.hint, when: (s) => councilSeated(s), done: (s) => Object.values(s.guilds.standing).some((v) => v >= 70), focus: { panel: 'edicts' }, reward: 1000, priority: 51 },
   { id: 'k_feast', chapter: QUEST_TEXT.k_feast.chapter, title: QUEST_TEXT.k_feast.title, hint: QUEST_TEXT.k_feast.hint, when: (s) => s.day >= 100, done: (s) => s.stats.feastGoods >= 10, focus: { tool: 'zoneMarket' }, reward: 600, priority: 52 },
   { id: 'k_twinroad', chapter: QUEST_TEXT.k_twinroad.chapter, title: QUEST_TEXT.k_twinroad.title, hint: QUEST_TEXT.k_twinroad.hint, when: (s) => !!s.daughter, done: (s) => s.stats.twinGoods > 0, focus: { build: 'depot' }, reward: 1500, priority: 53 },
-  { id: 'k_hall', chapter: QUEST_TEXT.k_hall.chapter, title: QUEST_TEXT.k_hall.title, hint: QUEST_TEXT.k_hall.hint, when: (s) => s.stats.councils > 0, done: (s) => s.stats.guildHalls > 0, focus: { panel: 'edicts' }, reward: 1200, priority: 54 },
+  { id: 'k_hall', chapter: QUEST_TEXT.k_hall.chapter, title: QUEST_TEXT.k_hall.title, hint: QUEST_TEXT.k_hall.hint, when: (s) => councilSeated(s), done: (s) => s.stats.guildHalls > 0, focus: { panel: 'edicts' }, reward: 1200, priority: 54 },
   { id: 'k_cross', chapter: QUEST_TEXT.k_cross.chapter, title: QUEST_TEXT.k_cross.title, hint: QUEST_TEXT.k_cross.hint, when: (s) => s.dragons.filter((d) => d.stage >= 2).length >= 2, done: (s) => s.stats.crossEggs > 0, focus: { center: 'cradle' }, reward: 1500, priority: 55 },
   { id: 'k_relics', chapter: QUEST_TEXT.k_relics.chapter, title: QUEST_TEXT.k_relics.title, hint: QUEST_TEXT.k_relics.hint, when: (s) => s.stats.relics >= 12, done: (s) => s.relics.complete.length > 0, focus: { build: 'academy' }, reward: 2000, priority: 56 },
   { id: 'k_blood', chapter: QUEST_TEXT.k_blood.chapter, title: QUEST_TEXT.k_blood.title, hint: QUEST_TEXT.k_blood.hint, when: (s) => s.dragons.filter((d) => d.second && d.stage >= 2).length >= 2, done: (s) => s.stats.truebloods > 0, focus: { center: 'cradle' }, reward: 2500, priority: 57 },
@@ -153,9 +156,9 @@ export const QUESTS: QuestDef[] = [
   { id: 'k_wyrm', chapter: QUEST_TEXT.k_wyrm.chapter, title: QUEST_TEXT.k_wyrm.title, hint: QUEST_TEXT.k_wyrm.hint, when: (s) => s.dragons.some((d) => d.trueblood && d.stage >= 3), done: (s) => s.stats.greatWyrms > 0, focus: { panel: 'wyrms' }, reward: 4000, priority: 59 },
   { id: 'k_assessor', chapter: QUEST_TEXT.k_assessor.chapter, title: QUEST_TEXT.k_assessor.title, hint: QUEST_TEXT.k_assessor.hint, when: (s) => s.relicStock >= 6, done: (s) => s.stats.relicsSold > 0, focus: { build: 'depot' }, reward: 800, priority: 60 },
   { id: 'k_charter', chapter: QUEST_TEXT.k_charter.chapter, title: QUEST_TEXT.k_charter.title, hint: QUEST_TEXT.k_charter.hint, when: (s) => s.stats.guildWars > 0 || s.stats.councils >= 3, done: (s) => s.stats.guildCharters > 0, focus: { panel: 'edicts' }, reward: 1500, priority: 61 },
-  { id: 'k_duel', chapter: QUEST_TEXT.k_duel.chapter, title: QUEST_TEXT.k_duel.title, hint: QUEST_TEXT.k_duel.hint, when: (s) => s.stats.greatWyrms > 0 && s.wyrm.state !== 'none', done: (s) => s.stats.wyrmDuels > 0, focus: { center: 'wyrm' }, reward: 3000, priority: 62 },
-  { id: 'w_patrol', chapter: QUEST_TEXT.w_patrol.chapter, title: QUEST_TEXT.w_patrol.title, hint: QUEST_TEXT.w_patrol.hint, when: (s) => has(s, 'watchhouse') || has(s, 'watchpost'), done: (s) => s.stats.walkerKills + s.stats.walkerLayings > 0, focus: { overlay: 'watch' }, reward: 400, priority: 24 },
-  { id: 'w_sexton', chapter: QUEST_TEXT.w_sexton.chapter, title: QUEST_TEXT.w_sexton.title, hint: QUEST_TEXT.w_sexton.hint, when: (s) => has(s, 'boneyard') || has(s, 'ossuary'), done: (s) => s.stats.walkerLayings > 0 && s.agents.some((a) => a.kind === 5 && a.job === 'sexton') || s.stats.walkerLayings > 2, focus: { overlay: 'death' }, reward: 400, priority: 25 },
+  { id: 'k_duel', chapter: QUEST_TEXT.k_duel.chapter, title: QUEST_TEXT.k_duel.title, hint: QUEST_TEXT.k_duel.hint, when: (s) => s.stats.greatWyrms > 0 && (s.wyrm.state === 'sleeping' || s.wyrm.state === 'awake'), done: (s) => s.stats.wyrmDuels > 0, focus: { center: 'wyrm' }, reward: 3000, priority: 62 },
+  { id: 'w_patrol', chapter: QUEST_TEXT.w_patrol.chapter, title: QUEST_TEXT.w_patrol.title, hint: QUEST_TEXT.w_patrol.hint, when: (s) => has(s, 'watchhouse') || has(s, 'watchpost'), done: (s) => s.stats.watchRounds > 0 || s.stats.walkerKills > 0, focus: { overlay: 'watch' }, reward: 400, priority: 24 },
+  { id: 'w_sexton', chapter: QUEST_TEXT.w_sexton.chapter, title: QUEST_TEXT.w_sexton.title, hint: QUEST_TEXT.w_sexton.hint, when: (s) => has(s, 'boneyard') || has(s, 'ossuary'), done: (s) => s.stats.sextonRounds > 0, focus: { overlay: 'death' }, reward: 400, priority: 25 },
   { id: 'w_healer', chapter: QUEST_TEXT.w_healer.chapter, title: QUEST_TEXT.w_healer.title, hint: QUEST_TEXT.w_healer.hint, when: (s) => has(s, 'healer') || has(s, 'hospice'), done: (s) => s.stats.healerVisits > 0, focus: { overlay: 'health' }, reward: 400, priority: 26 },
   { id: 'w_warden', chapter: QUEST_TEXT.w_warden.chapter, title: QUEST_TEXT.w_warden.title, hint: QUEST_TEXT.w_warden.hint, when: (s) => s.milestone >= 2 && s.buildings.filter((b) => b && (b.kind === 'spire' || b.kind === 'nexus')).length >= 2, done: (s) => s.stats.wardenRounds > 0, focus: { panel: 'edicts' }, reward: 600, priority: 27 },
   { id: 'w_scholar', chapter: QUEST_TEXT.w_scholar.chapter, title: QUEST_TEXT.w_scholar.title, hint: QUEST_TEXT.w_scholar.hint, when: (s) => (has(s, 'academy') || has(s, 'grandacademy')) && has(s, 'ruindelve'), done: (s) => s.stats.scholarTrips > 0, focus: { build: 'academy' }, reward: 600, priority: 51 },
@@ -177,7 +180,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'v_mill', chapter: QUEST_TEXT.v_mill.chapter, people: 'veshari', title: QUEST_TEXT.v_mill.title, hint: QUEST_TEXT.v_mill.hint, when: (s) => s.faction === 'veshari' && s.milestone >= 4, done: (s) => has(s, 'torrentmill'), focus: { build: 'torrentmill' }, reward: 800, priority: 30 },
   { id: 'v_pool', chapter: QUEST_TEXT.v_pool.chapter, people: 'veshari', title: QUEST_TEXT.v_pool.title, hint: QUEST_TEXT.v_pool.hint, when: (s) => s.faction === 'veshari' && s.milestone >= 4, done: (s) => has(s, 'tidepool'), focus: { build: 'tidepool' }, reward: 800, priority: 34 },
   { id: 'v_hatch', chapter: QUEST_TEXT.v_hatch.chapter, people: 'veshari', title: QUEST_TEXT.v_hatch.title, hint: QUEST_TEXT.v_hatch.hint, when: (s) => s.faction === 'veshari' && s.milestone >= 4, done: (s) => s.dragons.some((d) => { const c = s.buildings.find((b) => b && b.id === d.cradleId); return !!c && c.kind === 'tidepool'; }), focus: { build: 'tidepool' }, reward: 1000, priority: 38 },
-  { id: 'v_flood', chapter: QUEST_TEXT.v_flood.chapter, people: 'veshari', title: QUEST_TEXT.v_flood.title, hint: QUEST_TEXT.v_flood.hint, when: (s) => s.faction === 'veshari', done: (s) => s.stats.floodsWeathered >= 1, focus: { center: 'founding' }, reward: 1200, priority: 40 },
+  { id: 'v_flood', chapter: QUEST_TEXT.v_flood.chapter, people: 'veshari', title: QUEST_TEXT.v_flood.title, hint: QUEST_TEXT.v_flood.hint, when: (s) => s.faction === 'veshari', done: (s) => s.stats.floodsWeathered >= 1 || (has(s, 'greatweir') && s.day >= 4 * DAYS_PER_SEASON), focus: { center: 'founding' }, reward: 1200, priority: 40 },
   { id: 'v_weir', chapter: QUEST_TEXT.v_weir.chapter, people: 'veshari', title: QUEST_TEXT.v_weir.title, hint: QUEST_TEXT.v_weir.hint, when: (s) => s.faction === 'veshari' && s.milestone >= 7, done: (s) => has(s, 'greatweir'), focus: { build: 'greatweir' }, reward: 5000, priority: 70 },
   // The Wick: the Tallowkin's own chapter (iteration 52)
   { id: 't_spire', chapter: QUEST_TEXT.t_spire.chapter, people: 'tallowkin', title: QUEST_TEXT.t_spire.title, hint: QUEST_TEXT.t_spire.hint, when: (s) => s.faction === 'tallowkin', done: (s) => s.buildings.some((b) => b && b.kind === 'spire' && b.state === 'ok' && b.lit), focus: { build: 'spire' }, reward: 300, priority: 3 },
@@ -206,7 +209,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'c_market', chapter: QUEST_TEXT.c_market.chapter, title: QUEST_TEXT.c_market.title, hint: QUEST_TEXT.c_market.hint, when: (s) => s.milestone === 4, done: (s) => s.milestone >= 5, reward: 0, priority: 63 },
   { id: 'c_burgh', chapter: QUEST_TEXT.c_burgh.chapter, title: QUEST_TEXT.c_burgh.title, hint: QUEST_TEXT.c_burgh.hint, when: (s) => s.milestone === 5, done: (s) => s.milestone >= 6, reward: 0, priority: 64 },
   { id: 'c_free', chapter: QUEST_TEXT.c_free.chapter, title: QUEST_TEXT.c_free.title, hint: QUEST_TEXT.c_free.hint, when: (s) => s.milestone === 6, done: (s) => s.milestone >= 7, reward: 0, priority: 65 },
-  { id: 'c_beacon', chapter: QUEST_TEXT.c_beacon.chapter, title: QUEST_TEXT.c_beacon.title, hint: QUEST_TEXT.c_beacon.hint, when: (s) => s.milestone === 7, done: (s) => s.milestone >= 8, focus: { build: 'lantern' }, reward: 0, priority: 66 },
+  { id: 'c_beacon', chapter: QUEST_TEXT.c_beacon.chapter, title: QUEST_TEXT.c_beacon.title, hint: QUEST_TEXT.c_beacon.hint, when: (s) => s.milestone === 7, done: (s) => s.milestone >= 8, reward: 0, priority: 66 },
   { id: 'c_daughter', chapter: QUEST_TEXT.c_daughter.chapter, title: QUEST_TEXT.c_daughter.title, hint: QUEST_TEXT.c_daughter.hint, when: (s) => s.milestone >= 8 && !s.daughter, done: (s) => !!s.daughter, focus: { center: 'node' }, reward: 0, priority: 70 },
   { id: 'c_twin', chapter: QUEST_TEXT.c_twin.chapter, title: QUEST_TEXT.c_twin.title, hint: QUEST_TEXT.c_twin.hint, when: (s) => !!s.daughter, done: (s) => !!s.daughter && s.daughter.twin >= 0, reward: 0, priority: 71 },
 ];

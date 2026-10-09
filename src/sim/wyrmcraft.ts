@@ -72,7 +72,7 @@ export function isCradle(kind: string): boolean {
 export function cradleAccepts(b: Building, line?: DragonLine): boolean {
   if (!isCradle(b.kind)) return false;
   const lines = CRADLE_LINES[b.kind];
-  return !lines || !line || lines.includes(line);
+  return !lines || !line || line === 'vein' || lines.includes(line); // the wyrm's own egg nests in any people's cradle (iteration 91)
 }
 /** Two slots; four for a Great Cradle (level 2). */
 export function cradleCapacity(b: Building): number {

@@ -197,6 +197,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     target: (s, a, anchor) => (a.phase === 1 || brawlToday(s) ? errandTarget(s, a, anchor, () => (brawlToday(s) ? nearestRoadOf(s, a, ['guildhall']) : -1)) : null),
     onArrive: (s, a, i) => {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
+      if (!brawlToday(s)) s.stats.sextonRounds++; // a round walked, restless or none (iteration 91)
       if (brawlToday(s) && buildingsAt(s, i).some((b) => b.kind === 'guildhall')) {
         a.phase = 1;
         s.stats.brawlsParted++;
@@ -376,6 +377,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     onTile: (s, _a, i) => paintBonus(s, 'watch', i, 0.08, 0.3),
     meets: [AgentKind.Creature, AgentKind.Restless],
     cap: 4,
+    onArrive: (s) => { s.stats.watchRounds++; }, // a patrol leg walked: the Watch at work, hounds or no hounds (iteration 91)
     onMeet: (s, a, o) => {
       const kills = Math.floor(a.load / 10);
       const layings = a.load % 10;
