@@ -504,8 +504,9 @@ export class UI {
   private refreshTasks(): void {
     const s = this.host.state;
     const el = this.el.tasks;
-    // Re-evaluate at most every 20 ticks, or when a quest completes.
-    const key = `${s.seed}:${s.day}:${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}:${this.showDone}`;
+    // Re-evaluate at most every 20 ticks, when a quest completes, or on a change the player made while paused (a building
+    // placed, a road or zone paid for): the status lines must not lag behind (iteration 93).
+    const key = `${s.seed}:${s.day}:${Math.floor(s.tick / 20)}:${s.questsDone.length}:${this.tasksCollapsed}:${this.showDone}:${s.buildings.length}:${Math.round(s.treasury)}`;
     if (key === this.lastQuestKey) return;
     this.lastQuestKey = key;
     el.classList.remove('hidden');
@@ -1335,7 +1336,7 @@ export class UI {
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
             <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>N</kbd> Annals · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
-            <li><b>The Charter's Ledger</b> (top left) lists your next tasks. Under each, a blue line says what it still needs right now: not built yet, being built and how far, built but unlit, or a count against its target.</li>
+            <li><b>The Charter's Ledger</b> (top left) lists your next tasks. Under most, a blue line says what it still needs right now: not built yet, being built and how far, built but unlit, or a count against its target.</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley and the same people for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
             <li><b>Replays</b>: the Menu's <b>Export replay</b> saves every command of this charter since it was founded (a charter loaded from a save starts none); the title screen's <b>Watch a replay</b> plays such a file again. The map and panels can be read but not changed; <b>Skip to end</b> runs it to its last day and says whether it matches its recording.</li>

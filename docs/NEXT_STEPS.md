@@ -349,6 +349,15 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 93 (what a task still needs)
+
+- **A live line under most open tasks in the Ledger:** not built yet, being built and how far, built but unlit, or a
+  count against the target. Where the building stands but the task wants more, the line names the real blocker: an
+  unlit Guildhall, a lodge still hunting hounds, a hut away from water, Arcane outside an Academy's reach (DESIGN
+  §4.124).
+- The Ledger refreshes on edits made while paused.
+- The early tasks from the user's screenshot were already fixed in iteration 92; the window still ran the old build.
+
 ## Done in iteration 92 (the quests that never complete)
 
 - **"See the Watch at work" completes:** a watchman's first round does it, hounds or no hounds. "See a sexton walk the

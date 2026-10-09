@@ -139,7 +139,9 @@ main node.
     makes the dead easy to lay down.
 17. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
-    panel or moves the camera; the *Advisor* line above it names the worst current
+    panel or moves the camera, and under most a live line of what the task still needs
+    (not built yet, being built and how far, built but unlit, or a count against its
+    target); the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
 18. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
@@ -240,7 +242,7 @@ Charter as `.json`.
   and the Annals count what they pay) and the
   Wandering Merchant, who remembers every visit: the egg on offer changes, bought eggs cut
   her prices, and two evenings of stories are a favour owed.
-- The Charter's Ledger (51 guided quests with hints and *Show me*), the Advisor line, and
+- The Charter's Ledger (140 guided tasks with hints, *Show me* and a live line of what each still needs), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
 - The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
   or is bound at the Wyrm-Court as the city's guardian: lit, the Court halves its appetite;
