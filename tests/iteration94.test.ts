@@ -3,6 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createGame } from '../src/sim/world';
+import { ambientFor, liftAmbient, nightFactor } from '../src/render/palette';
+import { VIEW_LIFT } from '../src/render/renderer';
 import { Terrain, idx, MAP_H, MAP_W } from '../src/sim/types';
 import { ANCIENT, AUTUMN_PLAIN, BLOSSOM, BROADLEAF, CONIFER, CRYSTAL, CRYSTAL_REACH, MAGIC_REACH, SPIRIT, WET_REACH, WILLOW, groveCtx, treeFor, type GroveCtx } from '../src/render/groves';
 
@@ -70,14 +72,25 @@ describe('Trees by region', () => {
     expect(((byFamily.blossom ?? 0) + (byFamily.autumn ?? 0)) / total).toBeLessThan(0.3); // groves are patches, not the rule
   });
 
-  it('a 20 × 20 block of plain forest shows at most three families', () => {
-    let worst = 0;
-    for (let by = 0; by < 100; by += 20) for (let bx = 0; bx < 100; bx += 20) {
-      const fam = new Set<string>();
-      for (let y = by; y < by + 20; y++) for (let x = bx; x < bx + 20; x++) fam.add(FAMILY(treeFor(plain, x, y, 0, COUNTS)));
-      worst = Math.max(worst, fam.size);
-    }
-    expect(worst).toBeLessThanOrEqual(4); // a grove edge may add one; never the mix of the whole set
+  it('no 20 × 20 block of forest is an even mix: one family leads it (a grove may take part of a block: over 30 % in the lead, where an even mix of the set would be 15 %)', () => {
+    const cases: [string, GroveCtx][] = [['plain', plain], ['hills', { ...plain, hills: true }], ['wet', { ...plain, wet: true }], ['deep', { ...plain, deep: true }]];
+    for (const [label, ctx] of cases)
+      for (let by = 0; by < 100; by += 20) for (let bx = 0; bx < 100; bx += 20) {
+        const fam: Record<string, number> = {};
+        for (let y = by; y < by + 20; y++) for (let x = bx; x < bx + 20; x++) { const f = FAMILY(treeFor(ctx, x, y, 0, COUNTS)); fam[f] = (fam[f] ?? 0) + 1; }
+        const lead = Math.max(...Object.values(fam)) / 400;
+        expect(lead, `${label} ${bx},${by}`).toBeGreaterThan(0.3);
+      }
+  });
+
+  it('a view lifts the night ambient toward daylight and leaves the day as it is', () => {
+    expect(liftAmbient([58, 66, 120], 0)).toEqual([58, 66, 120]);
+    expect(liftAmbient([58, 66, 120], 1)).toEqual([255, 255, 255]);
+    const night = ambientFor(0);
+    const lifted = liftAmbient(night, VIEW_LIFT);
+    for (let c = 0; c < 3; c++) { expect(lifted[c]).toBeGreaterThan(night[c]); expect(lifted[c]).toBeLessThan(255); }
+    expect(liftAmbient(ambientFor(0.5), VIEW_LIFT).every((v) => v >= 250)).toBe(true); // noon is white already
+    expect(nightFactor(0)).toBeGreaterThan(0.9); // midnight keeps the full night pass in a view: the lights stay on
   });
 
   it('the procedural fallback set (four trees) still draws, and an empty glimwood pool draws no glimwood', () => {
@@ -87,18 +100,24 @@ describe('Trees by region', () => {
     }
   });
 
-  it('groveCtx reads the real map: nodes, water, hills', () => {
+  it('groveCtx reads the real map: it agrees with a brute-force look at the water, hills and forest around each tile', () => {
     const s = createGame(42, 'Groves');
     const n = s.nodes[0];
     expect(groveCtx(s, n.x, n.y).node).toBe(0);
-    let wetFound = false, hillsFound = false;
-    for (let y = 8; y < MAP_H - 8 && !(wetFound && hillsFound); y++) for (let x = 8; x < MAP_W - 8; x++) {
-      const t = s.terrain[idx(x, y)];
-      if (t !== Terrain.Forest) continue;
+    const seen = { wet: [0, 0], hills: [0, 0], deep: [0, 0] };
+    for (let y = 10; y < MAP_H - 10; y += 2) for (let x = 10; x < MAP_W - 10; x += 2) {
+      if (s.terrain[idx(x, y)] !== Terrain.Forest) continue;
+      let wet = false, hills = false, forest = 0;
+      for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) {
+        const t = s.terrain[idx(x + dx, y + dy)];
+        if (t === Terrain.Hills) hills = true;
+        if (Math.abs(dx) <= WET_REACH && Math.abs(dy) <= WET_REACH && (t === Terrain.Water || t === Terrain.DeepWater || t === Terrain.Marsh)) wet = true;
+        if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3 && t === Terrain.Forest) forest++;
+      }
       const c = groveCtx(s, x, y);
-      if (c.wet) { wetFound = true; let near = false; for (let dy = -WET_REACH; dy <= WET_REACH; dy++) for (let dx = -WET_REACH; dx <= WET_REACH; dx++) { const tt = s.terrain[idx(x + dx, y + dy)]; if (tt === Terrain.Water || tt === Terrain.DeepWater || tt === Terrain.Shore || tt === Terrain.Marsh) near = true; } expect(near).toBe(true); }
-      if (c.hills) hillsFound = true;
+      expect([c.wet, c.hills, c.deep]).toEqual([wet, hills, forest >= 36]);
+      seen.wet[wet ? 1 : 0]++; seen.hills[hills ? 1 : 0]++; seen.deep[forest >= 36 ? 1 : 0]++;
     }
-    expect(wetFound || hillsFound).toBe(true);
+    for (const [k, [no, yes]] of Object.entries(seen)) { expect(no, `${k} false`).toBeGreaterThan(0); expect(yes, `${k} true`).toBeGreaterThan(0); }
   });
 });

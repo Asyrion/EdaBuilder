@@ -5492,7 +5492,7 @@ RNG, and a saved game draws the same wood it always did.
 - The final split of the 32 trees was judged by eye on a contact sheet of the user's set.
 
 **Verified:**
-- `npx tsc --noEmit -p .`, the unit tests and `npm run build`. `tests/iteration94.test.ts` checks:
+- `npx tsc --noEmit -p .`, the unit tests (93 files, 594 tests) and `npm run build`. `tests/iteration94.test.ts` checks:
   - the pools cover the shipped set with no tree in two families;
   - the same tile always gets the same tree, and every name it returns is in the shipped atlas;
   - no crystal tree beyond three tiles of a node, no spirit tree beyond five;
@@ -5504,7 +5504,13 @@ RNG, and a saved game draws the same wood it always did.
   - a wood beside a ley node: the spirit trees stand in a ring around the node, spruces round it;
   - the Mana view at midnight: before, the view is dark and unlit; after, the spire, the windows and the ring glow.
   - `shots/iter94_{before,after}_{wood,node,night_view}.png`; no page errors.
-- **The control seed** (`npx tsc --noEmit`, `npx tsx scripts/balance.ts 42 150`): 3,194 folk, identical to main's.
+- **The review** (a workflow, three lenses, a refuter per finding) confirmed six findings, all fixed:
+  - the dusk and dawn tint did not carry the view's lift, so a view jumped a frame at dusk (`applyDayTint` takes it too);
+  - a grove reads up to six tiles away but only an edited chunk redrew, so the neighbours now redraw as well;
+  - the "20 × 20 block" test could never fail (now: one family leads every block, over 30 %);
+  - the `groveCtx` test now checks the water, hills and forest flags against a brute-force look, both ways;
+  - the lighting change had no test (`liftAmbient` is pure and tested), and the playtest now fails on a missing spot.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk, identical to main's.
   Render only; no balance bar is needed.
 
 ## 7. Milestone plan

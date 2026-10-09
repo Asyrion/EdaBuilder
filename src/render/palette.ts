@@ -141,6 +141,11 @@ export function hexToRgb(hex: string): [number, number, number] {
 }
 
 /** Day/night ambient colour ramp: returns [r,g,b] multiplier (0..255) for a time-of-day in [0,1). */
+/** An ambient colour mixed toward full daylight by `lift` (0 = as is, 1 = white): an info view lifts the night's (iteration 94). */
+export function liftAmbient(a: [number, number, number], lift: number): [number, number, number] {
+  return [a[0] + (255 - a[0]) * lift, a[1] + (255 - a[1]) * lift, a[2] + (255 - a[2]) * lift];
+}
+
 export function ambientFor(t: number): [number, number, number] {
   // keyframes: midnight, dawn, morning, noon, evening, dusk, night
   const keys: [number, [number, number, number]][] = [

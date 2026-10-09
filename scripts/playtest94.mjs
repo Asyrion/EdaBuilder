@@ -2,6 +2,8 @@
 // "before") and this one (4173, "after").   shots/iter94_{before,after}_{wood,node,river,night}.png
 // usage: node scripts/playtest94.mjs [4173 after | 4174 before]
 import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
+mkdirSync('shots', { recursive: true });
 const port = process.argv[2] ?? '4173';
 const tag = port === '4174' ? 'before' : 'after';
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
@@ -60,6 +62,7 @@ await page.keyboard.press('1'); // the Mana view
 await page.waitForTimeout(500);
 await shot('night_view', spots.founding, 3, 900);
 console.log(JSON.stringify({ tag, spots, got, night, errors }));
-console.log(errors.length ? 'PLAYTEST 94 FAILED' : 'PLAYTEST 94 OK');
+const ok = !errors.length && got.wood && got.node && night;
+console.log(ok ? 'PLAYTEST 94 OK' : 'PLAYTEST 94 FAILED');
 await browser.close();
-process.exit(errors.length ? 1 : 0);
+process.exit(ok ? 0 : 1);

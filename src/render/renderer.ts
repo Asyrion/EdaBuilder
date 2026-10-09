@@ -19,7 +19,7 @@ import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
 import { lightSprite } from './lights';
-import { PAL, ambientFor, nightFactor } from './palette';
+import { PAL, ambientFor, liftAmbient, nightFactor } from './palette';
 import { groveCtx, treeFor } from './groves';
 import { Particles } from './particles';
 import { TILE_H, TILE_W, ZONE_LOOKS } from './sprites';
@@ -481,7 +481,11 @@ export class Renderer {
 
     // dirty chunks from sim
     if (state.dirtyChunks && state.dirtyChunks.size) {
-      for (const ci of state.dirtyChunks) this.chunks.delete(ci);
+      // a tree's grove reads terrain up to six tiles away (less than a chunk), so the neighbours of an edited chunk redraw too (iteration 94)
+      for (const ci of state.dirtyChunks) {
+        const cx = ci % CHUNKS_X, cy = (ci / CHUNKS_X) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (cx + dx >= 0 && cx + dx < CHUNKS_X && cy + dy >= 0 && cy + dy < CHUNKS_Y) this.chunks.delete((cy + dy) * CHUNKS_X + cx + dx);
+      }
       state.dirtyChunks.clear();
     }
 
@@ -916,7 +920,7 @@ export class Renderer {
     // lighting
     const tLight = performance.now();
     if (night > 0.01) this.applyLighting(tod, night, lights, e ? this.emissive : null, view.overlay ? VIEW_LIFT : 0);
-    else this.applyDayTint(tod);
+    else this.applyDayTint(tod, view.overlay ? VIEW_LIFT : 0);
     // ley lines shimmer above the lit scene at night
     if (night > 0.05) this.drawLeyLines(state, night);
     const tBlit = performance.now();
@@ -1304,8 +1308,8 @@ export class Renderer {
     }
   }
 
-  private applyDayTint(tod: number): void {
-    const a = ambientFor(tod);
+  private applyDayTint(tod: number, lift = 0): void {
+    const a = liftAmbient(ambientFor(tod), lift); // the same lift as the night pass, so a view does not jump at dawn and dusk
     if (a[0] > 250 && a[1] > 250 && a[2] > 245) return;
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'multiply';
@@ -1318,7 +1322,7 @@ export class Renderer {
     const l = this.lctx;
     const base = ambientFor(tod);
     // in a view the night's ambient is lifted toward daylight so the overlay reads, while the lights and glows stay on
-    const a: [number, number, number] = [base[0] + (255 - base[0]) * lift, base[1] + (255 - base[1]) * lift, base[2] + (255 - base[2]) * lift];
+    const a = liftAmbient(base, lift);
     l.globalCompositeOperation = 'source-over';
     l.fillStyle = `rgb(${a[0] | 0},${a[1] | 0},${a[2] | 0})`;
     l.fillRect(0, 0, this.light.width, this.light.height);
