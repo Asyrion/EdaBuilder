@@ -146,15 +146,15 @@ for (const r of results) {
 }
 
 // The sheets (iteration 90): every distinct image (a sprite, its glow, a mirrored twin; aliases and hop frames share their
-// source's file) packed into a few sheets, so the page loads three images instead of a thousand. Tallest first, then by
-// path, so a run gives the same sheets every time. Each entry learns where its pixels sit (sheet, sx, sy; gsheet, gx, gy,
+// source's file) packed into a few sheets, so the page loads one image instead of a thousand. Tallest first, then
+// widest, then by path, so a run gives the same sheets every time. Each entry learns where its pixels sit (sheet, sx, sy; gsheet, gx, gy,
 // gw, gh for the glow); `file` and `glow` stay for the tools and tests that read the single PNGs. A sheet's hash is its
-// content's, and the page asks for `file?v=hash`, so a cached old sheet never meets a new manifest.
+// content's and part of its name (sheet_0.<hash>.png), so no cache or host can hand a new manifest an old sheet.
 const files = [...pngs.keys()].sort((a, b) => pngs.get(b).h - pngs.get(a).h || pngs.get(b).w - pngs.get(a).w || (a < b ? -1 : a > b ? 1 : 0));
 const packed = packSheets(files.map((f) => pngs.get(f)), 2048, 2048);
 const at = new Map(files.map((f, i) => [f, packed.pos[i]]));
 mkdirSync('public/art/sheets', { recursive: true });
-for (const f of readdirSync('public/art/sheets')) if (/^sheet_\d+\.png$/.test(f)) rmSync(`public/art/sheets/${f}`);
+for (const f of readdirSync('public/art/sheets')) if (/^sheet_\d+(\.[0-9a-f]+)?\.png$/.test(f)) rmSync(`public/art/sheets/${f}`);
 packed.sheets.forEach((size, n) => {
   const img = { w: size.w, h: size.h, data: new Uint8ClampedArray(size.w * size.h * 4) };
   files.forEach((f, i) => {
@@ -164,9 +164,10 @@ packed.sheets.forEach((size, n) => {
     for (let y = 0; y < src.h; y++) img.data.set(src.data.subarray(y * src.w * 4, (y + 1) * src.w * 4), ((p.y + y) * size.w + p.x) * 4);
   });
   const bytes = encodePng(img);
-  const file = `sheets/sheet_${n}.png`;
+  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 12);
+  const file = `sheets/sheet_${n}.${hash}.png`;
   writeFileSync(`public/art/${file}`, bytes);
-  manifest.sheets.push({ file, w: size.w, h: size.h, hash: createHash('sha256').update(bytes).digest('hex').slice(0, 12) });
+  manifest.sheets.push({ file, w: size.w, h: size.h, hash });
 });
 for (const entry of Object.values(manifest.sprites)) {
   const p = at.get(entry.file);

@@ -2,6 +2,7 @@
 //   1. Start-up on a throttled line (CDP: 100 ms latency, 10 Mbit/s, an empty cache): the time to the game and the requests.
 //   2. Every sprite in the atlas (body and glow) and its rect, read from both builds: they must be identical.
 //   3. The loading line while the sheet arrives, and the town by day: shots/iter90_loading.png, iter90_town_2x.png.
+//   4. The failure paths: the sheet refused (the single files load instead), the game's script refused (the line says so).
 // Run both previews first: `npx vite preview --port 4173` here and main's build on 4174.
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
@@ -108,9 +109,34 @@ await b.page.screenshot({ path: 'shots/iter90_town_2x.png' });
 console.log('town', JSON.stringify(town));
 await b.page.close();
 
+// the failure paths in a real browser: the sheet refused (the single files take over, every sprite still imported), and
+// the game's script refused (the loading line says so)
+const failures = {};
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  await page.route('**/art/sheets/**', (r) => r.fulfill({ status: 404, body: '' }));
+  const t0 = Date.now();
+  await page.goto('http://localhost:4173/');
+  await page.waitForFunction(() => window.__game && window.__wardlight?.atlas, null, { timeout: 5 * 60000 });
+  failures.sheetRefused = { seconds: (Date.now() - t0) / 1000, imported: await page.evaluate(() => window.__wardlight.atlas.imported.size) };
+  await page.close();
+}
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  await page.route('**/assets/*.js', (r) => r.fulfill({ status: 404, body: '' }));
+  await page.goto('http://localhost:4173/');
+  await page.waitForTimeout(1500);
+  failures.scriptRefused = await page.evaluate(() => document.getElementById('boot')?.textContent);
+  await page.close();
+}
+console.log('failures', JSON.stringify(failures));
+
 console.log('errors', errors.length ? errors : 'none');
 console.log('warnings', warns.length ? [...new Set(warns)].slice(0, 10) : 'none');
-const ok = diff.length === 0 && extra.length === 0 && errors.length === 0 && fast.bootLineGone && fast.seconds < slow.seconds;
+const sheetWarn = warns.some((w) => w.startsWith('4173') && /sprite sheet failed/.test(w));
+const ok = diff.length === 0 && extra.length === 0 && errors.length === 0 && fast.bootLineGone && fast.seconds < slow.seconds &&
+  fast.requests < 40 && !sheetWarn && a.prints.whole === b.prints.whole && a.prints.size.join() === b.prints.size.join() && // the sheet itself, not the fallback; the whole atlas the same
+  failures.sheetRefused.imported === names.filter((n) => a.prints.sprites[n].imported).length && /could not load/.test(failures.scriptRefused ?? '');
 console.log(ok ? 'PLAYTEST 90 OK' : 'PLAYTEST 90 FAILED');
 await browser.close();
 process.exit(ok ? 0 : 1);

@@ -507,8 +507,9 @@ export function isoTopDiamond(img, { shrink = 0.12, y = 0 } = {}, W = 32, H = 16
 }
 
 /** Shelf packing into sheets (iteration 90): the items in the given order, left to right with 1 px gutters, a new shelf when
- *  a row is full and a new sheet when a shelf would pass H. The same shelves as the atlas's shelfPack, cut into sheets W
- *  wide and at most H tall. Returns each item's { sheet, x, y } and each sheet's { w, h } (h the tallest item's bottom). */
+ *  a row is full and a new sheet when a shelf would pass H; sheets W wide and at most H tall. A packer in the style of the
+ *  atlas's shelfPack, not the same layout (the atlas repacks what it cuts). Returns each item's { sheet, x, y } and each
+ *  sheet's { w, h } (h the lowest item's bottom). */
 export function packSheets(items, W = 2048, H = 2048) {
   const pos = [];
   const sizes = [];

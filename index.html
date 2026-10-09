@@ -8,7 +8,21 @@
     <link rel="stylesheet" href="./src/ui/style.css" />
   </head>
   <body style="background: #0b0912">
-    <div id="boot" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #d9c48a; font: 16px Georgia, 'Times New Roman', serif; letter-spacing: 1px; pointer-events: none">Lighting the wards…</div>
+    <div id="boot" style="position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; color: #d9c48a; font: 16px Georgia, 'Times New Roman', serif; letter-spacing: 1px; pointer-events: none">Lighting the wards…</div>
+    <script>
+      // until the game stands, an error is said on the loading line instead of leaving it waiting: the game's script that
+      // failed to load (a stale page after a deploy), or one that threw (the line is gone once the game exists)
+      (function () {
+        function say(text) { var b = document.getElementById('boot'); if (b) b.textContent = text; }
+        window.addEventListener('error', function (e) {
+          if (e.target && e.target.tagName === 'SCRIPT') say('Wardlight could not load. Reload the page.');
+          else if (e.message) say('Wardlight could not start: ' + e.message);
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          say('Wardlight could not start: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+        });
+      })();
+    </script>
     <div id="ui"></div>
     <canvas id="game"></canvas>
     <script type="module" src="./src/main.ts"></script>

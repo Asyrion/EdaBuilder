@@ -120,7 +120,9 @@ export class SpriteAtlas {
    * packed below the current atlas and replaces the sprite of that name; a file that fails to load leaves the generated
    * sprite in place. Since iteration 90 the pixels come from a few sheets loaded at once (a thousand single files, fetched
    * one after another, kept the page blank for a minute over the internet); a manifest without sheets, or an entry whose
-   * sheet failed, loads its single files, 24 at a time. `onProgress` hears each finished request. Resolves to the count merged.
+   * sheet failed, loads its single files, 24 at a time. A sheet's name carries its content hash; a single file is asked for
+   * with its sheet's hash (`?v=`), so the browser's cache never pairs a new manifest with an old file. `onProgress` hears
+   * the sprites done (never fewer than before) out of all. Resolves to the count merged.
    */
   async mergeOverrides(base: string, onProgress?: (done: number, total: number) => void): Promise<number> {
     let manifest: ImportManifest;
@@ -133,14 +135,10 @@ export class SpriteAtlas {
     }
     const entries = Object.entries(manifest.sprites ?? {});
     const sheetList = manifest.sheets ?? [];
-    let done = 0;
-    let total = sheetList.length;
-    const tick = () => onProgress?.(++done, total);
     const sheets = await Promise.all(sheetList.map((s) =>
-      loadImage(`${base}art/${s.file}?v=${s.hash}`)
+      loadImage(`${base}art/${s.file}`)
         .then((img) => { if (img.width !== s.w || img.height !== s.h) throw new Error('size'); return img; })
-        .catch(() => { console.warn('sprite sheet failed to load', s.file); return null; })
-        .finally(tick)));
+        .catch(() => { console.warn('sprite sheet failed to load', s.file); return null; })));
     // each entry's pixels: a cut from its sheet, or (no sheet, or its sheet failed) its single files
     const cuts: (Loaded | null)[] = entries.map(([, e]) => {
       const body = e.sheet !== undefined ? sheets[e.sheet] : null;
@@ -151,17 +149,19 @@ export class SpriteAtlas {
       return { body: { src: body, x: e.sx ?? 0, y: e.sy ?? 0, w: e.w, h: e.h }, glow: { src: glow, x: e.gx ?? 0, y: e.gy ?? 0, w: e.gw ?? e.w, h: e.gh ?? e.h } };
     });
     const single = entries.map((_, i) => i).filter((i) => !cuts[i]);
-    total += single.length;
+    let done = entries.length - single.length; // progress counts sprites: the sheets' all at once, then each single file
+    onProgress?.(done, entries.length);
     await pool(24, single.map((i) => async () => {
       const [name, e] = entries[i];
+      const v = e.sheet !== undefined && sheetList[e.sheet] ? `?v=${sheetList[e.sheet].hash}` : '';
       try {
-        const img = await loadImage(`${base}art/${e.file}`);
-        const glow = e.glow ? await loadImage(`${base}art/${e.glow}`).catch(() => null) : null;
+        const img = await loadImage(`${base}art/${e.file}${v}`);
+        const glow = e.glow ? await loadImage(`${base}art/${e.glow}${v}`).catch(() => null) : null;
         cuts[i] = { body: whole(img), glow: glow && whole(glow) };
       } catch {
         console.warn('imported sprite failed to load', name);
       }
-      tick();
+      onProgress?.(++done, entries.length);
     }));
     const loaded = entries.flatMap(([name, e], i) => { const c = cuts[i]; return c ? [{ name, e, ...c }] : []; });
     if (!loaded.length) return 0;
@@ -208,7 +208,7 @@ export interface ImportEntry {
   gw?: number;
   gh?: number;
 }
-/** A sheet of imported sprites (iteration 90): its hash is its content's, asked for as `file?v=hash`. */
+/** A sheet of imported sprites (iteration 90): its hash is its content's, and part of its file name. */
 export interface ImportSheet { file: string; w: number; h: number; hash: string }
 export interface ImportManifest { sheets?: ImportSheet[]; sprites: Record<string, ImportEntry> }
 

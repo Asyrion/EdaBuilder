@@ -25,3 +25,4 @@ export function recolour(img: RgbaImage, opts?: { hue?: number; sat?: number; li
 export interface FlapWing { poly: number[][]; pivot: number[]; root?: number; behind?: boolean }
 export function flapFrame(src: RgbaImage, wings: FlapWing[], frame: { rot: number; sy: number }[], white?: number): RgbaImage;
 export function dropSpecks(img: RgbaImage, min: number): RgbaImage;
+export function packSheets(items: { w: number; h: number }[], W?: number, H?: number): { pos: { sheet: number; x: number; y: number }[]; sheets: { w: number; h: number }[] };
