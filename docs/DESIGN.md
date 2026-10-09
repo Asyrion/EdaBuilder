@@ -5278,7 +5278,35 @@ by a refuter) confirmed six findings, all fixed:
 
 **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`):
 
-BAR_TABLE
+132 runs a side; main's from the cache.
+
+| people | seeds × draws | this tree | origin/main | Δ (paired) | floor (2·SE) | bar | verdict |
+|---|---|---|---|---|---|---|---|
+| Vellish | 6 × 7 | 2,140 | 2,067 | +74 (+3.6 %) | 202 | met | within the noise |
+| Grimmen | 6 × 4 | 1,422 | 1,354 | +68 (+5.0 %) | 125 | met | within the noise |
+| Veshari | 6 × 3 | 2,287 | 2,232 | +55 (+2.5 %) | 178 | met | within the noise |
+| Tallowkin | 6 × 8 | 2,085 | 1,944 | +142 (+7.3 %) | 218 (10.8 %) | **not met: at the cap of 8 draws** | within the noise |
+| all | | 7,935 | 7,596 | +339 (+4.5 %) | 368 | | within the noise |
+
+**The last gates** (runs reaching it, median day), this tree against main:
+
+| people | gate | this tree | main |
+|---|---|---|---|
+| Vellish | Free City | 30/42, day 123 | 30/42, day 123 |
+| Vellish | Beacon of Eda | 17/42, day 136 | 12/42, day 135 |
+| Grimmen | Deephold | 20/24, day 114 | 20/24, day 57 |
+| Grimmen | Underking's Hall | 8/24, day 127 | 6/24, day 120 |
+| Grimmen | Underking's Seat | 3/24, day 141 | 3/24, day 142 |
+| Veshari | Sable Crown | 12/18, day 133 | 10/18, day 130 |
+| Tallowkin | Hall of Wicks | 37/48, day 59 | 33/48, day 66 |
+| Tallowkin | Lantern of Wicks | 19/48, day 104 | 16/48, day 119 |
+
+- Every people is within the noise, and all four are up. The cause is the crowns the newly completing tasks pay (400 to
+  1,200 each, sooner), not the breeding.
+- More runs reach every last gate.
+- **The one loss:** the Grimmen reach Deephold in as many runs, but at a median of day 114 against main's 57. It was
+  not looked into further: the folk, the later gates and the Seat all hold.
+- The Tallowkin's floor is 10.8 % at the cap, not met, as since iteration 64.
 
 ## 7. Milestone plan
 
