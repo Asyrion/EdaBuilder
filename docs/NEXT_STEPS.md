@@ -349,6 +349,14 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 94 (lit views at night, trees by region)
+
+- **A view at night keeps the lights on:** the lights, window and spire glows stay lit and only the ambient is lifted so
+  the overlay reads. Before, a view switched off every light and left the night's dark tint (DESIGN §4.125).
+- **Trees follow the land:** oaks and birches in the plain woods, spruces by hills and in the cold, willows by water,
+  blossom and autumn in groves of their own, and the crystal and spirit trees only within five tiles of a ley node.
+  `src/render/groves.ts`; no state, so old saves draw the same wood.
+
 ## Done in iteration 93 (what a task still needs)
 
 - **A live line under most open tasks in the Ledger:** not built yet, being built and how far, built but unlit, or a
