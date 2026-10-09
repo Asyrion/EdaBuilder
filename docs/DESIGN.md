@@ -5274,7 +5274,12 @@ by a refuter) confirmed six findings, all fixed:
 - **`scripts/playtest91.mjs`** in the browser: a new city with a Watch Post and a Boneyard on its road completes "See
   the Watch at work" and "See a sexton walk the rounds" on day 1, with no hound killed and no restless laid. The ticker
   shows both, +400 crowns each (`shots/iter91_done.png`).
-- **The census again:** CENSUS_AFTER
+- **The census again:** the same ten bot games, tasks done out of games where they apply:
+  - w_patrol 4/10 → **10/10**; w_sexton 0/10 → **10/10**; v_flood 1/2 → 2/2; c_beacon 2/10 → 4/10.
+  - 441 → 446 tasks done in all.
+  - The others did not move: the bot never builds a Guildhall or a Veshari Hall, and never breeds or binds the wyrm, so
+    the unit tests hold those fixes, not the census. g_burn 2 → 1 and k_hall 1 → 0 are runs that went differently,
+    not condition changes.
 
 **The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`):
 
@@ -5301,8 +5306,8 @@ by a refuter) confirmed six findings, all fixed:
 | Tallowkin | Hall of Wicks | 37/48, day 59 | 33/48, day 66 |
 | Tallowkin | Lantern of Wicks | 19/48, day 104 | 16/48, day 119 |
 
-- Every people is within the noise, and all four are up. The cause is the crowns the newly completing tasks pay (400 to
-  1,200 each, sooner), not the breeding.
+- Every people is within the noise, and all four are up. The likeliest cause is the crowns the newly completing tasks pay (400
+  to 1,200 each, sooner); this was not measured apart from the breeding change.
 - More runs reach every last gate.
 - **The one loss:** the Grimmen reach Deephold in as many runs, but at a median of day 114 against main's 57. It was
   not looked into further: the folk, the later gates and the Seat all hold.
