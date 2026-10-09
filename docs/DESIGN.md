@@ -5398,6 +5398,69 @@ by a refuter) confirmed six findings, all fixed:
   not looked into further: the folk, the later gates and the Seat all hold.
 - The Tallowkin's floor is 10.8 % at the cap, not met, as since iteration 64.
 
+### 4.124 What a task still needs: a live line in the Ledger (iteration 93)
+
+The user's playtest: early tasks (Build a Cistern of Vesh, Raise a Ward Lantern, See the Watch at work) "stayed open
+nearly indefinitely", their conditions not visible to the player. Two causes:
+- **That window ran an old build,** before iteration 92. Headless, all three complete within two days of being built.
+- **The gap is real all the same.** A task said once what to do (its hint) and never what was still missing: whether it
+  was built, still rising, unlit, or how far along a count stood.
+
+**The line.** Under most open tasks the Ledger now shows a blue line, read from the city each time the panel is drawn.
+- **For every "build X" task** (`buildStatus` in `src/data/quests.ts`; a people's own building counts through
+  `factionKey`, so a Seep for a Well):
+  - "Not built yet: pick it with Show me" (or "unlocks at <milestone>");
+  - "Being built: 40 %. Builders walk from the Founding Stake by road.";
+  - "Built, but unlit: it needs mana. Chain a Ley Spire within reach.";
+  - burning; in ruins.
+- **For about 70 tasks with an abstract condition,** the counter its `done` reads:
+  - "12 of 50 tiles of Gloam burned back" (after "Built, but unlit" while the Ward Lantern is dark, since a dark lantern
+    burns nothing);
+  - "2 of 5 days with every shelf stocked; 3 of 4 markets";
+  - "29 % of the folk educated, of 30 %" (rounded down, so a line never shows a goal as met while the task is open);
+  - "The spires flicker: day 2 of 5", with what to do before the fifth day;
+  - "No watchman out yet: the post needs a road at its door";
+  - the milestone tasks: folk and the people's own next gate.
+- Where the building stands but the task wants more, the line names the real blocker:
+  - an unlit Guildhall seats no council;
+  - a Hunters' Lodge hunts hounds until deer or boar is chosen;
+  - a Fishers' Hut must touch water, with a market within 12 tiles;
+  - Arcane grows only within an Academy's reach;
+  - an unlit Academy sends no scholar.
+- **Which "build X" tasks ask more than the building** is a list (`NOT_PLAIN_BUILD`). A test holds it to the conditions,
+  since a production build minifies the code.
+- 24 tasks, mostly late wyrmcraft and relic chains, still show no line; the help says "most".
+- **The Ledger also refreshes on a paused edit** (a building placed, a road or zone paid for). Before, it waited for game
+  time to pass, so a line would have stayed stale while the game was paused.
+- The lines are computed from the city, so they live in code beside their condition. The fixed hints stay in
+  `quests.json`.
+- A help line explains the blue line.
+
+**The review** (a workflow: two lenses on whether each line is true to its task, one on robustness, with a refuter per
+finding) confirmed 17 findings, none refuted, and all were fixed. Among them:
+- the Arcane line named a lit spire instead of schooling;
+- the brownout line said to endure, which never completes it;
+- the gate and rename lines pointed at the wrong tab;
+- "Show me" was promised for the second building of a two-building task;
+- percentages rounded up to the target;
+- the meat and fish lines blamed a missing road, but both reach the markets by distance;
+- the Guildhall and Academy lines missed the unlit case.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (92 files, 586 tests) and `npm run build`. `tests/iteration93.test.ts`
+  checks:
+  - the `NOT_PLAIN_BUILD` list against the conditions;
+  - every building task has a line, and no line throws or comes back empty, on a fresh game, a month in and from an old
+    save, for all four peoples;
+  - a Cistern from locked, through not built and 50 % built, to unlit, built and in ruins;
+  - a Grimmen Seep answering for the Well;
+  - the unlit-lantern case and the counts;
+  - the Watch line once a watchman is out.
+- **`scripts/playtest93.mjs`** in the browser: the Ledger before building, while the Cistern rises ("Being built: 40 %")
+  and with an unlit Ward Lantern ("Built, but unlit"); no page errors (`shots/iter93_*.png`).
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk at milestone 8, identical to main's run.
+  `status` is read only by the UI.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6684,3 +6747,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   Watch, a restless for the sexton, a flood the Weir prevents) asks the player to let the city slip. A task whose
   building answers the threat now completes on the building at work (its rounds), and a task about a threat opens only
   while the threat stands. The audit is a script and a workflow, so the next chapter of tasks can be held to it.
+- *A task always says what it still needs (iteration 93):* a hint is read once; a condition the player cannot see reads
+  as a broken task. Every task whose goal can be counted or checked shows it live, in the city's own numbers, and names
+  the real blocker rather than a guess.

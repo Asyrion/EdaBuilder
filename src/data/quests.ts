@@ -1,8 +1,10 @@
 import { isCradle } from '../sim/wyrmcraft';
-import { isFordTile } from '../sim/water';
+import { FISH_MARKET_REACH, bodyOf, isFordTile } from '../sim/water';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, DAYS_PER_SEASON, Terrain, Zone, idx, type GameState } from '../sim/types';
 import { hasCouncil } from '../sim/guilds';
+import { canBuild, milestonesOf, nextGate } from './factions';
+import { MEAT_REACH, huntBlock, quarryOf } from '../sim/wild';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { factionKey, litShare, stoneQuarried, type FactionId, moorings } from './factions';
 import { chose } from '../sim/events';
@@ -29,6 +31,8 @@ export interface QuestDef {
   priority: number; // lower first
   people?: FactionId; // a people's own chapter: shown and paid for that people only
   strict?: boolean; // completes only while `when` holds (a scenario's goal never pays in another game)
+  /** What the task still needs, read from the city (iteration 93): shown under the hint in the Ledger. See questStatus. */
+  status?: (s: GameState) => string;
 }
 
 const hasCradle = (s: GameState) => s.buildings.some((b) => b && isCradle(b.kind) && b.state !== 'ruin' && b.state !== 'building');
@@ -238,5 +242,178 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   if (s.happiness < 40) return { text: 'Folk are unhappy. Check the Happiness view (4) for the worst streets.', focus: { overlay: 'happiness' } };
   const gloamNear = zb.some((b) => s.gloamDist[b.y * s.w + b.x] < 6);
   if (gloamNear && !has(s, 'wardlantern')) return { text: 'The Gloam whispers at your buildings. Raise a Ward Lantern near the grey.', focus: { build: 'wardlantern' } };
+  return null;
+}
+
+// ---- What a task still needs (iteration 93, DESIGN 4.124) ----
+// The hint says once what to do; the status line says, every time the Ledger is drawn, what is missing now: a building not
+// yet raised, still rising, unlit or in ruins, or a counter against its target. Computed from the city, so it stays in code
+// beside the condition it mirrors.
+
+const n0 = (v: number) => Math.floor(v).toLocaleString();
+const of = (have: number, need: number, what: string) => `${n0(Math.min(have, need))} of ${n0(need)} ${what}.`;
+const zonedCount = (s: GameState, z: Zone) => { let c = 0; for (let i = 0; i < s.zone.length; i++) if (s.zone[i] === z) c++; return c; };
+
+/** A building task's line: not built (or still locked), being built, burning, in ruins, built but unlit, or built. */
+export function buildStatus(s: GameState, key0: string, n = 1, showMe = true): string {
+  const key = factionKey(s, key0);
+  const def = BUILDING_BY_KEY[key];
+  if (!def) return '';
+  const all = s.buildings.filter((b) => b && b.kind === key) as NonNullable<GameState['buildings'][number]>[];
+  const standing = all.filter((b) => b.state !== 'ruin' && b.state !== 'building');
+  const count = n > 1 ? ` (${Math.min(standing.length, n)} of ${n})` : '';
+  if (standing.length >= n) {
+    if (def.needsMana && !standing.some((b) => b.lit)) return `Built, but unlit: the ${def.name} needs mana. Chain a Ley Spire within reach of it (Mana view, 1).`;
+    if (standing.some((b) => b.state === 'burning')) return `The ${def.name} is burning: a Fire Watch in reach puts it out.`;
+    return `Built${count}.`;
+  }
+  const site = all.find((b) => b.state === 'building');
+  if (site) {
+    const pct = site.workTotal ? Math.round(100 * (1 - site.work / site.workTotal)) : 0;
+    return `${standing.length ? `${standing.length} of ${n} standing; the next is being built` : 'Being built'}: ${Math.max(0, Math.min(99, pct))} %. Builders walk from the Founding Stake by road.`;
+  }
+  if (all.some((b) => b.state === 'ruin')) return `The ${def.name} lies in ruins: bulldoze it and build again.`;
+  if (!canBuild(s, key)) {
+    const MS = milestonesOf(s);
+    return def.unlock > s.milestone && MS[def.unlock] ? `Not built yet: the ${def.name} unlocks at ${MS[def.unlock].name}.` : `Not built yet: the ${def.name} cannot be raised yet (its card in the build menu says why).`;
+  }
+  return showMe ? `Not built yet${count}: pick the ${def.name} with Show me and place it.` : `Not built yet${count}: the ${def.name} is in the build menu.`;
+}
+
+/** A task that wants the building lit, not only standing. */
+function litStatus(s: GameState, key: string): string {
+  const b = s.buildings.find((x) => x && x.kind === key && x.state === 'ok');
+  return b && !b.lit ? `Built, but unlit: it needs a lit node or spire within reach.` : buildStatus(s, key);
+}
+
+/** First the building (until it stands, and is lit if it needs mana), then what the task asks of it. */
+const after = (key: string, then: (s: GameState) => string, n = 1) => (s: GameState) => {
+  const k = factionKey(s, key);
+  const def = BUILDING_BY_KEY[k];
+  const standing = s.buildings.filter((b) => b && b.kind === k && b.state !== 'ruin' && b.state !== 'building');
+  return standing.length >= n && (!def?.needsMana || standing.some((b) => b!.lit)) ? then(s) : buildStatus(s, key, n);
+};
+const walkersOut = (s: GameState, job: string) => s.agents.filter((a) => a.kind === AgentKind.Walker && a.job === job).length;
+const anyOf = (s: GameState, keys: string[]) => keys.some((k) => has(s, k));
+
+const STATUS: Record<string, (s: GameState) => string> = {
+  f_road: (s) => of(roads(s), 9, 'road tiles'),
+  f_hearth: (s) => of(zonedCount(s, Zone.Hearth), 6, 'Hearth tiles zoned'),
+  f_jobs: (s) => `Craft ${n0(Math.min(zonedCount(s, Zone.Craft), 3))} of 3 tiles, Market ${n0(Math.min(zonedCount(s, Zone.Market), 2))} of 2 tiles zoned.`,
+  f_watch: (s) => `Watch Post: ${buildStatus(s, 'watchpost')} Shrine: ${buildStatus(s, 'shrine', 1, false)}`,
+  f_hamlet: (s) => `${n0(s.population)} folk. Next: ${nextGate(s) ?? 'the last gate is reached'}.`,
+  f_sector: () => 'No sector bought yet: click the dimmed land beyond the Charter line.',
+  l_all: (s) => { const u = unlit(s); return u ? `${u} building${u === 1 ? '' : 's'} unlit: the Mana view (1) shows them in red.` : `All lit; it needs more than 10 buildings (${zoneBuildings(s).length} now).`; },
+  l_water: (s) => { const d = dry(s); return d ? `${d} building${d === 1 ? '' : 's'} without water: the Water view shows them.` : `All watered; it needs more than 10 buildings (${zoneBuildings(s).length} now).`; },
+  l_deepen: (s) => `No node deepened yet (${s.nodes.length} node${s.nodes.length === 1 ? '' : 's'}): click a ley node and Deepen the Wellspring.`,
+  l_font: after('font', () => 'Built.'),
+  d_restless: (s) => `Restless out now: ${s.agents.filter((a) => a.kind === AgentKind.Restless).length}. A Watch, a sexton or a drake rider lays them.`,
+  g_burn: after('wardlantern', (s) => of(s.stats.gloamBurned, 50, 'tiles of Gloam burned back')), // an unlit lantern burns nothing: say so first
+  g_wall: (s) => of(walls(s), 20, 'wall tiles'),
+  g_hounds: (s) => of(s.stats.houndsKilled, 10, 'hounds killed'),
+  g_gate: () => 'No gate yet: place a gate on your wall (Services tab, or Show me).',
+  o_cart: (s) => `${zoneBuildings(s, Zone.Craft).length} working Craft, ${zoneBuildings(s, Zone.Market).length} Market: a cart sets out once both stand on one road.`,
+  o_full: (s) => `${n0(Math.min(s.stats.fullDays, 5))} of 5 days with every shelf stocked; ${n0(Math.min(zoneBuildings(s, Zone.Market).length, 4))} of 4 markets${s.day <= 20 ? '; from day 21' : ''}.`,
+  o_caravan: (s) => of(s.stats.caravanGoods, 200, 'goods sold to the caravan'),
+  a_academy: (s) => `${anyOf(s, ['academy', 'grandacademy']) ? '' : `${buildStatus(s, 'academy')} `}${Math.floor(s.educated * 100)} % of the folk educated, of 30 %.`,
+  a_arcane: (s) => {
+    const z = zonedCount(s, Zone.Arcane);
+    if (!z) return 'No Arcane zoned yet: zone Arcane beside a road, within an Academy\'s reach.';
+    let schooled = 0;
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] === Zone.Arcane && s.coverage.school[i] >= 40) schooled++;
+    return schooled ? `${schooled} of ${z} Arcane tiles have schooling; one grows when demand calls for it (lit and watered).` : `${z} Arcane tiles zoned, none in an Academy's reach: Arcane grows only with schooling (the Education view).`;
+  },
+  a_artifact: () => 'No artifacts sold yet: a working Arcane building fed with leystone makes them.',
+  x_paint: () => 'No district yet: Districts tab, paint one.',
+  x_charter: () => 'No charter yet: open the Edicts panel and charter the district.',
+  x_pay: (s) => of(s.stats.quarterDays, 2, 'days with a chartered district'),
+  x_edict: () => 'No district edict yet: Edicts panel, choose the district, set one.',
+  x_rename: () => 'Not named yet: open the Edicts panel, pick the district in Scope and type a name.',
+  s_brownout: (s) => (s.overdrawDays > 0 ? `The spires flicker: day ${s.overdrawDays} of 5. Bring the demand under the flow before the fifth day (cut consumers, raise a Thrum Font or a Nexus).` : 'No brownout under way.'),
+  w_cradle: (s) => `Cradle: ${buildStatus(s, 'cradle')} Tamer's Lodge: ${buildStatus(s, 'tamerslodge', 1, false)}`,
+  w_egg: () => 'No egg yet: one comes as a tale; accept it.',
+  w_hatch: (s) => `${s.dragons.length} egg${s.dragons.length === 1 ? '' : 's'}, none hatched yet: keep the cradle lit and fed.`,
+  w_role: () => 'No role given yet: the Wyrms panel sets one for a drake.',
+  w_courier: () => 'No courier flight yet: give a wyvern the courier role.',
+  k_glowvine: (s) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i] === 4) c++; return of(c, 12, 'tiles of Glowvine Lane'); },
+  p_arch: after('portalarch', () => 'Built.', 2),
+  t_grown: (s) => { const t = s.buildings.find((b) => b && b.kind === 'worldtree'); return t ? of(t.age, 90, 'days grown') : buildStatus(s, 'worldtree'); },
+  w_thatch: after('reedcutters', (s) => of(s.stats.homesThatched, 10, 'homes thatched')),
+  w_meat: after('hunterslodge', (s) => {
+    const lodges = s.buildings.filter((b) => b && b.kind === 'hunterslodge' && b.state === 'ok') as NonNullable<GameState['buildings'][number]>[];
+    const hunting = lodges.filter((l) => quarryOf(l) !== 'hounds');
+    if (!hunting.length) return 'No quarry chosen: pick the deer or the boar in the Hunters\' Lodge\'s panel (it hunts hounds until then).';
+    const block = hunting.map((l) => huntBlock(s, l)).find(Boolean);
+    if (block && hunting.every((l) => huntBlock(s, l))) return block;
+    const near = hunting.some((l) => zoneBuildings(s, Zone.Market).some((m) => Math.abs(m.x - l.x) <= MEAT_REACH && Math.abs(m.y - l.y) <= MEAT_REACH));
+    return near ? 'The hunters are out: meat reaches the shelves after a kill.' : `No market within ${MEAT_REACH} tiles of a hunting lodge.`;
+  }),
+  w_fish: after('fishershut', (s) => {
+    const huts = s.buildings.filter((b) => b && b.kind === 'fishershut' && b.state === 'ok') as NonNullable<GameState['buildings'][number]>[];
+    const wet = huts.filter((h) => bodyOf(s, h) >= 0);
+    if (!wet.length) return 'The hut must touch river or lake water.';
+    const near = wet.some((h) => zoneBuildings(s, Zone.Market).some((m) => Math.abs(m.x - h.x) <= FISH_MARKET_REACH && Math.abs(m.y - h.y) <= FISH_MARKET_REACH));
+    return near ? 'Fish reach the shelves the morning after a catch.' : `No market within ${FISH_MARKET_REACH} tiles of the hut.`;
+  }),
+  q_quay: after('quay', () => 'Two Quays stand, no barge yet: one needs Craft works holding goods within 8 tiles, the other Markets with room within 8, on the same water.', 2),
+  v_barge: after('landing', () => 'Two landings, no barge yet: one needs Craft works holding goods within 8 tiles, the other Markets with room within 8, on the same water.', 2),
+  v_landings: (s) => of(moorings(s), 2, 'landings'),
+  w_patrol: (s) => {
+    if (!anyOf(s, ['watchpost', 'watchhouse'])) return buildStatus(s, 'watchpost');
+    const out = walkersOut(s, 'watchman');
+    return out ? `${out} watchman out on patrol: the task completes when a round is walked.` : 'No watchman out yet: the post needs a road at its door, and it sends one out each morning.';
+  },
+  w_sexton: (s) => {
+    if (!anyOf(s, ['boneyard', 'ossuary'])) return buildStatus(s, 'boneyard');
+    const out = walkersOut(s, 'sexton');
+    return out ? `${out} sexton out on the rounds: the task completes when a round is walked.` : 'No sexton out yet: the Boneyard needs a road at its door, and it sends one out each morning.';
+  },
+  w_healer: (s) => (walkersOut(s, 'healer') ? 'A healer is out: the task completes at the first visit.' : 'No healer out yet: the building needs a road at its door.'),
+  w_pilgrim: () => 'No prayers yet: pilgrims walk to shrines along the roads.',
+  k_council: (s) => { const hall = s.buildings.find((b) => b && b.kind === 'guildhall' && b.state === 'ok'); return hall && !hall.lit ? 'Built, but unlit: the council sits only in a lit Guildhall. Chain a Ley Spire within reach (Mana view, 1).' : buildStatus(s, 'guildhall'); },
+  k_boon: (s) => { const best = Math.max(0, ...Object.values(s.guilds?.standing ?? {})); return `The best-pleased guild stands at ${Math.floor(best)}, of 70.`; },
+  k_feast: (s) => of(s.stats.feastGoods, 10, 'goods at the Thaw feast'),
+  u_cut: (s) => of(stoneQuarried(s), 2, 'stone quarried'),
+  u_street: (s) => of(onHills(s, 'hearth'), 6, 'halls on the hills'),
+  t_half: (s) => `${Math.floor(litShare(s) * 100)} % lit, of 50 %; ${n0(Math.min(s.buildings.filter((b) => b && b.state === 'ok').length, 20))} of 20 buildings.`,
+  v_flood: () => 'Not yet: come through one Hush, bailing the bank or behind a Great Weir.',
+  y_quiet: () => 'Not yet: keep the Gloam from pressing through a whole Hush.',
+  t_spire: (s) => litStatus(s, 'spire'),
+  t_tower: (s) => litStatus(s, 'wicktower'),
+  t_nexus: (s) => litStatus(s, 'nexus'),
+  e_foundry: after('golemfoundry', () => 'No Concord Warden bound yet: a woken golem is bound at the foundry.'),
+  u_forge: after('forgetemple', () => 'No Warden bound yet: a woken golem is bound at the Forge-Temple.'),
+  w_tamer: after('tamerslodge', () => 'No visit yet: the tamer walks by road to a cradle with a dragon in it.'),
+  w_scholar: after('ruindelve', (s) => (s.buildings.some((b) => b && (b.kind === 'academy' || b.kind === 'grandacademy') && b.state === 'ok' && b.lit) ? (walkersOut(s, 'scholar') ? 'A scholar is on the road to the delve.' : 'No scholar out yet: the Academy needs a road at its door, within 60 tiles of the delve.') : 'The Academy is unlit: it sends a scholar only while lit.')),
+  q_airship: after('skydock', () => 'No voyage yet.'),
+  e_beacon: after('leybeacon', () => 'No skyrays yet: a school comes to a lit Ley Beacon.'),
+  q_rider: after('drakemews', () => 'No rescue yet: a drake rider puts out fires and lays the restless.'),
+  w_ring: after('ring', () => 'No bout won yet.'),
+  n_tiger: after('hunterslodge', () => 'No war-tiger brought down yet.'),
+  s_hush: (s) => `Day ${n0(Math.min(s.day, 120))} of 120.`,
+  s_vigil: () => 'The vigil is a festival on the first night of the Hush: choose to keep it when it asks.',
+  s_feast: () => 'The Thaw feast comes as a festival on Thaw-day: choose to hold it when it asks.',
+  b_moths: () => 'No glimmoths seen yet: they come to a ley node at night. Watch one after dark.',
+  r_delve: (s) => buildStatus(s, 'ruindelve'),
+  w_ford: () => 'No ford yet: draw a Dirt Track across shallow river water.',
+  w_wyrm: () => 'A wyrm lairs under a bridge now: a Veshari Hall covering the bridge, or a Quay within 10, drives it off.',
+  k_hall: () => 'No guild hall earned yet: keep one guild pleased (70 or more) for a season.',
+  k_relics: (s) => `${n0(s.stats.relics)} relics found; ${s.relics.complete.length} sets complete. The Academy names them by set.`,
+  w_warden: (s) => (walkersOut(s, 'warden') ? 'A warden is out on the rounds.' : 'No warden out yet: a spire on a road sends one.'),
+  z_daily: (s) => `Day ${n0(s.day)} of 60; ${milestonesOf(s)[s.milestone].name}, the fifth milestone is ${milestonesOf(s)[Math.min(5, milestonesOf(s).length - 1)].name}.`,
+  c_daughter: () => 'No daughter founded yet: a far ley node can take a daughter charter (click it).',
+  z_island: (s) => `Burned back ${n0(Math.min(s.stats.gloamBurned, 300))} of 300; ${milestonesOf(s)[Math.min(4, milestonesOf(s).length - 1)].name} ${s.milestone >= 4 ? 'reached' : 'not yet'}.`,
+};
+for (const id of ['c_thorp', 'c_village', 'c_township', 'c_market', 'c_burgh', 'c_free', 'c_beacon', 'u_gallery', 'z_onenode']) STATUS[id] = (s) => `${n0(s.population)} folk. Next: ${nextGate(s) ?? 'every gate is reached'}.`;
+
+/** "Build X" tasks whose goal is more than that building standing: their line must not say "Built." while they are open.
+ *  A test holds this list to the conditions (a plain `has(s, key)` done is the generic case). */
+export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'g_hounds', 'a_academy', 's_brownout', 'w_cradle', 'w_ring', 'p_arch', 'e_foundry', 'e_beacon', 'q_quay', 'q_rider', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'w_wyrm', 'n_tiger', 'y_marvel', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'w_tamer', 'u_hatch', 'u_forge', 'v_landings', 'v_barge', 'v_hatch', 't_spire', 't_tower', 't_nexus', 'z_island']);
+
+/** The task's status line: its own, else the generic one for a "build X" task whose goal is that building; else none. */
+export function questStatus(s: GameState, q: QuestDef): string | null {
+  const own = q.status ?? STATUS[q.id];
+  if (own) return own(s) || null;
+  if (q.focus && 'build' in q.focus && !NOT_PLAIN_BUILD.has(q.id)) return buildStatus(s, q.focus.build) || null;
   return null;
 }
