@@ -121,7 +121,7 @@ export class SpriteAtlas {
    * sprite in place. Since iteration 90 the pixels come from a few sheets loaded at once (a thousand single files, fetched
    * one after another, kept the page blank for a minute over the internet); a manifest without sheets, or an entry whose
    * sheet failed, loads its single files, 24 at a time. A sheet's name carries its content hash; a single file is asked for
-   * with its sheet's hash (`?v=`), so the browser's cache never pairs a new manifest with an old file. `onProgress` hears
+   * with the hash of the sheet that holds it (`?v=`), so the browser's cache never pairs a new manifest with an old file. `onProgress` hears
    * the sprites done (never fewer than before) out of all. Resolves to the count merged.
    */
   async mergeOverrides(base: string, onProgress?: (done: number, total: number) => void): Promise<number> {
@@ -153,10 +153,10 @@ export class SpriteAtlas {
     onProgress?.(done, entries.length);
     await pool(24, single.map((i) => async () => {
       const [name, e] = entries[i];
-      const v = e.sheet !== undefined && sheetList[e.sheet] ? `?v=${sheetList[e.sheet].hash}` : '';
+      const v = (n?: number) => (n !== undefined && sheetList[n] ? `?v=${sheetList[n].hash}` : '');
       try {
-        const img = await loadImage(`${base}art/${e.file}${v}`);
-        const glow = e.glow ? await loadImage(`${base}art/${e.glow}${v}`).catch(() => null) : null;
+        const img = await loadImage(`${base}art/${e.file}${v(e.sheet)}`);
+        const glow = e.glow ? await loadImage(`${base}art/${e.glow}${v(e.gsheet)}`).catch(() => null) : null;
         cuts[i] = { body: whole(img), glow: glow && whole(glow) };
       } catch {
         console.warn('imported sprite failed to load', name);

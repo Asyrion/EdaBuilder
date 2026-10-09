@@ -212,7 +212,7 @@ describe('The atlas loads the sheets', () => {
       const body = at.get(`${rect.x},${rect.y}`)!;
       if (e.glow) {
         expect(body.src, name).toBe(`/art/${e.file}?v=${sheets[e.sheet!].hash}`);
-        expect(at.get(`${rect.glow!.x},${rect.glow!.y}`)!.src, name).toBe(`/art/${e.glow}?v=${sheets[e.sheet!].hash}`);
+        expect(at.get(`${rect.glow!.x},${rect.glow!.y}`)!.src, name).toBe(`/art/${e.glow}?v=f00`); // the glow's own sheet's hash
       } else expect(body.src, name).toBe(`/art/${sheets[e.sheet!].file}`);
     }
   });
