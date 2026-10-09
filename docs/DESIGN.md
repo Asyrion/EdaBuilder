@@ -5461,6 +5461,58 @@ finding) confirmed 17 findings, none refuted, and all were fixed. Among them:
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk at milestone 8, identical to main's run.
   `status` is read only by the UI.
 
+### 4.125 Lit views at night, and trees by region (iteration 94)
+
+Two of the user's requests after iteration 93, both about the look of the map. Both are in the renderer; `src/sim` is
+untouched.
+
+**1. Views at night were pitch dark.** With a view on (Mana, Water, Watch…), the renderer forced `night` to 0. That
+switched off the whole night pass (the lights, the window glow, the spire glow, the rune rings), but the dusk tint that is
+drawn instead multiplies the screen by the *night* ambient (58, 66, 120). So the scene was dimmed with nothing lit.
+- **The fix:** a view now keeps the night pass. Its ambient is lifted 45 % toward daylight (`VIEW_LIFT`), so the overlay
+  still reads while the lights and glows stay on. By day nothing changes.
+
+**2. Every tree grew everywhere** (the crystal trees among the oaks, willows on dry land, redwoods beside blossom). The
+forest props now come from `src/render/groves.ts`: each forest tile draws the trees of the land it stands on. It reads
+only the map (terrain, water, hills, ley nodes) and a smooth noise on the existing `h2` hash, so it has no state and no
+RNG, and a saved game draws the same wood it always did.
+
+| grove | where it grows | trees |
+|---|---|---|
+| broadleaf | the default | oaks, the apple tree, birches (13 sprites) |
+| conifer | within six tiles of hills, in the cold patches, and a few among the oaks to soften the seams | spruces and firs (8) |
+| wet | within five tiles of water or marsh | the willows (5) |
+| blossom | patches of the blossom field, about 11 tiles across | the pink trees (3) |
+| autumn | patches of the autumn field | the red and orange trees, the red conifer |
+| ancient | rarely, in the thick of a forest | the great dark trunk, the bonsai-like tree |
+| magic | only within five tiles of a ley node, thinning outward (it was nine tiles, at 60 %) | the spirit trees; the pure crystal ones only within three tiles |
+
+- The Gloam trees, the dead trees and the mushrooms are as before.
+- A pool keeps only the indices the loaded atlas has, so the procedural fallback set (four trees) still draws.
+- The final split of the 32 trees was judged by eye on a contact sheet of the user's set.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (93 files, 594 tests) and `npm run build`. `tests/iteration94.test.ts` checks:
+  - the pools cover the shipped set with no tree in two families;
+  - the same tile always gets the same tree, and every name it returns is in the shipped atlas;
+  - no crystal tree beyond three tiles of a node, no spirit tree beyond five;
+  - willows only by water, spruces by hills, oaks and birches the plain woods, groves a minority;
+  - a 20 × 20 block of plain forest never mixes the whole set;
+  - the fallback set draws, and `groveCtx` reads the real map.
+- **`scripts/playtest94.mjs`** against main's build (before) and this one (after), the same seed and tiles:
+  - a plain wood: oaks and birches in front, spruces behind, a patch of redwoods, no crystal;
+  - a wood beside a ley node: the spirit trees stand in a ring around the node, spruces round it;
+  - the Mana view at midnight: before, the view is dark and unlit; after, the spire, the windows and the ring glow.
+  - `shots/iter94_{before,after}_{wood,node,night_view}.png`; no page errors.
+- **The review** (a workflow, three lenses, a refuter per finding) confirmed six findings, all fixed:
+  - the dusk and dawn tint did not carry the view's lift, so a view jumped a frame at dusk (`applyDayTint` takes it too);
+  - a grove reads up to six tiles away but only an edited chunk redrew, so the neighbours now redraw as well;
+  - the "20 × 20 block" test could never fail (now: one family leads every block, over 30 %);
+  - the `groveCtx` test now checks the water, hills and forest flags against a brute-force look, both ways;
+  - the lighting change had no test (`liftAmbient` is pure and tested), and the playtest now fails on a missing spot.
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk, identical to main's.
+  Render only; no balance bar is needed.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6750,3 +6802,6 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *A task always says what it still needs (iteration 93):* a hint is read once; a condition the player cannot see reads
   as a broken task. Every task whose goal can be counted or checked shows it live, in the city's own numbers, and names
   the real blocker rather than a guess.
+- *Trees follow the land (iteration 94):* a forest shows the trees of the ground it stands on (hills, water, a ley node)
+  rather than the whole set at random; the magic trees keep to the nodes. A view at night keeps the lights on: it only
+  lifts the ambient so the overlay reads.

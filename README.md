@@ -417,7 +417,7 @@ Charter as `.json`.
 - Citizens, carts and restless walking real paths (A* on the road graph) with congestion.
 - Modern pixel art: 2:1 isometric, one palette, integer scaling, chunk-cached ground,
   day/night with a light map, emissive windows and spires, ley lines at night, particles
-  (smoke, sparks, fireflies, leaves, embers, gloam motes), animated water, tree sway.
+  (smoke, sparks, fireflies, leaves, embers, gloam motes), animated water, tree sway; the forest's trees follow the land (oaks and birches in the plain woods, spruces by hills, willows by water, the crystal trees only by a ley node), and the night's lights stay on under an info view.
 - Sprites are generated at startup into an atlas with a manifest. `public/art/sprites.json`
   lists per-sprite PNG overrides (with a footprint anchor and an optional glow) that are
   merged over the procedural atlas by name; `npm run art` makes them from the reference

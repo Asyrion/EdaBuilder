@@ -19,7 +19,8 @@ import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
 import { lightSprite } from './lights';
-import { PAL, ambientFor, nightFactor } from './palette';
+import { PAL, ambientFor, liftAmbient, nightFactor } from './palette';
+import { groveCtx, treeFor } from './groves';
 import { Particles } from './particles';
 import { TILE_H, TILE_W, ZONE_LOOKS } from './sprites';
 import { h2 } from './painter';
@@ -59,6 +60,9 @@ interface ChunkCache {
   props: Prop[];
   lights: { x: number; y: number; r: number; c: string; i: number }[]; // static lights (ley nodes)
 }
+
+/** How far a view lifts the night's ambient toward daylight (iteration 94): 0 is the plain night, 1 is full day. */
+export const VIEW_LIFT = 0.45;
 
 /** The marsh's dawn mist (iteration 85): strongest at MIST_HOUR of the day (0 = midnight), gone MIST_SPAN either side. */
 export const MIST_HOUR = 0.27;
@@ -359,11 +363,11 @@ export class Renderer {
           const n = 1 + (h2(x, y, 20) < 0.5 ? 1 : 0);
           let nearNode = false;
           for (const nd of state.nodes) if (Math.hypot(nd.x - x, nd.y - y) < 9) nearNode = true;
+          const grove = groveCtx(state, x, y); // the trees of the land this tile stands on (iteration 94)
+          const counts = { tree: this.treeCount, autumn: this.autumnCount, glimwood: this.glimwoodCount };
           for (let k = 0; k < n; k++) {
-            const v = Math.floor(h2(x, y, 21 + k) * this.treeCount);
             const py = wy + 8 + (h2(x, y, 23 + k) - 0.5) * 8;
-            const glim = nearNode && h2(x, y, 33 + k) < 0.6;
-            cache.props.push({ name: glim ? `glimwood_${v % this.glimwoodCount}` : h2(x, y, 30 + k) < 0.08 ? (this.autumnCount ? `tree_autumn_${Math.floor(h2(x, y, 31 + k) * this.autumnCount)}` : 'tree_autumn') : `tree_${v}`, wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
+            cache.props.push({ name: treeFor(grove, x, y, k, counts), wx: wx + (h2(x, y, 22 + k) - 0.5) * 16, wy: py, d: x + y + (py - wy) / 16, sway: h2(x, y, 40 + k) });
           }
           if (h2(x, y, 44) < 0.12) {
             // woodland mushrooms, and near a node the glowing caps (iteration 83: two pools, the user's mushrooms)
@@ -472,12 +476,16 @@ export class Renderer {
     ctx.fillRect(0, 0, nw, nh);
 
     const tod = timeOfDay(state);
-    const night = view.overlay ? 0 : nightFactor(tod);
+    const night = nightFactor(tod); // a view keeps the night pass, its lights and glows (iteration 94: it was forced to 0, which left the night's dark tint with nothing lit)
     const waterFrame = Math.floor(this.time * 3) % 4;
 
     // dirty chunks from sim
     if (state.dirtyChunks && state.dirtyChunks.size) {
-      for (const ci of state.dirtyChunks) this.chunks.delete(ci);
+      // a tree's grove reads terrain up to six tiles away (less than a chunk), so the neighbours of an edited chunk redraw too (iteration 94)
+      for (const ci of state.dirtyChunks) {
+        const cx = ci % CHUNKS_X, cy = (ci / CHUNKS_X) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (cx + dx >= 0 && cx + dx < CHUNKS_X && cy + dy >= 0 && cy + dy < CHUNKS_Y) this.chunks.delete((cy + dy) * CHUNKS_X + cx + dx);
+      }
       state.dirtyChunks.clear();
     }
 
@@ -911,8 +919,8 @@ export class Renderer {
     if (view.overlay === 'district') this.drawDistrictLabels(state, minX, maxX, minY, maxY);
     // lighting
     const tLight = performance.now();
-    if (night > 0.01) this.applyLighting(tod, night, lights, e ? this.emissive : null);
-    else this.applyDayTint(tod);
+    if (night > 0.01) this.applyLighting(tod, night, lights, e ? this.emissive : null, view.overlay ? VIEW_LIFT : 0);
+    else this.applyDayTint(tod, view.overlay ? VIEW_LIFT : 0);
     // ley lines shimmer above the lit scene at night
     if (night > 0.05) this.drawLeyLines(state, night);
     const tBlit = performance.now();
@@ -1300,8 +1308,8 @@ export class Renderer {
     }
   }
 
-  private applyDayTint(tod: number): void {
-    const a = ambientFor(tod);
+  private applyDayTint(tod: number, lift = 0): void {
+    const a = liftAmbient(ambientFor(tod), lift); // the same lift as the night pass, so a view does not jump at dawn and dusk
     if (a[0] > 250 && a[1] > 250 && a[2] > 245) return;
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'multiply';
@@ -1310,9 +1318,11 @@ export class Renderer {
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  private applyLighting(tod: number, night: number, lights: { x: number; y: number; r: number; c: string; i: number }[], emissive: HTMLCanvasElement | null): void {
+  private applyLighting(tod: number, night: number, lights: { x: number; y: number; r: number; c: string; i: number }[], emissive: HTMLCanvasElement | null, lift = 0): void {
     const l = this.lctx;
-    const a = ambientFor(tod);
+    const base = ambientFor(tod);
+    // in a view the night's ambient is lifted toward daylight so the overlay reads, while the lights and glows stay on
+    const a = liftAmbient(base, lift);
     l.globalCompositeOperation = 'source-over';
     l.fillStyle = `rgb(${a[0] | 0},${a[1] | 0},${a[2] | 0})`;
     l.fillRect(0, 0, this.light.width, this.light.height);
