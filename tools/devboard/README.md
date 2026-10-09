@@ -70,7 +70,8 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
 | `selftest.ts` | edits every entry on a temp copy and restores it byte for byte; refusals; HTTP guards |
 | `textCheck.ts` | the text kinds: every text the code reads is there, and every text is read |
 | `prompts.ts` | the prompt studio: house rules, yardstick, draft, lore, Refine with Claude (`claude -p` jobs) |
-| `pipelines.ts`, `pipelines.json` | the pipelines registry; the paintings importer's upload, islands and runs; hand-off tasks |
+| `pipelines.ts`, `pipelines.json` | the pipelines registry; the paintings importer's upload, islands and runs; the Aseprite steps' runs (one at a time with the import); hand-off tasks |
+| `tripo.ts` | Tripo Studio Route 2: whoami, a round of four through the CLI (polled by task id), the rounds kept |
 | `public/` | the page (plain HTML, CSS and JS, no build step; `project.js` the project tabs, the send dialog and the composer; `art.js` the Art panel and the Art & pipelines tab) |
 
 ## The art side (iteration 89, DESIGN 4.120)
@@ -89,8 +90,20 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
     3. fill its `art/sources.json` entry;
     4. run the import (`importSprites.mjs --check`, one at a time, about 90 s, its log on the page);
     5. judge the sprite beside the code one and mark it checked; Send to Claude hands over the tests and the commit.
-  - **Tripo Studio and Aseprite** hand off to Claude, who works the pipeline out with you and writes it into
-    `docs/HANDOFF.md`. Then its entry gets `"runs": "board"` and `steps`, and the page shows them.
+  - **Tripo Studio** (iteration 91, `tripo.ts`, `docs/ART_PIPELINES.md`):
+    - Route 1: you generate in Studio and drop the pick (saved as `inspirations/tripo/<sprite>.png`);
+    - Route 2: the login state (`tripo auth whoami`; you log in once in your own terminal), then "Generate 4" (`tripo
+      image`, Nano Banana 2, polled by task id past the CLI's bug), with the round in `art/tripo/` (ignored by git);
+    - the round shows as a contact sheet, each image measured;
+    - "Use this one" makes the pick a PNG, and the importer's steps follow.
+
+    `TRIPO` overrides the CLI and `DEVBOARD_TRIPO_POLL_MS` the poll.
+  - **Aseprite** (`scripts/aseprite.ts`):
+    - trace (`--force` to trace over an `.aseprite`), export, and the 8× previews beside the game's sprite;
+    - install after the review tick: the entry becomes `pixel: true`, the old one is switched off, and the importer runs.
+
+    `ASEPRITE` names the program. All of it runs one step at a time, together with the importer.
+  - Every pipeline keeps its hand-off task: "Send it to Claude instead".
 - **Checks:** every text the code reads is in the JSON and every text is read (`textCheck.ts`); each prompt names a
   sprite or building; no two live art sources share a name.
 

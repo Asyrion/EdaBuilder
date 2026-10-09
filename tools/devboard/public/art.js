@@ -56,7 +56,7 @@ const ArtUI = (() => {
       const src = sourceOf(sprite);
       cur = { sprite, building: building || st.building?.key || "", st, data: { ...st.data }, painting: src?.data.src ?? "", white: src?.data.white ?? 235, isl: null, job: null };
       draw();
-      if (cur.painting) listIslands();
+      pipeLoad();
     } catch (e) { toast(e.message, "bad"); }
   }
   const pipeOf = id => P.pipelines.find(p => p.id === id) ?? P.pipelines[0];
@@ -74,10 +74,127 @@ const ArtUI = (() => {
       <div class="acts"><button class="btn primary" data-art-save>Save prompt</button><button class="btn" data-art-refine>Refine with Claude</button><button class="btn ghost" data-art-copy>Copy prompt</button><span id="amsg" class="small"></span></div>
       <h4>Pipeline</h4>
       <div class="field"><label>Make it with</label><div><select id="ap">${opts}</select></div><div class="help">${esc(pipe.for)}</div></div>
-      <div id="apipe">${pipe.runs === "handoff" ? `<p class="small">Not written into the docs yet: this writes the task for Claude, who works the pipeline out with you and writes it into docs/HANDOFF.md.</p><button class="btn" data-art-handoff="${esc(pipe.id)}">Hand off to Claude</button>` : importer(src)}</div>
+      <div id="apipe">${pipeHtml(pipe, src)}</div>
       <div class="foot"><button class="btn ghost" data-close>Close</button></div></div>`;
     $("#modal").hidden = false;
   }
+  /** The chosen pipeline's section: its steps, what runs here, and Send to Claude for any of it (iteration 91). */
+  function pipeHtml(pipe, src) {
+    const steps = pipe.steps ? `<details class="small"><summary>Its steps (${esc(pipe.doc ?? "")})</summary><ol>${pipe.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "";
+    const toClaude = `<button class="btn small ghost" data-art-handoff="${esc(pipe.id)}">Send it to Claude instead</button>`;
+    if (pipe.runs === "handoff") return `<p class="small">Not written into the docs yet: this writes the task for Claude, who works the pipeline out with you and writes it into docs/ART_PIPELINES.md.</p><button class="btn" data-art-handoff="${esc(pipe.id)}">Hand off to Claude</button>`;
+    if (pipe.id === "tripo") return steps + tripoHtml() + `<h4>Then the paintings importer</h4>` + importer(src) + `<p>${toClaude}</p>`;
+    if (pipe.id === "aseprite") return steps + asepriteHtml() + `<p>${toClaude}</p>`;
+    return steps + importer(src);
+  }
+
+  // ---------------- Tripo Studio (iteration 91) ----------------
+  function tripoHtml() {
+    const T = cur.tripo ?? {}, who = T.who, R = T.rounds ?? [], run = T.current;
+    const prompt = ($("#ar")?.value || cur.data.refined || cur.st.draft || "").trim();
+    const login = !who ? '<span class="chip">checking the login…</span>' : who.ok ? `<span class="chip ok" title="${esc(who.text)}">logged in</span>` : `<span class="chip warn" title="${esc(who.text)}">${who.installed ? "not logged in" : "CLI not installed"}</span> <span class="small">${esc(who.text)}${who.installed ? " Run <span class=\"mono\">tripo auth login</span> in your own terminal (the board never sees the code), then check again." : ""}</span>`;
+    const shown = R[0];
+    const sheet = shown ? `<div class="contact">${shown.files.map((f, i) => `<figure data-tripo-file="${esc(f)}"><img src="/tripo/${encodeURI(f)}" alt="" data-tripo-measure="${i}"><figcaption><b>${i + 1}</b> <span class="m small dim">measuring…</span><br><button class="btn small" data-tripo-use="${esc(f)}">Use this one</button></figcaption></figure>`).join("")}</div><div class="small dim">Round ${shown.round} of ${R.length}. Claude's pick: the one whose white is flat (the importer keys it out), one subject whole, the front on the right; another round rewrites the prompt where this one missed.</div>` : "";
+    const state = run ? `<div class="small"><span class="chip ${run.state === "done" ? "ok" : run.state === "failed" ? "bad" : "warn"}">${run.state}</span> round ${run.round}${run.task ? ` · task <span class="mono">${esc(run.task)}</span>` : ""}${run.error ? ` · ${esc(run.error)}` : ""}</div>` : "";
+    return `<div class="field"><label>Route 1 · you</label><div class="small">Tripo Studio, Image tab, Nano Banana 2, 1:1, 4 images, with the house exclusions in the negative-prompt field (<span class="mono">text, letters, watermark, border, frame, grid lines, gradient, drop shadow, blur, photo, several buildings</span>). Drop the best one below (step 1): it is saved as <span class="mono">inspirations/tripo/${esc(cur.sprite)}.png</span>.</div></div>
+      <div class="field"><label>Route 2 · Claude</label><div>${login} <button class="btn small ghost" data-tripo-who>Check again</button>
+        <div class="small">The prompt: ${prompt.length} of 1000 characters${prompt.length > 1000 ? ' <b class="err-text">too long for Tripo</b>' : ""}. A round is 4 images, about 8 Studio credits.</div>
+        <button class="btn" data-tripo-go ${who?.ok && prompt && prompt.length <= 1000 && !(run && run.state === "running") ? "" : "disabled"}>Generate 4 with Tripo</button>${state}${sheet}</div></div>`;
+  }
+  async function tripoLoad(force) {
+    cur.tripo = cur.tripo ?? {};
+    try {
+      if (force || !cur.tripo.who) cur.tripo.who = await api("/api/tripo/whoami");
+      const r = await api(`/api/tripo/rounds?sprite=${encodeURIComponent(cur.sprite)}`);
+      cur.tripo.rounds = r.rounds; cur.tripo.current = r.current;
+    } catch (e) { toast(e.message, "bad"); }
+    redrawPipe();
+  }
+  async function tripoGo() {
+    const prompt = ($("#ar")?.value || cur.data.refined || cur.st.draft || "").trim();
+    if (!(await save(true))) return;
+    try {
+      cur.tripo.current = (await api("/api/tripo/generate", { sprite: cur.sprite, prompt })).result;
+      redrawPipe();
+      clearInterval(poll);
+      poll = setInterval(async () => {
+        const r = await api(`/api/tripo/rounds?sprite=${encodeURIComponent(cur.sprite)}`);
+        cur.tripo.rounds = r.rounds; cur.tripo.current = r.current;
+        if (r.current?.state !== "running") { clearInterval(poll); toast(r.current?.state === "done" ? "The round is in: pick one" : `The round failed: ${r.current?.error ?? ""}`, r.current?.state === "done" ? "ok" : "bad"); }
+        if ($("#apipe")) redrawPipe();
+      }, 3000);
+    } catch (e) { toast(e.message, "bad"); }
+  }
+  /** The importer keys white: how much of the image is white, how flat its corners are, its size (on a canvas). */
+  function measure(img) {
+    const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    const { data } = g.getImageData(0, 0, c.width, c.height);
+    let white = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i] >= 235 && data[i + 1] >= 235 && data[i + 2] >= 235) white++;
+    const k = Math.max(4, Math.round(Math.min(c.width, c.height) * 0.05)), corner = [];
+    for (const [x0, y0] of [[0, 0], [c.width - k, 0], [0, c.height - k], [c.width - k, c.height - k]])
+      for (let y = y0; y < y0 + k; y++) for (let x = x0; x < x0 + k; x++) { const i = (y * c.width + x) * 4; corner.push((data[i] + data[i + 1] + data[i + 2]) / 3); }
+    const mean = corner.reduce((a, v) => a + v, 0) / corner.length, sd = Math.sqrt(corner.reduce((a, v) => a + (v - mean) ** 2, 0) / corner.length);
+    return { white: white / (data.length / 4), corner: mean, flat: sd, w: c.width, h: c.height };
+  }
+  function showMeasures() {
+    document.querySelectorAll("#apipe img[data-tripo-measure]").forEach(img => {
+      const go = () => {
+        const m = measure(img), ok = m.corner >= 235 && m.flat < 6;
+        img.closest("figure").querySelector(".m").innerHTML = `<span class="chip ${ok ? "ok" : "warn"}" title="corners: mean ${m.corner.toFixed(0)}, spread ${m.flat.toFixed(1)}">${ok ? "white flat" : "white uneven"}</span> ${(m.white * 100).toFixed(0)} % white · ${m.w}×${m.h}`;
+      };
+      if (img.complete && img.naturalWidth) go(); else img.onload = go;
+    });
+  }
+  /** The pick becomes a painting: drawn onto a canvas (Tripo may send WebP or JPEG; the importer reads PNG) and saved. */
+  async function tripoUse(file) {
+    const img = [...document.querySelectorAll("#apipe img[data-tripo-measure]")].find(i => i.closest("figure").dataset.tripoFile === file);
+    if (!img) return;
+    const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0);
+    try {
+      const r = await api("/api/upload", { folder: "tripo", name: `${cur.sprite}.png`, data: c.toDataURL("image/png").split(",")[1] });
+      cur.painting = r.result.src; cur.island = null;
+      toast(`Saved ${r.result.src}: now its island and entry below`, "ok");
+      P = await api("/api/pipelines");
+      await listIslands();
+    } catch (e) { toast(e.message, "bad"); }
+  }
+
+  // ---------------- Aseprite (iteration 91) ----------------
+  function asepriteHtml() {
+    const A = cur.ase ?? {}, run = A.run && A.run.what?.endsWith(` ${cur.sprite}`) ? A.run : null, t = Date.now();
+    const busy = run && run.state === "running";
+    const img = (src, title) => `<figure><img class="spr big" src="${src}" alt="" onerror="this.closest('figure').remove()"><figcaption class="small">${title}</figcaption></figure>`;
+    const looks = `<div class="looks">${img(`/sprite/${esc(cur.sprite)}.png?t=${t}`, "the game now")}${A.tracePreview ? img(`/aseprite/${esc(cur.sprite)}.trace_8x.png?t=${t}`, "the trace, 8×") : ""}${A.preview ? img(`/aseprite/export/${esc(cur.sprite)}_8x.png?t=${t}`, "the export, 8× (review this)") : ""}</div>`;
+    return `<div class="field"><label>1 · Trace</label><div><button class="btn" data-ase="trace" ${busy ? "disabled" : ""}>Trace into art/aseprite/${esc(cur.sprite)}.aseprite</button> <label class="small"><input type="checkbox" id="aforce"> trace over the existing .aseprite (--force)</label>
+        <div class="small dim">${A.traced ? "Traced: the .aseprite is the source of truth now; edit it in Aseprite." : "Not traced yet."} Indexed, its colours cut to a palette in Lab, its edge in ink, stray pixels gone.</div></div></div>
+      <div class="field"><label>2 · Edit</label><div class="small">Open <span class="mono">art/aseprite/${esc(cur.sprite)}.aseprite</span> in Aseprite and redraw what needs it (Aseprite's path: <span class="mono">ASEPRITE</span>, else the Steam install).</div></div>
+      <div class="field"><label>3 · Export</label><div><button class="btn" data-ase="export" ${busy || !A.traced ? "disabled" : ""}>Export the PNG and its 8× preview</button></div></div>
+      <div class="field"><label>4 · Review</label><div>${looks}<div class="small">Nothing is installed before you have seen the 8× preview (the review rule).</div></div></div>
+      <div class="field"><label>5 · Install</label><div><label class="small"><input type="checkbox" id="areviewed"> I have reviewed the 8× preview</label> <button class="btn primary" data-ase="install" ${busy || !A.exported ? "disabled" : ""}>Install (pixel: true) and run the importer</button>
+        <div class="small dim">Its art/sources.json entry is taken as drawn; the old entry is switched off and kept.</div></div></div>
+      ${run ? `<div class="small"><span class="chip ${run.state === "done" ? "ok" : run.state === "failed" ? "bad" : "warn"}">${run.state}</span> ${esc(run.what)}</div><pre class="log">${esc(run.log.slice(-10).join("\n"))}</pre>` : ""}`;
+  }
+  async function aseLoad() {
+    try { cur.ase = await api(`/api/aseprite?sprite=${encodeURIComponent(cur.sprite)}`); } catch (e) { toast(e.message, "bad"); }
+    redrawPipe();
+  }
+  async function aseRun(step) {
+    if (step === "install" && !$("#areviewed")?.checked) return toast("Review the 8× preview first, then tick the box", "bad");
+    try {
+      await api("/api/aseprite/run", { sprite: cur.sprite, step, force: !!$("#aforce")?.checked });
+      clearInterval(poll);
+      poll = setInterval(async () => {
+        cur.ase = await api(`/api/aseprite?sprite=${encodeURIComponent(cur.sprite)}`);
+        if (cur.ase.run?.state !== "running") { clearInterval(poll); toast(cur.ase.run?.state === "done" ? `Aseprite ${step}: done` : `Aseprite ${step} failed: see its log`, cur.ase.run?.state === "done" ? "ok" : "bad"); if (step === "install") refresh(true); }
+        if ($("#apipe")) redrawPipe();
+      }, 1500);
+      cur.ase = await api(`/api/aseprite?sprite=${encodeURIComponent(cur.sprite)}`);
+      redrawPipe();
+    } catch (e) { toast(e.message, "bad"); }
+  }
+
   function importer(src) {
     const { sprite, st, painting } = cur, b = st.building, y = yardPx(b);
     const e = src?.data ?? {}, val = (k, d) => esc(e[k] ?? d ?? "");
@@ -85,7 +202,7 @@ const ArtUI = (() => {
     const isl = cur.isl ? `<div class="sheet" id="asheet"><img id="aimg" src="/painting?src=${encodeURIComponent(painting)}" alt="">${cur.isl.map(i => `<div class="box${String(i.i) === String(cur.island ?? e.island) ? " on" : ""}" data-art-island="${i.i}" data-r="${i.x},${i.y},${i.w},${i.h}" title="island ${i.i}: ${i.w}×${i.h}"><span>${i.i}</span></div>`).join("")}</div>` : painting ? '<p class="dim small">Listing its islands…</p>' : "";
     return `<p class="banner small">Don't run the balance bar while an import runs or an entry is saved: each run reads the files when it starts (DESIGN §4.118).</p>
       <div class="field"><label>1 · Painting</label><div><select id="apaint"><option value="">choose one in inspirations/ …</option>${list}</select>
-        <div class="drop" id="adrop">or drop a PNG here <input type="file" id="afile" accept="image/png"> into <input type="text" id="afolder" class="mono" value="${esc(painting.split("/")[1] ?? "board")}" size="14"></div></div></div>
+        <div class="drop" id="adrop">or drop a PNG here <input type="file" id="afile" accept="image/png"> into <input type="text" id="afolder" class="mono" value="${esc(painting.split("/")[1] ?? (cur.data.pipeline === "tripo" ? "tripo" : "board"))}" size="14"></div></div></div>
       <div class="field"><label>2 · Island</label><div>${isl}<span class="small">white <input type="number" id="awhite" value="${esc(cur.white)}" min="150" max="255" style="width:5em"> <button class="btn small ghost" data-art-islands>List again</button> (about 200 keys out a grey shadow or grid paper)</span></div></div>
       <div class="field"><label>3 · Entry</label><div class="entry small">
         <label>island <input type="number" id="ei" value="${esc(cur.island ?? e.island ?? "")}" style="width:5em"></label>
@@ -163,9 +280,9 @@ const ArtUI = (() => {
     const at = $("#apipe");
     if (!at || pipeOf($("#ap").value).runs !== "board") return;
     const keepVals = ["#ab", "#ar"].map(s => $(s)?.value);
-    at.innerHTML = importer(sourceOf(cur.sprite));
+    at.innerHTML = pipeHtml(pipeOf($("#ap").value), sourceOf(cur.sprite));
     ["#ab", "#ar"].forEach((s, i) => { if ($(s)) $(s).value = keepVals[i]; });
-    placeBoxes();
+    placeBoxes(); showMeasures();
   }
   function placeBoxes() {
     const img = $("#aimg");
@@ -185,7 +302,7 @@ const ArtUI = (() => {
     const folder = $("#afolder").value.trim() || "board";
     const data = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = fail; r.readAsDataURL(file); });
     try {
-      const r = await api("/api/upload", { folder, name: file.name, data });
+      const r = await api("/api/upload", { folder, name: cur.data.pipeline === "tripo" ? `${cur.sprite}.png` : file.name, data });
       cur.painting = r.result.src; cur.island = null;
       toast(`Saved ${r.result.src}`, "ok");
       P = await api("/api/pipelines");
@@ -242,7 +359,7 @@ const ArtUI = (() => {
   }
 
   document.addEventListener("click", ev => {
-    const t = ev.target.closest("[data-art],[data-art-open],[data-art-reload],[data-art-save],[data-art-refine],[data-art-copy],[data-art-redraft],[data-art-handoff],[data-art-islands],[data-art-island],[data-art-entry],[data-art-import],[data-art-checked]");
+    const t = ev.target.closest("[data-tripo-who],[data-tripo-go],[data-tripo-use],[data-ase],[data-art],[data-art-open],[data-art-reload],[data-art-save],[data-art-refine],[data-art-copy],[data-art-redraft],[data-art-handoff],[data-art-islands],[data-art-island],[data-art-entry],[data-art-import],[data-art-checked]");
     if (!t) return;
     const d = t.dataset;
     if (d.art) { const [s, b] = d.art.split("|"); open(s, b); }
@@ -258,15 +375,27 @@ const ArtUI = (() => {
     if ("artEntry" in d) saveEntry(false);
     if ("artImport" in d) runImport();
     if ("artChecked" in d) saveEntry(true);
+    if ("tripoWho" in d) tripoLoad(true);
+    if ("tripoGo" in d) tripoGo();
+    if (d.tripoUse) tripoUse(d.tripoUse);
+    if (d.ase) aseRun(d.ase);
   });
   document.addEventListener("change", ev => {
     if (!cur || !$("#modal") || $("#modal").hidden) return;
-    if (ev.target.id === "ap") { cur.data.pipeline = ev.target.value; const b = $("#ab").value, r = $("#ar").value; draw(); $("#ab").value = b; $("#ar").value = r; if (cur.painting && pipeOf(cur.data.pipeline).runs === "board") listIslands(); }
+    if (ev.target.id === "ap") { cur.data.pipeline = ev.target.value; const b = $("#ab").value, r = $("#ar").value; draw(); $("#ab").value = b; $("#ar").value = r; pipeLoad(); }
     if (ev.target.id === "apaint" && ev.target.value) { cur.painting = ev.target.value; cur.island = null; listIslands(); }
     if (ev.target.id === "afile") upload(ev.target.files[0]);
   });
   document.addEventListener("dragover", ev => { if (ev.target.closest?.("#adrop")) ev.preventDefault(); });
   document.addEventListener("drop", ev => { if (ev.target.closest?.("#adrop")) { ev.preventDefault(); upload(ev.dataTransfer.files[0]); } });
+
+  /** What the chosen pipeline needs from the board: the Tripo login and rounds, the Aseprite files, the sheet's islands. */
+  function pipeLoad() {
+    const id = cur.data.pipeline;
+    if (id === "tripo") tripoLoad(false);
+    if (id === "aseprite") aseLoad();
+    if (cur.painting && id !== "aseprite") listIslands();
+  }
 
   function render() { if (L === null || P === null) load(); return renderTab(); }
   return { handles, render, tabsHtml, spriteOf };

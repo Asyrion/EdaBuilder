@@ -5216,6 +5216,91 @@ ages". No sim code was involved.
 - The single PNGs still ship in the build (4.3 MB), though the game no longer fetches them; the tools and the tests read
   them. Fifteen of them (glowcap glows from an earlier import) appear in no manifest; the importer never deletes.
 
+### 4.122 The Tripo Studio and Aseprite pipelines, written into the docs and run from the board (iteration 91)
+
+Tooling, at the user's ask: "Let's write the pipelines into the docs" (2026-10-09). The user chose EdaBuilder and Ossuary,
+with both Tripo routes as in their Azyrion Tamer project. Until now the dev board handed Tripo Studio and Aseprite off to
+Claude (§4.120). The steps come from Tamer, where they are proven: docs 06 §0 and §2b, docs 04 §2 and §11 there.
+
+**The doc:** `docs/ART_PIPELINES.md`:
+- the house rules (the yardstick, the facing rule, what is committed);
+- the paintings importer;
+- Tripo Studio:
+  - the two routes side by side, and the prompt rules;
+  - Route 1: you generate in Studio and drop the pick on the Art panel;
+  - Route 2: Claude generates through the Tripo CLI on your Studio credits;
+- Aseprite: trace, edit, export, review, install;
+- what the board runs.
+
+HANDOFF's art section points to it.
+
+**Tripo, Route 2 on the board** (`tools/devboard/tripo.ts`):
+- The login is yours, done once in your own terminal (`tripo auth login`); the board only asks `tripo auth whoami`.
+- "Generate 4" runs `tripo image "<prompt>" -m gemini_3.1_flash_image_preview -n 4 --scale 1:1`. The CLI starts without a
+  shell (on Windows the package's own entry runs under Node), so no shell ever reads the prompt.
+- **The CLI's 0.8.1 bug:** the task id is read from its "Task created" line, then `tripo image get <id> --output-format
+  json` is polled until success.
+- The four images go to `art/tripo/<sprite>/round<n>/`, which is ignored by git.
+- The page shows a contact sheet, each image measured on a canvas: how much is white, whether the corners are flat white
+  (what the importer keys out), the size.
+- "Use this one" saves the pick as `inspirations/tripo/<sprite>.png`. A canvas makes it a PNG, since Tripo may send WebP
+  or JPEG; the project has no decoder for those, and a dependency was not worth it. Then the importer's own steps follow.
+- One round runs at a time; a prompt over 1000 characters is refused.
+
+**Aseprite** (`scripts/aseprite.ts`, `scripts/aseprite/build_sprite.lua`; ported from Tamer's `redraw.py`, one image a
+sprite):
+- **trace:** makes the sprite as the game has it into `art/aseprite/<sprite>.aseprite`:
+  - indexed, with index 0 clear;
+  - the colours cut by median cut in Lab;
+  - the darkest colour is the ink, and a darkened copy is added when the sprite has no outline;
+  - the silhouette's edge is in ink; specks and stray pixels are removed.
+- The `.aseprite` is the source of truth from then on: it is never traced over without `--force`.
+- **export:** writes the PNG and an 8× preview.
+- **install:** happens only after the review. The board asks for a tick that you have seen the 8× preview.
+  - The export becomes an `art/sources.json` entry with the new importer key `pixel: true`: taken as drawn (cropped and
+    anchored, never keyed, scaled, sharpened, quantized or outlined).
+  - The old entry is switched off and kept, and the importer runs.
+- The board runs trace, export and install in the background, one at a time together with the importer, and shows the
+  log.
+
+**The prompt rules reach the draft:**
+- The board's draft broke its own new rules: 1011 characters for the Quarry, over Tripo's 1000, with "no text, no drop
+  shadow" in it.
+- The house rules are now short and positive, and the brief gives way first, so every building's draft fits. A test
+  holds all 82.
+- Refine with Claude asks for under 1000 characters and positive phrasing.
+
+**Ossuary,** the same day: `docs/assets.md` gains the Tripo CLI and Aseprite in its tools table, the two routes to the
+concept images (image-to-3D, texturing and rigging stay with the owner in Studio), and an Aseprite section for drawn 2D
+pixel art.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (90 files, 568 tests; `tests/iteration91.test.ts`):
+  - `pixel: true` keeps a drawing pixel for pixel through the importer, in a temp folder;
+  - the trace's ink, edge, specks and palette size;
+  - install switches the old entry off and replaces its own;
+  - the CLI's task line in three spellings, and its result nested three ways;
+  - every building's draft under 1000 characters and free of negations.
+- `npm run build`.
+- The control seed (`npx tsx scripts/balance.ts 42 150`): 2,442 folk, as on main. No file under `src/sim`, `src/data` or
+  `src/core` changed.
+- `npm run art` on this tree writes main's sheet byte for byte (the same hash, `63fbf930aed6`): no entry uses `pixel`.
+- `npm run devboard:selftest`, against a fake `tripo` and a fake Aseprite:
+  - whoami;
+  - a round past the CLI's bug: polled, four images downloaded from a local server, kept in `round1`;
+  - the arguments (Nano Banana 2, four, 1:1, then get by task id);
+  - one round at a time, and over-long prompts and bad names refused;
+  - trace, the `--force` guard, export;
+  - the guards on the new routes.
+- `scripts/playtest91.mjs` on the board with the fakes, on the Quarry:
+  - logged in, Generate 4, the contact sheet measured ("white flat", 57 to 68 % white, 1024×1024), Use this one, its
+    islands drawn;
+  - Aseprite trace, export, the three previews; install refused before the tick, then installed (`pixel: true`, the
+    importer run, `b_quarry` in the manifest);
+  - no page errors. The test art was reverted.
+- **Not checked here:** the real Tripo CLI with your login, and real Aseprite. Both run on your PC. The fakes answer as
+  Tamer's docs say the tools do.
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6494,3 +6579,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   hash) instead of a thousand PNGs. The single files stay as the importer's output and the tools' input. The atlas is
   cut from the sheet into the same layout as before, so the change is invisible except for the time it saves; a page
   with no sheet, or a failed one, still loads the files, 24 at a time.
+- *Asset pipelines are written down before they are buttons (iteration 91):* Tripo Studio and Aseprite came from the
+  user's Tamer project as proven steps, written into `docs/ART_PIPELINES.md` first; the board runs what the doc says.
+  The login and the generator credits stay the user's. Every redraw is seen before it is installed, and a drawn sprite is
+  taken as drawn (`pixel: true`).

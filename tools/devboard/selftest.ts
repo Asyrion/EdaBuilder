@@ -19,6 +19,10 @@ import { toClaude, toIssue } from './session';
 import { jobOf, parseRefined, startRefine } from './prompts';
 import { Busy, importState, islands, paintingPath, runImport, savePainting } from './pipelines';
 import { checkAllText, checkText } from './textCheck';
+import { generate, roundState, roundsOf, roundFile, whoami } from './tripo';
+import { exportStep, traceStep } from '../../scripts/aseprite';
+import { createServer as httpServer } from 'node:http';
+import { encodePng } from '../../scripts/lib/png.mjs';
 import { balance, designIndex, designSection, nextSteps } from './tracker';
 
 const REPO = resolve(import.meta.dirname, '../..');
@@ -215,8 +219,13 @@ server.listen(0, '127.0.0.1', async () => {
   check(await call(port, 'GET', '/api/tracker', h) === 200 && await call(port, 'GET', '/api/design/4.118', h) === 200, 'the tracker and a DESIGN section are served');
   check(await call(port, 'GET', '/api/pipelines', h) === 200 && await call(port, 'GET', '/api/prompt/b_spire', h) === 200 && await call(port, 'GET', '/api/prompts', h) === 200, 'the pipelines and a prompt are served');
   check(await call(port, 'GET', '/painting?src=../package.json', h) === 400, 'no painting outside inspirations/');
+  for (const p of ['/api/tripo/generate', '/api/aseprite/run'])
+    check(await call(port, 'POST', p, { ...h, 'Content-Type': 'application/json' }, '{}') === 403, `${p} without X-Dev-Board is refused`);
+  check(await call(port, 'GET', '/aseprite/../x.png', h) !== 200, 'no file outside art/aseprite');
+  check(await call(port, 'GET', '/tripo/../../package.json', h) >= 400 && await call(port, 'GET', '/api/aseprite?sprite=../x', h) === 400, 'no Tripo or Aseprite file outside art/');
   server.close();
   await artRuns();
+  await pipelineRuns();
   if (fails.length) { console.log('DEV BOARD SELFTEST FAIL\n' + fails.slice(0, 40).join('\n')); process.exitCode = 1; }
   else console.log(`DEV BOARD SELFTEST OK (${edits} entries edited and restored, ${Object.keys(KINDS).length} kinds)`);
 });
@@ -252,4 +261,81 @@ async function artRuns() {
   const manifest = existsSync(join(root, 'public/art/sprites.json')) ? JSON.parse(readFileSync(join(root, 'public/art/sprites.json'), 'utf8')) : { sprites: {} };
   check(run.state === 'done' && !!manifest.sprites.b_selftestwell && importState() === run, `importer: the run writes the sprite into the manifest (${run.state}: ${run.log.slice(-2).join(' ')})`);
   rmSync(root, { recursive: true, force: true });
+}
+
+/** The Tripo and Aseprite pipelines (iteration 91): a round against a fake `tripo` (a task id, a poll that runs and then
+    succeeds, the images served from a local server), and trace and export against a fake Aseprite, on scratch names. */
+async function pipelineRuns() {
+  const until = async (ok: () => boolean, ms: number) => { const t = Date.now() + ms; while (!ok() && Date.now() < t) await new Promise((r) => setTimeout(r, 50)); };
+  const png = encodePng({ w: 8, h: 8, data: new Uint8ClampedArray(8 * 8 * 4).fill(255) });
+  const files = mkdtempSync(join(tmpdir(), 'devboard-tripo-'));
+  const srv = httpServer((q, r) => { r.writeHead(200, { 'Content-Type': 'image/png' }); r.end(png); });
+  await new Promise<void>((ok) => srv.listen(0, '127.0.0.1', () => ok()));
+  const port = (srv.address() as { port: number }).port, bin = join(files, 'tripo'), count = join(files, 'polls'), args = join(files, 'args');
+  writeFileSync(bin, `#!/bin/sh
+echo "$@" >> ${args}
+case "$1 $2" in
+  "auth whoami") echo "Logged in as test@example.invalid";;
+  "image get") n=$(cat ${count} 2>/dev/null || echo 0); n=$((n+1)); echo $n > ${count}
+    if [ $n -lt 2 ]; then echo '{"status":"running"}'; else echo '{"data":{"status":"success","urls":["http://127.0.0.1:${port}/1.png","http://127.0.0.1:${port}/2.png","http://127.0.0.1:${port}/3.png","http://127.0.0.1:${port}/4.png"]}}'; fi;;
+  image*) echo "Task created: task-12345678"; echo "Error: no image URLs in result";;
+esac
+`);
+  chmodSync(bin, 0o755);
+  const env = { T: process.env.TRIPO, P: process.env.DEVBOARD_TRIPO_POLL_MS, A: process.env.ASEPRITE };
+  process.env.TRIPO = bin; process.env.DEVBOARD_TRIPO_POLL_MS = '50';
+  const root = mkdtempSync(join(tmpdir(), 'devboard-round-'));
+  try {
+    const who = await whoami();
+    check(who.ok && who.installed && /test@example/.test(who.text), `tripo: whoami reads the login (${who.text})`);
+    const prompt = 'Isometric pixel-art sprite of a quarry; one subject on plain white.';
+    throws(() => generate(root, '../x', prompt), Error, 'tripo: a bad sprite name is refused');
+    throws(() => generate(root, 'b_quarry', 'x'.repeat(1001)), Error, 'tripo: a prompt over 1000 characters is refused');
+    const r = generate(root, 'b_quarry', prompt);
+    throws(() => generate(root, 'b_quarry', prompt), Error, 'tripo: one round at a time');
+    await until(() => r.state !== 'running', 15000);
+    check(r.state === 'done' && r.task === 'task-12345678' && r.files.length === 4 && roundState('b_quarry') === r, `tripo: the round reads the task id past the CLI's bug, polls and downloads four (${r.state} ${r.error ?? ''} ${r.files.length})`);
+    const rounds = roundsOf(root, 'b_quarry');
+    check(rounds.length === 1 && rounds[0].round === 1 && rounds[0].files[0] === 'b_quarry/round1/A_r1_1.png' && readFileSync(roundFile(root, rounds[0].files[0])).equals(png), 'tripo: the round is kept in art/tripo/<sprite>/round1/');
+    const sent = readFileSync(args, 'utf8');
+    check(sent.includes(`image ${prompt} -m gemini_3.1_flash_image_preview -n 4 --scale 1:1`) && sent.includes('image get task-12345678 --output-format json'), 'tripo: Nano Banana 2, four, 1:1; then polled by task id');
+    throws(() => roundFile(root, '../../package.json'), Error, 'tripo: no file outside art/tripo/');
+
+    // Aseprite: the fake builds the .aseprite (a marker) and exports the trace's pixels
+    const ase = join(files, 'aseprite');
+    writeFileSync(ase, `#!/bin/sh
+out=""; save=""; src=""
+while [ $# -gt 0 ]; do case "$1" in
+  --script-param) case "$2" in out=*) out="\${2#out=}";; esac; shift 2;;
+  --save-as) save="$2"; shift 2;;
+  -b|--script) [ "$1" = "--script" ] && shift; shift;;
+  *.aseprite) src="$1"; shift;;
+  *) shift;;
+esac; done
+[ -n "$out" ] && echo fake-aseprite > "$out"
+[ -n "$save" ] && cp "\${src%.aseprite}.trace.png" "$save"
+exit 0
+`);
+    chmodSync(ase, 0o755);
+    process.env.ASEPRITE = ase;
+    const drawn = join(files, 'drawn.png'), name = 'selftestAseprite';
+    const img = new Uint8ClampedArray(6 * 6 * 4);
+    for (let y = 1; y < 5; y++) for (let x = 1; x < 5; x++) img.set([180, 90, 40, 255], (y * 6 + x) * 4);
+    writeFileSync(drawn, encodePng({ w: 6, h: 6, data: img }));
+    try {
+      const t = await traceStep(name, { from: drawn });
+      check(existsSync(join(REPO, t.ase)) && existsSync(join(REPO, t.png)) && existsSync(join(REPO, t.preview)) && t.w === 6, 'aseprite: trace writes the .aseprite, the trace and its 8x preview');
+      let refused = false;
+      try { await traceStep(name, { from: drawn }); } catch { refused = true; }
+      check(refused, 'aseprite: an .aseprite is never traced over without --force');
+      const ex = exportStep(name);
+      check(existsSync(join(REPO, ex.out)) && existsSync(join(REPO, ex.out8)) && ex.w === 6, 'aseprite: export writes the PNG and the 8x preview');
+    } finally {
+      for (const f of [`${name}.aseprite`, `${name}.trace.lua`, `${name}.trace.png`, `${name}.trace_8x.png`, `export/${name}.png`, `export/${name}_8x.png`]) rmSync(join(REPO, 'art/aseprite', f), { force: true });
+    }
+  } finally {
+    for (const [k, v] of [['TRIPO', env.T], ['DEVBOARD_TRIPO_POLL_MS', env.P], ['ASEPRITE', env.A]] as const) if (v === undefined) delete process.env[k]; else process.env[k] = v;
+    srv.close();
+    rmSync(files, { recursive: true, force: true }); rmSync(root, { recursive: true, force: true });
+  }
 }
