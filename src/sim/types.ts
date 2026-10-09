@@ -559,6 +559,8 @@ export interface GameState {
     guildCharters: number;
     walkerKills: number;
     walkerLayings: number;
+    watchRounds: number; // patrol legs a watchman walked (iteration 92)
+    sextonRounds: number; // rounds a sexton walked, brawl days aside (iteration 92)
     healerVisits: number;
     wardenRounds: number;
     lamplighterRounds: number; // dark homes relit by lamplighters

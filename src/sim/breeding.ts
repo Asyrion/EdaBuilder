@@ -14,18 +14,29 @@ export interface BreedCheck { ok: boolean; why: string; sire?: Dragon; dam?: Dra
 export function canBreed(s: GameState, cradle: Building): BreedCheck {
   const inside = dragonsIn(s, cradle.id);
   if (inside.length < 2) return { ok: false, why: 'needs two grown dragons in the cradle' };
-  const [a, b] = inside;
-  if (a.stage < 2 || b.stage < 2) return { ok: false, why: 'both must be drakes or older' };
-  if (a.line === b.line) return { ok: false, why: 'two of one line breed nothing new' };
+  // every pair in the cradle is weighed, not only the first two (iteration 92: a Great Cradle of ember, ember and glim breeds)
+  const grown = inside.filter((d) => d.stage >= 2);
+  if (grown.length < 2) return { ok: false, why: 'both must be drakes or older' };
+  const pairs: [Dragon, Dragon][] = [];
+  for (let i = 0; i < grown.length; i++) for (let j = i + 1; j < grown.length; j++) pairs.push([grown[i], grown[j]]);
+  // different first lines breed, as ever (mirror crosses too); one first line breeds only from two crossed parents whose second
+  // lines differ (iteration 92), never a plain dragon with a crossed one, whose egg would copy the crossed parent
+  const breeds = (a: Dragon, b: Dragon) => a.line !== b.line || (!!a.second && !!b.second && a.second !== b.second);
+  const distinct = pairs.filter(([a, b]) => breeds(a, b));
+  if (!distinct.length) return { ok: false, why: 'two of one line breed nothing new' };
   const asp = aspectAt(s, cradle.x, cradle.y);
-  const sire = asp === a.line ? a : asp === b.line ? b : null;
-  if (!sire) return { ok: false, why: `the cradle must be attuned to one parent's line (this node is ${asp ? LINE_INFO[asp].name : 'none'})` };
-  const dam = sire === a ? b : a;
+  const attuned = distinct.filter(([a, b]) => asp === a.line || asp === b.line);
+  if (!attuned.length) return { ok: false, why: `the cradle must be attuned to one parent's line (this node is ${asp ? LINE_INFO[asp].name : 'none'})` };
   if (!cradle.lit) return { ok: false, why: 'the cradle is cold' };
-  if (a.mood < BREED_MOOD || b.mood < BREED_MOOD) return { ok: false, why: `both must be content (mood ${BREED_MOOD}+)` };
+  const pair = attuned.find(([a, b]) => a.mood >= BREED_MOOD && b.mood >= BREED_MOOD);
+  if (!pair) return { ok: false, why: `both must be content (mood ${BREED_MOOD}+)` };
+  const [a, b] = pair;
+  const sire = asp === a.line ? a : b;
+  const dam = sire === a ? b : a;
   if (!freeCradle(s, sire.line)) return { ok: false, why: `no cradle that takes a ${LINE_INFO[sire.line].name} egg has a free slot` };
+  const second = dam.line !== sire.line ? dam.line : dam.second!; // one first line: the dam's second line is what is new
   const trueblood = !!sire.second && !!dam.second;
-  return { ok: true, why: trueblood ? 'two crossed parents: a trueblood egg will be laid on Bloom day 20' : 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second: dam.line, trueblood };
+  return { ok: true, why: trueblood ? 'two crossed parents: a trueblood egg will be laid on Bloom day 20' : 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second, trueblood };
 }
 
 /** Daily: on Bloom day 20 every breeding cradle lays one crossed egg into a free cradle. */

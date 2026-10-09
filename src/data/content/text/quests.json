@@ -92,7 +92,7 @@
   "g_burn": {
     "chapter": "The grey edge",
     "title": "Burn back 50 tiles of Gloam",
-    "hint": "Wards and Gloam view (g) show the grey and what holds it."
+    "hint": "Wards and Gloam view (g) show the grey and what holds it. A lit Ward Lantern burns the grey in its reach; a Grimmen Stone Ward only holds it, and its stone-sexton cuts two tiles a day beside any road it walks that touches the grey."
   },
   "g_wall": {
     "chapter": "The grey edge",
@@ -126,8 +126,8 @@
   },
   "o_full": {
     "chapter": "Goods",
-    "title": "No market short for five days",
-    "hint": "Goods view (o). Zone works near the markets, or build a Trade Depot and import."
+    "title": "Four markets, none short for five days",
+    "hint": "With four or more markets, keep every shelf stocked five days running. Goods view (o): zone works near the markets, or build a Trade Depot and import."
   },
   "o_depot": {
     "chapter": "Goods",
@@ -352,7 +352,7 @@
   "w_wyrm": {
     "chapter": "Goods",
     "title": "Clear the bridge",
-    "hint": "In Bloom a marsh-wyrm may lair under a bridge, and the carts crawl. A Veshari Hall whose reach covers the bridge drives it off; none lairs within 10 of a Quay."
+    "hint": "A marsh-wyrm lairs under a bridge, and the carts crawl. A Veshari Hall whose reach covers the bridge drives it off, and so does a Quay raised within 10 of it."
   },
   "w_ford": {
     "chapter": "Goods",
@@ -392,7 +392,7 @@
   "k_council": {
     "chapter": "The guilds",
     "title": "Seat the guild council",
-    "hint": "A lit Guildhall (Leisure tab) seats the four guilds. Every 20 days the least pleased of them petitions for an edict."
+    "hint": "A lit Guildhall (Leisure tab) seats the four guilds. Every 20 days the least pleased of them may petition for an edict."
   },
   "k_boon": {
     "chapter": "The guilds",
@@ -417,7 +417,7 @@
   "k_cross": {
     "chapter": "Wyrmcraft",
     "title": "Breed a crossed egg",
-    "hint": "Two drakes of different lines, content, in a lit cradle attuned to one of them: on Bloom day 20 they lay an egg that carries both auras. Needs a free cradle slot."
+    "hint": "Two drakes of different lines, content, in a lit cradle attuned to one of them: on Bloom day 20 they lay an egg that carries both auras. In a Great Cradle any such pair will do. Needs a free cradle slot."
   },
   "k_relics": {
     "chapter": "The riverbank",
@@ -427,7 +427,7 @@
   "k_blood": {
     "chapter": "Wyrmcraft",
     "title": "Begin a bloodline",
-    "hint": "Two crossed dragons, content in a lit attuned cradle, lay a trueblood egg: both auras in full, faster growth, half again the scale."
+    "hint": "Two crossed dragons of different lines, content in a lit attuned cradle, lay a trueblood egg: both auras in full, faster growth, half again the scale. Two from one cradle may share their first line if their second lines differ."
   },
   "k_relicbuild": {
     "chapter": "The riverbank",
@@ -452,17 +452,17 @@
   "k_duel": {
     "chapter": "The Vein-Wyrm",
     "title": "A great wyrm meets the Vein-Wyrm",
-    "hint": "When a great wyrm stands in a cradle, a hostile flyover burns half as much and the old wyrm sleeps deeper after."
+    "hint": "A great wyrm meets the Vein-Wyrm when the old wyrm flies over in anger: a refused or short tribute brings it. With a great wyrm in a cradle the flyover burns half as much, and the old wyrm sleeps deeper after."
   },
   "w_patrol": {
     "chapter": "The Watch",
     "title": "See the Watch at work",
-    "hint": "Watch Houses on a road send watchmen out; the streets they walk count as watched, and they kill hounds and lay the restless they meet."
+    "hint": "Watch Posts and Watch Houses on a road send watchmen out; the streets they walk count as watched, and they kill the hounds and lay the restless they meet. Their first round done is the task done."
   },
   "w_sexton": {
     "chapter": "The dead",
-    "title": "See a sexton lay the dead",
-    "hint": "Boneyards and Ossuaries on a road send sextons out with salt; each restless they lay quiets one of the dead."
+    "title": "See a sexton walk the rounds",
+    "hint": "Boneyards and Ossuaries on a road send sextons out with salt: the lanes they walk count as tended, and each restless they meet is laid and quiets one of the dead."
   },
   "w_healer": {
     "chapter": "Health",
@@ -562,7 +562,7 @@
   "v_flood": {
     "chapter": "The Sable",
     "title": "Weather the first flood",
-    "hint": "From the fifth night of the Hush the Sable rises: homes on the bank lose heart unless bargemen bail them or a Great Weir stands. Come through one Hush."
+    "hint": "From the fifth night of the Hush the Sable rises: homes on the bank lose heart unless bargemen bail them or a Great Weir stands. Come through one Hush, by bailing or behind a Great Weir."
   },
   "v_weir": {
     "chapter": "The Sable",
@@ -611,8 +611,8 @@
   },
   "v_find": {
     "chapter": "The Vein-Wyrm",
-    "title": "Find the Sleeping Wyrm",
-    "hint": "One distant node is ringed with scale, not stone. Click it. Spires there would wake it."
+    "title": "Stir the Sleeping Wyrm",
+    "hint": "One distant node is ringed with scale, not stone. A lit spire within 6 tiles of it stirs the wyrm; bulldoze the spire before it is 80% awake, or have a tribute ready."
   },
   "v_tribute": {
     "chapter": "The Vein-Wyrm",
@@ -632,7 +632,7 @@
   "v_egg": {
     "chapter": "The Vein-Wyrm",
     "title": "Keep the guardian fed for a season",
-    "hint": "Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg."
+    "hint": "Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg: keep it, in a cradle with a free nest."
   },
   "z_daily": {
     "chapter": "The Charter",
@@ -687,7 +687,7 @@
   "c_beacon": {
     "chapter": "The Crown",
     "title": "Become a Beacon of Eda (2200 folk)",
-    "hint": "Raise and light the Lantern of Vell; the Crown names no Beacon without it."
+    "hint": "Reach 2200 folk and your people's gate (the top bar names it). The Vellish must also raise and light the Lantern of Vell."
   },
   "c_daughter": {
     "chapter": "The Crown",

@@ -25,6 +25,7 @@ npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples 
 npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until each people sees a tenth
                                                             # (runs cached in balance/cache by the sim's files; commit it)
 npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
+npx tsx scripts/questCensus.ts 42 200 vellish valley   # which Charter tasks a bot game completes, and which never
 npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites, packed into public/art/sheets; commit both)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
