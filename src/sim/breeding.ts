@@ -19,9 +19,10 @@ export function canBreed(s: GameState, cradle: Building): BreedCheck {
   if (grown.length < 2) return { ok: false, why: 'both must be drakes or older' };
   const pairs: [Dragon, Dragon][] = [];
   for (let i = 0; i < grown.length; i++) for (let j = i + 1; j < grown.length; j++) pairs.push([grown[i], grown[j]]);
-  // two of the same lines breed nothing new; two crossed dragons of one first line and different second lines do (iteration 91)
-  const sameLines = (a: Dragon, b: Dragon) => { const x = dragonLines(a), y = dragonLines(b); return x.length === y.length && x.every((l) => y.includes(l)); };
-  const distinct = pairs.filter(([a, b]) => !sameLines(a, b));
+  // different first lines breed, as ever (mirror crosses too); one first line breeds only from two crossed parents whose second
+  // lines differ (iteration 91), never a plain dragon with a crossed one, whose egg would copy the crossed parent
+  const breeds = (a: Dragon, b: Dragon) => a.line !== b.line || (!!a.second && !!b.second && a.second !== b.second);
+  const distinct = pairs.filter(([a, b]) => breeds(a, b));
   if (!distinct.length) return { ok: false, why: 'two of one line breed nothing new' };
   const asp = aspectAt(s, cradle.x, cradle.y);
   const attuned = distinct.filter(([a, b]) => asp === a.line || asp === b.line);
@@ -33,7 +34,7 @@ export function canBreed(s: GameState, cradle: Building): BreedCheck {
   const sire = asp === a.line ? a : b;
   const dam = sire === a ? b : a;
   if (!freeCradle(s, sire.line)) return { ok: false, why: `no cradle that takes a ${LINE_INFO[sire.line].name} egg has a free slot` };
-  const second = dam.line !== sire.line ? dam.line : (dam.second ?? sire.second)!;
+  const second = dam.line !== sire.line ? dam.line : dam.second!; // one first line: the dam's second line is what is new
   const trueblood = !!sire.second && !!dam.second;
   return { ok: true, why: trueblood ? 'two crossed parents: a trueblood egg will be laid on Bloom day 20' : 'a crossed egg will be laid on Bloom day 20', sire, dam, line: sire.line, second, trueblood };
 }

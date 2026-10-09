@@ -134,6 +134,8 @@ export const ANNALS: AnnalChapter[] = [
     rows: [
       { label: 'Kills by walkers', stat: 'walkerKills', note: 'Hounds and worse brought down by the Watch on its rounds.' },
       { label: 'Dead laid by walkers', stat: 'walkerLayings', note: 'The restless laid by sextons and pilgrims on their rounds.' },
+      { label: 'Watch rounds', stat: 'watchRounds', note: 'Patrol legs the watchmen walked, hounds or no hounds.' },
+      { label: 'Sexton rounds', stat: 'sextonRounds', note: 'Rounds the sextons walked with their salt, and the dead they laid.' },
       { label: 'Healer visits', stat: 'healerVisits', note: 'Homes tended by healers (+4 happiness for a day).' },
       { label: 'Spire-warden rounds', stat: 'wardenRounds', note: 'Spires checked by the Tallowkin wardens.' },
       { label: 'Lamplighter rounds', stat: 'lamplighterRounds', note: 'Dark homes relit by candle for a day.' },

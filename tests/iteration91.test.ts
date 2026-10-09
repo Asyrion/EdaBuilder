@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { canBreed } from '../src/sim/breeding';
+import { BREED_DAY, canBreed, dailyBreeding } from '../src/sim/breeding';
 import { addEgg, cradleAccepts } from '../src/sim/wyrmcraft';
 import { QUESTS } from '../src/data/quests';
 import { checkQuests } from '../src/sim/quests';
@@ -85,10 +85,11 @@ describe('Iteration 91: tasks that good play used to close off', () => {
     s.stats.wyrmsLaired = 1;
     s.marshWyrms = [{ id: 1, x: 5, y: 5, lair: 1234, nest: -1 }];
     expect(Q('w_wyrm').when(s)).toBe(true);
-    s.marshWyrms[0].lair = -1; // Bloom ended, or the bridge was guarded
+    s.marshWyrms[0].lair = -1; // Bloom ended, or the bridge was guarded: the task leaves the Ledger
     expect(Q('w_wyrm').when(s)).toBe(false);
+    s.stats.wyrmsDriven = 1; // a drive-off ends the lair in the same stroke, and still pays
     checkQuests(s);
-    expect(s.questsDone).not.toContain('w_wyrm');
+    expect(s.questsDone).toContain('w_wyrm');
   });
 
   it('every people\'s cradle takes the vein egg', () => {
@@ -127,6 +128,22 @@ describe('Iteration 91: breeding weighs every pair', () => {
     expect(chk.ok).toBe(true);
     expect(chk.line).toBe('vein');
     expect(chk.second).toBe('ember');
+    s.day = BREED_DAY;
+    c.lit = true;
+    dailyBreeding(s);
+    const egg = s.dragons[3];
+    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'ember', undefined]);
+    expect(s.stats.crossEggs).toBe(1);
+  });
+  it('mirror crosses still lay a trueblood, and a plain dragon with a crossed one of its line breeds nothing', () => {
+    const { s, c } = cradleTown();
+    const a = addEgg(s, 'vein')!; const b = addEgg(s, 'ember')!;
+    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
+    a.second = 'ember'; b.second = 'vein';
+    const chk = canBreed(s, c);
+    expect([chk.ok, chk.line, chk.second, chk.trueblood]).toEqual([true, 'vein', 'ember', true]);
+    b.line = 'vein'; b.second = undefined; // plain vein beside vein+ember: the egg would copy the crossed parent
+    expect(canBreed(s, c).ok).toBe(false);
   });
   it('two crossed dragons of one first line and different second lines lay a trueblood', () => {
     const { s, c } = cradleTown();
@@ -139,7 +156,13 @@ describe('Iteration 91: breeding weighs every pair', () => {
     expect(chk.trueblood).toBe(true);
     expect(chk.line).toBe('vein');
     expect(chk.second).toBe('sky');
-    b.second = 'grey'; // the same lines exactly
+    s.day = BREED_DAY;
+    c.lit = true;
+    dailyBreeding(s);
+    const egg = s.dragons[2];
+    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'sky', true]);
+    expect(s.stats.truebloods).toBe(1);
+    a.second = 'sky'; // the same lines exactly
     expect(canBreed(s, c).ok).toBe(false);
   });
 });

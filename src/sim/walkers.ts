@@ -210,6 +210,7 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       a.load += 1;
       s.stats.restlessLaid++;
       s.stats.walkerLayings++;
+      s.stats.sextonRounds++; // a laying is the sexton at work too (iteration 91)
       s.unquieted = Math.max(0, s.unquieted - 1);
       effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'bell', tick: s.tick });
       logLine(a, `Salted and laid one of the restless at (${Math.floor(a.x)},${Math.floor(a.y)}).`);
