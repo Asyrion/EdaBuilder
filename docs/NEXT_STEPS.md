@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 91 (the quests that never complete)
+
+- **"See the Watch at work" completes:** a watchman's first round does it, hounds or no hounds. "See a sexton walk the
+  rounds" likewise. Before, both waited for a threat that a well-kept city prevents (DESIGN §4.122).
+- **An audit of all 140 Charter tasks:**
+  - `scripts/questCensus.ts` plays bot games and lists the tasks never done.
+  - A workflow traced every task into the sim, with each flag checked by a refuter: 13 confirmed and fixed.
+  - The fixes: the flood behind a Great Weir, the wyrm duel, the bridge task, the vein egg for every people, the guild
+    council, breeding in a Great Cradle and the bloodline. The text of the four-market task, the Grimmen's Gloam, the
+    Sleeping Wyrm and the Beacon was rewritten.
+- New Annals rows: Watch rounds and Sexton rounds.
+
 ## Done in iteration 90 (a hotfix: the slow first load)
 
 - **The game starts in seconds again.** The page fetched about 1,100 sprite files one after another, so it stayed black
@@ -1080,22 +1092,17 @@ Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
 
-1. **The quests that never complete** (the user's playtest after iteration 86: "See the Watch at work" never completed,
-   more than once). It waits for a watchman to kill a hound or lay a restless on his own patrol, which a well-kept city
-   prevents; and the sextons' layings count toward it too (`walkerLayings` is shared). Audit every quest: bot games of
-   every people on several maps to list the ones that never complete, and each `done` read for a threat or an accident
-   good play avoids; fix them with a test each.
-2. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
+1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-3. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-4. **M18 part 1, the Fen-Nex** (§17.2).
+2. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
+3. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-5. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-6. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+4. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+5. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-7. **M19 part 2, the Belerial** (§17.3).
+6. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-8. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+7. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.

@@ -5216,6 +5216,70 @@ ages". No sim code was involved.
 - The single PNGs still ship in the build (4.3 MB), though the game no longer fetches them; the tools and the tests read
   them. Fifteen of them (glowcap glows from an earlier import) appear in no manifest; the importer never deletes.
 
+### 4.122 The quests that never complete (iteration 91)
+
+NEXT_STEPS item 1, from the user's playtests: "See the Watch at work" never completed, more than once.
+
+**The audit:**
+- **The census.** `scripts/questCensus.ts` (new) plays a bot game and lists every task done, with its day, and every task
+  never done, noting whether its `when` ever held. Ten games of 200 days: the four peoples on the valley, two seeds each,
+  and the Vellish on the island and on one node.
+- **The trace.** A workflow read all 140 tasks and followed each `done` into the sim to where its counters change. It
+  sorted them: completable by deliberate play, waiting on a threat that good play prevents, fed by a shared counter,
+  unreachable, or misleading. Each flag went to a second reader told to refute it.
+- **The result:** 16 flagged, **13 confirmed**. Three were refuted:
+  - f_hamlet: the top bar names the gate;
+  - b_wisps: completable as its hint says;
+  - q_rider: fires are a standing hazard that no city removes.
+- A task the bot never does (a rename, an edict, a wonder) is not a defect by that alone, and stays as it was.
+
+| task | what was wrong | the fix |
+|---|---|---|
+| w_patrol "See the Watch at work" | waited for a watchman to kill a hound or lay a restless, which a well-kept city prevents; sextons' layings counted too | `stats.watchRounds` (a patrol leg walked); done on a round or a kill |
+| w_sexton (now "See a sexton walk the rounds") | its own Boneyard keeps the restless from rising | `stats.sextonRounds` (a round, brawl days aside, or a laying) |
+| v_flood "Weather the first flood" | a Great Weir raised before the first Hush ends means no flood, ever | also done with a Weir standing once a Hush has ended (day 120) |
+| k_duel | only a hostile flyover brings the duel, and paying tribute or binding the wyrm prevents it | opens only while the wyrm sleeps or wakes, never bound; the hint names the refused tribute |
+| w_wyrm "Clear the bridge" | stayed open forever once any wyrm had laired | open only while a wyrm lairs; a drive-off still pays |
+| v_egg | a Grimmen Hatchery or Veshari Tide Pool could never take the vein egg | the wyrm's own line nests in any people's cradle |
+| k_council | counted petitions, and a contented council never petitions | done on a lit Guildhall; k_boon and k_hall open on the same |
+| k_cross | `canBreed` weighed only the first two dragons; a Great Cradle of ember, ember, vein never bred | every pair is weighed |
+| k_blood | two crossed dragons of one first line were refused | they breed when their second lines differ; mirror crosses breed as before; a plain dragon with a crossed one of its line does not (its egg would copy the parent) |
+| o_full | done needs four markets, which the text never said; the task vanished while the shelves were full | title "Four markets, none short for five days"; open while there are four markets |
+| g_burn | for the Grimmen a Stone Ward does not burn | the hint names the stone-sexton's cutting |
+| v_find (now "Stir the Sleeping Wyrm") | the hint said to click the node, which records nothing, and the chain after it needs the wyrm stirred | the hint says how (a lit spire within 6) and when to stop |
+| c_beacon | the hint demanded the Lantern of Vell, which three peoples cannot build | "your people's gate (the top bar)"; the "Show me" to the Lantern is gone |
+
+- Ids are unchanged, so tasks done in a save stay done.
+- The new counters have Annals rows and defaults in `world.ts` (a save fills its stats from a fresh game).
+- The text lives in `src/data/content/text/quests.json`.
+
+**The review** (a workflow, three lenses: the logic of each fix, saves and determinism, the tests; each finding checked
+by a refuter) confirmed six findings, all fixed:
+- the first breeding rule refused mirror crosses (vein+ember with ember+vein), the natural route to a trueblood;
+- it also let a plain dragon breed a copy of a crossed one;
+- the Annals coverage test and an older sexton test failed;
+- the breeding tests never laid an egg;
+- the bridge test's last assertion was vacuous.
+
+**Verified:**
+- `npx tsc --noEmit -p .`, the unit tests (90 files, 573 tests) and `npm run build`. `tests/iteration91.test.ts` has a
+  test per fix, among them:
+  - a quiet city with a Watch Post completes w_patrol in days, with no kill;
+  - a Boneyard completes w_sexton with no restless;
+  - the Weir; the bound wyrm; the lair ending, with a drive-off still paying;
+  - every cradle takes the vein egg; a lit Guildhall seats the council;
+  - eggs actually laid by `dailyBreeding` for the Great Cradle, the trueblood and the mirror cross;
+  - the texts.
+- `npm run devboard:selftest`: OK.
+- **`scripts/playtest91.mjs`** in the browser: a new city with a Watch Post and a Boneyard on its road completes "See
+  the Watch at work" and "See a sexton walk the rounds" on day 1, with no hound killed and no restless laid. The ticker
+  shows both, +400 crowns each (`shots/iter91_done.png`).
+- **The census again:** CENSUS_AFTER
+
+**The wide bar** (`npx tsx scripts/table.ts --bar wide --compare origin/main`):
+
+BAR_TABLE
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6494,3 +6558,7 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   hash) instead of a thousand PNGs. The single files stay as the importer's output and the tools' input. The atlas is
   cut from the sheet into the same layout as before, so the change is invisible except for the time it saves; a page
   with no sheet, or a failed one, still loads the files, 24 at a time.
+- *A task opens only when good play can finish it (iteration 91):* a Charter task that waits on a threat (a hound for the
+  Watch, a restless for the sexton, a flood the Weir prevents) asks the player to let the city slip. A task whose
+  building answers the threat now completes on the building at work (its rounds), and a task about a threat opens only
+  while the threat stands. The audit is a script and a workflow, so the next chapter of tasks can be held to it.
