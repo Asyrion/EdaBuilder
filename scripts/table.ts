@@ -34,6 +34,7 @@ const draws = Number(opt('draws', '2'));
 const target = Number(opt('target', '0.10'));
 const maxDraws = Number(opt('max-draws', wide ? '8' : String(draws)));
 const days = Number(opt('days', '150'));
+const scenario = opt('scenario', 'valley')!; // a charter other than the valley, e.g. --scenario atoll (iteration 95)
 const jobs = Number(opt('jobs', String(Math.max(1, cpus().length)))); // every core since iteration 71
 const out = resolve(ROOT, opt('out', 'shots/table.json')!);
 const cacheDir = resolve(ROOT, 'balance/cache');
@@ -94,11 +95,11 @@ function prune(inUse: string[]): void {
 
 let cached = 0;
 function runOne(j: Job): Promise<Run> {
-  const key = cacheKey({ sim: j.side.sim, runner, people: j.people, seed: j.seed, rolls: j.rolls, days });
+  const key = cacheKey({ sim: j.side.sim, runner, people: j.people, seed: j.seed, rolls: j.rolls, days, scenario });
   const hit = useCache ? cacheFile(key.file).runs[key.run] : undefined;
   if (hit) { cached++; return Promise.resolve({ ...hit, ref: j.side.label }); }
   return new Promise((ok, fail) => {
-    const p = spawn('npx', ['tsx', 'scripts/balance.ts', String(j.seed), String(days), '-', j.people, `roll=${j.rolls}`], { cwd: j.side.dir });
+    const p = spawn('npx', ['tsx', 'scripts/balance.ts', String(j.seed), String(days), '-', j.people, `roll=${j.rolls}`, ...(scenario === 'valley' ? [] : [`scenario=${scenario}`])], { cwd: j.side.dir });
     let text = '';
     p.stdout.on('data', (d) => (text += d));
     p.stderr.on('data', (d) => (text += d));
@@ -173,6 +174,17 @@ try {
   writeFileSync(out, JSON.stringify({ days, peoples, seeds, target, maxDraws, wide, sides: sides.map((s) => s.label), runs }, null, 1));
   if (wide) console.log(`The bar (a floor of ${Math.round(target * 100)} % of each people's mean, at most ${maxDraws} draws a seed):\n\n${renderBar(a, b, target, maxDraws)}\n`);
   console.log(renderTable(a, b, b ? [sides[0].label, sides[1].label] : undefined));
+  if (scenario !== 'valley') { // the charter's own report: the goal reached, and how far the isles were settled
+    const rows = peoples.map((p) => {
+      const rs = a.filter((r) => r.people === p);
+      const goals = rs.filter((r) => r.goal).length;
+      const settled = rs.map((r) => (r.isles ?? []).filter((c) => c >= 6).length);
+      const mean = (xs: number[]) => xs.reduce((x, y) => x + y, 0) / Math.max(1, xs.length);
+      const burgh = rs.map((r) => r.gates.find((g) => g.name === 'Burgh')?.day).filter((d): d is number => d !== undefined);
+      return `| ${p} | ${rs.length} | ${goals}/${rs.length} | ${mean(settled).toFixed(1)} | ${burgh.length ? [...burgh].sort((x, y) => x - y)[burgh.length >> 1] : '–'} | ${Math.round(mean(rs.map((r) => r.folk)))} | ${mean(rs.map((r) => r.galeDays ?? 0)).toFixed(1)} |`;
+    });
+    console.log(`\nThe ${scenario} charter (${days} days):\n\n| people | runs | goal reached | isles settled (mean) | median Burgh day | folk (mean) | gale days (mean) |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}`);
+  }
   console.log(`\n${runs.length} runs (${cached} from the cache) in ${Math.round((Date.now() - t0) / 60000)} minutes; raw runs: ${out}`);
 } finally {
   for (const s of sides) if (s.temp) dropWorktree(s.dir);

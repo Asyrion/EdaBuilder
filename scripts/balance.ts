@@ -5,7 +5,9 @@ import { createGame } from '../src/sim/world';
 import { ROLL_DAY, extraRolls, rollsOf } from './rolls';
 import { isFordTile, waterCensus } from '../src/sim/water';
 import { run } from '../src/sim/sim';
-import { TICKS_PER_DAY } from '../src/sim/types';
+import { TICKS_PER_DAY, type Scenario } from '../src/sim/types';
+import { createScenario } from '../src/sim/scenario';
+import { isleBuildings } from '../src/sim/isles';
 import { computeLedger } from '../src/sim/economy';
 import { Bot } from '../src/sim/bot';
 import { WILD_SPECIES, quarryOf, wildCensus } from '../src/sim/wild';
@@ -15,7 +17,8 @@ const seed = Number(process.argv[2] ?? 42);
 const days = Number(process.argv[3] ?? 120);
 const faction = (process.argv[5] ?? 'vellish') as FactionId;
 const rolls = rollsOf(process.argv[6]);
-const state = createGame(seed, 'Botwick', 'valley', faction);
+const scenario = (process.argv.find((a) => a.startsWith('scenario='))?.slice(9) ?? 'valley') as Scenario; // iteration 95: a charter other than the valley, e.g. scenario=atoll
+const state = scenario === 'valley' ? createGame(seed, 'Botwick', 'valley', faction) : createScenario(seed, 'Botwick', scenario, faction);
 if (process.argv[4] && process.argv[4] !== '-') state.treasury = Number(process.argv[4]);
 const bot = new Bot(state);
 const t0 = Date.now();
@@ -50,4 +53,5 @@ console.log('json: ' + JSON.stringify({
   seed, people: faction, rolls, days, folk: state.population, milestone: state.milestone,
   gates: milestoneDays.map((d, i) => ({ name: milestonesOf(state)[i].name, day: d })),
   treasury: Math.round(state.treasury), loan: Math.round(state.loan), depotDay: bot.depotDay, roadCrowns: Math.round(roadCrowns), caravanCrowns: state.stats.caravanCrowns, gameOver: !!state.gameOver,
+  ...(scenario === 'valley' ? {} : { scenario, isles: isleBuildings(state), goal: state.questsDone.includes(`z_${scenario}`), galeDays: state.stats.galeDays }),
 }));

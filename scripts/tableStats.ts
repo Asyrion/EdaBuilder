@@ -10,6 +10,8 @@ export interface Run {
   seed: number; people: string; rolls: number; days: number; folk: number; milestone: number; gates: Gate[];
   treasury: number; loan: number; depotDay: number; roadCrowns: number; caravanCrowns?: number; gameOver: boolean;
   ref?: string;
+  /** A charter other than the valley (the Atoll, iteration 95): its goal reached, and the standing zone buildings on each isle. */
+  scenario?: string; goal?: boolean; isles?: number[]; galeDays?: number;
 }
 
 /** The `json:` line of a balance.ts run, or null when the run printed none (it crashed). */
@@ -184,8 +186,8 @@ export function parseLsTree(text: string): { path: string; blob: string }[] {
 }
 
 /** The cache's key for a run: the file of its sim version and runner (balance.ts and rolls.ts), and the run within it. */
-export function cacheKey(k: { sim: string; runner: string; people: string; seed: number; rolls: number; days: number }): { file: string; run: string } {
-  return { file: `${k.sim.slice(0, 12)}-${k.runner.slice(0, 12)}.json`, run: `${k.people}-${k.seed}-r${k.rolls}-d${k.days}` };
+export function cacheKey(k: { sim: string; runner: string; people: string; seed: number; rolls: number; days: number; scenario?: string }): { file: string; run: string } {
+  return { file: `${k.sim.slice(0, 12)}-${k.runner.slice(0, 12)}.json`, run: `${k.people}-${k.seed}-r${k.rolls}-d${k.days}${k.scenario && k.scenario !== 'valley' ? `-${k.scenario}` : ''}` }; // a charter's runs are keyed apart from the valley's
 }
 
 /** One committed cache file: every finished run of one sim version and runner. */
