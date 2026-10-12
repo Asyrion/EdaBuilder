@@ -275,6 +275,21 @@ describe('Saves, replays and the bot on the Atoll', () => {
       expect(isleBuildings(s)[0], people).toBeGreaterThan(20);
     }
   }, 300_000);
+
+  it('the Veshari\'s founding stands by the shoal, and their bot builds tide-wells (seed 44 once left them dry at Hamlet)', () => {
+    for (const seed of [42, 43, 44, 45]) {
+      const s = createScenario(seed, 'Botwick', 'atoll', 'veshari');
+      const f = s.nodes[0];
+      let near = false;
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if (s.terrain[idx(f.x + dx, f.y + dy)] === Terrain.Water) near = true;
+      expect(near, `seed ${seed}`).toBe(true);
+    }
+    const s = createScenario(44, 'Botwick', 'atoll', 'veshari');
+    const bot = new Bot(s);
+    run(s, TICKS_PER_DAY * 20, { onDay: () => bot.step() });
+    expect(s.buildings.filter((b) => b && b.kind === 'tidewell').length).toBeGreaterThan(3);
+    expect(s.population).toBeGreaterThan(300);
+  }, 120_000);
 });
 
 describe('The Atoll\'s text', () => {

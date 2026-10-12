@@ -108,9 +108,27 @@ export function generateAtoll(seed: number, opts: TerrainOptions): TerrainResult
 
   // the founding node, on the great isle near its centre
   let fx = great.x, fy = great.y;
+  // the Veshari's tide-wells must touch the shoal (a tile of Water) and a road: their founding stands
+  // within WELL_SHORE of one (as on the valley's riverside), so the first roads reach the water
+  const WELL_SHORE = 4;
+  const shoalNear = (x: number, y: number, r: number): boolean => {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (inBounds(x + dx, y + dy) && terrain[idx(x + dx, y + dy)] === Terrain.Water) return true;
+    return false;
+  };
   for (let tries = 0; tries < 400; tries++) {
     const x = great.x + rng.int(9) - 4, y = great.y + rng.int(9) - 4;
-    if (buildable(x, y) && buildableCount(x, y, 6) > 90) { fx = x; fy = y; break; }
+    if (buildable(x, y) && buildableCount(x, y, 6) > 90 && (!opts.riverside || shoalNear(x, y, WELL_SHORE))) { fx = x; fy = y; break; }
+  }
+  if (opts.riverside && !shoalNear(fx, fy, WELL_SHORE)) {
+    // none of the draws stood near the coast: take the buildable tile with room that is closest to it
+    let best = Infinity;
+    for (let y = great.y - 12; y <= great.y + 12; y++)
+      for (let x = great.x - 12; x <= great.x + 12; x++) {
+        if (!buildable(x, y) || buildableCount(x, y, 6) <= 90) continue;
+        let d = Infinity;
+        for (let r = 1; r <= 20 && d === Infinity; r++) if (shoalNear(x, y, r)) d = r;
+        if (d < best) { best = d; fx = x; fy = y; }
+      }
   }
   const nodes: TerrainResult['nodes'] = [{ x: fx, y: fy }];
   // one node on every other isle, on a buildable tile near its centre, so every isle has mana of its own
