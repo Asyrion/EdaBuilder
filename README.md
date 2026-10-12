@@ -51,10 +51,11 @@ push to `main`. The Vite base is relative, so it works from any sub-path.
 
 ## How to play
 
-The title screen offers four charters: the open valley (the standard game), the one-node
-valley (one deep Vein and nothing else), the Gloam-locked island (grey on every side) and
-the inherited collapse (a month-old town in debt, with ruins, the dead walking and a surge
-two days out). Each has a goal that sits at the top of the Ledger.
+The title screen offers five charters: the open valley (the standard game), the one-node
+valley (one deep Vein and nothing else), the Gloam-locked island (grey on every side), the
+Patagoi Atoll (six isles in open water; bridge the shallow bars, barge the deep channels, and
+cobble your bridges before the Hush sea-gales) and the inherited collapse (a month-old town
+in debt, with ruins, the dead walking and a surge two days out). Each has a goal that sits at the top of the Ledger.
 
 You are a **Warden-Reeve** with a royal Charter. The map is 128×128 tiles with a river, a
 lake, forests, hills, several **ley nodes** (glowing springs of magic) and a grey rim of
@@ -227,6 +228,12 @@ Charter as `.json`.
 - Marsh-wyrms: in Bloom eel-like wyrms come up the river and the lake. One may lair under a bridge,
   and the carts on it crawl; a Veshari Hall covering the bridge drives it off, and none lairs
   within ten tiles of a Quay. A wyrm's nest by a Quay gives the city a tide egg each Bloom.
+- The Patagoi Atoll: six isles on a 128 × 128 sea, a ley node on each, the founding node on the great
+  isle. Three near isles lie over shallow bars (a bridge, at four times a road's price); two far isles
+  lie across deep channels that only barges, a Portal Arch pair or drake riders cross, and the Gloam
+  lies on their outer halves. Twice each Hush a sea-gale blows for two days: the barges stay in port and
+  every plain Track bridge is under the surf; cobbled bridges hold, and so does any bridge within six
+  tiles of a Quay, a Landing or a Weir. Goal: Burgh with four isles settled (six zone buildings each).
 - Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
   eggs arrive through events; hatch and train them into drakes and wyverns, set them as
   district wardens (fed by their district), mine delvers (wardens wake half as often),
@@ -388,8 +395,8 @@ Charter as `.json`.
   it diverges, so a bug report can be a file that reproduces it.
 - The daughter charter: at Beacon of Eda found a second wardlight on a far node, and grow
   it to 500 folk for the Twin Beacons.
-- Scenario charters on the title screen: the one-node valley, the Gloam-locked island and
-  the inherited collapse, each with a goal; a Done page in the Ledger; per-district
+- Scenario charters on the title screen: the one-node valley, the Gloam-locked island, the
+  Patagoi Atoll and the inherited collapse, each with a goal; a Done page in the Ledger; per-district
   problem counts in the Districts view.
 - Longwood and the Fen-Nex: war-tigers on forest-heavy maps, the Fen-Nex fox-folk and
   their tithe-free quarter (and fen-drake eggs), mana-storms after every surge, the Font
