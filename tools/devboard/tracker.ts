@@ -87,6 +87,8 @@ export function balance(root: string) {
     }));
     return { file: f, sim: f.split('-')[0], current: !!current && f.startsWith(current), created: d.created ?? null, runs: Object.keys(d.runs).length, peoples, stats };
   });
+  const valley = files.filter((f) => Object.keys(f.stats).length > 0 || f.runs === 0); // a file of charter runs only holds no valley numbers
+  files.length = 0; files.push(...valley);
   files.sort((a, b) => String(b.created ?? '').localeCompare(String(a.created ?? '')));
   return { files, treeSim: current };
 }
