@@ -5513,6 +5513,107 @@ RNG, and a saved game draws the same wood it always did.
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk, identical to main's.
   Render only; no balance bar is needed.
 
+### 4.126 The Patagoi Atoll (iteration 95)
+
+M17 part 3 (§17.1 item 3), the last piece of the marsh-and-atoll milestone. The user's choices: the goal is Burgh with the
+isles settled; the storm is a sea-gale in the Hush; all four peoples play it; the crossings are shallow straits (bridgeable
+at four times a road's price) and deep channels (barges, a Portal Arch pair or drake riders only).
+
+**The map** (`src/sim/atoll.ts`; `generateTerrain` hands an atoll straight to it, so every valley map stays as it was:
+a test pins a hash of twelve option and seed combinations, taken on iteration 94's tree and on main). A 128 × 128 sea
+with six isles, each with a ley node of its own (mana links by distance and cannot cross a channel):
+- the **great isle** at the centre (radius 14): the founding node, the first town, and for the Grimmen the Underhill hills;
+- three **near isles** on a ring 32 tiles out (radius 6 to 8), each joined to the great isle by a shallow bar of `Water`
+  that a track can be bridged over;
+- two **far isles** on a ring 46 tiles out (radius 6 to 7), ringed by `DeepWater`: only barges, a Portal Arch pair or
+  drake riders cross. The Gloam lies on their outer parts only (it cannot cross water), never within three tiles of a node.
+- The Tallowkin's twin node stands eight tiles from the founding; the ruins of Lukuku on a near isle; no marsh and no
+  riverside channel (the sea does that work). The **Veshari's founding stands within four tiles of the shoal**, because the
+  tide-well must touch water and a road (the first table left the Veshari dry on seed 44; see below).
+- A sweep of 320 maps (seeds 0 to 79 × plain, Underhill, twin node, riverside) checks every isle's sector can be bought by
+  adjacency, the founding has room, and no isle is cut off from the sectors.
+
+**The charter and its goal.** `Scenario` gains `'atoll'`; the title screen lists "The Patagoi Atoll". The quest `z_atoll` is
+done at milestone Burgh (6) or later with `ATOLL_ISLES` (4) isles settled, and pays 5,000 crowns like its siblings. An
+isle is settled when six standing zone buildings (homes, markets, crafts or arcane houses) stand on it. The isles are the
+land components of the saved terrain (`src/sim/isles.ts`, cached per terrain array), so no state is kept and old saves
+have nothing to migrate. The Ledger line says which isles are settled and how many buildings each has.
+
+**Sea-gales in the Hush** (`src/sim/gales.ts`, Atoll only). Twice each Hush a gale blows for two days, the first starting
+on day 3 to 11 of the season, the second on day 16 to 27, from their own hashed stream (`seed:year:gale`), so the main
+stream never moves and the Observatory can read them ahead.
+- The barges stay in port.
+- Every plain Track on `Water` (a bridge) is closed, through the same `state.water.closed` set the ford rule uses, so
+  paths drop, the road version bumps and the renderer draws the tile under the surf.
+- Cobbled and better bridges hold, and so does any bridge within six tiles of a Quay, a Landing, a Weir or a Great Weir.
+- The Observatory (lit) forecasts the coming gale; the Annals have a "Gale days" row; a dev command `gale` forces one;
+  the in-game help and the README say it.
+
+**The table.** `scripts/balance.ts` takes `scenario=atoll` (after `roll=N`), `scripts/table.ts` takes `--scenario atoll`
+and prints an "Atoll charter" report; the run key gains `-atoll`, so valley runs keep their keys. Four peoples, seeds
+42 to 44, two draws each, 150 days (`shots/table_atoll.json`), the bot unchanged:
+
+| people | runs | goal reached | isles settled (mean) | median Burgh day | folk (mean) | gale days (mean) |
+|---|---|---|---|---|---|---|
+| vellish | 6 | 6/6 | 4.5 | 32 | 1,249 | 4.0 |
+| grimmen | 6 | 4/6 | 4.0 | 47 (4/6 reached Burgh) | 948 | 4.0 |
+| veshari | 6 | 6/6 | 5.0 | 46 | 1,474 | 4.0 |
+| tallowkin | 6 | 6/6 | 4.5 | 33 | 1,213 | 4.0 |
+
+- **The bot is unchanged**, against the plan (which had a reachability flood fill, causeways and a Quay for all peoples).
+  It already reaches Burgh and settles four isles without them; it never reaches the two far isles (it builds no Quay).
+  So the goal is easy for the bot, and a human may find it easy too; tightening it (five or six isles, or the far isles)
+  is on the list (issues 105 and 106).
+- **The Grimmen are the weakest**: two of six runs end at milestone 5 with the near isles unsettled.
+- **The Veshari were stuck on seed 44 in the first table** (both draws at Hamlet with about 120 folk, "Hearth abandoned:
+  no water"): their tide-well must touch the shoal and a road, and the founding stood seven tiles from it. The founding is
+  now by the shoal (a test holds it, and that seed's bot builds the wells). Before the fix the Veshari reached the goal
+  3/6; after it, 6/6.
+
+**Deviations from the plan, said plainly**
+- A node on every isle (six), not four.
+- The river-freeze rules still apply on the sea, so the Veshari, Grimmen and Tallowkin barges stop from Hush day 5.
+- A holder (Quay, Landing, Weir) built mid-gale acts from the next day, not at once (the closed set is rebuilt once a day).
+- A bridge cobbled mid-gale opens at once: `fordClosed` now returns false for any tile that is not a plain Track. This also
+  applies to the valley's fords: a ford cobbled the day the river is high opens at once instead of the next day. It is the
+  only valley-visible change; it moved the Veshari valley runs by −0.7 % (within the noise) in the bar below.
+
+**The review** (a workflow, four lenses, a refuter per finding) confirmed and fixed:
+- the mid-gale cobbling lag (above) and a misleading "blows itself out" message;
+- the quest wording ("buildings" counted only zone buildings);
+- `balance.ts` imported `isles.ts` statically, which broke `--compare origin/main` (now a dynamic import);
+- a misspelled scenario silently ran the valley (now an error); the Atoll report took the wrong gate for Burgh;
+- the dev board's balance tab mixed charter runs into the valley's stats (and its self-test failed on a file of charter
+  runs only; the tab now skips such files).
+
+**Verified**
+- `npx tsc --noEmit -p .`, `npx vitest run` (94 files, 609 tests), `npm run build`, `npm run devboard:selftest`.
+- `tests/iteration95.test.ts` (15 tests): the valley hash; the six isles, a node on each, the Gloam only near the far
+  isles for four peoples × seeds 42, 7 and 99; the shallow bars; determinism; every isle's sector reachable; the goal (not
+  done at three isles or one milestone short, done with four, pays only in the atoll); the gale spells, the Track closed
+  and the Cobble open, a Quay holding, a mid-gale cobble opening at once; the forecast; save, old save and replay; the bot
+  playing thirty days per people; the Veshari founding and their tide-wells on seed 44.
+- `scripts/playtest95.mjs`: the title screen with the Atoll, a new atoll at zoom 1, a Track and a Cobble bridge built, a
+  gale day with six Track tiles closed and the Cobble row open; no page errors (`shots/iter95_*.png`).
+- **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk, milestone 8, identical to main's.
+- **The wide bar** (`--bar wide --compare origin/main`): every people within the noise, the valley otherwise identical to main (192 runs, 140 minutes)
+
+| people | this tree | origin/main | Δ (paired by seed) | ± 2·SE | verdict |
+|---|---|---|---|---|---|
+| vellish | 2,229 | 2,229 | +0 (0.0 %) | 196 | within the noise |
+| grimmen | 1,422 | 1,422 | +0 (0.0 %) | 123 | within the noise |
+| veshari | 2,279 | 2,295 | −16 (−0.7 %) | 220 | within the noise |
+| tallowkin | 2,085 | 2,085 | +0 (0.0 %) | 229 | within the noise |
+
+  - The only moved runs are four Veshari draws on seeds 42, 43, 44 and 47: the fords cobbled on a high-water day (above).
+  - The floors: Vellish 8.8 %, Grimmen 8.7 %, Veshari 9.6 % met; **the Tallowkin's 11.0 % is not met, at the cap of 8
+    draws** (identical on main; issue 123). No gate moved for any people.
+  - The bar was run twice, the second time after the Veshari founding fix (a change in `atoll.ts` only, which changes the
+    sim key): the same numbers. The cache is committed in `balance/cache/`.
+
+**Not verified:** a human playing it through to Burgh; the far isles by bot (it never gets there); the Portal Arch and
+drake-rider crossings (they use code that already exists and are not exercised by a test on the Atoll).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6252,7 +6353,7 @@ numbered part is one iteration with its own plan, and gets its own §4.NN when i
    - **The answers:** the Veshari Hall's coverage drives it off, and a Quay keeps them away.
    - **Nests:** a marsh-wyrm nest by a Quay becomes the tide eggs' second source (the §8.6 table; today only a Veshari
      tale lays them).
-3. **The Patagoi Atoll** (§11 item 10). A scenario charter on the title screen:
+3. ✅ **The Patagoi Atoll** (§11 item 10; built in iteration 95, §4.126). A scenario charter on the title screen:
    - a ring of islands in open water, with the founding node on the largest;
    - land scarce, barges and bridges the roads, storms in the Hush;
    - a goal and its Done page, as the other charters have;
@@ -6805,3 +6906,9 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
 - *Trees follow the land (iteration 94):* a forest shows the trees of the ground it stands on (hills, water, a ley node)
   rather than the whole set at random; the magic trees keep to the nodes. A view at night keeps the lights on: it only
   lifts the ambient so the overlay reads.
+- *The Patagoi Atoll (iteration 95):* a charter of six isles in open water, built by its own generator so no valley map
+  moves. Three near isles are joined by shallow bars (bridges at four times the road price), two far isles lie across deep
+  channels only barges cross. The Hush brings two two-day sea-gales that close plain Track bridges; Cobble, and bridges by
+  a Quay, a Landing or a Weir, hold. The goal is Burgh with four isles settled (six zone buildings each). The bot was left
+  as it was, since it already meets the goal; the Veshari found by the table to be stuck, whose founding now stands by the
+  shoal.

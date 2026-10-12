@@ -19,6 +19,7 @@ export const SCENARIOS: ScenarioDef[] = [
   { id: 'valley', name: 'The open valley', blurb: 'A river valley with four to six ley nodes and a thin rim of Gloam. The standard Charter.', goal: 'Grow a camp into a Beacon of Eda.' },
   { id: 'onenode', name: 'The one-node valley', blurb: 'The Crown surveyed a single node and nothing else. It runs deep, twice the flow of a common node, but every spire, cistern and ward must drink from it. Mana is the whole game.', goal: 'Reach Burgh (1,000 folk) on one Vein.' },
   { id: 'island', name: 'The Gloam-locked island', blurb: 'Thirty tiles of green in a grey sea. The Gloam presses from every side, the hounds come early, and there is no road out. Wards are your walls.', goal: 'Reach Township and burn back 300 tiles of Gloam.' },
+  { id: 'atoll', name: 'The Patagoi Atoll', blurb: 'Six isles in open water. The great isle holds the Stake; three near isles lie over shallow bars a bridge can cross, two far isles only barges and drakes reach. Land is scarce, and in the Hush the sea-gales close the bridges.', goal: 'Reach Burgh (1,000 folk) with four isles settled.' },
   { id: 'inherited', name: 'The inherited collapse', blurb: 'The last Warden-Reeve fled. You inherit a town a month old: debt, ruins, the dead walking, and the spires howling toward a surge. Stop the bleeding, then build.', goal: 'Treasury positive, no ruins and no restless for ten days running, then Burgh.' },
 ];
 
@@ -31,6 +32,7 @@ export function createScenario(seed: number, name: string, id: Scenario, faction
   const s = createGame(seed, name, id, faction);
   if (id === 'inherited') inherit(s);
   if (id === 'island') pushMessage(s, 'The sea of grey is forty tiles off in every direction and closer every week. Ward Lanterns, the Watch and a Hunters\' Lodge before anything else.', 'warn', true);
+  if (id === 'atoll') pushMessage(s, 'Six isles in a grey-blue sea, a ley node on each. Bridge the shallow bars to the near isles; the far two wait for barges. Cobble your bridges before the Hush: the gales close the plain ones.', 'warn', true);
   if (id === 'onenode') pushMessage(s, 'One Vein, running deep: twice the flow of a common node, and no other. Every spire you raise drinks from it.', 'warn', true);
   return s;
 }

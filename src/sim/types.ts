@@ -229,7 +229,7 @@ export interface DepartedDragon {
   returned: boolean; // its return tale has been answered
 }
 
-export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited';
+export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited' | 'atoll';
 
 export interface WyrmState {
   node: number; // index into nodes, -1 none
@@ -344,7 +344,7 @@ export interface Weather {
 export const CHALLENGE_DAYS = 60;
 
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights' | 'flood' | 'freeze'; // flood/freeze: forced from the dev panel (iteration 55)
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'rain' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights' | 'flood' | 'freeze' | 'gale'; // gale: forced from the dev panel (iteration 95)
   value: number;
   until: number; // day
   label: string;
@@ -559,6 +559,7 @@ export interface GameState {
     guildCharters: number;
     walkerKills: number;
     walkerLayings: number;
+    galeDays: number; // days a sea-gale blew (the Atoll, iteration 95)
     watchRounds: number; // patrol legs a watchman walked (iteration 92)
     sextonRounds: number; // rounds a sexton walked, brawl days aside (iteration 92)
     healerVisits: number;

@@ -3,6 +3,7 @@ import { FISH_MARKET_REACH, bodyOf, isFordTile } from '../sim/water';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, DAYS_PER_SEASON, Terrain, Zone, idx, type GameState } from '../sim/types';
 import { hasCouncil } from '../sim/guilds';
+import { ATOLL_ISLES, SETTLED_BUILDINGS, isleBuildings, settledIsles } from '../sim/isles';
 import { canBuild, milestonesOf, nextGate } from './factions';
 import { MEAT_REACH, huntBlock, quarryOf } from '../sim/wild';
 import { BUILDING_BY_KEY } from '../sim/catalog';
@@ -205,6 +206,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'z_daily', chapter: QUEST_TEXT.z_daily.chapter, title: QUEST_TEXT.z_daily.title, hint: QUEST_TEXT.z_daily.hint, when: (s) => !!s.challenge && (s.day <= 60 || s.questsDone.includes('z_daily')), done: (s) => s.milestone >= 5 && s.day <= 60, reward: 3000, priority: 0, strict: true },
   { id: 'z_onenode', chapter: QUEST_TEXT.z_onenode.chapter, title: QUEST_TEXT.z_onenode.title, hint: QUEST_TEXT.z_onenode.hint, when: (s) => s.scenario === 'onenode', done: (s) => s.milestone >= 6, reward: 5000, priority: 0, strict: true },
   { id: 'z_island', chapter: QUEST_TEXT.z_island.chapter, title: QUEST_TEXT.z_island.title, hint: QUEST_TEXT.z_island.hint, when: (s) => s.scenario === 'island', done: (s) => s.milestone >= 4 && s.stats.gloamBurned >= 300, focus: { build: 'wardlantern' }, reward: 5000, priority: 0, strict: true },
+  { id: 'z_atoll', chapter: QUEST_TEXT.z_atoll.chapter, title: QUEST_TEXT.z_atoll.title, hint: QUEST_TEXT.z_atoll.hint, when: (s) => s.scenario === 'atoll', done: (s) => s.milestone >= 6 && settledIsles(s) >= ATOLL_ISLES, focus: { center: 'founding' }, reward: 5000, priority: 0, strict: true },
   { id: 'z_inherited', chapter: QUEST_TEXT.z_inherited.chapter, title: QUEST_TEXT.z_inherited.title, hint: QUEST_TEXT.z_inherited.hint, when: (s) => s.scenario === 'inherited', done: (s) => s.cleanDays >= 10 && s.milestone >= 6, focus: { panel: 'budget' }, reward: 5000, priority: 0, strict: true },
   // The Crown
   { id: 'c_thorp', chapter: QUEST_TEXT.c_thorp.chapter, title: QUEST_TEXT.c_thorp.title, hint: QUEST_TEXT.c_thorp.hint, when: (s) => s.milestone === 1, done: (s) => s.milestone >= 2, reward: 0, priority: 60 },
@@ -402,6 +404,11 @@ const STATUS: Record<string, (s: GameState) => string> = {
   w_warden: (s) => (walkersOut(s, 'warden') ? 'A warden is out on the rounds.' : 'No warden out yet: a spire on a road sends one.'),
   z_daily: (s) => `Day ${n0(s.day)} of 60; ${milestonesOf(s)[s.milestone].name}, the fifth milestone is ${milestonesOf(s)[Math.min(5, milestonesOf(s).length - 1)].name}.`,
   c_daughter: () => 'No daughter founded yet: a far ley node can take a daughter charter (click it).',
+  z_atoll: (s) => {
+    const have = isleBuildings(s);
+    const settled = have.filter((c) => c >= SETTLED_BUILDINGS).length;
+    return `${settled} of ${ATOLL_ISLES} isles settled (${SETTLED_BUILDINGS} homes, markets, crafts or arcane houses each; now ${have.slice(0, 6).join(', ')}, the great isle first); ${milestonesOf(s)[Math.min(6, milestonesOf(s).length - 1)].name} ${s.milestone >= 6 ? 'reached' : `not yet: ${n0(s.population)} folk`}.`;
+  },
   z_island: (s) => `Burned back ${n0(Math.min(s.stats.gloamBurned, 300))} of 300; ${milestonesOf(s)[Math.min(4, milestonesOf(s).length - 1)].name} ${s.milestone >= 4 ? 'reached' : 'not yet'}.`,
 };
 for (const id of ['c_thorp', 'c_village', 'c_township', 'c_market', 'c_burgh', 'c_free', 'c_beacon', 'u_gallery', 'z_onenode']) STATUS[id] = (s) => `${n0(s.population)} folk. Next: ${nextGate(s) ?? 'every gate is reached'}.`;
