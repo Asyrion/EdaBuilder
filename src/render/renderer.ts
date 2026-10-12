@@ -323,6 +323,17 @@ export class Renderer {
               ctx.fill();
             }
             if (!ford) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
+            if (!ford && isWater(t) && fordClosed(state, i)) { // a bridge under the surf in a sea-gale (iteration 95)
+              ctx.fillStyle = PAL.water2;
+              ctx.globalAlpha = 0.6;
+              ctx.beginPath();
+              ctx.moveTo(dx, dy + 1);
+              ctx.lineTo(dx + 16, dy + 9);
+              ctx.lineTo(dx, dy + 17);
+              ctx.lineTo(dx - 16, dy + 9);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+            }
           }
         } else if (state.wall[i] === 1) {
           let m = 0;

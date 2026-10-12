@@ -6,6 +6,7 @@ import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
 import { riverFrozen } from './weave';
+import { galeToday } from './gales';
 import { modifierSum } from './edicts';
 import { seasonOf } from './world';
 import { MOORINGS } from '../data/factions';
@@ -182,7 +183,7 @@ export function dailyBarges(s: GameState): void {
 }
 function dailyQuayBarges(s: GameState): void {
   const qs = quays(s);
-  if (qs.length < 2 || riverFrozen(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
+  if (qs.length < 2 || riverFrozen(s) || galeToday(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
   const rng = rngOf(s);
   for (const from of qs) {
     if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id && a.dragonId === undefined)) continue;
@@ -212,7 +213,7 @@ export function swimsBarges(d: Dragon): boolean {
 /** Daily: every Tide dragon radiating its aura swims one barge from the mooring nearest its cradle: no crew, no strike, beside the mooring's own barge (iteration 53). */
 export function dailyTideBarges(s: GameState): void {
   const qs = quays(s);
-  if (qs.length < 2 || riverFrozen(s)) return;
+  if (qs.length < 2 || riverFrozen(s) || galeToday(s)) return;
   const rng = rngOf(s);
   for (const d of s.dragons) {
     if (!swimsBarges(d)) continue;

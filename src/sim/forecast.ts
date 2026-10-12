@@ -1,4 +1,5 @@
 /** The Astral Observatory's forecast: what the ley says is coming in the next five days. */
+import { GALE_DAYS, galeIn, galeToday } from './gales';
 import { boutOdds, nextBoutDay, ringChampion } from './wyrmcraft';
 import { wyrmEats } from './wyrm';
 import { DAYS_PER_SEASON, SEASON_NAMES, type GameState } from './types';
@@ -41,6 +42,11 @@ export function forecast(s: GameState): ForecastLine[] {
     if (!w || (s.weather && s.weather.kind === w.kind && s.weather.until === w.until) || (k > 1 && weatherAt(s, s.day + k - 1)?.until === w.until)) continue;
     out.push({ text: `${WEATHER_WORD[w.kind][0].toUpperCase() + WEATHER_WORD[w.kind].slice(1)} in ${k} day${k === 1 ? '' : 's'}, ${w.until - s.day - k} day${w.until - s.day - k === 1 ? '' : 's'} of it.`, kind: w.kind === 'rain' ? 'info' : 'warn' });
     break;
+  }
+  // the sea-gales of the Patagoi Atoll (iteration 95): a pure function of the seed, so the ley reads them exactly
+  if (s.scenario === 'atoll') {
+    if (galeToday(s)) out.push({ text: 'A sea-gale blows: the barges stay in port and the plain track bridges are under the surf. Cobbled bridges and any bridge within six tiles of a Quay or a Weir hold.', kind: 'warn' });
+    else { const g = galeIn(s, FORECAST_DAYS); if (g !== null) out.push({ text: `A sea-gale in ${g} day${g === 1 ? '' : 's'}, for ${GALE_DAYS}: cobble the bridges you cannot do without, or raise a Quay beside them.`, kind: 'warn' }); }
   }
   // the river: the freeze or the flood from the fifth day of the Hush, the open sluice's flood from the fifth of the Thaw
   { const freezes = factionOf(s).rules.riverFreezes; const hushFive = (Math.floor(s.day / DAYS_PER_SEASON) + (season === 3 && dayOfSeason < 5 ? 0 : 4 - season)) * DAYS_PER_SEASON + 5; const d5 = hushFive - s.day; if (season === 3 && dayOfSeason < 5 && d5 > 0 && d5 <= FORECAST_DAYS || (season !== 3 && d5 > 0 && d5 <= FORECAST_DAYS)) out.push(freezes ? { text: `The river freezes in ${d5} day${d5 === 1 ? '' : 's'}: the mills slow and the barges stop.`, kind: 'warn' } : hasMarvel(s, 'greatweir') ? { text: `The Sable rises in ${d5} day${d5 === 1 ? '' : 's'}; the Great Weir holds it.`, kind: 'info' } : { text: `The Sable rises in ${d5} day${d5 === 1 ? '' : 's'}: the homes on the bank lose heart and the bank wells foul. A Great Weir would hold it.`, kind: 'warn' });

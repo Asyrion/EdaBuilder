@@ -1,6 +1,7 @@
 import { Noise2D } from '../core/noise';
 import { Rng } from '../core/rng';
 import { MAP_H, MAP_W, Terrain, idx, inBounds, isWater } from './types';
+import { generateAtoll } from './atoll';
 
 export interface TerrainResult {
   terrain: Uint8Array;
@@ -10,7 +11,7 @@ export interface TerrainResult {
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean; underhill?: boolean; riverside?: boolean; twinnode?: boolean }
+export interface TerrainOptions { nodes?: number; island?: boolean; atoll?: boolean; underhill?: boolean; riverside?: boolean; twinnode?: boolean }
 
 /** The shore rule: a land tile (not hills, not a node, not ruins) with water among its eight neighbours. */
 function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
@@ -61,6 +62,7 @@ function markMarsh(terrain: Uint8Array, height: Float32Array, nz: Noise2D, fx: n
 }
 
 export function generateTerrain(seed: number, opts: TerrainOptions = {}): TerrainResult {
+  if (opts.atoll) return generateAtoll(seed, opts); // a ring of isles in open water (iteration 95): its own generator, the valley's is untouched
   const rng = new Rng(seed ^ 0x9e3779b9);
   const nz = new Noise2D(seed);
   const nz2 = new Noise2D(seed + 1337);

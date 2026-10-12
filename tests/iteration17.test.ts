@@ -50,7 +50,7 @@ describe('Scenario charters', () => {
   });
 
   it('every scenario has a goal and the open valley has no scenario quest', () => {
-    expect(SCENARIOS.map((x) => x.id)).toEqual(['valley', 'onenode', 'island', 'inherited']);
+    expect(SCENARIOS.map((x) => x.id)).toEqual(['valley', 'onenode', 'island', 'atoll', 'inherited']);
     const s = createGame(3, 'V');
     expect(activeQuests(s).some((q) => q.id.startsWith('z_'))).toBe(false);
   });

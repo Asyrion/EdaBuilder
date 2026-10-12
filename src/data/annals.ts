@@ -126,6 +126,7 @@ export const ANNALS: AnnalChapter[] = [
       { label: 'Days of drought', stat: 'droughtDays', note: 'Ember drought: fires ×2, wells two tiles shorter.' },
       { label: 'Days of blizzard', stat: 'blizzardDays', note: 'Hush blizzard: hearths draw a tenth more mana, no new hound packs.' },
       { label: 'Quiet Hushes', stat: 'quietHush', note: 'Hushes the Gloam never pressed hard.' },
+      { label: 'Gale days', stat: 'galeDays', note: 'Days a sea-gale blew over the Patagoi Atoll: the barges stay in, and plain track bridges are under the surf.' },
       { label: 'Floods weathered', stat: 'floodsWeathered', note: 'Hushes a water people came through with the river in flood.' },
     ],
   },

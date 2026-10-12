@@ -649,6 +649,11 @@
     "title": "The Gloam-locked island: Township and 300 tiles burned back",
     "hint": "Ward Lanterns outward from the Stake; the Watch and a Hunters' Lodge for the hounds."
   },
+  "z_atoll": {
+    "chapter": "The Charter",
+    "title": "The Patagoi Atoll: Burgh, with four isles settled",
+    "hint": "Six isles, a ley node on each. The near isles lie over shallow bars: bridge them (Cobble holds in the Hush gales). The far two take barges. Six standing buildings make an isle settled."
+  },
   "z_inherited": {
     "chapter": "The Charter",
     "title": "The inherited collapse: ten clean days, then Burgh",
