@@ -5596,7 +5596,20 @@ and prints an "Atoll charter" report; the run key gains `-atoll`, so valley runs
 - `scripts/playtest95.mjs`: the title screen with the Atoll, a new atoll at zoom 1, a Track and a Cobble bridge built, a
   gale day with six Track tiles closed and the Cobble row open; no page errors (`shots/iter95_*.png`).
 - **The control seed** (`npx tsx scripts/balance.ts 42 150`): 3,194 folk, milestone 8, identical to main's.
-- **The wide bar** (`--bar wide --compare origin/main`): BAR_RESULT
+- **The wide bar** (`--bar wide --compare origin/main`): every people within the noise, the valley otherwise identical to main (192 runs, 140 minutes)
+
+| people | this tree | origin/main | Δ (paired by seed) | ± 2·SE | verdict |
+|---|---|---|---|---|---|
+| vellish | 2,229 | 2,229 | +0 (0.0 %) | 196 | within the noise |
+| grimmen | 1,422 | 1,422 | +0 (0.0 %) | 123 | within the noise |
+| veshari | 2,279 | 2,295 | −16 (−0.7 %) | 220 | within the noise |
+| tallowkin | 2,085 | 2,085 | +0 (0.0 %) | 229 | within the noise |
+
+  - The only moved runs are four Veshari draws on seeds 42, 43, 44 and 47: the fords cobbled on a high-water day (above).
+  - The floors: Vellish 8.8 %, Grimmen 8.7 %, Veshari 9.6 % met; **the Tallowkin's 11.0 % is not met, at the cap of 8
+    draws** (identical on main; issue 123). No gate moved for any people.
+  - The bar was run twice, the second time after the Veshari founding fix (a change in `atoll.ts` only, which changes the
+    sim key): the same numbers. The cache is committed in `balance/cache/`.
 
 **Not verified:** a human playing it through to Burgh; the far isles by bot (it never gets there); the Portal Arch and
 drake-rider crossings (they use code that already exists and are not exercised by a test on the Atoll).
