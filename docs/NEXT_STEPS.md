@@ -349,6 +349,18 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 95 (M17 part 3, the Patagoi Atoll)
+
+- **The Patagoi Atoll charter:** six isles in open water (a great isle, three near isles joined by shallow bars that bridge
+  at four times the road price, two far isles across deep channels), a ley node on each, the Gloam on the far isles only.
+  Its own generator, so every valley map is unchanged (DESIGN §4.126).
+- **Goal:** Burgh with four isles settled (six zone buildings each); quest `z_atoll`, 5,000 crowns, a live status line.
+- **Sea-gales in the Hush:** twice a Hush for two days; barges stay in port, plain Track bridges close, Cobble and bridges
+  by a Quay, Landing or Weir hold; the Observatory forecasts; an Annals row and a dev command.
+- **The table runs a charter:** `scripts/table.ts --scenario atoll`. Result: goal reached by Vellish 6/6, Grimmen 4/6,
+  Veshari 6/6 (after a founding fix; 3/6 before), Tallowkin 6/6. The bot is unchanged and never reaches the far isles.
+- Follow-ups are GitHub issues 105 to 109 (milestone "Atoll polish").
+
 ## Done in iteration 94 (lit views at night, trees by region)
 
 - **A view at night keeps the lights on:** the lights, window and spire glows stay lit and only the ambient is lifted so
@@ -1122,14 +1134,13 @@ the single items first (all done by iteration 77), then the milestones. Each num
 1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-2. **M17 part 3, the Patagoi Atoll** (§17.1). A scenario charter of islands in open water, with a goal and the bot.
-3. **M18 part 1, the Fen-Nex** (§17.2).
+2. **M18 part 1, the Fen-Nex** (§17.2).
    - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
    - The fen start, the buildings, the look, the bot, and a row in the table.
-4. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-5. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+3. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+4. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-6. **M19 part 2, the Belerial** (§17.3).
+5. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-7. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+6. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
