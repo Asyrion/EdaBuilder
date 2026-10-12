@@ -60,7 +60,7 @@ export function designSection(text: string, id: string): string | null {
   return h ? text.split('\n').slice(h.from, h.to).join('\n').trim() : null;
 }
 
-interface Run { seed: number; people: string; rolls: number; days: number; folk: number; milestone: number; gates?: { name: string; day: number }[] }
+interface Run { seed: number; people: string; rolls: number; days: number; folk: number; milestone: number; gates?: { name: string; day: number }[]; scenario?: string }
 
 /** The balance bar's cache (DESIGN 4.102): each file's runs by people and seed, newest file first. `current` marks the
     file whose sim key is the working tree's (its runs are this tree's numbers). */
@@ -73,6 +73,7 @@ export function balance(root: string) {
     const d = JSON.parse(readFileSync(join(dir, f), 'utf8')) as { created?: string | number; runs: Record<string, Run> };
     const peoples: Record<string, { seeds: Record<string, { folk: number; gate: string; day: number | null; draws: number }[]> }> = {};
     for (const r of Object.values(d.runs)) {
+      if (r.scenario && r.scenario !== 'valley') continue; // a charter's runs (the Atoll, iteration 95) are not the valley's numbers
       const p = (peoples[r.people] ??= { seeds: {} });
       const last = r.gates?.[r.gates.length - 1];
       (p.seeds[r.seed] ??= []).push({ folk: r.folk, gate: last?.name ?? '', day: last?.day ?? null, draws: r.rolls });

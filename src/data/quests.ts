@@ -407,7 +407,7 @@ const STATUS: Record<string, (s: GameState) => string> = {
   z_atoll: (s) => {
     const have = isleBuildings(s);
     const settled = have.filter((c) => c >= SETTLED_BUILDINGS).length;
-    return `${settled} of ${ATOLL_ISLES} isles settled (${SETTLED_BUILDINGS} buildings each; now ${have.slice(0, 6).join(', ')}); ${milestonesOf(s)[Math.min(6, milestonesOf(s).length - 1)].name} ${s.milestone >= 6 ? 'reached' : `not yet: ${n0(s.population)} folk`}.`;
+    return `${settled} of ${ATOLL_ISLES} isles settled (${SETTLED_BUILDINGS} homes, markets, crafts or arcane houses each; now ${have.slice(0, 6).join(', ')}, the great isle first); ${milestonesOf(s)[Math.min(6, milestonesOf(s).length - 1)].name} ${s.milestone >= 6 ? 'reached' : `not yet: ${n0(s.population)} folk`}.`;
   },
   z_island: (s) => `Burned back ${n0(Math.min(s.stats.gloamBurned, 300))} of 300; ${milestonesOf(s)[Math.min(4, milestonesOf(s).length - 1)].name} ${s.milestone >= 4 ? 'reached' : 'not yet'}.`,
 };

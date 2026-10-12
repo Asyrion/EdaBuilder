@@ -395,6 +395,7 @@ const closedSets = new WeakMap<GameState, Set<number>>();
 export function fordClosed(state: GameState, i: number): boolean {
   const c = state.water?.closed;
   if (!c || !c.length) return false;
+  if (state.road[i] !== RoadType.Track) return false; // a bridge cobbled mid-gale (or a ford raised to a road) is open at once (iteration 95)
   let set = closedSets.get(state);
   if (!set || set.size !== c.length) { set = new Set(c); closedSets.set(state, set); }
   return set.has(i);
@@ -423,7 +424,7 @@ export function dailyFords(state: GameState): void {
       for (const a of state.agents) if ((a.kind === AgentKind.Citizen || a.kind === AgentKind.Cart || a.kind === AgentKind.Walker || a.kind === AgentKind.Builder) && a.path.some((t, k) => k >= a.pathIdx && set.has(t))) { a.path = []; a.pathIdx = 0; a.timer = Math.max(a.timer, 20); }
       if (!before.length && galeToday(state)) pushMessage(state, `A sea-gale blows in: ${closed.length} plain track bridge${closed.length === 1 ? ' is' : 's are'} under the surf and the barges stay in port. Cobbled bridges hold, and so do bridges within ${GALE_HOLD} tiles of a Quay or a Weir.`, 'warn', true, { x: closed[0] % MAP_W, y: (closed[0] / MAP_W) | 0 });
       else if (!before.length) pushMessage(state, `High water: ${closed.length} ford${closed.length === 1 ? ' is' : 's are'} under the river. Carts and folk go round by a bridge, if there is one; a Weir within ${WEIR_REACH} tiles holds a ford.`, 'warn', true, { x: closed[0] % MAP_W, y: (closed[0] / MAP_W) | 0 });
-    } else if (before.length) pushMessage(state, galeOn(state, state.day - 1) ? 'The gale blows itself out: the bridges are open again.' : 'The river falls: the fords are open again.', 'info', false);
+    } else if (before.length) pushMessage(state, galeToday(state) ? 'The gale blows on, but the bridges you cobbled hold.' : galeOn(state, state.day - 1) ? 'The gale blows itself out: the bridges are open again.' : 'The river falls: the fords are open again.', 'info', false);
   }
   if (closed.length) state.stats.fordDaysClosed++;
   if (galeToday(state)) state.stats.galeDays++;

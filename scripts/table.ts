@@ -35,6 +35,8 @@ const target = Number(opt('target', '0.10'));
 const maxDraws = Number(opt('max-draws', wide ? '8' : String(draws)));
 const days = Number(opt('days', '150'));
 const scenario = opt('scenario', 'valley')!; // a charter other than the valley, e.g. --scenario atoll (iteration 95)
+if (!['valley', 'onenode', 'island', 'atoll', 'inherited'].includes(scenario)) throw new Error(`unknown --scenario "${scenario}"`);
+if (scenario !== 'valley' && (opt('compare') || opt('ref'))) throw new Error('--scenario has no main side to compare with: an older tree does not know the charter');
 const jobs = Number(opt('jobs', String(Math.max(1, cpus().length)))); // every core since iteration 71
 const out = resolve(ROOT, opt('out', 'shots/table.json')!);
 const cacheDir = resolve(ROOT, 'balance/cache');
@@ -180,8 +182,8 @@ try {
       const goals = rs.filter((r) => r.goal).length;
       const settled = rs.map((r) => (r.isles ?? []).filter((c) => c >= 6).length);
       const mean = (xs: number[]) => xs.reduce((x, y) => x + y, 0) / Math.max(1, xs.length);
-      const burgh = rs.map((r) => r.gates.find((g) => g.name === 'Burgh')?.day).filter((d): d is number => d !== undefined);
-      return `| ${p} | ${rs.length} | ${goals}/${rs.length} | ${mean(settled).toFixed(1)} | ${burgh.length ? [...burgh].sort((x, y) => x - y)[burgh.length >> 1] : '–'} | ${Math.round(mean(rs.map((r) => r.folk)))} | ${mean(rs.map((r) => r.galeDays ?? 0)).toFixed(1)} |`;
+      const burgh = rs.map((r) => r.gates[6]?.day).filter((d): d is number => d !== undefined); // the seventh gate is Burgh for every people (milestone 6)
+      return `| ${p} | ${rs.length} | ${goals}/${rs.length} | ${mean(settled).toFixed(1)} | ${burgh.length ? `${[...burgh].sort((x, y) => x - y)[burgh.length >> 1]} (${burgh.length}/${rs.length})` : '–'} | ${Math.round(mean(rs.map((r) => r.folk)))} | ${mean(rs.map((r) => r.galeDays ?? 0)).toFixed(1)} |`;
     });
     console.log(`\nThe ${scenario} charter (${days} days):\n\n| people | runs | goal reached | isles settled (mean) | median Burgh day | folk (mean) | gale days (mean) |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}`);
   }

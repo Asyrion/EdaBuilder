@@ -206,6 +206,14 @@ describe('Sea-gales in the Hush', () => {
     s.buildings.push({ id: 8999, kind: 'quay', x: (i % MAP_W) + GALE_HOLD, y: (i / MAP_W) | 0, w: 1, h: 1, state: 'ok', level: 1, lit: true } as unknown as Building);
     dailyFords(s);
     expect(fordClosed(s, i)).toBe(false);
+    s.buildings.pop();
+    s.road[i] = RoadType.Track;
+    dailyFords(s);
+    expect(fordClosed(s, i)).toBe(true);
+    s.road[i] = RoadType.Cobble; // cobbled in the middle of the gale: open at once, not at the next dawn
+    expect(fordClosed(s, i)).toBe(false);
+    s.road[i] = RoadType.Track;
+    s.buildings.push({ id: 8999, kind: 'quay', x: (i % MAP_W) + GALE_HOLD, y: (i / MAP_W) | 0, w: 1, h: 1, state: 'ok', level: 1, lit: true } as unknown as Building);
     s.day = HUSH + galeStarts(42, 0)[0] + GALE_DAYS; // the gale has blown out
     s.buildings.pop();
     dailyFords(s);

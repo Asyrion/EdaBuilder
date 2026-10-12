@@ -54,7 +54,7 @@ describe('The cache files', () => {
       expect(name).toMatch(/^[0-9a-f]{12}-[0-9a-f]{12}\.json$/);
       const f = JSON.parse(readFileSync(`balance/cache/${name}`, 'utf8')) as CacheFile;
       expect(Number.isNaN(Date.parse(f.created))).toBe(false);
-      for (const [key, r] of Object.entries(f.runs)) expect(key).toBe(cacheKey({ sim: '', runner: '', people: r.people, seed: r.seed, rolls: r.rolls, days: r.days }).run);
+      for (const [key, r] of Object.entries(f.runs)) expect(key).toBe(cacheKey({ sim: '', runner: '', people: r.people, seed: r.seed, rolls: r.rolls, days: r.days, scenario: (r as { scenario?: string }).scenario }).run);
     }
   });
 });

@@ -1,13 +1,13 @@
 /** Headless balance run with the scripted bot. Usage: npx tsx scripts/balance.ts [seed] [days] [treasury] [faction] [roll=N|null]
  *  `roll=N` draws N extra rolls of the main stream on day 10 (`null` is roll=1): the seed's draws, the noise a change must clear
- *  (DESIGN 4.91–4.93). The last line, `json: {…}`, is what scripts/table.ts reads. */
+ *  (DESIGN 4.91–4.93). A charter other than the valley: `scenario=atoll` after roll=N (iteration 95; the json line then also names the isles).
+ *  The last line, `json: {…}`, is what scripts/table.ts reads. */
 import { createGame } from '../src/sim/world';
 import { ROLL_DAY, extraRolls, rollsOf } from './rolls';
 import { isFordTile, waterCensus } from '../src/sim/water';
 import { run } from '../src/sim/sim';
 import { TICKS_PER_DAY, type Scenario } from '../src/sim/types';
 import { createScenario } from '../src/sim/scenario';
-import { isleBuildings } from '../src/sim/isles';
 import { computeLedger } from '../src/sim/economy';
 import { Bot } from '../src/sim/bot';
 import { WILD_SPECIES, quarryOf, wildCensus } from '../src/sim/wild';
@@ -17,7 +17,8 @@ const seed = Number(process.argv[2] ?? 42);
 const days = Number(process.argv[3] ?? 120);
 const faction = (process.argv[5] ?? 'vellish') as FactionId;
 const rolls = rollsOf(process.argv[6]);
-const scenario = (process.argv.find((a) => a.startsWith('scenario='))?.slice(9) ?? 'valley') as Scenario; // iteration 95: a charter other than the valley, e.g. scenario=atoll
+const scenario = (process.argv.find((a) => a.startsWith('scenario='))?.slice(9) ?? 'valley') as Scenario; // iteration 95: a charter other than the valley, e.g. scenario=atoll (after roll=N)
+if (!['valley', 'onenode', 'island', 'atoll', 'inherited'].includes(scenario)) throw new Error(`unknown scenario "${scenario}"`);
 const state = scenario === 'valley' ? createGame(seed, 'Botwick', 'valley', faction) : createScenario(seed, 'Botwick', scenario, faction);
 if (process.argv[4] && process.argv[4] !== '-') state.treasury = Number(process.argv[4]);
 const bot = new Bot(state);
@@ -53,5 +54,5 @@ console.log('json: ' + JSON.stringify({
   seed, people: faction, rolls, days, folk: state.population, milestone: state.milestone,
   gates: milestoneDays.map((d, i) => ({ name: milestonesOf(state)[i].name, day: d })),
   treasury: Math.round(state.treasury), loan: Math.round(state.loan), depotDay: bot.depotDay, roadCrowns: Math.round(roadCrowns), caravanCrowns: state.stats.caravanCrowns, gameOver: !!state.gameOver,
-  ...(scenario === 'valley' ? {} : { scenario, isles: isleBuildings(state), goal: state.questsDone.includes(`z_${scenario}`), galeDays: state.stats.galeDays }),
+  ...(scenario === 'valley' ? {} : { scenario, isles: (await import('../src/sim/isles')).isleBuildings(state), goal: state.questsDone.includes(`z_${scenario}`), galeDays: state.stats.galeDays }),
 }));

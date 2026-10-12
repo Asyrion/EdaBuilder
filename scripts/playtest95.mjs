@@ -39,29 +39,30 @@ const bridge = await page.evaluate(() => {
   const g = window.__game, s = g.state, w = window.__wardlight, f = s.founding;
   const find = (dy0) => { for (let dy = dy0; dy < dy0 + 8; dy++) { const xs = []; for (let x = f.x; x < f.x + 40; x++) if (s.terrain[(f.y + dy) * s.w + x] === 1) xs.push(x); if (xs.length >= 5) return { y: f.y + dy, x0: Math.min(...xs) - 2, x1: Math.max(...xs) + 2 }; } return null; };
   const a = find(-4), b = find(3);
-  let cost = 0;
-  for (const [spot, kind] of [[a, 1], [b, 2]]) if (spot) { const path = w.actions.roadPath(spot.x0, spot.y, spot.x1, spot.y, false); const r = w.actions.buildRoad(s, kind, path); cost += r.cost ?? 0; }
+  let cost = 0; const built = [];
+  for (const [spot, kind] of [[a, 1], [b, 2]]) if (spot) { const path = w.actions.roadPath(spot.x0, spot.y, spot.x1, spot.y, false); const r = w.actions.buildRoad(s, kind, path); built.push(r.ok !== false); cost += r.cost ?? 0; }
   w.recomputeAll(s);
   g.renderer.camera.setZoom(2); const m = a ?? b; if (m) g.renderer.camera.centerOnTile((m.x0 + m.x1) >> 1, m.y + 2);
   g.renderer.invalidateAll(); g.ui.refresh();
-  return { track: a, cobble: b, cost: Math.round(cost) };
+  return { track: a, cobble: b, cost: Math.round(cost), built };
 });
 await page.waitForTimeout(700);
 await page.screenshot({ path: 'shots/iter95_bridge.png' });
 // the same, on the first gale day of the first Hush
-const gale = await page.evaluate(() => {
+const gale = await page.evaluate((bridgeSpots) => {
   const g = window.__game, s = g.state, w = window.__wardlight;
   const { galeStarts } = window.__wardlight.gales;
   s.day = 90 + galeStarts(s.seed, 0)[0];
   s.tick = s.day * 900 + 300;
   w.water.dailyFords(s);
   g.renderer.invalidateAll(); g.ui.refresh();
-  return { closed: s.water.closed.length, galeDays: s.stats.galeDays, messages: s.messages.slice(-3).map((m) => m.text) };
-});
+  const onRow = (spot) => s.water.closed.filter((i) => Math.floor(i / s.w) === spot.y && s.terrain[i] === 1).length;
+  return { closed: s.water.closed.length, trackRowClosed: bridgeSpots.a ? onRow(bridgeSpots.a) : 0, cobbleRowClosed: bridgeSpots.b ? onRow(bridgeSpots.b) : 0, galeDays: s.stats.galeDays, messages: s.messages.slice(-3).map((m) => m.text) };
+}, { a: bridge.track, b: bridge.cobble });
 await page.waitForTimeout(700);
 await page.screenshot({ path: 'shots/iter95_gale.png' });
 console.log(JSON.stringify({ title, picked, info, bridge, gale, errors }, null, 1));
-const ok = title.length === 5 && title.some((t) => t.startsWith('atoll')) && info.scenario === 'atoll' && info.nodes === 6 && gale.closed > 0 && !errors.length;
+const ok = title.length === 5 && title.some((t) => t.startsWith('atoll')) && info.scenario === 'atoll' && info.nodes === 6 && gale.closed > 0 && gale.trackRowClosed > 0 && gale.cobbleRowClosed === 0 && bridge.built.every(Boolean) && !errors.length;
 console.log(ok ? 'PLAYTEST 95 OK' : 'PLAYTEST 95 FAILED');
 await browser.close();
 process.exit(ok ? 0 : 1);
