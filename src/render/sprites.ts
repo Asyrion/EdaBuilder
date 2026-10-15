@@ -1659,7 +1659,8 @@ function wickSpec(spec: BuildingSpec, level: number, variant: number): BuildingS
 function fenSpec(spec: BuildingSpec, level: number, variant: number, zone: string): BuildingSpec {
   const walls: Wall[] = ['timber', 'brick', 'log', 'plaster'];
   const roofs: Roof[] = level === 1 ? ['thatch', 'thatch', 'moss', 'thatch'] : level === 2 ? ['thatch', 'awning', 'thatch', 'shingle'] : ['thatch', 'copper', 'tile', 'thatch'];
-  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: zone === 'market' && variant % 2 === 1 ? 'awning' : roofs[variant % 4], height: spec.height + 3, stilts: true, lanternPost: spec.lanternPost || variant % 2 === 0, banner: spec.banner || zone === 'market', chimney: false, seed: (spec.seed ?? 0) + 1100 };
+  const hearth = zone === 'hearth';
+  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: zone === 'market' && variant % 2 === 1 ? 'awning' : roofs[variant % 4], height: spec.height + 3, hip: variant % 2 === 1, stilts: true, lanternPost: spec.lanternPost || variant % 2 === 0, banner: spec.banner || zone === 'market', sign: spec.sign || zone === 'market', glowWindows: true, chimney: false, porch: false, flowerBox: false, woodpile: false, sideTree: undefined, fence: false, bush: false, dormer: false, balcony: false, brickChimney: false, reedBundles: hearth && variant === 2, fishRack: hearth && variant === 3, seed: (spec.seed ?? 0) + 1100 };
 }
 
 /** Peoples with a zone look of their own: the atlas carries a `_people` copy of every zoned sprite. */

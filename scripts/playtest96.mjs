@@ -74,11 +74,11 @@ const street = await page.evaluate(() => {
   s.milestone = 5; s.treasury = 999999; s.sectors.fill(1); s.lessonsSeen = ['districts'];
   const at = (x, y) => y * s.w + x;
   const Y = f.y + 5;
-  for (let y = Y - 4; y <= Y + 4; y++) for (let x = f.x - 12; x <= f.x + 14; x++) { const i = at(x, y); if (s.terrain[i] === 7) continue; s.terrain[i] = y < Y && (x + y) % 3 !== 0 ? 9 : 3; s.gloam[i] = 0; s.road[i] = 0; const k = s.bIndex[i]; if (k >= 0 && s.buildings[k]) w.actions.bulldoze(s, x, y); }
+  for (let y = Y - 4; y <= Y + 4; y++) for (let x = f.x - 12; x <= f.x + 14; x++) { const i = at(x, y); if (s.terrain[i] === 7) continue; s.terrain[i] = y < Y ? 9 : 3; s.gloam[i] = 0; s.road[i] = 0; const k = s.bIndex[i]; if (k >= 0 && s.buildings[k]) w.actions.bulldoze(s, x, y); }
   w.actions.buildRoad(s, 2, w.actions.roadPath(f.x - 12, Y, f.x + 14, Y, false));
   const put = (k, x, y, lvl) => { const b = w.place(s, k, x, y, lvl); if (b) { b.state = 'ok'; b.work = 0; b.lit = true; b.watered = true; } return b; };
   let stilts = 0;
-  for (let x = f.x - 10; x <= f.x + 12; x += 1) { const ok = w.actions.paintZone(s, 1, x, Y - 1, x, Y - 1).ok; if (ok && s.terrain[at(x, Y - 1)] === 9) stilts++; if (ok) put('hearth', x, Y - 1, 1 + (x & 1) + (x % 5 === 0 ? 1 : 0)); }
+  for (let x = f.x - 10; x <= f.x + 12; x += 2) { const ok = w.actions.paintZone(s, 1, x, Y - 1, x, Y - 1).ok; if (ok && s.terrain[at(x, Y - 1)] === 9) stilts++; if (ok) put('hearth', x, Y - 1, 1 + (x & 1) + (x % 5 === 0 ? 1 : 0)); }
   const craft = w.actions.paintZone(s, 3, f.x - 2, Y + 1, f.x, Y + 1);
   put('caravanserai', f.x - 10, Y + 1); put('foxpost', f.x - 7, Y + 1); put('fenden', f.x + 8, Y + 1);
   for (let x = f.x - 6; x <= f.x + 6; x += 1) put('market', x, Y + 1, 1 + (x & 1) + (x % 4 === 0 ? 1 : 0));
@@ -88,7 +88,7 @@ const street = await page.evaluate(() => {
   return { fx: f.x, Y, stilts, craftRefused: !craft.ok, craftReason: craft.reason };
 });
 for (const [name, tick] of [['street_4x', 250], ['street_night_4x', 640]]) {
-  await page.evaluate(([x, y, tick]) => { const g = window.__game, s = g.state; s.tick = s.day * 900 + tick; g.renderer.camera.setZoom(4); g.renderer.camera.centerOnTile(x, y); g.renderer.invalidateAll(); g.ui.refresh(); }, [street.fx - 1, street.Y, tick]);
+  await page.evaluate(([x, y, tick]) => { const g = window.__game, s = g.state; document.getElementById('toast')?.classList.add('hidden'); s.tick = s.day * 900 + tick; g.renderer.camera.setZoom(4); g.renderer.camera.centerOnTile(x, y); g.renderer.invalidateAll(); g.ui.refresh(); }, [street.fx - 1, street.Y - 1, tick]);
   await page.waitForTimeout(500);
   await page.screenshot({ path: `shots/iter96_${name}.png` });
 }
@@ -105,7 +105,7 @@ await page.screenshot({ path: 'shots/iter96_panel.png' });
 const menu = await page.evaluate(() => {
   const g = window.__game;
   g.select(null);
-  g.ui.category = 'zones'; g.ui.refreshItems(); g.ui.refresh();
+  g.ui.category = 'zones'; g.ui.refreshItems(); g.ui.refresh(); document.getElementById('toast')?.classList.add('hidden');
   return document.body.innerText.includes('Craft');
 });
 await page.waitForTimeout(400);
