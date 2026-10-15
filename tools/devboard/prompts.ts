@@ -55,10 +55,11 @@ const PEOPLE_LOOK: Record<string, string> = {
   grimmen: 'Grimmen: ash-grey stone cut into the hill, heavy lintels, standing stones, turf and slab roofs.',
   veshari: 'Veshari: river folk of the Sable, reed and tarred timber, stilts and moorings, blue-dyed cloth, water-mage sigils.',
   tallowkin: 'Tallowkin: small candle-lit timber buildings, wax and tallow, many lamps and wicks, soot-dark beams.',
+  fennex: 'Fen-Nex: fox-folk traders of the fen, plank and russet brick on stilts over the marsh, reed thatch, striped awnings, banners and signs in two scripts.',
 };
 
 export function peopleOf(b: Building): string[] {
-  return b.faction?.length ? b.faction : ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+  return b.faction?.length ? b.faction : ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
 }
 
 /** Paragraphs of the lore docs that name the building (its name, or the name without "The"). */

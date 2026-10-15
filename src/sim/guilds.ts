@@ -1,5 +1,5 @@
 /** The guild council: four guilds that sit at the Guildhall, each with a standing, a boon, a strike and an edict they petition for. See DESIGN.md 4.44. */
-import { BUILDING_BY_KEY } from './catalog';
+import { BUILDING_BY_KEY, isDepot } from './catalog';
 import { AgentKind, Zone, type Building, type GameState } from './types';
 import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
@@ -134,7 +134,7 @@ export function guildDrivers(s: GameState, g: GuildId): { text: string; value: n
   const on = (k: string) => !!s.edicts[k];
   switch (g) {
     case 'carters': {
-      const depots = count(s, (k) => k === 'depot' || (k === 'cartersyard' && hallActive(s, 'cartersyard')));
+      const depots = count(s, (k) => isDepot(k) || (k === 'cartersyard' && hallActive(s, 'cartersyard')));
       add(depots ? 'a Trade Depot' : 'no Trade Depot', depots ? 0.6 : -0.6);
       if (count(s, (k) => MOORINGS.includes(k)) >= 2) add('barges on the river', 0.4);
       const routes = tradeRoutes(s).filter((r) => r.kind !== 'road').length;

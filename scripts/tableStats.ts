@@ -119,6 +119,7 @@ export function renderTable(a: Run[], b?: Run[], names: [string, string] = ['thi
     const cs = [...A.keys()].filter((p) => B.has(p)).map((p) => compare(p, A.get(p)!, B.get(p)!));
     out.push(`| people | ${names[0]} mean | ${names[1]} mean | Δ (paired by seed) | ± 2·SE | verdict |`, '|---|---|---|---|---|---|');
     for (const c of [...cs, overall(cs)]) out.push(`| ${c.people} | ${n0(c.meanA)} | ${n0(c.meanB)} | ${sgn(c.delta)} (${pct(c.delta, c.meanB)}) | ${n0(c.floor)} | ${c.seen ? '**seen**' : 'within the noise'} |`);
+    for (const p of [...A.keys()].filter((p) => !B.has(p))) out.push(`| ${p} | ${n0(mean([...A.get(p)!.values()].flat().map((r) => r.folk)))} | – | – | – | new people: no row on ${names[1]} |`); // a people the other ref does not know (iteration 96)
   }
   out.push('');
   // the trade: how many runs stand a depot, its median day, and what the road and the caravan paid (iteration 63)

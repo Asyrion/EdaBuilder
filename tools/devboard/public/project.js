@@ -148,7 +148,7 @@ const ProjectUI = (() => {
       <div class="field"><label>Key</label><div><input type="text" id="cy" placeholder="lower case, e.g. lanternmarket"></div><div class="help">For a building: its key in buildings.json.</div></div>
       <div class="field"><label>The idea</label><div><textarea id="ci" rows="5" placeholder="What it is, what it does in the city, why the player builds it"></textarea></div></div>
       <div class="field"><label>Numbers</label><div><input type="text" id="cm" placeholder="cost, upkeep, size, unlock milestone… if known"></div></div>
-      <div class="field"><label>Peoples</label><div class="checks">${["vellish", "grimmen", "veshari", "tallowkin"].map(p => `<label><input type="checkbox" value="${p}">${p}</label>`).join("")}</div><div class="help">None ticked: every people.</div></div>
+      <div class="field"><label>Peoples</label><div class="checks">${["vellish", "grimmen", "veshari", "tallowkin", "fennex"].map(p => `<label><input type="checkbox" value="${p}">${p}</label>`).join("")}</div><div class="help">None ticked: every people.</div></div>
       <div class="field"><label>Art</label><div><select id="ca"><option value="yes">wanted: a painting through the art pipeline</option><option value="code">drawn in code for now</option><option value="no">none</option></select></div></div>
       <div id="cmsg"></div>
       <div class="foot"><span class="left"><button class="btn" data-compose-create>Create the entry now</button></span><button class="btn ghost" data-close>Cancel</button><button class="btn primary" data-compose-send>Write the task</button></div></div>`;

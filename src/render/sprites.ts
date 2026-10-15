@@ -255,6 +255,7 @@ export interface BuildingSpec {
   fence?: boolean; // pickets along the left front edge
   dormer?: boolean; // a dormer window on the front slope
   balcony?: boolean; // a railing across the right face at mid height
+  stilts?: boolean; // raised on posts over the fen: the lowest rows of the walls are open, posts at the corners and every few pixels (the Fen-Nex, iteration 96)
   brickChimney?: boolean; // the chimney in brick instead of stone
 }
 
@@ -361,6 +362,21 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
   };
   texWall(L[0], L[1], B[0], B[1], false);
   texWall(B[0], B[1], R[0], R[1], true);
+  if (spec.stilts) {
+    // the open underfloor: four dark rows under each face, a post at the corners and every fifth pixel, a floor beam over them
+    const under = (x0: number, y0: number, x1: number, y1: number) => {
+      const len = Math.abs(x1 - x0);
+      for (let i = 0; i <= len; i++) {
+        const x = x0 + (x1 > x0 ? i : -i);
+        const gy = Math.floor(y0 + ((y1 - y0) * i) / len);
+        const post = i === 0 || i === len || i % 5 === 0;
+        for (let d = 0; d < 4; d++) p.px(x, gy - d, post ? 'wood2' : 'outline', post ? 255 : 150);
+        p.px(x, gy - 4, 'wood1');
+      }
+    };
+    under(L[0], L[1], B[0], B[1]);
+    under(B[0], B[1], R[0], R[1]);
+  }
   // wall bottom edge and vertical corner
   p.line(L[0], L[1], B[0], B[1], 'outline');
   p.line(B[0], B[1], R[0], R[1], 'outline');
@@ -1327,7 +1343,7 @@ function rock(variant: number): Painter {
   return p;
 }
 
-function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean): { p: Painter; glow: Painter } {
+function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean, fox = false): { p: Painter; glow: Painter } {
   // drawn by hand (iteration 65): two-tone cloth lit from the right, a belt, boots, arms that swing against the stride.
   // The layout is the walkers' (hair or cap on row t-1, the face on t..t+1, the body on t+2..t+5, props in columns 6 and 7).
   const p = new Painter(8, 12);
@@ -1335,7 +1351,7 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   const cloth: Col[] = ['cloth1', 'cloth2', 'cloth3', 'cloth4', 'cloth5', 'wood2'];
   const c = cloth[variant % cloth.length];
   const skin: Col = grimmen ? 'skinGrey' : 'skin';
-  const t = tallow ? 3 : 1;
+  const t = tallow ? 3 : fox ? 2 : 1;
   const f = frame % 4;
   // arms first, so the body overlaps their shoulders: the forward arm reaches a row lower, and its hand shows
   const armL = f === 0 ? 3 : f === 2 ? 1 : 2;
@@ -1355,6 +1371,7 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   p.rect(3, t, 2, 2, skin);
   p.px(3, t + 1, 'outline', 60);
   if (grimmen) { p.rect(2, t - 1, 4, 1, 'bone'); p.px(2, t - 1, 'stone2'); }
+  else if (fox) { p.rect(2, t - 1, 4, 1, 'copper'); p.px(2, t - 2, 'copper'); p.px(5, t - 2, 'copper'); p.px(2, t - 1, 'outline', 70); p.px(1, t + 5, 'copper'); p.px(0, t + 6, 'copper'); p.px(0, t + 7, 'whitewash'); } // russet fur, two ears and a brush: the Fen-Nex (iteration 96)
   else if (variant % 3 === 0) { p.rect(2, t - 1, 4, 1, c); p.px(2, t, c); p.px(5, t, c); p.px(2, t, 'outline', 80); }
   else p.rect(3, t - 1, 2, 1, variant % 2 ? 'wood1' : 'outline');
   if (tallow) { for (const x of [3, 4]) { p.px(x, t, 'windowLit'); glow.px(x, t, 'windowLit'); } }
@@ -1638,13 +1655,21 @@ function wickSpec(spec: BuildingSpec, level: number, variant: number): BuildingS
   return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], height: spec.height + 4, overhang: true, glowWindows: true, windowRows: (spec.windowRows ?? 1) + 1, seed: (spec.seed ?? 0) + 900 };
 }
 
+/** The Fen-Nex build on stilts over the fen: plank, log and russet brick under reed thatch, awnings and banners at the markets (iteration 96). */
+function fenSpec(spec: BuildingSpec, level: number, variant: number, zone: string): BuildingSpec {
+  const walls: Wall[] = ['timber', 'brick', 'log', 'plaster'];
+  const roofs: Roof[] = level === 1 ? ['thatch', 'thatch', 'moss', 'thatch'] : level === 2 ? ['thatch', 'awning', 'thatch', 'shingle'] : ['thatch', 'copper', 'tile', 'thatch'];
+  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: zone === 'market' && variant % 2 === 1 ? 'awning' : roofs[variant % 4], height: spec.height + 3, stilts: true, lanternPost: spec.lanternPost || variant % 2 === 0, banner: spec.banner || zone === 'market', chimney: false, seed: (spec.seed ?? 0) + 1100 };
+}
+
 /** Peoples with a zone look of their own: the atlas carries a `_people` copy of every zoned sprite. */
-export const ZONE_LOOKS = ['grimmen', 'veshari', 'tallowkin'];
+export const ZONE_LOOKS = ['grimmen', 'veshari', 'tallowkin', 'fennex'];
 
 function zoneSpecs(zone: string, level: number, variant: number, people?: string): BuildingSpec {
   if (people === 'grimmen') return stoneSpec(zoneSpecs(zone, level, variant), level, variant);
   if (people === 'veshari') return reedSpec(zoneSpecs(zone, level, variant), level, variant, zone);
   if (people === 'tallowkin') return wickSpec(zoneSpecs(zone, level, variant), level, variant);
+  if (people === 'fennex') return fenSpec(zoneSpecs(zone, level, variant), level, variant, zone);
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
@@ -1742,6 +1767,10 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true, runeBand: true, bellTower: true },
   shrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
   candleshrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, windowRows: 2, door: true, glowWindows: true, seed: 52, lanternPost: true, leyLamps: true },
+  // the Fen-Nex (iteration 96): a caravan yard of russet brick under awnings, a waystation on stilts, a reed den on warm stones
+  caravanserai: { w: 2, h: 2, height: 12, roofH: 7, wall: 'brick', roof: 'awning', windows: 2, windowRows: 1, door: true, sign: true, banner: true, stalls: true, lanternPost: true, glowWindows: true, hip: true, fence: true, seed: 96 },
+  foxpost: { w: 1, h: 1, height: 9, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, banner: true, lanternPost: true, glowWindows: true, stilts: true, seed: 97 },
+  fenden: { w: 2, h: 2, height: 7, roofH: 8, wall: 'stone', roof: 'thatch', windows: 1, door: true, glowWindows: true, leyLamps: true, reedBundles: true, standingStones: true, seed: 98 },
   wicktower: { w: 1, h: 1, height: 14, roofH: 3, wall: 'plaster', roof: 'cone', windows: 1, windowRows: 3, seed: 53, glowWindows: true, lanternPost: true },
   temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true },
   academy: { w: 2, h: 2, height: 13, roofH: 6, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
@@ -2156,8 +2185,8 @@ export function generateSprites(): SpriteDef[] {
     else push(`b_${key}`, drawBuilding(spec));
   }
   // agents
-  for (let v = 0; v < 6; v++)
-    for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
+  for (let v = 0; v < 7; v++)
+    for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5, v === 6); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
   for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff'], ['stonesexton', 'salt'], ['bargeman', 'pole'], ['lamplighter', 'lamp']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {

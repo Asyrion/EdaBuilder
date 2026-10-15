@@ -124,6 +124,12 @@ export function isZoneUnlocked(milestone: number, zone: Zone): boolean {
   return key ? milestone >= BUILDING_BY_KEY[key].unlock : false;
 }
 
+/** The Gloam road's yards: the Trade Depot, and the Fen-Nex's Caravanserai that stands for it (iteration 96). */
+export const DEPOT_KINDS = ['depot', 'caravanserai'];
+export function isDepot(kind: string): boolean {
+  return DEPOT_KINDS.includes(kind);
+}
+
 export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;

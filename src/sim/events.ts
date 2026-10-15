@@ -1,5 +1,5 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
-import { BUILDING_BY_KEY } from './catalog';
+import { BUILDING_BY_KEY, isDepot } from './catalog';
 import { bodyOf, ensureShoals, shoalCap } from './water';
 import { moorings, factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
@@ -337,7 +337,7 @@ const EGGS: EventDef[] = [
     text: EVENT_TEXT.egg_first.text,
     when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
     choices: [
-      { label: EVENT_TEXT.egg_first.choices[0].label, desc: (s) => `${s.faction === 'veshari' ? 'A tide' : 'An ember'} egg goes into your cradle.`, apply: (s) => { const d = addEgg(s, s.faction === 'veshari' ? 'tide' : 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
+      { label: EVENT_TEXT.egg_first.choices[0].label, desc: (s) => `${s.faction === 'veshari' ? 'A tide' : s.faction === 'fennex' ? 'A fen' : 'An ember'} egg goes into your cradle.`, apply: (s) => { const d = addEgg(s, s.faction === 'veshari' ? 'tide' : s.faction === 'fennex' ? 'fen' : 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
       { label: EVENT_TEXT.egg_first.choices[1].label, desc: EVENT_TEXT.egg_first.choices[1].desc!, apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
     ],
   },
@@ -402,7 +402,7 @@ const VISITORS: EventDef[] = [
   {
     id: 'fennex', title: EVENT_TEXT.fennex.title, once: true,
     text: EVENT_TEXT.fennex.text,
-    when: (s) => s.milestone >= 4 && s.population > 250,
+    when: (s) => s.faction !== 'fennex' && s.milestone >= 4 && s.population > 250, // a Fen-Nex city does not receive the Fen-Nex as visitors (iteration 96)
     choices: [
       { label: EVENT_TEXT.fennex.choices[0].label, desc: EVENT_TEXT.fennex.choices[0].desc, apply: (s) => { const rng = rngOf(s); const honest = rng.chance(0.5); commitRng(s, rng); if (honest) { s.treasury += 3000; return 'Honest, this time. Salts, dyes and a set of scales that weigh true, paid for in coin that stays coin.'; } s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 7, label: 'Swindled by foxes' }); return 'The coin turns to leaves by morning. The Fen-Nex are already two valleys away, laughing.'; } },
       { label: EVENT_TEXT.fennex.choices[1].label, desc: EVENT_TEXT.fennex.choices[1].desc, apply: (s) => { const d = marketDistrict(s); if (!d) { s.treasury += 500; return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; } s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
@@ -465,7 +465,7 @@ const VISITORS: EventDef[] = [
   {
     id: 'caravan', title: EVENT_TEXT.caravan.title,
     text: EVENT_TEXT.caravan.text,
-    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 3,
+    when: (s) => s.buildings.some((b) => b && isDepot(b.kind) && b.state === 'ok') && s.milestone >= 3,
     choices: [
       { label: EVENT_TEXT.caravan.choices[0].label, desc: (s) => `Sell every works' surplus above 10 goods at 1.5x the season price (${caravanSurplus(s)} goods on the shelves now).`, apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } sold = Math.round(sold); const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; s.stats.caravanGoods += sold; return sold > 0 ? `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.` : 'The works have nothing to spare above ten goods a shelf. The riders buy bread and water the striders.'; } },
       { label: EVENT_TEXT.caravan.choices[1].label, desc: (s) => { const m = s.materials; return `Scale 400, wyrmfire 500, eggshell 200, rayscale 300, glim-dust 150 crowns each (${Math.round(m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150)} crowns for the whole vault); the slider sets the share sold.`; }, slider: { max: 100, label: 'share of the vault sold' }, apply: (s, amount) => { const share = amount === undefined ? 1 : Math.max(0, Math.min(100, amount)) / 100; const m = s.materials; const sold = { scale: m.scale * share, wyrmfire: m.wyrmfire * share, eggshell: m.eggshell * share, rayscale: m.rayscale * share, glimdust: m.glimdust * share }; const crowns = Math.round(sold.scale * 400 + sold.wyrmfire * 500 + sold.eggshell * 200 + sold.rayscale * 300 + sold.glimdust * 150); const line = `${Math.round(sold.scale)} scale, ${sold.wyrmfire.toFixed(1)} wyrmfire, ${sold.eggshell.toFixed(1)} eggshell, ${sold.rayscale.toFixed(1)} rayscale and ${sold.glimdust.toFixed(1)} glim-dust`; m.scale -= sold.scale; m.wyrmfire -= sold.wyrmfire; m.eggshell -= sold.eggshell; m.rayscale -= sold.rayscale; m.glimdust -= sold.glimdust; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns${share < 1 ? `; the rest stays in the vault` : ''}.` : 'The jars are empty. The riders shrug and water the striders.'; } },
@@ -483,7 +483,7 @@ const VISITORS: EventDef[] = [
       const bought = m.eggs ? `${m.eggs === 1 ? 'an egg' : `${m.eggs} eggs`}${m.spent > m.eggs * 3000 ? ' and more' : ''}` : m.spent ? 'seeds and salts' : 'nothing yet';
       return `The wagon is back, for the ${['second', 'third', 'fourth', 'fifth'][Math.min(3, m.visits - 1)]} time. The merchant remembers: ${m.visits} visit${m.visits === 1 ? '' : 's'}, ${m.spent.toLocaleString()} crowns, ${bought}${m.talks >= 2 ? ', and the stories you traded instead of coin. She says she owes you one' : m.talks ? ', and one evening of stories' : ''}. ${m.eggs ? `The basket holds ${m.eggs === 1 ? 'a storm egg this time' : 'an ember egg this time'}` : 'The white egg is still in its basket'}, ${m.eggs ? 'at a price for an old customer' : 'at the old price'}.`;
     },
-    when: (s) => s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay >= 10,
+    when: (s) => s.buildings.some((b) => b && isDepot(b.kind) && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay >= 10,
     choices: [
       { label: EVENT_TEXT.merchant.choices[0].label, desc: (s) => `${merchantEgg(s) === 'sky' ? 'A sky egg: a wyvern-only line, the fastest courier' : merchantEgg(s) === 'storm' ? 'A storm egg: the storm line, lightning in its wake' : 'An ember egg: the Craft line'}, ${merchantPrice(s, 4000).toLocaleString()} crowns${s.merchant.eggs ? ` (a tenth off for each egg bought: ${s.merchant.eggs})` : ''}. Needs a free cradle.`, apply: (s) => { const price = merchantPrice(s, 4000); const line = merchantEgg(s); if (s.treasury < price) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, line); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= price; s.merchant.spent += price; s.merchant.eggs++; merchantVisit(s); return `The egg is ${line === 'sky' ? 'white as the plains at noon' : line === 'storm' ? 'the blue of a sky before hail, and it hums' : 'warm as a hearthstone'}. The tamers name it ${d.name}.`; } },
       { label: EVENT_TEXT.merchant.choices[1].label, desc: (s) => `Goods production +20% for 30 days: ${merchantPrice(s, 1200).toLocaleString()} crowns.`, apply: (s) => { const price = merchantPrice(s, 1200); if (s.treasury < price) return 'Not enough crowns.'; s.treasury -= price; s.merchant.spent += price; merchantVisit(s); s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
@@ -865,7 +865,7 @@ export function maybeFireWyrm(s: GameState): void {
 /** The Belerial caravan keeps a rhythm of its own: every CARAVAN_EVERY days at a standing depot, the first half a rhythm after the depot opens. */
 export const CARAVAN_EVERY = 12;
 export function hasDepot(s: GameState): boolean {
-  return s.milestone >= 3 && s.buildings.some((b) => b && b.kind === 'depot' && b.state === 'ok');
+  return s.milestone >= 3 && s.buildings.some((b) => b && isDepot(b.kind) && b.state === 'ok');
 }
 /** Goods the caravan's Trade would buy today: every works' stock above ten. */
 export function caravanSurplus(s: GameState): number {
