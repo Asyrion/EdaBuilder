@@ -5,7 +5,7 @@ import { pushMessage } from './world';
 
 /** A people's own chapter belongs to that people alone; every other quest is everyone's. */
 export function questsFor(s: GameState): QuestDef[] {
-  return QUESTS.filter((q) => !q.people || q.people === s.faction);
+  return QUESTS.filter((q) => (!q.people || q.people === s.faction) && !q.notFor?.includes(s.faction));
 }
 
 export function activeQuests(s: GameState, max = 3, pinChapter?: string): QuestDef[] {

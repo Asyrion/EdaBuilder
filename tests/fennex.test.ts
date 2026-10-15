@@ -14,6 +14,7 @@ import { Bot } from '../src/sim/bot';
 import { serialize, deserialize } from '../src/sim/save';
 import { FACTIONS, FENNEX_ROUTES, canBuild, factionKey, milestonesOf, nextGate, type FactionId } from '../src/data/factions';
 import { flatten } from './helpers';
+import { questsFor } from '../src/sim/quests';
 
 /** A flat town with two roads at dy 2 and 3. */
 function town(faction: FactionId = 'fennex'): GameState {
@@ -165,6 +166,16 @@ describe('The fen start, the den and the visitors', () => {
     s.day = 8 * DAYS_PER_SEASON;
     dailyFenEggs(s);
     expect(s.dragons.length).toBe(1);
+  });
+
+  it('the Ledger never asks them for Craft: the Craft tasks give way to the Caravanserai and the routes', () => {
+    const ids = questsFor(town()).map((q) => q.id);
+    for (const id of ['f_jobs', 'o_cart', 'k_glim', 'o_caravan', 'q_quay']) expect(ids, id).not.toContain(id);
+    expect(ids).toContain('x_caravan');
+    expect(ids).toContain('x_routes');
+    const v = questsFor(town('vellish')).map((q) => q.id);
+    expect(v).toContain('f_jobs');
+    expect(v).not.toContain('x_caravan');
   });
 
   it('a Fen-Nex city is not visited by the Fen-Nex', () => {
