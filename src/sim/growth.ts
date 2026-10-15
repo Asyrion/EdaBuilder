@@ -1,5 +1,5 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
-import { BUILDING_BY_KEY, ZONE_KEY, isZoneUnlocked } from './catalog';
+import { BUILDING_BY_KEY, ZONE_KEY, isDepot, isZoneUnlocked } from './catalog';
 import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
 import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
@@ -19,6 +19,7 @@ export const SPENT_RATE = 2;
 import { seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
+import { dailyCaravans } from './trade';
 import { mothBonus } from './creatures';
 import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
 import { FISH_HAPPY, FISH_PRICE, SMOKE_KEEP, THATCH_HAPPY, fishNear, thatched } from './water';
@@ -501,7 +502,8 @@ export function updateDemand(state: GameState): void {
   if (pop < 30) hearth = Math.max(hearth, 0.5);
   hearth -= state.unrest * 0.5;
   // Market: needs shoppers; wants ~1 market job per 5 residents.
-  const marketWant = pop / 5;
+  const fen = factionOf(state).rules;
+  const marketWant = (pop / 5) * (fen.marketJobs ?? 1); // the Fen-Nex want a market hand for every two folk, not five (iteration 96)
   let market = pop < 12 ? -0.2 : Math.max(-1, Math.min(1, (marketWant - marketJobs) / Math.max(10, marketWant))) * 0.9;
   market -= (state.taxRates.market - 10) * 0.04;
   market += unemployment * 0.3;
@@ -521,6 +523,7 @@ export function updateDemand(state: GameState): void {
   craft += unemployment * 0.5;
   craft -= (state.taxRates.craft - 10) * 0.04;
   if (marketJobs > 0 && state.goodsShort > 0) craft += Math.min(0.4, state.goodsShort / Math.max(4, marketJobs / 4));
+  if (fen.noCraft) craft = -1; // no works at all: goods come by caravan
   // Arcane: needs education; wants ~1 arcane job per 6 residents once educated.
   let arcane = -0.2;
   if (isZoneUnlocked(state.milestone, Zone.Arcane)) {
@@ -533,7 +536,7 @@ export function updateDemand(state: GameState): void {
   lastDemandWhy = [
     `Hearth: ${jobs} jobs for ${workforce} hands${jobSurplus > 0 ? ' (work to spare: folk want homes)' : ' (no work: nobody comes)'} · happiness ${Math.round(state.happiness)} · unrest ${Math.round(state.unrest * 100)} %${hearthCap - hearthRes > Math.max(8, pop * 0.25) ? ' · many homes stand empty' : ''}`,
     `Market: ${marketJobs} market jobs, ${Math.round(marketWant)} wanted for ${pop} folk${craftN > 0 && craftFull > 0 ? ` · ${craftFull} of ${craftN} works cannot sell` : ''}`,
-    `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
+    fen.noCraft ? `Craft: none, the ${factionOf(state).people} make nothing; goods come by caravan to the Caravanserai${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}` : `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
     `Arcane: ${arcaneJobs} arcane jobs${state.educated < 0.2 ? ` · educated ${Math.round(state.educated * 100)} % (needs 20 %)` : ` · educated ${Math.round(state.educated * 100)} %`}`,
   ];
   const clamp = (v: number) => Math.max(-1, Math.min(1, v));
@@ -647,7 +650,9 @@ export function dailyTrade(state: GameState): void {
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
-  const depots = state.buildings.filter((b) => b && (b.kind === 'depot' || (b.kind === 'cartersyard' && hallActive(state, 'cartersyard'))) && b.state === 'ok');
+  const caravans = factionOf(state).rules.noCraft ? dailyCaravans(state) : 0; // the Fen-Nex buy their goods off the caravans (iteration 96)
+  if (caravans) { state.treasury -= caravans; state.tradeIncomeToday = -caravans; }
+  const depots = state.buildings.filter((b) => b && (isDepot(b.kind) || (b.kind === 'cartersyard' && hallActive(state, 'cartersyard'))) && b.state === 'ok');
   if (!depots.length) return;
   const hasBuyers = state.buildings.some((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok');
   let crowns = 0;
@@ -741,5 +746,5 @@ export function dailyTrade(state: GameState): void {
   if (hasMarvel(state, 'chartroom')) crowns *= 1.15;
   state.treasury += crowns; // exports are cash on the day
   t.exported = Math.round(t.exported);
-  state.tradeIncomeToday = Math.round(crowns);
+  state.tradeIncomeToday = Math.round(crowns) - caravans;
 }

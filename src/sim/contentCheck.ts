@@ -5,7 +5,7 @@ import { RELIC_SETS } from './relics';
 import { SERVICE_TYPES, Zone } from './types';
 
 const CATEGORIES: BuildingCategory[] = ['zone', 'ley', 'water', 'service', 'leisure', 'wonder', 'marvel', 'special'];
-const PEOPLES = ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+const PEOPLES = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
 const ZONE_KEYS = ['hearth', 'market', 'craft', 'arcane'];
 const KEY = /^[a-z][a-z0-9_]*$/;
 /** `unlock` of a building no milestone opens (a guild hall comes with its charter, guilds.ts). */

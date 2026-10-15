@@ -22,7 +22,7 @@ import { tick } from '../src/sim/sim';
 import { MAP_H, MAP_W, RoadType, TICKS_PER_DAY, Terrain, idx, isWater, type Building, type GameState } from '../src/sim/types';
 import type { FactionId } from '../src/data/factions';
 
-const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
 const fnv = (a: ArrayLike<number>, h = 0x811c9dc5) => { for (let i = 0; i < a.length; i++) h = Math.imul(h ^ a[i], 16777619) >>> 0; return h; };
 

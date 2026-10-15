@@ -108,6 +108,8 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
 
 export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, x1: number, y1: number): ActionResult {
   if (zone !== Zone.None && !isZoneUnlocked(state.milestone, zone)) return { ok: false, reason: 'Not yet unlocked' };
+  const rules = factionOf(state).rules;
+  if (zone === Zone.Craft && rules.noCraft) return { ok: false, reason: `The ${factionOf(state).people} make nothing: goods come by caravan` };
   const ax = Math.min(x0, x1);
   const bx = Math.max(x0, x1);
   const ay = Math.min(y0, y1);
@@ -119,7 +121,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || (t === Terrain.Hills && !factionOf(state).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
+      if (isWater(t) || (t === Terrain.Hills && !rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || (t === Terrain.Marsh && !(rules.stiltHomes && (zone === Zone.Hearth || zone === Zone.None)))) continue; // the Fen-Nex raise homes on stilts in the marsh (iteration 96)
       if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];

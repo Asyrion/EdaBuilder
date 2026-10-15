@@ -42,6 +42,7 @@ export interface SimHooks {
 
 /** Full recompute of derived layers (after load or big edits). */
 export function recomputeAll(state: GameState): void {
+  setFenNex(state.fenNex, state.district, factionOf(state).rules.marketStock ?? 1);
   updateMana(state);
   updateWater(state);
   updateMiasma(state);
@@ -52,7 +53,7 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  setFenNex(state.fenNex, state.district);
+  setFenNex(state.fenNex, state.district, factionOf(state).rules.marketStock ?? 1);
   setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver || state.pendingEvent) return;
   state.tick++;

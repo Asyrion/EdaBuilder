@@ -647,6 +647,22 @@
     "service": { "type": "leisure", "radius": 5, "strength": 0.3 }
   },
   {
+    "key": "fenden",
+    "name": "Fen Den",
+    "category": "service",
+    "faction": ["fennex"],
+    "desc": "A reed-roofed den on warm stones, the Fen-Nex's Wyrm-Cradle. Holds two eggs of the fen line only (four as a Great Den): russet cat-dragons that hounds cannot see, wardens of a district once grown. Lays a fen egg of its own at every Thaw while it is lit and has room. Must be lit and drinks 8 mana a day. Needs a ley node or spire within 6 to be raised.",
+    "flavor": "The cat-dragons sleep in a heap and deny it.",
+    "w": 2,
+    "h": 2,
+    "cost": 3200,
+    "upkeep": 28,
+    "manaUse": 8,
+    "unlock": 4,
+    "needsMana": true,
+    "service": { "type": "leisure", "radius": 5, "strength": 0.3 }
+  },
+  {
     "key": "tamerslodge",
     "name": "Tamer's Lodge",
     "category": "service",
@@ -690,6 +706,35 @@
     "onHills": true,
     "needsMana": true,
     "service": { "type": "leisure", "radius": 6, "strength": 0.4 }
+  },
+  {
+    "key": "caravanserai",
+    "name": "Caravanserai",
+    "category": "leisure",
+    "faction": ["fennex"],
+    "desc": "The Fen-Nex's yard for the caravans, standing for the Trade Depot. A trade route of its own once a road reaches its door. Each day it buys 24 goods off the caravans, 8 more for every trade route the city has open (its own and every other post, the river, the sky, the arches, the Twin Road), at six tenths of the day's price, and fills the emptiest markets within 16 tiles. It sells the city's surplus on the Gloam road as a depot does.",
+    "flavor": "Every bale is weighed twice, once honestly.",
+    "w": 2,
+    "h": 2,
+    "cost": 1200,
+    "upkeep": 15,
+    "manaUse": 1,
+    "unlock": 0,
+    "service": { "type": "leisure", "radius": 5, "strength": 0.3 }
+  },
+  {
+    "key": "foxpost",
+    "name": "Fox-Post",
+    "category": "leisure",
+    "faction": ["fennex"],
+    "desc": "A waystation for the pack-trains. Brings 8 goods a day to the markets within 10 tiles, at the caravans' price. Stood 20 tiles or more from every Caravanserai and every other counted post, it opens a trade route of its own.",
+    "flavor": "A lantern, a ledger and a fox who swears the scales are true.",
+    "w": 1,
+    "h": 1,
+    "cost": 450,
+    "upkeep": 6,
+    "manaUse": 0,
+    "unlock": 2
   },
   {
     "key": "depot",

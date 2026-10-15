@@ -1,4 +1,4 @@
-import { GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
+import { FENNEX_ROUTES, GRIMMEN_STONE, TALLOW_LIGHT, VELLISH_HAPPINESS, canBuild, factionKey, factionOf, litShare, milestonesOf, stoneQuarried, MOORINGS, costOf } from '../data/factions';
 import { FISH_MARKET_REACH, REED_REACH, SMOKE_KEEP, SMOKE_REACH, THATCH_REACH, WEIR_REACH, bodyOf, ensureShoals, fishingWater, isFordTile, reedBeds, shoalCap, weirHolds } from './water';
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
@@ -12,7 +12,8 @@ import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
 import { HUNT_REACH, LODGE_MEAT_KEEP, MEAT_REACH, WILD, WILD_SPECIES, herdsInGrounds, huntFloor, quarryOf, setQuarry } from './wild';
 import { RELIC_KEEP, RELIC_PRICE } from './growth';
-import { roadTileOf } from './agents';
+import { marketStockCap, roadTileOf } from './agents';
+import { FOXPOST_SPACING, routePosts, routesOpened } from './trade';
 import { BUILDING_BY_KEY, GATE_COST, GATE_UNLOCK, MILESTONES, WALL_UNLOCK, isBuildingUnlocked } from './catalog';
 import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
@@ -56,6 +57,7 @@ export class Bot {
   fishBuilt = 0; // huts and smokehouses the bot raised (iteration 60)
   /** Iteration 61: the day the bot's depot went up, reed-cutters and Weirs raised, ford tiles bridged. */
   depotDay = -1;
+  tradeDay = -99; // the Fen-Nex's last post raised (iteration 96)
   cuttersBuilt = 0;
   weirsBuilt = 0;
   fordsBridged = 0;
@@ -120,6 +122,7 @@ export class Bot {
     this.quarry();
     this.moor();
     this.brighten();
+    this.trade();
     this.keepLit();
     this.linkNodes();
     this.raiseWalls();
@@ -572,6 +575,7 @@ export class Bot {
       // find unzoned road-adjacent tiles inside the radius, paint a few strips (2 rows beside a street);
       // a people that builds on hills takes the hill tiles first (stone for its milestones)
       const hillOK = factionOf(s).rules.hillBuildable;
+      const stilts = !!factionOf(s).rules.stiltHomes;
       outer: for (const hillPass of hillOK ? [true, false] : [false]) for (const want of [0, 1, 2, 3]) for (let y = this.cy - r; y <= this.cy + r; y++) {
         for (let x = this.cx - r; x <= this.cx + r; x++) {
           if (!inBounds(x, y)) continue;
@@ -579,7 +583,7 @@ export class Bot {
           if (tier(i) !== want) continue;
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
-          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
+          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins || (t === Terrain.Marsh && !(stilts && z === Zone.Hearth))) continue; // the Fen-Nex's homes stand on stilts in the marsh (iteration 96)
           if (hillPass !== (t === Terrain.Hills && hillOK)) continue;
           if (!roadOnSide(s, x, y)) continue;
           // craft away from the centre, hearth near
@@ -617,6 +621,33 @@ export class Bot {
   }
 
   /** A people gated on light: Wick-Towers beside the dark buildings when a lit spire or node is in reach, else a spire. */
+  /** The Fen-Nex make nothing (iteration 96): a Caravanserai first, another by the driest markets when shelves run dry, and a
+   *  post that opens a route when the gate wants more: a Fox-Post on a far street when one would count, else a Caravanserai. */
+  private trade(): void {
+    const s = this.s;
+    if (!factionOf(s).rules.noCraft || !canBuild(s, 'caravanserai')) return;
+    if (s.day - this.tradeDay < 3) return;
+    const next = s.milestone + 1;
+    const routesShort = next < FENNEX_ROUTES.length && routesOpened(s) < FENNEX_ROUTES[next];
+    const markets: Building[] = [];
+    forEachBuilding(s, (b) => { if (b.state === 'ok' && BUILDING_BY_KEY[b.kind].zone === Zone.Market) markets.push(b); });
+    const sera = this.countKind('caravanserai');
+    const dry = markets.filter((m) => m.stock < marketStockCap(m) * 0.1);
+    const goodsShort = sera === 0 ? markets.length > 0 || s.population > 0 : dry.length > Math.max(2, markets.length * 0.2);
+    if (!routesShort && !goodsShort) return;
+    const spare = 400 + Math.max(0, s.loan) + this.reserve;
+    if (routesShort && canBuild(s, 'foxpost') && s.treasury >= costOf(s, BUILDING_BY_KEY.foxpost) + spare) {
+      const posts = routePosts(s);
+      const far = (x: number, y: number) => roadOnSide(s, x, y) && posts.every((p) => Math.max(Math.abs(p.x - x), Math.abs(p.y - y)) >= FOXPOST_SPACING);
+      if (this.placeNear('foxpost', this.cx, this.cy, this.radius + 2, false, far)) { this.tradeDay = s.day; return; }
+    }
+    if (s.treasury < costOf(s, BUILDING_BY_KEY.caravanserai) + spare) return;
+    let tx = this.cx; let ty = this.cy;
+    if (dry.length) { tx = Math.round(dry.reduce((a, m) => a + m.x, 0) / dry.length); ty = Math.round(dry.reduce((a, m) => a + m.y, 0) / dry.length); }
+    const door = (x: number, y: number) => roadOnSide(s, x, y) || roadOnSide(s, x + 1, y) || roadOnSide(s, x, y + 1) || roadOnSide(s, x + 1, y + 1); // a yard with no road at its door opens no route
+    if (this.placeNear('caravanserai', tx, ty, 8, false, door) || this.placeNear('caravanserai', this.cx, this.cy, this.radius + 2, false, door)) this.tradeDay = s.day;
+  }
+
   private brighten(): void {
     const s = this.s;
     const gate = factionOf(s).rules.milestoneGate;

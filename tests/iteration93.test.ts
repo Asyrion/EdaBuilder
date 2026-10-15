@@ -13,7 +13,7 @@ import type { FactionId } from '../src/data/factions';
 import { flatten } from './helpers';
 
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
-const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
 
 describe('Iteration 93: every task says what it still needs', () => {
   it('the list of "build X" tasks with a larger goal matches their conditions', () => {

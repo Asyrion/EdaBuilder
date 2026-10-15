@@ -293,7 +293,12 @@ Charter as `.json`.
   climb milestones named by reach that need moorings as well as folk. The Tallowkin of the
   Wick are born between two nodes: their spires reach further and cost double, Wick-Towers
   light the corners, a house three days dark is abandoned, the Hush vigil is theirs to keep,
-  and their milestones are measured by how much of the city burns bright.
+  and their milestones are measured by how much of the city burns bright. The Fen-Nex of the
+  Reach, fox-folk traders, found their city on a fen and make nothing: no Craft zones, goods
+  bought off the caravans at a Caravanserai (a trade route of its own, its caravans growing
+  with every route open) and at Fox-Posts, markets that hold three times the stock and want a
+  hand for every two folk, homes on stilts in the marsh, a Fen Den that lays a fen cat-dragon
+  egg each Thaw, and milestones counted in trade routes opened.
 - Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims,
   the Grimmen's stone-sextons and the Veshari's bargemen walk the roads from their buildings and do their jobs where
   they go; the streets they walk

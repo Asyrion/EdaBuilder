@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked, type BuildingDef, type Milestone } from '../sim/catalog';
 import { Terrain, idx, type GameState } from '../sim/types';
 
-export type FactionId = 'vellish' | 'grimmen' | 'veshari' | 'tallowkin';
+export type FactionId = 'vellish' | 'grimmen' | 'veshari' | 'tallowkin' | 'fennex';
 
 export interface FactionRules {
   hillLandValue: number; // land value added on Hills tiles
@@ -24,6 +24,10 @@ export interface FactionRules {
   vigilMandatory: boolean; // skipping the vigil costs the people dearly (events.ts)
   milestoneGate?: (s: GameState, next: number) => boolean; // false holds the city at its milestone
   gateHold?: (s: GameState, next: number) => boolean; // a gate that must hold GATE_HOLD_DAYS days running (s.litHeld counts them, in checkMilestones)
+  noCraft?: boolean; // Craft zones cannot be painted: goods come by caravan (actions.ts, growth.ts; the Fen-Nex, iteration 96)
+  marketStock?: number; // × a market's shelf (agents.ts marketStockCap)
+  marketJobs?: number; // × the market jobs the folk want (growth.ts updateDemand)
+  stiltHomes?: boolean; // Hearths may be painted on marsh (actions.ts paintZone)
 }
 
 export interface FactionDef {
@@ -113,7 +117,32 @@ const TALLOW_TEXTS = [
   'The Lantern of Wicks. Every window in the city burns, and the Gloam has nowhere to stand.',
 ];
 const TALLOW_SWAP: Record<string, string> = { shrine: 'candleshrine', lantern_wonder: 'lanternofwicks' };
+const FENNEX_SWAP: Record<string, string> = { depot: 'caravanserai', cradle: 'fenden' };
 export const TALLOW_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: TALLOW_NAMES[i], text: TALLOW_TEXTS[i], unlocks: m.unlocks.map((k) => TALLOW_SWAP[k] ?? k) }));
+
+/** Trade routes opened: the Fen-Nex's milestones count them. The count lives in trade.ts (routesOpened), which hands it here
+ *  when it loads: an import from this file would close a cycle through the sim's core (a constant left undefined). */
+let routeCounter: (s: GameState) => number = () => 0;
+export function setRouteCounter(f: (s: GameState) => number): void {
+  routeCounter = f;
+}
+export function routesOpened(s: GameState): number {
+  return routeCounter(s);
+}
+export const FENNEX_ROUTES = [0, 0, 1, 1, 2, 3, 4, 5, 6];
+const FENNEX_NAMES = ['Stall', 'Booth', 'Bazaar', 'Fair', 'Mart', 'Exchange', 'Staple Town', 'Free Port', 'Fox Crown'];
+const FENNEX_TEXTS = [
+  'A stall at the marsh edge. No works, no smoke: raise a Caravanserai and let the roads bring the goods to you.',
+  'A booth with a sign in two scripts. The Crown sends cobbles, a sexton and a healer; the Fen-Nex send for more ledgers.',
+  'A bazaar on the first road: one route open, and the first Ward Lantern is yours to raise.',
+  "A fair on the Crown's maps. Scholars, a proper Watch and the carters follow the caravans in.",
+  'A mart where two roads meet. The deep Veins may be tapped and a Fen Den warmed for the cat-dragons.',
+  'An exchange: caravans from three valleys stop at your posts, and every price is honest half the time. The guilds petition for a hall.',
+  'A staple town of a thousand souls. The Four Vigils ask for a temple, and haggle over the price.',
+  "A free port of five roads: the Crown grants you the right to raise the Lantern, if you will pay for it in full.",
+  'The Fox Crown. Six roads run to your shelves, and the Gloam cannot find a road that leads here.',
+];
+export const FENNEX_MILESTONES: Milestone[] = MILESTONES.map((m, i) => ({ ...m, name: FENNEX_NAMES[i], text: FENNEX_TEXTS[i], unlocks: m.unlocks.filter((k) => k !== 'craft' && k !== 'depot').map((k) => FENNEX_SWAP[k] ?? k).concat(i === 0 ? ['caravanserai'] : i === 2 ? ['foxpost'] : []) }));
 
 export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false };
 
@@ -140,6 +169,12 @@ export const FACTIONS: Record<string, FactionDef> = {
     lore: 'The small candle-eyed people born beside the Veins, the spire-wrights of every wardlight, chartered under two nodes. Light is life: a house three days dark is abandoned, their spires reach a tile further and cost double, Wick-Towers light the corners cheaply, the Hush vigil is theirs to keep, and their milestones are measured by how much of the city burns bright.',
     milestones: TALLOW_MILESTONES, deny: [], replaces: { shrine: 'candleshrine', lantern: 'lanternofwicks' },
     rules: { ...NEUTRAL_RULES, spireReach: 1, spireCost: 2, darkAbandon: 3, vigilCost: 0.5, vigilMandatory: true, nodeMana: 1.2, milestoneGate: (s, next) => litShare(s) >= TALLOW_LIGHT[next] && s.litHeld >= GATE_HOLD_DAYS, gateHold: (s, next) => litShare(s) >= TALLOW_LIGHT[next] },
+  },
+  fennex: {
+    id: 'fennex', name: 'The Fen-Nex of the Reach', people: 'Fen-Nex', playable: true,
+    lore: 'The fox-folk of Longwood, shapeshifters who trade honestly exactly half the time, chartered on a marsh. They make nothing and sell everything: no Craft works, goods come in by caravan at the Caravanserai, their markets hold three times the stock and the folk want a market hand for every two of them, their homes stand on stilts in the fen, and cat-dragons from the Fen Den keep the Watch. Their milestones are counted in trade routes opened.',
+    milestones: FENNEX_MILESTONES, deny: [], replaces: { depot: 'caravanserai', cradle: 'fenden' },
+    rules: { ...NEUTRAL_RULES, startCrowns: 1500, noCraft: true, marketStock: 3, marketJobs: 2.5, stiltHomes: true, milestoneGate: (s, next) => routesOpened(s) >= FENNEX_ROUTES[next] },
   },
 };
 
@@ -197,6 +232,7 @@ export function nextGate(s: GameState): string | null {
   else if (s.faction === 'grimmen') bits.push(`${GRIMMEN_STONE[next]} stone quarried`);
   else if (s.faction === 'veshari') bits.push(`${VESHARI_MOORINGS[next]} mooring${VESHARI_MOORINGS[next] === 1 ? '' : 's'}`);
   else if (s.faction === 'tallowkin') bits.push(`${Math.round(TALLOW_LIGHT[next] * 100)} % lit for ${GATE_HOLD_DAYS} days`);
+  else if (s.faction === 'fennex') bits.push(`${FENNEX_ROUTES[next]} trade route${FENNEX_ROUTES[next] === 1 ? '' : 's'} (${routesOpened(s)} open)`);
   if (s.faction === 'vellish' && next === MS.length - 1) bits.push('the Lantern of Vell lit');
   return `${MS[next].name}: ${bits.join(', ')}`;
 }

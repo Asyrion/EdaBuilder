@@ -20,7 +20,7 @@ function opaqueHeight(name: string): number {
   return bottom - top + 1;
 }
 const folk = (name: string) => opaqueHeight(name) / CITIZEN;
-const PEOPLES = ['', '_grimmen', '_veshari', '_tallowkin'];
+const PEOPLES = ['', '_grimmen', '_veshari', '_tallowkin', '_fennex'];
 
 describe('The scale of things: the small buildings against a citizen', () => {
   it('a citizen is still 8×12', () => {

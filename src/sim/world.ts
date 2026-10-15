@@ -34,7 +34,7 @@ import {
 export const CITY_NAMES = ['Thornwick', 'Ashmere', 'Glimford', 'Hollowmoor', 'Candlecross', 'Wickholm', 'Sablemere', 'Morrowford'];
 
 export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley', faction: FactionId = 'vellish'): GameState {
-  const t = generateTerrain(seed, { ...(scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : scenario === 'atoll' ? { atoll: true } : {}), underhill: faction === 'grimmen', riverside: faction === 'veshari', twinnode: faction === 'tallowkin' });
+  const t = generateTerrain(seed, { ...(scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : scenario === 'atoll' ? { atoll: true } : {}), underhill: faction === 'grimmen', riverside: faction === 'veshari', twinnode: faction === 'tallowkin', fen: faction === 'fennex' });
   const n = MAP_W * MAP_H;
   const coverage = {} as Record<ServiceType, Uint8Array>;
   for (const s of SERVICE_TYPES) coverage[s] = new Uint8Array(n);
@@ -288,7 +288,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
   if (def.nearShore && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Shore || t === Terrain.Water)) return 'Must touch the shore or the water';
   if (def.nearGate && !touchesBelregiGate(state, x, y, def.w, def.h)) return 'Must stand beside a Belregi gate in the Warding Wall';
   if (def.nearLake && !footprintNearLake(state, x, y, def.w, def.h)) return "Must stand on the lake's shore (within 3 of open water)";
-  if (def.key === 'mothloft' || def.key === 'cradle' || def.key === 'hatchery' || def.key === 'tidepool') {
+  if (def.key === 'mothloft' || def.key === 'cradle' || def.key === 'hatchery' || def.key === 'tidepool' || def.key === 'fenden') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
     if (!near) return def.key !== 'mothloft' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';

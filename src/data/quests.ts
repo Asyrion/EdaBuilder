@@ -7,7 +7,7 @@ import { ATOLL_ISLES, SETTLED_BUILDINGS, isleBuildings, settledIsles } from '../
 import { canBuild, milestonesOf, nextGate } from './factions';
 import { MEAT_REACH, huntBlock, quarryOf } from '../sim/wild';
 import { BUILDING_BY_KEY } from '../sim/catalog';
-import { factionKey, litShare, stoneQuarried, type FactionId, moorings } from './factions';
+import { factionKey, litShare, stoneQuarried, type FactionId, moorings, routesOpened } from './factions';
 import { chose } from '../sim/events';
 import { aspectAt } from '../sim/weave';
 import { debtLine } from '../sim/economy';
@@ -31,6 +31,7 @@ export interface QuestDef {
   reward: number; // crowns
   priority: number; // lower first
   people?: FactionId; // a people's own chapter: shown and paid for that people only
+  notFor?: FactionId[]; // a task these peoples cannot do (the Fen-Nex have no Craft works, iteration 96): never shown to them
   strict?: boolean; // completes only while `when` holds (a scenario's goal never pays in another game)
   /** What the task still needs, read from the city (iteration 93): shown under the hint in the Ledger. See questStatus. */
   status?: (s: GameState) => string;
@@ -56,7 +57,7 @@ export const QUESTS: QuestDef[] = [
   // Founding
   { id: 'f_road', chapter: QUEST_TEXT.f_road.chapter, title: QUEST_TEXT.f_road.title, hint: QUEST_TEXT.f_road.hint, when: () => true, done: (s) => roads(s) > 8, focus: { tool: 'road' }, reward: 0, priority: 1 },
   { id: 'f_hearth', chapter: QUEST_TEXT.f_hearth.chapter, title: QUEST_TEXT.f_hearth.title, hint: QUEST_TEXT.f_hearth.hint, when: (s) => roads(s) > 8, done: (s) => zoned(s, Zone.Hearth, 6), focus: { tool: 'zoneHearth' }, reward: 0, priority: 2 },
-  { id: 'f_jobs', chapter: QUEST_TEXT.f_jobs.chapter, title: QUEST_TEXT.f_jobs.title, hint: QUEST_TEXT.f_jobs.hint, when: (s) => zoned(s, Zone.Hearth, 6), done: (s) => zoned(s, Zone.Craft, 3) && zoned(s, Zone.Market, 2), focus: { tool: 'zoneCraft' }, reward: 0, priority: 3 },
+  { id: 'f_jobs', chapter: QUEST_TEXT.f_jobs.chapter, notFor: ['fennex'], title: QUEST_TEXT.f_jobs.title, hint: QUEST_TEXT.f_jobs.hint, when: (s) => zoned(s, Zone.Hearth, 6), done: (s) => zoned(s, Zone.Craft, 3) && zoned(s, Zone.Market, 2), focus: { tool: 'zoneCraft' }, reward: 0, priority: 3 },
   { id: 'f_spire', chapter: QUEST_TEXT.f_spire.chapter, title: QUEST_TEXT.f_spire.title, hint: QUEST_TEXT.f_spire.hint, when: (s) => zoned(s, Zone.Hearth, 6), done: (s) => has(s, 'spire'), focus: { build: 'spire' }, reward: 0, priority: 4 },
   { id: 'f_well', chapter: QUEST_TEXT.f_well.chapter, title: QUEST_TEXT.f_well.title, hint: QUEST_TEXT.f_well.hint, when: (s) => zoned(s, Zone.Hearth, 6), done: (s) => has(s, 'well'), focus: { build: 'well' }, reward: 0, priority: 5 },
   { id: 'f_watch', chapter: QUEST_TEXT.f_watch.chapter, title: QUEST_TEXT.f_watch.title, hint: QUEST_TEXT.f_watch.hint, when: (s) => s.population > 15, done: (s) => has(s, 'watchpost') && has(s, 'shrine'), focus: { build: 'watchpost' }, reward: 300, priority: 6 },
@@ -82,10 +83,10 @@ export const QUESTS: QuestDef[] = [
   { id: 'g_greatgate', chapter: QUEST_TEXT.g_greatgate.chapter, title: QUEST_TEXT.g_greatgate.title, hint: QUEST_TEXT.g_greatgate.hint, when: (s) => s.milestone >= 6 && belregiGates(s), done: (s) => has(s, 'greatgate'), focus: { build: 'greatgate' }, reward: 2000, priority: 18 },
   { id: 'g_heart', chapter: QUEST_TEXT.g_heart.chapter, title: QUEST_TEXT.g_heart.title, hint: QUEST_TEXT.g_heart.hint, when: (s) => has(s, 'greatgate'), done: (s) => s.heart.step >= 1, focus: { center: 'greatgate' }, reward: 1000, priority: 19 },
   // Goods
-  { id: 'o_cart', chapter: QUEST_TEXT.o_cart.chapter, title: QUEST_TEXT.o_cart.title, hint: QUEST_TEXT.o_cart.hint, when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
+  { id: 'o_cart', chapter: QUEST_TEXT.o_cart.chapter, notFor: ['fennex'], title: QUEST_TEXT.o_cart.title, hint: QUEST_TEXT.o_cart.hint, when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
   { id: 'o_full', chapter: QUEST_TEXT.o_full.chapter, title: QUEST_TEXT.o_full.title, hint: QUEST_TEXT.o_full.hint, when: (s) => s.goodsShort > 0 || zoneBuildings(s, Zone.Market).length > 3, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
   { id: 'o_depot', chapter: QUEST_TEXT.o_depot.chapter, title: QUEST_TEXT.o_depot.title, hint: QUEST_TEXT.o_depot.hint, when: (s) => s.milestone >= 3, done: (s) => has(s, 'depot'), focus: { build: 'depot' }, reward: 700, priority: 20 },
-  { id: 'o_caravan', chapter: QUEST_TEXT.o_caravan.chapter, title: QUEST_TEXT.o_caravan.title, hint: QUEST_TEXT.o_caravan.hint, when: (s) => has(s, 'depot'), done: (s) => s.stats.caravanGoods >= 200, reward: 900, priority: 21 },
+  { id: 'o_caravan', chapter: QUEST_TEXT.o_caravan.chapter, notFor: ['fennex'], title: QUEST_TEXT.o_caravan.title, hint: QUEST_TEXT.o_caravan.hint, when: (s) => has(s, 'depot'), done: (s) => s.stats.caravanGoods >= 200, reward: 900, priority: 21 },
   // Schooling and the arcane
   { id: 'a_academy', chapter: QUEST_TEXT.a_academy.chapter, title: QUEST_TEXT.a_academy.title, hint: QUEST_TEXT.a_academy.hint, when: (s) => s.milestone >= 3, done: (s) => s.educated >= 0.3, focus: { build: 'academy' }, reward: 800, priority: 22 },
   { id: 'a_arcane', chapter: QUEST_TEXT.a_arcane.chapter, title: QUEST_TEXT.a_arcane.title, hint: QUEST_TEXT.a_arcane.hint, when: (s) => s.milestone >= 4, done: (s) => zoneBuildings(s, Zone.Arcane).length > 0, focus: { tool: 'zoneArcane' }, reward: 800, priority: 23 },
@@ -115,7 +116,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_ring', chapter: QUEST_TEXT.w_ring.chapter, title: QUEST_TEXT.w_ring.title, hint: QUEST_TEXT.w_ring.hint, when: (s) => s.dragons.some((d) => d.stage >= 2) && s.milestone >= 5, done: (s) => s.stats.boutsWon > 0, focus: { build: 'ring' }, reward: 2000, priority: 38 },
   // Huruhui and Gekiryu craft
   { id: 'k_mill', chapter: QUEST_TEXT.k_mill.chapter, title: QUEST_TEXT.k_mill.title, hint: QUEST_TEXT.k_mill.hint, when: (s) => s.milestone >= 4, done: (s) => has(s, 'torrentmill'), focus: { build: 'torrentmill' }, reward: 800, priority: 29 },
-  { id: 'k_glim', chapter: QUEST_TEXT.k_glim.chapter, title: QUEST_TEXT.k_glim.title, hint: QUEST_TEXT.k_glim.hint, when: (s) => s.milestone >= 3 && zoneBuildings(s, Zone.Craft).length >= 3, done: (s) => has(s, 'glimhouse'), focus: { build: 'glimhouse' }, reward: 500, priority: 39 },
+  { id: 'k_glim', chapter: QUEST_TEXT.k_glim.chapter, notFor: ['fennex'], title: QUEST_TEXT.k_glim.title, hint: QUEST_TEXT.k_glim.hint, when: (s) => s.milestone >= 3 && zoneBuildings(s, Zone.Craft).length >= 3, done: (s) => has(s, 'glimhouse'), focus: { build: 'glimhouse' }, reward: 500, priority: 39 },
   { id: 'k_gardens', chapter: QUEST_TEXT.k_gardens.chapter, title: QUEST_TEXT.k_gardens.title, hint: QUEST_TEXT.k_gardens.hint, when: (s) => s.milestone >= 4, done: (s) => has(s, 'hanginggardens'), focus: { build: 'hanginggardens' }, reward: 800, priority: 46 },
   { id: 'k_glowvine', chapter: QUEST_TEXT.k_glowvine.chapter, title: QUEST_TEXT.k_glowvine.title, hint: QUEST_TEXT.k_glowvine.hint, when: (s) => has(s, 'hanginggardens'), done: (s) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i] === 4) c++; return c >= 12; }, focus: { tool: 'road' }, reward: 600, priority: 47 },
   { id: 'k_obs', chapter: QUEST_TEXT.k_obs.chapter, title: QUEST_TEXT.k_obs.title, hint: QUEST_TEXT.k_obs.hint, when: (s) => s.milestone >= 5, done: (s) => has(s, 'observatory'), focus: { build: 'observatory' }, reward: 1000, priority: 48 },
@@ -130,7 +131,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'e_mews', chapter: QUEST_TEXT.e_mews.chapter, title: QUEST_TEXT.e_mews.title, hint: QUEST_TEXT.e_mews.hint, when: (s) => s.milestone >= 6 && has(s, 'watchhouse'), done: (s) => has(s, 'drakemews'), focus: { build: 'drakemews' }, reward: 800, priority: 53 },
   { id: 'e_edict', chapter: QUEST_TEXT.e_edict.chapter, title: QUEST_TEXT.e_edict.title, hint: QUEST_TEXT.e_edict.hint, when: (s) => s.milestone >= 4, done: (s) => !!(s.edicts.beastmasters || s.edicts.bounty || s.edicts.wyrmpeace) || Object.keys(s.districtEdicts).some((k) => s.districtEdicts[k] && /:(beastmasters|bounty|wyrmpeace)$/.test(k)), focus: { panel: 'edicts' }, reward: 400, priority: 54 },
   // Vehicles
-  { id: 'q_quay', chapter: QUEST_TEXT.q_quay.chapter, title: QUEST_TEXT.q_quay.title, hint: QUEST_TEXT.q_quay.hint, when: (s) => s.milestone >= 3 && zoneBuildings(s, Zone.Market).length > 2, done: (s) => s.stats.bargeTrips > 0, focus: { build: 'quay' }, reward: 700, priority: 55 },
+  { id: 'q_quay', chapter: QUEST_TEXT.q_quay.chapter, notFor: ['fennex'], title: QUEST_TEXT.q_quay.title, hint: QUEST_TEXT.q_quay.hint, when: (s) => s.milestone >= 3 && zoneBuildings(s, Zone.Market).length > 2, done: (s) => s.stats.bargeTrips > 0, focus: { build: 'quay' }, reward: 700, priority: 55 },
   { id: 'q_float', chapter: QUEST_TEXT.q_float.chapter, title: QUEST_TEXT.q_float.title, hint: QUEST_TEXT.q_float.hint, when: (s) => zoneBuildings(s, Zone.Arcane).length > 0, done: (s) => s.agents.some((a) => a.kind === 1 && a.variant === 3), reward: 600, priority: 56 },
   { id: 'q_rider', chapter: QUEST_TEXT.q_rider.chapter, title: QUEST_TEXT.q_rider.title, hint: QUEST_TEXT.q_rider.hint, when: (s) => has(s, 'drakemews'), done: (s) => s.stats.riderRescues > 0, focus: { build: 'drakemews' }, reward: 800, priority: 57 },
   { id: 'q_airship', chapter: QUEST_TEXT.q_airship.chapter, title: QUEST_TEXT.q_airship.title, hint: QUEST_TEXT.q_airship.hint, when: (s) => s.milestone >= 8, done: (s) => s.stats.airshipVoyages > 0, focus: { build: 'skydock' }, reward: 3000, priority: 69 },
@@ -196,6 +197,9 @@ export const QUESTS: QuestDef[] = [
   { id: 't_nexus', chapter: QUEST_TEXT.t_nexus.chapter, people: 'tallowkin', title: QUEST_TEXT.t_nexus.title, hint: QUEST_TEXT.t_nexus.hint, when: (s) => s.faction === 'tallowkin' && s.milestone >= 4, done: (s) => s.buildings.some((b) => b && b.kind === 'nexus' && b.state === 'ok' && b.lit), focus: { build: 'nexus' }, reward: 800, priority: 24 },
   { id: 't_hall', chapter: QUEST_TEXT.t_hall.chapter, people: 'tallowkin', title: QUEST_TEXT.t_hall.title, hint: QUEST_TEXT.t_hall.hint, when: (s) => s.faction === 'tallowkin' && s.milestone >= 5, done: (s) => has(s, 'hallofwicks'), focus: { build: 'hallofwicks' }, reward: 1500, priority: 40 },
   { id: 't_lantern', chapter: QUEST_TEXT.t_lantern.chapter, people: 'tallowkin', title: QUEST_TEXT.t_lantern.title, hint: QUEST_TEXT.t_lantern.hint, when: (s) => s.faction === 'tallowkin' && s.milestone >= 7, done: (s) => has(s, 'lanternofwicks'), focus: { build: 'lanternofwicks' }, reward: 5000, priority: 70 },
+  // The Fen-Nex (iteration 96): the two tasks that stand for the Craft ones; their chapter comes in part 2
+  { id: 'x_caravan', chapter: 'The Reach', people: 'fennex', title: 'Raise a Caravanserai and zone a Market', hint: 'The Fen-Nex make nothing: a Caravanserai with a road at its door buys goods off the caravans and fills the markets within 16 tiles. Zone two Market tiles beside it.', when: (s) => s.faction === 'fennex' && zoned(s, Zone.Hearth, 6), done: (s) => has(s, 'caravanserai') && routesOpened(s) >= 1 && zoned(s, Zone.Market, 2), focus: { build: 'caravanserai' }, reward: 300, priority: 3, status: (s) => `${has(s, 'caravanserai') && routesOpened(s) >= 1 ? 'A Caravanserai trades' : has(s, 'caravanserai') ? 'The Caravanserai has no road at its door' : 'No Caravanserai yet'}; Market ${Math.min(zonedCount(s, Zone.Market), 2)} of 2 tiles zoned.` },
+  { id: 'x_routes', chapter: 'The Reach', people: 'fennex', title: 'Open two trade routes', hint: 'Every Caravanserai opens a road route, and so does a Fox-Post twenty tiles from every other post; a river, the sky and the arches count too. The milestones count them.', when: (s) => s.faction === 'fennex' && s.milestone >= 2, done: (s) => routesOpened(s) >= 2, focus: { build: 'foxpost' }, reward: 600, priority: 9, status: (s) => `${routesOpened(s)} of 2 routes open.` },
   // The Vein-Wyrm
   { id: 'v_find', chapter: QUEST_TEXT.v_find.chapter, title: QUEST_TEXT.v_find.title, hint: QUEST_TEXT.v_find.hint, when: (s) => s.wyrm.state !== 'none' && s.milestone >= 3, done: (s) => s.wyrm.waking > 0 || s.wyrm.state !== 'sleeping', focus: { center: 'wyrm' }, reward: 300, priority: 41 },
   { id: 'v_tribute', chapter: QUEST_TEXT.v_tribute.chapter, title: QUEST_TEXT.v_tribute.title, hint: QUEST_TEXT.v_tribute.hint, when: (s) => s.wyrm.state === 'awake', done: (s) => s.stats.wyrmTributes > 0, focus: { center: 'wyrm' }, reward: 500, priority: 42 },
@@ -234,7 +238,7 @@ export function advise(s: GameState): { text: string; focus?: Focus } | null {
   if (d > zb.length * 0.25) return { text: `${d} buildings are dry. Dig Wells or a Cistern near them.`, focus: { overlay: 'water' } };
   if (s.unquieted > 12 && !has(s, 'boneyard')) return { text: 'The dead are piling up unquieted. Build a Boneyard before they rise.', focus: { build: 'boneyard' } };
   if (s.agents.filter((a) => a.kind === AgentKind.Restless).length > 5) return { text: 'The restless walk. Watch coverage and wards lay them down.', focus: { overlay: 'watch' } };
-  if (s.goodsShort > Math.max(3, zoneBuildings(s, Zone.Market).length * 0.4)) return { text: 'Markets are running dry. Zone Craft works with a road to them, or import through a Trade Depot.', focus: { overlay: 'goods' } };
+  if (s.goodsShort > Math.max(3, zoneBuildings(s, Zone.Market).length * 0.4)) return { text: s.faction === 'fennex' ? 'Markets are running dry. Raise another Caravanserai by them, or open a route: every route open brings each Caravanserai 8 more goods a day.' : 'Markets are running dry. Zone Craft works with a road to them, or import through a Trade Depot.', focus: { overlay: 'goods' } };
   if (s.agents.some((a) => a.kind === AgentKind.Creature && a.species === 'hound') && !has(s, 'hunterslodge')) return { text: "Gloam-hounds are hunting at the edge. A Hunters' Lodge or a Warding Wall stops them.", focus: { build: 'hunterslodge' } };
   { const lair = (s.marshWyrms ?? []).find((w) => w.lair >= 0); if (lair) return { text: 'A marsh-wyrm lairs under a bridge and the carts crawl across it. A Veshari Hall that covers the bridge drives it off; a Quay within 10 keeps them away.', focus: { build: 'veshari' } }; }
   if (s.wyrm.state === 'bound' && s.wyrm.sulking > 0) return { text: 'The bound wyrm is sulking: its lair no longer wards the Gloam. Feed it 40 goods a day from the markets.', focus: { overlay: 'goods' } };
@@ -415,7 +419,7 @@ for (const id of ['c_thorp', 'c_village', 'c_township', 'c_market', 'c_burgh', '
 
 /** "Build X" tasks whose goal is more than that building standing: their line must not say "Built." while they are open.
  *  A test holds this list to the conditions (a plain `has(s, key)` done is the generic case). */
-export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'g_hounds', 'a_academy', 's_brownout', 'w_cradle', 'w_ring', 'p_arch', 'e_foundry', 'e_beacon', 'q_quay', 'q_rider', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'w_wyrm', 'n_tiger', 'y_marvel', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'w_tamer', 'u_hatch', 'u_forge', 'v_landings', 'v_barge', 'v_hatch', 't_spire', 't_tower', 't_nexus', 'z_island']);
+export const NOT_PLAIN_BUILD = new Set(['x_caravan', 'x_routes', 'f_watch', 'd_restless', 'g_hounds', 'a_academy', 's_brownout', 'w_cradle', 'w_ring', 'p_arch', 'e_foundry', 'e_beacon', 'q_quay', 'q_rider', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'w_wyrm', 'n_tiger', 'y_marvel', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'w_tamer', 'u_hatch', 'u_forge', 'v_landings', 'v_barge', 'v_hatch', 't_spire', 't_tower', 't_nexus', 'z_island']);
 
 /** The task's status line: its own, else the generic one for a "build X" task whose goal is that building; else none. */
 export function questStatus(s: GameState, q: QuestDef): string | null {

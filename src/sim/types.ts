@@ -438,7 +438,7 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
+  trade: { exported: number; imported: number; importCost: number; caravanGoods?: number; caravanCost?: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
   wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
   marshWyrms?: MarshWyrm[]; // the marsh-wyrms out in Bloom (marshwyrms.ts, iteration 86; absent in older saves)
   water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
