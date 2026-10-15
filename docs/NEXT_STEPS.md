@@ -349,6 +349,26 @@
   every twelve days; Trade counts its goods (the Ledger quest can complete), says the
   surplus on the shelves, and the depot panel counts the caravan down.
 
+## Done in iteration 96 (M18 part 1, the Fen-Nex of the Reach)
+
+- **The fifth people** (DESIGN §4.127): fox-folk traders who make nothing.
+  - No Craft zones; goods are bought off the caravans at a Caravanserai and at Fox-Posts.
+  - Markets hold three times the stock and want a hand for every two folk; homes may stand on stilts in the marsh.
+  - The Fen Den takes fen eggs only and lays one each Thaw.
+  - The milestones (Stall to Fox Crown) count trade routes opened.
+- **The fen start:** marsh within three tiles of the founding, by a channel and a looser marsh rule; no other map moves.
+- **The look:** stilt houses, a Caravanserai under striped awnings, a Fox-Post, a reed Fen Den and fox-folk citizens, all
+  drawn in code.
+- **The bot, the table and the Ledger:**
+  - The bot raises Caravanserais and Fox-Posts; the table runs five peoples and prints a new people's row.
+  - The Ledger keeps the five Craft tasks from them and gives them two of their own.
+- **The wide bar:** Fen-Nex 2,298 folk on average, floor met (8.9 %), every run at the Mart by a median day 19, Free
+  Port 12/12, Fox Crown 4/12. The other four peoples are identical to main. The Tallowkin floor is still not met at the
+  cap (issue 123).
+- **Known:** late-game shelves run dry in bot cities (the bot under-builds Caravanserais); the bot rarely raises a Fen
+  Den.
+- **eda-lore:** a draft proposal for the Fen-Nex and the fen cat-dragon, Asyrion/eda-lore PR 5, for the owner.
+
 ## Done in iteration 95 (M17 part 3, the Patagoi Atoll)
 
 - **The Patagoi Atoll charter:** six isles in open water (a great isle, three near isles joined by shallow bars that bridge
@@ -1031,6 +1051,9 @@
 
 ## Known issues
 
+- **The Fen-Nex bot runs its shelves dry late** (iteration 96, DESIGN §4.127): 150 to 180 empty markets at day 150 on
+  seeds 42 and 43; it raises a Caravanserai only when the purse allows, and it rarely raises a Fen Den. Happiness held.
+
 - **The marsh costs the Grimmen bot a sixth of its folk** (iteration 85, DESIGN §4.116), seen past the noise; the cause is
   the map, not the miasma, the causeway price or draining. Shipped at the user's word; worth a probe of the bot's purse.
 
@@ -1134,13 +1157,14 @@ the single items first (all done by iteration 77), then the milestones. Each num
 1. **The art still drawn in code** (HANDOFF.md "Still drawn in code"): new paintings from the user for the buildings, folk,
    vehicles, creatures and terrain that eda-lore does not cover yet, imported as looks the same way. Waits on the user's
    sheets.
-2. **M18 part 1, the Fen-Nex** (§17.2).
-   - Rules: no Craft, goods by caravan and route, triple market stock, cat-dragon wardens, progression by routes.
-   - The fen start, the buildings, the look, the bot, and a row in the table.
-3. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
-4. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
+2. **M18 part 2, the Fen-Nex's game** (§17.2). Their chapter, tales, walker, wonder and late game.
+   - Also: the Fen-Nex in the daily challenge's draw.
+   - The bot keeping its shelves full: it under-builds Caravanserais late, and rarely raises a Fen Den.
+   - Their own paintings, if the user's sheets bring them.
+3. **M19 part 1, striders** (§17.3). A strider stable, fast carts and couriers for every people, and the caravan's
     strider trade.
-5. **M19 part 2, the Belerial** (§17.3).
+4. **M19 part 2, the Belerial** (§17.3).
     - Rules: no walls, the bounty always on, the Gloam outrun, progression by herds.
     - The start, the buildings, the look, the bot, and a row in the table.
-6. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+5. **M19 part 3, the Belerial's game** (§17.3). Their chapter, tales, walker, wonder and late game.
+(M18 part 1, the Fen-Nex, was built in iteration 96.)

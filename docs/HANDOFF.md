@@ -1,7 +1,7 @@
 # Handoff: where Wardlight stands
 
 Written for a new session. The eda-lore swap (below) is done: the user's own sprites from `eda-lore` replaced every game
-asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 95 (M17 part 3, the Patagoi Atoll: a charter of six isles in open water with its own generator `src/sim/atoll.ts`, a goal of Burgh with four isles settled (`src/sim/isles.ts`, quest `z_atoll`), and Hush sea-gales that close plain Track bridges (`src/sim/gales.ts`); the table runs it with `--scenario atoll`; the bot is unchanged and never reaches the far isles; the Veshari's founding stands by the shoal so their tide-wells can be built; DESIGN §4.126; **M17 is closed**, the next playable item is M18 part 1, the Fen-Nex, after NEXT_STEPS item 1, the art still drawn in code, which waits on the user's sheets; open follow-ups are GitHub issues 101 to 124 in six milestones), 94 (a view at night keeps its lights, and the forest's trees follow the land through `src/render/groves.ts`, DESIGN §4.125), 93 (a live line under each open task in the Ledger saying what it still needs, DESIGN §4.124), 92 (the quests that never complete: an audit of all 140 Charter tasks, `scripts/questCensus.ts` for bot censuses, 13 fixed, among them "See the Watch at work", which now completes on a watchman's round; DESIGN §4.123; NEXT_STEPS item 1 is now the art still drawn in code, which waits on the user's sheets, so the next playable item is M17 part 3, the Patagoi Atoll), 91 (the Tripo Studio and Aseprite pipelines written into `docs/ART_PIPELINES.md` and run from the dev board's Art panel; the importer's `pixel: true` for drawn sprites; DESIGN §4.122), 90 (a hotfix: the sprites ship packed in one sheet, `public/art/sheets/`, loaded at once, after the user found the first load took minutes; `npm run art` writes the sheet, so commit `public/art/sheets/` and `sprites.json` with every import; DESIGN §4.121), 89 (the dev board, part 3: the text of edicts, events, quests and guilds as data in `src/data/content/text/`, the prompt studio with Refine with Claude in `art/prompts/`, the paintings importer run from the board, Tripo Studio and Aseprite as hand-offs, DESIGN §4.120; the board is complete, NEXT_STEPS item 1 is the quests that never complete), 88 (the dev board, part 2: the Next steps, GitHub and Balance tabs, Send to Claude, the "New element" composer, DESIGN §4.119), 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
+asset they could. The milestones resume with M17, after the dev board. Main stands at iteration 96 (M18 part 1, the Fen-Nex of the Reach: the fifth people, fox-folk traders with no Craft zones, goods bought off the caravans at a Caravanserai and Fox-Posts, triple shelves, stilt homes on the marsh, a Fen Den for fen eggs, milestones by trade routes opened, a fen start, the look drawn in code, the bot and a fifth row in the table; DESIGN §4.127; the next item is M18 part 2, their game, unless the user's art sheets arrive first; a draft proposal for them is eda-lore PR 5), 95 (M17 part 3, the Patagoi Atoll: a charter of six isles in open water with its own generator `src/sim/atoll.ts`, a goal of Burgh with four isles settled (`src/sim/isles.ts`, quest `z_atoll`), and Hush sea-gales that close plain Track bridges (`src/sim/gales.ts`); the table runs it with `--scenario atoll`; the bot is unchanged and never reaches the far isles; the Veshari's founding stands by the shoal so their tide-wells can be built; DESIGN §4.126; **M17 is closed**, the next playable item is M18 part 1, the Fen-Nex, after NEXT_STEPS item 1, the art still drawn in code, which waits on the user's sheets; open follow-ups are GitHub issues 101 to 124 in six milestones), 94 (a view at night keeps its lights, and the forest's trees follow the land through `src/render/groves.ts`, DESIGN §4.125), 93 (a live line under each open task in the Ledger saying what it still needs, DESIGN §4.124), 92 (the quests that never complete: an audit of all 140 Charter tasks, `scripts/questCensus.ts` for bot censuses, 13 fixed, among them "See the Watch at work", which now completes on a watchman's round; DESIGN §4.123; NEXT_STEPS item 1 is now the art still drawn in code, which waits on the user's sheets, so the next playable item is M17 part 3, the Patagoi Atoll), 91 (the Tripo Studio and Aseprite pipelines written into `docs/ART_PIPELINES.md` and run from the dev board's Art panel; the importer's `pixel: true` for drawn sprites; DESIGN §4.122), 90 (a hotfix: the sprites ship packed in one sheet, `public/art/sheets/`, loaded at once, after the user found the first load took minutes; `npm run art` writes the sheet, so commit `public/art/sheets/` and `sprites.json` with every import; DESIGN §4.121), 89 (the dev board, part 3: the text of edicts, events, quests and guilds as data in `src/data/content/text/`, the prompt studio with Refine with Claude in `art/prompts/`, the paintings importer run from the board, Tripo Studio and Aseprite as hand-offs, DESIGN §4.120; the board is complete, NEXT_STEPS item 1 is the quests that never complete), 88 (the dev board, part 2: the Next steps, GitHub and Balance tabs, Send to Claude, the "New element" composer, DESIGN §4.119), 87 (the dev board, part 1: the content as data in `src/data/content/`, the board in `tools/devboard/`, DESIGN §4.118), 86 (M17 part 2, the marsh-wyrms, DESIGN §4.117); before it 85 (M17 part 1, the marsh, §4.116),
 84 (the eda-lore swap, batch 2: every
 other compatible asset, §4.115), 83 (the Brickworks, a 3×3 building at the Village for the brickworks drawing, §4.114, from a parallel session), 82 (the
 eda-lore swap, batch 1: the zone houses, §4.113), 81 (the twelve paintings composed by hand, §4.112) and 80 (the brickworks
@@ -107,8 +107,9 @@ should look like the user's drawings.
 ## What the game is
 
 A browser city builder (TypeScript + Vite, 2:1 isometric pixel art, a deterministic sim with
-tests, deployed to GitHub Pages from `main`). Three playable peoples (Vellish, Grimmen,
-Veshari) plus the Tallowkin, each with rules, buildings, a quest chapter and tales. The
+tests, deployed to GitHub Pages from `main`). Five playable peoples (Vellish, Grimmen,
+Veshari, the Tallowkin and, since iteration 96, the Fen-Nex), each with rules and buildings; all but the Fen-Nex
+also have a quest chapter and tales (theirs are M18 part 2). The
 design lives in `docs/DESIGN.md` (sections 4.1–4.112 are one per iteration; §7 the milestone
 plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to build; §12 the decision log), the open list in
 `docs/NEXT_STEPS.md`, the building and mechanic audit in `docs/AUDIT.md`.
@@ -138,10 +139,24 @@ plan; §15 M14; §16 M15 and M16; §17 M17–M19 and the single items still to b
 
 ## The next item
 
-The next item is NEXT_STEPS item 1, the quest audit (the user's word after iteration 86): "See the Watch at work" never
-completes in a well-kept city (it waits for a watchman to kill a hound or lay a restless, and shares the sextons' counter).
-Audit every quest the same way and fix them, a test each. After it, M17 part 3, the Patagoi Atoll. Plan it on the Plan
-panel first.
+NEXT_STEPS item 1, the art still drawn in code, waits on the user's sheets (check eda-lore for new ones first). Otherwise
+item 2, **M18 part 2, the Fen-Nex's game** (DESIGN §17.2): their chapter, tales, walker, wonder and late game, the daily
+challenge's fifth people, and a bot that keeps its shelves full. Plan it on the Plan panel first.
+
+## Learned in iteration 96 (the Fen-Nex, DESIGN §4.127)
+
+- **Import cycles bite at load, not at call:** `factions.ts` importing `trade.ts` broke every suite, because `weave.ts`
+  spreads `MOORINGS` into `FLOODPROOF` while `factions.ts` is still loading. A count the people's gate needs from deep in
+  the sim is handed over instead (`setRouteCounter`, called when `trade.ts` loads).
+- **A people without Craft needs jobs elsewhere:** Craft is a third of the jobs. With market demand doubled the bot
+  stalled at 1,200 folk; at a hand for every two folk (2.5×) it grows like the others.
+- **The table runs from the working tree:** editing `src/sim`, `src/data` or `src/core` while a bar runs mixes code into
+  its runs under the key taken at the start. Stop it, commit, and start again. Render, UI, docs and `scripts/` are safe
+  to edit (but `scripts/balance.ts` is the runner key: changing it reruns main's side too).
+- **The Ledger's tasks must suit every people:** `notFor` on a quest keeps a task from a people that cannot do it.
+  Run `scripts/questCensus.ts` for a new people in part 2.
+- **A new people's houses are drawn in code** (`fenSpec`, the `stilts` feature): eda-lore has no Fen-Nex paintings, so
+  `tests/iteration82.test.ts` (the imported houses) leaves them out.
 
 ## Learned in iteration 86 (the marsh-wyrms, DESIGN §4.117)
 
@@ -193,6 +208,9 @@ Built since iteration 68:
 - DESIGN §17 has the subtasks.
 
 ## Known issues (also in NEXT_STEPS.md "Known issues")
+
+- **The Fen-Nex bot runs its shelves dry late** (iteration 96): 150 to 180 empty markets at day 150 on seeds 42 and 43;
+  it raises Caravanserais only when the purse allows and rarely a Fen Den. Part 2's work.
 
 - **The marsh costs the Grimmen bot a sixth of its folk** (iteration 85, DESIGN §4.116; seen past the noise; the user chose
   to ship it). On seed 45 the city runs short of crowns by day 30 and stops spreading at radius 28. The miasma, the

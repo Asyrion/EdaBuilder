@@ -5614,6 +5614,127 @@ and prints an "Atoll charter" report; the run key gains `-atoll`, so valley runs
 **Not verified:** a human playing it through to Burgh; the far isles by bot (it never gets there); the Portal Arch and
 drake-rider crossings (they use code that already exists and are not exercised by a test on the Atoll).
 
+### 4.127 The Fen-Nex of the Reach, part 1: rules, buildings, the fen start, the look, the bot (iteration 96)
+
+M18 part 1 (§17.2 item 1), the fifth people on the scaffold of §4.65, built the way the Tallowkin were (§4.72). NEXT_STEPS
+item 1 (the art still drawn in code) waits on the user's sheets, and none had arrived. The lore is the game's own: the
+fox-folk of Longwood who trade honestly half the time (§4.37), and the `fen` cat-dragon line. eda-lore's canon does not
+name them, so a draft proposal went there (eda-lore PR 5) and the game uses the facts under `draft`.
+
+**Rules.** Five fields on `FactionRules`, neutral by default and read once each. Nine rule points in all, under §14.2's ten:
+- `noCraft`: Craft cannot be painted.
+  - `paintZone` refuses it and says why; the zone button is greyed.
+  - Craft demand reads −1 with the line "goods come by caravan".
+  - The five Charter tasks that need Craft works (`f_jobs`, `o_cart`, `k_glim`, `o_caravan`, `q_quay`) are kept from
+    them through a new `notFor` on a quest.
+  - Two tasks of their own stand in: `x_caravan` (a Caravanserai and two Market tiles) and `x_routes` (two routes open).
+  - The Advisor's "markets are running dry" names the Caravanserai.
+- `marketStock: 3`: shelves hold three times as much. `setFenNex` now also carries the people's shelf factor, set each
+  tick and in `recomputeAll`.
+- `marketJobs: 2.5`: the folk want a market hand for every two of them, not five. At 2 the first probe stalled at 1,200
+  folk: there were 600 jobs for 750 hands, so no newcomers came.
+- `stiltHomes`: Hearths, and only Hearths, may be painted on marsh. The bot paints them there too. The miasma is theirs
+  to bear.
+- The milestone gate counts **trade routes opened** (`routesOpened` in `trade.ts`):
+  - a road route for every Caravanserai with a road at its door;
+  - a road route for every Fox-Post standing 20 tiles (Chebyshev) from every other counted post;
+  - one route for each other kind open (river, sky, arches, the Twin Road);
+  - gates `FENNEX_ROUTES = [0, 0, 1, 1, 2, 3, 4, 5, 6]`; the top bar reads "3 trade routes (2 open)".
+- Also: 1,500 more crowns at the start, and the milestones Stall, Booth, Bazaar, Fair, Mart, Exchange, Staple Town, Free
+  Port and Fox Crown.
+
+**The count lives in `trade.ts` and is handed to `factions.ts` when the module loads** (`setRouteCounter`). An import the
+other way closed a cycle through `weave.ts`, where `FLOODPROOF` spreads `MOORINGS` at load, and every suite failed.
+
+**Buildings** (`faction: ["fennex"]`, each with a procedural sprite):
+- **Caravanserai** (2×2, 1,200 crowns, from the first day): the Trade Depot's replacement.
+  - It is a depot everywhere one is read, through `isDepot`: the Gloam road's surplus, the Belerial caravan, the Twin
+    Road, the merchant.
+  - Each day `dailyCaravans` buys `24 + 8 × routes open` goods off the caravans at 0.6 × the day's price. It fills the
+    emptiest markets within 16 tiles a share at a time, in up to four passes.
+  - The cost comes off the day's trade income, which the Ledger shows with the goods.
+- **Fox-Post** (1×1, 450, from the Thorp): 8 goods to the markets within 10, at the same price; a route of its own when far
+  enough from the others.
+- **Fen Den** (2×2, 3,200, the Wyrm-Cradle's replacement): takes only fen eggs. At every Thaw a lit den with room lays one
+  (`dailyFenEggs`). The Crown's first egg is a fen egg for them. The cat-dragons use the existing warden role.
+- The visitor tale "The Fen-Nex come to market" does not fire for a Fen-Nex city, so neither do its gift nor the fox audit.
+
+**The fen start.** `generateTerrain`'s `fen` option:
+- it cuts the Veshari's channel (now `cutChannel`, shared) before the marsh is marked;
+- `markMarsh` then comes to within 3 tiles of the founding, not 9;
+- within 14 tiles of the founding the land needs no lowness to be wet, and a lower noise bar (`FEN_NOISE`).
+No rng is read, and every other map keeps its hash (iteration 95's test). Seeds 1–3, 7 and 42–47 give 21 to 80 marsh tiles
+within nine of the founding.
+
+**The look.** `ZONE_LOOKS` gains `fennex`:
+- `fenSpec` gives stilt houses: plank, russet brick, log and plaster walls under reed thatch, striped awnings and copper.
+  The market roofs alternate awnings and signs; some houses have hipped roofs.
+- Variant 2 of the hearth has reed sheaves and variant 3 a fish rack.
+- A new `stilts` feature opens the lowest four rows of the walls over posts.
+- Citizen variant 6 is a fox: russet fur, two ears and a white-tipped brush. Half the Fen-Nex folk draw it, mapped from
+  the existing variants, so no new rng draw.
+- The sprites are drawn in code. There is no painting of them in eda-lore; the user's sheets would replace them by name.
+
+**The bot.** A `trade()` step keyed on `noCraft`, every third day at most:
+- the first Caravanserai;
+- another by the driest markets when a fifth of them stand dry;
+- when the route gate is short, a Fox-Post on a street 20 tiles from every post if one fits, else a Caravanserai.
+A yard is only placed with a road at its door; the first draft placed one without and lost a route.
+
+**The table.**
+- `scripts/table.ts` runs five peoples by default.
+- A ref that does not know a people (its `factions.ts` has no entry) runs no jobs for it. The comparison prints the row as
+  "new people".
+- The daily challenge's draw stays at four peoples, so no existing daily changes; the Fen-Nex join it in part 2.
+
+**Verification:**
+- `npx tsc --noEmit -p .`, `npx vitest run` (95 files, 622 tests), `npm run build`, `npm run devboard:selftest`.
+- `tests/fennex.test.ts` (13 tests):
+  - Craft is refused;
+  - stilt Hearths are allowed for them and refused for the Vellish;
+  - the shelf is 60 at level 1;
+  - a Caravanserai with a road fills markets and charges 0.6 × the price, and without a road brings nothing;
+  - a Fox-Post counts only when far from the others;
+  - the gate counts routes and the top bar says so;
+  - the fen start has marsh near the founding;
+  - the den lays at the Thaw only while lit;
+  - the visitors stay away;
+  - the Ledger never asks for Craft;
+  - the bot plays thirty days and paints no Craft;
+  - a save round-trips.
+  The people lists of iterations 78, 81, 93 and 95 include them; iteration 82's (the imported paintings) does not.
+- `scripts/playtest96.mjs`: the five peoples on the title screen; the buildings beside the ones they replace; the zone
+  houses beside the Vellish; a fen start by day and night; a stilt street; the Caravanserai's panel; the greyed Craft.
+  No page errors or missing sprites (`shots/iter96_*.png`).
+- **Bit-identical:** Vellish, Grimmen, Veshari and Tallowkin seed 42 against a worktree of main (the json lines equal).
+- **The wide bar** (`--bar wide --compare origin/main`, 204 runs): the four peoples identical to main on every seed and
+  draw. The Fen-Nex are new:
+
+| people | this tree | origin/main | Δ (paired by seed) | ± 2·SE | verdict |
+|---|---|---|---|---|---|
+| vellish | 2,229 | 2,229 | +0 (0.0 %) | 196 | within the noise |
+| grimmen | 1,422 | 1,422 | +0 (0.0 %) | 123 | within the noise |
+| veshari | 2,279 | 2,279 | +0 (0.0 %) | 196 | within the noise |
+| tallowkin | 2,085 | 2,085 | +0 (0.0 %) | 229 | within the noise |
+| fennex | 2,298 | – | – | 204 | new people |
+
+  - The floors:
+    - Vellish 8.8 %, Grimmen 8.7 %, Veshari 8.6 % and Fen-Nex 8.9 % are met.
+    - **The Tallowkin's 11.0 % is not met at the cap of 8 draws**, the same as on main (issue 123).
+  - The Fen-Nex by seed (two draws each): 42: 2,017 and 2,383; 43: 2,591 and 2,512; 44: 1,900 and 2,178; 45: 1,989 and
+    2,228; 46: 2,318 and 2,151; 47: 2,317 and 2,986.
+  - Their gates:
+    - every run reaches the fifth gate, the Mart, by a median day 19 (the Grimmen's old bar asked day 70);
+    - Free Port 12/12 (median day 65);
+    - Fox Crown 4/12 (median day 142).
+  - Their caravans cost the bot about 47,800 crowns over 150 days (the table's "road crowns" for them is net of it).
+  - Late in the game many shelves stand dry: 150 to 180 markets on seeds 42 and 43 at day 150. The bot raises a
+    Caravanserai only when the purse allows, and it never builds enough. The people's happiness held at 60 to 69 all the
+    same.
+
+**Not verified:** a human playing a Fen-Nex city through; the Fen Den's eggs growing into wardens in a bot run (the bot
+builds a den late or not at all); the river, sky and arch routes counted in a real game (a test covers only posts).
+
 ## 7. Milestone plan
 
 - **M1 Foundation** — scaffold, palette, procedural terrain, atlas, iso renderer,
@@ -6362,7 +6483,7 @@ numbered part is one iteration with its own plan, and gets its own §4.NN when i
 ### 17.2 M18 The Fen-Nex (§14.2; the fifth people)
 
 On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as the Tallowkin had (§4.72, §4.83).
-1. **Part 1: the people.**
+1. ✅ **Part 1: the people** (built in iteration 96, §4.127).
    - **Rules:**
      - no Craft zones: goods come by caravan and trade route;
      - markets hold three times the stock;
@@ -6912,3 +7033,8 @@ On the people scaffold of M11–M13 (`src/data/factions.ts`), in two parts as th
   a Quay, a Landing or a Weir, hold. The goal is Burgh with four isles settled (six zone buildings each). The bot was left
   as it was, since it already meets the goal; the Veshari found by the table to be stuck, whose founding now stands by the
   shoal.
+- *A people that makes nothing (iteration 96):* the Fen-Nex have no Craft zones at all, and trade fills the gap. Goods are
+  bought off the caravans each day at the Caravanserai, more for every route the city has open, so the milestones (routes
+  opened) and the shelves pull the same way. The jobs Craft gives the others come from the markets (a hand for every two
+  folk). Their homes may stand on the marsh, the fen they found on. The Charter's Craft tasks are kept from them rather
+  than left impossible. The daily challenge keeps four peoples until part 2, so no daily changes under a player.
