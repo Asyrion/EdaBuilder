@@ -81,6 +81,8 @@ player's machine.
 |---|---|
 | Bit-identity: `npx tsx scripts/balance.ts <seed> 150`, main vs. branch, the whole `json:` line | **identical on all six seeds** (42, 1, 7, 13, 21, 45) |
 | Their numbers (folk, milestone, treasury, loan) | 42: 3,194 / 8 / 6,319 / 0 · 1: 2,812 / 7 / 2,335 / 0 · 7: 1,421 / 6 / 2,995 / 0 · 13: 2,587 / 7 / 272 / 0 · 21: 2,583 / 8 / 3,603 / 70,000 · 45: 2,864 / 8 / 5,976 / 70,000 |
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 87 files, 554 tests, all green (was 96 files, 626 tests: the peoples' 9 files and their cases are gone, one test of the refusal is new), 317 s on a busy container |
 | `scripts/smoke.mjs` | SMOKE OK; the same city as phase 0 (835 folk, day 30), no page errors |
 | Bundle | JS 811 KB (276 KB gzip), was 882 KB (295 KB) |
 | `npm run devboard:selftest` | OK |
