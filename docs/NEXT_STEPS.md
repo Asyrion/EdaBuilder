@@ -5,16 +5,16 @@
 The game is being cut back to its core with the Vellish alone. The plan is **`docs/RESET_PLAN.md`**, one PR to `main`
 per phase; what each phase did is in `docs/RESET_LOG.md`, and what was parked, and how to bring it back, is in
 `docs/PARKED.md`. Done: phase 0 (archive branches, core smoke tests, checklist, smoke playtest, baselines) and phase 1a
-(the peoples down to the Vellish; six seeds bit-identical to main; RESET_LOG).
+(the peoples down to the Vellish; six seeds bit-identical to main; RESET_LOG) and phase 1b (the creatures, dragons,
+wyrms, beasts, hounds, the Warding Wall and the Great Gate parked; the bot corridor against phase 0 in RESET_LOG).
 
-1. **Phase 1b: park creatures, dragons, wyrms and beasts** (RESET_PLAN §3).
-2. **Phase 1c: park the cross-cutting add-ons** (events, weather, walkers, water extras, vehicles, scenarios, terraforming …).
-3. **Phase 1d: clean up** (save version 8, tests, assets, docs, `inspirations/` to eda-lore).
-4. **Phase 2: sharpen the core loop.**
-5. **Phase 3: the art foundation and pixel art.**
-6. **Phase 4: shaders and effects.**
-7. **Phase 5: UX and feedback.**
-8. **Phase 6: performance and stability.**
+1. **Phase 1c: park the cross-cutting add-ons** (events, weather, walkers, water extras, vehicles, scenarios, terraforming …).
+2. **Phase 1d: clean up** (save version 8 and the demand step on load, tests, assets, docs, `inspirations/` to eda-lore).
+3. **Phase 2: sharpen the core loop.**
+4. **Phase 3: the art foundation and pixel art.**
+5. **Phase 4: shaders and effects.**
+6. **Phase 5: UX and feedback.**
+7. **Phase 6: performance and stability.**
 
 Everything below is the history before the reset. Its open list at the end is **parked**.
 
