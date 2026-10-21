@@ -616,7 +616,7 @@
     "key": "skydock",
     "name": "Sky-Dock",
     "category": "wonder",
-    "desc": "A mooring tower for the airship of the wardlights. On the third day of each season the ship leaves with up to 200 surplus goods and returns ten days later with crowns at 1.6x the season price, and sometimes a tale. 30 mana.",
+    "desc": "A mooring tower for the airship of the wardlights. On the third day of each season the ship leaves with up to 200 surplus goods and returns ten days later with crowns at 1.6x the season price. 30 mana.",
     "flavor": "The next lantern on the horizon has a dock like this one. That is how you know it is a lantern.",
     "w": 2,
     "h": 2,

@@ -332,7 +332,7 @@ export interface GameState {
   relicStock: number; // loose relics the delve has brought up and not yet sold
   scenario: Scenario;
   faction: FactionId; // the people (data/factions.ts)
-  gloamPressure: number; // 0..1, recomputed daily (see weave.ts)
+  gloamPressure: number; // 0..1, recomputed daily (hazards.ts)
   sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter
   challenge: string | null; // daily challenge date, e.g. '2026-10-01'
   challengeDay: number; // day the challenge goal was met, -1

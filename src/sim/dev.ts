@@ -90,7 +90,7 @@ export const DEV_COMMANDS: DevCommand[] = [
     return 'A sea-gale blows for three days.';
   } },
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
-  // guilds & relics
+  // the Crown & relics
   { id: 'standing', group: 'The Crown & relics', name: 'Set a standing', desc: "The Crown's favour, 0 to 100 (50 is indifferent; under 20 the Crown withholds the next grant).", arg: { kind: 'select', options: [['crown', "The Crown's favour"]] }, arg2: { kind: 'number', min: 0, max: 100, value: 80 }, run: (s, a) => {
     const [who, v] = a.split(':');
     const val = Math.max(0, Math.min(100, Math.round(Number(v ?? 80))));
@@ -100,7 +100,7 @@ export const DEV_COMMANDS: DevCommand[] = [
     return `The Crown's favour: ${val}.`;
   } },
   { id: 'relic', group: 'The Crown & relics', name: 'Complete a relic set', desc: 'The chosen set entire.', arg: { kind: 'select', options: RELIC_SETS.map((r) => [r.id, r.name]) }, run: (s, id) => { grantRelicSet(s, id); return `${RELIC_SETS.find((r) => r.id === id)?.name} entire.`; } },
-  // events & map
+  // tasks & map
   { id: 'quest', group: 'Tasks & map', name: 'Complete a task', desc: "One of this people's open Charter tasks, done now with its reward, as if its goal were met.", arg: { kind: 'select', options: (s) => { const done = new Set(s.questsDone); const open = questsFor(s).filter((q) => !done.has(q.id)).map((q) => [q.id, `${q.chapter}: ${q.title}`] as [string, string]); return open.length ? open : [['', 'every task is done']]; } }, run: (s, id) => {
     const q = QUESTS.find((x) => x.id === id);
     if (!q) return 'No such task.';

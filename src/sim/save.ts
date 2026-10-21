@@ -87,7 +87,7 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.relics = state.relics ?? initRelics();
     state.relicStock = state.relicStock ?? 0;
     for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
-    state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
+    state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, voyages: 0 };
     state.scenario = state.scenario ?? 'valley';
     state.faction = state.faction ?? 'vellish';
     state.daughter = state.daughter ?? null;

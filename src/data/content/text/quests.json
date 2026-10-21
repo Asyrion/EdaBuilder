@@ -107,7 +107,7 @@
   "o_depot": {
     "chapter": "Goods",
     "title": "Build a Trade Depot",
-    "hint": "Sells surplus goods at seasonal prices; caravans stop there."
+    "hint": "Sells surplus goods at seasonal prices on the Gloam road."
   },
   "a_academy": {
     "chapter": "The arcane",
@@ -247,10 +247,10 @@
   "y_quiet": {
     "chapter": "The dead",
     "title": "Keep the Gloam quiet through a Hush",
-    "hint": "Pressure below 45% on every day of a Hush: deathcare, faith coverage and Grey ley."
+    "hint": "Pressure below 45% on every day of a Hush: deathcare and faith coverage."
   },
   "k_twinroad": {
-    "chapter": "The guilds",
+    "chapter": "The Crown",
     "title": "Open the Twin Road",
     "hint": "A Trade Depot within 12 tiles of the daughter's stake and another in the mother city: 30 goods a day cross, and the Crown pays a toll."
   },

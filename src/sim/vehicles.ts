@@ -169,7 +169,7 @@ export function deliverBarge(s: GameState, a: Agent): void {
 }
 
 // ---------- airship ----------
-export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number }
+export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; voyages: number }
 /** Surplus goods gathered from the works' shelves for a run beyond the Gloam, up to `cap`; nothing under 20. */
 function gatherSurplus(s: GameState, cap: number): number {
   let goods = 0;
@@ -223,7 +223,7 @@ function spawnAirship(s: GameState, dock: Building, leaving: boolean): void {
   s.agents.push(a);
 }
 
-/** The airship is home: pay out and maybe bring a tale. */
+/** The airship is home: pay out. */
 export function airshipArrives(s: GameState): void {
   const air = s.airship;
   const dock = skyDock(s);
