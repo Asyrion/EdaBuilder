@@ -19,34 +19,10 @@ import EDICT_TEXT from '../data/content/text/edicts.json';
 
 export const EDICTS: EdictDef[] = [
   {
-    key: 'beastmasters', name: EDICT_TEXT.beastmasters.name,
-    desc: EDICT_TEXT.beastmasters.desc,
-    flavor: EDICT_TEXT.beastmasters.flavor,
-    costPerDay: () => 40, unlock: 4, cityOnly: true,
-  },
-  {
-    key: 'bounty', name: EDICT_TEXT.bounty.name,
-    desc: EDICT_TEXT.bounty.desc,
-    flavor: EDICT_TEXT.bounty.flavor,
-    costPerDay: (s) => 20 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 15, unlock: 2, cityOnly: true,
-  },
-  {
     key: 'closeseason', name: EDICT_TEXT.closeseason.name,
     desc: EDICT_TEXT.closeseason.desc,
     flavor: EDICT_TEXT.closeseason.flavor,
     costPerDay: (s) => 10 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 10, unlock: 2, cityOnly: true,
-  },
-  {
-    key: 'wyrmpeace', name: EDICT_TEXT.wyrmpeace.name,
-    desc: EDICT_TEXT.wyrmpeace.desc,
-    flavor: EDICT_TEXT.wyrmpeace.flavor,
-    costPerDay: () => 80, unlock: 5, cityOnly: true,
-  },
-  {
-    key: 'scalemail', name: EDICT_TEXT.scalemail.name,
-    desc: EDICT_TEXT.scalemail.desc,
-    flavor: EDICT_TEXT.scalemail.flavor,
-    costPerDay: () => 0, unlock: 4, cityOnly: true,
   },
   {
     key: 'curfew', name: EDICT_TEXT.curfew.name,

@@ -9,7 +9,6 @@ export interface FactionRules {
   hillLandValue: number; // land value added on Hills tiles
   grassPenalty: number; // land value taken off every tile that is not hills
   hillBuildable: boolean; // ordinary buildings and zones may stand on Hills
-  wallWard: number; // × the ward of the Warding Wall's gates
   lanternWard: number; // × the strength of a Ward Lantern
   hillMana: number; // × the mana made by a building that stands on hills
   nodeMana: number; // × the flow of the ley nodes
@@ -43,7 +42,7 @@ export function VELLISH_HAPPINESS(next: number): number {
   return 45 + 3 * next;
 }
 
-export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, wallWard: 1, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false };
+export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false };
 
 export const FACTIONS: Record<string, FactionDef> = {
   vellish: {
@@ -84,7 +83,6 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
 /** A building's own gate beyond the milestone: the reason it cannot be raised now, or null. */
 export function specialLock(s: GameState, key: string): string | null {
   if (key === 'stormpeak' && !s.firedEvents.includes('stormcaller:0')) return 'Needs its caller: give the Huruhui storm caller the hills when they come (a Township of 300 folk).';
-  if (key === 'wyrmcourt' && (s.wyrm.state === 'none' || s.wyrm.state === 'sleeping')) return 'Raised for a woken wyrm: there is none awake to court.';
   return null;
 }
 export function canBuild(s: GameState, key: string): boolean {

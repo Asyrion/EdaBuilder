@@ -17,7 +17,6 @@ import { forEachBuilding, pushMessage, seasonOf } from './world';
 
 export const HERD_RANGE = 6; // a herd's cap counts the habitat within this many tiles of its home
 export const HUNT_REACH = 16; // a lodge's hunting grounds
-export const HOUND_REACH = 12; // a lodge kills hounds within this (twice it under the Hunters' Bounty)
 export const MEAT_REACH = 16; // a lodge carts its meat to the markets within this many tiles
 export const MARKET_MEAT_CAP = 8; // meat a market's shelves hold
 export const MEAT_HAPPY_REACH = 10; // a hearth within this of a market with meat: +MEAT_HAPPY
@@ -264,16 +263,13 @@ export function herdsInGrounds(state: GameState, l: Building, sp?: WildSpecies):
   return state.wild.herds.filter((h) => (!sp || h.sp === sp) && Math.hypot(h.x + 0.5 - c.x, h.y + 0.5 - c.y) <= HUNT_REACH);
 }
 
-/** A lodge's quarry (hounds unless chosen). */
-export function quarryOf(l: Building): 'hounds' | WildSpecies {
-  return l.quarry ?? 'hounds';
-}
-
-/** The chance a lodge kills a hound in reach: full on hounds (or in the Close Season's Bloom, when no game is taken), half while its hunters are out after game. */
-export function houndChance(state: GameState, l: Building): number {
-  if (quarryOf(l) === 'hounds') return 0.8;
-  if (edictOn(state, 'closeseason') && seasonOf(state) === 1) return 0.8;
-  return 0.4;
+/** A lodge's quarry: the one chosen, else the game of the fullest herd in its grounds, else none (the Gloam-hounds it once
+ *  guarded against are parked, scope reset phase 1b). */
+export function quarryOf(state: GameState, l: Building): WildSpecies | null {
+  if (l.quarry) return l.quarry;
+  let best: Herd | null = null;
+  for (const h of herdsInGrounds(state, l)) if (!best || h.head > best.head) best = h;
+  return best ? best.sp : null;
 }
 
 /** The floor below which no lodge takes a herd. */
@@ -282,17 +278,17 @@ export function huntFloor(state: GameState): number {
 }
 
 /** Set a lodge's quarry (the panel's choice; the bot's too). */
-export function setQuarry(state: GameState, b: Building, q: 'hounds' | WildSpecies): boolean {
+export function setQuarry(state: GameState, b: Building, q: WildSpecies | null): boolean {
   if (b.kind !== 'hunterslodge') return false;
-  if (q === 'hounds') delete b.quarry; else b.quarry = q;
+  if (!q) delete b.quarry; else b.quarry = q; // none: the fullest herd in the grounds
   void state;
   return true;
 }
 
 /** Whether a lodge can hunt game today, and if not, why (for the panel). */
 export function huntBlock(state: GameState, l: Building): string | null {
-  const q = quarryOf(l);
-  if (q === 'hounds') return null;
+  const q = quarryOf(state, l);
+  if (!q) return `no game within ${HUNT_REACH} tiles`;
   if (edictOn(state, 'closeseason') && seasonOf(state) === 1) return 'the Close Season: no game is taken in Bloom';
   const herds = herdsInGrounds(state, l, q);
   if (!herds.length) return `no ${WILD[q].plural} within ${HUNT_REACH} tiles`;
@@ -305,8 +301,8 @@ export function dailyGame(state: GameState): number {
   const rng = sideRng(state, 'hunt');
   let taken = 0;
   for (const l of lodgesOf(state)) {
-    const q = quarryOf(l);
-    if (q === 'hounds' || huntBlock(state, l)) continue;
+    const q = quarryOf(state, l);
+    if (!q || huntBlock(state, l)) continue;
     const floor = huntFloor(state);
     let best: Herd | null = null;
     for (const h of herdsInGrounds(state, l, q)) if (h.head >= floor + 1 && (!best || h.head > best.head)) best = h;
@@ -332,7 +328,7 @@ export function dailyGame(state: GameState): number {
   return taken;
 }
 
-/** Daily: the wolves in the Hush. They thin the deer, elk and goats near their den, take a thrumhare, and stalk a hearth. */
+/** Daily: the wolves in the Hush. They thin the deer, elk and goats near their den and stalk a hearth. */
 export function dailyWolves(state: GameState): number {
   const w = state.wild;
   const hush = seasonOf(state) === 3;
@@ -351,9 +347,6 @@ export function dailyWolves(state: GameState): number {
       if (d <= pd && h.head > 0) { pd = d; prey = h; }
     }
     if (prey) prey.head -= 0.15;
-    // a thrumhare that strayed near the den
-    const hare = state.agents.findIndex((a) => a.kind === AgentKind.Creature && a.species === 'thrumhare' && Math.hypot(a.x - p.x, a.y - p.y) <= 10);
-    if (hare >= 0) state.agents.splice(hare, 1);
     // the hearth it stalks: the nearest level-1 hearth in reach with no Watch or ward over it
     let best: Building | null = null;
     let bd = WOLF_REACH;
@@ -513,7 +506,7 @@ export function tickWildAgent(state: GameState, a: Agent, rng: Rng, night: boole
   const ny = a.y + (dy / dist) * speed;
   const ni = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(nx))), Math.max(0, Math.min(MAP_H - 1, Math.floor(ny))));
   const swims = sp === 'otter' || sp === 'heron';
-  if (state.bIndex[ni] >= 0 || state.wall[ni] || (!swims && isWater(state.terrain[ni]))) { a.path = []; a.timer = 10; return; }
+  if (state.bIndex[ni] >= 0 || (!swims && isWater(state.terrain[ni]))) { a.path = []; a.timer = 10; return; }
   a.x = nx;
   a.y = ny;
   a.dir = dx > 0 ? 0 : 2;

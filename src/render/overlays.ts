@@ -2,7 +2,7 @@
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { DISTRICT_NAMES, type GameState, type ServiceType } from '../sim/types';
 import { computeBuildingHappiness } from '../sim/growth';
-import { ASPECTS, ASPECT_INFO, ASPECT_RADIUS, dragonAuras } from '../sim/weave';
+import { ASPECTS, ASPECT_INFO, ASPECT_RADIUS } from '../sim/weave';
 
 function hex(c: string, a: number): string {
   const n = parseInt(c.slice(1), 16);
@@ -143,13 +143,9 @@ export const OVERLAY_LIST: OverlayDef[] = [
     tile: (s, i) => (s.district[i] ? DISTRICT_COLORS[s.district[i] - 1] + '66' : null),
   },
   {
-    id: 'weave', name: 'The Weave', key: 'w', desc: 'Ley aspects around each node (10 tiles) and the auras of grown dragons. Build to the ley: Craft on Ember, deathcare on Bone, a Nexus on Vein, wells on Tide.',
-    legend: [...ASPECTS.map((a) => [hex(ASPECT_INFO[a].color, 0.55), `${ASPECT_INFO[a].name} ley`] as [string, string]), ['rgba(255,255,255,0.35)', 'dragon aura']],
+    id: 'weave', name: 'The Weave', key: 'w', desc: 'Ley aspects around each node (10 tiles). Build to the ley: Craft on Ember, deathcare on Bone, a Nexus on Vein, wells on Tide.',
+    legend: [...ASPECTS.map((a) => [hex(ASPECT_INFO[a].color, 0.55), `${ASPECT_INFO[a].name} ley`] as [string, string])],
     tile: (s, i, x, y) => {
-      for (const a of dragonAuras(s)) {
-        const d = Math.max(Math.abs(a.x - x), Math.abs(a.y - y));
-        if (d <= a.r) return hex(ASPECT_INFO[a.line].color, 0.62 - (d / a.r) * 0.2);
-      }
       let best = ASPECT_RADIUS + 1;
       let line: string | null = null;
       for (const n of s.nodes) {

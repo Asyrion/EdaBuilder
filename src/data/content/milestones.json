@@ -17,7 +17,7 @@
     "name": "Thorp",
     "pop": 100,
     "grant": 3000,
-    "unlocks": ["veshari", "wardlantern", "cistern", "mothloft", "smokehouse", "weir"],
+    "unlocks": ["veshari", "wardlantern", "cistern", "smokehouse", "weir"],
     "text": "A hundred hearths. The water-mages answer your call, and the first Ward Lantern is yours to raise."
   },
   {
@@ -31,7 +31,7 @@
     "name": "Township",
     "pop": 400,
     "grant": 6000,
-    "unlocks": ["arcane", "lantern", "nexus", "font", "mine", "cradle", "tamerslodge"],
+    "unlocks": ["arcane", "lantern", "nexus", "font", "mine"],
     "text": "The Tallowkin spire-wrights arrive. Arcane districts, lantern-ways, Thrum Fonts and Crystal Mines may be raised."
   },
   {
@@ -45,15 +45,15 @@
     "name": "Burgh",
     "pop": 1000,
     "grant": 11000,
-    "unlocks": ["temple", "grandacademy", "golemfoundry", "leybeacon", "drakemews", "greatgate"],
+    "unlocks": ["temple", "grandacademy"],
     "text": "A thousand souls. The Four Vigils ask for a temple; the deep Veins may be tapped."
   },
   {
     "name": "Free City",
     "pop": 1500,
     "grant": 16000,
-    "unlocks": ["lantern", "wyrmcourt", "fontquieting"],
-    "text": "The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken."
+    "unlocks": ["lantern", "fontquieting"],
+    "text": "The Crown grants you the right to raise a Lantern of Vell and a Font of Quieting."
   },
   {
     "name": "Beacon of Eda",

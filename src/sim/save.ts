@@ -1,10 +1,10 @@
 /** JSON serialization of GameState. Typed arrays are base64-encoded. */
 import { initGuilds } from './guilds';
 import { initRelics } from './relics';
-import { chooseWyrmNode, newWyrm } from './wyrm';
 import { assignAspects } from './weave';
-import type { WyrmState } from './types';
-import { SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
+import { AgentKind, SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
+import { BUILDING_BY_KEY } from './catalog';
+import { isWild } from './wild';
 import { emptyLedger, markAllDirty } from './world';
 import { recomputeAll } from './sim';
 import { distanceMap } from './terrain';
@@ -44,6 +44,18 @@ export class SaveVersionError extends Error {}
 export function parkedPeopleMessage(people: string): string {
   return `This charter belongs to a people that is parked for now (${people}): this Wardlight plays the Vellish only.`;
 }
+/** A charter that holds what the scope reset parked in phase 1b (dragons, the Warding Wall, their buildings): refused with the
+ *  first such thing named, as it would load what this build no longer has (docs/PARKED.md). */
+export function parkedContentMessage(what: string): string {
+  return `This charter holds something that is parked for now (${what}): this Wardlight cannot load it.`;
+}
+/** The first parked thing a raw save holds, or null: a building this build no longer has, a dragon, a stretch of the Warding Wall. */
+export function parkedContentIn(o: Record<string, any>): string | null {
+  for (const b of (o.buildings ?? []) as ({ kind: string } | null)[]) if (b && !BUILDING_BY_KEY[b.kind]) return `the building "${b.kind}"`;
+  if (Array.isArray(o.dragons) && o.dragons.length) return 'dragons';
+  if (o.wall && typeof o.wall === 'object' && 'u8' in o.wall && fromB64(o.wall.u8).some((v) => v !== 0)) return 'the Warding Wall';
+  return null;
+}
 
 /**
  * Save migrations by version (iteration 55). `MIGRATIONS[v]` lifts a save of version v to v + 1; they run in order from the
@@ -69,19 +81,11 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.districtNames = state.districtNames ?? {};
     state.districtQuarters = state.districtQuarters ?? {};
     state.tradeIncomeToday = state.tradeIncomeToday ?? 0;
-    state.dragons = state.dragons ?? [];
-    state.nextDragonId = state.nextDragonId ?? 1;
-    state.materials = state.materials ?? { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0 };
-    state.materials.rayscale = state.materials.rayscale ?? 0;
-    state.materials.glimdust = state.materials.glimdust ?? 0;
-    state.departed = state.departed ?? []; // iteration 53
-    state.burnWyrmfire = state.burnWyrmfire ?? true;
     state.weather = state.weather ?? null; // iteration 54
     state.crownFavour = state.crownFavour ?? 50;
     state.loan = state.loan ?? 0;
     state.pleadings = state.pleadings ?? 0;
     state.pilgrimsDay = state.pilgrimsDay ?? -1;
-    state.heart = state.heart ?? { held: 'none', step: 0, day: -1 }; // iteration 69
     state.edictSince = state.edictSince ?? {}; // an edict with no stamp may be repealed
     state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
     state.remembranceDead = state.remembranceDead ?? 0;
@@ -100,17 +104,12 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.guilds.charters = state.guilds.charters ?? [];
     for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
     state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
-    state.fenNex = state.fenNex ?? 0;
     state.scenario = state.scenario ?? 'valley';
     state.faction = state.faction ?? 'vellish';
     state.daughter = state.daughter ?? null;
     state.challenge = state.challenge ?? null;
     state.challengeDay = state.challengeDay ?? -1;
     state.cleanDays = state.cleanDays ?? 0;
-    state.storms = state.storms ?? [];
-    if (!state.wyrm || typeof state.wyrm !== 'object' || !(state.wyrm as WyrmState).state) state.wyrm = newWyrm(chooseWyrmNode(state.nodes, state.founding));
-    state.wyrm.courted = state.wyrm.courted ?? false; // iteration 53
-    state.wyrm.courtDark = state.wyrm.courtDark ?? 0;
   },
 };
 
@@ -120,6 +119,8 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   const saved = typeof o.version === 'number' ? o.version : 6;
   if (saved > SAVE_VERSION) throw new SaveVersionError(`This charter was saved by a newer Wardlight (save version ${saved}); this one reads version ${SAVE_VERSION} and older.`);
   if (o.faction !== undefined && o.faction !== 'vellish') throw new SaveVersionError(parkedPeopleMessage(String(o.faction)));
+  const parked = parkedContentIn(o);
+  if (parked) throw new SaveVersionError(parkedContentMessage(parked));
   const state = fresh(o.seed);
   const freshStats = { ...state.stats };
   for (const [k, v] of Object.entries(o)) {
@@ -139,17 +140,13 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (!('wild' in o)) { state.wild = { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] }; state.agents = state.agents.filter((a) => a.herdId === undefined); } // a save from before the wild seeds its herds on its own land the next day (iteration 58)
   if (!('water' in o)) state.water = { fish: [], spawnUntil: -1, fishAt: [], closed: [] }; // a save from before the water: every shoal starts full (iteration 60)
   state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
-  state.wyrm.starved = state.wyrm.starved ?? 0; // the wyrm's refusals in a row and its razing flight (iteration 70)
-  state.wyrm.razing = state.wyrm.razing ?? false;
-  // the Sky-Dock's wyvern, the merchant's memory and the brawl's day (iteration 73): a save from before them starts at nothing
-  state.airship.wyvern = state.airship.wyvern ?? false;
-  state.airship.wyvernId = state.airship.wyvernId ?? -1;
-  state.airship.wyvernTale = state.airship.wyvernTale ?? 0;
-  state.merchant = state.merchant ?? { visits: 0, spent: 0, eggs: 0, talks: 0 };
+  // the merchant's memory and the brawl's day (iteration 73): a save from before them starts at nothing
+  state.merchant = state.merchant ?? { visits: 0, spent: 0, talks: 0 };
+  // the parked creatures (phase 1b) leave the map; the wild, the boats and the airship stay
+  state.agents = state.agents.filter((a) => a.kind !== AgentKind.Creature || a.species === 'airship' || a.species === 'boat' || isWild(a.species));
+  for (const k of Object.keys(state.stats)) if (!(k in freshStats)) delete (state.stats as Record<string, number>)[k]; // the parked systems' counters
   state.guilds.brawlDay = state.guilds.brawlDay ?? -1;
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
-  if (!state.wall || state.wall.length !== state.w * state.h) state.wall = new Uint8Array(state.w * state.h);
-  if (!state.dustLit || state.dustLit.length !== state.w * state.h) state.dustLit = new Uint16Array(state.w * state.h);
   assignAspects(state.nodes, state.founding, (() => { let k = 0; return () => (k++ * 5 + 3); })());
   state.version = SAVE_VERSION;
   // rebuild derived layers

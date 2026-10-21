@@ -3,13 +3,11 @@ import { BUILDING_BY_KEY } from './catalog';
 import { brawlToday } from './guilds';
 /** A shrine whose pilgrim prayed at the Temple reaches half again as far for this many days. */
 export const CONSECRATED_DAYS = 10;
-import { mewsActive } from './beasts';
 import { findPath, roadTileOf } from './agents';
 import { effects, recomputeGloamDist } from './hazards';
 import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent, type Building, type GameState, type ServiceType } from './types';
 import { commitRng, forEachBuilding, markDirty, rngOf } from './world';
 import { catalogue } from './relics';
-import { CRADLE_KINDS, isCradle } from './wyrmcraft';
 
 import { flooding } from './weave';
 
@@ -139,28 +137,6 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
       }
     },
   },
-  tamer: {
-    id: 'tamer', name: 'tamer', plural: 'tamers', prop: 'leash',
-    desc: "Walks from its Tamer's Lodge to each cradle within ten tiles that holds dragons: every dragon there is calmer (+2 mood) and grows a tenth faster that day, three visits a day.",
-    from: ['tamerslodge'],
-    count: () => 1,
-    radius: () => 10,
-    cap: 3,
-    target: (s, a, anchor) => errandTarget(s, a, anchor, () => (a.load >= 3 ? -1 : nearestRoadOf(s, a, CRADLE_KINDS, (b) => Math.hypot(b.x - anchor.x, b.y - anchor.y) <= 10 && (b.visited ?? -1) < s.day && s.dragons.some((d) => d.cradleId === b.id)))),
-    onArrive: (s, a, i) => {
-      if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
-      const c = buildingsAt(s, i).find((b) => isCradle(b.kind));
-      if (c && a.load < 3 && (c.visited ?? -1) < s.day) {
-        c.visited = s.day + 1; // the daily reader runs after the day rolls over
-        a.load += 1;
-        let n = 0;
-        for (const d of s.dragons) if (d.cradleId === c.id) { d.mood = Math.min(100, d.mood + 2); n++; }
-        s.stats.tamerVisits++;
-        logLine(a, `Worked the ${n} dragon${n === 1 ? '' : 's'} in the cradle at (${c.x},${c.y}).`);
-      }
-      a.phase = 1;
-    },
-  },
   pilgrim: {
     id: 'pilgrim', name: 'pilgrim', plural: 'pilgrims', prop: 'staff',
     desc: 'Walks from its shrine, temple or the Great Gate to a house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
@@ -265,26 +241,17 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
   },
   watchman: {
     id: 'watchman', name: 'watchman', plural: 'watchmen', prop: 'rod',
-    desc: 'Patrols the streets around its Watch House: the tiles it walks count as watched, and it kills hounds and lays the restless it meets, two of each a day.',
+    desc: 'Patrols the streets around its Watch House: the tiles it walks count as watched, and it lays the restless it meets, two a day.',
     from: ['watchpost', 'watchhouse'],
     count: (_s, b) => (b.kind === 'watchhouse' ? (b.lit ? 2 : 1) : 1),
-    radius: (b, s) => (BUILDING_BY_KEY[b.kind].service?.radius ?? 8) * (b.kind === 'watchhouse' && mewsActive(s) ? 2 : 1),
+    radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
     onTile: (s, _a, i) => paintBonus(s, 'watch', i, 0.08, 0.3),
-    meets: [AgentKind.Creature, AgentKind.Restless],
+    meets: [AgentKind.Restless],
     cap: 4,
-    onArrive: (s) => { s.stats.watchRounds++; }, // a patrol leg walked: the Watch at work, hounds or no hounds (iteration 92)
+    onArrive: (s) => { s.stats.watchRounds++; }, // a patrol leg walked: the Watch at work (iteration 92)
     onMeet: (s, a, o) => {
-      const kills = Math.floor(a.load / 10);
       const layings = a.load % 10;
-      if (o.kind === AgentKind.Creature) {
-        if (o.species !== 'hound' || kills >= 2) return false;
-        a.load += 10;
-        s.stats.houndsKilled++;
-        s.stats.walkerKills++;
-        effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'growl', tick: s.tick });
-        logLine(a, `Killed a hound at (${Math.floor(a.x)},${Math.floor(a.y)}).`);
-        return true;
-      }
+      if (o.kind !== AgentKind.Restless) return false;
       if (layings >= 2) return false;
       a.load += 1;
       s.stats.restlessLaid++;

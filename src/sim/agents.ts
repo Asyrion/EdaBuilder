@@ -2,8 +2,8 @@
 import { effects } from './hazards';
 import { fordClosed } from './water';
 import { marketQuarterAt } from './districts';
-import { BARGE_VARIANT, CART_BALK_TICKS, CART_FEAR_REACH, FLOAT_VARIANT, GOLEM_LOAD, GOLEM_REST, GOLEM_VARIANT, deliverBarge, floatingCarts, floatingTarget, isDonkeyCart } from './vehicles';
-import { fontOfQuieting } from './lore';
+import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
+import { fontOfQuieting } from './hazards';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
 import { PORTAL_CAP } from './networks';
@@ -13,7 +13,6 @@ export const CARTERS_EASE = 0.8;
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { edictOn } from './edicts';
-import { auraAt } from './weave';
 
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
@@ -151,15 +150,8 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 }
 
 /** A road tile adjacent to the building footprint, or -1. */
-let fenD = 0;
-let fenGrid: Uint8Array | null = null;
-/** Set once a tick so marketStockCap can know the Fen-Nex quarter without a state argument. */
-export function setFenNex(d: number, grid: Uint8Array): void {
-  fenD = d;
-  fenGrid = grid;
-}
 export function marketStockCap(b: Building): number {
-  return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1) * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
+  return 20 * b.level * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
 }
 
 /** The door: the first road tile on a side of the footprint, else a corner (a corner counts since iteration 49; the sides come first so every older door stays where it was). */
@@ -220,7 +212,7 @@ export function dailyAgents(state: GameState): void {
   let carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
   }
   // remove agents whose home vanished
   state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.kind === AgentKind.Creature || a.homeId >= 0);
@@ -228,7 +220,7 @@ export function dailyAgents(state: GameState): void {
   carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
   }
   while (citizens > targetCitizens) {
     const i = state.agents.findIndex((a) => a.kind === AgentKind.Citizen);
@@ -237,7 +229,7 @@ export function dailyAgents(state: GameState): void {
     citizens--;
   }
   while (carts > targetCarts) {
-    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && a.variant !== GOLEM_VARIANT && !mines.some((m) => m.id === a.homeId));
+    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && !mines.some((m) => m.id === a.homeId));
     if (i < 0) break;
     state.agents.splice(i, 1);
     carts--;
@@ -372,9 +364,8 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
     if (a.targetId === -1) {
       // wait for a load; then deliver to the hungriest reachable buyer (markets for goods, enchanters for leystone)
       const buyers = home.kind === 'mine' ? pools.arcanes : pools.markets;
-      const golem = a.variant === GOLEM_VARIANT;
       if (home.stock < 4 || !buyers.length) {
-        a.timer = golem ? 60 : 120; // a warden in harness looks in twice as often (iteration 72)
+        a.timer = 120;
         return;
       }
       let best: Building | null = null;
@@ -388,7 +379,7 @@ function chooseTrip(state: GameState, a: Agent, rng: ReturnType<typeof rngOf>, p
         }
       }
       dest = best;
-      a.load = Math.min(golem && best ? Math.min(GOLEM_LOAD, Math.max(6, marketStockCap(best) - best.stock)) : golem ? GOLEM_LOAD : 12, home.stock); // a warden loads what the market has room for, up to 30 (iteration 72)
+      a.load = Math.min(12, home.stock);
     } else dest = home;
   } else {
     const atHome = a.targetId === -1 || a.targetId === home.id;
@@ -448,25 +439,11 @@ export function tickAgents(state: GameState): void {
     return pools;
   };
   const dt = 1 / TICKS_PER_SEC;
-  // the Gloam-hounds abroad this tick, for the donkeys to balk at (iteration 72); gathered once, only when one is out
-  let hounds: Agent[] | null = null;
-  const houndsOut = () => (hounds ??= state.agents.filter((h) => h.kind === AgentKind.Creature && h.species === 'hound'));
   for (const a of state.agents) {
     if (a.kind === AgentKind.Creature || a.kind === AgentKind.Builder || a.kind === AgentKind.Walker) continue;
     if (a.timer > 0) {
       a.timer--;
       continue;
-    }
-    if (a.kind === AgentKind.Cart && a.pathIdx < a.path.length && isDonkeyCart(a)) {
-      // a donkey cart balks at a hound within reach and stands; the floating carts, the barges and the golem haulers do not (iteration 72)
-      let scared = false;
-      for (const h of houndsOut()) if (Math.abs(h.x - a.x) <= CART_FEAR_REACH && Math.abs(h.y - a.y) <= CART_FEAR_REACH && Math.hypot(h.x - a.x, h.y - a.y) <= CART_FEAR_REACH) { scared = true; break; }
-      if (scared) {
-        a.timer = CART_BALK_TICKS;
-        state.stats.cartsBalked++;
-        if (state.stats.lastBalkDay !== state.day) { state.stats.lastBalkDay = state.day; pushMessage(state, `The carters' donkeys balk at Gloam-hounds on the road at (${Math.floor(a.x)},${Math.floor(a.y)}) and will not go on. A Concord Warden in harness would.`, 'warn', true, { x: Math.floor(a.x), y: Math.floor(a.y) }); }
-        continue;
-      }
     }
     if (a.pathIdx >= a.path.length && a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT) { a.homeId = -2; continue; }
     if (a.pathIdx >= a.path.length) {
@@ -481,7 +458,7 @@ export function tickAgents(state: GameState): void {
     const congestion = state.trafficSmooth[t] / 255;
     const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
     const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
-    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * (auraAt(state, 'sky', a.x, a.y) ? 1.25 : 1) * dt; // a Sky dragon's aura speeds the carts in it (iteration 53)
+    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;
@@ -512,7 +489,7 @@ export function tickAgents(state: GameState): void {
       }
       if (a.pathIdx >= a.path.length) {
         // arrived
-        a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : a.kind === AgentKind.Cart && a.variant === GOLEM_VARIANT ? GOLEM_REST : 150 + rng.int(450); // a warden in harness does not rest (iteration 72)
+        a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : 150 + rng.int(450);
         if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
           const m = buildingById(state, a.targetId);
           if (m && m.state === 'ok') {
@@ -520,7 +497,6 @@ export function tickAgents(state: GameState): void {
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
             state.stats.goodsDelivered += a.load;
-            if (a.variant === GOLEM_VARIANT) state.stats.golemHauls += a.load;
           }
           a.load = 0;
         }

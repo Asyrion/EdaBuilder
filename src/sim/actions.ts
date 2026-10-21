@@ -2,7 +2,7 @@
 import { RELIC_SETS } from './relics';
 import { FORD_COST, fordable } from './water';
 import { buildsFor, canBuild, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
-import { BUILDING_BY_KEY, BULLDOZE_COST, GATE_COST, GATE_UNLOCK, ROAD_BY_TYPE, WALL_COST, WALL_UNLOCK, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
+import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, districtName, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 import { districtInUse, districtOpenAt, districtSlots } from './districts';
@@ -28,7 +28,6 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (t === Terrain.LeyNode) return -1;
   if (state.bIndex[i] >= 0) return -1;
   if (state.gloam[i]) return -1;
-  if (state.wall[i] === 1) return -1; // roads pass through gates, not walls
   if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1; // beyond the Charter
   let cost = def.cost;
   if (t === Terrain.Water) cost *= type === RoadType.Track && fordable(state, i) ? FORD_COST : 4; // a track fords a narrow river (iteration 60); else a bridge
@@ -96,7 +95,6 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
     if (state.road[i] === type) continue;
     state.road[i] = type;
     state.zone[i] = Zone.None;
-    state.dustLit[i] = 0; // a re-tiered road loses its glim-dust
     built++;
     markDirtyAround(state, i % state.w, (i / state.w) | 0);
   }
@@ -148,8 +146,6 @@ export function placeBuilding(state: GameState, key: string, x: number, y: numbe
   if (why) return { ok: false, reason: why };
   const cost = costOf(state, def);
   if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
-  if (def.materials) for (const [k, v] of Object.entries(def.materials)) if ((state.materials[k as keyof typeof state.materials] ?? 0) < (v ?? 0)) return { ok: false, reason: `Needs ${v} ${k}` };
-  if (def.materials) { for (const [k, v] of Object.entries(def.materials)) state.materials[k as keyof typeof state.materials] -= v ?? 0; state.stats.marvels++; }
   state.treasury -= cost;
   for (let dy = 0; dy < def.h; dy++)
     for (let dx = 0; dx < def.w; dx++) state.zone[idx(x + dx, y + dy)] = Zone.None;
@@ -172,23 +168,11 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     removeBuilding(state, b);
     return { ok: true, cost };
   }
-  if (state.road[i] && state.wall[i] >= 2) {
-    // a gate goes first; the road under it stays
-    state.wall[i] = 0;
-    markDirtyAround(state, x, y);
-    return { ok: true, cost: 0 };
-  }
   if (state.road[i]) {
     state.road[i] = RoadType.None;
-    state.dustLit[i] = 0;
     state.treasury -= BULLDOZE_COST;
     markDirtyAround(state, x, y);
     return { ok: true, cost: BULLDOZE_COST };
-  }
-  if (state.wall[i]) {
-    state.wall[i] = 0;
-    markDirtyAround(state, x, y);
-    return { ok: true, cost: 0 };
   }
   if (state.zone[i]) {
     state.zone[i] = Zone.None;
@@ -197,20 +181,6 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
     return { ok: true, cost: 0 };
   }
   return { ok: false };
-}
-
-/** Glim-dust scattered on a track or cobbled tile lights it for a season: land value, the overlay and a glow, but no ley (iteration 53). */
-export const DUST_DAYS = 30;
-export function scatterDust(state: GameState, x: number, y: number): ActionResult {
-  if (!inBounds(x, y)) return { ok: false };
-  const i = idx(x, y);
-  if (state.road[i] !== RoadType.Track && state.road[i] !== RoadType.Cobble) return { ok: false, reason: 'Glim-dust goes on a track or a cobbled road' };
-  if (state.dustLit[i] > state.day) return { ok: false, reason: `Already dusted (${state.dustLit[i] - state.day} days left)` };
-  if (state.materials.glimdust < 1) return { ok: false, reason: 'Needs 1 glim-dust (Moth-Lofts gather it)' };
-  state.materials.glimdust -= 1;
-  state.dustLit[i] = state.day + DUST_DAYS;
-  markDirtyAround(state, x, y);
-  return { ok: true, cost: 0 };
 }
 
 export function setTax(state: GameState, zone: keyof GameState['taxRates'], rate: number): void {
@@ -247,7 +217,6 @@ export interface Snapshot {
   road: Uint8Array;
   zone: Uint8Array;
   district: Uint8Array;
-  wall: Uint8Array;
   bIndex: Int32Array;
   buildings: string; // JSON of the buildings array
   nextBuildingId: number;
@@ -261,7 +230,6 @@ export function takeSnapshot(state: GameState, label: string): Snapshot {
     road: state.road.slice(),
     zone: state.zone.slice(),
     district: state.district.slice(),
-    wall: state.wall.slice(),
     bIndex: state.bIndex.slice(),
     buildings: JSON.stringify(state.buildings),
     nextBuildingId: state.nextBuildingId,
@@ -275,7 +243,6 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
   state.road.set(snap.road);
   state.zone.set(snap.zone);
   state.district.set(snap.district);
-  state.wall.set(snap.wall);
   state.bIndex.set(snap.bIndex);
   state.buildings = JSON.parse(snap.buildings);
   state.nextBuildingId = snap.nextBuildingId;
@@ -291,7 +258,7 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
 export type TerraformOp = 'clear' | 'plant' | 'level';
 export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string; faction?: FactionId[] }> = {
   clear: { name: 'Clear forest', cost: 40, unlock: 0, desc: 'Fell a forest tile to grass. Woodcutters are cheap; glimwood is not replanted by itself.' },
-  plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little, hide war-tigers, and shade the Gloam\'s approach not at all.' },
+  plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little and shade the Gloam\'s approach not at all.' },
   level: { name: 'Level hills', cost: 220, unlock: 4, desc: 'Grimmen crews cut a hills tile down to grass. Slow, loud, and the only way to build a 2x2 where the rock was.' },
 };
 
@@ -303,7 +270,7 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
   const def = TERRAFORM[op];
   if (state.milestone < def.unlock) return { ok: false, reason: 'Not yet unlocked' };
   if (def.faction && !def.faction.includes(state.faction)) return { ok: false, reason: `The ${factionOf(state).people} do not ${def.name.toLowerCase()}` };
-  if (state.bIndex[i] >= 0 || state.road[i] || state.wall[i]) return { ok: false, reason: 'Something stands here' };
+  if (state.bIndex[i] >= 0 || state.road[i]) return { ok: false, reason: 'Something stands here' };
   if (state.gloam[i]) return { ok: false, reason: 'The Gloam holds this ground' };
   const t = state.terrain[i];
   if (op === 'clear' && t !== Terrain.Forest) return { ok: false, reason: 'No forest here' };
@@ -316,72 +283,6 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
   if (op === 'level') state.stats.stoneCut++;
   markDirtyAround(state, x, y);
   return { ok: true, cost: def.cost };
-}
-
-/** Warding Wall: a line of leystone-inlaid stone the Gloam cannot cross and hounds cannot pass. */
-export function wallTileCost(state: GameState, i: number): number {
-  if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1;
-  const t = state.terrain[i];
-  if (isWater(t) || t === Terrain.LeyNode) return -1;
-  if (state.bIndex[i] >= 0 || state.road[i] || state.gloam[i]) return -1;
-  if (state.wall[i]) return 0;
-  return t === Terrain.Hills || t === Terrain.Marsh ? WALL_COST * 2 : WALL_COST; // rock to cut, or a footing to sink in the marsh
-}
-
-export function previewWall(state: GameState, tiles: number[]): { cost: number; valid: boolean[] } {
-  let cost = 0;
-  const valid: boolean[] = [];
-  for (const i of tiles) {
-    const c = wallTileCost(state, i);
-    valid.push(c >= 0);
-    if (c > 0) cost += c;
-  }
-  return { cost, valid };
-}
-
-export function buildWall(state: GameState, tiles: number[]): ActionResult {
-  if (state.milestone < WALL_UNLOCK) return { ok: false, reason: 'Not yet unlocked' };
-  const { cost } = previewWall(state, tiles);
-  if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
-  let built = 0;
-  for (const i of tiles) {
-    const c = wallTileCost(state, i);
-    if (c <= 0) continue;
-    state.wall[i] = 1;
-    state.zone[i] = Zone.None;
-    built++;
-    markDirtyAround(state, i % state.w, (i / state.w) | 0);
-  }
-  if (built === 0) return { ok: false, reason: 'Nothing to build there' };
-  state.treasury -= cost;
-  state.zoneListDirty = true;
-  return { ok: true, cost };
-}
-
-export function wallCount(state: GameState): number {
-  let n = 0;
-  for (let i = 0; i < state.wall.length; i++) n += state.wall[i];
-  return n;
-}
-
-/** A gate in the Warding Wall: placed on a wall tile or an empty/road tile beside a wall. Roads pass through gates. */
-export function placeGate(state: GameState, style: 2 | 3, x: number, y: number): ActionResult {
-  if (state.milestone < GATE_UNLOCK) return { ok: false, reason: 'Not yet unlocked' };
-  if (!inBounds(x, y)) return { ok: false, reason: 'Off the map' };
-  const i = idx(x, y);
-  const t = state.terrain[i];
-  if (isWater(t) || t === Terrain.LeyNode || state.bIndex[i] >= 0 || state.gloam[i]) return { ok: false, reason: 'Cannot build here' };
-  if (!inCharter(state, x, y)) return { ok: false, reason: 'Beyond the Charter' };
-  const nearWall = [idx(x - 1, y), idx(x + 1, y), idx(x, y - 1), idx(x, y + 1)].some((j) => j >= 0 && j < state.wall.length && state.wall[j] === 1);
-  if (state.wall[i] !== 1 && !nearWall) return { ok: false, reason: 'A gate must stand in or beside the Warding Wall' };
-  const cost = GATE_COST[style];
-  if (cost > state.treasury) return { ok: false, reason: 'Not enough crowns' };
-  state.treasury -= cost;
-  state.wall[i] = style;
-  state.zone[i] = Zone.None;
-  state.zoneListDirty = true;
-  markDirtyAround(state, x, y);
-  return { ok: true, cost };
 }
 
 /** Storm-Caller's Peak: call rain over everything within 14 tiles. */

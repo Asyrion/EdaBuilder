@@ -1,8 +1,7 @@
 import { factionOf, milestonesOf } from '../data/factions';
 /** Daily tithe: taxes and upkeep; and, since iteration 54, the Crown that wants: favour, the Thaw levy, debt interest and a loan. */
-import { inFenNex } from './lore';
 import { charterUpkeep, districtUnlockNotes, quarterOf, templeQuarterStands, TEMPLE_TITHE_SHARE } from './districts';
-import { BUILDING_BY_KEY, ROAD_BY_TYPE, WALL_UPKEEP } from './catalog';
+import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { Zone, type Building, type GameState } from './types';
 import { GROWING_HALLS, forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
@@ -111,7 +110,7 @@ export function computeLedger(state: GameState) {
       const t = occupants * (def.tax ?? 0) * rate * levelMult * happyMod * unrestMod;
       switch (def.zone) {
         case Zone.Hearth: l.taxHearth += t; break;
-        case Zone.Market: { const q = quarterOf(state, b); if (!inFenNex(state, b) && q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1) * (nearSquare(b) ? 1.15 : 1) * marketRoadMultAt(state, roadTileOf(state, b)); break; } // the road at the door counts (iteration 75)
+        case Zone.Market: { const q = quarterOf(state, b); if (q !== 'temple') l.taxMarket += t * (edictOn(state, 'lanternlevy', b) ? 1.2 : 1) * (q === 'market' ? 1.1 : 1) * (nearSquare(b) ? 1.15 : 1) * marketRoadMultAt(state, roadTileOf(state, b)); break; } // the road at the door counts (iteration 75)
         case Zone.Craft: l.taxCraft += t; break;
         case Zone.Arcane: l.taxArcane += t; break;
       }
@@ -119,10 +118,7 @@ export function computeLedger(state: GameState) {
       l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1) * (quarterOf(state, b) === 'scholars' ? 1.1 : 1);
     }
   });
-  for (let i = 0; i < state.road.length; i++) {
-    if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
-    if (state.wall[i]) l.upkeepRoads += WALL_UPKEEP;
-  }
+  for (let i = 0; i < state.road.length; i++) if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
   l.upkeepEdicts = edictUpkeep(state);
   l.upkeepCharters = charterUpkeep(state); // a crown a building a day in every chartered district (iteration 54)
   l.charterTithe = templeQuarterStands(state) ? l.taxMarket * TEMPLE_TITHE_SHARE : 0; // the Vigils take a tenth of the whole city's market tithe

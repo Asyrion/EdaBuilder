@@ -1,28 +1,8 @@
 {
-  "beastmasters": {
-    "name": "Beastmasters' Charter",
-    "desc": "Drakes and golems are fed from the city purse: cradles and foundries draw 40% less mana, but the tamers' scraps draw hounds: packs come 50% more often. 40 crowns/day.",
-    "flavor": "Everything that eats can be tamed. Everything that is tamed still eats."
-  },
-  "bounty": {
-    "name": "Hunters' Bounty",
-    "desc": "A crown a pelt. Hunters' Lodges clear hounds twice as far, the Watch kills them more often, and thrumhares vanish from the meadows (they are pelts too).",
-    "flavor": "The lodge door ran out of room for notches in a season."
-  },
   "closeseason": {
     "name": "The Close Season",
-    "desc": "Wardens of the chase: no lodge takes game in Bloom while the herds drop their young (its hunters guard against hounds instead), no lodge takes a herd below 6 head, and the herds breed a quarter faster. 10 crowns a day and 10 a lodge.",
+    "desc": "Wardens of the chase: no lodge takes game in Bloom while the herds drop their young, no lodge takes a herd below 6 head, and the herds breed a quarter faster. 10 crowns a day and 10 a lodge.",
     "flavor": "The hart is the Crown's in Bloom and the cook's in Ember. The wardens of the chase keep the calendar."
-  },
-  "wyrmpeace": {
-    "name": "Wyrm-Peace",
-    "desc": "A standing offering at the wyrm's node: tribute is halved, and so is the ward of a bound wyrm's lair. 80 crowns/day.",
-    "flavor": "Half a hoard buys half a guardian. The wyrm can count."
-  },
-  "scalemail": {
-    "name": "Scale-Mail",
-    "desc": "The Watch wears dragon scale: unrest −5 % while scale is in the vault, and the mail wears 0.05 scale a day. No crowns; the vault pays.",
-    "flavor": "It turns a knife. It also turns heads, which the Warden-Reeve counts as the point."
   },
   "curfew": {
     "name": "Night Curfew",

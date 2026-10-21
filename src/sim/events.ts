@@ -2,22 +2,18 @@
 import { BUILDING_BY_KEY, isDepot } from './catalog';
 import { bodyOf, ensureShoals, shoalCap } from './water';
 import { factionOf } from '../data/factions';
-import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
+import { DISTRICT_NAMES, Terrain, Zone, type Building, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
-import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, fightBout, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, ringChampion, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
 import { hasAcademy } from './relics';
 import { canPlaceBuilding, commitRng, forEachBuilding, illTiding, placeBuildingRaw, pushMessage, rngOf, seasonOf } from './world';
 import { addFavour } from './economy';
 import { Rng, hashString } from '../core/rng';
 import { capacityOf } from './growth';
 import { spawnRestless } from './agents';
-import { TIGER_FOREST, forestTiles, marketDistrict, startStorm } from './lore';
 import { districtName, markDirty } from './world';
 import { MAP_W, inBounds, idx } from './types';
 import { igniteBuilding, recomputeGloamDist } from './hazards';
 import { RIOT_UNREST } from './growth';
-import { HEART_GLOAM_REACH, HEART_STEP_DAYS, PASS_ALMS, PASS_PILGRIM_DAY, PASS_PILGRIMS, WARDEN_DAYS, BELREGI_REACH_HEART, GREAT_GATE_REACH_HEART, GREAT_GATE_REACH, BELREGI_REACH_GREAT, gateCounts, greatGateOf, litGreatGate, passPilgrims } from './gate';
-import { WYRM_STARVE_LIMIT, WYRM_EATS, WYRM_TRIBUTE_GOODS, bind, hasCourt, marketGoods, payTribute, refuse, takeGoods, wyrmNode, wyrmTribute } from './wyrm';
 import EVENT_TEXT from '../data/content/text/events.json';
 
 export interface EventDef {
@@ -237,16 +233,6 @@ const CHAINS: EventDef[] = [
 
 /** Welcomed pilgrims ask for a shrine this many days on (iteration 54). */
 export const PILGRIM_ASK_DAYS = 30;
-/** The Fen-Nex quarter's seasonal audit: the foxes trade honestly half the time, on a coin of their own (iteration 54). */
-export function foxAudit(s: GameState): void {
-  if (s.fenNex <= 0 || s.day <= 0 || s.day % 30 !== 0) return;
-  const rng = new Rng(hashString(`${s.seed}:${s.day}:fox`));
-  const honest = rng.chance(0.5);
-  s.stats.foxAudits++;
-  if (honest) { s.treasury += 2000; pushMessage(s, `The season's audit of ${districtName(s, s.fenNex)}: the foxes' ledgers balance, for once, and ${s.cityName} is 2,000 crowns the richer.`, 'good', true); }
-  else { s.treasury -= 1000; pushMessage(s, `The season's audit of ${districtName(s, s.fenNex)}: the foxes' ledgers are in three scripts and none of them adds up. 1,000 crowns are gone and nobody is sorry.`, 'warn', true); }
-}
-
 function findSpot(s: GameState, key: string): [number, number] | null {
   for (const b of s.buildings) {
     if (!b || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth) continue;
@@ -322,67 +308,6 @@ export const CALENDAR: (EventDef & { seasonDay: number; season: number })[] = [
   },
 ];
 
-/** Egg events: the only way to get dragons. */
-function eggChoices(line: DragonLine, sell: number): EventDef['choices'] {
-  return [
-    { label: 'Keep the egg', desc: 'Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown.', apply: (s) => { const d = addEgg(s, line); if (d) return `The ${LINE_INFO[line].name.toLowerCase()} egg is laid in the cradle, warm and humming. The tamers already call it ${d.name}.`; s.treasury += sell; return `No cradle had room. The Crown's assessor pays ${sell} crowns and rides off very carefully.`; } },
-    { label: `Sell it to the Crown (+${sell} crowns)`, desc: 'Crowns now, and the Crown\'s favour +3.', apply: (s) => { s.treasury += sell; addFavour(s, 3); return `${sell} crowns, and a receipt with the royal wyrm-seal.`; } },
-    { label: 'Give it to the Academy', desc: 'Educated share +5% (needs an Academy), else happiness +3 for 10 days.', apply: (s) => { if (s.buildings.some((b) => b && (b.kind === 'academy' || b.kind === 'grandacademy'))) { s.educated = Math.min(0.95, s.educated + 0.05); return 'The scholars draw it from every angle and argue about the spiral.'; } s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 10, label: 'Egg on display' }); return 'Without an Academy it sits in the Founding Stake, and half the valley comes to look.'; } },
-  ];
-}
-
-const EGGS: EventDef[] = [
-  {
-    id: 'egg_first', title: EVENT_TEXT.egg_first.title, once: true, priority: true, // the Crown heard of the cradle: it answers, not the luck of the draw (iteration 55)
-    text: EVENT_TEXT.egg_first.text,
-    when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
-    choices: [
-      { label: EVENT_TEXT.egg_first.choices[0].label, desc: () => 'An ember egg goes into your cradle.', apply: (s) => { const d = addEgg(s, 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
-      { label: EVENT_TEXT.egg_first.choices[1].label, desc: EVENT_TEXT.egg_first.choices[1].desc!, apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
-    ],
-  },
-  {
-    id: 'egg_seam', title: 'A seam of warm stone',
-    text: 'Grimmen miners break into a seam that is warm to the touch, and in a hollow of red stone lies an egg the size of a bucket, ticking softly.',
-    when: (s) => s.milestone >= 4 && s.buildings.some((b) => b && b.kind === 'mine' && b.age >= 20) && s.dragons.length < 6,
-    choices: eggChoices('ember', 1500),
-  },
-  {
-    id: 'egg_bone', title: 'A hatchling in the boneyard',
-    text: 'The wisps over the Ossuary have gathered in a ring all week. At its centre the sexton finds an ivory egg half-buried in the quiet ground.',
-    when: (s) => s.milestone >= 4 && s.buildings.some((b) => b && b.kind === 'ossuary') && s.agents.filter((a) => a.species === 'wisp').length >= 6 && s.dragons.length < 6,
-    choices: eggChoices('bone', 1800),
-  },
-  {
-    id: 'egg_glim', title: 'Something in the loft',
-    text: 'The moth-keepers report a nest of glim-dust in the top of the loft, and in it a golden egg no bigger than a fist, warm as a lamp.',
-    when: (s) => s.buildings.some((b) => b && b.kind === 'mothloft' && b.age >= 40) && s.dragons.length < 6,
-    choices: eggChoices('glim', 900),
-  },
-  {
-    id: 'egg_sky', title: 'A skyray nest', once: true,
-    text: 'The rays circling the Beacon have left something on its roof: an egg like a pale stone, veined silver, cold to the touch and lighter than it should be.',
-    when: (s) => s.agents.some((a) => a.kind === 3 && a.species === 'skyray' && a.phase === 1) && s.dragons.length < 6,
-    choices: eggChoices('sky', 3000),
-  },
-  {
-    id: 'egg_grey', title: 'The Concord vault', once: true,
-    text: 'The bound wardens have led the foundry-masters to a door in the hill they were built to guard. Inside, in a nest of grey ash, lies an egg half turned to stone. It is warm.',
-    when: (s) => s.stats.golemsBound >= 3 && s.dragons.length < 6,
-    choices: eggChoices('grey', 3500),
-  },
-  {
-    id: 'egg_poachers', title: EVENT_TEXT.egg_poachers.title,
-    text: EVENT_TEXT.egg_poachers.text,
-    when: (s) => s.buildings.some((b) => b && isCradle(b.kind)) && s.treasury > 3000 && s.dragons.length < 6,
-    choices: [
-      { label: EVENT_TEXT.egg_poachers.choices[0].label, desc: EVENT_TEXT.egg_poachers.choices[0].desc, apply: (s) => { if (s.treasury < 2500) return 'The purse is too light; the carters pull their hoods up and go.'; const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim'] as DragonLine[]); commitRng(s, rng); if (!freeCradle(s, line)) return `No cradle has room for a ${LINE_INFO[line].name.toLowerCase()} egg; the poachers sell it on to the Crown.`; s.treasury -= 2500; const d = addEgg(s, line); return d ? `A ${LINE_INFO[line].name.toLowerCase()} egg, still warm. The poachers are gone before the crowns are counted.` : 'No cradle had room; the egg is sold on to the Crown at a loss. The poachers laugh.'; } },
-      { label: EVENT_TEXT.egg_poachers.choices[1].label, desc: EVENT_TEXT.egg_poachers.choices[1].desc, apply: (s) => { s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'Poachers jailed' }); const rng = rngOf(s); const luck = rng.chance(0.4); commitRng(s, rng); if (luck) { const d = addEgg(s, 'ember'); if (d) return 'The Watch takes the carters and the egg. It goes to the cradle.'; } return 'The Watch takes the carters. The egg is not in the cart.'; } },
-      { label: EVENT_TEXT.egg_poachers.choices[2].label, desc: EVENT_TEXT.egg_poachers.choices[2].desc, apply: () => 'They leave by the Gloam road, moss dripping.' },
-    ],
-  },
-];
-
 /** Visitors from the wider Eda (lore drop). */
 /** The Crown's assessor comes for relics. */
 const CROWN: EventDef[] = [
@@ -400,34 +325,6 @@ const CROWN: EventDef[] = [
 
 const VISITORS: EventDef[] = [
   {
-    id: 'fennex', title: EVENT_TEXT.fennex.title, once: true,
-    text: EVENT_TEXT.fennex.text,
-    when: (s) => s.milestone >= 4 && s.population > 250,
-    choices: [
-      { label: EVENT_TEXT.fennex.choices[0].label, desc: EVENT_TEXT.fennex.choices[0].desc, apply: (s) => { const rng = rngOf(s); const honest = rng.chance(0.5); commitRng(s, rng); if (honest) { s.treasury += 3000; return 'Honest, this time. Salts, dyes and a set of scales that weigh true, paid for in coin that stays coin.'; } s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 7, label: 'Swindled by foxes' }); return 'The coin turns to leaves by morning. The Fen-Nex are already two valleys away, laughing.'; } },
-      { label: EVENT_TEXT.fennex.choices[1].label, desc: EVENT_TEXT.fennex.choices[1].desc, apply: (s) => { const d = marketDistrict(s); if (!d) { s.treasury += 500; return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; } s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
-      { label: EVENT_TEXT.fennex.choices[2].label, desc: EVENT_TEXT.fennex.choices[2].desc, apply: () => 'They bow, and bow, and are gone. One of the Watch lanterns is missing in the morning.' },
-    ],
-  },
-  {
-    id: 'fennex_gift', title: EVENT_TEXT.fennex_gift.title, once: true,
-    text: EVENT_TEXT.fennex_gift.text,
-    when: (s) => s.fenNex > 0 && s.day - s.lastEventDay >= 20 && s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok'),
-    choices: [
-      { label: EVENT_TEXT.fennex_gift.choices[0].label, desc: EVENT_TEXT.fennex_gift.choices[0].desc, apply: (s) => { const rng = rngOf(s); const real = rng.chance(0.5); commitRng(s, rng); if (!real) { s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'A good joke' }); return 'Leaves. Very warm leaves. The whole quarter is laughing and, somehow, so is the city.'; } const d = addEgg(s, 'fen'); return d ? `Real. The tamers call it ${d.name}; it is already stealing shoes.` : 'Real, and no cradle has room. The speaker takes it back with a look of sympathy.'; } },
-      { label: EVENT_TEXT.fennex_gift.choices[1].label, desc: EVENT_TEXT.fennex_gift.choices[1].desc, apply: () => '"Wise," she says, in a tone that means the opposite.' },
-    ],
-  },
-  {
-    id: 'longwood_sighting', title: EVENT_TEXT.longwood_sighting.title,
-    text: EVENT_TEXT.longwood_sighting.text,
-    when: (s) => forestTiles(s) >= TIGER_FOREST && s.milestone >= 2,
-    choices: [
-      { label: EVENT_TEXT.longwood_sighting.choices[0].label, desc: EVENT_TEXT.longwood_sighting.choices[0].desc, apply: (s) => { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 12, label: 'A wonder in the woods' }); return 'The story grows a head each telling. Children leave apples at the forest edge.'; } },
-      { label: EVENT_TEXT.longwood_sighting.choices[1].label, desc: EVENT_TEXT.longwood_sighting.choices[1].desc, apply: (s) => { s.treasury -= 400; s.modifiers.push({ kind: 'unrest', value: -0.03, until: s.day + 10, label: 'The hunt' }); return 'Three days in the trees, a great deal of ale, and one very clear hoofprint.'; } },
-    ],
-  },
-  {
     id: 'dr_jelly', title: EVENT_TEXT.dr_jelly.title, once: true,
     text: EVENT_TEXT.dr_jelly.text,
     when: (s) => s.milestone >= 3 && s.treasury > 3000,
@@ -441,7 +338,7 @@ const VISITORS: EventDef[] = [
     text: EVENT_TEXT.cloud_wizard.text,
     when: (s) => s.milestone >= 4,
     choices: [
-      { label: EVENT_TEXT.cloud_wizard.choices[0].label, desc: EVENT_TEXT.cloud_wizard.choices[0].desc, apply: (s) => { const f = s.founding; let n = 0; const rng = rngOf(s); for (let tries = 0; tries < 200 && n < 12; tries++) { const x = f.x + rng.int(17) - 8; const y = f.y + rng.int(17) - 8; if (!inBounds(x, y)) continue; const i = idx(x, y); if (s.terrain[i] !== Terrain.Grass && s.terrain[i] !== Terrain.Meadow) continue; if (s.bIndex[i] >= 0 || s.road[i] || s.zone[i] || s.wall[i]) continue; s.terrain[i] = Terrain.Forest; markDirty(s, x, y); n++; } commitRng(s, rng); s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 30, label: 'The glimwood grove' }); return `${n} glimwood saplings, waist-high by morning and glowing by the next night.`; } },
+      { label: EVENT_TEXT.cloud_wizard.choices[0].label, desc: EVENT_TEXT.cloud_wizard.choices[0].desc, apply: (s) => { const f = s.founding; let n = 0; const rng = rngOf(s); for (let tries = 0; tries < 200 && n < 12; tries++) { const x = f.x + rng.int(17) - 8; const y = f.y + rng.int(17) - 8; if (!inBounds(x, y)) continue; const i = idx(x, y); if (s.terrain[i] !== Terrain.Grass && s.terrain[i] !== Terrain.Meadow) continue; if (s.bIndex[i] >= 0 || s.road[i] || s.zone[i]) continue; s.terrain[i] = Terrain.Forest; markDirty(s, x, y); n++; } commitRng(s, rng); s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 30, label: 'The glimwood grove' }); return `${n} glimwood saplings, waist-high by morning and glowing by the next night.`; } },
       { label: EVENT_TEXT.cloud_wizard.choices[1].label, desc: EVENT_TEXT.cloud_wizard.choices[1].desc, apply: () => 'He leaves a single seed on the Stake. It has not sprouted. Yet.' },
     ],
   },
@@ -468,7 +365,7 @@ const VISITORS: EventDef[] = [
     when: (s) => s.buildings.some((b) => b && isDepot(b.kind) && b.state === 'ok') && s.milestone >= 3,
     choices: [
       { label: EVENT_TEXT.caravan.choices[0].label, desc: (s) => `Sell every works' surplus above 10 goods at 1.5x the season price (${caravanSurplus(s)} goods on the shelves now).`, apply: (s) => { let sold = 0; for (const b of s.buildings) { if (!b || b.state !== 'ok') continue; const def = BUILDING_BY_KEY[b.kind]; if (def.zone === Zone.Craft && b.stock > 10) { const n = b.stock - 10; b.stock = 10; sold += n; } } sold = Math.round(sold); const crowns = Math.round(sold * s.trade.priceGoods * 1.5); s.treasury += crowns; s.stats.caravanGoods += sold; return sold > 0 ? `${sold} goods change hands for ${crowns} crowns. The riders pay in Belerial gold, which the guild weighs twice.` : 'The works have nothing to spare above ten goods a shelf. The riders buy bread and water the striders.'; } },
-      { label: EVENT_TEXT.caravan.choices[1].label, desc: (s) => { const m = s.materials; return `Scale 400, wyrmfire 500, eggshell 200, rayscale 300, glim-dust 150 crowns each (${Math.round(m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150)} crowns for the whole vault); the slider sets the share sold.`; }, slider: { max: 100, label: 'share of the vault sold' }, apply: (s, amount) => { const share = amount === undefined ? 1 : Math.max(0, Math.min(100, amount)) / 100; const m = s.materials; const sold = { scale: m.scale * share, wyrmfire: m.wyrmfire * share, eggshell: m.eggshell * share, rayscale: m.rayscale * share, glimdust: m.glimdust * share }; const crowns = Math.round(sold.scale * 400 + sold.wyrmfire * 500 + sold.eggshell * 200 + sold.rayscale * 300 + sold.glimdust * 150); const line = `${Math.round(sold.scale)} scale, ${sold.wyrmfire.toFixed(1)} wyrmfire, ${sold.eggshell.toFixed(1)} eggshell, ${sold.rayscale.toFixed(1)} rayscale and ${sold.glimdust.toFixed(1)} glim-dust`; m.scale -= sold.scale; m.wyrmfire -= sold.wyrmfire; m.eggshell -= sold.eggshell; m.rayscale -= sold.rayscale; m.glimdust -= sold.glimdust; s.treasury += crowns; return crowns > 0 ? `${line} go east in sealed jars for ${crowns} crowns${share < 1 ? `; the rest stays in the vault` : ''}.` : 'The jars are empty. The riders shrug and water the striders.'; } },
+      { label: EVENT_TEXT.caravan.choices[1].label, desc: EVENT_TEXT.caravan.choices[1].desc!, apply: () => 'The riders trade the news of the plains over a cup and buy nothing. (The rare goods they once bought are parked with the dragons.)' },
       { label: EVENT_TEXT.caravan.choices[2].label, desc: EVENT_TEXT.caravan.choices[2].desc!, apply: (s) => { if (s.treasury < 2000) return 'The purse is too light; the riders shrug and pack up.'; s.treasury -= 2000; s.modifiers.push({ kind: 'watch', value: 0.2, until: s.day + 60, label: 'Strider patrols' }); return 'Four striders and a rider to teach the Watch. The birds hiss at everyone but the Grimmen.'; } },
       { label: EVENT_TEXT.caravan.choices[3].label, desc: EVENT_TEXT.caravan.choices[3].desc!, apply: (s) => { if (s.relicStock < 1) return 'There are no loose relics to auction. The riders look at the empty table and laugh.'; const rng = rngOf(s); const price = 100 + rng.int(41); const n = s.relicStock; let out = `${n} relics go under the hammer at ${price} each: ${n * price} crowns.`; s.treasury += n * price; s.relicStock = 0; s.stats.relicsSold += n; s.stats.relicsAuctioned += n; if (s.relics.uncatalogued > 0 && rng.chance(0.34)) { s.relics.uncatalogued--; s.treasury += 2500; out += ' A Belerial collector in a striped coat pays 2,500 for a piece nobody has named yet.'; } commitRng(s, rng); s.guilds.standing.sextons = Math.max(0, s.guilds.standing.sextons - 5); return out; } },
       { label: EVENT_TEXT.caravan.choices[4].label, desc: EVENT_TEXT.caravan.choices[4].desc!, apply: () => 'They water the striders and ride for the next wardlight before noon.' },
@@ -479,13 +376,13 @@ const VISITORS: EventDef[] = [
     text: EVENT_TEXT.merchant.text,
     textFn: (s) => {
       const m = s.merchant;
-      if (!m.visits) return 'A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.';
-      const bought = m.eggs ? `${m.eggs === 1 ? 'an egg' : `${m.eggs} eggs`}${m.spent > m.eggs * 3000 ? ' and more' : ''}` : m.spent ? 'seeds and salts' : 'nothing yet';
-      return `The wagon is back, for the ${['second', 'third', 'fourth', 'fifth'][Math.min(3, m.visits - 1)]} time. The merchant remembers: ${m.visits} visit${m.visits === 1 ? '' : 's'}, ${m.spent.toLocaleString()} crowns, ${bought}${m.talks >= 2 ? ', and the stories you traded instead of coin. She says she owes you one' : m.talks ? ', and one evening of stories' : ''}. ${m.eggs ? `The basket holds ${m.eggs === 1 ? 'a storm egg this time' : 'an ember egg this time'}` : 'The white egg is still in its basket'}, ${m.eggs ? 'at a price for an old customer' : 'at the old price'}.`;
+      if (!m.visits) return EVENT_TEXT.merchant.text;
+      const bought = m.spent ? 'seeds and salts' : 'nothing yet';
+      return `The wagon is back, for the ${['second', 'third', 'fourth', 'fifth'][Math.min(3, m.visits - 1)]} time. The merchant remembers: ${m.visits} visit${m.visits === 1 ? '' : 's'}, ${m.spent.toLocaleString()} crowns, ${bought}${m.talks >= 2 ? ', and the stories you traded instead of coin. She says she owes you one' : m.talks ? ', and one evening of stories' : ''}.`;
     },
     when: (s) => s.buildings.some((b) => b && isDepot(b.kind) && b.state === 'ok') && s.milestone >= 5 && s.day - s.lastEventDay >= 10,
     choices: [
-      { label: EVENT_TEXT.merchant.choices[0].label, desc: (s) => `${merchantEgg(s) === 'sky' ? 'A sky egg: a wyvern-only line, the fastest courier' : merchantEgg(s) === 'storm' ? 'A storm egg: the storm line, lightning in its wake' : 'An ember egg: the Craft line'}, ${merchantPrice(s, 4000).toLocaleString()} crowns${s.merchant.eggs ? ` (a tenth off for each egg bought: ${s.merchant.eggs})` : ''}. Needs a free cradle.`, apply: (s) => { const price = merchantPrice(s, 4000); const line = merchantEgg(s); if (s.treasury < price) return 'Not enough crowns; the merchant smiles and closes the basket.'; const d = addEgg(s, line); if (!d) return 'No cradle has room. The merchant keeps the egg and your interest.'; s.treasury -= price; s.merchant.spent += price; s.merchant.eggs++; merchantVisit(s); return `The egg is ${line === 'sky' ? 'white as the plains at noon' : line === 'storm' ? 'the blue of a sky before hail, and it hums' : 'warm as a hearthstone'}. The tamers name it ${d.name}.`; } },
+      { label: EVENT_TEXT.merchant.choices[0].label, desc: EVENT_TEXT.merchant.choices[0].desc!, apply: (s) => { merchantVisit(s); return 'The basket is empty this season: the merchant sold her last egg two wardlights back. She shows you the feathers instead.'; } },
       { label: EVENT_TEXT.merchant.choices[1].label, desc: (s) => `Goods production +20% for 30 days: ${merchantPrice(s, 1200).toLocaleString()} crowns.`, apply: (s) => { const price = merchantPrice(s, 1200); if (s.treasury < price) return 'Not enough crowns.'; s.treasury -= price; s.merchant.spent += price; merchantVisit(s); s.modifiers.push({ kind: 'goods', value: 0.2, until: s.day + 30, label: 'Longwood seeds' }); return 'The seeds sprout overnight in the herb yards, which the alchemists find rude.'; } },
       { label: EVENT_TEXT.merchant.choices[2].label, desc: (s) => `Unquieted dead −30; health +10 for 15 days: ${merchantPrice(s, 600).toLocaleString()} crowns.`, apply: (s) => { const price = merchantPrice(s, 600); if (s.treasury < price) return 'Not enough crowns.'; s.treasury -= price; s.merchant.spent += price; merchantVisit(s); s.unquieted = Math.max(0, s.unquieted - 30); s.modifiers.push({ kind: 'health', value: 0.1, until: s.day + 15, label: 'Ulum salts' }); return 'Salt on every lip in the boneyard, and a cleaner cough in the low streets. The merchant counts it twice and writes your name in a book.'; } },
       { label: EVENT_TEXT.merchant.choices[3].label, desc: EVENT_TEXT.merchant.choices[3].desc!, apply: (s) => { s.merchant.talks++; merchantVisit(s); return 'You trade stories: the Gates, the storm caller, a fox that was a man. The merchant leaves at dawn.'; } },
@@ -494,64 +391,16 @@ const VISITORS: EventDef[] = [
   },
 ];
 
-/** The Sleeping Wyrm (DESIGN 4.29). These fire on their own conditions, before the random draw. */
-export const WYRM_EVENTS: EventDef[] = [
+/** The airship captain's story fires on its own condition, before the random draw (the wyrm's tales are parked, scope reset phase 1b). */
+export const AIRSHIP_EVENTS: EventDef[] = [
   {
     id: 'airship_tale', title: EVENT_TEXT.airship_tale.title,
     text: EVENT_TEXT.airship_tale.text,
     when: (s) => s.airship.tale > 0 && !s.pendingEvent,
     choices: [
-      { label: EVENT_TEXT.airship_tale.choices[0].label, desc: EVENT_TEXT.airship_tale.choices[0].desc, apply: (s) => { s.airship.tale = 0; s.materials.rayscale += 4; s.modifiers.push({ kind: 'goods', value: 0.1, until: s.day + 15, label: 'Foreign reagents' }); return 'Crates of pale scale and a jar of dust that hums. The alchemists close the shutters for a week.'; } },
+      { label: EVENT_TEXT.airship_tale.choices[0].label, desc: EVENT_TEXT.airship_tale.choices[0].desc, apply: (s) => { s.airship.tale = 0; s.modifiers.push({ kind: 'goods', value: 0.1, until: s.day + 15, label: 'Foreign reagents' }); return 'Crates of foreign reagents and a jar of dust that hums. The alchemists close the shutters for a week.'; } },
       { label: EVENT_TEXT.airship_tale.choices[1].label, desc: EVENT_TEXT.airship_tale.choices[1].desc, apply: (s) => { s.airship.tale = 0; return `${addResidents(s, 30)} folk step off the gondola with everything they own and a letter of introduction.`; } },
       { label: EVENT_TEXT.airship_tale.choices[2].label, desc: EVENT_TEXT.airship_tale.choices[2].desc, apply: (s) => { s.airship.tale = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: "The captain's story" }); return 'She tells it on the square at dusk. Nobody goes home until the spires dim.'; } },
-    ],
-  },
-  {
-    id: 'wyvern_tale', title: EVENT_TEXT.wyvern_tale.title,
-    text: EVENT_TEXT.wyvern_tale.text,
-    when: (s) => (s.airship.wyvernTale ?? 0) > 0 && !s.pendingEvent,
-    choices: [
-      { label: EVENT_TEXT.wyvern_tale.choices[0].label, desc: EVENT_TEXT.wyvern_tale.choices[0].desc!, apply: (s) => { s.airship.wyvernTale = 0; if (s.treasury < 3000) return 'The purse is too light; the rider keeps the basket shut.'; const rng = rngOf(s); const line = rng.pick(['ember', 'bone', 'glim', 'storm'] as DragonLine[]); commitRng(s, rng); const d = addEgg(s, line); if (!d) return `No cradle has room for a ${LINE_INFO[line].name.toLowerCase()} egg; the rider takes it home again.`; s.treasury -= 3000; return `A ${LINE_INFO[line].name.toLowerCase()} egg from a cradle three lanterns east. The tamers name it ${d.name}.`; } },
-      { label: EVENT_TEXT.wyvern_tale.choices[1].label, desc: (s) => { const ring = s.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok'); const champ = ringChampion(s); return ring && champ ? `${champ.name} fights the rival's wyvern at the Ring today: the odds at three quarters, the purse doubled (${3000 * champ.stage} crowns).` : ring ? 'The Ring stands, but no champion is named: the challenge goes unanswered.' : 'No Wyrm-Ring stands: the challenge goes unanswered.'; }, apply: (s) => { s.airship.wyvernTale = 0; const ring = s.buildings.some((b) => b && b.kind === 'ring' && b.state === 'ok'); const champ = ringChampion(s); if (!ring || !champ) return 'The rider shrugs and rides home with the challenge unanswered. The story of it goes round the wardlights anyway.'; const rng = rngOf(s); const won = fightBout(s, champ, rng, 0.75, 2, "the rival wardlight's wyvern"); commitRng(s, rng); return won ? `${champ.name} meets the rival's wyvern over the Ring and sends it home bleeding. The purse is the richest the Ring has paid.` : `The rival's wyvern is a bigger beast than its rider let on. ${champ.name} is carried back to its cradle.`; } },
-      { label: EVENT_TEXT.wyvern_tale.choices[2].label, desc: EVENT_TEXT.wyvern_tale.choices[2].desc!, apply: (s) => { s.airship.wyvernTale = 0; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 15, label: "The wyvern's story" }); return 'The rider tells it on the square: a city whose spires sing in a different key, and a wyvern of yours that would not be caught. Nobody goes home until the spires dim.'; } },
-    ],
-  },
-  {
-    id: 'wyrm_tribute', title: EVENT_TEXT.wyrm_tribute.title,
-    text: EVENT_TEXT.wyrm_tribute.text,
-    when: (s) => s.wyrm.state === 'awake' && s.wyrm.tributeDay >= 0 && s.day >= s.wyrm.tributeDay && !s.pendingEvent,
-    choices: [
-      { label: EVENT_TEXT.wyrm_tribute.choices[0].label, desc: EVENT_TEXT.wyrm_tribute.choices[0].desc!, apply: (s) => payTribute(s, 'crowns') },
-      { label: EVENT_TEXT.wyrm_tribute.choices[1].label, desc: (s) => `${WYRM_TRIBUTE_GOODS} goods taken from the market shelves (${Math.round(marketGoods(s))} on them now). Fewer than half and it counts as a refusal${s.wyrm.starved >= WYRM_STARVE_LIMIT - 1 ? ': the last one' : ''}.`, apply: (s) => payTribute(s, 'goods') },
-      { label: EVENT_TEXT.wyrm_tribute.choices[2].label, desc: (s) => (s.wyrm.starved >= WYRM_STARVE_LIMIT - 1 ? `Refused ${s.wyrm.starved} times running, it will not circle this time: it flies for the Founding Stake and burns the Charter on its door. The game ends, unless a great wyrm of your own rises to meet it.` : s.wyrm.starved > 0 ? 'It flies over the city and burns up to four buildings, then sleeps again. Refused twice running, the next refusal will be its last: it would come for the Founding Stake.' : 'It flies over the city and burns up to four buildings, then sleeps again; spires near it will wake it once more. It remembers refusals in a row: the third brings it down on the Founding Stake.'), apply: (s) => refuse(s) },
-    ],
-  },
-  {
-    id: 'wyrm_binding', title: EVENT_TEXT.wyrm_binding.title,
-    text: EVENT_TEXT.wyrm_binding.text,
-    when: (s) => s.wyrm.state === 'awake' && hasCourt(s) && !s.pendingEvent && (s.wyrm.tributeDay < 0 || s.day < s.wyrm.tributeDay) && (s.wyrm.askedBind < 0 || s.day - s.wyrm.askedBind >= 20),
-    choices: [
-      { label: EVENT_TEXT.wyrm_binding.choices[0].label, desc: EVENT_TEXT.wyrm_binding.choices[0].desc, apply: (s) => { if (s.educated >= 0.3) return bind(s); s.wyrm.tributeDay = s.day; s.modifiers.push({ kind: 'happiness', value: -4, until: s.day + 10, label: 'Failed binding' }); return 'The song breaks before dawn. The wyrm laughs, if wyrms laugh, and names its price.'; } },
-      { label: EVENT_TEXT.wyrm_binding.choices[1].label, desc: EVENT_TEXT.wyrm_binding.choices[1].desc, apply: () => 'The singers practise. The wyrm listens from the ridge.' },
-    ],
-  },
-  {
-    id: 'wyrm_sulks', title: EVENT_TEXT.wyrm_sulks.title,
-    text: EVENT_TEXT.wyrm_sulks.text,
-    when: (s) => s.wyrm.state === 'bound' && s.wyrm.sulking >= 2 && s.wyrm.sulking % 10 === 2 && !s.pendingEvent,
-    choices: [
-      { label: EVENT_TEXT.wyrm_sulks.choices[0].label, desc: EVENT_TEXT.wyrm_sulks.choices[0].desc!, apply: (s) => { let have = 0; forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].zone === Zone.Arcane) have += b.stock; }); if (have < 30) return 'There is not enough leystone in the city. The wyrm sniffs at the empty carts and turns away.'; let left = 60; forEachBuilding(s, (b) => { if (left > 0 && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.stock > 0) { const t = Math.min(b.stock, left); b.stock -= t; left -= t; } }); s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'It eats the leystone like bread and comes back to its post by the node.'; } },
-      { label: EVENT_TEXT.wyrm_sulks.choices[1].label, desc: EVENT_TEXT.wyrm_sulks.choices[1].desc!, apply: (s) => { s.treasury -= 3000; s.wyrm.sulking = 0; s.wyrm.unfed = 0; return 'Forty carts of Belerial bread and beer. The wyrm is content, for now.'; } },
-      { label: EVENT_TEXT.wyrm_sulks.choices[2].label, desc: `No ward from its lair until markets feed it ${WYRM_EATS} goods a day. Forty days of sulking and it dies.`, apply: () => 'It does not look at the city. The lanterns at the edge burn alone.' },
-    ],
-  },
-  {
-    id: 'egg_vein', title: EVENT_TEXT.egg_vein.title,
-    text: EVENT_TEXT.egg_vein.text,
-    when: (s) => s.wyrm.state === 'bound' && s.wyrm.sulking === 0 && s.wyrm.fedDays >= 30 && !s.pendingEvent,
-    choices: [
-      { label: EVENT_TEXT.egg_vein.choices[0].label, desc: EVENT_TEXT.egg_vein.choices[0].desc, apply: (s) => { s.wyrm.fedDays = 0; const d = addEgg(s, 'vein'); if (d) return `The vein egg is carried to the cradle under guard. The tamers call it ${d.name}.`; s.treasury += 6000; return 'No cradle had room. The Crown pays 6,000 crowns and sends a warded coach for it.'; } },
-      { label: EVENT_TEXT.egg_vein.choices[1].label, desc: EVENT_TEXT.egg_vein.choices[1].desc, apply: (s) => { s.wyrm.fedDays = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: 'The wyrm is grateful' }); return 'The wyrm curls around it. Folk come to the edge of the lair to hear the two notes together.'; } },
     ],
   },
 ];
@@ -581,149 +430,16 @@ export function maybeFireRiot(s: GameState): void {
 }
 void RIOT_UNREST;
 
-/** A departed dragon returns after a season, wild, and asks a tribute (iteration 53). Fired by maybeFireReturn on its own terms. */
-export const DRAGON_RETURNS: EventDef = {
-  id: 'dragon_returns', title: EVENT_TEXT.dragon_returns.title,
-  text: EVENT_TEXT.dragon_returns.text,
-  when: (s) => dueReturn(s) !== null,
-  choices: [
-    { label: EVENT_TEXT.dragon_returns.choices[0].label, desc: (s) => { const e = dueReturn(s); return e ? `${RETURN_TRIBUTE * Math.max(1, e.stage)} crowns, or ${RETURN_GOODS * Math.max(1, e.stage)} goods off the market shelves if the purse cannot; it leaves for good.` : 'It leaves for good.'; }, apply: (s) => { const e = dueReturn(s); return e ? payReturn(s, e) : 'Nothing changes.'; } },
-    { label: EVENT_TEXT.dragon_returns.choices[1].label, desc: (s) => { const e = dueReturn(s); return e && freeCradle(s, e.line) ? `It comes home a ${STAGE_NAMES[e.stage]}, sullen (mood 40), and eats from the markets again.` : `No cradle takes a ${e ? LINE_INFO[e.line].name : ''} dragon now: refused, it burns.`; }, apply: (s) => { const e = dueReturn(s); if (!e) return 'Nothing changes.'; return homeReturn(s, e) ?? refuseReturn(s, e); } },
-    { label: EVENT_TEXT.dragon_returns.choices[2].label, desc: (s) => { const e = dueReturn(s); return `It circles the old cradle all day and sets up to ${e ? Math.max(1, e.stage) : 1} dark, unwarded roof${e && e.stage > 1 ? 's' : ''} within 12 tiles alight.`; }, apply: (s) => { const e = dueReturn(s); return e ? refuseReturn(s, e) : 'Nothing changes.'; } },
-  ],
-};
-export function maybeFireReturn(s: GameState): void {
-  if (s.pendingEvent || s.gameOver) return;
-  const e = dueReturn(s);
-  if (!e) return;
-  const def = DRAGON_RETURNS;
-  s.pendingEvent = { id: def.id, title: `${e.name} returns`, text: `${e.name} the ${LINE_INFO[e.line].name} ${STAGE_NAMES[e.stage]}, which left ${s.cityName} ${s.day - e.day} days ago, circles its old cradle at (${e.x},${e.y}) at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.`, choices: def.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
-  s.firedEvents.push(`${def.id}:?`);
-}
-// ---------------------------------------------------------------- the Heart of Belregi (iteration 69, DESIGN 4.100)
-
-/** One line of the city's record at the gates: what the High Warden has heard, and whether it raises the Pass's trust or lowers it. */
-export interface GateDeed { text: string; trust: 1 | -1 }
-/** The record of the gates: earlier answers at the gate (the pilgrims, their shrine, the Lantern Fair, the poachers) and the gates in
- *  the wall. The tales of the Heart recite it, and its sum is the Pass's trust. */
-export function gateRecord(s: GameState): GateDeed[] {
-  const out: GateDeed[] = [];
-  if (chose(s, 'pilgrims', 0)) out.push({ text: 'you took in the pilgrims of Aume', trust: 1 });
-  if (chose(s, 'pilgrims_shrine', 0)) out.push({ text: 'you raised them a shrine', trust: 1 });
-  if (chose(s, 'pilgrims_shrine', 2)) out.push({ text: 'you refused the pilgrims their shrine', trust: -1 });
-  if (chose(s, 'lanternfair', 0)) out.push({ text: 'you opened your gates for the Lantern Fair', trust: 1 });
-  if (chose(s, 'lanternfair', 1)) out.push({ text: 'you kept your gates shut on the Lantern Fair', trust: -1 });
-  if (chose(s, 'egg_poachers', 1)) out.push({ text: 'your Watch took the egg poachers at the gate', trust: 1 });
-  if (chose(s, 'egg_poachers', 0)) out.push({ text: 'you bought a poached egg at the gate', trust: -1 });
-  const g = gateCounts(s);
-  if (g.belregi > g.uzulim) out.push({ text: `your wall has more Belregi gates than Uzulim (${g.belregi} to ${g.uzulim})`, trust: 1 });
-  else if (g.uzulim > g.belregi) out.push({ text: `your wall has more Uzulim gates than Belregi (${g.uzulim} to ${g.belregi})`, trust: -1 });
-  return out;
-}
-/** The Pass's trust: the sum of the record. Under zero the Heart wakes cold and gives half. */
-export function heartTrust(s: GameState): number {
-  return gateRecord(s).reduce((a, d) => a + d.trust, 0);
-}
-function recite(s: GameState, who = 'She'): string {
-  const r = gateRecord(s);
-  if (!r.length) return who === 'She' ? 'She has heard nothing of you at the gates, good or ill, and says so.' : `${who} has heard nothing of you at the gates, good or ill.`;
-  const good = r.filter((d) => d.trust > 0).map((d) => d.text);
-  const ill = r.filter((d) => d.trust < 0).map((d) => d.text);
-  const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
-  const bits: string[] = [];
-  if (good.length) bits.push(`${who} has heard that ${list(good)}.`);
-  if (ill.length) bits.push(`${who} has ${good.length ? 'also heard' : 'heard'} that ${list(ill)}.`);
-  return bits.join(' ');
-}
-const cold = (s: GameState) => heartTrust(s) < 0;
-function heartStep(s: GameState): void {
-  s.heart.step++;
-  s.heart.day = s.day;
-}
-
-export const HEART_EVENTS: EventDef[] = [
-  {
-    id: 'heart_warden', title: EVENT_TEXT.heart_warden.title,
-    // heart.day holds the day the Gate first stood lit until she comes (maybeFireHeart stamps it)
-    text: EVENT_TEXT.heart_warden.text,
-    when: (s) => s.heart.step === 0 && s.heart.held === 'none' && !!litGreatGate(s) && s.heart.day >= 0 && s.day - s.heart.day >= WARDEN_DAYS,
-    choices: [
-      { label: EVENT_TEXT.heart_warden.choices[0].label, desc: (s) => `The Gate wards ${GREAT_GATE_REACH_HEART} tiles instead of ${GREAT_GATE_REACH}, and every Belregi gate ${BELREGI_REACH_HEART} instead of ${BELREGI_REACH_GREAT}.${gateCounts(s).uzulim ? ' An Uzulim gate stands in your wall: its wardens will hear of it.' : ''} In the Hush the Heart wakes and asks what you want of it.`, apply: (s) => { s.heart.held = 'set'; heartStep(s); return 'The Heart goes into the keystone of the arch. The runes on every Belregi gate in the wall turn a deeper blue that night.'; } },
-      { label: EVENT_TEXT.heart_warden.choices[1].label, desc: `The Heart goes home to the Pass. Twice as many pilgrims of the Pass come each season (${PASS_PILGRIMS * 2} instead of ${PASS_PILGRIMS}), and the Crown's favour rises 5. The Heart still wakes in the Hush, far away, and the Guardians send word.`, apply: (s) => { s.heart.held = 'guardians'; heartStep(s); addFavour(s, 5); return 'The High Warden bows, which the Guardians do not do often. The road to the Pass is busier by the next season.'; } },
-      { label: EVENT_TEXT.heart_warden.choices[2].label, desc: EVENT_TEXT.heart_warden.choices[2].desc!, apply: (s) => { s.heart.held = 'sold'; s.heart.step = 3; s.heart.day = s.day; s.treasury += 6000; addFavour(s, 10); return 'The assessor pays in Crown silver and has the box on a cart before dusk. The High Warden leaves by the Gloam road and does not look back. The runes on the Great Gate dim.'; } },
-    ],
-  },
-  {
-    id: 'heart_obelisks', title: EVENT_TEXT.heart_obelisks.title,
-    text: EVENT_TEXT.heart_obelisks.text,
-    when: (s) => s.heart.step === 1 && s.heart.held === 'set' && gateCounts(s).uzulim > 0 && !!litGreatGate(s) && s.day - s.heart.day >= HEART_STEP_DAYS,
-    choices: [
-      { label: EVENT_TEXT.heart_obelisks.choices[0].label, desc: EVENT_TEXT.heart_obelisks.choices[0].desc!, apply: (s) => { heartStep(s); s.modifiers.push({ kind: 'unrest', value: 0.05, until: s.day + 15, label: 'The Uzulim refused' }); return 'The wardens leave without a word. The crimson symbols on your Uzulim gates burn a little brighter, and the streets near them are quarrelsome.'; } },
-      { label: EVENT_TEXT.heart_obelisks.choices[1].label, desc: `A sliver of the Heart goes into each Uzulim gate: the Great Gate wards ${GREAT_GATE_REACH} tiles again and the Belregi gates ${BELREGI_REACH_GREAT}, but the Uzulim gates stop adding unrest while the Great Gate stands.`, apply: (s) => { s.heart.held = 'shared'; heartStep(s); return 'The Heart is cut on the Stake\'s anvil by a Grimmen smith who will not say how. The obelisks hum in a lower key; folk near them sleep better.'; } },
-      { label: EVENT_TEXT.heart_obelisks.choices[2].label, desc: EVENT_TEXT.heart_obelisks.choices[2].desc!, apply: (s) => { heartStep(s); s.treasury -= 2500; return 'The wardens count it twice and go. Nobody thinks it is over.'; } },
-    ],
-  },
-  {
-    id: 'heart_wakes', title: EVENT_TEXT.heart_wakes.title,
-    text: EVENT_TEXT.heart_wakes.text,
-    when: (s) => s.heart.step === 2 && (s.heart.held === 'set' || s.heart.held === 'shared' || s.heart.held === 'guardians') && seasonOf(s) === 3 && !!greatGateOf(s) && s.day - s.heart.day >= HEART_STEP_DAYS,
-    choices: [
-      { label: EVENT_TEXT.heart_wakes.choices[0].label, desc: (s) => `The Gloam is cleared within ${cold(s) ? Math.round(HEART_GLOAM_REACH / 2) : HEART_GLOAM_REACH} tiles of the Great Gate${cold(s) ? ' (the Heart is cold: half the reach)' : ''}.`, apply: (s) => { const g = greatGateOf(s); heartStep(s); if (!g) return 'The Gate is gone; the Heart has nothing to answer through.'; const r = cold(s) ? Math.round(HEART_GLOAM_REACH / 2) : HEART_GLOAM_REACH; const cx = g.x + 1; const cy = g.y + 1; let n = 0; for (let y = cy - r; y <= cy + r; y++) for (let x = cx - r; x <= cx + r; x++) { if (!inBounds(x, y) || Math.hypot(x - cx, y - cy) > r) continue; const i = idx(x, y); if (s.gloam[i]) { s.gloam[i] = 0; n++; markDirty(s, x, y); } } s.stats.gloamBurned += n; if (n) recomputeGloamDist(s); return n ? `A blue wind goes out from the arch at midnight. By dawn ${n} tiles of grey grass are green again.` : 'A blue wind goes out from the arch at midnight and finds no grey to burn. The Heart seems pleased anyway.'; } },
-      { label: EVENT_TEXT.heart_wakes.choices[1].label, desc: (s) => `Rain over the city for ${cold(s) ? 5 : 10} days and goods +${cold(s) ? 10 : 20} % for 30${cold(s) ? ' (the Heart is cold: half)' : ''}.`, apply: (s) => { const h = cold(s) ? 0.5 : 1; heartStep(s); s.modifiers.push({ kind: 'rain', value: 1, until: s.day + 10 * h, label: 'The Heart\'s rain' }); s.modifiers.push({ kind: 'goods', value: 0.2 * h, until: s.day + 30, label: 'The Heart\'s harvest' }); return 'Rain in the Hush, warm as Bloom. The herb yards do not know what season it is and do not care.'; } },
-      { label: EVENT_TEXT.heart_wakes.choices[2].label, desc: (s) => `The Guardians name ${s.cityName} a friend of the Pass: happiness +${cold(s) ? 2 : 3} for 60 days${cold(s) ? ' (the Heart is cold: less)' : ''}.`, apply: (s) => { heartStep(s); s.modifiers.push({ kind: 'happiness', value: cold(s) ? 2 : 3, until: s.day + 60, label: 'A friend of the Pass' }); return 'The Heart goes back to sleep. The High Warden writes, in a hand like a carved rune, that it has not been asked for nothing in three hundred years.'; } },
-    ],
-  },
-];
-/** The tale's text for this city: the High Warden recites the record, the waking says how warm the Heart is. */
-function heartText(s: GameState, e: EventDef): string {
-  if (e.id === 'heart_warden') return `${e.text} ${recite(s)} "The Heart goes where it is kept well," she says. "Tell me where it goes."`;
-  if (e.id === 'heart_obelisks') return `${e.text} ${gateCounts(s).uzulim === 1 ? 'Your Uzulim gate is' : `Your ${gateCounts(s).uzulim} Uzulim gates are`} the proof of it, they say, and they want their share.`;
-  if (e.id === 'heart_wakes') {
-    const where = s.heart.held === 'guardians' ? 'The Guardians send word from the Pass: the Heart woke there, and it asked after the city that sent it home.' : 'The keystone of the Great Gate is warm to the touch, and the runes beat like a slow heart.';
-    const t = heartTrust(s);
-    const warmth = t < 0 ? 'It is cold toward you: what it gives, it gives by half.' : t >= 2 ? 'It is warm toward you.' : 'It is neither warm nor cold toward you.';
-    return `${e.text} ${where} ${recite(s, 'The Pass')} ${warmth}`;
-  }
-  return e.text;
-}
-/** The Heart's tales fire on their own terms, with no draw: a city without a Great Gate never meets them. A Heart set in a city with
- *  no Uzulim gate skips the obelisks, and a Heart the Guardians keep goes straight to the waking. */
-export function maybeFireHeart(s: GameState): void {
-  if (s.pendingEvent || s.gameOver || s.heart.step >= 3 || !greatGateOf(s)) return;
-  if (s.heart.step === 0 && s.heart.day < 0 && litGreatGate(s)) s.heart.day = s.day; // the day the Gate first stood lit: the Warden comes ten days on
-  if (s.heart.step === 1 && s.day - s.heart.day >= HEART_STEP_DAYS && (s.heart.held === 'guardians' || (s.heart.held === 'set' && gateCounts(s).uzulim === 0))) s.heart.step = 2; // no tale between: the waking counts its days from the Warden
-  for (const e of HEART_EVENTS) {
-    if (!e.when(s)) continue;
-    s.pendingEvent = { id: e.id, title: e.title, text: heartText(s, e), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
-    s.firedEvents.push(`${e.id}:?`);
-    return;
-  }
-}
-/** Pilgrims of the Pass, on the 15th of each season: up to 12 (24 with the Guardians) lodge in empty homes and pay alms. */
-export function dailyGatePilgrims(s: GameState): void {
-  if (s.day % 30 !== PASS_PILGRIM_DAY) return;
-  const n = passPilgrims(s);
-  if (n <= 0) return;
-  const lodged = addResidents(s, n);
-  const alms = lodged * PASS_ALMS;
-  s.treasury += alms;
-  s.stats.gatePilgrims += lodged;
-  s.stats.gateAlms += alms;
-  pushMessage(s, lodged ? `Pilgrims of the Pass come through the Great Gate: ${lodged} lodge in ${s.cityName}'s empty homes and pay ${alms} crowns in alms.` : 'Pilgrims of the Pass come through the Great Gate, find no empty home, pray at the arch and walk on.', 'good');
-}
-/** The merchant's memory (iteration 73): the egg on offer is sky the first time, storm the second, ember after. */
-export function merchantEgg(s: GameState): DragonLine {
-  return s.merchant.eggs === 0 ? 'sky' : s.merchant.eggs === 1 ? 'storm' : 'ember';
-}
-/** A tenth off for each egg bought before, down to half. */
+/** The merchant's price (her tenth off for each egg bought went with the eggs, scope reset phase 1b). */
 export function merchantPrice(s: GameState, base: number): number {
-  return Math.round(base * Math.max(0.5, 1 - 0.1 * s.merchant.eggs));
+  void s;
+  return base;
 }
 function merchantVisit(s: GameState): void {
   s.merchant.visits++;
 }
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, ...HEART_EVENTS, RIOT, DRAGON_RETURNS];
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...VISITORS, ...CROWN, ...CALENDAR, ...AIRSHIP_EVENTS, ...COUNCIL_EVENTS, RIOT];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -742,16 +458,12 @@ export function maybeFireCalendar(s: GameState): void {
   }
 }
 
-/** Wyrm events fire on their own terms (no random draw, no 18-day spacing). */
-export function maybeFireWyrm(s: GameState): void {
+/** The airship's tale fires on its own terms (no random draw, no 18-day spacing). */
+export function maybeFireAirship(s: GameState): void {
   if (s.pendingEvent || s.gameOver) return;
-  for (const e of WYRM_EVENTS) {
-    if (s.wyrm.state === 'none' && e.id !== 'airship_tale' && e.id !== 'wyvern_tale') continue; // the captain's story and the wyvern's need no wyrm
+  for (const e of AIRSHIP_EVENTS) {
     if (!e.when(s)) continue;
-    if (e.id === 'wyrm_binding') s.wyrm.askedBind = s.day;
-    // the third asking after two refusals is the last (iteration 70)
-    const last = e.id === 'wyrm_tribute' && s.wyrm.starved >= WYRM_STARVE_LIMIT - 1;
-    s.pendingEvent = { id: e.id, title: last ? "The wyrm's last asking" : e.title, text: last ? `${e.text} It has been refused ${s.wyrm.starved} times running. The keeper is pale: this time it is not asking for coin so much as for a reason not to come down on the Founding Stake.` : e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
+    s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };
     s.firedEvents.push(`${e.id}:?`);
     return;
   }
@@ -799,7 +511,7 @@ export function maybeFireEvent(s: GameState): void {
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
   // the caravan keeps its own rhythm (maybeFireCaravan) and is never drawn here
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...VISITORS, ...CROWN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = pool.find((x) => x.priority) ?? rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: textOf(e, s), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };

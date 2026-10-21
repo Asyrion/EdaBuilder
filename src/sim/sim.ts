@@ -1,30 +1,21 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
 import { dailyDrainage } from './marsh';
-import { dailyMarshWyrms } from './marshwyrms';
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
-import { dailyHush } from './hounds';
-import { dailyGatePilgrims, maybeFireHeart, foxAudit, maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireReturn, maybeFireRiot, maybeFireWyrm } from './events';
+import { maybeFireCalendar, maybeFireCaravan, maybeFireEvent, maybeFireRiot, maybeFireAirship } from './events';
 import { seasonOf } from './world';
-import { dailyHunt, tickCreatures, updateCreatures } from './creatures';
-import { dailyDragons, seasonalBout } from './wyrmcraft';
+import { tickCreatures, updateCreatures } from './creatures';
 import { checkQuests } from './quests';
-import { dailyWyrm } from './wyrm';
-import { dailyBeasts } from './beasts';
 import { dailyAirship, dailyBarges } from './vehicles';
-import { dailyStorms, dailyTigers } from './lore';
 import { dailyWild } from './wild';
 import { dailyWater } from './water';
 import { dailyDaughter } from './charter';
 import { dailyWeather, dailyWeave, hasMarvel } from './weave';
 import { dailyGuilds } from './guilds';
 import { dailyTwinRoad } from './trade';
-import { dailyBreeding } from './breeding';
 import { dailyRelics } from './relics';
 import { dailyConstruction, tickConstruction } from './construction';
 import { dailyWalkers, tickWalkers } from './walkers';
-import { wardenDistricts } from './wyrmcraft';
-import { setFenNex } from './agents';
 import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
@@ -42,7 +33,6 @@ export interface SimHooks {
 
 /** Full recompute of derived layers (after load or big edits). */
 export function recomputeAll(state: GameState): void {
-  setFenNex(state.fenNex, state.district);
   updateMana(state);
   updateWater(state);
   updateMiasma(state);
@@ -53,7 +43,6 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  setFenNex(state.fenNex, state.district);
   setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver || state.pendingEvent) return;
   state.tick++;
@@ -86,38 +75,25 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailySurge(state);
     dailyDeath(state);
     dailyGloam(state);
-    dailyHunt(state);
-    dailyDragons(state);
-    seasonalBout(state);
-    dailyWyrm(state);
-    dailyBeasts(state);
     dailyBarges(state);
     dailyAirship(state);
     dailyTwinRoad(state);
     dailyEconomy(state);
-    dailyStorms(state);
-    dailyTigers(state, wardenDistricts(state));
     dailyWild(state); // the herds, the wolves and the hunt for game (iteration 58)
-    dailyHush(state); // the hounds' Hush: a new count, or the Thaw that lets the fled folk home (iteration 70)
     dailyWater(state); // the shoals, the fish, the reeds and the fords (iteration 60)
     dailyDrainage(state); // the Drainage edict cuts the nearest marsh to meadow (iteration 85)
-    dailyMarshWyrms(state); // the marsh-wyrms of Bloom: lairs under bridges, nests by the Quays (iteration 86)
     dailyDaughter(state);
     dailyWeave(state);
     dailyGuilds(state);
     dailyConstruction(state);
-    dailyBreeding(state);
     dailyRelics(state);
-    dailyGatePilgrims(state); // pilgrims of the Pass through the Great Gate (iteration 69)
     state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (Object.values(state.districtQuarters).some(Boolean)) state.stats.quarterDays++;
   if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
-    if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) { crownLevy(state); foxAudit(state); } // the season tick: the Crown's Thaw levy and the Fen-Nex quarter's audit (iteration 54)
-    maybeFireWyrm(state);
-    maybeFireHeart(state); // the Heart of Belregi, on its own terms (iteration 69)
-    maybeFireReturn(state);
+    if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) crownLevy(state); // the season tick: the Crown's Thaw levy (iteration 54)
+    maybeFireAirship(state);
     maybeFireCalendar(state);
     maybeFireCaravan(state);
     maybeFireRiot(state);

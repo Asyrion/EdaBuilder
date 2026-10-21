@@ -305,18 +305,7 @@ export class Audio {
    * night, ley (spires near the camera), water (water tiles in view), fire (burning buildings in view),
    * market (market buildings in view, daytime).
    */
-  private lastSong = 0;
-  private lastStomp = 0;
-  /** Skyrays in view sing every twelve seconds or so. */
-  raysInView(amount: number): void {
-    if (!this.ctx || this.muted) return;
-    const now = this.ctx.currentTime;
-    if (now - this.lastSong < 12 / Math.max(0.3, amount)) return;
-    this.lastSong = now;
-    this.cue('song', (Math.random() - 0.5) * 1.2, 0.5 * amount);
-  }
-
-  /** A positional one-shot: howl, roar, growl, horn, bell, song, storm, stomp, rain. */
+  /** A positional one-shot: horn, bell, hammer, rain. */
   cue(kind: SoundCue, pan = 0, vol = 1): void {
     if (!this.ctx || !this.master || this.muted || vol <= 0.02) return;
     const ctx = this.ctx;
@@ -354,24 +343,16 @@ export class Audio {
       src.start(t + delay);
     };
     switch (kind) {
-      case 'howl': osc('sine', 330, 520, 0.9, 0.16, 0, 5.5); osc('sine', 520, 300, 0.8, 0.12, 0.9, 5); osc('sine', 247, 390, 0.9, 0.08, 0.25, 5.5); break;
-      case 'roar': osc('sawtooth', 70, 48, 1.4, 0.22, 0, 7); osc('square', 105, 72, 1.2, 0.08, 0.05, 6); noise(1.3, 0.3, 500); break;
-      case 'growl': noise(0.5, 0.35, 260); noise(0.4, 0.3, 220, 0.5); osc('sawtooth', 60, 50, 0.9, 0.08, 0, 11); break;
       case 'horn': osc('triangle', 196, 196, 0.9, 0.18); osc('triangle', 198, 198, 0.9, 0.12); osc('sine', 98, 98, 1.0, 0.1); osc('triangle', 262, 262, 0.7, 0.14, 0.9); break;
       case 'bell': osc('sine', 1046, 1046, 1.2, 0.14); osc('sine', 2093, 2093, 0.8, 0.05); osc('sine', 1318, 1318, 0.9, 0.04, 0.02); break;
-      case 'song': osc('sine', 880, 1320, 1.6, 0.07, 0, 2); osc('sine', 1320, 1100, 1.4, 0.05, 1.2, 2.5); osc('sine', 660, 990, 1.8, 0.04, 0.4, 2); break;
-      case 'storm': noise(0.12, 0.4, 3000, 0, 'highpass'); noise(0.1, 0.35, 2500, 0.18, 'highpass'); noise(0.15, 0.4, 2000, 0.4, 'highpass'); osc('sine', 523, 1046, 0.5, 0.06); osc('sine', 659, 1318, 0.5, 0.05, 0.15); osc('sine', 784, 1568, 0.6, 0.05, 0.3); break;
-      case 'stomp': osc('sine', 80, 40, 0.35, 0.3); noise(0.2, 0.25, 180); osc('sine', 70, 38, 0.35, 0.25, 0.5); noise(0.2, 0.2, 180, 0.5); break;
       case 'hammer': osc('square', 820, 540, 0.05, 0.05); noise(0.04, 0.18, 2200, 0, 'highpass'); osc('square', 760, 500, 0.05, 0.04, 0.16); noise(0.04, 0.15, 2000, 0.16, 'highpass'); break;
       case 'rain': noise(2.5, 0.25, 1800, 0, 'bandpass'); noise(2.0, 0.15, 900, 0.3); osc('sine', 392, 392, 0.5, 0.05, 0.2); break;
     }
   }
 
-  ambientMix(night: number, ley: number, water = 0, fire = 0, market = 0, storm = 0, golems = 0): void {
+  ambientMix(night: number, ley: number, water = 0, fire = 0, market = 0): void {
     if (!this.ambient || !this.ctx) return;
     const t = this.ctx.currentTime;
-    if (storm > 0 && Math.random() < 0.02) this.cue('storm', (Math.random() - 0.5) * 1.4, 0.35);
-    if (golems > 0 && t - this.lastStomp > 1.1) { this.lastStomp = t; this.cue('stomp', (Math.random() - 0.5), 0.35 * golems); }
     this.ambient.night.gain.setTargetAtTime(night * 0.12, t, 0.5);
     this.ambient.hum.gain.setTargetAtTime(0.02 + ley * 0.1, t, 0.5);
     this.ambient.water.gain.setTargetAtTime(water * 0.16, t, 0.8);

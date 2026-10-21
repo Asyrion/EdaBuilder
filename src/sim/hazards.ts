@@ -13,15 +13,12 @@ import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { wardenNear } from './walkers';
 import { seasonOf } from './world';
-import { WYRM_LAIR_RADIUS, wyrmBoneQuiet, wyrmGuards, wyrmNode } from './wyrm';
-import { surgeMaddensGolems } from './beasts';
-import { fontOfQuieting, startStorm } from './lore';
 import { aspectAt, drought, nodesOfAspect, raining } from './weave';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
-export type SoundCue = 'howl' | 'roar' | 'growl' | 'horn' | 'bell' | 'song' | 'storm' | 'stomp' | 'rain' | 'hammer';
-export const SOUND_CUES: SoundCue[] = ['howl', 'roar', 'growl', 'horn', 'bell', 'song', 'storm', 'stomp', 'rain', 'hammer'];
+export type SoundCue = 'horn' | 'bell' | 'rain' | 'hammer';
+export const SOUND_CUES: SoundCue[] = ['horn', 'bell', 'rain', 'hammer'];
 
 export interface Effect {
   x: number;
@@ -180,10 +177,8 @@ export function dailySurge(state: GameState): void {
       b.workers = 0;
       markDirty(state, b.x, b.y);
       effects.push({ x: b.x, y: b.y, kind: 'surge', tick: state.tick });
-      if (k === 0) startStorm(state, b.x, b.y);
     }
     state.stats.surgesTotal++;
-    surgeMaddensGolems(state);
     illTiding(state);
     pushMessage(state, `WILD SURGE! Overdrawn ley lashes out: ${n} building(s) warped into ruin. The Concord made the same mistake.`, 'bad');
     commitRng(state, rng);
@@ -204,7 +199,6 @@ export function wardBurnBudget(state: GameState, b: Building): number {
   if (!def.service || def.service.type !== 'ward') return 0;
   let strength = def.service.strength * crewFactor(b, state);
   if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
-  if (b.kind === 'scaleward') strength *= b.plate ?? 1;
   return Math.round(WARD_BURN * strength);
 }
 /** Grey tiles inside a ward's radius, for its panel. */
@@ -281,29 +275,6 @@ export function dailyGloam(state: GameState): void {
           }
         }
   });
-  // 1b. the bound wyrm's lair burns the Gloam back for 30 tiles (a few tiles a day, from the inside out)
-  if (wyrmGuards(state)) {
-    const wn = wyrmNode(state)!;
-    const r = WYRM_LAIR_RADIUS;
-    let budget = 40;
-    for (let rr = 1; rr <= r && budget > 0; rr++)
-      for (let dy = -rr; dy <= rr && budget > 0; dy++)
-        for (let dx = -rr; dx <= rr && budget > 0; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rr || dx * dx + dy * dy > r * r) continue;
-          const x = wn.x + dx;
-          const y = wn.y + dy;
-          if (!inBounds(x, y)) continue;
-          const i = idx(x, y);
-          if (state.gloam[i]) {
-            state.gloam[i] = 0;
-            state.stats.gloamBurned++;
-            markDirty(state, x, y);
-            changed = true;
-            budget--;
-            if (rng.chance(0.2)) effects.push({ x, y, kind: 'ward', tick: state.tick });
-          }
-        }
-  }
   // 2. creep
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
@@ -318,7 +289,7 @@ export function dailyGloam(state: GameState): void {
         for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]] as const) {
           if (!inBounds(nx, ny)) continue;
           const j = idx(nx, ny);
-          if (gloam[j] || isWater(state.terrain[j]) || state.wall[j]) continue;
+          if (gloam[j] || isWater(state.terrain[j])) continue;
           if (state.coverage.ward[j] > 0) continue;
           if (greyNodes.some((g) => Math.hypot(g.x - nx, g.y - ny) <= 10)) continue;
           if (state.bIndex[j] >= 0) continue; // never onto a building: the grey comes to the door first
@@ -438,7 +409,6 @@ export function dailyDeath(state: GameState): void {
     }
     if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (b.kind === 'saltfont' && (b.cooldown ?? 0) > 0 ? 2 : 1) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons')) * (relicDone(state, 'saltspoons') ? 1.1 : 1) * (BUILDING_BY_KEY[b.kind].category === 'special' && !hallActive(state, b.kind) ? 0 : 1);
   });
-  quietCap += wyrmBoneQuiet(state);
   if (fontOfQuieting(state)) quietCap *= 1.5;
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);
@@ -479,4 +449,9 @@ export function dailyDeath(state: GameState): void {
     state.lostTo = 'restless';
     pushMessage(state, state.gameOver, 'bad');
   }
+}
+
+/** A lit Font of Quieting makes the dead half again as easy to lay down (iteration 16; it lived in lore.ts until phase 1b). */
+export function fontOfQuieting(s: GameState): boolean {
+  return s.buildings.some((b) => b && b.kind === 'fontquieting' && b.state === 'ok' && b.lit);
 }
