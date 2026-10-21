@@ -3,7 +3,7 @@ import { FISH_MARKET_REACH, REED_REACH, SMOKE_KEEP, SMOKE_REACH, THATCH_REACH, W
 /**
  * A scripted "reasonable player" used for headless balance runs and the demo/perf harness.
  * It expands a street grid from the Founding Stake, zones what it can light, keeps buildings lit and
- * watered, saves for one large purchase at a time, sets its taxes and edicts, answers tales greedily and
+ * watered, saves for one large purchase at a time, sets its taxes and edicts and
  * buys services as they unlock. Deliberately simple; it is a test tool, not AI (DESIGN 4.86).
  */
 import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
@@ -16,9 +16,7 @@ import { marketStockCap, roadTileOf } from './agents';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type WildSpecies } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
-import { caravanSurplus, resolveEvent } from './events';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
-import { chooseTale } from './botPolicy';
 
 /** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
  *  the next road would go, so the planner keeps its lots on the sides (iteration 49). */
@@ -28,7 +26,6 @@ function roadOnSide(s: GameState, x: number, y: number): boolean {
 
 export interface BotOptions {
   aggressive?: boolean; // zone more than demand asks
-  choiceZero?: boolean; // answer every tale with choice 0, as the bot did before iteration 55 (for comparisons)
 }
 
 /** The one large purchase the bot is saving for: its price is held back from growth until it is bought. */
@@ -66,9 +63,7 @@ export class Bot {
   zoningHeld = false;
   private goalTries: Record<string, number> = {};
   private goalBlocked: Record<string, number> = {};
-  /** Tales answered, and how many of them not with choice 0; loans taken. */
-  tales = 0;
-  talesOff0 = 0;
+  /** Loans taken. */
   loans = 0;
   constructor(private s: GameState, private opts: BotOptions = {}) {}
 
@@ -87,12 +82,6 @@ export class Bot {
   step(): void {
     const s = this.s;
     if (s.gameOver) return;
-    if (s.pendingEvent) {
-      const a = this.opts.choiceZero ? { choice: 0, amount: undefined } : chooseTale(s);
-      resolveEvent(s, a.choice, a.amount);
-      this.tales++;
-      if (a.choice !== 0) this.talesOff0++;
-    }
     this.setTaxes();
     this.setEdicts();
     this.hunt();
@@ -275,12 +264,13 @@ export class Bot {
   }
 
   /** What the goods held for the Gloam road would fetch at today's prices: hides, salted meat and trophies on the lodges, smoked
-   *  fish over the smokehouse's keep and loose relics (iteration 61), and the works' surplus above ten at the caravan's 1.5× (iteration 63:
-   *  the caravan that halts every twelve days at a depot pays ten times its upkeep, where the road's eight goods a day pay about it). */
+   *  fish over the smokehouse's keep and loose relics (iteration 61), and the works' surplus above ten at the road's price (the Belerial
+   *  caravan, which paid half again, is parked with the tales: scope reset phase 1c). */
   waitingForRoad(): number {
     const s = this.s;
     const t = s.trade;
-    let v = Math.max(0, s.relicStock - RELIC_KEEP) * RELIC_PRICE + caravanSurplus(s) * t.priceGoods * 1.5;
+    let v = Math.max(0, s.relicStock - RELIC_KEEP) * RELIC_PRICE;
+    forEachBuilding(s, (b) => { if (b.state === 'ok' && BUILDING_BY_KEY[b.kind].zone === Zone.Craft && b.stock > 10) v += (b.stock - 10) * t.priceGoods; });
     forEachBuilding(s, (b) => {
       if (b.state !== 'ok') return;
       if (b.kind === 'hunterslodge') v += b.stock * (t.priceHides ?? 0) + Math.max(0, Math.floor((b.meat ?? 0) - LODGE_MEAT_KEEP)) * (t.priceMeat ?? 0) + (b.trophies ?? 0) * (t.priceTrophy ?? 0);
@@ -673,7 +663,6 @@ export class Bot {
     want('watchhouse', Math.floor(buildings / 150));
     want('ossuary', Math.floor(s.population / 1200));
     want('hospice', Math.floor(buildings / 250));
-    want('guildhall', 1);
     want('depot', 1);
     want('nexus', Math.floor(buildings / 220));
     if (isBuildingUnlocked(s.milestone, 'mine') && this.countKind('mine') < 1 + Math.floor(s.buildings.filter((b) => b && b.kind === 'arcane').length / 15) && this.spendable() > 4500) this.buildMine();

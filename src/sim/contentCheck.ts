@@ -8,7 +8,7 @@ const CATEGORIES: BuildingCategory[] = ['zone', 'ley', 'water', 'service', 'leis
 const PEOPLES = ['vellish'];
 const ZONE_KEYS = ['hearth', 'market', 'craft', 'arcane'];
 const KEY = /^[a-z][a-z0-9_]*$/;
-/** `unlock` of a building no milestone opens (a guild hall comes with its charter, guilds.ts). */
+/** `unlock` of a building no milestone opens (the guild halls used it; they are parked, scope reset phase 1c). */
 export const NEVER = 99;
 
 export function validateContent(defs = BUILDINGS, roads = ROADS, milestones = MILESTONES, relics = RELIC_SETS): string[] {

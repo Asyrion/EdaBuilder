@@ -8,7 +8,6 @@ import { FISH_MARKET_REACH, FISH_REACH, REED_REACH, SMOKE_REACH, THATCH_REACH, W
 import { influenceRadius, waterReachOf } from './world';
 import { QUAY_REACH } from './vehicles';
 import { GLIMHOUSE_REACH, HOSPICE_REACH } from './growth';
-import { CARTERS_REACH } from './agents';
 import { BRICK_REACH } from './construction';
 import { GLOWVINE_REACH, MILL_SHARE_REACH } from './networks';
 import { HUNT_REACH } from './wild';
@@ -29,7 +28,6 @@ const SERVICE_WORDS: Record<string, string> = { watch: 'watch', health: 'healing
 export const SECONDARY_REACH: Record<string, { r: number; label: string; square?: boolean; when?: (b: Building) => boolean }[]> = {
   quay: [{ r: QUAY_REACH, label: 'works by barge', square: true }],
   hospice: [{ r: HOSPICE_REACH, label: 'draughts from markets', square: true }],
-  cartersyard: [{ r: CARTERS_REACH, label: 'eases the roads', square: true }],
   hanginggardens: [{ r: GLOWVINE_REACH, label: 'glowvine alive' }],
   brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 83)
   torrentmill: [{ r: MILL_SHARE_REACH, label: 'shares the river', square: true }],

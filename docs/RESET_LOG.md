@@ -191,3 +191,101 @@ Each cell is folk / milestone / treasury / loan on day 150.
 - **`lostTo` does not survive a save.** `deserialize` copies only the keys a fresh state has, and `createGame` never sets
   `lostTo`, so an ended charter saved and loaded forgets its cause. This is older than the reset; it goes with the save
   work in 1d.
+
+## Phase 1c-1: the tales, the weave, the guilds, the walkers, the forecast and the Annals (2026-10-21)
+
+Phase 1c ships in two PRs, split along RESET_PLAN §6's order. This first one parks the cross-cutting sim systems. The
+world add-ons and the content cut follow in 1c-2.
+
+**Done.**
+- **Parked:**
+  - the tales (`events.ts`): every event and chain, the calendar's feasts, the caravan, the riots, the merchant, the
+    airship's tale, `pendingEvent`, the event modal and the tick's pause, and the bot's answers (`botPolicy.ts`)
+  - the weave (`weave.ts`): weather (rain, drought, blizzard), the ley aspects and `DragonLine`, the river's freeze
+    and flood, the Weave view
+  - the forecast strip and the Astral Observatory; the Storm-Caller's Peak (its unlock was a tale's answer)
+  - the guilds (`guilds.ts`): the Guildhall and the four guild halls, petitions, boons, strikes, feuds and charters,
+    the guild block of the Edicts panel
+  - the walkers (`walkers.ts`, eleven kinds with the pilgrims), `walkerBonus`, `blessed`, `tended`, the Spire Wardens
+    edict
+  - the Annals (`data/annals.ts`, its top-bar button, modal and key N)
+- **Content:** 7 buildings (observatory, stormpeak, guildhall, cartersyard, lyceum, wrightslodge, sextonchapel), the
+  edict `wardens`, `events.json` and `guilds.json`, and 15 Ledger tasks (s_vigil, s_feast, k_obs, k_council, k_boon,
+  k_feast, k_hall, k_charter, o_caravan and the six walker tasks). k_twinroad stays, in the chapter "The Crown".
+- **Moved, not parked:**
+  - The Gloam pressure is now in `hazards.ts`, without the aspect, weather, guild and warden terms; the surge threshold
+    is a fixed 1.25.
+  - `hasMarvel`, `marvelNear` and `litWonders` are now in `world.ts`.
+  - `stepRoad` and `WALK_SPEED` are now in `construction.ts`, because the builders still walk.
+- **Neutral values:**
+  - Weather multiplies by 1.
+  - The guild terms are 0, and Carters' Yard no longer eases traffic.
+  - Cover has no walker bonus.
+  - The aspects' effects are gone, except one: **the founding node keeps the Vein's +15 flow** (`FOUNDING_FLOW`). The
+    founding node was always Vein, so the start is unchanged. Other nodes lose the Vein bonus with the aspects.
+- **Saves and replays:** a save holding one of the seven buildings is refused (`parkedContentIn`). A replay using
+  `tale`, `guild`, `vent` or `rain` is refused (`PARKED_OPS`). Walkers (agent kind 5), `node.aspect` and the parked
+  stats are dropped on load. The replay verdict no longer has `stuck`, because the tick never pauses for a tale now.
+  `tests/parked1c.test.ts` holds it.
+- **Art:** 11 entries of `art/sources.json` and their PNGs, and the walker painter. The sheet is 2048×377 (was
+  2048×403), 726 images.
+- **Tests:** caravan, walkers, iteration30, 32 and 33 were deleted, the mixed files were cut to the core, and one
+  refusal test is new. The playtests of these systems are gone.
+
+**Measured.** The measure is the bot corridor against main (= phase 1b), two draws per seed. Main's side comes from
+phase 1b's cache, bit for bit; its draw 0 is phase 0's baseline from the parked dragons on.
+
+| Seed | 1b (main), draw 0 | 1c-1, draw 0 | 1b, draw 1 | 1c-1, draw 1 |
+|---|---|---|---|---|
+| 42 | 1,296 (Burgh 43) | 1,566 (Burgh 136) | 2,370 (Free City 123) | 1,524 (Market Town 25) |
+| 1 | 1,949 (Free City 59) | 891 (Market Town 23) | 2,927 (Free City 116) | 1,659 (Burgh 38) |
+| 7 | 1,979 (Free City 86) | 900 (Market Town 24) | 1,451 (Burgh 35) | 1,014 (Burgh 39) |
+| 13 | 2,032 (Free City 131) | 1,911 (Burgh 40) | 3,134 (Beacon 150) | 1,607 (Burgh 88) |
+| 21 | 2,137 (Free City 64) | 1,455 (Burgh 34) | 2,957 (Beacon 69) | 1,298 (Burgh 44) |
+| 45 | 2,202 (Beacon 150) | 1,180 (Market Town 23) | 2,325 (Beacon 149) | 799 (Market Town 24) |
+
+Folk on day 150 (the last gate, with its day).
+
+- **The verdict is a loss, and it is real:** a mean of 1,317 folk against 2,230, Δ −913 (−40.9 %) paired by seed,
+  well outside the noise (2·SE 379). Against phase 0 (2,409) that is −45 %.
+- **The gates:**
+  - Burgh in 7 of 12 runs (main 12 of 12).
+  - Free City in 0 of 12 (main 10 of 12).
+  - Beacon of Eda in 0 of 12 (main 4 of 12).
+  - No run lost the charter. The corridor test in `tests/core-loop.test.ts` (seed 42, day 100, at least 0.5 × 1,945)
+    stays green.
+- **Why, traced on seed 45 (`scripts/balance.ts 45 150`):**
+  - On main the caravan pays 18,967 crowns. With them the city holds 6,620 crowns on day 40, builds eight fonts,
+    reaches Burgh on day 51 and grows to 2,202.
+  - Without the caravan the depot road pays 2,136 crowns over the run, and net income is 100 to 180 a day from day 40.
+  - The bot saves for a font (6,700 crowns), and fires (93 against 65) keep spending its savings. So it sits at about
+    800 folk at Market Town from day 30 to day 130.
+  - In the mean over all runs, the road pays 2,027 crowns and the caravan 0, against 1,482 and 23,995 on main.
+  - So the caravan carried the mid-game economy: Burgh's fonts and everything after them were paid for with tale money.
+- **Not compensated in this phase**, as the plan said. Phase 2 (the core loop and the trade side) needs an income that
+  replaces it.
+  - **Proposal for phase 2:** a new corridor taken from this phase's numbers (mean 1,317, Burgh in 7 of 12), and a
+    target for the core economy to reach Burgh in 12 of 12 runs again without the tales.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 75 files, 375 tests, all green, 166 s (was 79 files, 440 tests, 213 s) |
+| `scripts/smoke.mjs` | SMOKE OK; 855 folk on day 30, milestone 5, treasury 613, no page errors, save 465 KB (was 466 KB) |
+| Bundle | JS 485 KB (166 KB gzip), was 606 KB (206 KB) |
+| `npm run devboard:selftest` | OK (657 entries, 7 kinds) |
+| Screenshots, seed 42, main against the branch | the top bar without the Annals, the Edicts panel without the guilds, the Services tab without the Observatory and the Peak, the city by day and by night without walkers; no page errors |
+
+**What stays with a parked name, on purpose.** These are what `grep -rniE "aspect|weather|guild|walker|pilgrim|caravan|forecast|annals|tales?" src` still finds:
+- the refusal of parked saves and replays (`save.ts`, `commands.ts`), and the comments that say what was parked
+- `terrain.ts`'s `aspect?: 'vein'` on the generated nodes. It is not read any more; 1d removes it with the save work.
+- the gales' forecast helper (`gales.ts`, parked in 1c-2), and the Fen-Nex caravanserai comment (`catalog.ts`)
+- `focus.ts` comments that mention a tale's dialog (for 1d)
+- the walkers' pixel layout, which the citizens' painter still uses (`sprites.ts`)
+
+**Modifier kinds without a producer now** (the tales made them; for 1d to keep or remove): happiness, unrest, deaths,
+health, tithe, craftTax, mana, gloamHold, watch, goods, price, barges, wrights.
+
+**Found.** The message on a hall stage still named the Guildhall among the growing halls; fixed in this phase
+(`economy.ts`). The Edicts panel still shows Close Season and Drainage, and those go in 1c-2. The text of the Scholars'
+Stipend still names "Grimmen and Tallowkin children", which is left over from 1a. It goes with the edict cut in 1c-2.

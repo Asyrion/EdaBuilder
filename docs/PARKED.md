@@ -53,24 +53,35 @@ leybeacon, drakemews, mothloft, greatgate. Edicts: beastmasters, bounty, wyrmpea
 | Drake riders, mounts, tide barges, the Sky-Dock's wyvern | `53b26f7`, iteration 73 | `vehicles.ts` | §8 | the Sky-Dock and its airship stay |
 | The tamer walker | iteration 31 | `walkers.ts` | §14 (M10) | the other walkers follow in 1c |
 
-## Cross-cutting add-ons (phase 1c)
+## The tales, the weave, the guilds, the walkers, the forecast and the Annals (phase 1c-1)
+
+Parked on 2026-10-21 (phase 1c-1, `docs/RESET_LOG.md`), from `16b8df4` on. Buildings: the Astral Observatory, the
+Storm-Caller's Peak (its unlock was a tale's answer), the Guildhall and the four guild halls (Carters' Yard, Lyceum,
+Wright's Lodge, Sexton's Chapel). Edict: the Spire Wardens. A save holding one of those buildings is refused
+(`parkedContentIn`); a replay using the commands `tale`, `guild`, `vent` or `rain` is refused (`PARKED_OPS`).
 
 | Feature | Introduced | Main files | DESIGN | Back |
 |---|---|---|---|---|
-| Story events and tales, festivals, the caravan's tales, riots as tales | `159c577` (iteration 2), many since | `events.ts`, `content/text/events.json`, `botPolicy.ts` | §4 (iterations 2–4), §13 | the pause and the event modal in `ui.ts` |
-| Weather, the weave and ley aspects | `7b02989` (iteration 23) | `weave.ts`, `world.ts` `assignAspects` | §13 | ~25 readers |
-| Service walkers (11 kinds) and pilgrims | `7ca40bb`, `a773bcb`, `990c40c` (iterations 31–33) | `walkers.ts` | §14 (M10) | `walkerBonus` in the coverage |
+| Story events and tales: the storyteller, chains, the calendar festivals, the Belerial caravan, the riot, the Wandering Merchant, the airship captain's tale | `159c577` (iteration 2), many since | `events.ts`, `botPolicy.ts` (the bot's answers), `content/text/events.json`, the event modal in `ui.ts` | §4 (iterations 2–4), §13 | `pendingEvent` halting the tick in `sim.ts`, the `tale` op, `maybeFire*` in the day; the depot's 1.5× caravan was most of its income (RESET_LOG) |
+| Weather, the river's freeze and flood, the ley aspects of the nodes | `7b02989` (iteration 23), iteration 54 | `weave.ts`, `assignAspects` in `world.ts`, the Weave view | §13 | the aspect and weather terms in `growth`/`hazards`/`services`/`networks`/`world`; the Gloam pressure moved to `hazards.ts` and stays |
+| The Astral Observatory and the forecast | `f814c57` (iteration 12) | `forecast.ts`, the Ledger's forecast strip | §8 | `hasObservatory` (the Chart Room read it too) |
+| Guilds: standings, petitions, boons, strikes, wars, brawls, charters, guild halls | `c46477f` (iteration 24) | `guilds.ts`, `content/text/guilds.json`, the council block in the Edicts panel | §13.8 | `guildEffect`/`hallActive` terms (Craft rate, depot goods, mana store, surge line, deathcare, traffic), the `guild` op |
+| Service walkers (11 kinds) and pilgrims; the Spire Wardens edict | `7ca40bb`, `a773bcb`, `990c40c` (iterations 31–33) | `walkers.ts`, the walker sprites | §14 (M10) | `walkerBonus` in the coverage, `blessed`/`tended`, the wardens' surge shield; `stepRoad` moved to `construction.ts` |
+| The Annals (135 counters) | `584f5a0` (iteration 55) | `src/data/annals.ts`, the Annals modal and key N | §4.86 | the parked systems' stats are gone; the rest go to core counters in 1d |
+
+## Other cross-cutting add-ons (phase 1c-2)
+
+| Feature | Introduced | Main files | DESIGN | Back |
+|---|---|---|---|---|
 | Fishing, reeds, the smokehouse, fords, the Weir, high water | `0e6b3f3` (iteration 60) | `water.ts` | §4.91 | the bot's hut |
 | The marsh and the Drainage edict | `8485f4f` (iteration 85) | `marsh.ts`, marsh terrain in `terrain.ts` | §4.116 | |
 | The Patagoi Atoll, isles, sea-gales | `6238d8c` (iteration 95) | `atoll.ts`, `isles.ts`, `gales.ts` | §4.126 | scenario `atoll` |
 | Vehicles: floating carts, barges and Quays, drake riders, the airship and the Sky-Dock | `53b26f7` (iteration 15) | `vehicles.ts` | §8 | |
-| Guilds | `c46477f` (iteration 24) | `guilds.ts`, `content/text/guilds.json` | §13.8 | unrest |
 | Relics, the Ruins of Lukuku and the Ruin Delve, Portal Arches, the World Tree | `7b8cbb1`, `21b8a32` (iterations 13, 25) | `relics.ts`, portals in `agents.ts` | §13.9 | |
 | The wild: herds, wolves, the Hunters' Lodge, meat | `f7109cb` (iteration 58) | `wild.ts` | §4.89 | market shelves |
-| Magical buildings: Torrent Mill, Glimhouse, Astral Observatory and forecast, Hanging Gardens, Glowvine Lane | `f814c57` (iteration 12) | `buildings.json`, `forecast.ts`, `networks.ts` | §8 | |
+| Magical buildings: Torrent Mill, Glimhouse, Hanging Gardens, Glowvine Lane | `f814c57` (iteration 12) | `buildings.json`, `forecast.ts`, `networks.ts` | §8 | |
 | The Brickworks | `9fac9e9`, `b45a3ea` (iterations 80, 83) | `buildings.json`, `drawn.ts`, `construction.ts` speed bonus | §4.111, §4.114 | |
 | Wonders and marvels other than the Lantern of Vell | various | `buildings.json` | §8 | `WONDER_HALLS` in `catalog.ts` |
-| The Annals (135 counters) | `584f5a0` (iteration 55) | `src/data/annals.ts`, `stats` in `types.ts` | §4.86 | |
 | Scenarios One-Node, Island, Inherited; the daughter charter; the daily challenge | `c60d405`, `5bc3920`, `170291f` (iterations 17–19) | `scenario.ts`, `charter.ts` | §4 (iterations 17–19) | the title screen |
 | Terraforming (the Land tab) | `170291f` (iteration 19) | `actions.ts` | §4 (iteration 19) | |
 | Trade extras: the Twin Road toll, trade routes | `c46477f` (iteration 24) | `trade.ts` | §13.8 | the depot stays |

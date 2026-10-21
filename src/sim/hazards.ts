@@ -1,24 +1,22 @@
 /** Fire, wild surges, the Gloam, and the restless dead. */
 import { BUILDING_BY_KEY } from './catalog';
 import { THATCH_FIRE, thatched } from './water';
-import { MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, illTiding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
+import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
+import { treeStage, worldTree } from './growth';
+import { commitRng, forEachBuilding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
 import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { crewFactor } from './services';
 import { factionOf } from '../data/factions';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
-import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
-import { wardenNear } from './walkers';
 import { seasonOf } from './world';
-import { aspectAt, drought, nodesOfAspect, raining } from './weave';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
-export type SoundCue = 'horn' | 'bell' | 'rain' | 'hammer';
-export const SOUND_CUES: SoundCue[] = ['horn', 'bell', 'rain', 'hammer'];
+export type SoundCue = 'horn' | 'bell' | 'hammer';
+export const SOUND_CUES: SoundCue[] = ['horn', 'bell', 'hammer'];
 
 export interface Effect {
   x: number;
@@ -48,7 +46,6 @@ export function dailyFire(state: GameState): void {
       if (b.kind !== 'font' || !b.lit || b.state !== 'ok' || (b.flare ?? 0) > 0) return;
       if (!rng.chance(FLARE_CHANCE)) return;
       b.flare = FLARE_DAYS;
-      illTiding(state);
       pushMessage(state, `A bore flare at the Thrum Font at (${b.x},${b.y}): the ley came up the shaft as fire. The yard will smoke for ${FLARE_DAYS} days.`, 'bad', true, { x: b.x, y: b.y });
       igniteBuilding(state, b, 'A bore flare at');
       forEachBuilding(state, (o) => {
@@ -99,11 +96,7 @@ export function dailyFire(state: GameState): void {
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
     if (thatched(state, b)) p *= THATCH_FIRE; // thatch burns (water.ts, iteration 60)
     if (def.key === 'font') p *= 6;
-    const asp = aspectAt(state, b.x, b.y);
-    if (asp === 'ember') p *= 1.5;
-    else if (asp === 'tide') p *= 0.7;
     if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
-    if (raining(state)) p *= 0.4; else if (drought(state)) p *= 2; // the weather (iteration 54)
     p *= 1 - fireCov * 0.5;
     if (rng.chance(p)) toIgnite.push(b);
   });
@@ -134,7 +127,7 @@ export function dailySurge(state: GameState): void {
     b.broken = (b.broken ?? 0) - 1;
     if (b.broken === 0) { markDirty(state, b.x, b.y); pushMessage(state, `The Lantern of the Cores at (${b.x},${b.y}) is whole again: the three cores light and the housing hums.`, 'good', true, { x: b.x, y: b.y }); }
   });
-  const threshold = (edictOn(state, 'wardens') ? 1.5 : 1.25) + (hallActive(state, 'wrightslodge') ? 0.15 : 0);
+  const threshold = 1.25;
   // a Nexus store soaks up the peak: the count runs only once the store is spent
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20 && state.manaStorage <= 0.5) {
     state.overdrawDays++;
@@ -165,7 +158,7 @@ export function dailySurge(state: GameState): void {
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {
-      if (b.lit && b.state === 'ok' && manaUseOf(b) > 0 && BUILDING_BY_KEY[b.kind].category === 'zone' && !wardenNear(state, b)) lit.push(b);
+      if (b.lit && b.state === 'ok' && manaUseOf(b) > 0 && BUILDING_BY_KEY[b.kind].category === 'zone') lit.push(b);
     });
     const n = Math.min(lit.length, 2 + rng.int(4));
     for (let k = 0; k < n; k++) {
@@ -178,7 +171,6 @@ export function dailySurge(state: GameState): void {
       effects.push({ x: b.x, y: b.y, kind: 'surge', tick: state.tick });
     }
     state.stats.surgesTotal++;
-    illTiding(state);
     pushMessage(state, `WILD SURGE! Overdrawn ley lashes out: ${n} building(s) warped into ruin. The Concord made the same mistake.`, 'bad');
     commitRng(state, rng);
   }
@@ -278,7 +270,6 @@ export function dailyGloam(state: GameState): void {
   const creepEvery = 4;
   if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
     const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1) * (0.5 + state.gloamPressure);
-    const greyNodes = nodesOfAspect(state, 'grey');
     const gloam = state.gloam;
     const newTiles: number[] = [];
     for (let y = 0; y < MAP_H; y++)
@@ -290,7 +281,6 @@ export function dailyGloam(state: GameState): void {
           const j = idx(nx, ny);
           if (gloam[j] || isWater(state.terrain[j])) continue;
           if (state.coverage.ward[j] > 0) continue;
-          if (greyNodes.some((g) => Math.hypot(g.x - nx, g.y - ny) <= 10)) continue;
           if (state.bIndex[j] >= 0) continue; // never onto a building: the grey comes to the door first
           // the grey keeps two tiles from a lit building; past the pressure of GLOAM_TAKES it comes up to a dark, unwarded one
           if (hasBuildingNear(state, nx, ny, 2, state.gloamPressure >= GLOAM_TAKES)) continue;
@@ -356,7 +346,6 @@ export function dailyGloam(state: GameState): void {
     } else if (b.greyDays) b.greyDays = 0;
   });
   for (const b of taken) {
-    illTiding(state);
     pushMessage(state, `${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) was swallowed by the Gloam.`, 'bad', true, { x: b.x, y: b.y });
     removeBuilding(state, b);
     changed = true;
@@ -406,7 +395,7 @@ export function dailyDeath(state: GameState): void {
       // the font takes a loose relic every three days and quiets twice as many while it lasts
       if ((b.cooldown ?? 0) <= 0 && state.relicStock >= 1) { state.relicStock--; b.cooldown = 3; }
     }
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (b.kind === 'saltfont' && (b.cooldown ?? 0) > 0 ? 2 : 1) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (aspectAt(state, b.x, b.y) === 'bone' ? 1.5 : 1) * (1 + 0.15 * guildEffect(state, 'sextons')) * (relicDone(state, 'saltspoons') ? 1.1 : 1) * (BUILDING_BY_KEY[b.kind].category === 'special' && !hallActive(state, b.kind) ? 0 : 1);
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (b.kind === 'saltfont' && (b.cooldown ?? 0) > 0 ? 2 : 1) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (relicDone(state, 'saltspoons') ? 1.1 : 1);
   });
   if (fontOfQuieting(state)) quietCap *= 1.5;
   let pool = state.unquieted + covered;
@@ -433,7 +422,6 @@ export function dailyDeath(state: GameState): void {
     rng.state = state.rngState;
   }
   if (rose > 0) {
-    illTiding(state);
     // the dead the Remembrance stirred rise first, and the Chronicle says so (iteration 54)
     const stirred = Math.min(rose, Math.floor(state.remembranceDead / 20));
     state.remembranceDead = Math.max(0, state.remembranceDead - stirred * 20);
@@ -453,4 +441,37 @@ export function dailyDeath(state: GameState): void {
 /** A lit Font of Quieting makes the dead half again as easy to lay down (iteration 16; it lived in lore.ts until phase 1b). */
 export function fontOfQuieting(s: GameState): boolean {
   return s.buildings.some((b) => b && b.kind === 'fontquieting' && b.state === 'ok' && b.lit);
+}
+
+// ---------- Gloam pressure (from the weave, which is parked: scope reset phase 1c) ----------
+/** 0..1: how hard the Gloam presses. Dead, restless and overdraw raise it; faith and the Tree lower it. */
+export function computeGloamPressure(s: GameState): number {
+  let p = 0.3;
+  p += Math.min(0.3, s.unquieted / 80);
+  let restless = 0;
+  for (const a of s.agents) if (a.kind === AgentKind.Restless) restless++;
+  p += Math.min(0.2, restless / 30);
+  if (s.overdrawDays > 0) p += 0.15;
+  if (seasonOf(s) === 3) p += 0.1;
+  // faith: share of zoned buildings under faith coverage
+  let zoned = 0;
+  let faithful = 0;
+  forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') { zoned++; if (s.coverage.faith[idx(b.x, b.y)] > 60) faithful++; } });
+  if (zoned) p -= 0.25 * (faithful / zoned);
+  const tree = worldTree(s);
+  if (tree) p -= 0.04 * treeStage(tree);
+  return Math.max(0, Math.min(1, p));
+}
+export function pressureWord(p: number): string {
+  return p < 0.25 ? 'quiet' : p < 0.45 ? 'restless' : p < 0.65 ? 'pressing' : 'hungry';
+}
+/** Daily: the Gloam's pressure, and a quiet Hush counted (every day of the season under 0.45). */
+export function dailyGloamPressure(s: GameState): void {
+  s.gloamPressure = computeGloamPressure(s);
+  const dos = s.day % DAYS_PER_SEASON;
+  if (seasonOf(s) === 3) {
+    if (dos === 0) s.stats.hushPressureBreaks = 0;
+    if (s.gloamPressure >= 0.45) s.stats.hushPressureBreaks++;
+    if (dos === DAYS_PER_SEASON - 1 && s.stats.hushPressureBreaks === 0) s.stats.quietHush++;
+  }
 }

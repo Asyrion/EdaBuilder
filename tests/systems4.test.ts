@@ -5,7 +5,6 @@ import { buildRoad, paintDistrict, placeBuilding, roadPath, takeSnapshot, restor
 import { RoadType, TICKS_PER_DAY, Zone, idx } from '../src/sim/types';
 import { dailyTrade, craftStockCap } from '../src/sim/growth';
 import { updateMana } from '../src/sim/networks';
-import { maybeFireCalendar, resolveEvent } from '../src/sim/events';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -66,31 +65,6 @@ describe('trade depot', () => {
     s.day = 90;
     dailyTrade(s);
     expect(s.trade.priceGoods).toBeGreaterThan(2);
-  });
-});
-
-describe('calendar festivals', () => {
-  it('fire on their season day once a year and record the choice', () => {
-    const { s } = base(63);
-    s.population = 100;
-    s.day = 2; // founding Thaw: no festival
-    maybeFireCalendar(s);
-    expect(s.pendingEvent).toBeNull();
-    s.day = 75; // Remembrance
-    maybeFireCalendar(s);
-    expect(s.pendingEvent?.id).toBe('remembrance');
-    resolveEvent(s, 1);
-    expect(s.firedEvents.some((f) => f === 'remembrance@0:1')).toBe(true);
-    maybeFireCalendar(s);
-    expect(s.pendingEvent).toBeNull();
-    s.day = 91; // Hush vigil
-    maybeFireCalendar(s);
-    expect(s.pendingEvent?.id).toBe('vigil');
-    resolveEvent(s, 0);
-    expect(s.modifiers.some((m) => m.kind === 'gloamHold')).toBe(true);
-    s.day = 122; // next year's Thaw-day
-    maybeFireCalendar(s);
-    expect(s.pendingEvent?.id).toBe('thawday');
   });
 });
 

@@ -45,7 +45,7 @@ describe('Linked nodes', () => {
     updateMana(s);
     expect(sp.lit).toBe(true);
     expect(s.nodeLinked[other]).toBe(true);
-    expect(s.manaSupply).toBe(flow + 45 + ((s.nodes[other].aspect === 'vein' ? 15 : 0)) + (s.nodes[other].depth ?? 0) * 45); // the other half of its flow, and its Vein
+    expect(s.manaSupply).toBe(flow + 45 + (s.nodes[other].depth ?? 0) * 45); // the other half of its flow
     expect(canDeepenNode(s, other)).toBeNull();
   });
 });

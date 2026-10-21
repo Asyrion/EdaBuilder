@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { run, recomputeAll } from '../src/sim/sim';
-import { buildRoad, callRain, placeBuilding, roadPath } from '../src/sim/actions';
-import { RoadType, TICKS_PER_DAY, Terrain, idx } from '../src/sim/types';
-import { updateMiasma } from '../src/sim/services';
-import { ALL_EVENTS } from '../src/sim/events';
+import { buildRoad, roadPath } from '../src/sim/actions';
+import { RoadType, TICKS_PER_DAY } from '../src/sim/types';
 import { flatten } from './helpers';
 
 function town(seed = 101) {
@@ -22,43 +20,7 @@ function town(seed = 101) {
   return { s, f, markets, crafts };
 }
 
-describe("Storm-Caller's Peak and visitors", () => {
-  it('calls rain: fires out, miasma washed, cooldown', () => {
-    const t = town(105);
-    const { s, f } = t;
-    for (let yy = f.y + 6; yy <= f.y + 6; yy++) s.terrain[idx(f.x, yy)] = Terrain.Hills;
-    buildRoad(s, RoadType.Track, roadPath(f.x, f.y + 4, f.x, f.y + 5, true));
-    s.milestone = 5;
-    expect(placeBuilding(s, 'stormpeak', f.x, f.y + 6).ok).toBe(false); // no caller yet
-    s.firedEvents.push('stormcaller:0'); // the storm caller was given the hills
-    const r = placeBuilding(s, 'stormpeak', f.x, f.y + 6);
-    expect(r.ok).toBe(true);
-    const peak = s.buildings.find((b) => b && b.kind === 'stormpeak')!;
-    peak.lit = true;
-    t.crafts[0].state = 'burning';
-    updateMiasma(s);
-    const before = s.miasma[idx(t.crafts[0].x, t.crafts[0].y)];
-    expect(callRain(s, peak.id).ok).toBe(true);
-    expect(t.crafts[0].state).toBe('ok');
-    updateMiasma(s);
-    expect(s.miasma[idx(t.crafts[0].x, t.crafts[0].y)]).toBeLessThan(before);
-    expect(callRain(s, peak.id).ok).toBe(false);
-    expect(peak.cooldown).toBe(3);
-  });
-  it('caravan trade sells surplus', () => {
-    const t = town(106);
-    const { s, f } = t;
-    placeBuilding(s, 'depot', f.x - 12, f.y + 4);
-    const caravan = ALL_EVENTS.find((e) => e.id === 'caravan')!;
-    expect(caravan.when(s)).toBe(true);
-    const t0 = s.treasury;
-    caravan.choices[0].apply(s);
-    expect(s.treasury).toBeGreaterThan(t0);
-    expect(t.crafts.every((c) => c.stock <= 10)).toBe(true);
-    const storm = ALL_EVENTS.find((e) => e.id === 'stormcaller')!;
-    storm.choices[0].apply(s);
-    expect(s.modifiers.some((m) => m.kind === 'rain')).toBe(true);
-  });
+describe('A busy market town', () => {
   it('a long run with all of it stays finite', () => {
     const t = town(107);
     run(t.s, TICKS_PER_DAY * 4, { onDay: () => { for (const m of t.markets) m.stock = 20; } });

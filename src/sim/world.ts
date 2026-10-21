@@ -1,10 +1,8 @@
-import { initGuilds } from './guilds';
 import { initRelics } from './relics';
 import { FACTIONS, factionOf, type FactionId, milestonesOf } from '../data/factions';
 import { buildTicks, construction } from './construction';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
-import { assignAspects, aspectAt, drought, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { seedWild } from './wild';
 import { lakeDistAt } from './water';
@@ -74,7 +72,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     bankruptDays: 0,
     crownFavour: 50,
     loan: 0,
-    pleadings: 0,
     population: 0,
     jobs: 0,
     employed: 0,
@@ -82,7 +79,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     happiness: 60,
     health: 0.6,
     unrest: 0.1,
-    unrestHigh: 0,
     educatedFloor: 0,
     manaSupply: 0,
     manaDemand: 0,
@@ -111,36 +107,28 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     wild: { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] },
     water: { fish: [], spawnUntil: -1, fishAt: [], closed: [] },
-    weather: null,
-    pilgrimsDay: -1,
     edictSince: {},
     quarterSince: {},
     remembranceDead: 0,
-    airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
-    merchant: { visits: 0, spent: 0, talks: 0 },
+    airship: { status: 'none', goods: 0, since: -1, voyages: 0 },
     scenario,
     faction,
     daughter: null,
     challenge: null,
     sectors: initialSectors(t.founding),
     gloamPressure: 0.3,
-    lastBadDay: -30,
     challengeDay: -1,
     cleanDays: 0,
     artifactsSold: 0,
     tradeIncomeToday: 0,
     modifiers: [],
-    pendingEvent: null,
-    lastEventDay: 0,
-    firedEvents: [],
     lessonsSeen: [],
     goodsProduced: 0,
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, caravanCrowns: 0, lastCaravanCrowns: 0, lastCaravanDay: -1, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, brawlsParted: 0, relics: 0, portalTrips: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, fullDays: 0, brownoutsSurvived: 0, brownoutOpen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, quietHush: 0, hushPressureBreaks: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, guildHalls: 0, devUses: 0, relicsSold: 0, guildWars: 0, relicsAuctioned: 0, guildCharters: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, pilgrimPrayers: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, surgesAbsorbed: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, pilgrimShrines: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, watchRounds: 0, sextonRounds: 0, galeDays: 0 },
+    stats: { goodsDelivered: 0, gloamBurned: 0, restlessLaid: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, relics: 0, portalTrips: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, fullDays: 0, brownoutsSurvived: 0, brownoutOpen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, quietHush: 0, hushPressureBreaks: 0, gloamTiles: 0, peakPopulation: 0, twinGoods: 0, devUses: 0, relicsSold: 0, quarterDays: 0, goodsStolen: 0, surgesAbsorbed: 0, levies: 0, levied: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, galeDays: 0 },
     relicStock: 0,
-    guilds: initGuilds(),
     relics: initRelics(),
     dirtyChunks: new Set(),
     zoneListDirty: true,
@@ -158,7 +146,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
   }
   markAllDirty(state);
   pushMessage(state, `The Charter of ${state.cityName} is signed. Draw a road from the Founding Stake and zone some hearths.`, 'milestone');
-  assignAspects(state.nodes, state.founding, () => rng.int(1000));
   commitRng(state, rng);
   seedWild(state); // the herds on the land from the first hour (side streams only: the main stream is untouched)
   return state;
@@ -189,11 +176,6 @@ export function pushMessage(state: GameState, text: string, kind: Message['kind'
   state.messages.push({ tick: state.tick, text, kind });
   if (state.messages.length > 60) state.messages.splice(0, state.messages.length - 60);
   if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
-}
-
-/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
-export function illTiding(state: GameState): void {
-  state.lastBadDay = state.day;
 }
 
 export function pushChronicle(state: GameState, text: string, kind: Message['kind'], at?: { x: number; y: number }): void {
@@ -472,8 +454,8 @@ export function stagedSpriteName(kind: string, stage: number, has: (name: string
 export function stakeSpriteName(stage: number, has: (name: string) => boolean): string {
   return stagedSpriteName('stake', stage, has);
 }
-/** The halls that grow with the city (iteration 51): the Stake, the Guildhall and the Temple. */
-export const GROWING_HALLS = ['stake', 'guildhall', 'temple'];
+/** The halls that grow with the city (iteration 51): the Stake and the Temple. */
+export const GROWING_HALLS = ['stake', 'temple'];
 /** "the Burgh's hall": the name of the hall at this stage, from the people's own milestone names. */
 export function stakeHallName(state: GameState): string {
   const st = stakeStage(state);
@@ -488,8 +470,7 @@ export const NODE_DEEPEN_COST = [8000, 14000];
 export const NODE_DEEPEN_MANA = 45;
 
 /** Extra mana from deepened nodes. */
-/** Water radius with the Tide aspect. */
-/** A water building's reach today: the Seep swells in the Thaw and shrinks in the Ember, a plain well far from any water reaches 4, a bank well gives nothing while the river floods, Tide ley adds 2. */
+/** A water building's reach: a plain well far from any water reaches 4. */
 /** The tiles a water building actually waters: its radius this season, and the near-water bonus (as updateWater reads it). */
 export function waterReachOf(state: GameState, b: Building): number {
   const def = BUILDING_BY_KEY[b.kind];
@@ -505,21 +486,21 @@ export function waterRadiusOf(state: GameState, b: Building): number {
   if (b.kind === 'well') {
     const wd = state.waterDist[idx(b.x, b.y)];
     if (wd > 8) r = 4; // dry land: the Cistern's reason
-    if (wd <= 2 && floodedAt(state, b.x, b.y)) return 0; // fouled by the flood, or the Weir's open sluice
   }
-  if (aspectAt(state, b.x, b.y) === 'tide') r += 2;
-  if (drought(state)) r = Math.max(2, r - 2); // the drought shrinks every well two tiles (iteration 54)
   return r;
 }
 
-/** An unlinked node seeps this share of its 90 into the ground; a lit spire, stake or hall within 6 draws the rest, and its depth and a Vein's 15 come only with the link. */
+/** An unlinked node seeps this share of its 90 into the ground; a lit spire, stake or hall within 6 draws the rest, and its depth and the founding node's 15 come only with the link. */
 export const NODE_SEEP = 0.5;
-/** The nodes' flow before the people's multiplier: 90 a node plus its depth and a Vein's 15 when linked (a list given), else the seep. The one-node scenario's deep Vein and the true veins left to the ley count always. */
+/** The founding Wellspring runs deeper than the rest: the Vein aspect's 15, which only it ever had (the aspects are parked, scope reset phase 1c). */
+export const FOUNDING_FLOW = 15;
+const isFounding = (state: GameState, n: { x: number; y: number }) => n.x === state.founding.x && n.y === state.founding.y;
+/** The nodes' flow before the people's multiplier: 90 a node plus its depth and the founding node's 15 when linked (a list given), else the seep. The one-node scenario's deep Vein and the true veins left to the ley count always. */
 export function nodeFlow(state: GameState, linked?: boolean[]): number {
   let m = 0;
   state.nodes.forEach((n, k) => {
     if (linked && linked[k] === false) { m += NODE_MANA * NODE_SEEP; return; }
-    m += NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0);
+    m += NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (isFounding(state, n) ? FOUNDING_FLOW : 0);
   });
   if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
   return m;
@@ -527,7 +508,7 @@ export function nodeFlow(state: GameState, linked?: boolean[]): number {
 /** One node's flow as its panel shows it. */
 export function nodeFlowOf(state: GameState, ni: number): number {
   const n = state.nodes[ni];
-  return NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0) + (state.scenario === 'onenode' ? 90 : 0);
+  return NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (isFounding(state, n) ? FOUNDING_FLOW : 0) + (state.scenario === 'onenode' ? 90 : 0);
 }
 
 export function canDeepenNode(state: GameState, ni: number): string | null {
@@ -550,4 +531,21 @@ export function deepenNode(state: GameState, ni: number): string | null {
   n.depth = depth + 1;
   pushMessage(state, `The Wellspring at (${n.x},${n.y}) is deepened. Tallowkin bore-singers coax ${NODE_DEEPEN_MANA} more mana a day from the Vein.`, 'milestone');
   return null;
+}
+
+/** The wonder halls standing and lit (or needing no mana): each delights the whole city and lifts the next grant (iteration 53). */
+export function litWonders(s: GameState): Building[] {
+  const out: Building[] = [];
+  forEachBuilding(s, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (def.category === 'wonder' && b.state === 'ok' && (b.lit || !def.needsMana)) out.push(b);
+  });
+  return out;
+}
+export function hasMarvel(s: GameState, key: string): boolean {
+  const needsMana = !!BUILDING_BY_KEY[key]?.needsMana;
+  return s.buildings.some((b) => b && b.kind === key && b.state === 'ok' && (b.lit || !needsMana));
+}
+export function marvelNear(s: GameState, key: string, b: Building, r = 8): boolean {
+  return s.buildings.some((o) => o && o.kind === key && o.state === 'ok' && o.lit && Math.abs(o.x - b.x) <= r && Math.abs(o.y - b.y) <= r);
 }

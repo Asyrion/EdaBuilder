@@ -7,7 +7,6 @@ import { recomputeAll } from '../src/sim/sim';
 import { BUILDING_BY_KEY, BUILDINGS } from '../src/sim/catalog';
 import { SECONDARY_REACH, reachesOf, reachesOfBuilding } from '../src/sim/reach';
 import { HOSPICE_REACH, GLIMHOUSE_REACH } from '../src/sim/growth';
-import { CARTERS_REACH } from '../src/sim/agents';
 import { flatten } from './helpers';
 
 describe('Reach rings', () => {
@@ -22,7 +21,7 @@ describe('Reach rings', () => {
     }
     for (const key of Object.keys(SECONDARY_REACH)) expect(BUILDING_BY_KEY[key], key).toBeDefined();
   });
-  it("a water building rings the water it really gives: the near-water bonus, and a drought's shorter reach", () => {
+  it("a water building rings the water it really gives, the near-water bonus included", () => {
     const s = createGame(56, 'Ringwick');
     const f = s.founding;
     flatten(s, f.x - 10, f.y - 10, f.x + 10, f.y + 10);
@@ -31,15 +30,11 @@ describe('Reach rings', () => {
     const ring = reachesOfBuilding(s, w)[0];
     expect(ring.r).toBe(waterReachOf(s, w));
     expect(ring.label).toBe(`water ${ring.r}`);
-    s.weather = { kind: 'drought', until: s.day + 5 };
-    expect(reachesOfBuilding(s, w)[0].r).toBe(waterReachOf(s, w));
-    expect(reachesOfBuilding(s, w)[0].r).toBeLessThan(ring.r);
   });
   it("the secondary reaches are the sim's own numbers", () => {
     const s = createGame(56, 'Ringwick');
     const r = (key: string) => reachesOf(s, BUILDING_BY_KEY[key]).filter((x) => !x.primary).map((x) => x.r);
     expect(r('hospice')).toEqual([HOSPICE_REACH]);
-    expect(r('cartersyard')).toEqual([CARTERS_REACH]);
     expect(r('glimhouse')).toEqual([GLIMHOUSE_REACH]);
     expect(reachesOf(s, BUILDING_BY_KEY.hospice).find((x) => !x.primary)!.square).toBe(true);
   });
@@ -59,6 +54,6 @@ describe('The painted buildings at the procedural scale, facing the procedural w
     for (const e of sources) if (e.name.startsWith('b_') && e.targetHeight) expect(e.anchor, e.name).toBe('centre');
     // the donkey carts (kind 'vehicle') face right by their own rule (iteration 57)
     const flipped = sources.filter((e) => e.flip && e.kind !== 'vehicle' && e.name.startsWith('b_') && !/_v\d+$/.test(e.name)).map((e) => e.name).sort();
-    expect(flipped).toEqual(['b_cartersyard', 'b_cistern', 'b_lyceum', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2']); // the depot is drawn in code since iteration 79; the zone houses' flips are pinned in tests/iteration82.test.ts, the buildings' looks' in iteration83
+    expect(flipped).toEqual(['b_cistern', 'b_stake_s0', 'b_stake_s1', 'b_stake_s2']); // the carters' yard and the lyceum are parked (phase 1c); the depot is drawn in code since iteration 79; the zone houses' flips are pinned in tests/iteration82.test.ts, the buildings' looks' in iteration83
   });
 });

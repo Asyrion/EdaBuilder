@@ -1,14 +1,11 @@
 import { FISH_MARKET_REACH, bodyOf, isFordTile } from '../sim/water';
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
 import { AgentKind, DAYS_PER_SEASON, Terrain, Zone, idx, type GameState } from '../sim/types';
-import { hasCouncil } from '../sim/guilds';
 import { ATOLL_ISLES, SETTLED_BUILDINGS, isleBuildings, settledIsles } from '../sim/isles';
 import { canBuild, milestonesOf, nextGate } from './factions';
 import { HUNT_REACH, MEAT_REACH, huntBlock, quarryOf } from '../sim/wild';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { factionKey, type FactionId } from './factions';
-import { chose } from '../sim/events';
-import { aspectAt } from '../sim/weave';
 import { debtLine } from '../sim/economy';
 import QUEST_TEXT from './content/text/quests.json';
 
@@ -42,8 +39,6 @@ const roads = (s: GameState) => { let c = 0; for (let i = 0; i < s.road.length; 
 const zoneBuildings = (s: GameState, z?: Zone) => s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok' && (z === undefined || BUILDING_BY_KEY[b.kind].zone === z)) as NonNullable<GameState['buildings'][number]>[];
 const unlit = (s: GameState) => zoneBuildings(s).filter((b) => !b.lit).length;
 const dry = (s: GameState) => zoneBuildings(s).filter((b) => !b.watered).length;
-/** The guild council sits once a lit Guildhall stands, petition or none (iteration 92: a contented council never petitions). */
-const councilSeated = (s: GameState) => hasCouncil(s) || s.stats.councils > 0;
 const districts = (s: GameState) => { for (let i = 0; i < s.district.length; i++) if (s.district[i]) return true; return false; };
 
 export const QUESTS: QuestDef[] = [
@@ -74,7 +69,6 @@ export const QUESTS: QuestDef[] = [
   { id: 'o_cart', chapter: QUEST_TEXT.o_cart.chapter, title: QUEST_TEXT.o_cart.title, hint: QUEST_TEXT.o_cart.hint, when: (s) => zoneBuildings(s, Zone.Craft).length > 0 && zoneBuildings(s, Zone.Market).length > 0, done: (s) => s.stats.goodsDelivered > 0, focus: { center: 'cart' }, reward: 200, priority: 18 },
   { id: 'o_full', chapter: QUEST_TEXT.o_full.chapter, title: QUEST_TEXT.o_full.title, hint: QUEST_TEXT.o_full.hint, when: (s) => s.goodsShort > 0 || zoneBuildings(s, Zone.Market).length > 3, done: (s) => s.stats.fullDays >= 5 && zoneBuildings(s, Zone.Market).length > 3 && s.day > 20, focus: { overlay: 'goods' }, reward: 600, priority: 19 },
   { id: 'o_depot', chapter: QUEST_TEXT.o_depot.chapter, title: QUEST_TEXT.o_depot.title, hint: QUEST_TEXT.o_depot.hint, when: (s) => s.milestone >= 3, done: (s) => has(s, 'depot'), focus: { build: 'depot' }, reward: 700, priority: 20 },
-  { id: 'o_caravan', chapter: QUEST_TEXT.o_caravan.chapter, title: QUEST_TEXT.o_caravan.title, hint: QUEST_TEXT.o_caravan.hint, when: (s) => has(s, 'depot'), done: (s) => s.stats.caravanGoods >= 200, reward: 900, priority: 21 },
   // Schooling and the arcane
   { id: 'a_academy', chapter: QUEST_TEXT.a_academy.chapter, title: QUEST_TEXT.a_academy.title, hint: QUEST_TEXT.a_academy.hint, when: (s) => s.milestone >= 3, done: (s) => s.educated >= 0.3, focus: { build: 'academy' }, reward: 800, priority: 22 },
   { id: 'a_arcane', chapter: QUEST_TEXT.a_arcane.chapter, title: QUEST_TEXT.a_arcane.title, hint: QUEST_TEXT.a_arcane.hint, when: (s) => s.milestone >= 4, done: (s) => zoneBuildings(s, Zone.Arcane).length > 0, focus: { tool: 'zoneArcane' }, reward: 800, priority: 23 },
@@ -88,15 +82,12 @@ export const QUESTS: QuestDef[] = [
   // Seasons
   { id: 's_brownout', chapter: QUEST_TEXT.s_brownout.chapter, title: QUEST_TEXT.s_brownout.title, hint: QUEST_TEXT.s_brownout.hint, when: (s) => s.overdrawDays > 0, done: (s) => s.stats.brownoutsSurvived > 0, focus: { build: 'nexus' }, reward: 600, priority: 33 },
   { id: 'x_rename', chapter: QUEST_TEXT.x_rename.chapter, title: QUEST_TEXT.x_rename.title, hint: QUEST_TEXT.x_rename.hint, when: (s) => districts(s), done: (s) => Object.values(s.districtNames).some((n) => !s.daughter || n !== s.daughter.name), focus: { panel: 'edicts' }, reward: 200, priority: 30 },
-  { id: 's_vigil', chapter: QUEST_TEXT.s_vigil.chapter, title: QUEST_TEXT.s_vigil.title, hint: QUEST_TEXT.s_vigil.hint, when: (s) => s.day >= 85, done: (s) => chose(s, 'vigil', 0), reward: 800, priority: 51 },
-  { id: 's_feast', chapter: QUEST_TEXT.s_feast.chapter, title: QUEST_TEXT.s_feast.title, hint: QUEST_TEXT.s_feast.hint, when: (s) => s.day >= 110, done: (s) => chose(s, 'thawday', 0), reward: 600, priority: 52 },
   { id: 's_hush', chapter: QUEST_TEXT.s_hush.chapter, title: QUEST_TEXT.s_hush.title, hint: QUEST_TEXT.s_hush.hint, when: (s) => s.day >= 60, done: (s) => s.day >= 120, reward: 1500, priority: 50 },
   // Huruhui and Gekiryu craft
   { id: 'k_mill', chapter: QUEST_TEXT.k_mill.chapter, title: QUEST_TEXT.k_mill.title, hint: QUEST_TEXT.k_mill.hint, when: (s) => s.milestone >= 4, done: (s) => has(s, 'torrentmill'), focus: { build: 'torrentmill' }, reward: 800, priority: 29 },
   { id: 'k_glim', chapter: QUEST_TEXT.k_glim.chapter, title: QUEST_TEXT.k_glim.title, hint: QUEST_TEXT.k_glim.hint, when: (s) => s.milestone >= 3 && zoneBuildings(s, Zone.Craft).length >= 3, done: (s) => has(s, 'glimhouse'), focus: { build: 'glimhouse' }, reward: 500, priority: 39 },
   { id: 'k_gardens', chapter: QUEST_TEXT.k_gardens.chapter, title: QUEST_TEXT.k_gardens.title, hint: QUEST_TEXT.k_gardens.hint, when: (s) => s.milestone >= 4, done: (s) => has(s, 'hanginggardens'), focus: { build: 'hanginggardens' }, reward: 800, priority: 46 },
   { id: 'k_glowvine', chapter: QUEST_TEXT.k_glowvine.chapter, title: QUEST_TEXT.k_glowvine.title, hint: QUEST_TEXT.k_glowvine.hint, when: (s) => has(s, 'hanginggardens'), done: (s) => { let c = 0; for (let i = 0; i < s.road.length; i++) if (s.road[i] === 4) c++; return c >= 12; }, focus: { tool: 'road' }, reward: 600, priority: 47 },
-  { id: 'k_obs', chapter: QUEST_TEXT.k_obs.chapter, title: QUEST_TEXT.k_obs.title, hint: QUEST_TEXT.k_obs.hint, when: (s) => s.milestone >= 5, done: (s) => has(s, 'observatory'), focus: { build: 'observatory' }, reward: 1000, priority: 48 },
   // Longwood and Lukuku
   { id: 'p_arch', chapter: QUEST_TEXT.p_arch.chapter, title: QUEST_TEXT.p_arch.title, hint: QUEST_TEXT.p_arch.hint, when: (s) => s.milestone >= 5, done: (s) => has(s, 'portalarch', 2), focus: { build: 'portalarch' }, reward: 1200, priority: 49 },
   { id: 'r_delve', chapter: QUEST_TEXT.r_delve.chapter, title: QUEST_TEXT.r_delve.title, hint: QUEST_TEXT.r_delve.hint, when: (s) => s.milestone >= 4 && s.terrain.some((t) => t === 8), done: (s) => has(s, 'ruindelve'), focus: { center: 'ruins' }, reward: 800, priority: 50 },
@@ -114,24 +105,13 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_ford', chapter: QUEST_TEXT.w_ford.chapter, title: QUEST_TEXT.w_ford.title, hint: QUEST_TEXT.w_ford.hint, when: (s) => s.milestone >= 1 && s.day >= 5, done: (s) => { for (let i = 0; i < s.road.length; i++) if (s.road[i] && isFordTile(s, i)) return true; return false; }, focus: { tool: 'road' }, reward: 300, priority: 58 },
   // The Font of Quieting
   { id: 'n_font', chapter: QUEST_TEXT.n_font.chapter, title: QUEST_TEXT.n_font.title, hint: QUEST_TEXT.n_font.hint, when: (s) => s.milestone >= 7, done: (s) => has(s, 'fontquieting'), focus: { build: 'fontquieting' }, reward: 1500, priority: 59 },
-  // The ley-weave
+  // The Gloam's pressure
   { id: 'y_quiet', chapter: QUEST_TEXT.y_quiet.chapter, title: QUEST_TEXT.y_quiet.title, hint: QUEST_TEXT.y_quiet.hint, when: (s) => s.day >= 60, done: (s) => s.stats.quietHush > 0, focus: { build: 'shrine' }, reward: 1500, priority: 42 },
-  // The guilds, the feast and the routes
-  { id: 'k_council', chapter: QUEST_TEXT.k_council.chapter, title: QUEST_TEXT.k_council.title, hint: QUEST_TEXT.k_council.hint, when: (s) => s.milestone >= 5, done: (s) => councilSeated(s), focus: { build: 'guildhall' }, reward: 500, priority: 50 },
-  { id: 'k_boon', chapter: QUEST_TEXT.k_boon.chapter, title: QUEST_TEXT.k_boon.title, hint: QUEST_TEXT.k_boon.hint, when: (s) => councilSeated(s), done: (s) => Object.values(s.guilds.standing).some((v) => v >= 70), focus: { panel: 'edicts' }, reward: 1000, priority: 51 },
-  { id: 'k_feast', chapter: QUEST_TEXT.k_feast.chapter, title: QUEST_TEXT.k_feast.title, hint: QUEST_TEXT.k_feast.hint, when: (s) => s.day >= 100, done: (s) => s.stats.feastGoods >= 10, focus: { tool: 'zoneMarket' }, reward: 600, priority: 52 },
+  // The routes and the relics
   { id: 'k_twinroad', chapter: QUEST_TEXT.k_twinroad.chapter, title: QUEST_TEXT.k_twinroad.title, hint: QUEST_TEXT.k_twinroad.hint, when: (s) => !!s.daughter, done: (s) => s.stats.twinGoods > 0, focus: { build: 'depot' }, reward: 1500, priority: 53 },
-  { id: 'k_hall', chapter: QUEST_TEXT.k_hall.chapter, title: QUEST_TEXT.k_hall.title, hint: QUEST_TEXT.k_hall.hint, when: (s) => councilSeated(s), done: (s) => s.stats.guildHalls > 0, focus: { panel: 'edicts' }, reward: 1200, priority: 54 },
   { id: 'k_relics', chapter: QUEST_TEXT.k_relics.chapter, title: QUEST_TEXT.k_relics.title, hint: QUEST_TEXT.k_relics.hint, when: (s) => s.stats.relics >= 12, done: (s) => s.relics.complete.length > 0, focus: { build: 'academy' }, reward: 2000, priority: 56 },
   { id: 'k_relicbuild', chapter: QUEST_TEXT.k_relicbuild.chapter, title: QUEST_TEXT.k_relicbuild.title, hint: QUEST_TEXT.k_relicbuild.hint, when: (s) => s.relics.complete.length > 0, done: (s) => s.buildings.some((b) => !!b && !!BUILDING_BY_KEY[b.kind].relic && b.state === 'ok'), focus: { build: 'corelantern' }, reward: 1500, priority: 58 },
   { id: 'k_assessor', chapter: QUEST_TEXT.k_assessor.chapter, title: QUEST_TEXT.k_assessor.title, hint: QUEST_TEXT.k_assessor.hint, when: (s) => s.relicStock >= 6, done: (s) => s.stats.relicsSold > 0, focus: { build: 'depot' }, reward: 800, priority: 60 },
-  { id: 'k_charter', chapter: QUEST_TEXT.k_charter.chapter, title: QUEST_TEXT.k_charter.title, hint: QUEST_TEXT.k_charter.hint, when: (s) => s.stats.guildWars > 0 || s.stats.councils >= 3, done: (s) => s.stats.guildCharters > 0, focus: { panel: 'edicts' }, reward: 1500, priority: 61 },
-  { id: 'w_patrol', chapter: QUEST_TEXT.w_patrol.chapter, title: QUEST_TEXT.w_patrol.title, hint: QUEST_TEXT.w_patrol.hint, when: (s) => has(s, 'watchhouse') || has(s, 'watchpost'), done: (s) => s.stats.watchRounds > 0, focus: { overlay: 'watch' }, reward: 400, priority: 24 },
-  { id: 'w_sexton', chapter: QUEST_TEXT.w_sexton.chapter, title: QUEST_TEXT.w_sexton.title, hint: QUEST_TEXT.w_sexton.hint, when: (s) => has(s, 'boneyard') || has(s, 'ossuary'), done: (s) => s.stats.sextonRounds > 0, focus: { overlay: 'death' }, reward: 400, priority: 25 },
-  { id: 'w_healer', chapter: QUEST_TEXT.w_healer.chapter, title: QUEST_TEXT.w_healer.title, hint: QUEST_TEXT.w_healer.hint, when: (s) => has(s, 'healer') || has(s, 'hospice'), done: (s) => s.stats.healerVisits > 0, focus: { overlay: 'health' }, reward: 400, priority: 26 },
-  { id: 'w_warden', chapter: QUEST_TEXT.w_warden.chapter, title: QUEST_TEXT.w_warden.title, hint: QUEST_TEXT.w_warden.hint, when: (s) => s.milestone >= 2 && s.buildings.filter((b) => b && (b.kind === 'spire' || b.kind === 'nexus')).length >= 2, done: (s) => s.stats.wardenRounds > 0, focus: { panel: 'edicts' }, reward: 600, priority: 27 },
-  { id: 'w_scholar', chapter: QUEST_TEXT.w_scholar.chapter, title: QUEST_TEXT.w_scholar.title, hint: QUEST_TEXT.w_scholar.hint, when: (s) => (has(s, 'academy') || has(s, 'grandacademy')) && has(s, 'ruindelve'), done: (s) => s.stats.scholarTrips > 0, focus: { build: 'academy' }, reward: 600, priority: 51 },
-  { id: 'w_pilgrim', chapter: QUEST_TEXT.w_pilgrim.chapter, title: QUEST_TEXT.w_pilgrim.title, hint: QUEST_TEXT.w_pilgrim.hint, when: (s) => s.buildings.filter((b) => b && (b.kind === 'shrine' || b.kind === 'temple') && b.state === 'ok').length >= 2, done: (s) => s.stats.pilgrimPrayers > 0, focus: { overlay: 'faith' }, reward: 400, priority: 28 },
   // Scenario goals
   { id: 'z_daily', chapter: QUEST_TEXT.z_daily.chapter, title: QUEST_TEXT.z_daily.title, hint: QUEST_TEXT.z_daily.hint, when: (s) => !!s.challenge && (s.day <= 60 || s.questsDone.includes('z_daily')), done: (s) => s.milestone >= 5 && s.day <= 60, reward: 3000, priority: 0, strict: true },
   { id: 'z_onenode', chapter: QUEST_TEXT.z_onenode.chapter, title: QUEST_TEXT.z_onenode.title, hint: QUEST_TEXT.z_onenode.hint, when: (s) => s.scenario === 'onenode', done: (s) => s.milestone >= 6, reward: 5000, priority: 0, strict: true },
@@ -219,7 +199,6 @@ const after = (key: string, then: (s: GameState) => string, n = 1) => (s: GameSt
   const standing = s.buildings.filter((b) => b && b.kind === k && b.state !== 'ruin' && b.state !== 'building');
   return standing.length >= n && (!def?.needsMana || standing.some((b) => b!.lit)) ? then(s) : buildStatus(s, key, n);
 };
-const walkersOut = (s: GameState, job: string) => s.agents.filter((a) => a.kind === AgentKind.Walker && a.job === job).length;
 const anyOf = (s: GameState, keys: string[]) => keys.some((k) => has(s, k));
 
 const STATUS: Record<string, (s: GameState) => string> = {
@@ -237,7 +216,6 @@ const STATUS: Record<string, (s: GameState) => string> = {
   g_burn: after('wardlantern', (s) => of(s.stats.gloamBurned, 50, 'tiles of Gloam burned back')), // an unlit lantern burns nothing: say so first
   o_cart: (s) => `${zoneBuildings(s, Zone.Craft).length} working Craft, ${zoneBuildings(s, Zone.Market).length} Market: a cart sets out once both stand on one road.`,
   o_full: (s) => `${n0(Math.min(s.stats.fullDays, 5))} of 5 days with every shelf stocked; ${n0(Math.min(zoneBuildings(s, Zone.Market).length, 4))} of 4 markets${s.day <= 20 ? '; from day 21' : ''}.`,
-  o_caravan: (s) => of(s.stats.caravanGoods, 200, 'goods sold to the caravan'),
   a_academy: (s) => `${anyOf(s, ['academy', 'grandacademy']) ? '' : `${buildStatus(s, 'academy')} `}${Math.floor(s.educated * 100)} % of the folk educated, of 30 %.`,
   a_arcane: (s) => {
     const z = zonedCount(s, Zone.Arcane);
@@ -274,32 +252,12 @@ const STATUS: Record<string, (s: GameState) => string> = {
     return near ? 'Fish reach the shelves the morning after a catch.' : `No market within ${FISH_MARKET_REACH} tiles of the hut.`;
   }),
   q_quay: after('quay', () => 'Two Quays stand, no barge yet: one needs Craft works holding goods within 8 tiles, the other Markets with room within 8, on the same water.', 2),
-  w_patrol: (s) => {
-    if (!anyOf(s, ['watchpost', 'watchhouse'])) return buildStatus(s, 'watchpost');
-    const out = walkersOut(s, 'watchman');
-    return out ? `${out} watchman out on patrol: the task completes when a round is walked.` : 'No watchman out yet: the post needs a road at its door, and it sends one out each morning.';
-  },
-  w_sexton: (s) => {
-    if (!anyOf(s, ['boneyard', 'ossuary'])) return buildStatus(s, 'boneyard');
-    const out = walkersOut(s, 'sexton');
-    return out ? `${out} sexton out on the rounds: the task completes when a round is walked.` : 'No sexton out yet: the Boneyard needs a road at its door, and it sends one out each morning.';
-  },
-  w_healer: (s) => (walkersOut(s, 'healer') ? 'A healer is out: the task completes at the first visit.' : 'No healer out yet: the building needs a road at its door.'),
-  w_pilgrim: () => 'No prayers yet: pilgrims walk to shrines along the roads.',
-  k_council: (s) => { const hall = s.buildings.find((b) => b && b.kind === 'guildhall' && b.state === 'ok'); return hall && !hall.lit ? 'Built, but unlit: the council sits only in a lit Guildhall. Chain a Ley Spire within reach (Mana view, 1).' : buildStatus(s, 'guildhall'); },
-  k_boon: (s) => { const best = Math.max(0, ...Object.values(s.guilds?.standing ?? {})); return `The best-pleased guild stands at ${Math.floor(best)}, of 70.`; },
-  k_feast: (s) => of(s.stats.feastGoods, 10, 'goods at the Thaw feast'),
   y_quiet: () => 'Not yet: keep the Gloam from pressing through a whole Hush.',
-  w_scholar: after('ruindelve', (s) => (s.buildings.some((b) => b && (b.kind === 'academy' || b.kind === 'grandacademy') && b.state === 'ok' && b.lit) ? (walkersOut(s, 'scholar') ? 'A scholar is on the road to the delve.' : 'No scholar out yet: the Academy needs a road at its door, within 60 tiles of the delve.') : 'The Academy is unlit: it sends a scholar only while lit.')),
   q_airship: after('skydock', () => 'No voyage yet.'),
   s_hush: (s) => `Day ${n0(Math.min(s.day, 120))} of 120.`,
-  s_vigil: () => 'The vigil is a festival on the first night of the Hush: choose to keep it when it asks.',
-  s_feast: () => 'The Thaw feast comes as a festival on Thaw-day: choose to hold it when it asks.',
   r_delve: (s) => buildStatus(s, 'ruindelve'),
   w_ford: () => 'No ford yet: draw a Dirt Track across shallow river water.',
-  k_hall: () => 'No guild hall earned yet: keep one guild pleased (70 or more) for a season.',
   k_relics: (s) => `${n0(s.stats.relics)} relics found; ${s.relics.complete.length} sets complete. The Academy names them by set.`,
-  w_warden: (s) => (walkersOut(s, 'warden') ? 'A warden is out on the rounds.' : 'No warden out yet: a spire on a road sends one.'),
   z_daily: (s) => `Day ${n0(s.day)} of 60; ${milestonesOf(s)[s.milestone].name}, the fifth milestone is ${milestonesOf(s)[Math.min(5, milestonesOf(s).length - 1)].name}.`,
   c_daughter: () => 'No daughter founded yet: a far ley node can take a daughter charter (click it).',
   z_atoll: (s) => {
@@ -313,7 +271,7 @@ for (const id of ['c_thorp', 'c_village', 'c_township', 'c_market', 'c_burgh', '
 
 /** "Build X" tasks whose goal is more than that building standing: their line must not say "Built." while they are open.
  *  A test holds this list to the conditions (a plain `has(s, key)` done is the generic case). */
-export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'a_academy', 's_brownout', 'p_arch', 'q_quay', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'z_island']);
+export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'a_academy', 's_brownout', 'p_arch', 'q_quay', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'y_quiet', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'z_island']);
 
 /** The task's status line: its own, else the generic one for a "build X" task whose goal is that building; else none. */
 export function questStatus(s: GameState, q: QuestDef): string | null {

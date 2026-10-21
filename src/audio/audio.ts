@@ -305,7 +305,7 @@ export class Audio {
    * night, ley (spires near the camera), water (water tiles in view), fire (burning buildings in view),
    * market (market buildings in view, daytime).
    */
-  /** A positional one-shot: horn, bell, hammer, rain. */
+  /** A positional one-shot: horn, bell, hammer. */
   cue(kind: SoundCue, pan = 0, vol = 1): void {
     if (!this.ctx || !this.master || this.muted || vol <= 0.02) return;
     const ctx = this.ctx;
@@ -346,7 +346,6 @@ export class Audio {
       case 'horn': osc('triangle', 196, 196, 0.9, 0.18); osc('triangle', 198, 198, 0.9, 0.12); osc('sine', 98, 98, 1.0, 0.1); osc('triangle', 262, 262, 0.7, 0.14, 0.9); break;
       case 'bell': osc('sine', 1046, 1046, 1.2, 0.14); osc('sine', 2093, 2093, 0.8, 0.05); osc('sine', 1318, 1318, 0.9, 0.04, 0.02); break;
       case 'hammer': osc('square', 820, 540, 0.05, 0.05); noise(0.04, 0.18, 2200, 0, 'highpass'); osc('square', 760, 500, 0.05, 0.04, 0.16); noise(0.04, 0.15, 2000, 0.16, 'highpass'); break;
-      case 'rain': noise(2.5, 0.25, 1800, 0, 'bandpass'); noise(2.0, 0.15, 900, 0.3); osc('sine', 392, 392, 0.5, 0.05, 0.2); break;
     }
   }
 

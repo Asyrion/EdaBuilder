@@ -2,10 +2,8 @@
 import { BUILDING_BY_KEY, MOORINGS } from './catalog';
 import { Zone, type Building, type GameState } from './types';
 import { marketStockCap, roadTileOf } from './agents';
-import { riverFrozen } from './weave';
 import { forEachBuilding } from './world';
 
-import { hallActive } from './guilds';
 
 export interface TradeRoute {
   kind: 'road' | 'river' | 'sky' | 'portal' | 'twin';
@@ -46,12 +44,12 @@ export function twinDepots(s: GameState): [Building, Building] | null {
 /** Every route the city has, open or not, for the Ledger. */
 export function tradeRoutes(s: GameState): TradeRoute[] {
   const out: TradeRoute[] = [];
-  const depots = okOf(s, 'depot').concat(hallActive(s, 'cartersyard') ? okOf(s, 'cartersyard') : []);
+  const depots = okOf(s, 'depot');
   if (depots.length) out.push({ kind: 'road', name: 'The Gloam road', at: depots[0], to: null, note: `${depots.length} depot${depots.length > 1 ? 's' : ''}: surplus sold to the Crown at ${s.trade.priceGoods.toFixed(1)} a good${s.trade.priceHides !== undefined ? `, hides at ${s.trade.priceHides}, salted meat at ${s.trade.priceMeat}, trophies at ${s.trade.priceTrophy}` : ''}${s.trade.priceFish !== undefined ? `, smoked fish at ${s.trade.priceFish}` : ''}${s.stats.relicsSold ? `; ${s.stats.relicsSold} relics sold` : ''}${s.relicStock > 10 ? `; ${s.relicStock} loose relics in the camp` : ''}`, open: true });
   const quays = MOORINGS.flatMap((k) => okOf(s, k));
   if (quays.length) {
-    const open = quays.length >= 2 && !riverFrozen(s);
-    out.push({ kind: 'river', name: 'River barges', at: quays[0], to: quays[1] ?? null, note: quays.length < 2 ? 'one mooring: nowhere to send a barge' : riverFrozen(s) ? 'the river is frozen until the Thaw' : `${quays.length} moorings; ${s.stats.bargeTrips} barges sent`, open });
+    const open = quays.length >= 2;
+    out.push({ kind: 'river', name: 'River barges', at: quays[0], to: quays[1] ?? null, note: quays.length < 2 ? 'one mooring: nowhere to send a barge' : `${quays.length} moorings; ${s.stats.bargeTrips} barges sent`, open });
   }
   const docks = okOf(s, 'skydock');
   if (docks.length) out.push({ kind: 'sky', name: 'The airship of the wardlights', at: docks[0], to: null, note: s.airship.status === 'away' ? `away with ${Math.round(s.airship.goods)} goods` : `${s.stats.airshipVoyages} voyages, ${s.stats.airshipCrowns} crowns`, open: docks[0].lit });

@@ -35,12 +35,8 @@ export const KINDS: Record<string, KindDef> = {
     summary: ['pieces', 'bonus'] },
   edicts: { title: 'Edicts', group: 'Text', sources: [{ file: 'src/data/content/text/edicts.json' }], shape: 'map', labelKey: 'name',
     summary: ['desc', 'flavor'], textOnly: 'src/sim/edicts.ts' },
-  events: { title: 'Events', group: 'Text', sources: [{ file: 'src/data/content/text/events.json' }], shape: 'map', labelKey: 'title',
-    summary: ['text'], textOnly: 'src/sim/events.ts' },
   quests: { title: 'Quests', group: 'Text', sources: [{ file: 'src/data/content/text/quests.json' }], shape: 'map', labelKey: 'title',
     summary: ['chapter', 'hint'], textOnly: 'src/data/quests.ts' },
-  guilds: { title: 'Guilds', group: 'Text', sources: [{ file: 'src/data/content/text/guilds.json' }], shape: 'map', labelKey: 'name',
-    summary: ['seal', 'desc', 'boon', 'strike'], textOnly: 'src/sim/guilds.ts' },
   // by position: a sprite's switched-off entries (`off: true`) stay beside its live one, so names repeat
   artsources: { title: 'Art sources', group: 'Art', sources: [{ file: 'art/sources.json', path: ['sprites'] }], shape: 'list',
     labelKey: 'name', summary: ['src', 'island', 'kind', 'targetHeight', 'checked'] },

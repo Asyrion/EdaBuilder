@@ -82,7 +82,6 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
 /** Unlocked for this city: milestone, relic set, and the people. */
 /** A building's own gate beyond the milestone: the reason it cannot be raised now, or null. */
 export function specialLock(s: GameState, key: string): string | null {
-  if (key === 'stormpeak' && !s.firedEvents.includes('stormcaller:0')) return 'Needs its caller: give the Huruhui storm caller the hills when they come (a Township of 300 folk).';
   return null;
 }
 export function canBuild(s: GameState, key: string): boolean {

@@ -107,12 +107,7 @@
   "o_depot": {
     "chapter": "Goods",
     "title": "Build a Trade Depot",
-    "hint": "Sells surplus goods at seasonal prices; caravans stop there."
-  },
-  "o_caravan": {
-    "chapter": "Goods",
-    "title": "Sell 200 goods to a Belerial caravan",
-    "hint": "A caravan halts at the depot every 12 days (the depot panel counts them down); choose Trade to sell every works' surplus above 10 goods. Works fill when the markets are already stocked."
+    "hint": "Sells surplus goods at seasonal prices on the Gloam road."
   },
   "a_academy": {
     "chapter": "The arcane",
@@ -164,16 +159,6 @@
     "title": "Name a district",
     "hint": "Edicts panel: pick the district in Scope and type a name."
   },
-  "s_vigil": {
-    "chapter": "Seasons",
-    "title": "Keep the Hush vigil",
-    "hint": "On the first night of the Hush the city is asked to keep every window lit."
-  },
-  "s_feast": {
-    "chapter": "Seasons",
-    "title": "Hold a Thaw feast",
-    "hint": "On Thaw-day of the second year, pay for the feast."
-  },
   "s_hush": {
     "chapter": "Seasons",
     "title": "Survive a Hush",
@@ -198,11 +183,6 @@
     "chapter": "The riverbank",
     "title": "Lay 12 tiles of Glowvine Lane",
     "hint": "Roads tab. Lit by the vines within 12 tiles of a Hanging Gardens, no mana."
-  },
-  "k_obs": {
-    "chapter": "Seasons",
-    "title": "Raise an Astral Observatory",
-    "hint": "Services tab, Market Town. The week ahead appears in the Ledger."
   },
   "p_arch": {
     "chapter": "The arcane",
@@ -267,32 +247,12 @@
   "y_quiet": {
     "chapter": "The dead",
     "title": "Keep the Gloam quiet through a Hush",
-    "hint": "Pressure below 45% on every day of a Hush: deathcare, faith coverage and Grey ley."
-  },
-  "k_council": {
-    "chapter": "The guilds",
-    "title": "Seat the guild council",
-    "hint": "A lit Guildhall (Leisure tab) seats the four guilds. Every 20 days the least pleased of them may petition for an edict."
-  },
-  "k_boon": {
-    "chapter": "The guilds",
-    "title": "Please a guild",
-    "hint": "Raise one guild's standing to 70 (Edicts panel shows what moves each). A pleased guild pays a boon: more exports, more goods, deeper stores or quieter dead."
-  },
-  "k_feast": {
-    "chapter": "The guilds",
-    "title": "Feed a Thaw feast from the shelves",
-    "hint": "On the second day of Thaw the feast takes 40 goods from the markets; every district whose markets fed it is happier for a season."
+    "hint": "Pressure below 45% on every day of a Hush: deathcare and faith coverage."
   },
   "k_twinroad": {
-    "chapter": "The guilds",
+    "chapter": "The Crown",
     "title": "Open the Twin Road",
     "hint": "A Trade Depot within 12 tiles of the daughter's stake and another in the mother city: 30 goods a day cross, and the Crown pays a toll."
-  },
-  "k_hall": {
-    "chapter": "The guilds",
-    "title": "Earn a guild hall",
-    "hint": "Keep one guild at 70 or better for ten days and it raises its own hall by the Guildhall: a yard, a lyceum, a lodge or a chapel."
   },
   "k_relics": {
     "chapter": "The riverbank",
@@ -308,41 +268,6 @@
     "chapter": "The riverbank",
     "title": "Sell relics to the Crown",
     "hint": "The depot sells two loose relics a day once the camp holds more than ten; the Crown's assessor pays more in person."
-  },
-  "k_charter": {
-    "chapter": "The guilds",
-    "title": "Charter a rivalry away",
-    "hint": "In the Edicts panel a 2,000-crown charter ends a rivalry for good: no more drag, sting or brawls between the pair."
-  },
-  "w_patrol": {
-    "chapter": "The Watch",
-    "title": "See the Watch at work",
-    "hint": "Watch Posts and Watch Houses on a road send watchmen out; the streets they walk count as watched, and they lay the restless they meet. Their first round done is the task done."
-  },
-  "w_sexton": {
-    "chapter": "The dead",
-    "title": "See a sexton walk the rounds",
-    "hint": "Boneyards and Ossuaries on a road send sextons out with salt: the lanes they walk count as tended, and each restless they meet is laid and quiets one of the dead."
-  },
-  "w_healer": {
-    "chapter": "Health",
-    "title": "A healer at the door",
-    "hint": "Healer's Shrines and Hospices send healers to the unhappiest home in reach: +4 happiness there for a day."
-  },
-  "w_warden": {
-    "chapter": "The ley",
-    "title": "Candles on the spires",
-    "hint": "Under the Spire Wardens edict every lit spire sends a Tallowkin warden walking spire to spire; nothing near a warden is warped by a surge."
-  },
-  "w_scholar": {
-    "chapter": "The riverbank",
-    "title": "A scholar at the delve",
-    "hint": "A lit Academy on a road sends a scholar to the Ruin Delve; every relic piece is carried home and named by hand."
-  },
-  "w_pilgrim": {
-    "chapter": "Faith",
-    "title": "Pilgrims on the road",
-    "hint": "Shrines and temples on roads send pilgrims to one another and to the Founding Stake; the roads they walk count as under faith."
   },
   "z_daily": {
     "chapter": "The Charter",

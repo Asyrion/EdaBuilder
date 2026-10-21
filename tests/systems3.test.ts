@@ -5,7 +5,6 @@ import { buildRoad, paintDistrict, placeBuilding, roadPath } from '../src/sim/ac
 import { AgentKind, RoadType, TICKS_PER_DAY, Terrain, idx } from '../src/sim/types';
 import { edictOn, edictShare, edictUpkeep, districtsInUse } from '../src/sim/edicts';
 import { computeBuildingHappiness, dailyBuildings } from '../src/sim/growth';
-import { ALL_EVENTS, maybeFireEvent, resolveEvent, chose } from '../src/sim/events';
 import { computeLedger } from '../src/sim/economy';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -84,35 +83,7 @@ describe('leystone', () => {
   });
 });
 
-describe('event chains', () => {
-  it('records choices and unlocks the follow-up, which never repeats', () => {
-    const { s } = town(53);
-    s.milestone = 5;
-    s.firedEvents.push('guilds:?');
-    s.pendingEvent = { id: 'guilds', title: 't', text: 'x', choices: [{ label: 'a', desc: 'b' }, { label: 'c', desc: 'd' }] };
-    resolveEvent(s, 0);
-    expect(chose(s, 'guilds', 0)).toBe(true);
-    s.lastEventDay = -100;
-    s.day = 40;
-    const follow = ALL_EVENTS.find((e) => e.id === 'guilds_return')!;
-    expect(follow.when(s)).toBe(true);
-    let n = 0;
-    while ((!s.pendingEvent || s.pendingEvent.id !== 'guilds_return') && n++ < 400) { if (s.pendingEvent) resolveEvent(s, 0); s.lastEventDay = -100; maybeFireEvent(s); }
-    expect(s.pendingEvent?.id).toBe('guilds_return');
-    resolveEvent(s, 0);
-    expect(s.modifiers.some((m) => m.kind === 'craftTax')).toBe(true);
-    // once: never again
-    s.lastEventDay = -100;
-    for (let k = 0; k < 300; k++) { maybeFireEvent(s); if (s.pendingEvent) { expect(s.pendingEvent.id).not.toBe('guilds_return'); resolveEvent(s, 0); } s.lastEventDay = -100; }
-  });
-  it('the Grimmen boneyard chain places a real building', () => {
-    const { s } = town(54);
-    s.treasury = 5000;
-    const ev = ALL_EVENTS.find((e) => e.id === 'grimmen_boneyard')!;
-    const before = s.buildings.filter((b) => b && b.kind === 'boneyard').length;
-    ev.choices[0].apply(s);
-    expect(s.buildings.filter((b) => b && b.kind === 'boneyard').length).toBe(before + 1);
-  });
+describe('districts on save/load', () => {
   it('round-trips districts and district edicts through save/load', () => {
     const { s, f } = town(55);
     paintDistrict(s, 4, f.x - 14, f.y + 2, f.x - 1, f.y + 6);

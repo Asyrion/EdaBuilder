@@ -1,7 +1,6 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isDepot, isZoneUnlocked } from './catalog';
 import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
-import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { bumpRoadVersion, marketStockCap } from './agents';
 import { PORTAL_CAP } from './networks';
@@ -16,12 +15,11 @@ export const EDUCATED_FLOOR_CAP = 0.2;
 /** A Crystal Mine's seam: this much leystone, then dust. */
 export const SEAM = 2400;
 export const SPENT_RATE = 2;
-import { seasonOf } from './world';
+import { hasMarvel, litWonders, seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
 import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
 import { FISH_HAPPY, FISH_PRICE, SMOKE_KEEP, THATCH_HAPPY, fishNear, thatched } from './water';
-import { aspectAt, drought, floodedAt, hasMarvel, litWonders, raining, FLOODPROOF } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -109,9 +107,7 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   add('health', (cov.health[i] / 255) * 6);
   add('watch', (cov.watch[i] / 255) * 5);
   add(b.lit ? 'lit' : 'unlit', b.lit ? 6 : -9);
-  if ((b.tended ?? -1) >= state.day) add('tended by a healer', 4);
   if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') add('Hearth quarter', 3); else if (q === 'craft') add('Craft quarter', -4); else if (q === 'temple') add('Temple quarter', 2); }
-  if (state.waterDist[i] <= 1 && !FLOODPROOF.includes(b.kind) && floodedAt(state, b.x, b.y)) add('the flood', -10); // the Sable in flood, or the Weir's open sluice
   add(b.watered ? 'watered' : 'dry', b.watered ? 6 : -11);
   add('miasma', -(state.miasma[i] / 255) * 30);
   const gd = state.gloamDist[i];
@@ -223,8 +219,7 @@ export function dailyBuildings(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
-      const aged = !(b.kind === 'worldtree' && drought(state)); // the World Tree waits out a drought (iteration 54)
-      if (aged) b.age++;
+      b.age++;
       // the Hospice draws two goods of draughts a day from the fullest market within 16 (it holds ten)
       if (b.kind === 'hospice' && b.state === 'ok' && b.lit && b.stock < HOSPICE_DRAUGHTS) {
         let best: Building | null = null;
@@ -239,7 +234,7 @@ export function dailyBuildings(state: GameState): void {
         b.progress++; // relics studied here
       }
       if (def.goodsRate && b.state === 'ok') {
-        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (b.kind === 'hanginggardens' && drought(state) && !b.watered ? 0.5 : 1) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands; unwatered gardens wilt in a drought
+        const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands; unwatered gardens wilt in a drought
         b.stock += Math.max(0, made);
         state.goodsProduced += Math.max(0, made);
       }
@@ -247,7 +242,7 @@ export function dailyBuildings(state: GameState): void {
         extraJobs.push(b);
         jobs += capacityOf(b, state);
       }
-      if (b.kind === 'worldtree' && aged && b.age % 30 === 0 && b.age <= 90) {
+      if (b.kind === 'worldtree' && b.age % 30 === 0 && b.age <= 90) {
         markDirty(state, b.x, b.y);
         const st = treeStage(b);
         if (st > 0) pushMessage(state, st === 3 ? `The World Tree at (${b.x},${b.y}) is full-grown: its crown stands above the Lantern of Vell, and the Gloam will not cross its shade.` : `The World Tree at (${b.x},${b.y}) has grown another season; its shade now reaches ${TREE_LEISURE_RADIUS[st]} tiles.`, 'milestone', true, { x: b.x, y: b.y });
@@ -319,8 +314,7 @@ export function dailyBuildings(state: GameState): void {
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
       const glim = glimhouseNear(state, b);
-      const asp = aspectAt(state, b.x, b.y);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + (raining(state) ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + modifierSum(state, 'goods') + (glim ? 0.1 : 0));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const hands = b.workers;
@@ -557,11 +551,8 @@ export function updateSocial(state: GameState): void {
     Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
-  state.unrestHigh = state.unrest > RIOT_UNREST ? state.unrestHigh + 1 : 0;
 }
 
-/** Unrest above this for RIOT_DAYS days in a row brings a riot. */
-export const RIOT_UNREST = 0.5;
 /** Idle scholars: more than half the city educated with Arcane work for fewer than an eighth of the folk. */
 export const IDLE_SCHOLARS = 0.05;
 export function idleScholars(state: GameState): boolean {
@@ -619,12 +610,11 @@ export function dailyTrade(state: GameState): void {
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
-  const depots = state.buildings.filter((b) => b && (isDepot(b.kind) || (b.kind === 'cartersyard' && hallActive(state, 'cartersyard'))) && b.state === 'ok');
+  const depots = state.buildings.filter((b) => b && isDepot(b.kind) && b.state === 'ok');
   if (!depots.length) return;
   const hasBuyers = state.buildings.some((b) => b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane && b.state === 'ok');
   let crowns = 0;
-  const carters = guildEffect(state, 'carters');
-  const perDepot = 8 * (carters > 0 ? 1.5 : carters < 0 ? 0.5 : 1);
+  const perDepot = 8;
   // the Gloam road carries 8 goods a day per depot, city-wide, from the fullest shelves first (DESIGN 4.22)
   let budget = perDepot * depots.length;
   const full: Building[] = [];

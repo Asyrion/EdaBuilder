@@ -8,7 +8,7 @@ import { RoadType, TICKS_PER_DAY, Zone, idx, type GameState } from '../src/sim/t
 import { roadPath } from '../src/sim/actions';
 
 /** A short charter played through commands the way the UI sends them: snapshots before map actions, a drag of bulldozes, an undo,
- *  panel commands, tales answered as they come. */
+ *  panel commands. */
 function play(header: ReplayHeader, days: number): { runner: CommandRunner; s: GameState } {
   const s = stateFromHeader(header);
   const r = new CommandRunner(s, header);
@@ -28,7 +28,6 @@ function play(header: ReplayHeader, days: number): { runner: CommandRunner; s: G
     for (let t = 0; t < TICKS_PER_DAY; t++) {
       const k = s.tick;
       if (k % 50 === 0 && at[k / 50]) at[k / 50]();
-      if (s.pendingEvent) r.exec('tale', 0, null);
       tick(s);
       r.checkpoint();
     }
@@ -38,7 +37,7 @@ function play(header: ReplayHeader, days: number): { runner: CommandRunner; s: G
 /** The replay of a recording, run to its end in a fresh state. */
 function replay(file: ReturnType<CommandRunner['toFile']>): GameState {
   const p = new ReplayPlayer(file, stateFromHeader(file.header));
-  for (let g = 0; g < 5_000_000 && !p.done; g++) { if (!p.feed() || p.done || p.stuck) break; tick(p.state); p.runner.checkpoint(); }
+  for (let g = 0; g < 5_000_000 && !p.done; g++) { if (!p.feed() || p.done) break; tick(p.state); p.runner.checkpoint(); }
   return p.state;
 }
 
@@ -99,8 +98,7 @@ describe('The commands', () => {
       district: [1, f.x, f.y, f.x + 2, f.y + 2], undo: [],
       tax: ['market', 9], edict: ['curfew', true, 0], loan: [], repay: [], sector: [0], deepen: [0], daughter: [0, 'Twin'],
       quarter: [1, null], lesson: ['districts'], priority: [-1, 0], renameDistrict: [1, 'A'],
-      vent: [-1], rain: [-1],
-      sluice: [-1], quarry: [-1, 'deer'], tale: [0, null], guild: ['carters'], dev: ['addcrowns', '100', f.x, f.y],
+      sluice: [-1], quarry: [-1, 'deer'], dev: ['addcrowns', '100', f.x, f.y],
     };
     for (const op of COMMAND_OPS) {
       expect(args[op], `a test call for ${op}`).toBeDefined();

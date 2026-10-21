@@ -14,7 +14,6 @@ import { QUESTS, questStatus } from '../src/data/quests';
 import { checkQuests } from '../src/sim/quests';
 import { Bot } from '../src/sim/bot';
 import { run } from '../src/sim/sim';
-import { forecast } from '../src/sim/forecast';
 import { serialize, deserialize } from '../src/sim/save';
 import { SECTORS_X, SECTORS_Y, initialSectors, sectorOf } from '../src/sim/sectors';
 import { CommandRunner, stateFromHeader, verifyReplay, type ReplayHeader } from '../src/sim/commands';
@@ -221,15 +220,13 @@ describe('Sea-gales in the Hush', () => {
     expect(fordClosed(s, i)).toBe(false);
   });
 
-  it('stops the barges, shows on the Observatory\'s forecast a few days ahead, and can be forced by the dev panel in any charter', () => {
+  it('is seen a few days ahead, and can be forced by the dev panel in any charter', () => {
     const s = createScenario(42, 'Gale', 'atoll', 'vellish');
     const start = galeStarts(42, 0)[0];
-    s.buildings.push({ id: 8998, kind: 'observatory', x: 0, y: 0, w: 1, h: 1, state: 'ok', level: 1, lit: true } as unknown as Building);
     s.day = HUSH + start - 2;
     expect(galeIn(s, 5)).toBe(2);
-    expect(forecast(s).some((f) => /sea-gale in 2 days/.test(f.text))).toBe(true);
     s.day = HUSH + start;
-    expect(forecast(s).some((f) => /A sea-gale blows/.test(f.text))).toBe(true);
+    expect(galeToday(s)).toBe(true);
     const valley = createGame(42, 'V');
     valley.day = HUSH + start;
     expect(galeToday(valley)).toBe(false);
@@ -258,7 +255,6 @@ describe('Saves, replays and the bot on the Atoll', () => {
     for (let d = 0; d < 5; d++)
       for (let t = 0; t < TICKS_PER_DAY; t++) {
         if (s.tick === 100) { r.exec('snap', 'road'); r.exec('road', RoadType.Track, [idx(f.x - 5, f.y + 3), idx(f.x - 4, f.y + 3), idx(f.x - 3, f.y + 3)]); }
-        if (s.pendingEvent) r.exec('tale', 0, null);
         tick(s);
         r.checkpoint();
       }

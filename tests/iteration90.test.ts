@@ -58,7 +58,7 @@ describe('The sprite sheets', () => {
       expect(e.gx! >= 0 && e.gy! >= 0 && e.gx! + glow.w <= gs.w && e.gy! + glow.h <= gs.h, name).toBe(true);
       expect(same(gs, e.gx!, e.gy!, glow), name).toBe(true);
     }
-    expect(entries.length).toBeGreaterThan(600); // 834 before the scope reset parked the other peoples' looks (659 after)
+    expect(entries.length).toBeGreaterThan(550); // 834 before the scope reset parked the other peoples' looks (659 after, 589 after phase 1c-1)
     expect(glows).toBeGreaterThan(100);
   });
 

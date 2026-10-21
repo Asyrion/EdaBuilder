@@ -1,4 +1,4 @@
-/* The text of edicts, events, quests and guilds (iteration 89, DESIGN 4.120): src/data/content/text/*.json, read by the code
+/* The text of edicts and quests (iteration 89; the tales and the guilds are parked, DESIGN 4.120): src/data/content/text/*.json, read by the code
    through EDICT_TEXT.<id>.<field> (and EVENT_TEXT, QUEST_TEXT, GUILD_TEXT). This check reads both sides as files, so it
    still reports when an entry the code needs is gone (the import itself would only throw): every path the code reads must
    be a non-empty string in the JSON, and every JSON entry and field must be read by the code. */
@@ -7,9 +7,7 @@ import { join } from 'node:path';
 
 export const TEXT_KINDS: Record<string, { json: string; code: string; v: string }> = {
   edicts: { json: 'src/data/content/text/edicts.json', code: 'src/sim/edicts.ts', v: 'EDICT_TEXT' },
-  events: { json: 'src/data/content/text/events.json', code: 'src/sim/events.ts', v: 'EVENT_TEXT' },
   quests: { json: 'src/data/content/text/quests.json', code: 'src/data/quests.ts', v: 'QUEST_TEXT' },
-  guilds: { json: 'src/data/content/text/guilds.json', code: 'src/sim/guilds.ts', v: 'GUILD_TEXT' },
 };
 
 /** The paths a source reads from its text variable: `id.field` or `id.choices.N.field`. */

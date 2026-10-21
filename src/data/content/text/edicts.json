@@ -19,11 +19,6 @@
     "desc": "The city pays the sextons. Boneyards and Ossuaries quiet 50% more dead. 25 crowns/day per deathcare building.",
     "flavor": "Salt on the lips, a coin on the eyes, and now a second coin for Hollis."
   },
-  "wardens": {
-    "name": "Spire Wardens",
-    "desc": "Tallowkin wardens watch the spires day and night. Wild surges only strike above 1.5× overdraw. 60 crowns/day.",
-    "flavor": "They sleep in shifts under the obelisks and dream in blue."
-  },
   "herbgardens": {
     "name": "Herb Garden Edict",
     "desc": "Every Craft yard must keep a glimherb bed. Goods production +25%, miasma +30%.",

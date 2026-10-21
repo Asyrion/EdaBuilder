@@ -32,7 +32,7 @@ npm run devboard:selftest   # the board's own checks
 ```
 
 **The dev board** (`tools/devboard/README.md`, DESIGN §4.118): a local page with a tab per kind of content (buildings,
-roads, milestones, relic sets; edicts, events, quests and guilds read-only). Each building shows its sprites, imported or
+roads, milestones, relic sets; edicts and quests read-only). Each building shows its sprites, imported or
 drawn in code, and its art status. Edits save only what changed, are checked by `validateContent` and the sprite rule, and
 can be undone. Its project tabs (DESIGN §4.119) show the next steps and the iterations done with their DESIGN sections,
 GitHub's milestones and issues (through `gh`) and the balance cache as charts. "Send to Claude" hands any item, issue or
@@ -41,7 +41,7 @@ edict, event, quest or creature. Its art side (DESIGN §4.120) keeps an image pr
 `art/prompts/` ("Refine with Claude" runs `claude -p`), runs the paintings importer from a card (drop a painting, pick its
 island, import, judge), Tripo Studio (you in Studio, or Claude through the Tripo CLI: a round of four, measured, the pick
 into the importer) and Aseprite (trace, export, an 8× review, install); `docs/ART_PIPELINES.md` has all three. The
-wording of edicts, events, quests and guilds is edited there too (`src/data/content/text/`). Run one instance; it serves
+wording of edicts and quests is edited there too (`src/data/content/text/`). Run one instance; it serves
 every session.
 
 `.github/workflows/deploy.yml` builds, tests and deploys `dist/` to GitHub Pages on every
@@ -71,9 +71,8 @@ main node.
 2. **Zones** — drag rectangles next to roads: **Hearth** (homes), **Market** (trade),
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.
-3. **Mana and the ley-weave** — ley nodes give 90 mana/day each and each carries an
-   **aspect** (click it): Ember, Bone, Glim, Vein, Sky, Grey, Tide or Storm ley changes the
-   rules within 10 tiles, so where you build matters. A **Ley Spire** within 6 tiles of a node
+3. **Mana** — ley nodes give 90 mana/day each (the founding Wellspring 105; click one to
+   see its flow). A **Ley Spire** within 6 tiles of a node
    (or of another lit spire) lights 5 tiles around it; lit buildings light the buildings
    they touch. Draw more than the Veins give and the spires flicker; overdraw for five days
    and a **wild surge** warps buildings into ruins. Thrum Fonts and a Ley Nexus help later.
@@ -87,19 +86,16 @@ main node.
 7. **Goods** — Craft works fill donkey carts; the carts feed Markets by road. Empty shelves and
    idle stills both hurt, and shortages push the demand bars. From Township, Crystal
    Mines dug into hills send leystone to Arcane districts, which sell artifacts.
-8. **Districts, edicts and events** — paint districts from the toolbar; the *Edicts*
-   button holds seven policies with daily upkeep, city-wide or per district.
-   Every few weeks an event pauses the game and asks you to choose; consequences last
-   for days.
+8. **Districts and edicts** — paint districts from the toolbar; the *Edicts*
+   button holds the policies with daily upkeep, city-wide or per district.
 9. **Seasons** — Thaw, Bloom, Ember and Hush, 30 days each. The Hush brings long nights,
-   hungrier hearths and a bolder Gloam. Festivals on fixed days ask for a choice.
+   hungrier hearths and a bolder Gloam.
 10. **Trade and the Wellspring** — a Trade Depot sells surplus goods at seasonal prices;
     click a ley node to see its flow and, from Burgh, deepen it for more mana.
 12. **Huruhui and Gekiryu craft** — a **Torrent Mill** on the riverbank makes mana from
     falling water; **Hanging Gardens** against hills make goods, health and light with no
     mana and unlock the **Glowvine Lane**; a **Glimhouse** keeps Craft works warm through
-    the Hush (works otherwise make 20% less); the **Astral Observatory** forecasts the
-    week ahead in the Ledger. A **Brickworks** (Village, 3×3, drawn after the user's
+    the Hush (works otherwise make 20% less). A **Brickworks** (Village, 3×3, drawn after the user's
     painting) fires 6 goods of brick a day for the carts by its own kiln-light, and every
     building site within 12 tiles rises half again as fast.
 13. **Longwood and Lukuku** — two **Portal Arches** (Market Town), both lit, let carts and
@@ -159,18 +155,17 @@ Charter as `.json`.
   has: it saves for one goal at a time (its people's hall, a depot, the cheapest mana) and takes
   the Crown's loan as a bridge to a hall. It zones what it can light, moves the tithe off the
   hearths, and sets the curfew, draughts and imports. It hunts with one lodge.
-  It saves for a depot once the works' surplus (at the Belerial caravan's price), hides, trophies
+  It saves for a depot once the works' surplus, hides, trophies
   and smoked fish waiting for the Gloam road would fetch half its price. It thatches with a Reed-Cutters' Hut, raises a Weir where its
-  Fishers' Hut fishes the shoal down, and bridges its fords before the Thaw's high water. It answers
-  each tale by playing every choice on a copy of the city.
+  Fishers' Hut fishes the shoal down, and bridges its fords before the Thaw's high water.
 - Procedural terrain: river, lake, forests, meadows, hills, 4–6 ley nodes, Gloam rim.
 - Roads (3 tiers, bridges), 4 zone types, buildings that level up 1→3 with visibly
   different sprites, 20+ civic buildings, a wonder.
 - Mana network (spire chains, adjacency spread, brownouts, wild surges), water coverage,
   8 service coverage types, land value, happiness, health, unrest, education, demand.
 - Hazards from the lore: Gloam creep and pockets, restless dead, wild surges, fire.
-- Goods flow by cart (potions and leystone), four seasons, ten story events with choices
-  and chains, seven edicts city-wide or per district, eight paintable districts.
+- Goods flow by cart (potions and leystone), four seasons, edicts city-wide or per district,
+  eight paintable districts.
 - Menu settings for colour-blind overlay ramps and UI scale; camera-driven ambience.
 - The wild: herds of deer and elk graze the meadows by day, run from lit ground and bed down in
   the woods at night; boar keep the forests, goats the hills, otters and herons the banks. Herds
@@ -178,8 +173,7 @@ Charter as `.json`.
   them recover). A Hunters' Lodge hunts the fullest herd within 16 tiles, or the quarry its panel names: hides, meat and
   trophies with their own prices on the Gloam road, and meat for the markets in reach, which makes
   the hearths near them happier. A herd hunted to the last is gone; the Close Season edict keeps a floor. In the Hush, wolves leave the
-  forest at night to take hens from the dark hearths at the edge. Two tales: the white hart and
-  the wolf winter. The creatures are painted from the animal sheets where a painting reads at the
+  forest at night to take hens from the dark hearths at the edge. The creatures are painted from the animal sheets where a painting reads at the
   game's scale.
 - The water: every river and lake holds a shoal. A Fishers' Hut on the bank puts boats out by day
   (moored at night) and lands fish as the shoal allows; fish spoil in two days unless a market's
@@ -188,7 +182,7 @@ Charter as `.json`.
   the shore thatch the level-1 homes (+3 happiness, but thatch burns). The lake's open water lifts
   the land around it and feeds its wells half again, and the Water Garden stands on its shore. A
   Dirt Track over a narrow river is a ford: a third of a bridge's price, but under water in the
-  Thaw's first ten days after a Hush unless a Weir holds it. One tale: the spawning run.
+  Thaw's first ten days after a Hush unless a Weir holds it.
 - The marsh: reed beds and standing pools beside slow water, mist on them at dawn. Nothing is built
   on marsh; a road crosses it as a causeway at a bridge's price, and it breeds miasma within two
   tiles. Its reeds count twice for the Reed-Cutters. The Drainage edict (from the Village) cuts
@@ -200,60 +194,43 @@ Charter as `.json`.
   lies on their outer halves. Twice each Hush a sea-gale blows for two days: the barges stay in port and
   every plain Track bridge is under the surf; cobbled bridges hold, and so does any bridge within six
   tiles of a Quay, a Landing or a Weir. Goal: Burgh with four isles settled (six zone buildings each).
-- Storm-Caller's Peak (call rain), Belerial
-  caravans (every twelve days at a Trade Depot; the depot panel counts them down, and the Budget
-  and the Annals count what they pay) and the
-  Wandering Merchant, who remembers every visit: two evenings of stories are a favour owed.
 - The Charter's Ledger (140 guided tasks with hints, *Show me* and a live line of what each still needs), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
 - Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
-  the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
+  the Hush), Hanging Gardens
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
 - The Brickworks (Village): goods of brick for the carts, lit by its own kiln, and building
   sites within 12 tiles rise half again as fast.
 - Panels never overlap: the toolbar and Ledger stack; views, info, minimap and the ticker
   drag. The minimap jumps the camera where you click.
-- The ley-weave: every node has an aspect that changes the rules around it (Ember works,
-  Bone deathcare, Glim moths, Vein mana, Sky couriers, Grey stillness, Tide water, Storm
-  calm); every lit wonder hall delights the city and lifts the next grant a tenth; the Lantern of
+- Every lit wonder hall delights the city and lifts the next grant a tenth; the Lantern of
   the Cores takes the first 30 of a surge and cracks for ten days; the Gloam presses harder as the dead go unquieted and
-  eases under faith; the river freezes in the Hush.
-- The guild council (sextons walk to a brawl on the square and can part it): a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
-  who petition for edicts every 20 days and pay boons or strike; festivals spend the city
-  (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
-  Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
-  Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects.
+  eases under faith.
+- The Ledger lists every trade route, including the Twin Road to a daughter wardlight.
 - One people, the Vellish (the scope reset, `docs/RESET_PLAN.md`): the Grimmen, the Veshari, the Tallowkin
   and the Fen-Nex are parked with everything that served only them (`docs/PARKED.md` says how they would
   come back); `src/data/factions.ts` stays as the seam another people would plug into. Phase 1b parked the
-  creatures, the dragons, the wyrms, the beasts, the hounds and the Warding Wall in the same way.
-- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars and pilgrims walk the roads from their buildings and do their jobs where
-  they go; the streets they walk
-  count as covered.
+  creatures, the dragons, the wyrms, the beasts, the hounds and the Warding Wall in the same way, and phase
+  1c-1 the story events, the weather and the ley aspects, the forecast, the guilds, the walkers and the Annals.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
   Scholars' or Temple quarter), each a gift and a price for the buildings inside; edicts can
   still be set per district. A selected building shows its reach. A charter holds thirty
   days and costs a crown a building a day (a Craft quarter's smoke drifts past its edge, a
   Temple quarter takes a tenth of the market tithe); an edict holds ten days and costs 200
   to repeal.
-- The world pushes back: weather written in the seed (Bloom rain, an Ember drought, a Hush
-  blizzard, each with its price and its gift, read five days ahead by the Observatory); the
-  Crown's Thaw levy, its favour that moves sector prices and withholds grants, interest on
+- The world pushes back: the Crown's Thaw levy, its favour that moves sector prices and withholds grants, interest on
   a debt and a loan from the Budget, a bankruptcy line that grows with the city; the next
-  milestone's gate named in the top bar (happiness, and the Lantern of Vell lit for the Beacon); pilgrims who ask for a shrine, a collector who remembers
-  each pleading, a fox audit every season.
+  milestone's gate named in the top bar (happiness, and the Lantern of Vell lit for the Beacon).
 - Services have crews filled from the city's hands and watch, heal, teach and quiet by how
   many are filled; every happiness and land value shows its largest terms; a home lists what
   its next level needs; wards burn the grey on a daily budget, the nearest first.
-- Unrest has teeth: five days above half brings a riot to the least-watched market, and an
-  unwatched market loses a tenth of its shelves a night while the city is unquiet. The
-  Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
-  its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
+- Unrest has teeth: an unwatched market loses a tenth of its shelves a night while the city
+  is unquiet. The Hospice runs on draughts from the markets, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
 - The painted set: the ground, the trees, bushes and mushrooms, the spire, the wells, the
   Depot, the chapels, the homes, works, shops and markets of the zones are imported from
   the reference paintings, sharpened and outlined to sit beside the procedural set; one
-  painting is the look of its building; the Stake, the Guildhall and the Temple grow with
+  painting is the look of its building; the Stake and the Temple grow with
   the city; every building has a sprite. The painted heroes stand at the height of their
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
   the whole set faces lower-right; every building then turns toward its road (a mirror when the
@@ -294,18 +271,14 @@ Charter as `.json`.
   mana of buildings and its farthest go dark over that (a Load row), every building has a
   brownout tier, and lantern-ways dim first when the ley runs short.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
-  result): among them jump to a day, flood or freeze the river, complete a Charter task, set a
-  guild's standing or the Crown's favour, and reset the tales, the ledger history or the Chronicle.
-- The Annals (**N**, or the top bar): every counter the charter keeps, by chapter (riots and
-  levies, rain days, relics, walkers' rounds), each with a note on what it
-  counts.
+  result): among them jump to a day, complete a Charter task, set the Crown's favour, and reset
+  the ledger history or the Chronicle.
 - Saves carry their version and migrate step by step; a save from a newer Wardlight is refused
   with the reason.
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
 - Relic sets catalogued by the Academy from the Ruin Delve, each unlocking
-  a building; guild halls that pleased guilds raise for themselves, guild rivalries and
-  brawls and charters; relics sold to the Crown's assessor or auctioned to the caravans.
+  a building; relics sold to the Crown on the Gloam road.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
@@ -343,7 +316,7 @@ Charter as `.json`.
   sheets (`public/art/sheets/`) that the page loads at once, with a loading line until the
   town is up. Drop `public/art/atlas.png` + `atlas.json` to replace the whole set instead.
 - Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (the
-  airship's horn, barges ring, builders' hammers, called rain) panned by where they happen, and
+  airship's horn, barges ring, builders' hammers) panned by where they happen, and
   generative ambient music that follows day, night, season and danger (Menu to toggle).
 
 ## Docs
@@ -365,8 +338,8 @@ src/render    palette, painter, sprites (procedural art), atlas, iso, camera, re
 src/ui        style.css, tools (input), ui (DOM panels)
 src/audio     procedural WebAudio
 src/data      flavor text, tips and the quest list; content/: buildings, roads, milestones and relic
-              sets as JSON (edited by hand or on the dev board); content/text/: the wording of edicts,
-              events, quests and guilds, read by the code by id
+              sets as JSON (edited by hand or on the dev board); content/text/: the wording of edicts
+              and quests, read by the code by id
 tests         vitest suites
 scripts       headless balance run, Playwright screenshot/perf/playtest harnesses,
               importSprites (the art pipeline) and its lib (png codec, sprite steps)

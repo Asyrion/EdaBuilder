@@ -15,13 +15,10 @@ import { SEAM, SPENT_RATE } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
 import { MOORINGS } from '../sim/catalog';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
-import { BOON_AT, COUNCIL_SPACING, GUILDS, GUILD_IDS, CHARTER_COST, HALL_DAYS, HALL_OF, RIVAL_OF, STRIKE_AT, isChartered, guildDrivers, guildEffect, guildMood, hallActive, hasCouncil, type GuildId } from '../sim/guilds';
 import { RELICS_PER_PIECE, RELIC_SETS, hasAcademy } from '../sim/relics';
-import { WALKER_JOBS, walkersOf } from '../sim/walkers';
 import { brickworksNear, builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
-import { CARAVAN_EVERY, caravanDue, caravanSurplus } from '../sim/events';
 import { TIPS } from '../data/flavor';
 import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
@@ -37,7 +34,6 @@ import type { Scenario } from '../sim/types';
 import { CHALLENGE_DAYS, SCENARIOS, challengeScore } from '../sim/scenario';
 import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
 import { daughterPopulation, TWIN_POP } from '../sim/charter';
-import { ASPECT_INFO, WEATHER_WORD, aspectAt, pressureWord } from '../sim/weave';
 import { KEY_ACTIONS, DEFAULT_KEYS as DEFAULT_KEYS_LOCAL, keyLabel, type KeyAction } from './keys';
 import { UNBINDABLE, keepFocusThroughRebuilds, roving, watchDialogs, watchRegions } from './focus';
 import { TERRAFORM, type TerraformOp } from '../sim/actions';
@@ -46,8 +42,6 @@ import { PAL } from '../render/palette';
 import { Terrain } from '../sim/types';
 import { activeQuests, questProgress } from '../sim/quests';
 import { advise, type Focus } from '../data/quests';
-import { ANNALS, type AnnalRow } from '../data/annals';
-import { forecast } from '../sim/forecast';
 import { HUSH_CRAFT, glimhouseNear, treeStage, TREE_LEISURE_RADIUS, TREE_WARD_RADIUS } from '../sim/growth';
 import { seasonOf as seasonOfState } from '../sim/world';
 
@@ -96,16 +90,12 @@ export interface UiHost {
   renameDistrict(d: number, name: string): void;
   undo(): boolean;
   undoLabel: string | null;
-  callRain(buildingId: number): void;
-  vent(buildingId: number): void;
-  resolveEvent(choice: number, amount?: number): void;
   centerOn(x: number, y: number): void;
   camera: Camera;
   selected: Building | null;
   select(b: Building | null): void;
   perf: { fps: number; ms: number; drawn: number };
   dev(id: string, arg: string): string;
-  charterGuilds(g: GuildId): string | null;
 }
 
 const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolean }[] = [
@@ -164,7 +154,6 @@ export class UI {
         <button id="btn-budget" title="Tithe & budget">Budget</button>
         <button id="btn-edicts" title="City edicts (policies)">Edicts</button>
         <button id="btn-chronicle" title="Chronicle: what has happened in the world (C)">Chronicle</button>
-        <button id="btn-annals" title="Annals: every counter the charter keeps (N)">Annals</button>
         <button id="btn-views" title="Info views (V)">Views</button>
         <button id="btn-help" title="Help (H)">Help</button>
         <button id="btn-menu" title="Menu">Menu</button>
@@ -180,7 +169,7 @@ export class UI {
         </div>
         <div class="hint"></div>
       </div>
-      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="score hidden"></div><div class="advice hidden"></div><div class="forecast hidden"></div><div class="list"></div></div>
+      <div id="tasks" class="panel hidden"><h3>The Charter's Ledger <span class="prog muted"></span> <button class="done" title="Completed tasks">Done</button><button class="min" title="Collapse">–</button></h3><div class="score hidden"></div><div class="advice hidden"></div><div class="list"></div></div>
       <div id="info" class="panel hidden" role="region" aria-label="Selected"></div>
       </div>
       <div id="tooltip" class="panel hidden"></div>
@@ -197,17 +186,14 @@ export class UI {
       <div id="menu" class="modal hidden"></div>
       <div id="gameover" class="modal hidden"></div>
       <div id="edicts" class="modal hidden"></div>
-      <div id="event" class="modal hidden"></div>
       <div id="chronicle" class="modal hidden"></div>
-      <div id="annals" class="modal hidden"></div>
       <div id="dev" class="modal hidden" role="dialog" aria-label="Dev tools"></div>
     `;
-    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'event', 'chronicle', 'annals', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
+    for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'chronicle', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
     this.q('#btn-chronicle').onclick = () => this.toggleChronicle();
-    this.q('#btn-annals').onclick = () => this.toggleAnnals();
     (this.q('#tasks .min') as HTMLButtonElement).onclick = () => { this.tasksCollapsed = !this.tasksCollapsed; this.lastQuestKey = ''; this.refreshTasks(); };
     (this.q('#tasks .done') as HTMLButtonElement).onclick = () => { this.showDone = !this.showDone; this.lastQuestKey = ''; this.refreshTasks(); };
     this.q('#btn-views').onclick = () => this.el.views.classList.toggle('hidden');
@@ -420,8 +406,7 @@ export class UI {
     const season = SEASON_NAMES[Math.floor(s.day / DAYS_PER_SEASON) % 4];
     const year = 1 + Math.floor(s.day / (DAYS_PER_SEASON * 4));
     const tbDate = this.q('#tb-date');
-    tbDate.textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}${s.weather ? ` · ${WEATHER_WORD[s.weather.kind]}` : ''}`;
-    tbDate.title = s.weather ? `${WEATHER_WORD[s.weather.kind][0].toUpperCase() + WEATHER_WORD[s.weather.kind].slice(1)} until day ${s.weather.until}` : 'Fair weather';
+    tbDate.textContent = `${(s.day % DAYS_PER_SEASON) + 1} ${season}, Y${year}`;
     const l = computeLedger(s);
     const gold = this.q('#tb-gold');
     gold.textContent = `${Math.round(s.treasury).toLocaleString()} c`;
@@ -443,7 +428,6 @@ export class UI {
     gd.textContent = `${Math.round(s.goodsSold)} / ${s.goodsShort}`;
     gd.className = `v ${s.goodsShort > 3 ? 'warn' : ''}`;
     gd.title = 'Goods delivered by cart to markets today / markets with empty shelves';
-    this.refreshEvent();
     const un = this.q('#tb-unrest');
     un.textContent = `${Math.round(s.unrest * 100)}%`;
     un.className = `v ${s.unrest > 0.4 ? 'bad' : s.unrest > 0.25 ? 'warn' : ''}`;
@@ -456,7 +440,6 @@ export class UI {
     this.refreshLog();
     this.refreshMinimap();
     this.refreshChronicle();
-    this.refreshAnnals();
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
@@ -497,7 +480,6 @@ export class UI {
       for (const q of QUESTS) if (done.has(q.id)) { const l = byChapter.get(q.chapter) ?? []; l.push(q.title); byChapter.set(q.chapter, l); }
       list.innerHTML = byChapter.size ? [...byChapter].map(([ch, titles]) => `<div class="q done"><div class="t"><span class="ch">${ch}</span></div><div class="h">${titles.map((t) => `✓ ${t}`).join('<br>')}</div></div>`).join('') : '<div class="flavor">Nothing finished yet.</div>';
       adv.classList.add('hidden');
-      (el.querySelector('.forecast') as HTMLElement).classList.add('hidden');
       return;
     }
     const quests = activeQuests(s, 3, this.lessonOpen ? 'Districts' : undefined);
@@ -510,8 +492,6 @@ export class UI {
         if (q?.focus) this.focus(q.focus);
       };
     });
-    const fc = el.querySelector('.forecast') as HTMLElement;
-    const lines = forecast(s);
     const score = el.querySelector('.score') as HTMLElement;
     if (s.challenge) {
       const done = s.challengeDay >= 0;
@@ -523,8 +503,6 @@ export class UI {
       const cp = score.querySelector('#q-copy') as HTMLButtonElement | null;
       if (cp) cp.onclick = () => { const line = `Wardlight daily ${s.challenge}: ${done ? `${goal} on day ${s.challengeDay}, score ${challengeScore(s)}` : `failed by day ${CHALLENGE_DAYS}`} in ${s.cityName}${s.stats.devUses ? ' (dev tools used)' : ''}. https://asyrion.github.io/EdaBuilder/`; try { void navigator.clipboard.writeText(line); this.toast('<p>Result copied.</p>', 1500); } catch { this.toast(`<p>${line}</p>`, 5000); } };
     } else score.classList.add('hidden');
-    fc.classList.toggle('hidden', !lines.length);
-    if (lines.length) fc.innerHTML = `<span class="lbl">Forecast</span>${lines.map((f) => `<div class="${f.kind}">✦ ${f.text}</div>`).join('')}`;
     const a = advise(s);
     adv.classList.toggle('hidden', !a);
     if (a) {
@@ -622,34 +600,6 @@ export class UI {
       (b as HTMLButtonElement).onclick = () => { const d = (b as HTMLElement).dataset; this.host.centerOn(Number(d.x), Number(d.y)); this.toggleChronicle(false); };
     });
     el.querySelector('#ch-close')!.addEventListener('click', () => this.toggleChronicle(false));
-  }
-
-  // ---------- the Annals (iteration 55) ----------
-  private lastAnnalsKey = '';
-
-  toggleAnnals(show?: boolean): void {
-    const el = this.el.annals;
-    const sh = show ?? el.classList.contains('hidden');
-    el.classList.toggle('hidden', !sh);
-    if (sh) { this.lastAnnalsKey = ''; this.refreshAnnals(); }
-  }
-
-  /** Every counter by chapter; refreshed once a day while open. */
-  refreshAnnals(): void {
-    const el = this.el.annals;
-    if (el.classList.contains('hidden')) return;
-    const s = this.host.state;
-    const key = `${s.day}:${s.stats.devUses}`;
-    if (key === this.lastAnnalsKey) return;
-    this.lastAnnalsKey = key;
-    const val = (r: AnnalRow) => (r.stat ? Math.round(s.stats[r.stat] as number).toLocaleString() : String(r.value!(s)));
-    el.innerHTML = `<div class="box panel annals">
-      <h2>The Annals of ${s.cityName}</h2>
-      <p class="muted">Every count the charter keeps, day ${s.day}. Hover a line for what it counts.</p>
-      <div class="chapters">${ANNALS.map((c) => `<section><h3>${c.chapter}</h3>${c.rows.map((r) => `<div class="arow" title="${r.note.replace(/"/g, '&quot;')}"><span class="al">${r.label}</span><span class="av">${val(r)}</span></div>`).join('')}</section>`).join('')}</div>
-      <div style="text-align:right"><button id="an-close">Close</button></div>
-    </div>`;
-    el.querySelector('#an-close')!.addEventListener('click', () => this.toggleAnnals(false));
   }
 
   private drawClock(): void {
@@ -824,21 +774,17 @@ export class UI {
       if (seam <= 0) problems.push(`Spent: ${SPENT_RATE} a day of dust; the empty shaft wakes wardens three times as often. Bulldoze it or move on.`);
     }
     if (def.goodsRate) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));
-    if (b.kind === 'observatory') rows.push(...(b.lit ? forecast(s) : [{ text: 'Unlit: the dome is dark and reads nothing.', kind: 'warn' as const }]).map((f) => `<div class="fc ${f.kind}">✦ ${f.text}</div>`));
     if (b.kind === 'worldtree') {
       const st = treeStage(b);
       rows.push(row('Growth', st >= 3 ? 'full-grown' : `stage ${st + 1} of 4, ${30 - (b.age % 30)} days to the next`));
       rows.push(row('Shade', `${TREE_LEISURE_RADIUS[st]} tiles of leisure; roots hold the Gloam for ${TREE_WARD_RADIUS[st]}`));
     }
-    { const ws = walkersOf(s, b); if (ws.length) { const job = WALKER_JOBS[ws[0].job!]; rows.push(row('Walkers', `${ws.length} ${ws.length === 1 ? job.name : job.plural} on patrol`)); for (const line of ws.flatMap((w) => w.log ?? []).slice(-3)) rows.push(`<div class="fc good">✦ ${line}</div>`); } else if (Object.values(WALKER_JOBS).some((j) => j.from.includes(b.kind) && j.count(s, b) > 0) && b.state === 'ok') problems.push('No walker: the building needs a road at its door to send one out.'); }
     if (b.kind === 'ruindelve') {
       rows.push(row('Relics brought up', `${s.stats.relics} (a set piece every ${RELICS_PER_PIECE})`));
       for (const set of RELIC_SETS) rows.push(row(set.name, s.relics.complete.includes(set.id) ? `<span class="good">entire: ${set.bonus}</span>` : `${s.relics.pieces[set.id] ?? 0} of 3`));
       if (s.relics.uncatalogued > 0) (hasAcademy(s) ? rows : problems).push(hasAcademy(s) ? row('Awaiting the Academy', `${s.relics.uncatalogued} piece(s)`) : `${s.relics.uncatalogued} piece(s) lie uncatalogued: an Academy would name them.`);
     }
     if (b.kind === 'hospice') { rows.push(row('Draughts', `${Math.round(b.stock)} / ${HOSPICE_DRAUGHTS} (2 goods a day from the fullest market within 16)`)); if (b.stock <= 0) problems.push('No draughts: with no goods on the shelf it heals at six tenths. A market within 16 tiles.'); }
-    if (b.kind === 'shrine') rows.push(row('Consecrated', (b.blessed ?? -1) >= s.day ? `${b.blessed! - s.day} day${b.blessed! - s.day === 1 ? '' : 's'}: reaches half again as far` : 'no: a pilgrim of this shrine who prays at a Temple consecrates it for 10 days'));
-    if (b.kind === 'temple') rows.push(row('Consecrates', 'the shrines whose pilgrims pray here reach half again as far for 10 days'));
     if (b.kind === 'veshari' && !b.watered) problems.push('Dry: a fire hall without water fights at half strength. A well within reach.');
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relics studied', `${Math.round(b.progress)} here · educated floor +${Math.round(s.educatedFloor * 100)} % (a loose relic every 5 days while lit, up to ${EDUCATED_FLOOR_CAP * 100} %)`));
     if (b.kind === 'grandacademy') rows.push(row('Artifact prices', `${grandAcademyBonus(s) > 1 ? `+${Math.round((grandAcademyBonus(s) - 1) * 100)} %` : 'no bonus yet'} (+5 % per tenth of the city educated above four tenths; educated ${Math.round(s.educated * 100)} %)`));
@@ -866,16 +812,9 @@ export class UI {
     if (b.kind === 'smokehouse') rows.push(row('Smoked fish', `${Math.round(b.stock)} in the smoke-loft (over ${SMOKE_KEEP} goes down the Gloam road) · ${s.stats.fishSmoked} smoked this charter`));
     if (b.kind === 'reedcutters') rows.push(row('Reeds', `${reedBeds(s, b)} reed beds in reach · ${Math.round(b.stock)} bundles · ${b.caught ?? 0} cut today${seasonOfState(s) === 3 ? ' (none cut in the Hush)' : ''} · ${s.stats.homesThatched} homes thatched this charter`));
     if (b.kind === 'weir') rows.push(row('The pool', `fords within ${WEIR_REACH} stay open at high water; this water\'s shoal regrows twice as fast`));
-    if (b.kind === 'wrightslodge') { rows.push(row('Store', `40 mana of Nexus store and a surge line of 1.4× while the guild is pleased`)); rows.push(row('Vent', (b.cooldown ?? 0) > 0 ? `ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'}` : 'ready: empties the store and resets the surge count (30-day cooldown)')); }
-    if (b.kind === 'cartersyard') rows.push(row('Roads', `congestion within 10 tiles smoothed by a fifth while the guild is pleased`));
     if (b.kind === 'academy' || b.kind === 'grandacademy') rows.push(row('Relic sets', s.relics.complete.length ? s.relics.complete.map((id) => RELIC_SETS.find((r) => r.id === id)!.name).join(', ') : 'none catalogued yet'));
-    { const gid = (Object.keys(HALL_OF) as GuildId[]).find((k) => HALL_OF[k] === b.kind); if (gid) { rows.push(row('Guild', `${GUILDS[gid].name}, ${guildMood(s.guilds.standing[gid])} (${Math.round(s.guilds.standing[gid])})`)); if (!hallActive(s, b.kind)) problems.push('Locked: the guild is on strike. Raise its standing above 25 to reopen the hall.'); } }
-    if (b.kind === 'guildhall') { for (const id of GUILD_IDS) rows.push(row(GUILDS[id].name, `${guildMood(s.guilds.standing[id])} (${Math.round(s.guilds.standing[id])})`)); if (!b.lit) problems.push('Unlit: the council does not sit.'); else { rows.push(row('Council', `${s.stats.councils} petitions heard; see the Edicts panel`)); const low = [...GUILD_IDS].sort((p, q) => s.guilds.standing[p] - s.guilds.standing[q])[0]; const inDays = Math.max(0, COUNCIL_SPACING - (s.day - s.guilds.lastCouncil)); rows.push(row('Next petition', `in ${inDays} day${inDays === 1 ? '' : 's'}, from the ${GUILDS[low].name} (standing ${Math.round(s.guilds.standing[low])})${s.guilds.standing[low] >= 60 ? ': content, so none' : ''}`)); } }
     if (isDepot(b.kind)) {
-      if (s.merchant.visits) rows.push(row('The Wandering Merchant', `${s.merchant.visits} visit${s.merchant.visits === 1 ? '' : 's'}, ${s.merchant.spent.toLocaleString()} crowns spent${s.merchant.talks ? `, ${s.merchant.talks} evening${s.merchant.talks === 1 ? '' : 's'} of stories${s.merchant.talks >= 2 ? ' (a favour owed)' : ''}` : ''}`));
       const rt = tradeRoutes(s); rows.push(row('Routes', rt.filter((r) => r.open).map((r) => r.name).join(', ') || 'none')); const tw = rt.find((r) => r.kind === 'twin'); if (tw && !tw.open) problems.push(tw.note);
-      const due = caravanDue(s);
-      rows.push(row('Caravan', due === null ? `halts here once the depot stands, from the Village on, every ${CARAVAN_EVERY} days` : due === 0 ? 'at the gate: answer the tale (Trade sells the works\' surplus)' : `next in ${due} day${due === 1 ? '' : 's'} (every ${CARAVAN_EVERY}); ${caravanSurplus(s)} surplus goods to sell at 1.5× price; ${s.stats.caravanGoods.toLocaleString()} sold so far for ${s.stats.caravanCrowns.toLocaleString()} crowns`));
     }
     if (MOORINGS.includes(b.kind)) { const qn = s.buildings.filter((o) => o && MOORINGS.includes(o.kind) && o.state === 'ok').length; rows.push(row('Barges sent', `${s.stats.bargeTrips}`)); rows.push(row('Moorings', `${qn} on the map`)); if (qn < 2) problems.push('A single mooring has nowhere to send a barge: build another on the same water.'); }
     if (b.kind === 'skydock') {
@@ -890,9 +829,6 @@ export class UI {
       rows.push(row('Crossings today', `${b.load ?? 0} / ${PORTAL_CAP} (each draws ${PORTAL_MANA} mana)`));
       if ((b.load ?? 0) > PORTAL_CAP) problems.push('Crowded: past 60 crossings a day the jump costs the carts like a jammed road.');
     }
-    if (b.kind === 'stormpeak') {
-      rows.push(row('Cooldown', b.cooldown > 0 ? `${b.cooldown} day(s)` : 'ready'));
-    }
     const dist = s.district[i];
     if (dist) rows.push(row('District', `<span style="color:${DISTRICT_COLORS[dist - 1]}">${districtName(s, dist)}</span>`));
     if (def.zone === Zone.Arcane && b.stock <= 0.5 && b.age > 3) problems.push('No leystone: build a Crystal Mine in the hills with a road to this district.');
@@ -901,22 +837,6 @@ export class UI {
     if (b.state === 'building') { const ba = buildersAt(s, b); rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · ${ba.present} builder${ba.present === 1 ? '' : 's'} at work${ba.assigned > ba.present ? `, ${ba.assigned - ba.present} on the way` : ''}${brickworksNear(s, b) ? ' · bricks from the Brickworks (half again as fast)' : ''}`)); if (def.category === 'zone') rows.pop(), rows.push(row('Construction', `${Math.round((1 - b.work / Math.max(1, b.workTotal)) * 100)}% · raised by the folk who will live here`)); else if (!ba.assigned && builderTarget(s) > 0) problems.push('No builder can reach this site by road from the Founding Stake; the folk raise it themselves at a quarter pace.'); }
     el.innerHTML = `<button class="close">✕</button><h2>${def.name}</h2><div class="muted">(${b.x},${b.y}) · ${b.w}×${b.h} · ${b.state}${def.category === 'zone' ? ` · age ${b.age}d` : ''}</div>${rows.join('')}<div class="problems">${problems.map((p) => `<div>⚠ ${p}</div>`).join('')}</div><p class="flavor">${def.flavor}</p>`;
     el.querySelector('.close')!.addEventListener('click', () => this.host.select(null));
-    if (b.kind === 'stormpeak') {
-      const btn = document.createElement('button');
-      btn.textContent = b.cooldown > 0 ? `Call rain (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Call rain over the city (300 crowns)';
-      btn.disabled = b.cooldown > 0;
-      btn.style.width = '100%';
-      btn.onclick = () => this.host.callRain(b.id);
-      el.appendChild(btn);
-    }
-    if (b.kind === 'wrightslodge') {
-      const btn = document.createElement('button');
-      btn.textContent = (b.cooldown ?? 0) > 0 ? `Vent the store (ready in ${b.cooldown} day${b.cooldown === 1 ? '' : 's'})` : 'Vent the store: empty it, reset the surge count';
-      btn.disabled = (b.cooldown ?? 0) > 0;
-      btn.style.width = '100%';
-      btn.onclick = () => { this.host.vent(b.id); this.refreshInfo(); };
-      el.appendChild(btn);
-    }
     if (b.kind === 'hunterslodge' && b.state === 'ok') {
       // the quarry: the fullest herd in the grounds, or any game chosen there (iteration 58; the hounds are parked)
       const bar = document.createElement('div');
@@ -974,14 +894,12 @@ export class UI {
     const depth = n.depth ?? 0;
     const why = this.host.canDeepenNode(i);
     const founding = n.x === s.founding.x && n.y === s.founding.y;
-    const asp = n.aspect ? ASPECT_INFO[n.aspect] : null;
     const rows = [
       row('Flow', `${Math.round(nodeFlowOf(s, i) * factionOf(s).rules.nodeMana)} mana / day`),
       row('Linked', s.nodeLinked[i] === false ? `<span class="warn">no: it seeps ${Math.round(90 * NODE_SEEP * factionOf(s).rules.nodeMana)} into the ground; a lit spire, stake or hall within 6 tiles draws the rest (and its depth)</span>` : 'yes: a lit spire, stake or hall within 6 tiles draws its full flow'),
       row('Deepened', `${depth} / ${NODE_DEEPEN_COST.length}`),
       row('City mana', `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}`),
     ];
-    if (asp) rows.push(row('Aspect', `<span style="color:${asp.color}">${asp.name} ley</span>`), `<div class="muted" style="margin:2px 0 6px">${asp.desc[0].toUpperCase() + asp.desc.slice(1)}.</div>`);
     const canDaughterWhy = this.host.canFoundDaughter(i);
     const canDaughter = canDaughterWhy === null ? true : canDaughterWhy;
     const title = founding ? 'The Founding Wellspring' : s.daughter && s.daughter.node === i ? `${s.daughter.name}'s Wellspring` : 'Ley Node';
@@ -1057,7 +975,7 @@ export class UI {
           case Terrain.Meadow: return PAL.meadow;
           case Terrain.Forest: return PAL.forestFloor;
           case Terrain.Hills: return PAL.hillGrass;
-          case Terrain.LeyNode: { const nd = s.nodes.find((n) => n.x === x && n.y === y); return nd?.aspect ? ASPECT_INFO[nd.aspect].color : PAL.ley1; }
+          case Terrain.LeyNode: return PAL.ley1;
           case Terrain.Ruins: return PAL.stone2;
           case Terrain.Marsh: return PAL.moss; // the marsh (iteration 85)
           default: return PAL.grass2;
@@ -1198,7 +1116,7 @@ export class UI {
             <li><kbd>Wheel</kbd> zoom (integer steps) · <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd></li>
             <li><kbd>Right click</kbd> / <kbd>Esc</kbd> cancel tool · <kbd>X</kbd> select</li>
             <li><kbd>R</kbd> road (again: next type) · <kbd>Z</kbd> zone (again: next zone)</li>
-            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>N</kbd> Annals · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
+            <li><kbd>B</kbd> bulldoze · <kbd>Shift</kbd>+<kbd>G</kbd> grid · <kbd>C</kbd> Chronicle · <kbd>H</kbd> this help · keys can be rebound in Menu → Key bindings</li>
             <li><b>The Charter's Ledger</b> (top left) lists your next tasks. Under most, a blue line says what it still needs right now: not built yet, being built and how far, built but unlit, or a count against its target.</li>
             <li>The map beyond the <b>Charter</b> is dimmed: click it to see the price and extend the Charter (from Hamlet). The Gloam inside a bought sector draws back.</li>
             <li>The <b>Land</b> tab clears forest, plants glimwood and levels hills, one tile at a time. The title screen's <b>Today's challenge</b> is the same valley for everyone, drawn from the date: the fifth milestone by day ${CHALLENGE_DAYS}, failed on day ${CHALLENGE_DAYS + 1}, scored by the days to spare and a point a thousand crowns.</li>
@@ -1219,28 +1137,26 @@ export class UI {
             <li><b>Serve</b>: Watch, Healers, Water-Mages\' Hall (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
             <li><b>Goods</b>: Craft works fill donkey carts; the carts feed Markets by road (the mines' carts carry leystone). A market trades by the road at its door: a cobbled road in full, a dirt track a tenth less (a fifth in the mud of the Thaw and the Hush), a lit Lantern-way or a Glowvine Lane a tenth more. Empty shelves and idle stills both hurt.</li>
-            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there. The <b>Annals</b> (top bar, <kbd>N</kbd>) keep every count of the charter by chapter: riots and levies, rain days, relics, walkers' rounds.</li>
-            <li><b>Edicts</b> (top bar) are policies with daily costs. <b>Events</b> pause the game and ask you to choose.</li>
-            <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam. Festivals ask for choices on fixed days.</li>
-            <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods, and every 12 days the Belerial caravan halts there to buy the works' surplus at 1.5× (the Budget counts its take).</li>
-            <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush; the <b>Astral Observatory</b> forecasts the week in the Ledger.</li>
+            <li>The <b>Charter's Ledger</b> (left) lists the next three tasks with a hint and a <b>Show me</b> button; the <b>Advisor</b> line names the worst problem right now. The <b>Chronicle</b> (top bar, <kbd>C</kbd>) records what has actually happened in the world, with a ⌖ to go there.</li>
+            <li><b>Edicts</b> (top bar) are policies with daily costs.</li>
+            <li><b>Seasons</b> last 30 days. The Hush brings long nights, hungrier hearths and a bolder Gloam.</li>
+            <li><b>Click a ley node</b> to see its flow; from Burgh you can deepen it for more mana. A <b>Trade Depot</b> sells surplus goods on the Gloam road at the season's price.</li>
+            <li><b>Huruhui and Gekiryu craft</b>: a <b>Torrent Mill</b> on the riverbank makes mana from falling water; <b>Hanging Gardens</b> against hills make goods, health and light with no mana, and unlock the <b>Glowvine Lane</b>; a <b>Glimhouse</b> keeps Craft works warm through the Hush.</li>
             <li><b>Brickworks</b> (Village, 3×3): ten hands fire 6 goods of brick a day for the carts, lit by the kiln with no mana; while it is staffed, every building site within 12 tiles rises half again as fast (its ring shows the reach, a site's panel says so).</li>
             <li><b>Longwood and Lukuku</b>: a pair of <b>Portal Arches</b> (Market Town) lets carts step across the map; a <b>Ruin Delve</b> on the Ruins of Lukuku (flagstones in a forest) brings up relics and old stories; the <b>World Tree Sapling</b> wonder (Free City) grows over four seasons into shade that holds the Gloam.</li>
             <li>The <b>Font of Quieting</b> (Free City) makes the dead easy to lay down.</li>
-            <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus. The <b>Wandering Merchant</b> remembers every visit (two evenings of stories are a favour owed); <b>sextons</b> walk to a guild brawl on the square and can part it.</li>
-            <li><b>The ley-weave</b>: every node has an aspect (Ember, Bone, Glim, Vein, Sky, Grey, Tide, Storm) that changes the rules within 10 tiles; the Gloam's pressure rises with the dead and falls with faith.</li>
+            <li><b>Vehicles</b>: level-3 Arcane workshops put <b>floating carts</b> on the roads (no congestion, 1 mana while moving); two <b>Quays</b> on the same water trade goods by <b>barge</b>; the <b>Sky-Dock</b> (Beacon of Eda) launches an <b>airship</b> each season with the city's surplus.</li>
+            <li><b>The Gloam's pressure</b> rises with the dead and falls with faith.</li>
             <li>Every lit <b>wonder hall</b> delights the city (+5) and lifts the next grant a tenth; the <b>Lantern of the Cores</b> takes the first 30 of a surge and cracks for 10 days.</li>
-            <li><b>Walkers</b>: Watch Houses send watchmen, Boneyards sextons, Healer's Shrines healers, spires Tallowkin wardens (under their edict), Academies scholars to the delve, and shrines pilgrims to the temple. The streets they walk count as covered, and each does its job where it goes.</li>
-            <li>The <b>Weave</b> view (<kbd>W</kbd>) paints ley aspects; the Edicts panel seats the <b>guild council</b> once a Guildhall is lit; the Ledger lists every <b>trade route</b>.</li>
+            <li>The Ledger lists every <b>trade route</b>.</li>
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
-            <li><b>Unrest</b> above half for five days brings a riot to the least-watched market (the Watch holds it at half coverage, or pay the Crown 600); an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are. Selecting a building rings everything it reaches, labelled (its water, watch or light, and the rest: the Hospice's draughts, a quay's works, a lodge's hunting grounds), above the houses and through the night, with its kin's reach faint around it.</li>
+            <li><b>Unrest</b>: an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are. Selecting a building rings everything it reaches, labelled (its water, watch or light, and the rest: the Hospice's draughts, a quay's works, a lodge's hunting grounds), above the houses and through the night, with its kin's reach faint around it.</li>
             <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A charter costs a crown a building a day and holds ${CHARTER_LOCK_DAYS} days; a Craft quarter's smoke drifts four tiles past its edge, a Temple quarter takes a tenth of the city's market tithe. An <b>edict</b> holds ${EDICT_MIN_DAYS} days and costs ${EDICT_REPEAL} crowns to repeal. A road at a building's corner counts as its door.</li>
-            <li><b>Weather</b> is written in the seed: Bloom rain (fewer fires, more craft, less miasma), an Ember drought (more fires, wells reach less, the gardens and the World Tree wait) and a Hush blizzard (hearths burn more mana). The top bar names it; the Observatory sees it coming.</li>
             <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: happiness 45 + 3 × the milestone, and for the Beacon the Lantern of Vell lit.</li>
             <li><b>The wild</b>: herds of deer and elk graze the meadows by day and bed down in the woods at night, and run from lit ground; boar keep the forests, goats the hills, otters and herons the banks. A herd breeds in Bloom and thins where the city builds within two tiles of its ground; a ward or a lit Glimhouse helps it recover. A <b>Hunters' Lodge</b> hunts the fullest herd within 16 tiles, or the <b>quarry</b> its panel names: hides, meat and trophies (antlers, tusks, plumes, wolf heads) for the Gloam road at their own prices, and meat for the markets within 16, where it makes the hearths within 10 happier. A herd hunted to the last is gone. <b>The Close Season</b> edict closes the chase in Bloom and keeps six head in every herd. In the Hush <b>wolves</b> leave the forest at night to take hens from the dark, unwatched hearths at the edge.</li>
             <li><b>The water</b>: every river and lake holds a shoal. A <b>Fishers' Hut</b> on the bank puts boats out and lands fish as the shoal allows; fish spoil in two days unless a market within 12 or a <b>Smokehouse</b> within 6 takes them, and a market with fish makes the hearths within 10 happier. Too many huts on one water fish it out; a <b>Weir</b> doubles its regrowth and keeps the fords near it open. <b>Reed-Cutters</b> on the shore thatch the level-1 homes (+3 happiness, but thatch burns). The <b>lake</b> (open water) lifts the land within 4, its wells serve half again, and the <b>Water Garden</b> stands on its shore. A Dirt Track over a narrow river is a <b>ford</b>: cheap, but under water in the Thaw's first ten days.</li>
             <li><b>The marsh</b>: reed beds and standing pools beside slow water. Nothing is built on it; a road crosses it as a <b>causeway</b> at a bridge's price (4×). It breeds <b>miasma</b> within 2 tiles (lower health and land value), and its reeds count twice for the <b>Reed-Cutters</b>. <b>The Drainage</b> edict (from the Village) cuts the marsh nearest the city to meadow, 3 tiles a day; the reeds go with it. At dawn mist lies on it.</li>
-            <li><b>Sea-gales</b> (the Patagoi Atoll only): twice each Hush a gale blows for two days. The barges stay in port and every plain <b>Dirt Track</b> bridge is under the surf, so folk and carts go round or wait. <b>Cobbled</b> bridges hold, and so does any bridge within 6 tiles of a <b>Quay</b>, a <b>Landing</b> or a <b>Weir</b>. The Observatory sees a gale coming. The near isles lie over shallow bars you can bridge; the far two lie across deep channels only barges, a Portal Arch pair or drake riders cross.</li>
+            <li><b>Sea-gales</b> (the Patagoi Atoll only): twice each Hush a gale blows for two days. The barges stay in port and every plain <b>Dirt Track</b> bridge is under the surf, so folk and carts go round or wait. <b>Cobbled</b> bridges hold, and so does any bridge within 6 tiles of a <b>Quay</b>, a <b>Landing</b> or a <b>Weir</b>. The near isles lie over shallow bars you can bridge; the far two lie across deep channels only barges, a Portal Arch pair or drake riders cross.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1454,7 +1370,6 @@ export class UI {
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
           <tr><td>The hunt's goods sold today</td><td class="r good" data-k="hunt"></td></tr>
           <tr><td>Smoked fish sold today</td><td class="r good" data-k="fish"></td></tr>
-          <tr><td>The Belerial caravan (every ${CARAVAN_EVERY} days)</td><td class="r good" data-k="caravan"></td></tr>
           <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
           <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
@@ -1497,12 +1412,6 @@ export class UI {
     set('trade', `${l.trade >= 0 ? '+' : ''}${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('hunt', st.trade.priceHides !== undefined ? `${st.trade.hidesSold ?? 0} hides at ${st.trade.priceHides} · ${st.trade.meatSold ?? 0} salted meat at ${st.trade.priceMeat} · ${st.trade.trophiesSold ?? 0} trophies at ${st.trade.priceTrophy}` : 'none');
     set('fish', st.trade.priceFish !== undefined ? `${st.trade.fishSold ?? 0} at ${st.trade.priceFish}` : 'none');
-    // the caravan pays at its halt, not by the day: the last take and the charter's total (iteration 63)
-    {
-      const due = caravanDue(st);
-      const c = st.stats;
-      set('caravan', due === null ? 'halts once a depot stands (from the Village)' : c.caravanCrowns > 0 || c.lastCaravanCrowns > 0 ? `last: +${c.lastCaravanCrowns.toLocaleString()} on day ${c.lastCaravanDay} · this charter: +${c.caravanCrowns.toLocaleString()} · next in ${due} day${due === 1 ? '' : 's'}` : `first halt in ${due} day${due === 1 ? '' : 's'}: ${caravanSurplus(st)} surplus goods at 1.5× price`);
-    }
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
@@ -1529,7 +1438,7 @@ export class UI {
     if (loanBtn) loanBtn.onclick = () => { const why = this.host.takeLoan(); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshBudget(); this.refresh(); };
     const repayBtn = loanEl.querySelector('#b-repay') as HTMLButtonElement | null;
     if (repayBtn) repayBtn.onclick = () => { const why = this.host.repayLoan(); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshBudget(); this.refresh(); };
-    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.${idleScholars(st) ? ' Idle scholars: more than half the city is schooled with little Arcane work, +5 unrest.' : ''}${st.unrestHigh > 0 ? ` Unrest above half for ${st.unrestHigh} day${st.unrestHigh === 1 ? '' : 's'} (a riot at 5).` : ''}${st.stats.goodsStolen > 0 ? ` Stolen from unwatched shelves: ${Math.round(st.stats.goodsStolen)} goods.` : ''}`);
+    set('social', `Unrest ${Math.round(st.unrest * 100)}% cuts yields. Happiness ${Math.round(st.happiness)}. Health ${Math.round(st.health * 100)}%. Educated ${Math.round(st.educated * 100)}%. Unquieted dead: ${Math.round(st.unquieted)}. Dead today ${st.deathsToday} · quieted ${Math.round(st.quietedToday)} / capacity ${Math.round(st.quietCap)} · waiting ${Math.round(st.waitingDead)}.${idleScholars(st) ? ' Idle scholars: more than half the city is schooled with little Arcane work, +5 unrest.' : ''}${st.stats.goodsStolen > 0 ? ` Stolen from unwatched shelves: ${Math.round(st.stats.goodsStolen)} goods.` : ''}`);
     set('history', `Last 10 days net, exports included: ${st.ledgerHistory.slice(-10).map((v) => (v >= 0 ? '+' : '') + v).join(', ') || 'n/a'}. The Charter is revoked after ${DEBT_DAYS} days under ${debtLine(st).toLocaleString()} crowns; debt pays 1 % a day.`);
     const routes = tradeRoutes(st);
     const rEl = this.el.budget.querySelector('[data-k="routes"]') as HTMLElement;
@@ -1640,7 +1549,6 @@ export class UI {
       <p class="muted">Edicts take effect immediately and cost their upkeep every day; an edict holds ${EDICT_MIN_DAYS} days once made and costs ${EDICT_REPEAL} crowns to repeal. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
       ${stats}
       ${rows.join('')}
-      ${this.councilHtml(st)}
       ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
       <div style="text-align:right"><button id="e-close">Close</button></div>
     </div>`;
@@ -1659,29 +1567,6 @@ export class UI {
     };
     this.el.edicts.querySelector('#e-close')!.addEventListener('click', () => this.toggleEdicts(false));
     this.el.edicts.querySelectorAll('button[data-quarter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.setQuarter(this.edictScope, ((b as HTMLElement).dataset.quarter || null) as QuarterId | null); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); this.refresh(); }; });
-    this.el.edicts.querySelectorAll('button[data-charter]').forEach((b) => { (b as HTMLButtonElement).onclick = () => { const why = this.host.charterGuilds((b as HTMLElement).dataset.charter as GuildId); if (why) this.toast(`<p class="bad">${why}</p>`, 2500); this.refreshEdicts(); }; });
-  }
-
-  /** The guild council block: standings, moods, today's drivers and the open petition. */
-  private councilHtml(st: GameState): string {
-    const council = hasCouncil(st);
-    const g = st.guilds;
-    const rows = GUILD_IDS.map((id) => {
-      const d = GUILDS[id];
-      const v = Math.round(g.standing[id]);
-      const eff = guildEffect(st, id);
-      const drivers = council ? guildDrivers(st, id).map((x) => `${x.value > 0 ? '+' : ''}${x.value.toFixed(1)} ${x.text}`).join(', ') : '';
-      const hall = st.buildings.some((b) => b && b.kind === HALL_OF[id] && b.state === 'ok');
-      const hallText = hall ? `${BUILDING_BY_KEY[HALL_OF[id]].name} stands${eff < 0 ? ' (locked by the strike)' : ''}.` : eff > 0 ? `Pleased ${g.pleasedDays[id]} of ${HALL_DAYS} days toward raising ${BUILDING_BY_KEY[HALL_OF[id]].name}.` : '';
-      return `<div class="guild"><div><b>${d.name}</b> <span class="${eff > 0 ? 'good' : eff < 0 ? 'bad' : 'muted'}">${guildMood(v)}</span> <span class="muted">(${v})</span><div class="bar"><span style="width:${v}%"></span></div></div>
-        <div class="muted">${d.desc} Pleased at ${BOON_AT}: ${d.boon}. Striking under ${STRIKE_AT}: ${d.strike}. Rival: ${GUILDS[RIVAL_OF[id]].name}${isChartered(st, id) ? ' (chartered: no grudge)' : ''}. ${hallText}${drivers ? ` <i>Today: ${drivers}.</i>` : ''}</div></div>`;
-    }).join('');
-    const dm = g.demand;
-    const demand = dm && dm.until > st.day ? `<p class="muted">Granted petition: keep <b>${EDICT_BY_KEY[GUILDS[dm.guild].edict]?.name}</b> on for ${GUILDS[dm.guild].name} (${dm.until - st.day} days left; turning it off costs 2 standing a day).</p>` : '';
-    const charters = council ? (['carters', 'alchemists'] as GuildId[]).filter((p) => !st.guilds.charters.includes(p)).map((p) => `<button class="show" data-charter="${p}" ${st.treasury < CHARTER_COST ? 'disabled' : ''}>Charter ${GUILDS[p].name.replace('The ', 'the ')} and ${GUILDS[RIVAL_OF[p]].name.replace('The ', 'the ')} (${CHARTER_COST} crowns)</button>`).join(' ') : '';
-    return `<h3 style="margin-top:8px">The guild council</h3>
-      <p class="muted">${council ? `The four guilds sit at the Guildhall. Every ${COUNCIL_SPACING} days the least pleased of them petitions for an edict. ${st.stats.councils} petition${st.stats.councils === 1 ? '' : 's'} heard.` : 'No lit Guildhall: the guilds have no seat and no voice. Build one (Leisure tab) to hear petitions and earn their boons.'}</p>
-      ${demand}${rows}${charters ? `<p class="muted">A charter ends a rivalry for good: both guilds +10, no more drag, sting or brawls. ${charters}</p>` : ''}`;
   }
 
   /** Dev tools: grouped commands with a live status line. */
@@ -1695,8 +1580,7 @@ export class UI {
   private renderDev(last: string): void {
     const s = this.host.state;
     const el = this.el.dev;
-    const stand = GUILD_IDS.map((g) => `${GUILDS[g].name.replace('The ', '').split(' ')[0]} ${Math.round(s.guilds.standing[g])}`).join(' · ');
-    const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · ${stand} · relics ${s.relics.complete.length}/4 · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
+    const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · favour ${Math.round(s.crownFavour)} · relics ${s.relics.complete.length}/4 · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
     // an argument is a list or a number (iteration 55); a second one rides beside the first and both go as `first:second`
     const input = (a: DevArg | undefined, id: string, attr: string) => !a ? '' : a.kind === 'select' ? `<select ${attr}="${id}">${devOptions(a, s).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>` : `<input type="number" ${attr}="${id}" min="${a.min}" max="${a.max}" value="${devNumber(a, s)}">`;
     const groups = DEV_GROUPS.map((g) => `<h3>${g}</h3><div class="devgrid">${DEV_COMMANDS.filter((c) => c.group === g).map((c) => `<div class="devcmd"><button data-id="${c.id}" title="${c.desc}">${c.name}</button>${input(c.arg, c.id, 'data-arg')}${input(c.arg2, c.id, 'data-arg2')}</div>`).join('')}</div>`).join('');
@@ -1713,28 +1597,6 @@ export class UI {
   }
 
   private ms() { return milestonesOf(this.host.state); }
-
-  private eventShownId: string | null = null;
-
-  refreshEvent(): void {
-    const pe = this.host.state.pendingEvent;
-    const el = this.el.event;
-    if (!pe) {
-      el.classList.add('hidden');
-      this.eventShownId = null;
-      return;
-    }
-    if (this.eventShownId === pe.id && !el.classList.contains('hidden')) return;
-    this.eventShownId = pe.id;
-    el.innerHTML = `<div class="box panel" style="border-color:var(--gold)">
-      <h2>${pe.title}</h2>
-      <p>${pe.text}</p>
-      <div class="choices">${pe.choices.map((c, i) => `${c.slider ? `<div class="tax" style="margin:4px 0 0"><label>${c.slider.label}</label><input type="range" min="0" max="${c.slider.max}" value="${c.slider.max}" data-slider="${i}"><output>${c.slider.max} %</output></div>` : ''}<button data-i="${i}"><b>${c.label}</b><br><span class="muted">${c.desc}</span></button>`).join('')}</div>
-    </div>`;
-    el.classList.remove('hidden');
-    el.querySelectorAll('input[data-slider]').forEach((inp) => { (inp as HTMLInputElement).oninput = () => { (inp.nextElementSibling as HTMLOutputElement).textContent = `${(inp as HTMLInputElement).value} %`; }; });
-    el.querySelectorAll('button').forEach((b) => (b.onclick = () => { const i = Number((b as HTMLElement).dataset.i); const sl = el.querySelector(`input[data-slider="${i}"]`) as HTMLInputElement | null; this.host.resolveEvent(i, sl ? Number(sl.value) : undefined); }));
-  }
 
   showGameOver(): void {
     const s = this.host.state;

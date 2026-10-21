@@ -1,18 +1,13 @@
-/** Iteration 55 (M14 part 5, the bot plays it all, and the Annals): the bot's tale policy, purse, light-first zoning, taxes,
- *  edicts and depot; the Annals over every counter; saves that branch on their version; five dev commands; and the
- *  Hall of Wicks that the vigil festival really unlocks. */
+/** Iteration 55 (M14 part 5, the bot plays it all): the bot's purse, light-first zoning, taxes, edicts and depot; saves
+ *  that branch on their version; the dev commands. The tale policy and the Annals were parked in the scope reset (phase 1c). */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { RoadType, SAVE_VERSION, TICKS_PER_DAY, idx, type GameState } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { ALL_EVENTS, descOf, resolveEvent } from '../src/sim/events';
 import { Bot } from '../src/sim/bot';
-import { chooseTale, worth } from '../src/sim/botPolicy';
-import { ANNALS, ANNALS_INTERNAL } from '../src/data/annals';
 import { MIGRATIONS, SaveVersionError, deserialize, serialize } from '../src/sim/save';
 import { devDefaultArg, DEV_COMMANDS, runDev } from '../src/sim/dev';
-import { flooding, riverFrozen, weatherAt } from '../src/sim/weave';
 import { questsFor } from '../src/sim/quests';
 import { specialLock, VELLISH_HAPPINESS } from '../src/data/factions';
 import { MILESTONES } from '../src/sim/catalog';
@@ -29,36 +24,6 @@ function town(seed = 55) {
   recomputeAll(s);
   return s;
 }
-/** Put a tale on the table the way the storyteller does. */
-function pend(s: GameState, id: string) {
-  const e = ALL_EVENTS.find((x) => x.id === id)!;
-  s.pendingEvent = { id: e.id, title: e.title, text: e.text, choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s), slider: c.slider })) };
-}
-
-describe('The bot answers a tale greedily', () => {
-  it('scores each choice on a copy, leaves the live state and its rng untouched, and answers the same way twice', () => {
-    const s = town();
-    pend(s, 'council_spirewrights');
-    const rng = s.rngState;
-    const json = serialize(s);
-    const a = chooseTale(s);
-    const b = chooseTale(s);
-    expect(s.rngState).toBe(rng);
-    expect(serialize(s)).toBe(json);
-    expect(a).toEqual(b);
-    // granting the spire-wrights' petition costs 60 a day for nothing this town needs: the policy does not grant it
-    expect(a.choice).not.toBe(0);
-  });
-  it('worth counts the purse, the ledger, the timed effects and the roofs', () => {
-    const s = town();
-    const w0 = worth(s);
-    s.treasury += 1000;
-    expect(worth(s) - w0).toBeCloseTo(1000, 0);
-    s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 10, label: 'test' });
-    expect(worth(s)).toBeGreaterThan(w0 + 1000);
-  });
-});
-
 describe('The bot keeps a purse', () => {
   it('saves for a Font when the ley runs short, holds the price back from services, and buys it once the purse holds it', () => {
     const s = town();
@@ -108,12 +73,12 @@ describe('The bot keeps a purse', () => {
     const s = town(55);
     s.milestone = 6;
     const bot = new Bot(s);
-    (bot as any).goal = { kind: 'hall', key: 'stormpeak', cost: 5400, mana: false };
+    (bot as any).goal = { kind: 'hall', key: 'ruindelve', cost: 5400, mana: false };
     s.treasury = 60000;
-    // no storm caller has come: the Peak cannot stand (the Great Gate this test used is parked)
+    // no flagstones near the town: the Delve cannot stand (the Great Gate and the Storm-Caller's Peak this test used are parked)
     for (let k = 0; k < 5; k++) (bot as any).pursueGoal();
     expect((bot as any).goal).toBeNull();
-    expect((bot as any).goalBlocked.stormpeak).toBe(s.day + 20);
+    expect((bot as any).goalBlocked.ruindelve).toBe(s.day + 20);
   });
 });
 
@@ -169,20 +134,6 @@ describe('The bot stands a depot', () => {
   });
 });
 
-describe('The Annals', () => {
-  it('list every counter: each key of stats is a row or an internal timer with its reason', () => {
-    const s = createGame(55, 'Annalwick');
-    const rows = new Set(ANNALS.flatMap((c) => c.rows.map((r) => r.stat).filter(Boolean)));
-    for (const k of Object.keys(s.stats)) expect(rows.has(k as never) || k in ANNALS_INTERNAL, `stats.${k} is on no page`).toBe(true);
-    for (const c of ANNALS) for (const r of c.rows) {
-      expect(!!r.stat !== !!r.value).toBe(true);
-      expect(r.note.length).toBeGreaterThan(10);
-      expect(['number', 'string']).toContain(r.stat ? typeof s.stats[r.stat] : typeof r.value!(s));
-    }
-    expect(ANNALS.length).toBeGreaterThanOrEqual(10); // phase 1b parked the Wyrmcraft, Vein-Wyrm and Beasts pages
-  });
-});
-
 describe('Saves branch on their version', () => {
   it('a save from before iteration 55 (version 6, fields missing) loads with the old defaults and runs a day', () => {
     const s = town();
@@ -204,11 +155,10 @@ describe('Saves branch on their version', () => {
   });
   it('a version 7 save round-trips its fields; a save with no version counts as 6; a newer save is refused with the reason', () => {
     const s = town();
-    s.crownFavour = 61; s.stats.riots = 2; s.firedEvents.push('vigil@0:0');
+    s.crownFavour = 61;
     const r = deserialize(serialize(s), (seed) => createGame(seed));
     expect(r.crownFavour).toBe(61);
     expect(r.stats).toEqual(s.stats);
-    expect(r.firedEvents).toEqual(s.firedEvents);
     const o = JSON.parse(serialize(s));
     delete o.version; delete o.crownFavour;
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).crownFavour).toBe(50);
@@ -219,9 +169,9 @@ describe('Saves branch on their version', () => {
   });
 });
 
-describe('Five dev commands', () => {
+describe('Dev commands', () => {
   const at = (s: GameState) => ({ x: s.founding.x, y: s.founding.y });
-  it('jump to day: forward only, the season and the weather follow, the main rng untouched', () => {
+  it('jump to day: forward only, the season follows, the main rng untouched', () => {
     const s = town();
     const rng = s.rngState;
     expect(runDev(s, 'setday', '0', at(s))).toMatch(/Only forward/);
@@ -229,19 +179,7 @@ describe('Five dev commands', () => {
     runDev(s, 'setday', '45', at(s));
     expect(s.day).toBe(45);
     expect(Math.floor(s.tick / TICKS_PER_DAY)).toBe(45);
-    expect(s.weather).toEqual(weatherAt(s, 45));
     expect(s.rngState).toBe(rng);
-  });
-  it('flood or freeze the river for ten days, whatever the season or the people', () => {
-    const s = town();
-    expect(flooding(s)).toBe(false);
-    runDev(s, 'river', 'flood', at(s));
-    expect(flooding(s)).toBe(true);
-    runDev(s, 'river', 'freeze', at(s));
-    expect(riverFrozen(s)).toBe(true);
-    s.day += 10;
-    expect(flooding(s)).toBe(false);
-    expect(riverFrozen(s)).toBe(false);
   });
   it("complete a task pays its reward; an unknown or a done task is refused", () => {
     const s = town();
@@ -253,42 +191,24 @@ describe('Five dev commands', () => {
     expect(runDev(s, 'quest', q.id, at(s))).toBe('Already done.');
     expect(runDev(s, 'quest', 't_hall', at(s))).toMatch(/No such task/); // a parked people's task (scope reset)
   });
-  it("set a standing: a guild's or the Crown's favour, clamped to 0..100", () => {
+  it("set a standing: the Crown's favour, clamped to 0..100", () => {
     const s = town();
     runDev(s, 'standing', 'crown:15', at(s));
     expect(s.crownFavour).toBe(15);
-    runDev(s, 'standing', 'carters:140', at(s));
-    expect(s.guilds.standing.carters).toBe(100);
+    runDev(s, 'standing', 'crown:140', at(s));
+    expect(s.crownFavour).toBe(100);
     const c = DEV_COMMANDS.find((x) => x.id === 'standing')!;
-    expect(devDefaultArg(c, s)).toBe('carters:80');
+    expect(devDefaultArg(c, s)).toBe('crown:80');
   });
-  it('reset the history: the tales forget all but the ones that unlock a building; the ledger; the Chronicle keeps the dev mark', () => {
+  it('reset the history: the ledger; the Chronicle keeps the dev mark', () => {
     const s = town();
-    s.firedEvents.push('pilgrims:0', 'stormcaller:0', 'vigil@0:0', 'egg_first:1');
     s.ledgerHistory.push(10, 20);
-    runDev(s, 'forget', 'tales', at(s));
-    expect(s.firedEvents).toEqual(['stormcaller:0', 'vigil@0:0']);
     runDev(s, 'forget', 'ledger', at(s));
     expect(s.ledgerHistory).toEqual([]);
     runDev(s, 'forget', 'chronicle', at(s));
     expect(s.chronicle.length).toBe(1);
     expect(s.chronicle[0].text).toMatch(/dev tools/);
-    expect(s.stats.devUses).toBeGreaterThanOrEqual(3);
+    expect(s.stats.devUses).toBeGreaterThanOrEqual(2);
   });
 });
 
-
-describe('A city in debt can still answer a tale', () => {
-  it('a choice with no price is never refused as "0 crowns asked"; a priced one still is', () => {
-    const s = town();
-    s.treasury = -500;
-    s.day = 40;
-    pend(s, 'council_carters');
-    resolveEvent(s, 0); // grant the petition: no crowns asked (the dragon's tribute this test used is parked)
-    expect(s.edicts.imports).toBe(true);
-    expect(s.messages[s.messages.length - 1].text).not.toMatch(/purse is too light|crowns asked/);
-    pend(s, 'council_carters');
-    resolveEvent(s, 1); // "Pay them off (400 crowns)"
-    expect(s.messages[s.messages.length - 1].text).toMatch(/400 crowns asked/);
-  });
-});

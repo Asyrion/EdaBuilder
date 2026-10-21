@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { idx } from '../src/sim/types';
 import { RELIC_SETS, dailyRelics, initRelics, relicDone } from '../src/sim/relics';
-import { BOON_AT, HALL_DAYS, HALL_OF, dailyGuilds, hallActive } from '../src/sim/guilds';
-import { dailyTrade } from '../src/sim/growth';
-import { dailyDeath } from '../src/sim/hazards';
-import { updateMiasma } from '../src/sim/services';
 import { sectorCost } from '../src/sim/sectors';
 import { serialize, deserialize } from '../src/sim/save';
-import { activeQuests } from '../src/sim/quests';
-import { buildRoad, roadPath } from '../src/sim/actions';
-import { RoadType } from '../src/sim/types';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
@@ -54,64 +46,5 @@ describe('Relic sets', () => {
     expect(r.relics.complete).toEqual(['lanterncores']);
     const o = JSON.parse(serialize(s)); delete o.relics;
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).relics).toEqual(initRelics());
-  });
-});
-
-describe('Guild halls', () => {
-  it('a guild pleased for ten days raises its hall by the Guildhall; the hall locks while the guild strikes', () => {
-    const s = town();
-    const f = s.founding;
-    buildRoad(s, RoadType.Track, roadPath(f.x - 10, f.y + 3, f.x + 10, f.y + 3, false));
-    const gh = placeBuildingRaw(s, 'guildhall', f.x + 2, f.y + 4);
-    placeBuildingRaw(s, 'spire', f.x + 5, f.y + 5);
-    placeBuildingRaw(s, 'depot', f.x - 5, f.y + 4);
-    const c = placeBuildingRaw(s, 'craft', f.x - 2, f.y - 3, 2);
-    recomputeAll(s);
-    s.guilds.standing.carters = 95;
-    s.guilds.standing.sextons = 95;
-    for (let d = 0; d < HALL_DAYS - 1; d++) { dailyGuilds(s); s.guilds.standing.carters = 95; s.guilds.standing.sextons = 95; }
-    expect(s.guilds.pleasedDays.carters).toBe(HALL_DAYS - 1);
-    expect(s.buildings.some((b) => b && b.kind === 'cartersyard')).toBe(false);
-    dailyGuilds(s);
-    const yard = s.buildings.find((b) => b && b.kind === 'cartersyard')!;
-    const chapel = s.buildings.find((b) => b && b.kind === 'sextonchapel')!;
-    expect(yard).toBeTruthy();
-    expect(chapel).toBeTruthy();
-    expect(Math.max(Math.abs(yard.x - gh.x), Math.abs(yard.y - gh.y))).toBeLessThanOrEqual(9);
-    expect(s.stats.guildHalls).toBe(2);
-    expect(s.guilds.pleasedDays.carters).toBe(0);
-    expect(hallActive(s, 'cartersyard')).toBe(true);
-    expect(activeQuests(s, 100).some((q) => q.id === 'k_hall')).toBe(false);
-    // the yard counts as a depot
-    recomputeAll(s);
-    s.guilds.standing.carters = 50;
-    c.stock = 60;
-    dailyTrade(s);
-    expect(s.trade.exported).toBe(16);
-    // the chapel quiets 15 a day with its crew of three; locked on strike
-    recomputeAll(s);
-    chapel.workers = 3;
-    s.unquieted = 30; s.deathsToday = 0;
-    dailyDeath(s);
-    const quietedOpen = 30 - s.unquieted;
-    s.guilds.standing.sextons = 10;
-    expect(hallActive(s, 'sextonchapel')).toBe(false);
-    s.unquieted = 30;
-    dailyDeath(s);
-    expect(quietedOpen).toBeGreaterThanOrEqual(15);
-    expect(30 - s.unquieted).toBeLessThan(quietedOpen);
-    // the lyceum scrubs miasma; the lodge raises the surge threshold
-    s.guilds.standing.alchemists = 95;
-    s.guilds.pleasedDays.alchemists = HALL_DAYS - 1;
-    dailyGuilds(s);
-    const ly = s.buildings.find((b) => b && b.kind === 'lyceum')!;
-    expect(ly).toBeTruthy();
-    updateMiasma(s);
-    const mi = s.miasma[idx(c.x, c.y)];
-    s.guilds.standing.alchemists = 10;
-    updateMiasma(s);
-    expect(mi).toBeLessThan(s.miasma[idx(c.x, c.y)]);
-    expect(Object.values(HALL_OF).every((k) => typeof k === 'string')).toBe(true);
-    void BOON_AT;
   });
 });

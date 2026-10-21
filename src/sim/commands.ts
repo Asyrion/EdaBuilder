@@ -4,7 +4,7 @@
  * bump, its undo snapshot) so live play is unchanged. A command is stamped with the tick it came in after; a replay applies the
  * commands of each tick before running the next, and the sim's determinism does the rest.
  */
-import { buildRoad, bulldoze, callRain, paintDistrict, paintZone, placeBuilding, restoreSnapshot, setTax, takeSnapshot, terraform, type Snapshot, type TerraformOp } from './actions';
+import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, restoreSnapshot, setTax, takeSnapshot, terraform, type Snapshot, type TerraformOp } from './actions';
 import { bumpRoadVersion } from './agents';
 import { foundDaughter } from './charter';
 import { construction } from './construction';
@@ -12,8 +12,6 @@ import { runDev } from './dev';
 import { setQuarter, type QuarterId } from './districts';
 import { repayLoan, takeLoan } from './economy';
 import { setEdict } from './edicts';
-import { resolveEvent } from './events';
-import { charterGuilds, type GuildId } from './guilds';
 import { SaveVersionError, parkedContentMessage, parkedPeopleMessage, serialize } from './save';
 import { buySector } from './sectors';
 import { recomputeAll, tick } from './sim';
@@ -76,17 +74,14 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   lesson: (s, _r, [id]) => { if (!s.lessonsSeen.includes(id)) s.lessonsSeen.push(id); return { ok: true }; },
   priority: (s, _r, [id, p]) => { const x = b(s, id); if (!x) return { ok: false }; x.priority = p; x.lit = true; recomputeAll(s); return { ok: true }; },
   renameDistrict: (s, _r, [d, name]) => { s.districtNames[d] = String(name).trim().slice(0, 18); return { ok: true }; },
-  vent: (s, _r, [id]) => { const x = b(s, id); if (!x || x.kind !== 'wrightslodge' || (x.cooldown ?? 0) > 0) return { ok: false }; s.manaStorage = 0; s.overdrawDays = -4; s.stats.brownoutOpen = 0; x.cooldown = 30; recomputeAll(s); return { ok: true }; },
-  rain: (s, _r, [id]) => { const res = callRain(s, id); if (res.ok) recomputeAll(s); return res; },
   quarry: (s, _r, [id, q]) => { const x = b(s, id); return { ok: !!x && setQuarry(s, x, (q || null) as WildSpecies | null) }; },
-  tale: (s, _r, [choice, amount]) => { resolveEvent(s, choice, amount ?? undefined); return { ok: true }; },
-  guild: (s, _r, [g]) => { const why = charterGuilds(s, g as GuildId); return { ok: !why, reason: why }; },
   dev: (s, _r, [id, arg, x, y]) => { const out = runDev(s, id, arg, { x, y }); recomputeAll(s); return { ok: true, out }; },
 };
 export const COMMAND_OPS = Object.keys(OPS);
-/** The ops of the systems the scope reset parked in phase 1b (glim-dust, the Warding Wall and its gates, the dragons, the Scale
- *  Ward, wyrmfire, the Sky-Dock's wyvern, the golems): a replay that uses one is refused (docs/PARKED.md). */
-export const PARKED_OPS = ['dust', 'gate', 'wall', 'training', 'replate', 'role', 'cradle', 'nest', 'burnWyrmfire', 'skydock', 'golem'];
+/** The ops of the systems the scope reset parked: in phase 1b glim-dust, the Warding Wall and its gates, the dragons, the Scale
+ *  Ward, wyrmfire, the Sky-Dock's wyvern and the golems; in 1c the tales, the guilds, the Wright's Lodge's vent and the
+ *  Storm-Caller's rain. A replay that uses one is refused (docs/PARKED.md). */
+export const PARKED_OPS = ['dust', 'gate', 'wall', 'training', 'replate', 'role', 'cradle', 'nest', 'burnWyrmfire', 'skydock', 'golem', 'tale', 'guild', 'vent', 'rain'];
 
 /** Runs commands against a state: logs them while recording, and keeps the undo stack both the live game and a replay rebuild. */
 export class CommandRunner {
@@ -154,8 +149,6 @@ export class ReplayPlayer {
     return !(this.next < cmds.length && cmds[this.next].t < this.state.tick);
   }
   get done(): boolean { return this.next >= this.file.commands.length && this.state.tick >= this.file.endTick; }
-  /** A tale waits and no command answers it at this tick: the replay cannot go on. */
-  get stuck(): boolean { return !!this.state.pendingEvent && !(this.next < this.file.commands.length && this.file.commands[this.next].t === this.state.tick); }
   /** The first day whose checkpoint differs from the recording's, or −1. */
   firstDivergence(): number {
     const a = this.file.checkpoints;
@@ -165,19 +158,17 @@ export class ReplayPlayer {
   }
 }
 
-export interface ReplayVerdict { matches: boolean; checksum: string; expected: string; divergedOnDay: number; ticks: number; stuck: boolean }
+export interface ReplayVerdict { matches: boolean; checksum: string; expected: string; divergedOnDay: number; ticks: number }
 /** Run a replay headless to its end and say whether it reproduces its recording. */
 export function verifyReplay(file: ReplayFile): ReplayVerdict {
   const p = new ReplayPlayer(file, stateFromHeader(file.header));
-  let stuck = false;
   for (let guard = 0; guard < 10_000_000; guard++) {
     if (!p.feed()) break;
     if (p.done) break;
-    if (p.stuck) { stuck = true; break; }
     if (p.state.gameOver) break;
     tick(p.state);
     p.runner.checkpoint();
   }
   const sum = checksum(p.state);
-  return { matches: sum === file.checksum && !stuck, checksum: sum, expected: file.checksum, divergedOnDay: p.firstDivergence(), ticks: p.state.tick, stuck };
+  return { matches: sum === file.checksum, checksum: sum, expected: file.checksum, divergedOnDay: p.firstDivergence(), ticks: p.state.tick };
 }

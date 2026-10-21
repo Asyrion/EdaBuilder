@@ -6,12 +6,10 @@ import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WONDER_HALLS } from '.
 import { MAP_H, MAP_W, RoadType, Zone, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
-import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { factionOf } from '../data/factions';
 import { bumpRoadVersion } from './agents';
 import { floatingMana } from './vehicles';
-import { aspectAt, blizzard, millFactor } from './weave';
 import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
@@ -72,11 +70,11 @@ export function updateMana(state: GameState): void {
     if (def.manaProduce) {
       // a mill with an older mill within 8 shares its river and runs at ×0.6
       const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= MILL_SHARE_REACH && Math.abs(o.y - b.y) <= MILL_SHARE_REACH);
-      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); 
+      const made = def.manaProduce * (b.kind === 'torrentmill' ? (seasonOf(state) === 0 ? 1.3 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); 
       supply += made;
       b.load = made;
     }
-    if (def.manaStorage && !cracked(b) && (def.category !== 'special' || hallActive(state, b.kind))) storageMax += def.manaStorage * (aspectAt(state, b.x, b.y) === 'vein' ? 1.5 : 1);
+    if (def.manaStorage && !cracked(b)) storageMax += def.manaStorage;
   });
 
   // 2. spire chain: BFS from nodes over spires/nexus
@@ -221,7 +219,6 @@ export function updateMana(state: GameState): void {
   let consumers: Consumer[] = [];
   let demand = 0;
   const hush = seasonOf(state) === 3;
-  const snow = blizzard(state);
   const mult = manaMult(state);
   const f = state.founding;
   for (let s = 0; s < state.buildings.length; s++) {
@@ -231,7 +228,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = manaUseOf(b, hush) * mult * (snow && BUILDING_BY_KEY[b.kind].zone === Zone.Hearth ? 1.1 : 1); // a blizzard: the hearths drink a tenth more (iteration 54)
+    const use = manaUseOf(b, hush) * mult;
     if (use > 0) {
       demand += use;
       let dmin = Infinity;
@@ -283,7 +280,6 @@ export function updateMana(state: GameState): void {
   void f;
 
   if (relicDone(state, 'lanterncores')) storageMax += 60;
-  storageMax *= 1 + 0.2 * guildEffect(state, 'spirewrights');
   // storage buffers a deficit
   let effectiveSupply = supply;
   if (demand > supply) {

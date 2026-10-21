@@ -8,7 +8,6 @@ import { canPlaceBuilding, districtName, markAllDirty, markDirty, markDirtyAroun
 import { districtInUse, districtOpenAt, districtSlots } from './districts';
 import { MAX_DISTRICTS } from './types';
 import { inCharter } from './sectors';
-import { aspectAt } from './weave';
 import { effects } from './hazards';
 import { MAP_W } from './types';
 
@@ -283,30 +282,4 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
   if (op === 'level') state.stats.stoneCut++;
   markDirtyAround(state, x, y);
   return { ok: true, cost: def.cost };
-}
-
-/** Storm-Caller's Peak: call rain over everything within 14 tiles. */
-export function callRain(state: GameState, buildingId: number): ActionResult {
-  const b = state.buildings.find((o) => o && o.id === buildingId);
-  if (!b || b.kind !== 'stormpeak') return { ok: false, reason: 'No peak' };
-  if (b.state !== 'ok') return { ok: false, reason: 'The peak is not in order' };
-  if (!b.lit) return { ok: false, reason: 'The storm caller needs mana to work' };
-  if (b.cooldown > 0) return { ok: false, reason: `The sky is spent: ${b.cooldown} day(s) until the next call` };
-  if (state.treasury < 300) return { ok: false, reason: 'Not enough crowns (300)' };
-  state.treasury -= 300;
-  b.cooldown = aspectAt(state, b.x, b.y) === 'storm' ? Math.ceil(3 / 2) : 3;
-  let doused = 0;
-  for (const o of state.buildings) {
-    if (!o || o.state !== 'burning') continue;
-    if (Math.hypot(o.x - b.x, o.y - b.y) <= 14) {
-      o.state = 'ok';
-      o.stateDays = 0;
-      doused++;
-      markDirty(state, o.x, o.y);
-    }
-  }
-  state.modifiers.push({ kind: 'rain', value: 1, until: state.day + 3, label: 'Called rain' });
-  effects.push({ x: b.x, y: b.y, kind: 'rain', tick: state.tick });
-  pushMessage(state, `The storm caller climbs the peak. Rain comes down in sheets: ${doused} fire${doused === 1 ? '' : 's'} out, the miasma washed into the gutters, the glimherb drinking.`, 'good');
-  return { ok: true, cost: 300 };
 }

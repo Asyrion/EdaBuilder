@@ -50,7 +50,7 @@ describe('Wells with capacity', () => {
     expect(hs.every((b) => b.watered)).toBe(true);
   });
 
-  it('a plain well far from water reaches 4, a cistern keeps 12; a flood fouls a bank well', () => {
+  it('a plain well far from water reaches 4, a cistern keeps 12', () => {
     const s = town();
     const f = s.founding;
     const well = placeBuildingRaw(s, 'well', f.x + 4, f.y + 4); ok(well);
@@ -60,16 +60,6 @@ describe('Wells with capacity', () => {
     expect(waterRadiusOf(s, cistern)).toBe(12);
     s.waterDist.fill(5);
     expect(waterRadiusOf(s, well)).toBe(8);
-    // a flood (forced, as from the dev panel: the Vellish river freezes instead) fouls a well within 2 of the river
-    const v = town(41);
-    const bw = placeBuildingRaw(v, 'well', v.founding.x + 4, v.founding.y + 4); ok(bw);
-    v.waterDist.fill(2);
-    v.day = 0;
-    expect(waterRadiusOf(v, bw)).toBe(8);
-    v.modifiers.push({ kind: 'flood', value: 1, until: v.day + 5, label: 'flood' });
-    expect(waterRadiusOf(v, bw)).toBe(0);
-    updateWater(v);
-    expect(bw.load).toBe(0);
   });
 });
 

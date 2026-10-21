@@ -14,7 +14,6 @@ import { BUILDING_BY_KEY } from './catalog';
 import { bumpRoadVersion } from './agents';
 import { capacityOf } from './growth';
 import { edictOn } from './edicts';
-import { riverFrozen, flooding, floodedAt } from './weave';
 import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
 import { forEachBuilding, markDirty, pushMessage, seasonOf } from './world';
 
@@ -187,7 +186,6 @@ export function fishingWater(state: GameState, b: Building, body = bodyOf(state,
 export function fishBlock(state: GameState, b: Building): string | null {
   const body = bodyOf(state, b);
   if (body < 0) return 'no water at its door';
-  if (riverFrozen(state)) return 'the river is frozen';
   if (edictOn(state, 'closeseason') && seasonOf(state) === 1) return 'the Close Season: no fishing in Bloom';
   const w = ensureShoals(state);
   if (edictOn(state, 'closeseason') && state.water.fish[body] < shoalCap(w, body) * CLOSE_SHOAL) return 'the Close Season: the shoal is under a third';
@@ -376,10 +374,9 @@ export function highWater(state: GameState): boolean {
 
 /** Whether a ford tile is under water today: high water or a flood reaches it, the river is not frozen, and no Weir holds it. */
 export function fordClosedToday(state: GameState, i: number): boolean {
-  if (riverFrozen(state)) return false;
   const x = i % MAP_W;
   const y = (i / MAP_W) | 0;
-  if (!highWater(state) && !flooding(state) && !floodedAt(state, x, y)) return false;
+  if (!highWater(state)) return false;
   return !weirHolds(state, i);
 }
 
@@ -421,7 +418,7 @@ export function dailyFords(state: GameState): void {
     // agents mid-crossing turn back: a path through a closed ford is dropped and worked again
     if (closed.length) {
       const set = new Set(closed);
-      for (const a of state.agents) if ((a.kind === AgentKind.Citizen || a.kind === AgentKind.Cart || a.kind === AgentKind.Walker || a.kind === AgentKind.Builder) && a.path.some((t, k) => k >= a.pathIdx && set.has(t))) { a.path = []; a.pathIdx = 0; a.timer = Math.max(a.timer, 20); }
+      for (const a of state.agents) if ((a.kind === AgentKind.Citizen || a.kind === AgentKind.Cart || a.kind === AgentKind.Builder) && a.path.some((t, k) => k >= a.pathIdx && set.has(t))) { a.path = []; a.pathIdx = 0; a.timer = Math.max(a.timer, 20); }
       if (!before.length && galeToday(state)) pushMessage(state, `A sea-gale blows in: ${closed.length} plain track bridge${closed.length === 1 ? ' is' : 's are'} under the surf and the barges stay in port. Cobbled bridges hold, and so do bridges within ${GALE_HOLD} tiles of a Quay or a Weir.`, 'warn', true, { x: closed[0] % MAP_W, y: (closed[0] / MAP_W) | 0 });
       else if (!before.length) pushMessage(state, `High water: ${closed.length} ford${closed.length === 1 ? ' is' : 's are'} under the river. Carts and folk go round by a bridge, if there is one; a Weir within ${WEIR_REACH} tiles holds a ford.`, 'warn', true, { x: closed[0] % MAP_W, y: (closed[0] / MAP_W) | 0 });
     } else if (before.length) pushMessage(state, galeToday(state) ? 'The gale blows on, but the bridges you cobbled hold.' : galeOn(state, state.day - 1) ? 'The gale blows itself out: the bridges are open again.' : 'The river falls: the fords are open again.', 'info', false);

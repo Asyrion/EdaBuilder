@@ -19,6 +19,6 @@ const v = verifyReplay(file);
 console.log(`replayed ${v.ticks} ticks in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 if (v.matches) console.log(`MATCH: checksum ${v.checksum}`);
 else {
-  console.log(`DIVERGED${v.divergedOnDay >= 0 ? ` on day ${v.divergedOnDay}` : ''}${v.stuck ? ' (a tale waited with no answer in the log)' : ''}: checksum ${v.checksum}, recorded ${v.expected}`);
+  console.log(`DIVERGED${v.divergedOnDay >= 0 ? ` on day ${v.divergedOnDay}` : ''}: checksum ${v.checksum}, recorded ${v.expected}`);
   process.exitCode = 1;
 }

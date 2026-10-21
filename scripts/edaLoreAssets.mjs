@@ -120,7 +120,6 @@ looks('well', 1, 16, [
   ...[0, 1, 3, 5, 6, 7, 9, 10, 11].map((i) => ['wells_wood_12', i]),
 ], 0, WELL);
 looks('shrine', 1, 28, [['shrines_12', 0, F], ['shrines_12', 2, F], ['shrines_12', 3], ['shrines_12', 4, F], ['shrines_12', 8], ['shrines_altars_12', 1, F], ['shrines_altars_12', 3, F], ['shrines_altars_12', 9, F], ['shrines_altars_12', 10, F], ['shrines_altars_12', 16, F], ['magic_buildings_8', 0, F]]);
-looks('stormpeak', 1, 45, [['shrines_12', 5, F], ['shrines_12', 9]]);
 const AL = 'inspirations/craft_houses/alchemists_house/';
 looks('healer', 1, 31, [['shrines_altars_12', 6, F], ['shrines_altars_12', 14], [`${AL}image_1(1).png`], [`${AL}image_2(1).png`], [`${AL}image_3(2).png`]]);
 looks('watchpost', 1, 36, [['light_towers_6', 51], ['hunters_lodges_7', 4]]);
@@ -130,19 +129,15 @@ looks('reedcutters', 1, 31, [[`${WH}image_2(1).png`]]);
 looks('smokehouse', 1, 31, [[`${WH}image_3(2).png`]]);
 looks('boneyard', 2, 49, [0, 1, 3, 4, 5, 7, 8, 9, 11, 12].map((i) => ['cemeteries_16', i]), 1);
 looks('ossuary', 2, 58, [['cemeteries_16', 2], ['cemeteries_16', 6], ['cemeteries_16', 14], ['cemeteries_16', 10], ['inspirations/graveyards/image_2(1).png', undefined, F]], 1);
-looks('sextonchapel', 2, 55, [['cemeteries_16', 15]], 1);
 looks('watergarden', 2, 44, [['cemeteries_16', 13]]);
 looks('hunterslodge', 2, 50, [['hunters_lodges_7', 2, F], ['hunters_lodges_7', 3], ['hunters_lodges_7', 6], ['hunters_lodges_7', 7, F]]);
 const TH = 'inspirations/trade_houses/';
 looks('depot', 2, 62, [[`${TH}image_0(1).png`], [`${TH}image_2(1).png`], [`${TH}image_3(2).png`]]);
-const GC = 'inspirations/craft_houses/general_craft/';
-looks('wrightslodge', 2, 52, [[`${GC}image_0(1).png`], [`${GC}image_1(1).png`], [`${GC}image_2(1).png`], [`${GC}image_3(2).png`]]);
 const BM = 'inspirations/craft_houses/brickmaker/';
 looks('brickworks', 3, 80, [[`${BM}image_0(1).png`], [`${BM}image_1(1).png`], [`${BM}image_2(1).png`], [`${BM}image_3(2).png`]]);
 // a narrow painting on a 2×2 stands taller so it fills its diamond; the two thinnest spires are Ley Spires (1×1)
 looks('academy', 2, 62, [['lantern_towers_7', 2]]);
 looks('spire', 1, 47, [['magic_buildings_8', 54, F], ['lantern_towers_7', 4]], 1);
-looks('observatory', 2, 70, [['magic_buildings_8', 3]]);
 looks('ruindelve', 2, 56, [['magic_buildings_8', 55]]);
 looks('househall', 2, 62, [['magic_buildings_8', 57, F]]);
 looks('lantern', 3, 140, [['light_towers_6', 2, F]]);

@@ -29,7 +29,6 @@ describe('Construction', () => {
     expect(buildDaysFor(BUILDING_BY_KEY.watchhouse)).toBeGreaterThanOrEqual(1);
     expect(buildDaysFor(BUILDING_BY_KEY.nexus)).toBe(4);
     expect(buildDaysFor(BUILDING_BY_KEY.skydock)).toBe(9);
-    expect(buildDaysFor(BUILDING_BY_KEY.cartersyard)).toBe(2);
   });
 
   it('a placed building is a site, inert until finished; the folk raise it slowly with nobody there', () => {

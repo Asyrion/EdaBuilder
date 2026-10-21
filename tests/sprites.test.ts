@@ -47,13 +47,12 @@ describe('the painted set, part 2', () => {
   });
 
   it('a hall that grows falls back to the highest lower stage, then the plain sprite', () => {
-    const has = (n: string) => ['b_guildhall_s1', 'b_guildhall_s2', 'b_temple_s1'].includes(n);
-    expect(stagedSpriteName('guildhall', 0, has)).toBe('b_guildhall');
-    expect(stagedSpriteName('guildhall', 1, has)).toBe('b_guildhall_s1');
-    expect(stagedSpriteName('guildhall', 3, has)).toBe('b_guildhall_s2');
+    const has = (n: string) => ['b_temple_s1'].includes(n);
+    expect(stagedSpriteName('temple', 0, has)).toBe('b_temple');
+    expect(stagedSpriteName('temple', 1, has)).toBe('b_temple_s1');
     expect(stagedSpriteName('temple', 3, has)).toBe('b_temple_s1');
-    expect(GROWING_HALLS).toEqual(['stake', 'guildhall', 'temple']);
-    for (const n of ['b_guildhall_s1', 'b_guildhall_s2', 'b_temple_s1', 'b_temple_s2']) expect(names.has(n)).toBe(true);
+    expect(GROWING_HALLS).toEqual(['stake', 'temple']); // the Guildhall grew too; it is parked with the guilds (scope reset 1c)
+    for (const n of ['b_temple_s1', 'b_temple_s2']) expect(names.has(n)).toBe(true);
   });
 
   it('recolour shifts the hue and keeps alpha; the manifest holds the zone levels at 36 px and the glimwood', () => {

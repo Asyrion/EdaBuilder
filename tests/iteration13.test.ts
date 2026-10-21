@@ -6,7 +6,6 @@ import { AgentKind, RoadType, Terrain, idx } from '../src/sim/types';
 import { findPath, bumpRoadVersion, portalGates, tickAgents } from '../src/sim/agents';
 import { updateCoverage } from '../src/sim/services';
 import { dailyBuildings, treeStage, TREE_LEISURE_RADIUS, delveActive } from '../src/sim/growth';
-import { maybeFireEvent, resolveEvent, ALL_EVENTS } from '../src/sim/events';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -50,18 +49,6 @@ describe('Ruins of Lukuku', () => {
     dailyBuildings(s);
     expect(s.stats.relics).toBe(1);
     expect(s.artifactsSold).toBeCloseTo(8 * 0.25 * 5 * 1.15, 3);
-    // the chain: first fall, then the door
-    const d = s.buildings.find((b) => b && b.kind === 'ruindelve')!;
-    d.age = 10;
-    s.lastEventDay = -100;
-    const first = ALL_EVENTS.find((e) => e.id === 'lukuku_first')!;
-    expect(first.when(s)).toBe(true);
-    s.pendingEvent = { id: 'lukuku_first', title: first.title, text: first.text, choices: [] };
-    s.firedEvents.push('lukuku_first:?');
-    resolveEvent(s, 0);
-    expect(s.firedEvents).toContain('lukuku_first:0');
-    s.lastEventDay = s.day - 20;
-    expect(ALL_EVENTS.find((e) => e.id === 'lukuku_door')!.when(s)).toBe(true);
   });
 });
 
