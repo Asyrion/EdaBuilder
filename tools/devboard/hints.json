@@ -27,9 +27,7 @@
     "bonus": { "help": "What the set gives once entire." }
   },
   "edicts": { "desc": { "text": true }, "flavor": { "text": true } },
-  "events": { "text": { "text": true }, "choices": { "help": "Each choice's label and description; a choice whose description is worked out for the city keeps it in code (src/sim/events.ts)." } },
   "quests": { "hint": { "text": true } },
-  "guilds": { "desc": { "text": true }, "petition": { "text": true } },
   "artsources": {
     "src": { "help": "The painting, under inspirations/." },
     "kind": { "values": ["building", "prop", "ground", "vehicle"] },

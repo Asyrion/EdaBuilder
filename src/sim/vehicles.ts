@@ -6,7 +6,6 @@ import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
-import { riverFrozen } from './weave';
 import { galeToday } from './gales';
 import { modifierSum } from './edicts';
 import { seasonOf } from './world';
@@ -142,7 +141,7 @@ function sendBarge(s: GameState, from: Building, qs: Building[]): { total: numbe
 /** Daily: every quay sends a barge to a quay whose markets are emptier, along the water. */
 export function dailyBarges(s: GameState): void {
   const qs = quays(s);
-  if (qs.length < 2 || riverFrozen(s) || galeToday(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
+  if (qs.length < 2 || galeToday(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
   const rng = rngOf(s);
   for (const from of qs) {
     if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id)) continue;
@@ -233,11 +232,7 @@ export function airshipArrives(s: GameState): void {
   s.stats.airshipCrowns += crowns;
   if (dock) effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
   air.status = 'docked';
-  const rng = rngOf(s);
-  const tale = rng.chance(0.5);
-  commitRng(s, rng);
-  if (tale) air.tale = s.day;
-  pushMessage(s, `The airship is home: ${Math.round(air.goods)} goods sold beyond the Gloam for ${crowns} crowns.${tale ? ' The captain has a story.' : ''}`, 'good', true, dock ? { x: dock.x, y: dock.y } : undefined);
+  pushMessage(s, `The airship is home: ${Math.round(air.goods)} goods sold beyond the Gloam for ${crowns} crowns.`, 'good', true, dock ? { x: dock.x, y: dock.y } : undefined);
   air.goods = 0;
 }
 

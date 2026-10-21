@@ -11,9 +11,7 @@ import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree
 
 /** Land value lost within 4 tiles of any deathcare. */
 export const DEATHCARE_LV = 6;
-import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
-import { nodesOfAspect, floodedAt, raining } from './weave';
 import { CHARTER_SMOKE_SPILL } from './districts';
 
 /** A service with a crew radiates by how many of its hands are filled (never below 0.3); one without a crew radiates in full. */
@@ -31,7 +29,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (!def.service || def.service.type !== type) return;
     if (b.state !== 'ok') return;
-    if (def.category === 'special' && b.kind !== 'stake' && !hallActive(state, b.kind)) return;
     let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
     if (cracked(b)) strength = 0; // the Lantern of the Cores wards nothing while cracked
@@ -40,8 +37,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
-    const consecrated = b.kind === 'shrine' && (b.blessed ?? -1) >= state.day;
-    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
+    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -55,16 +51,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
-  if (type === 'ward') for (const g of nodesOfAspect(state, 'grey')) {
-    const r = 10;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        const x = g.x + dx;
-        const y = g.y + dy;
-        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
-        acc[idx(x, y)] += 0.35;
-      }
-  }
   if (type === 'ward') {
     // the World Tree's roots hold the Gloam under its shade (no burning, just holding)
     const tree = worldTree(state);
@@ -82,8 +68,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     }
   }
   if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
-  const wb = state.walkerBonus?.[type];
-  if (wb) for (let i = 0; i < n; i++) acc[i] += wb[i];
   // the quarters: a temple quarter's faith counts half again, a scholars' quarter's schooling a quarter more
   if (type === 'faith' || type === 'school') for (let i = 0; i < n; i++) { const q = state.district[i] ? state.districtQuarters[state.district[i]] : undefined; if (type === 'faith' && q === 'temple') acc[i] *= 1.5; else if (type === 'school' && q === 'scholars') acc[i] *= 1.25; }
   const out = state.coverage[type];
@@ -136,12 +120,7 @@ export function updateMiasma(state: GameState): void {
       acc[idx(mx + dx, my + dy)] += MARSH_MIASMA * (1 - d / (MARSH_MIASMA_REACH + 1));
     }
   }
-  const rain = raining(state) ? 0.3 : 1;
-  if (hallActive(state, 'lyceum')) forEachBuilding(state, (b) => {
-    if (b.kind !== 'lyceum' || b.state !== 'ok') return;
-    for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = b.x + 1 + dx; const y = b.y + 1 + dy; if (inBounds(x, y)) acc[idx(x, y)] *= 0.67; }
-  });
-  for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12 * rain));
+  for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12));
 }
 
 /** The flat land-value bonus of every building (and the −6 of deathcare), summed per tile. */
@@ -189,7 +168,6 @@ export function landValueTerms(state: GameState, i: number, bonus: Float32Array)
   const wd = state.waterDist[i];
   if (wd <= 5) add('water near', (5 - wd) * 2.5 * fr.waterLandValue);
   else if (wd > 8) add('dry land', -fr.dryPenalty);
-  if (wd <= 1 && floodedAt(state, i % MAP_W, (i / MAP_W) | 0)) add('the flood', -10);
   if (lakeDistAt(state, i % MAP_W, (i / MAP_W) | 0) <= LAKE_LAND_REACH && !isWater(state.terrain[i])) add('by the lake', LAKE_LAND); // the lake's own (iteration 60)
   const q = quarterAt(state, i);
   if (q === 'hearth') add('Hearth quarter', 6); else if (q === 'market') add('Market quarter', -4);

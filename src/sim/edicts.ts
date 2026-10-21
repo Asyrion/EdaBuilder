@@ -43,12 +43,6 @@ export const EDICTS: EdictDef[] = [
     costPerDay: (s) => 25 * s.buildings.filter((b) => b && (b.kind === 'boneyard' || b.kind === 'ossuary')).length, unlock: 1,
   },
   {
-    key: 'wardens', name: EDICT_TEXT.wardens.name,
-    desc: EDICT_TEXT.wardens.desc,
-    flavor: EDICT_TEXT.wardens.flavor,
-    costPerDay: () => 60, unlock: 2, cityOnly: true,
-  },
-  {
     key: 'herbgardens', name: EDICT_TEXT.herbgardens.name,
     desc: EDICT_TEXT.herbgardens.desc,
     flavor: EDICT_TEXT.herbgardens.flavor,

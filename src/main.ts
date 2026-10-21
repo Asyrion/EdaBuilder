@@ -1,11 +1,9 @@
 import type { FactionId } from './data/factions';
 import { setEdict } from './sim/edicts';
 import { repayLoan, takeLoan } from './sim/economy';
-import * as weave from './sim/weave';
 import * as economy from './sim/economy';
 import * as edicts from './sim/edicts';
 import * as districts from './sim/districts';
-import * as events from './sim/events';
 import * as scenario from './sim/scenario';
 import * as wild from './sim/wild';
 import * as water from './sim/water';
@@ -23,7 +21,6 @@ import { SOUND_CUES, type SoundCue } from './sim/hazards';
 import { buySector } from './sim/sectors';
 import { tileToWorld, worldToTile } from './render/iso';
 import { runDev } from './sim/dev';
-import { charterGuilds } from './sim/guilds';
 import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import type { Scenario } from './sim/types';
@@ -38,10 +35,9 @@ import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
-import { resolveEvent, maybeFireEvent, maybeFireRiot, ALL_EVENTS } from './sim/events';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
-import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
+import { takeSnapshot, restoreSnapshot, type Snapshot } from './sim/actions';
 import { deepenNode, canDeepenNode, placeBuildingRaw } from './sim/world';
 import { migrateKeys } from './ui/focus';
 import { Bot } from './sim/bot';
@@ -150,13 +146,9 @@ class Game {
       setPriority: (id, p) => { /* a changed tier is judged afresh: the brownout darkens the already-dark first */ if (this.cmd('priority', id, p).ok) this.audio.click(); },
       renameDistrict: (d, name) => { this.cmd('renameDistrict', d, name); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
-      vent: (id) => { if (this.cmd('vent', id).ok) this.audio.spire(); },
-      callRain: (id) => { const r = this.cmd('rain', id); if (r.ok) { this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
       get undoLabel() { const u = game.runner?.undoStack ?? []; return u.length ? u[u.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
-      resolveEvent: (c, amount) => { if (this.replay) return; this.cmd('tale', c, amount ?? null); this.audio.coin(); this.ui.refresh(); },
       centerOn: (x, y) => this.renderer.camera.centerOnTile(x, y),
-      charterGuilds: (g) => { const why = this.cmd('guild', g).reason ?? null; if (!why) { this.audio.coin(); this.ui.refresh(); } return why; },
       dev: (id, arg) => { const [u, v] = worldToTile(this.renderer.camera.cx, this.renderer.camera.cy); const out = this.cmd('dev', id, arg, Math.floor(u), Math.floor(v)).out ?? ''; this.paused = true; this.ui.refresh(); return out; },
       get camera() { return game.renderer.camera; },
       select: (b) => this.select(b),
@@ -259,15 +251,15 @@ class Game {
   /** The replay, run to its end as fast as the browser allows. */
   skipReplay(): void { if (this.replay) { this.skipping = true; this.paused = false; } }
 
-  private endReplay(stuck: boolean): void {
+  private endReplay(): void {
     const p = this.replay;
     if (!p) return;
     this.skipping = false;
     this.paused = true;
     const sum = checksum(this.state);
     const day = p.firstDivergence();
-    const ok = !stuck && sum === p.file.checksum;
-    this.ui.toast(ok ? `<p><b>The replay matches its recording</b>: day ${this.state.day}, checksum ${sum}.</p>` : `<p class="bad"><b>The replay diverged</b>${day >= 0 ? ` on day ${day}` : stuck ? ': a tale waited with no answer' : ''} (checksum ${sum}, recorded ${p.file.checksum}).</p>`, 12000);
+    const ok = sum === p.file.checksum;
+    this.ui.toast(ok ? `<p><b>The replay matches its recording</b>: day ${this.state.day}, checksum ${sum}.</p>` : `<p class="bad"><b>The replay diverged</b>${day >= 0 ? ` on day ${day}` : ''} (checksum ${sum}, recorded ${p.file.checksum}).</p>`, 12000);
     this.replayEnded = { ok, day, sum };
     this.ui.refresh();
   }
@@ -386,13 +378,12 @@ class Game {
       case 'faster': this.speed = Math.min(3, this.speed + 1); this.paused = false; this.ui.refresh(); return true;
       case 'help': this.ui.toggleHelp(); return true;
       case 'chronicle': this.ui.toggleChronicle(); return true;
-      case 'annals': this.ui.toggleAnnals(); return true;
       case 'views': this.ui.toggleBudget(false); document.getElementById('views')!.classList.toggle('hidden'); return true;
       case 'save': this.save(); this.ui.toast('<p>Charter saved.</p>', 1500); return true;
       case 'load': this.load(); return true;
       case 'cancel': {
         let handled = false;
-        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle', 'edicts', 'dev']) {
+        for (const id of ['help', 'budget', 'menu', 'chronicle', 'edicts', 'dev']) {
           const el = document.getElementById(id)!;
           if (!el.classList.contains('hidden')) { el.classList.add('hidden'); handled = true; }
         }
@@ -451,9 +442,8 @@ class Game {
         while (this.acc >= step && n < cap) {
           if (this.replay && !this.replayEnded) {
             // a replay applies the commands of this tick before running the next
-            if (!this.replay.feed()) { this.endReplay(false); break; }
-            if (this.replay.done) { this.endReplay(false); break; }
-            if (this.replay.stuck) { this.endReplay(true); break; }
+            if (!this.replay.feed()) { this.endReplay(); break; }
+            if (this.replay.done) { this.endReplay(); break; }
           }
           tick(this.state);
           this.runner.checkpoint();
@@ -530,7 +520,7 @@ async function boot(): Promise<void> {
   await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
   say('Raising the town…');
   await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0))); // let the line paint before the town is built
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, place: placeBuildingRaw, vehicles, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, gales, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, vehicles, economy, edicts, districts, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, gales, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
   line?.remove();

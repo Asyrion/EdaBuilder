@@ -3,12 +3,11 @@ import { factionOf, milestonesOf } from '../data/factions';
 import { charterUpkeep, districtUnlockNotes, quarterOf, templeQuarterStands, TEMPLE_TITHE_SHARE } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { Zone, type Building, type GameState } from './types';
-import { GROWING_HALLS, forEachBuilding, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
+import { GROWING_HALLS, forEachBuilding, litWonders, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
 import { edictOn, edictUpkeep, modifierSum } from './edicts';
 import { capacityOf } from './growth';
 import { roadTileOf } from './agents';
 import { marketRoadMultAt } from './roads';
-import { litWonders } from './weave';
 
 // ---------- the Crown ----------
 /** The Thaw levy: LEVY_RATE of the treasury above LEVY_FLOOR, each first day of the Thaw. */

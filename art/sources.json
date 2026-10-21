@@ -556,17 +556,6 @@
    "flip": true
   },
   {
-   "name": "b_cartersyard",
-   "src": "inspirations/trade_houses/image_1(1).png",
-   "w": 2,
-   "h": 2,
-   "colors": 24,
-   "checked": true,
-   "targetHeight": 46,
-   "anchor": "centre",
-   "flip": true
-  },
-  {
    "name": "b_ossuary",
    "src": "inspirations/graveyards/image_0(1).png",
    "w": 2,
@@ -582,24 +571,6 @@
    "anchor": "centre",
    "aliases": [
     "b_ossuary_v0"
-   ]
-  },
-  {
-   "name": "b_sextonchapel",
-   "src": "inspirations/graveyards/image_1(1).png",
-   "w": 2,
-   "h": 2,
-   "colors": 24,
-   "glow": {
-    "hue": "any",
-    "minLum": 0.45,
-    "warm": 60
-   },
-   "checked": true,
-   "targetHeight": 54,
-   "anchor": "centre",
-   "aliases": [
-    "b_sextonchapel_v0"
    ]
   },
   {
@@ -619,17 +590,6 @@
    "aliases": [
     "b_boneyard_v0"
    ]
-  },
-  {
-   "name": "b_lyceum",
-   "src": "inspirations/craft_houses/alchemists_house/image_0(1).png",
-   "w": 2,
-   "h": 2,
-   "colors": 24,
-   "checked": true,
-   "targetHeight": 64,
-   "anchor": "centre",
-   "flip": true
   },
   {
    "name": "hearth_l2_v0",
@@ -8153,45 +8113,6 @@
    "checked": true
   },
   {
-   "name": "b_stormpeak_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/shrines_12.png",
-   "island": 5,
-   "w": 1,
-   "h": 1,
-   "targetHeight": 45,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "flip": true,
-   "checked": true
-  },
-  {
-   "name": "b_stormpeak_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/shrines_12.png",
-   "island": 9,
-   "w": 1,
-   "h": 1,
-   "targetHeight": 45,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
    "name": "b_healer_v0",
    "set": "eda-lore-2",
    "src": "inspirations/eda-lore/shrines_altars_12.png",
@@ -8681,25 +8602,6 @@
    "checked": true
   },
   {
-   "name": "b_sextonchapel_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/cemeteries_16.png",
-   "island": 15,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 55,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
    "name": "b_watergarden_v0",
    "set": "eda-lore-2",
    "src": "inspirations/eda-lore/cemeteries_16.png",
@@ -8851,78 +8753,6 @@
    "checked": true
   },
   {
-   "name": "b_wrightslodge_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/general_craft/image_0(1).png",
-   "w": 2,
-   "h": 2,
-   "targetHeight": 52,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_wrightslodge_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/general_craft/image_1(1).png",
-   "w": 2,
-   "h": 2,
-   "targetHeight": 52,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_wrightslodge_v2",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/general_craft/image_2(1).png",
-   "w": 2,
-   "h": 2,
-   "targetHeight": 52,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_wrightslodge_v3",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/general_craft/image_3(2).png",
-   "w": 2,
-   "h": 2,
-   "targetHeight": 52,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
    "name": "b_brickworks_v0",
    "set": "eda-lore-2",
    "src": "inspirations/craft_houses/brickmaker/image_0(1).png",
@@ -9042,25 +8872,6 @@
    "h": 1,
    "targetHeight": 47,
    "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_observatory_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/magic_buildings_8.png",
-   "island": 3,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 70,
-   "maxWidth": 66,
    "anchor": "centre",
    "colors": 24,
    "sharpen": 0.8,

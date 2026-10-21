@@ -34,7 +34,7 @@ function checkPrompts(sprites: Set<string>): string[] {
 }
 
 const checks: [string, () => string[]][] = [
-  ['text (edicts, events, quests, guilds)', () => checkAllText(ROOT)],
+  ['text (edicts, quests)', () => checkAllText(ROOT)],
   ['art sources (art/sources.json)', () => {
     const live = (JSON.parse(readFileSync(join(ROOT, 'art/sources.json'), 'utf8')).sprites as { name: string; off?: boolean }[]).filter((e) => !e.off).map((e) => e.name);
     return [...new Set(live.filter((n, i) => live.indexOf(n) !== i))].map((n) => `art/sources.json: ${n} has two live entries (switch the old one off)`);

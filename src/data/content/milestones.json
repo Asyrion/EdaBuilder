@@ -38,8 +38,8 @@
     "name": "Market Town",
     "pop": 650,
     "grant": 8000,
-    "unlocks": ["ossuary", "hospice", "guildhall", "watergarden"],
-    "text": "Carts from three valleys come to your market. The guilds petition for a hall."
+    "unlocks": ["ossuary", "hospice", "watergarden"],
+    "text": "Carts from three valleys come to your market. The Ossuary and the Hospice may be raised."
   },
   {
     "name": "Burgh",

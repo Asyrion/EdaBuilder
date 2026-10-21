@@ -4,7 +4,6 @@ import { AgentKind, MAP_W, TICKS_PER_DAY, type Agent, type Building, type GameSt
 import { findPath, roadTileOf } from './agents';
 import { effects } from './hazards';
 import { commitRng, forEachBuilding, markDirty, pushMessage, rngOf } from './world';
-import { stepRoad } from './walkers';
 
 /** Set `instant` to skip construction (tests, headless tools). */
 export const construction = { instant: false };
@@ -152,4 +151,23 @@ export function tickConstruction(s: GameState): void {
       for (const a of crew) if (a.targetId === b.id) { a.targetId = -1; a.phase = 0; a.path = []; a.pathIdx = 0; }
     }
   }
+}
+
+export const WALK_SPEED = 1.3; // tiles per second, a builder on foot
+
+/** One road step for a builder: no congestion, no portals. Returns true when a new tile was reached. */
+export function stepRoad(a: Agent, dt: number, speedMul = 1): boolean {
+  if (a.pathIdx >= a.path.length) return false;
+  const t = a.path[a.pathIdx];
+  const tx = (t % MAP_W) + 0.5;
+  const ty = ((t / MAP_W) | 0) + 0.5;
+  const dx = tx - a.x;
+  const dy = ty - a.y;
+  const d = Math.hypot(dx, dy);
+  const sp = a.speed * WALK_SPEED * speedMul * dt;
+  if (d <= sp) { a.x = tx; a.y = ty; a.pathIdx++; return true; }
+  a.x += (dx / d) * sp;
+  a.y += (dy / d) * sp;
+  a.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
+  return false;
 }

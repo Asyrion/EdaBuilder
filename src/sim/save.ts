@@ -1,7 +1,5 @@
 /** JSON serialization of GameState. Typed arrays are base64-encoded. */
-import { initGuilds } from './guilds';
 import { initRelics } from './relics';
-import { assignAspects } from './weave';
 import { AgentKind, SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
 import { BUILDING_BY_KEY } from './catalog';
 import { isWild } from './wild';
@@ -29,7 +27,6 @@ export function serialize(state: GameState): string {
   for (const [k, v] of Object.entries(state)) {
     if (k === 'dirtyChunks' || k === 'zoneList' || k === 'zoneListDirty') continue;
     if (k === 'coverage' || k === 'lit' || k === 'watered' || k === 'landValue' || k === 'miasma' || k === 'traffic' || k === 'waterDist' || k === 'gloamDist') continue;
-    if (k === 'walkerBonus') continue; // transient (walkers.ts), rebuilt from nothing after a load; as JSON it was 80,000 keys
     if (v instanceof Uint8Array) o[k] = { u8: toB64(v) };
     else if (v instanceof Int32Array) o[k] = { i32: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
     else if (v instanceof Uint16Array) o[k] = { u16: toB64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
@@ -70,38 +67,25 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.chronicle = state.chronicle ?? [];
     state.questsDone = state.questsDone ?? [];
     for (const a of state.agents) a.load = a.load ?? 0;
-    state.agents = state.agents.filter((a) => a.kind !== 5 || !!a.job);
     state.edicts = state.edicts ?? {};
     state.modifiers = state.modifiers ?? [];
-    state.pendingEvent = state.pendingEvent ?? null;
-    state.lastEventDay = state.lastEventDay ?? 0;
-    state.firedEvents = state.firedEvents ?? [];
     state.lessonsSeen = state.lessonsSeen ?? [];
     state.districtEdicts = state.districtEdicts ?? {};
     state.districtNames = state.districtNames ?? {};
     state.districtQuarters = state.districtQuarters ?? {};
     state.tradeIncomeToday = state.tradeIncomeToday ?? 0;
-    state.weather = state.weather ?? null; // iteration 54
     state.crownFavour = state.crownFavour ?? 50;
     state.loan = state.loan ?? 0;
-    state.pleadings = state.pleadings ?? 0;
-    state.pilgrimsDay = state.pilgrimsDay ?? -1;
     state.edictSince = state.edictSince ?? {}; // an edict with no stamp may be repealed
     state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
     state.remembranceDead = state.remembranceDead ?? 0;
     state.gloamPressure = state.gloamPressure ?? 0.3;
-    state.lastBadDay = state.lastBadDay ?? -30;
-    state.unrestHigh = state.unrestHigh ?? 0;
     state.educatedFloor = state.educatedFloor ?? 0;
     state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
     // the stats object is replaced whole by the save: stone before iteration 38 was every terraform op; the rest fill from a fresh game below
     if (state.stats.stoneCut === undefined) state.stats.stoneCut = state.stats.terraformed ?? 0;
-    state.guilds = state.guilds ?? initGuilds();
-    state.guilds.pleasedDays = state.guilds.pleasedDays ?? { carters: 0, alchemists: 0, spirewrights: 0, sextons: 0 };
     state.relics = state.relics ?? initRelics();
     state.relicStock = state.relicStock ?? 0;
-    state.guilds.lastWar = state.guilds.lastWar ?? 0;
-    state.guilds.charters = state.guilds.charters ?? [];
     for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
     state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 };
     state.scenario = state.scenario ?? 'valley';
@@ -124,7 +108,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   const state = fresh(o.seed);
   const freshStats = { ...state.stats };
   for (const [k, v] of Object.entries(o)) {
-    if (!(k in state) || k === 'walkerBonus') continue; // saves before the hotfix carried the walkers' bonus as plain objects
+    if (!(k in state)) continue; // a field this build no longer has (a parked system's) is dropped
     if (v && typeof v === 'object' && 'u8' in v) (state as any)[k] = fromB64(v.u8);
     else if (v && typeof v === 'object' && 'i32' in v) {
       const b = fromB64(v.i32);
@@ -140,14 +124,11 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (!('wild' in o)) { state.wild = { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] }; state.agents = state.agents.filter((a) => a.herdId === undefined); } // a save from before the wild seeds its herds on its own land the next day (iteration 58)
   if (!('water' in o)) state.water = { fish: [], spawnUntil: -1, fishAt: [], closed: [] }; // a save from before the water: every shoal starts full (iteration 60)
   state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
-  // the merchant's memory and the brawl's day (iteration 73): a save from before them starts at nothing
-  state.merchant = state.merchant ?? { visits: 0, spent: 0, talks: 0 };
-  // the parked creatures (phase 1b) leave the map; the wild, the boats and the airship stay
-  state.agents = state.agents.filter((a) => a.kind !== AgentKind.Creature || a.species === 'airship' || a.species === 'boat' || isWild(a.species));
+  // the parked creatures (phase 1b) and walkers (1c, kind 5) leave the map; the wild, the boats and the airship stay
+  state.agents = state.agents.filter((a) => (a.kind as number) !== 5 && (a.kind !== AgentKind.Creature || a.species === 'airship' || a.species === 'boat' || isWild(a.species)));
+  for (const n of state.nodes) delete (n as { aspect?: string }).aspect; // the ley aspects are parked (1c)
   for (const k of Object.keys(state.stats)) if (!(k in freshStats)) delete (state.stats as Record<string, number>)[k]; // the parked systems' counters
-  state.guilds.brawlDay = state.guilds.brawlDay ?? -1;
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);
-  assignAspects(state.nodes, state.founding, (() => { let k = 0; return () => (k++ * 5 + 3); })());
   state.version = SAVE_VERSION;
   // rebuild derived layers
   const n = state.w * state.h;

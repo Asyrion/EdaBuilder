@@ -55,10 +55,9 @@ export function dailyRelics(s: GameState): void {
     r.uncatalogued += got;
     if (!hasAcademy(s)) pushMessage(s, `The diggers bring up a piece of something older than the Concord. Without an Academy nobody can say what.`, 'info');
   }
-  // scholars carry the pieces home themselves once an Academy fields one (walkers.ts); otherwise one a day by the book
-  // a scholar whose delve is out of reach would stall the book forever: after ten idle days the Academy names a piece itself
+  // the Academy names one piece a day by the book (its scholar walkers are parked, scope reset phase 1c)
   r.idle = r.uncatalogued > 0 ? (r.idle ?? 0) + 1 : 0;
-  if (r.uncatalogued > 0 && hasAcademy(s) && (!s.agents.some((a) => a.kind === 5 && a.job === 'scholar') || (r.idle ?? 0) >= 10)) {
+  if (r.uncatalogued > 0 && hasAcademy(s)) {
     r.uncatalogued--;
     r.idle = 0;
     catalogue(s);

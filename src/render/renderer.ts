@@ -5,7 +5,6 @@ import { factionOf } from '../data/factions';
 import { QUARTER_BY_ID } from '../sim/districts';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { inCharter } from '../sim/sectors';
-import { ASPECT_INFO } from '../sim/weave';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
@@ -387,8 +386,7 @@ export class Renderer {
         } else if ((t === Terrain.Grass || t === Terrain.Meadow) && !state.zone[i]) {
           if (h2(x, y, 27) < 0.05) cache.props.push({ name: `bush_${Math.floor(h2(x, y, 29) * this.bushCount)}`, wx: wx + (h2(x, y, 28) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.LeyNode) {
-          const nodeHere = state.nodes.find((n) => n.x === x && n.y === y);
-          cache.lights.push({ x: wx, y: wy + 8, r: 70, c: nodeHere?.aspect ? ASPECT_INFO[nodeHere.aspect].color : PAL.ley1, i: 0.9 });
+          cache.lights.push({ x: wx, y: wy + 8, r: 70, c: PAL.ley1, i: 0.9 });
           cache.props.push({ name: 'leynode', wx, wy, d: x + y + 0.4, sway: 0 });
         }
       }
@@ -657,12 +655,12 @@ export class Renderer {
     const cartPools = new Map<string, number>(); // the donkey-cart pools, counted once a frame (the paintings merge in after boot)
     const cartCount = (prefix: string): number => { let n = cartPools.get(prefix); if (n === undefined) { n = this.atlas.countVariants(prefix); cartPools.set(prefix, n); } return n; };
     for (const a of state.agents) {
-      // each walker keeps its own pace (its speed and its id), so a crowd on one road does not march in step
+      // each agent keeps its own pace (its speed and its id), so a crowd on one road does not march in step
       const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
-      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature && a.kind !== AgentKind.Walker) continue; // resting inside a building
+      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature) continue; // resting inside a building
       // a lane of its own: a small sideways offset by id, so agents sharing a tile do not stand on each other
-      const lane = a.kind === AgentKind.Citizen || a.kind === AgentKind.Walker || a.kind === AgentKind.Builder ? ((a.id * 7) % 5) - 2 : 0;
+      const lane = a.kind === AgentKind.Citizen || a.kind === AgentKind.Builder ? ((a.id * 7) % 5) - 2 : 0;
       const [wx0, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
       const wx = wx0 + lane;
       if (a.kind === AgentKind.Creature) {
@@ -699,8 +697,7 @@ export class Renderer {
       if (a.kind === AgentKind.Builder) {
         name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : a.phase === 1 && a.pathIdx < a.path.length ? walkFrame % 2 : 0}`;
         if (a.phase === 2 && cam.zoom >= 2 && Math.random() < 0.08) this.particles.emit({ x: wx + 4, y: wy + 2, vx: (Math.random() - 0.5) * 12, vy: -8 - Math.random() * 6, maxLife: 0.4, size: 1, color: PAL.lampWarm, glow: true, kind: 'spark' });
-      } else if (a.kind === AgentKind.Walker) name = `walker_${a.job}_${a.variant % 3}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
-      else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
+      } else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
       else if (a.kind === AgentKind.Cart) name = cartSpriteName(a, cartCount);
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
       const s = this.atlas.get(name);

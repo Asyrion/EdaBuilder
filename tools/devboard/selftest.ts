@@ -90,11 +90,12 @@ for (const [name, k] of Object.entries(KINDS).filter(([, k]) => k.textOnly)) {
 }
 {
   check(checkAllText(REPO).length === 0, 'text: every text the code reads is there, and every text is read');
-  const ev = JSON.parse(readFileSync(join(REPO, 'src/data/content/text/events.json'), 'utf8')), src = readFileSync(join(REPO, 'src/sim/events.ts'), 'utf8');
+  // the tales and the guilds are parked (scope reset phase 1c): the edicts' text stands in
+  const ev = JSON.parse(readFileSync(join(REPO, 'src/data/content/text/edicts.json'), 'utf8')), src = readFileSync(join(REPO, 'src/sim/edicts.ts'), 'utf8');
   const first = Object.keys(ev)[0];
   const missing = { ...ev }; delete missing[first];
-  check(checkText('events', missing, src).some((x) => x.includes(`${first}.title`) && x.includes('would not load')), 'text: an entry the code reads, gone, is reported');
-  check(checkText('events', { ...ev, selftestStray: { title: 'x' } }, src).some((x) => x.includes('selftestStray.title') && x.includes('nothing')), 'text: an entry nothing reads is reported');
+  check(checkText('edicts', missing, src).some((x) => x.includes(`${first}.name`) && x.includes('would not load')), 'text: an entry the code reads, gone, is reported');
+  check(checkText('edicts', { ...ev, selftestStray: { name: 'x' } }, src).some((x) => x.includes('selftestStray.name') && x.includes('nothing')), 'text: an entry nothing reads is reported');
 }
 
 // prompts (iteration 89): a new file, an edit, a stale write refused, undo of the edit and of the new file

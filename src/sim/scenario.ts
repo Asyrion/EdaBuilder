@@ -44,7 +44,6 @@ function inherit(s: GameState): void {
   for (let d = 0; d < 28; d++) {
     run(s, 900);
     bot.step();
-    if (s.pendingEvent) s.pendingEvent = null;
   }
   // the collapse
   s.treasury = -7000;
