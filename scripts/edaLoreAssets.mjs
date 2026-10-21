@@ -102,10 +102,9 @@ ground('ruins', 3, [[`${G}image_0.png`, 2, ISO], ['grass_tiles_16', 10, ISO], ['
 // the creatures the game has and the sheets paint: one painting, a pixel's hop for the second frame (iteration 58's rule)
 const A = 'inspirations/animals/';
 out.push({ name: 'boar_0', set: 'eda-lore-2', kind: 'prop', ...pick([`${A}image_3(1).png`, 26]), targetHeight: 9, colors: 20, glow: false, hop: true, checked: true });
-// the crystal ram reads as a purple blob at a goat's 11 px, and no sheet paints a tiger: those keep the drawn sprites
+// the crystal ram reads as a purple blob at a goat's 11 px: it keeps the drawn sprite (the glimmoth, the tiger and the
+// looks of the creature buildings are parked with their systems, scope reset phase 1b)
 // out.push({ name: 'goat_0', set: 'eda-lore-2', kind: 'prop', ...pick([`${A}image_2(1).png`, 37]), targetHeight: 11, colors: 20, glow: false, hop: true, checked: true });
-out.push({ name: 'glimmoth_0', set: 'eda-lore-2', kind: 'prop', ...pick([`${A}image_2(1).png`, 39]), targetHeight: 7, colors: 16, glow: { hue: 'any', minLum: 0.6, warm: 30 }, hop: true, checked: true });
-// out.push({ name: 'tiger_0', set: 'eda-lore-2', kind: 'prop', ...pick([`${A}image_1.png`, cell(1, 2, 256, 256)]), targetHeight: 11, colors: 20, glow: false, hop: true, checked: true });
 
 // ---------- buildings: looks ----------
 const GLOWB = { minLum: 0.6, warm: 60, maxBlob: 10 };
@@ -124,8 +123,6 @@ looks('shrine', 1, 28, [['shrines_12', 0, F], ['shrines_12', 2, F], ['shrines_12
 looks('stormpeak', 1, 45, [['shrines_12', 5, F], ['shrines_12', 9]]);
 const AL = 'inspirations/craft_houses/alchemists_house/';
 looks('healer', 1, 31, [['shrines_altars_12', 6, F], ['shrines_altars_12', 14], [`${AL}image_1(1).png`], [`${AL}image_2(1).png`], [`${AL}image_3(2).png`]]);
-looks('eggshellfont', 1, 35, [['shrines_altars_12', 2], ['shrines_16', 16]]);
-looks('leybeacon', 1, 51, [['light_towers_6', 0, F]]);
 looks('watchpost', 1, 36, [['light_towers_6', 51], ['hunters_lodges_7', 4]]);
 const WH = 'inspirations/wooden_houses/';
 looks('fishershut', 1, 31, [[`${WH}image_0(1).png`, undefined, F], [`${WH}image_1(1).png`]]);
@@ -136,10 +133,6 @@ looks('ossuary', 2, 58, [['cemeteries_16', 2], ['cemeteries_16', 6], ['cemeterie
 looks('sextonchapel', 2, 55, [['cemeteries_16', 15]], 1);
 looks('watergarden', 2, 44, [['cemeteries_16', 13]]);
 looks('hunterslodge', 2, 50, [['hunters_lodges_7', 2, F], ['hunters_lodges_7', 3], ['hunters_lodges_7', 6], ['hunters_lodges_7', 7, F]]);
-looks('tamerslodge', 2, 50, [['hunters_lodges_7', 11, F], ['hunters_lodges_7', 12]]);
-const FG = 'inspirations/craft_houses/forge/';
-looks('wyrmforge', 2, 51, [[`${FG}image_0(1).png`, undefined, F], [`${FG}image_1(1).png`]]);
-looks('golemfoundry', 2, 58, [[`${FG}image_3(2).png`, undefined, F]]);
 const TH = 'inspirations/trade_houses/';
 looks('depot', 2, 62, [[`${TH}image_0(1).png`], [`${TH}image_2(1).png`], [`${TH}image_3(2).png`]]);
 const GC = 'inspirations/craft_houses/general_craft/';
@@ -149,13 +142,10 @@ looks('brickworks', 3, 80, [[`${BM}image_0(1).png`], [`${BM}image_1(1).png`], [`
 // a narrow painting on a 2×2 stands taller so it fills its diamond; the two thinnest spires are Ley Spires (1×1)
 looks('academy', 2, 62, [['lantern_towers_7', 2]]);
 looks('spire', 1, 47, [['magic_buildings_8', 54, F], ['lantern_towers_7', 4]], 1);
-looks('drakemews', 2, 56, [['magic_buildings_8', 2, F]]);
 looks('observatory', 2, 70, [['magic_buildings_8', 3]]);
 looks('ruindelve', 2, 56, [['magic_buildings_8', 55]]);
 looks('househall', 2, 62, [['magic_buildings_8', 57, F]]);
 looks('lantern', 3, 140, [['light_towers_6', 2, F]]);
-looks('greatgate', 3, 96, [['lantern_towers_7', 0]]);
-looks('hallofmarvels', 3, 80, [['lantern_towers_7', 3]]);
 looks('grandacademy', 3, 85, [['lantern_towers_7', 6]]);
 
 // a building whose base painting was imported before keeps it as its first look

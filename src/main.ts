@@ -10,14 +10,7 @@ import * as scenario from './sim/scenario';
 import * as wild from './sim/wild';
 import * as water from './sim/water';
 import * as gales from './sim/gales';
-import * as hounds from './sim/hounds';
-import { lineNest, raiseCradle } from './sim/wyrmcraft';
-import * as wyrmcraft from './sim/wyrmcraft';
-import * as beasts from './sim/beasts';
 import * as vehicles from './sim/vehicles';
-import { setGolemDuty } from './sim/beasts';
-import { scatterDust } from './sim/actions';
-import { maybeFireReturn } from './sim/events';
 import { canBuild, costOf, specialLock } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
@@ -50,8 +43,6 @@ import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { takeSnapshot, restoreSnapshot, callRain, type Snapshot } from './sim/actions';
 import { deepenNode, canDeepenNode, placeBuildingRaw } from './sim/world';
-import { setTraining, setRole } from './sim/wyrmcraft';
-import * as wyrm from './sim/wyrm';
 import { migrateKeys } from './ui/focus';
 import { Bot } from './sim/bot';
 import { CommandRunner, ReplayPlayer, checksum, stateFromHeader, type CommandResult, type ReplayFile, type ReplayHeader } from './sim/commands';
@@ -159,17 +150,8 @@ class Game {
       setPriority: (id, p) => { /* a changed tier is judged afresh: the brownout darkens the already-dark first */ if (this.cmd('priority', id, p).ok) this.audio.click(); },
       renameDistrict: (d, name) => { this.cmd('renameDistrict', d, name); this.renderer.overlayVersion++; },
       undo: () => this.undo(),
-      setTraining: (id, t) => { this.cmd('training', id, t); this.audio.click(); },
       vent: (id) => { if (this.cmd('vent', id).ok) this.audio.spire(); },
-      replate: (id) => { if (this.cmd('replate', id).ok) this.audio.spire(); },
       callRain: (id) => { const r = this.cmd('rain', id); if (r.ok) { this.audio.spire(); this.renderer.burst('ward', this.selected?.x ?? 0, this.selected?.y ?? 0); } else this.ui.setHint(`<span class="bad">${r.reason}</span>`); this.ui.refresh(); },
-      setRole: (id, role, target) => { const why = this.cmd('role', id, role, target).reason ?? null; if (!why) this.audio.spire(); return why; },
-      raiseCradle: (id) => { const why = this.cmd('cradle', id).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); } this.ui.refresh(); return why; },
-      lineNest: (id) => { const why = this.cmd('nest', id).reason ?? null; if (!why) this.audio.click(); return why; },
-      setBurnWyrmfire: (on) => { this.cmd('burnWyrmfire', on); this.audio.click(); },
-      toggleSkyDock: () => { const why = this.cmd('skydock').reason ?? null; if (!why) this.audio.click(); this.ui.refresh(); return why; },
-      setGolemDuty: (id, duty, target) => { const why = this.cmd('golem', id, duty, target).reason ?? null; if (!why) this.audio.click(); return why; },
-      scatterDust: (x, y) => { const r = this.cmd('dust', x, y); if (r.ok) { this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },
       get undoLabel() { const u = game.runner?.undoStack ?? []; return u.length ? u[u.length - 1].label : null; },
       setSetting: (k, v) => game.setSetting(k, v),
       resolveEvent: (c, amount) => { if (this.replay) return; this.cmd('tale', c, amount ?? null); this.audio.coin(); this.ui.refresh(); },
@@ -410,7 +392,7 @@ class Game {
       case 'load': this.load(); return true;
       case 'cancel': {
         let handled = false;
-        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle', 'edicts', 'wyrms', 'dev']) {
+        for (const id of ['help', 'budget', 'menu', 'annals', 'chronicle', 'edicts', 'dev']) {
           const el = document.getElementById(id)!;
           if (!el.classList.contains('hidden')) { el.classList.add('hidden'); handled = true; }
         }
@@ -505,9 +487,8 @@ class Game {
       const tod = timeOfDay(this.state);
       const night = nightFactor(tod);
       const v = this.renderer.inView;
-      this.audio.ambientMix(night, v.ley, Math.min(1, v.water + v.mills * 0.8), v.fire, v.market, v.storm, v.golems);
-      if (v.rays > 0) this.audio.raysInView(v.rays);
-      const danger = Math.max(v.fire, this.state.wyrm.flyover > 0 && this.state.agents.some((a) => a.kind === 3 && a.species === 'wyrm' && a.load > 0) ? 1 : 0, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0, this.state.agents.some((a) => a.kind === 3 && a.species === 'hound') && night > 0.3 ? 0.7 : 0);
+      this.audio.ambientMix(night, v.ley, Math.min(1, v.water + v.mills * 0.8), v.fire, v.market);
+      const danger = Math.max(v.fire, this.state.overdrawDays > 0 ? 1 : 0, this.state.unrest > 0.4 ? 1 : 0);
       this.audio.setMood(night, Math.floor(this.state.day / 30) % 4, danger);
       if (this.state.gameOver && !this.paused) {
         this.paused = true;
@@ -530,8 +511,7 @@ class Game {
       if (this.running) {
         this.ui.refresh();
         this.ui.refreshBudget();
-        if (!document.getElementById('wyrms')!.classList.contains('hidden') && this.state.tick % 300 === 0) this.ui.refreshWyrms();
-        if ((this.tools.tool.kind === 'road' || this.tools.tool.kind === 'wall') && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
+        if (this.tools.tool.kind === 'road' && this.tools.previewCost > 0) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — cost <span class="gold">${this.tools.previewCost} crowns</span>. Release to build.`);
         else if ((this.tools.tool.kind === 'build' || this.tools.tool.kind === 'zone') && this.tools.previewReason) this.ui.setHint(`<b>${toolLabel(this.tools.tool)}</b> — <span class="warn">${this.tools.previewReason}</span>`);
         else if (this.tools.tool.kind === 'build' || this.tools.tool.kind === 'zone') this.updateHint();
       }
@@ -550,7 +530,7 @@ async function boot(): Promise<void> {
   await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
   say('Raising the town…');
   await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0))); // let the line paint before the town is built
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, wyrm, place: placeBuildingRaw, wyrmcraft, beasts, vehicles, maybeFireReturn, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, hounds, gales, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, maybeFireEvent, maybeFireRiot, resolveEvent, ALL_EVENTS, place: placeBuildingRaw, vehicles, weave, economy, edicts, districts, events, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, gales, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
   line?.remove();

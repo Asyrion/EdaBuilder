@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { flyoverFireCap, greatWyrm, startFlyover, endFlyover, WYRM_FLYOVER_FIRES } from '../src/sim/wyrm';
-import { addEgg } from '../src/sim/wyrmcraft';
 import { ALL_EVENTS, resolveEvent } from '../src/sim/events';
 import { CHARTER_COST, RIVALRY_STING, charterGuilds, dailyGuilds, guildDrivers, isChartered } from '../src/sim/guilds';
 import { activeQuests } from '../src/sim/quests';
@@ -15,31 +13,6 @@ function town(seed = 41) {
   flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
   return s;
 }
-
-describe('The great wyrm answers the flyover', () => {
-  it('halves the fires, writes the tale, and the Vein-Wyrm sleeps deeper', () => {
-    const s = town(21);
-    const f = s.founding;
-    placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
-    recomputeAll(s);
-    expect(greatWyrm(s)).toBeNull();
-    expect(flyoverFireCap(s)).toBe(WYRM_FLYOVER_FIRES);
-    const d = addEgg(s, 'vein')!;
-    d.trueblood = true; d.second = 'ember'; d.stage = 4;
-    expect(greatWyrm(s)?.name).toBe(d.name);
-    expect(flyoverFireCap(s)).toBe(2);
-    if (s.wyrm.node >= 0) {
-      s.wyrm.state = 'awake';
-      startFlyover(s, true);
-      expect(s.stats.wyrmDuels).toBe(1);
-      expect(s.chronicle.some((c) => c.text.includes('rises from its cradle'))).toBe(true);
-      endFlyover(s, true);
-      expect(s.wyrm.state).toBe('sleeping');
-      expect(s.wyrm.waking).toBe(20);
-      expect(activeQuests(s, 100).some((q) => q.id === 'k_duel')).toBe(false);
-    }
-  });
-});
 
 describe('Relic auctions', () => {
   it('the caravan bids above the Crown and a collector may take an uncatalogued piece', () => {

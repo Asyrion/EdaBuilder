@@ -6,7 +6,6 @@
 import { VELLISH_HAPPINESS, milestonesOf } from '../data/factions';
 import { computeLedger } from './economy';
 import { resolveEvent } from './events';
-import { clearAuraCache } from './weave';
 import type { GameState, Modifier } from './types';
 
 /** Crowns a timed effect is worth per unit of its value per day, for this city (a first guess the balance runs settle). */
@@ -29,9 +28,9 @@ function modifierWeight(s: GameState, kind: Modifier['kind'], happyW: number): n
   }
 }
 
-/** What the city holds, in crowns: the purse, ten days of the ledger, the timed effects, favour, standings, dragons, goods and roofs. */
+/** What the city holds, in crowns: the purse, ten days of the ledger, the timed effects, favour, standings, relics and roofs. */
 export function worth(s: GameState): number {
-  if (s.gameOver || s.wyrm.razing) return -1e9; // the razing flight ends the charter when it lands (iteration 70)
+  if (s.gameOver) return -1e9;
   const next = s.milestone + 1;
   const underGate = s.faction === 'vellish' && next < milestonesOf(s).length && s.happiness < VELLISH_HAPPINESS(next) + 2;
   const happyW = Math.max(5, s.population * 0.02) * (underGate ? 3 : 1);
@@ -46,9 +45,7 @@ export function worth(s: GameState): number {
   w += s.crownFavour * 40;
   for (const v of Object.values(s.guilds.standing)) w += v * 15;
   w += s.educated * 20000;
-  w += s.dragons.length * 5000;
-  const m = s.materials;
-  w += m.scale * 400 + m.wyrmfire * 500 + m.eggshell * 200 + m.rayscale * 300 + m.glimdust * 150 + s.relicStock * 120;
+  w += s.relicStock * 120;
   let roofs = 0;
   for (const b of s.buildings) if (b && b.state === 'ok') roofs++;
   w += roofs * 400 + s.population * 3;
@@ -73,6 +70,5 @@ export function chooseTale(s: GameState): TaleAnswer {
       if (gain > best.gain + 1e-6) best = { choice: k, amount, gain };
     }
   });
-  clearAuraCache(); // the copies may have cached their own dragons' auras
   return best;
 }

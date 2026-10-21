@@ -1,5 +1,5 @@
 /** Iteration 55 (M14 part 5, the bot plays it all, and the Annals): the bot's tale policy, purse, light-first zoning, taxes,
- *  edicts, walls and depot; the Annals over every counter; saves that branch on their version; five dev commands; and the
+ *  edicts and depot; the Annals over every counter; saves that branch on their version; five dev commands; and the
  *  Hall of Wicks that the vigil festival really unlocks. */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
@@ -49,16 +49,6 @@ describe('The bot answers a tale greedily', () => {
     // granting the spire-wrights' petition costs 60 a day for nothing this town needs: the policy does not grant it
     expect(a.choice).not.toBe(0);
   });
-  it('keeps an egg when a cradle has room and sells it when none has', () => {
-    const s = town();
-    s.milestone = 4;
-    pend(s, 'egg_seam');
-    expect(chooseTale(s).choice).toBe(1); // no cradle: "keep" would sell it anyway, and the Crown's sale adds favour
-    const f = s.founding;
-    placeBuildingRaw(s, 'cradle', f.x + 4, f.y + 3);
-    recomputeAll(s);
-    expect(chooseTale(s).choice).toBe(0);
-  });
   it('worth counts the purse, the ledger, the timed effects and the roofs', () => {
     const s = town();
     const w0 = worth(s);
@@ -76,9 +66,7 @@ describe('The bot keeps a purse', () => {
     const bot = new Bot(s);
     s.manaSupply = 100; s.manaDemand = 120; s.brownout = 0.2;
     const g = (bot as any).pickGoal();
-    expect(g.kind).toBe('font'); // in a brownout the first cradle waits: the ley must carry it
-    s.manaSupply = 200; s.manaDemand = 120; s.brownout = 0; s.ledger.net = 400;
-    expect((bot as any).pickGoal().kind).toBe('cradle'); // with mana to spare and a ledger of 300, it comes first, once
+    expect(g.kind).toBe('font');
     s.manaSupply = 100; s.manaDemand = 120; s.brownout = 0.2;
     (bot as any).goal = g; (bot as any).reserve = g.cost;
     for (let k = 0; k < 6; k++) placeBuildingRaw(s, 'hearth', s.founding.x - 8 + k, s.founding.y + 3);
@@ -96,7 +84,6 @@ describe('The bot keeps a purse', () => {
     const s = town(55);
     s.milestone = 7; // the Lantern of Vell is the hall (the Tallowkin's Hall of Wicks, which this test used, is parked)
     const bot = new Bot(s);
-    (bot as any).goalBlocked.cradle = 999; // no cradle goal in the way of the repayment below
     s.treasury = 500;
     (bot as any).goal = { kind: 'font', key: 'font', cost: 6700, mana: true };
     s.ledger.net = 600;
@@ -121,12 +108,12 @@ describe('The bot keeps a purse', () => {
     const s = town(55);
     s.milestone = 6;
     const bot = new Bot(s);
-    (bot as any).goal = { kind: 'hall', key: 'greatgate', cost: 5400, mana: false };
+    (bot as any).goal = { kind: 'hall', key: 'stormpeak', cost: 5400, mana: false };
     s.treasury = 60000;
-    // no Belregi gate in the wall: the Great Gate cannot stand
+    // no storm caller has come: the Peak cannot stand (the Great Gate this test used is parked)
     for (let k = 0; k < 5; k++) (bot as any).pursueGoal();
     expect((bot as any).goal).toBeNull();
-    expect((bot as any).goalBlocked.greatgate).toBe(s.day + 20);
+    expect((bot as any).goalBlocked.stormpeak).toBe(s.day + 20);
   });
 });
 
@@ -167,26 +154,7 @@ describe('The bot zones what it can light and moves the tithe', () => {
   });
 });
 
-describe('The bot walls the grey side and stands a depot', () => {
-  it('raises a wall arc with gates on the roads once thirty hounds have come', () => {
-    const s = town();
-    const bot = new Bot(s);
-    const f = s.founding;
-    for (let x = f.x - 20; x <= f.x + 20; x++) for (let y = f.y - 26; y <= f.y - 22; y++) s.gloam[idx(x, y)] = 1; // the Gloam to the north
-    buildRoad(s, RoadType.Track, roadPath(f.x + 2, f.y + 1, f.x + 2, f.y - 18, true));
-    recomputeAll(s);
-    s.manaSupply = 400; s.manaDemand = 50;
-    s.stats.houndsTotal = 29;
-    (bot as any).raiseWalls();
-    expect(s.wall.some(Boolean)).toBe(false);
-    s.stats.houndsTotal = 30;
-    (bot as any).raiseWalls();
-    expect(bot.wallArcs).toBe(1);
-    const walls = [...s.wall].filter((v) => v === 1).length;
-    const gates = [...s.wall].filter((v) => v === 2).length;
-    expect(walls).toBeGreaterThan(6);
-    expect(gates).toBeGreaterThanOrEqual(1);
-  });
+describe('The bot stands a depot', () => {
   it('finds a depot room in the outer ring when the old homes are packed (the depot of iteration 43)', () => {
     const s = town();
     const bot = new Bot(s);
@@ -211,7 +179,7 @@ describe('The Annals', () => {
       expect(r.note.length).toBeGreaterThan(10);
       expect(['number', 'string']).toContain(r.stat ? typeof s.stats[r.stat] : typeof r.value!(s));
     }
-    expect(ANNALS.length).toBeGreaterThanOrEqual(12);
+    expect(ANNALS.length).toBeGreaterThanOrEqual(10); // phase 1b parked the Wyrmcraft, Vein-Wyrm and Beasts pages
   });
 });
 
@@ -222,12 +190,11 @@ describe('Saves branch on their version', () => {
     const o = JSON.parse(serialize(s));
     expect(o.version).toBe(SAVE_VERSION);
     o.version = 6;
-    delete o.crownFavour; delete o.departed; delete o.edictSince; delete o.stats.levies; delete o.stats.stoneCut; delete o.sectors;
+    delete o.crownFavour; delete o.edictSince; delete o.stats.levies; delete o.stats.stoneCut; delete o.sectors;
     o.stats.terraformed = 7;
     const r = deserialize(JSON.stringify(o), (seed) => createGame(seed));
     expect(r.version).toBe(SAVE_VERSION);
     expect(r.crownFavour).toBe(50);
-    expect(r.departed).toEqual([]);
     expect(r.edictSince).toEqual({});
     expect(r.stats.levies).toBe(0);
     expect(r.stats.stoneCut).toBe(7); // stone before iteration 38 was every terraform op
@@ -243,8 +210,8 @@ describe('Saves branch on their version', () => {
     expect(r.stats).toEqual(s.stats);
     expect(r.firedEvents).toEqual(s.firedEvents);
     const o = JSON.parse(serialize(s));
-    delete o.version; delete o.departed;
-    expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).departed).toEqual([]);
+    delete o.version; delete o.crownFavour;
+    expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).crownFavour).toBe(50);
     o.version = 99;
     expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(SaveVersionError);
     expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(/version 99/);
@@ -316,19 +283,12 @@ describe('A city in debt can still answer a tale', () => {
     const s = town();
     s.treasury = -500;
     s.day = 40;
-    s.departed.push({ name: 'Pell', line: 'ember', stage: 2, x: s.founding.x, y: s.founding.y, day: 5, returned: false });
-    pend(s, 'dragon_returns');
-    resolveEvent(s, 0); // pay its tribute: the purse cannot, so the shelves pay
-    expect(s.departed[0].returned).toBe(true);
-    expect(s.messages[s.messages.length - 1].text).not.toMatch(/purse is too light/);
+    pend(s, 'council_carters');
+    resolveEvent(s, 0); // grant the petition: no crowns asked (the dragon's tribute this test used is parked)
+    expect(s.edicts.imports).toBe(true);
+    expect(s.messages[s.messages.length - 1].text).not.toMatch(/purse is too light|crowns asked/);
     pend(s, 'council_carters');
     resolveEvent(s, 1); // "Pay them off (400 crowns)"
     expect(s.messages[s.messages.length - 1].text).toMatch(/400 crowns asked/);
-  });
-});
-
-describe('The Crown answers the first cradle', () => {
-  it("the Crown's gift is a priority tale", () => {
-    expect(ALL_EVENTS.find((e) => e.id === 'egg_first')!.priority).toBe(true);
   });
 });

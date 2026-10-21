@@ -11,7 +11,7 @@ import { BLIZZARD_DAYS, DROUGHT_DAYS, RAIN_DAYS, blizzard, dailyWeather, drought
 import { dailyFire } from '../src/sim/hazards';
 import { updateMana } from '../src/sim/networks';
 import { updateMiasma } from '../src/sim/services';
-import { ALL_EVENTS, CALENDAR, PILGRIM_ASK_DAYS, foxAudit, resolveEvent } from '../src/sim/events';
+import { ALL_EVENTS, CALENDAR, PILGRIM_ASK_DAYS, resolveEvent } from '../src/sim/events';
 import { EDICT_MIN_DAYS, EDICT_REPEAL, edictLocked, setEdict } from '../src/sim/edicts';
 import { CHARTER_LOCK_DAYS, CHARTER_SMOKE_SPILL, TEMPLE_TITHE_SHARE, charterCostOf, charterHeld, charterUpkeep, setQuarter } from '../src/sim/districts';
 import { forecast } from '../src/sim/forecast';
@@ -71,7 +71,7 @@ describe('The weather is written in the seed', () => {
     expect(raining(s)).toBe(true);
   });
 
-  it('a drought shrinks the wells and pauses the World Tree; a blizzard makes the hearths drink more and keeps the hounds in', () => {
+  it('a drought shrinks the wells and pauses the World Tree; a blizzard makes the hearths drink more', () => {
     const s = town();
     const f = s.founding;
     const well = placeBuildingRaw(s, 'well', f.x + 3, f.y + 1); ok(well);
@@ -220,7 +220,7 @@ describe('Gates and memory', () => {
     expect(nextGate(s)).toBeNull();
   });
 
-  it('welcomed pilgrims ask for a shrine a month on, each pleading is remembered, and the Fen-Nex quarter is audited each season on a coin of its own', () => {
+  it('welcomed pilgrims ask for a shrine a month on, and each pleading is remembered', () => {
     const s = town();
     const f = s.founding;
     for (let k = 0; k < 6; k++) { const h = placeBuildingRaw(s, 'hearth', f.x - 6 + k * 2, f.y + 1); ok(h); h.residents = 2; }
@@ -262,20 +262,6 @@ describe('Gates and memory', () => {
     // paying lifts the favour
     s.pendingEvent = { id: 'collector', title: 'The Crown\'s collector', text: '', choices: [] }; s.firedEvents.push('collector:?'); resolveEvent(s, 0);
     expect(s.crownFavour).toBe(25);
-    // the fox audit: a side-stream coin, once a season, only with a Fen-Nex quarter
-    s.day = 60; s.treasury = 10000;
-    const rng0 = s.rngState;
-    foxAudit(s);
-    expect(s.treasury).toBe(10000);
-    s.fenNex = 1;
-    foxAudit(s);
-    expect(s.rngState).toBe(rng0);
-    expect(s.stats.foxAudits).toBe(1);
-    expect([12000, 9000]).toContain(s.treasury);
-    const t1 = s.treasury;
-    s.day = 61;
-    foxAudit(s);
-    expect(s.treasury).toBe(t1);
   });
 
   it('a bad line no longer silences the tales: only a hazard is an ill tiding', () => {

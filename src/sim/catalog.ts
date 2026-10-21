@@ -49,13 +49,11 @@ export interface BuildingDef {
   nearHills?: boolean; // a hills tile must touch the footprint
   nearWater?: boolean; // a river/lake tile must touch the footprint
   nearShore?: boolean; // a shore or water tile must touch the footprint (the reed-cutters, iteration 60)
-  nearGate?: boolean; // a footprint tile must touch a Belregi gate in the Warding Wall (the Great Gate, iteration 69)
   nearLake?: boolean; // a footprint tile within 3 of the lake's open water (the Water Garden, iteration 60)
   selfLit?: boolean; // lights itself and its neighbours without mana
   goodsRate?: number; // goods produced per day, carted like a Craft works
   onRuins?: boolean; // footprint must be Ruins tiles
   maxCount?: number; // at most this many in the city
-  materials?: { scale?: number; wyrmfire?: number; eggshell?: number; rayscale?: number; glimdust?: number }; // rare goods consumed to build
   relic?: string; // needs this relic set entire (relics.ts)
   faction?: FactionId[]; // a people's own building; absent = every people
   leystone?: number; // leystone mined per day
@@ -138,11 +136,3 @@ export const WONDER_HALLS = ['lantern'];
 /** Moorings: the buildings barges sail between (the Veshari's Landing is parked). */
 export const MOORINGS = ['quay'];
 
-export const WALL_COST = 60;
-export const WALL_UPKEEP = 0.4;
-export const WALL_MANA = 0.5;
-export const WALL_UNLOCK = 2; // Thorp
-
-export const GATE_COST = { 2: 450, 3: 650 } as Record<number, number>;
-export const GATE_NAMES = { 2: 'Belregi Gate', 3: 'Uzulim Gate' } as Record<number, string>;
-export const GATE_UNLOCK = 3; // Village

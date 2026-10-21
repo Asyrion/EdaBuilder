@@ -1,9 +1,8 @@
-import { GREAT_CRADLE_MANA, isCradle } from './wyrmcraft';
 import { LAKE_WELL_CAP, LAKE_WELL_REACH, lakeDistAt } from './water';
 /** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
-import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WALL_MANA, WONDER_HALLS } from './catalog';
+import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WONDER_HALLS } from './catalog';
 import { MAP_H, MAP_W, RoadType, Zone, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
@@ -11,9 +10,8 @@ import { guildEffect, hallActive } from './guilds';
 import { relicDone } from './relics';
 import { factionOf } from '../data/factions';
 import { bumpRoadVersion } from './agents';
-import { foundryMana } from './beasts';
 import { floatingMana } from './vehicles';
-import { aspectAt, blizzard, dragonAuras, millFactor } from './weave';
+import { aspectAt, blizzard, millFactor } from './weave';
 import { edictOn } from './edicts';
 import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
@@ -41,19 +39,17 @@ export function isLeyMember(b: Building): boolean {
 export function priorityOf(b: Building): 0 | 1 | 2 {
   if (b.priority !== undefined) return b.priority;
   const def = BUILDING_BY_KEY[b.kind];
-  if (def.service?.type === 'ward' || def.waterRadius || b.kind === 'wyrmcourt') return 0; // the Court goes dark last: a dark Court sulks the wyrm
+  if (def.service?.type === 'ward' || def.waterRadius) return 0;
   if (def.category === 'leisure') return 2;
   return 1;
 }
 interface MemberLoad { b: Building; x: number; y: number; cap: number; load: number; list: { c: Consumer; d: number }[] }
 interface Consumer { s: number; use: number; d: number; wasLit: boolean; prio: number }
 
-let beastmastersOn = false;
 export function manaUseOf(b: Building, hush = false): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
-  const base = (def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse) + (isCradle(b.kind) && b.level >= 2 ? GREAT_CRADLE_MANA : 0); // a Great Cradle drinks four more
-  if (isCradle(b.kind) && beastmastersOn) return base * 0.6;
+  const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
   return hush && def.category === 'zone' ? base * 1.25 : base;
 }
 
@@ -63,7 +59,6 @@ function manaMult(state: GameState): number {
 
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */
 export function updateMana(state: GameState): void {
-  beastmastersOn = edictOn(state, 'beastmasters');
   const n = MAP_W * MAP_H;
   const lit = new Uint8Array(n);
   const oldLit = state.lit;
@@ -119,11 +114,6 @@ export function updateMana(state: GameState): void {
   state.nodeLinked = linked;
   supply += nodeFlow(state, linked) * factionOf(state).rules.nodeMana;
 
-  // 2a. drakes: a Glim drake lights its cradle's neighbours; a Vein drake roosting adds flow
-  for (const au of dragonAuras(state)) {
-    if (au.line === 'glim') sources.push({ x: au.x, y: au.y, r: 3 });
-    if (au.line === 'vein') supply += 10;
-  }
   // 2b. self-lit buildings (Hanging Gardens) and living glowvine lanes are sources that need no Vein
   const gardens: { x: number; y: number }[] = [];
   forEachBuilding(state, (b) => {
@@ -280,10 +270,8 @@ export function updateMana(state: GameState): void {
   }
   let roadDemand = 0;
   for (let i = 0; i < n; i++) if (roadLit[i] && state.road[i] === RoadType.Lantern) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
-  demand += foundryMana(state);
   demand += floatingMana(state);
   forEachBuilding(state, (b) => { if (b.kind === 'portalarch' && b.lit && b.state === 'ok') demand += PORTAL_MANA * (b.load ?? 0); }); // each crossing today draws a tenth
-  for (let i = 0; i < n; i++) if (state.wall[i]) demand += WALL_MANA;
   // lantern-ways are the first thing a shortfall dims: their draw leaves the demand and they go dark (with hysteresis, so they do not flicker)
   if (!state.roadsDim && demand + roadDemand > supply) state.roadsDim = true;
   else if (state.roadsDim && demand + roadDemand <= supply) state.roadsDim = false;
@@ -336,11 +324,9 @@ export function updateMana(state: GameState): void {
     if (!b.lit) return;
     for (let dy = 0; dy < b.h; dy++) for (let dx = 0; dx < b.w; dx++) lit[idx(b.x + dx, b.y + dy)] = 1;
   });
-  // glim-dust on a road tile lights that tile for a season: land value, the overlay and a glow, but it conducts nothing and lights no building (iteration 53)
-  for (let i = 0; i < n; i++) if (state.dustLit[i] > state.day && state.road[i]) lit[i] = 1;
   // dirty chunks where lit changed (for lantern-way glow rendering)
   for (let i = 0; i < n; i++) {
-    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine || state.dustLit[i])) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
+    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine)) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
     if (lit[i] !== oldLit[i] && state.bIndex[i] >= 0 && state.buildings[state.bIndex[i]]?.kind === 'portalarch') bumpRoadVersion();
   }
   state.lit = lit;

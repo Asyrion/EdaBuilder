@@ -49,22 +49,18 @@ describe('The caravan in the books', () => {
     expect(s.stats.caravanGoods).toBe(40);
     expect(s.ledgerHistory).toEqual([120, 140 + take]);
   });
-  it('the rare goods and the relic auction count too; a caravan sent on counts nothing and leaves the last take at 0', () => {
+  it('the relic auction counts too; a caravan sent on counts nothing and leaves the last take at 0', () => {
     const s = town(64);
-    s.materials.scale = 2;
-    halt(s);
-    resolveEvent(s, 1, 100);
-    expect(s.stats.caravanCrowns).toBe(800); // scale at 400 each
     s.relicStock = 3;
     halt(s);
     const before = s.treasury;
     resolveEvent(s, 3);
     const auction = Math.round(s.treasury - before);
     expect(auction).toBeGreaterThan(0);
-    expect(s.stats.caravanCrowns).toBe(800 + auction);
+    expect(s.stats.caravanCrowns).toBe(auction);
     halt(s);
     resolveEvent(s, 4);
-    expect(s.stats.caravanCrowns).toBe(800 + auction);
+    expect(s.stats.caravanCrowns).toBe(auction);
     expect(s.stats.lastCaravanCrowns).toBe(0);
   });
   it('buying striders is not a take', () => {

@@ -109,8 +109,6 @@ h3 { font-size: 13px; color: var(--gold); }
 #info { position: absolute; left: 302px; top: 50px; width: 280px; padding: 10px; }
 #info .meter { height: 6px; background: #0b0912; border: 1px solid var(--border); margin: 3px 0; }
 #info .meter div { height: 100%; background: linear-gradient(90deg, var(--ley), #ff6a4a); }
-#wyrms .wyrmrow { padding: 6px 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px; }
-#wyrms .wyrmrow button { margin-top: 4px; font-size: 11px; }
 #info .row { display: flex; justify-content: space-between; padding: 1px 0; }
 #info .close { float: right; }
 #info .problems div { color: var(--warn); }
@@ -209,10 +207,6 @@ h3 { font-size: 13px; color: var(--gold); }
 #edicts .dstats input { width: 140px; }
 #info #n-deepen { width: 100%; margin-top: 6px; }
 
-#wyrms .box { width: 620px; }
-#wyrms .dragon { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
-#wyrms .drow { margin-top: 3px; }
-#wyrms select { font: inherit; background: #0b0912; color: var(--text); border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; }
 .prio button { padding: 1px 7px; font-size: 11px; }
 .prio button.active { background: #3a3150; border-color: #a890e0; color: #f0e8ff; }
 #info .why { font-size: 11px; line-height: 1.35; margin: -2px 0 4px; }

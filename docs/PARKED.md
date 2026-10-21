@@ -33,16 +33,25 @@ boneyard tale and the grey and candle-eyed citizens (parked with their systems i
 
 ## Creatures, dragons and beasts (phase 1b)
 
+Parked on 2026-10-21 (phase 1b, `docs/RESET_LOG.md`), in `ee5129d` and the commits after it. A save that holds a parked
+building, a dragon or a stretch of the Warding Wall is refused with a message (`parkedContentIn`, `src/sim/save.ts`), and so
+is a replay that uses one of their commands (`PARKED_OPS`, `src/sim/commands.ts`). Buildings: cradle (and the Great
+Cradle), tamerslodge, ring, wyrmcourt, scaleward, wyrmforge, eggshellfont, raymirror, hallofmarvels, golemfoundry,
+leybeacon, drakemews, mothloft, greatgate. Edicts: beastmasters, bounty, wyrmpeace, scalemail. 34 imported sprites
+(`art/sources.json`) and their drawn painters in `sprites.ts`.
+
 | Feature | Introduced | Main files | DESIGN | Back |
 |---|---|---|---|---|
-| Ambient creatures (glimmoths, thrumhares, wisps) | `69f304b` (iteration 6) | `src/sim/creatures.ts` | §8 | render hooks in `renderer.ts` |
-| Wyrmcraft: eggs, cradles, drakes, wyverns, roles, bouts, Wyrm-Ring, Mews, materials | `9c10df9`, `94dd814`, `b5dfe8b` (iterations 8, 9, 53) | `wyrmcraft.ts`, `breeding.ts` (`21b8a32`), `creatures.ts`; the "Wyrms" modal in `ui.ts` | §8, §15 | auras in the weave, the Mews' Watch reach in `services.ts` |
-| The Sleeping Wyrm and the Wyrm-Court | `6517b1d` (iteration 11) | `wyrm.ts`; the "wyrm" loss | §4 (iteration 11), §4.101 | game-over cause |
-| Marsh-wyrms | `3d657f2` (iteration 86) | `marshwyrms.ts` | §4.117 | `roads.ts` lair lookup |
-| Concord Wardens, the Golem Foundry and haulers; skyrays and the Ley Beacon | `349e06d`, `2273779` (iterations 14, 72) | `beasts.ts` | §4.103 | labour in `growth.ts`, the mine's waking |
-| Gloam-hounds, the Hush siege, the Warding Wall, the Belregi/Uzulim gates | `fb39972`, `b824e3d` (iterations 7, 70) | `hounds.ts`, `creatures.ts`, wall in `actions.ts`, gates in `services.ts` | §4.101 | the "hounds" loss, carts that balk |
-| War-tigers, mana-storms, the Fen-Nex visitor quarter | `0dbcdee` (iteration 16) | `lore.ts` | §8 | `setFenNex` in the tick |
-| The wild: herds, wolves, the Hunters' Lodge, meat | `f7109cb` (iteration 58) | `wild.ts` | §4.89 | market shelves |
+| Ambient creatures (glimmoths, thrumhares, wisps) | `69f304b` (iteration 6) | `src/sim/creatures.ts` (now only the wild, the boats and the airship) | §8 | `tickCreatures`, render branches in `renderer.ts`; they draw from the main rng every night tick, so they change every bot run |
+| Wyrmcraft: eggs, cradles, drakes, wyverns, roles, bouts, the Wyrm-Ring, the Mews, materials, glim-dust on the roads, the Moth-Loft and the Ray Mirror | `9c10df9`, `94dd814`, `b5dfe8b` (iterations 8, 9, 53) | `wyrmcraft.ts`, `breeding.ts` (`21b8a32`); the "Wyrms" modal in `ui.ts`; `scatterDust` and `dustLit` | §8, §15 | the auras in `weave.ts`, the dragon terms in `growth.ts`/`services.ts`/`networks.ts`, the egg tales, the merchant's egg and the caravan's vault choice (both kept as no-ops at their indices) |
+| The Sleeping Wyrm and the Wyrm-Court | `6517b1d` (iteration 11) | `wyrm.ts`; the "wyrm" loss | §4 (iteration 11), §4.101 | the wyrm node in `world.ts`, its tales in `events.ts`, the game-over cause |
+| Marsh-wyrms | `3d657f2` (iteration 86) | `marshwyrms.ts` | §4.117 | the lair lookup in `roads.ts` |
+| Concord Wardens, the Golem Foundry and haulers; skyrays and the Ley Beacon | `349e06d`, `2273779` (iterations 14, 72) | `beasts.ts`, the golem carts in `vehicles.ts` | §4.103 | labour in `growth.ts`, the mine's waking, `GOLEM_VARIANT` in `carts.ts` |
+| Gloam-hounds and the Hush siege, the Warding Wall, the Belregi/Uzulim gates | `fb39972`, `b824e3d` (iterations 7, 70) | `hounds.ts`, the wall in `actions.ts`, the gates in `services.ts` | §4.101 | the "hounds" loss, fear in `growth.ts`, carts that balk in `agents.ts`, the lodge's hound quarry in `wild.ts` |
+| The Great Gate, the Pass and the Heart of Belregi | `3bf742b` (iteration 69) | `gate.ts`, the Heart tales in `events.ts` | §4.100 | `nearGate` in `catalog.ts`/`world.ts`; it needs the wall's Belregi gate, so it was parked here and not in 1c |
+| War-tigers, mana-storms, the Fen-Nex visitor quarter | `0dbcdee` (iteration 16) | `lore.ts`, the `fennex` tales, the fox audit | §8 | `setFenNex` in the tick, `inFenNex` in `economy.ts` |
+| Drake riders, mounts, tide barges, the Sky-Dock's wyvern | `53b26f7`, iteration 73 | `vehicles.ts` | §8 | the Sky-Dock and its airship stay |
+| The tamer walker | iteration 31 | `walkers.ts` | §14 (M10) | the other walkers follow in 1c |
 
 ## Cross-cutting add-ons (phase 1c)
 
@@ -57,7 +66,7 @@ boneyard tale and the grey and candle-eyed citizens (parked with their systems i
 | Vehicles: floating carts, barges and Quays, drake riders, the airship and the Sky-Dock | `53b26f7` (iteration 15) | `vehicles.ts` | §8 | |
 | Guilds | `c46477f` (iteration 24) | `guilds.ts`, `content/text/guilds.json` | §13.8 | unrest |
 | Relics, the Ruins of Lukuku and the Ruin Delve, Portal Arches, the World Tree | `7b8cbb1`, `21b8a32` (iterations 13, 25) | `relics.ts`, portals in `agents.ts` | §13.9 | |
-| The Great Gate, the Pass and the Heart of Belregi | `3bf742b` (iteration 69) | `gate.ts` | §4.100 | |
+| The wild: herds, wolves, the Hunters' Lodge, meat | `f7109cb` (iteration 58) | `wild.ts` | §4.89 | market shelves |
 | Magical buildings: Torrent Mill, Glimhouse, Astral Observatory and forecast, Hanging Gardens, Glowvine Lane | `f814c57` (iteration 12) | `buildings.json`, `forecast.ts`, `networks.ts` | §8 | |
 | The Brickworks | `9fac9e9`, `b45a3ea` (iterations 80, 83) | `buildings.json`, `drawn.ts`, `construction.ts` speed bonus | §4.111, §4.114 | |
 | Wonders and marvels other than the Lantern of Vell | various | `buildings.json` | §8 | `WONDER_HALLS` in `catalog.ts` |

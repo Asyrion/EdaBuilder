@@ -1,19 +1,14 @@
 /** Dev tools: commands for playtesting and checking mechanics. Every use is counted, marks the daily result, and writes one Chronicle line. See DESIGN.md 4.55. */
-import { lairFor } from './marshwyrms';
 import { ALL_EVENTS, descOf } from './events';
 import { milestonesOf } from '../data/factions';
 import { ASPECTS } from './weave';
 import { QUARTERS, QUARTER_BY_ID, setQuarter, type QuarterId } from './districts';
-import { LINE_INFO, addEgg, STAGE_NAMES, stageCap } from './wyrmcraft';
 import { GUILDS, GUILD_IDS, dailyGuilds, type GuildId } from './guilds';
 import { RELIC_SETS, grantRelicSet } from './relics';
 import { construction, dailyConstruction, sites, tickConstruction } from './construction';
 import { dailySurge, igniteBuilding, recomputeGloamDist } from './hazards';
-import { spawnCreature } from './creatures';
 import { roadTileOf, spawnRestless } from './agents';
 import { WALKER_JOBS, spawnWalker } from './walkers';
-import { startStorm } from './lore';
-import { wake, startFlyover } from './wyrm';
 import { checkMilestones } from './economy';
 import { run } from './sim';
 import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, SEASON_NAMES, TICKS_PER_DAY, Terrain, idx, inBounds, type Building, type DragonLine, type GameState } from './types';
@@ -70,7 +65,6 @@ function pocket(s: GameState, at: { x: number; y: number }, r: number): number {
 export const DEV_COMMANDS: DevCommand[] = [
   // purse
   { id: 'crowns', group: 'Purse', name: '+10,000 crowns', desc: 'Into the treasury.', run: (s) => { s.treasury += 10000; return 'The Crown sends a chest.'; } },
-  { id: 'materials', group: 'Purse', name: '+10 of every rare good', desc: 'Scale, wyrmfire, eggshell, rayscale, glim-dust.', run: (s) => { for (const k of Object.keys(s.materials) as (keyof typeof s.materials)[]) s.materials[k] += 10; return 'The vaults fill.'; } },
   { id: 'lamplight', group: 'Purse', name: "The lamplighters' round", desc: 'Every standing home, shop and works relit by candle for three days (the Tallowkin way).', run: (s) => { let n = 0; for (const b of s.buildings) if (b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone') { b.relit = s.day + 3; b.lit = true; n++; } return `${n} candles lit for three days.`; } },
   { id: 'milestone', group: 'Purse', name: 'Next milestone', desc: 'Raises the milestone by one (unlocks follow).', run: (s) => { const MS = milestonesOf(s); s.milestone = Math.min(MS.length - 1, s.milestone + 1); return `Now ${MS[s.milestone].name}.`; } },
   { id: 'population', group: 'Purse', name: 'Fill every home', desc: 'Residents and workers to capacity for one day.', run: (s) => { let n = 0; forEachBuilding(s, (b) => { const d = BUILDING_BY_KEY[b.kind]; if (d.zone === Zone.Hearth && b.state === 'ok') { b.residents = 8 * b.level; n += b.residents; } }); s.population = Math.max(s.population, n); checkMilestones(s); return `${n} folk housed.`; } },
@@ -93,11 +87,7 @@ export const DEV_COMMANDS: DevCommand[] = [
   } },
   { id: 'builders', group: 'Time', name: 'Hire builders', desc: "Fills the builders' yard to its cap.", run: (s) => { s.population = Math.max(s.population, 1200); dailyConstruction(s); return `${s.agents.filter((a) => a.kind === AgentKind.Builder).length} builders.`; } },
   // hazards
-  { id: 'hounds', group: 'Hazards', name: 'Hound pack here', desc: 'Four Gloam-hounds at the camera centre.', run: (s, _a, at) => { for (let k = 0; k < 4; k++) spawnCreature(s, 'hound', at.x + (k % 2), at.y + (k >> 1)); return 'Howling.'; } },
   { id: 'restless', group: 'Hazards', name: 'Restless here', desc: 'Three of the unquieted dead rise at the camera centre.', run: (s, _a, at) => { let n = 0; for (let k = 0; k < 3; k++) if (spawnRestless(s, at.x + k, at.y)) n++; return `${n} rise.`; } },
-  { id: 'marshwyrm', group: 'Hazards', name: 'Marsh-wyrm here', desc: 'A marsh-wyrm at the camera centre lairs under the nearest bridge (in any season, until Ember).', run: (s, _a, at) => { const w = { id: 900 + (s.marshWyrms?.length ?? 0), x: at.x, y: at.y, lair: -1, nest: -1 }; const i = lairFor(s, w); if (i < 0) return 'No bridge in reach.'; w.lair = i; w.x = i % s.w; w.y = (i / s.w) | 0; (s.marshWyrms ??= []).push(w); s.stats.wyrmsLaired = (s.stats.wyrmsLaired ?? 0) + 1; return 'Something long moves under the planks.'; } },
-  { id: 'tiger', group: 'Hazards', name: 'War-tiger here', desc: 'A tiger of Longwood at the camera centre.', run: (s, _a, at) => { s.agents.push({ id: s.nextAgentId++, kind: AgentKind.Creature, x: at.x + 0.5, y: at.y + 0.5, path: [], pathIdx: 0, speed: 1.9, homeId: -1, targetId: -1, timer: 0, variant: 0, dir: 0, load: 0, species: 'tiger', anchorId: -1, ax: at.x + 0.5, ay: at.y + 0.5 }); s.stats.tigersTotal++; return 'Striped, silent.'; } },
-  { id: 'storm', group: 'Hazards', name: 'Mana-storm here', desc: 'A storm starts at the camera centre.', run: (s, _a, at) => { startStorm(s, at.x, at.y); return 'The sky bruises.'; } },
   { id: 'surge', group: 'Hazards', name: 'Wild surge now', desc: 'The overdraw breaks loose today.', run: (s) => { s.overdrawDays = 6; dailySurge(s); return 'The ley lashes out.'; } },
   { id: 'fire', group: 'Hazards', name: 'Fire in a random home', desc: 'Ignites one lit zone building.', run: (s) => { const list = s.buildings.filter((b) => b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone'); const b = list[Math.floor(list.length / 2)]; return b && igniteBuilding(s, b, 'Dev fire at') ? `Fire at (${b.x},${b.y}).` : 'Nothing to burn.'; } },
   { id: 'gloam', group: 'Hazards', name: 'Gloam pocket here', desc: 'Grey grass in a 7×7 at the camera centre.', run: (s, _a, at) => `${pocket(s, at, 3)} tiles greyed.` },
@@ -113,12 +103,6 @@ export const DEV_COMMANDS: DevCommand[] = [
     return kind === 'flood' ? (flooding(s) ? 'The river rises over the bank for ten days.' : 'The river rises, and the Great Weir holds it.') : 'The river freezes for ten days.';
   } },
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
-  // wyrms
-  { id: 'egg', group: 'Wyrms', name: 'Lay an egg', desc: 'Of the chosen line, in a free cradle.', arg: { kind: 'select', options: ASPECTS.concat(['fen' as DragonLine]).map((l) => [l, LINE_INFO[l].name]) }, run: (s, line) => { const d = addEgg(s, line as DragonLine); return d ? `${d.name} laid.` : 'No free cradle.'; } },
-  { id: 'grow', group: 'Wyrms', name: 'Grow every dragon a stage', desc: 'Eggs hatch, hatchlings become drakes, drakes wyverns where the line allows.', run: (s) => { let n = 0; for (const d of s.dragons) { const cap = stageCap(d); if (d.stage < cap) { d.stage = (d.stage + 1) as typeof d.stage; d.days = 0; n++; } } return `${n} grew; ${s.dragons.map((d) => `${d.name} ${STAGE_NAMES[d.stage]}`).join(', ') || 'no dragons'}.`; } },
-  { id: 'content', group: 'Wyrms', name: 'Dragons content', desc: 'Mood 100 and fed.', run: (s) => { for (const d of s.dragons) { d.mood = 100; d.hungry = 0; } return `${s.dragons.length} dragons purr.`; } },
-  { id: 'wake', group: 'Wyrms', name: 'Wake the Vein-Wyrm', desc: 'If one sleeps on the map.', run: (s) => { if (s.wyrm.state === 'sleeping') { wake(s, 'the dev bell'); return 'It wakes.'; } return `The wyrm is ${s.wyrm.state}.`; } },
-  { id: 'flyover', group: 'Wyrms', name: 'Wyrm flyover', desc: 'A hostile pass over the city.', run: (s) => { if (s.wyrm.state === 'awake' || s.wyrm.state === 'bound') { startFlyover(s, true); return 'Wings over the valley.'; } return `The wyrm is ${s.wyrm.state}.`; } },
   // guilds & relics
   { id: 'guildup', group: 'Guilds & relics', name: 'Guild +25', desc: 'Standing of the chosen guild.', arg: { kind: 'select', options: GUILD_IDS.map((g) => [g, GUILDS[g].name]) }, run: (s, g) => { s.guilds.standing[g as GuildId] = Math.min(100, s.guilds.standing[g as GuildId] + 25); return `${GUILDS[g as GuildId].name}: ${Math.round(s.guilds.standing[g as GuildId])}.`; } },
   { id: 'guilddown', group: 'Guilds & relics', name: 'Guild −25', desc: 'Standing of the chosen guild.', arg: { kind: 'select', options: GUILD_IDS.map((g) => [g, GUILDS[g].name]) }, run: (s, g) => { s.guilds.standing[g as GuildId] = Math.max(0, s.guilds.standing[g as GuildId] - 25); return `${GUILDS[g as GuildId].name}: ${Math.round(s.guilds.standing[g as GuildId])}.`; } },

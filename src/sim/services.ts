@@ -6,18 +6,14 @@ import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, cracked, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
-import { wardenDistricts } from './wyrmcraft';
 import { modifierSum } from './edicts';
-import { WYRM_LAIR_RADIUS, wyrmGuards, wyrmNode } from './wyrm';
 import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree } from './growth';
-import { belregiReach, greatGateReach, GREAT_GATE_SOLD_STRENGTH } from './gate';
 
 /** Land value lost within 4 tiles of any deathcare. */
 export const DEATHCARE_LV = 6;
-import { GOLEM_GUARD_RADIUS, GOLEM_GUARD_STRENGTH, guardGolems, mewsActive } from './beasts';
 import { hallActive } from './guilds';
 import { factionOf } from '../data/factions';
-import { dragonAuras, nodesOfAspect, floodedAt, raining } from './weave';
+import { nodesOfAspect, floodedAt, raining } from './weave';
 import { CHARTER_SMOKE_SPILL } from './districts';
 
 /** A service with a crew radiates by how many of its hands are filled (never below 0.3); one without a crew radiates in full. */
@@ -38,16 +34,14 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (def.category === 'special' && b.kind !== 'stake' && !hallActive(state, b.kind)) return;
     let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
-    if (b.kind === 'scaleward') strength *= b.plate ?? 1;
     if (cracked(b)) strength = 0; // the Lantern of the Cores wards nothing while cracked
     if (b.kind === 'hospice' && b.stock <= 0) strength *= 0.6; // no draughts on the shelf
     if (b.kind === 'veshari' && !b.watered) strength *= 0.5; // a dry fire hall
-    if (b.kind === 'greatgate' && state.heart.held === 'sold') strength *= GREAT_GATE_SOLD_STRENGTH; // the Guardians closed the Pass (iteration 69)
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
     const consecrated = b.kind === 'shrine' && (b.blessed ?? -1) >= state.day;
-    const r = b.kind === 'greatgate' ? greatGateReach(state) : b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : b.kind === 'watchhouse' && type === 'watch' && mewsActive(state) ? def.service.radius * 2 : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
+    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : consecrated ? Math.round(def.service.radius * 1.5) : def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -61,54 +55,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
-  // gates of the Pass of Buluiain: Belregi (faith, ward) and Uzulim (ward, watch)
-  if (type === 'faith' || type === 'ward' || type === 'watch') {
-    const belregi = belregiReach(state); // 8, 12 beside a lit Great Gate, 16 with the Heart set in it (iteration 69)
-    for (let i = 0; i < n; i++) {
-      const g = state.wall[i];
-      if (g < 2) continue;
-      const gx = i % MAP_W;
-      const gy = (i / MAP_W) | 0;
-      const r = g === 2 ? belregi : 10;
-      const str = g === 2 ? (type === 'faith' ? 0.3 : type === 'ward' ? 0.2 : 0) : type === 'ward' ? 0.4 : type === 'watch' ? 0.3 : 0;
-      if (str <= 0) continue;
-      for (let dy = -r; dy <= r; dy++)
-        for (let dx = -r; dx <= r; dx++) {
-          const x = gx + dx;
-          const y = gy + dy;
-          if (!inBounds(x, y)) continue;
-          const d = Math.hypot(dx, dy);
-          if (d > r) continue;
-          acc[idx(x, y)] += str * (1 - (d / r) * 0.6) * (type === 'ward' ? factionOf(state).rules.wallWard : 1);
-        }
-    }
-  }
-  // dragon auras and ley aspects
-  for (const au of dragonAuras(state)) {
-    const str = (type === 'ward' && au.line === 'grey') || (type === 'fire' && au.line === 'tide') || (type === 'death' && au.line === 'bone') ? 0.5 : 0;
-    if (!str) continue;
-    const r = au.r;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        const x = Math.round(au.x + dx);
-        const y = Math.round(au.y + dy);
-        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
-        acc[idx(x, y)] += str * (1 - Math.hypot(dx, dy) / r * 0.6);
-      }
-  }
-  // Concord Wardens on guard hold the grey six tiles around their post (iteration 53)
-  if (type === 'ward') for (const g of guardGolems(state)) {
-    const r = GOLEM_GUARD_RADIUS;
-    const gx = g.ax ?? g.x;
-    const gy = g.ay ?? g.y;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        const x = Math.round(gx + dx);
-        const y = Math.round(gy + dy);
-        if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
-        acc[idx(x, y)] += GOLEM_GUARD_STRENGTH * (1 - (Math.hypot(dx, dy) / r) * 0.6);
-      }
-  }
   if (type === 'ward') for (const g of nodesOfAspect(state, 'grey')) {
     const r = 10;
     for (let dy = -r; dy <= r; dy++)
@@ -135,24 +81,7 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         }
     }
   }
-  if (type === 'ward' && wyrmGuards(state)) {
-    const wn = wyrmNode(state)!;
-    const r = WYRM_LAIR_RADIUS;
-    for (let dy = -r; dy <= r; dy++)
-      for (let dx = -r; dx <= r; dx++) {
-        const x = wn.x + dx;
-        const y = wn.y + dy;
-        if (!inBounds(x, y)) continue;
-        const d = Math.hypot(dx, dy);
-        if (d > r) continue;
-        acc[idx(x, y)] += (1 - (d / r) * 0.6) * (edictOn(state, 'wyrmpeace') ? 0.5 : 1);
-      }
-  }
   if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
-  if (type === 'watch' || type === 'fire') {
-    const wd = wardenDistricts(state);
-    if (wd.size) for (let i = 0; i < n; i++) if (state.district[i] && wd.has(state.district[i])) acc[i] += 0.5;
-  }
   const wb = state.walkerBonus?.[type];
   if (wb) for (let i = 0; i < n; i++) acc[i] += wb[i];
   // the quarters: a temple quarter's faith counts half again, a scholars' quarter's schooling a quarter more

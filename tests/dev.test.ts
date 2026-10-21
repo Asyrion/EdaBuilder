@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { DEV_COMMANDS, DEV_GROUPS, devDefaultArg, runDev } from '../src/sim/dev';
-import { AgentKind, idx } from '../src/sim/types';
+import { idx } from '../src/sim/types';
 import { construction } from '../src/sim/construction';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -12,10 +12,9 @@ describe('Dev tools', () => {
     const s = createGame(41, 'Dev');
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
-    placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
     placeBuildingRaw(s, 'guildhall', f.x - 5, f.y + 3);
     recomputeAll(s);
-    expect(DEV_GROUPS.length).toBeGreaterThanOrEqual(6);
+    expect(DEV_GROUPS.length).toBeGreaterThanOrEqual(5); // the Wyrms group is parked (reset 1b)
     const at = { x: f.x + 8, y: f.y + 8 };
     let n = 0;
     for (const c of DEV_COMMANDS) {
@@ -33,11 +32,10 @@ describe('Dev tools', () => {
     construction.instant = true; // the toggle flipped it off
   });
 
-  it('commands do what they say: crowns, gloam, hounds, relics, guilds, eggs, finish', () => {
+  it('commands do what they say: crowns, gloam, relics, guilds, finish', () => {
     const s = createGame(41, 'Dev');
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
-    placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
     recomputeAll(s);
     const at = { x: f.x + 8, y: f.y - 6 };
     const t0 = s.treasury;
@@ -47,16 +45,10 @@ describe('Dev tools', () => {
     expect(s.gloam[idx(at.x, at.y)]).toBe(1);
     runDev(s, 'cleargloam', '', at);
     expect(s.gloam[idx(at.x, at.y)]).toBe(0);
-    runDev(s, 'hounds', '', at);
-    expect(s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'hound').length).toBe(4);
     runDev(s, 'relic', 'saltspoons', at);
     expect(s.relics.complete).toEqual(['saltspoons']);
     runDev(s, 'guildup', 'sextons', at);
     expect(s.guilds.standing.sextons).toBe(75);
-    runDev(s, 'egg', 'grey', at);
-    expect(s.dragons[0]?.line).toBe('grey');
-    runDev(s, 'grow', '', at);
-    expect(s.dragons[0].stage).toBe(1);
     const m0 = s.milestone;
     runDev(s, 'milestone', '', at);
     expect(s.milestone).toBe(m0 + 1);

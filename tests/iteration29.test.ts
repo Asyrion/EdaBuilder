@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { addEgg, dailyDragons, stageCap, WYRM_EATS_GOODS } from '../src/sim/wyrmcraft';
-import { dragonAuras, computeGloamPressure } from '../src/sim/weave';
 import { RELIC_KEEP, RELICS_PER_DAY, RELIC_PRICE, dailyTrade } from '../src/sim/growth';
 import { STRIKE_AT, WAR_EVENTS, WAR_SPACING, dailyGuilds } from '../src/sim/guilds';
 import { ALL_EVENTS, maybeFireEvent, resolveEvent } from '../src/sim/events';
@@ -17,43 +15,6 @@ function town(seed = 41) {
   flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
   return s;
 }
-
-describe('The great wyrm', () => {
-  it('only a trueblood grows past the wyvern stage; a great wyrm eats 20, widens its auras and shrinks the Gloam', () => {
-    const s = town();
-    const f = s.founding;
-    const c = placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
-    placeBuildingRaw(s, 'tamerslodge', f.x - 4, f.y + 3);
-    for (let k = 0; k < 3; k++) placeBuildingRaw(s, 'market', f.x - 6 + k * 3, f.y + 7, 3).stock = 60;
-    recomputeAll(s);
-    const d = addEgg(s, 'vein')!;
-    expect(stageCap(d)).toBe(3);
-    d.trueblood = true; d.second = 'ember';
-    expect(stageCap(d)).toBe(4);
-    const g = addEgg(s, 'grey')!;
-    g.trueblood = true;
-    expect(stageCap(g)).toBe(4); // a trueblood of a ground line too
-    d.stage = 3; d.days = 59; d.mood = 90; d.training = 'gentle';
-    c.lit = true;
-    const p0 = computeGloamPressure(s);
-    const sc0 = s.materials.scale;
-    for (let k = 0; k < 4 && d.stage < 4; k++) dailyDragons(s);
-    expect(d.stage).toBe(4);
-    expect(s.stats.greatWyrms).toBe(1);
-    expect(s.materials.scale - sc0).toBeGreaterThanOrEqual((10 + 3) * 1.5 * 2);
-    expect(dragonAuras(s).filter((a) => a.name === d.name).map((a) => a.r)).toEqual([12, 12]);
-    expect(computeGloamPressure(s)).toBeCloseTo(p0 - 0.1, 5);
-    // eats 20 a day
-    const m = s.buildings.filter((b) => b && b.kind === 'market');
-    const before = m.reduce((n, b) => n + b!.stock, 0);
-    s.dragons = [d];
-    dailyDragons(s);
-    expect(before - m.reduce((n, b) => n + b!.stock, 0)).toBe(WYRM_EATS_GOODS);
-    expect(activeQuests(s, 100).some((q) => q.id === 'k_wyrm')).toBe(false);
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
-    expect(r.dragons[0].stage).toBe(4);
-  });
-});
 
 describe('Relic trade with the Crown', () => {
   it('the depot sells two loose relics a day above ten; the assessor pays more in person', () => {

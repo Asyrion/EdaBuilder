@@ -3,7 +3,7 @@ import { shortcutTarget } from './focus';
 import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
-import { buildRoad, buildWall, bulldoze, paintDistrict, paintZone, placeBuilding, placeGate, previewRoad, previewWall, roadPath, roadTileCost, scatterDust } from '../sim/actions';
+import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { canBuild, costOf, factionOf, milestonesOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
@@ -19,11 +19,8 @@ export type Tool =
   | { kind: 'zone'; zone: Zone }
   | { kind: 'build'; key: string }
   | { kind: 'district'; id: number }
-  | { kind: 'wall' }
-  | { kind: 'gate'; style: 2 | 3 }
   | { kind: 'bulldoze' }
-  | { kind: 'terrain'; op: TerraformOp }
-  | { kind: 'dust' }; // scatter glim-dust on a road tile (iteration 53)
+  | { kind: 'terrain'; op: TerraformOp };
 
 export interface ToolHost {
   state: GameState;
@@ -111,7 +108,6 @@ export class Tools {
       case 'road':
       case 'zone':
       case 'district':
-      case 'wall':
         this.dragStart = t;
         break;
       case 'bulldoze':
@@ -124,20 +120,9 @@ export class Tools {
         this.host.beforeAction('terrain');
         this.doTerraform(t);
         break;
-      case 'dust': {
-        const r = this.host.exec('dust', t[0], t[1]);
-        if (r.ok) this.host.onAction('terrain'); else this.host.onAction('error', r.reason ?? undefined);
-        break;
-      }
       case 'build':
         this.doBuild(t);
         break;
-      case 'gate': {
-        this.host.beforeAction('gate');
-        const r = this.host.exec('gate', this.tool.style, t[0], t[1]);
-        if (r.ok) this.host.onAction('place'); else this.host.onAction('error', r.reason ?? undefined);
-        break;
-      }
       case 'select': {
         const b = buildingAt(this.host.state, t[0], t[1]);
         this.host.onSelect(b);
@@ -193,12 +178,6 @@ export class Tools {
       this.host.beforeAction('district');
       const r = this.host.exec('district', this.tool.id, start[0], start[1], end[0], end[1]);
       if (r.ok) this.host.onAction('district', String(this.tool.id));
-      else this.host.onAction('error', r.reason ?? undefined);
-    } else if (this.tool.kind === 'wall') {
-      const tiles = this.roadTiles(start, end);
-      this.host.beforeAction('wall');
-      const r = this.host.exec('wall', tiles);
-      if (r.ok) this.host.onAction('place');
       else this.host.onAction('error', r.reason ?? undefined);
     }
     this.updatePreview();
@@ -275,12 +254,6 @@ export class Tools {
           v.previewTiles.push({ i, ok: ground && road });
         }
       this.previewReason = noRoad > 0 ? `${noRoad} tile${noRoad === 1 ? ' has' : 's have'} no road at the door and will never grow: zone beside a road (a corner counts).` : null;
-    } else if (this.tool.kind === 'wall') {
-      const start = this.dragStart ?? hover;
-      const tiles = this.roadTiles(start, hover);
-      const pv = previewWall(s, tiles);
-      v.previewTiles = tiles.map((i, k) => ({ i, ok: pv.valid[k] }));
-      this.previewCost = pv.cost;
     } else if (this.tool.kind === 'district') {
       const start = this.dragStart ?? hover;
       const x0 = Math.min(start[0], hover[0]);
@@ -299,8 +272,6 @@ export class Tools {
       this.previewReason = why;
     } else if (this.tool.kind === 'bulldoze') {
       if (inBounds(hover[0], hover[1])) v.previewTiles = [{ i: idx(hover[0], hover[1]), ok: false }];
-    } else if (this.tool.kind === 'gate') {
-      if (inBounds(hover[0], hover[1])) { const i = idx(hover[0], hover[1]); const near = s.wall[i] === 1 || [i - 1, i + 1, i - MAP_W, i + MAP_W].some((j) => j >= 0 && j < s.wall.length && s.wall[j] === 1); v.previewTiles = [{ i, ok: near && s.bIndex[i] < 0 }]; }
     }
   }
   previewCost = 0;
@@ -364,11 +335,8 @@ export function toolLabel(t: Tool): string {
     case 'zone': return `Zone: ${['De-zone', 'Hearth', 'Market', 'Craft', 'Arcane'][t.zone]}`;
     case 'build': return `Build: ${BUILDING_BY_KEY[t.key].name}`;
     case 'district': return t.id === 0 ? 'District: clear' : `District: ${DISTRICT_NAMES[t.id - 1]}`;
-    case 'wall': return 'Warding Wall';
-    case 'gate': return t.style === 2 ? 'Belregi Gate' : 'Uzulim Gate';
     case 'bulldoze': return 'Bulldoze';
     case 'terrain': return `Land: ${TERRAFORM[t.op].name}`;
-    case 'dust': return 'Land: scatter glim-dust';
   }
 }
 

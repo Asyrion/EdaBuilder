@@ -104,3 +104,90 @@ this phase.
   `buildings.json`, so the 17 entries were cut as text. The dev board writes the same layout.
 - **Old single sprite PNGs are never deleted by the importer.** The parked ones were deleted by hand. Phase 1d drops
   the single PNGs altogether.
+
+## Phase 1b: creatures, dragons, wyrms, beasts, hounds and the Warding Wall (2026-10-21)
+
+**Done.**
+- **Parked:**
+  - the ambient creatures (glimmoths, thrumhares, wisps); `creatures.ts` keeps only the wild, the fishers' boats and the
+    airship's flight
+  - wyrmcraft and breeding: eggs, cradles and the Great Cradle, drakes, wyverns, roles, bouts, the Wyrm-Ring, auras,
+    the materials (scale, wyrmfire, eggshell, rayscale, glim-dust), the Moth-Loft, the Ray Mirror and the glim-dust tool
+  - the Sleeping Wyrm and the Wyrm-Court; the marsh-wyrms
+  - the Concord Wardens, the Golem Foundry and its haulers; the skyrays and the Ley Beacon; the Drake Mews and its riders
+  - the Gloam-hounds and the Hush siege; the Warding Wall and its Belregi and Uzulim gates; the Great Gate and the
+    Heart of Belregi (it needs a Belregi gate, so it went here and not in 1c)
+  - the war-tigers, the mana-storms and the Fen-Nex visitor quarter (`lore.ts`)
+  - the Sky-Dock's wyvern, the tide barges and the tamer walker
+- **Content:** 14 buildings, 4 edicts (beastmasters, bounty, wyrmpeace, scalemail), 14 tales, 34 Ledger tasks and the
+  Annals' chapters Wyrmcraft, The Vein-Wyrm and Beasts. The losses "wyrm" and "hounds" are gone; three remain.
+- **Kept, with a neutral value:**
+  - The Hunters' Lodge hunts the fullest herd in its grounds unless its panel names a quarry ("Fullest herd" is the
+    first button). The bot builds one lodge for game from day 20 instead of one per thirty hounds.
+  - The Sky-Dock keeps its airship. Its tale's first choice gives Craft +10 % without rayscale.
+  - Three tale choices that pointed at parked things are kept at their index, so `chose()`, the bot and old firedEvents
+    still read the same numbers: the caravan's "Trade news" and the merchant's "Ask after the egg" do nothing, and the
+    merchant's prices no longer fall with eggs bought.
+  - The ley aspects keep their type, `DragonLine`, and their rules.
+- **Saves and replays:** a save that holds a parked building, a dragon or a stretch of wall is refused with a message
+  that names it (`parkedContentIn`). A replay that uses a parked command (`PARKED_OPS`) is refused too. Old creatures in
+  a save are dropped on load, and so are the stats the parked systems kept. `tests/parked1b.test.ts` holds it.
+- **UI:** the Wyrms button and modal; the wall, gates and glim-dust tools; the parked inspector rows, node panel,
+  minimap pixels, help bullets and game-over causes; the audio cues howl, roar, growl, stomp, storm and song.
+- **Art:** 34 entries of `art/sources.json` and their PNGs; the drawn painters of the dragons, the wyvern, the wyrm,
+  the wall, the gates, the golem cart, the tiger, the rider, the hound, the skyray and the 14 buildings. `npm run art`
+  was rerun: the sheet is 2048×403 (was 2048×443), 747 images.
+- **Tests:** 8 files were deleted at the start of the phase and `iteration69` with the Great Gate. 36 mixed files were
+  cut to the core, and one refusal test is new. Three agents trimmed the test files in parallel; I checked their
+  reports and ran the whole suite. The playtests of these systems are gone: 5, 6, 7, 53, 69, 70, 72, 73, 74, 76, 86 and
+  `dbg_fly`.
+
+**Measured.** Bit-identity with main is no longer possible: from day 1 the glimmoths drew from the main stream at
+night, and the hounds' fear and the golems' labour changed the cities. So the measure is the bot corridor, with two
+draws per seed (`npx tsx scripts/table.ts --compare origin/main --seeds 42,1,7,13,21,45 --draws 2`). Draw 0 of main is
+the phase 0 baseline, bit for bit.
+
+| Seed | Phase 0 (main), draw 0 | 1b, draw 0 | Main, draw 1 | 1b, draw 1 |
+|---|---|---|---|---|
+| 42 | 3,194 / 8 / 6,319 / 0 | 1,296 / 6 / 2,866 / 0 | 2,664 / 8 / 254 / 70,000 | 2,370 / 7 / 2,515 / 70,000 |
+| 1 | 2,812 / 7 / 2,335 / 0 | 1,949 / 7 / 3,126 / 0 | 1,750 / 7 / 19,315 / 0 | 2,927 / 7 / 550 / 0 |
+| 7 | 1,421 / 6 / 2,995 / 0 | 1,979 / 7 / 1,663 / 0 | 1,855 / 7 / 5,461 / 0 | 1,451 / 6 / 3,566 / 0 |
+| 13 | 2,587 / 7 / 272 / 0 | 2,032 / 7 / 1,689 / 0 | 1,936 / 7 / 18,608 / 0 | 3,134 / 8 / 3,569 / 0 |
+| 21 | 2,583 / 8 / 3,603 / 70,000 | 2,137 / 7 / 6,483 / 0 | 2,562 / 8 / 3,726 / 70,000 | 2,957 / 8 / 918 / 70,000 |
+| 45 | 2,864 / 8 / 5,976 / 70,000 | 2,202 / 8 / 54,625 / 70,000 | 2,683 / 8 / 28,776 / 70,000 | 2,325 / 8 / 27,603 / 70,000 |
+
+Each cell is folk / milestone / treasury / loan on day 150.
+
+- **The verdict:** a mean of 2,230 folk against 2,409, Δ −179 (−7.4 %) paired by seed, **within the noise** (2·SE 420).
+  The gates: Burgh in all 24 runs; Free City in 10 of 12 (main 11 of 12), median day 116 (main 123); Beacon of Eda in 4
+  of 12 (main 6 of 12). No run lost the charter.
+- **The drops over a quarter, one by one.** On draw 0, seed 42 falls by 59 %, seed 1 by 31 % and seed 7 rises by 39 %.
+  The second draw tells these apart from a change: seed 42 reaches 2,370 (main 2,664), and seed 1 reaches 2,927 (main
+  1,750). The project's own measure (DESIGN §4.93) moves a Vellish run by up to half its folk on one extra roll.
+- **One real loss, from the removal:** the caravan pays a mean of 23,995 crowns over a run, against 33,747 on main
+  (−29 %), because its "sell the vault" choice sold the scale and wyrmfire the dragons made. The Gloam road's own crowns
+  are about the same (1,482 against 1,585).
+- The corridor test in `tests/core-loop.test.ts` (seed 42, day 100) stays green.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 79 files, 440 tests, all green, 213 s (was 87 files, 554 tests, 317 s) |
+| `scripts/smoke.mjs` | SMOKE OK; 848 folk on day 30, no page errors, save 466 KB (was 545 KB) |
+| Bundle | JS 606 KB (206 KB gzip), was 811 KB (276 KB) |
+| `npm run devboard:selftest` | OK |
+| Screenshots, seed 42 at day 40, main against the branch | the top bar without "Wyrms", the Services tab without the wall and gates, the city by day and by night without the skyray swarm; no page errors |
+
+**What stays with a parked name, on purpose.** These are what `grep -rniE "dragon|wyrm|golem|hound|skyray|tiger|glimmoth|wisp|wyvern" src` still finds:
+- the type `DragonLine` of the ley aspects (`weave.ts`, `types.ts`, `dev.ts`)
+- the refusal of parked saves and commands (`save.ts`, `commands.ts`) and the comments that say what was parked
+- the Crown's "wyrm-seal" on the loan (`economy.ts`) and a wyrm in the airship captain's story (lore)
+- the wolf winter's tale (wolves are the wild's), and `wisps` as a drawn decoration on four buildings (`sprites.ts`)
+
+**Found.**
+- **The save bug of phase 0 is still there.** The demand still moves on load. Seed 5 now comes back equal over the
+  test's twenty days by chance, so the `it.fails` test moved to seed 42, where the population still drifts (185 against
+  160 ten days after a load). It is fixed in 1d.
+- **`lostTo` does not survive a save.** `deserialize` copies only the keys a fresh state has, and `createGame` never sets
+  `lostTo`, so an ended charter saved and loaded forgets its cause. This is older than the reset; it goes with the save
+  work in 1d.

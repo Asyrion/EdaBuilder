@@ -10,7 +10,7 @@ import { flatten } from './helpers';
 function farNode(s: ReturnType<typeof createGame>): number {
   let best = -1;
   let bd = 0;
-  s.nodes.forEach((n, i) => { const d = Math.hypot(n.x - s.founding.x, n.y - s.founding.y); const w = s.wyrm.node === i; if (!w && d > bd) { bd = d; best = i; } });
+  s.nodes.forEach((n, i) => { const d = Math.hypot(n.x - s.founding.x, n.y - s.founding.y); if (d > bd) { bd = d; best = i; } });
   return best;
 }
 
@@ -22,7 +22,6 @@ describe('The daughter charter', () => {
     expect(canFoundDaughter(s, ni)).toMatch(/Beacon/);
     s.milestone = 8;
     expect(canFoundDaughter(s, 0)).toMatch(/founding/);
-    if (s.wyrm.node >= 0) expect(canFoundDaughter(s, s.wyrm.node)).toMatch(/wyrm/);
     const n = s.nodes[ni];
     flatten(s, n.x - 8, n.y - 8, n.x + 8, n.y + 8);
     expect(canFoundDaughter(s, ni)).toBeNull();

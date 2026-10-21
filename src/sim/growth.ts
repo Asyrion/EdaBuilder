@@ -19,12 +19,9 @@ export const SPENT_RATE = 2;
 import { seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
-import { mothBonus } from './creatures';
 import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
 import { FISH_HAPPY, FISH_PRICE, SMOKE_KEEP, THATCH_HAPPY, fishNear, thatched } from './water';
-import { wyrmGuards } from './wyrm';
-import { GOLEM_LABOUR, labourGolems, raysLured, worksGolems } from './beasts';
-import { aspectAt, auraAt, drought, floodedAt, hasMarvel, litWonders, marvelExhibits, marvelNear, raining, FLOODPROOF } from './weave';
+import { aspectAt, drought, floodedAt, hasMarvel, litWonders, raining, FLOODPROOF } from './weave';
 
 /** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
 export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
@@ -51,10 +48,8 @@ export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
-import { SCALEMAIL_UNREST, delverBonus, forgeHot, scaleMailOn, wyrmfireBonus } from './wyrmcraft';
 import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
-import { greatGateOf } from './gate';
 
 export function capacityOf(b: Building, s?: GameState): number {
   const def = BUILDING_BY_KEY[b.kind];
@@ -123,19 +118,13 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   if (gd < 7) add('the Gloam near', -(7 - gd) * 3 * (1 - cov.ward[i] / 255));
   add('traffic', -(state.trafficSmooth[i] / 255) * 10);
   add('unrest', -state.unrest * 15);
-  // the restless and Gloam-hounds nearby frighten everyone
+  // the restless and the wolves nearby frighten everyone
   let fear = 0;
   for (const a of state.agents) {
     if (a.kind === 2) {
       if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 8;
-    } else if (a.kind === 3 && a.species === 'hound') {
-      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
-    } else if (a.kind === 3 && a.species === 'golem' && a.load === 0) {
-      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 10;
     } else if (a.kind === 3 && a.species === 'wolf') {
       if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
-    } else if (a.kind === 3 && a.species === 'tiger') {
-      if (Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) < 5) fear -= 12;
     }
   }
   add('the restless and beasts near', fear);
@@ -148,11 +137,8 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   }
   add('the tithe', -(tax - 10) * 1.6);
   add('effects', modifierSumAt(state, 'happiness', state.district[i]));
-  if (wyrmGuards(state)) add('the bound wyrm', 10);
   const tree = worldTree(state);
   if (tree) add('the World Tree', treeStage(tree));
-  if (raysLured(state)) add('skyrays overhead', 3);
-  { const ex = marvelExhibits(state); if (ex > 0) add(`the Hall of Marvels (${ex} exhibit${ex === 1 ? '' : 's'})`, ex * 2); } // +2 a rare good on show, lit (iteration 53)
   for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
   if (relicDone(state, 'ninehouses')) add('the Nine Houses', 3);
   if (hasMarvel(state, 'househall')) add('the House-Hall', 2);
@@ -214,7 +200,7 @@ export function craftStockCap(b: Building): number {
 }
 
 export function workforceOf(state: GameState): number {
-  return Math.round(state.population * 0.62) + labourGolems(state) * GOLEM_LABOUR;
+  return Math.round(state.population * 0.62);
 }
 
 /** Daily update of occupancy, happiness, levelling and abandonment for zoned buildings. */
@@ -315,8 +301,7 @@ export function dailyBuildings(state: GameState): void {
     if (def.zone === Zone.Hearth) {
       // move-in / move-out
       const d = state.demand.hearth;
-      if (b.fled !== undefined) { /* fled from the hounds: empty until the Thaw (iteration 70) */ }
-      else if (b.residents < cap && b.happiness > 35 && d > -0.3) {
+      if (b.residents < cap && b.happiness > 35 && d > -0.3) {
         const gain = 1 + (b.happiness > 65 && d > 0.5 ? 1 : 0);
         b.residents = Math.min(cap, b.residents + gain);
       } else if (b.happiness < 30 && b.residents > 0 && rng.chance(0.5)) {
@@ -333,13 +318,12 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      const forge = marvelNear(state, 'wyrmforge', b) && forgeHot(state); // a Forge with no wyrmfire is cold (iteration 53)
-      const glim = glimhouseNear(state, b) || forge;
+      const glim = glimhouseNear(state, b);
       const asp = aspectAt(state, b.x, b.y);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + mothBonus(state, b) + wyrmfireBonus(state) + (raining(state) ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + (auraAt(state, 'ember', b.x, b.y) ? 0.1 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1) + (forge ? 0.25 : 0));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + (raining(state) ? 0.15 : 0) + modifierSum(state, 'goods') + (glim ? 0.1 : 0) + (asp === 'ember' ? 0.15 : 0) + guildEffect(state, 'alchemists') * (guildEffect(state, 'alchemists') > 0 ? 0.08 : 0.1));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
-      const hands = b.workers + Math.min(worksGolems(state, b) * GOLEM_LABOUR, Math.max(0, capacityOf(b, state) - b.workers)); // a posted Concord Warden works the bench for twelve, up to the works' capacity; with none posted the crew alone, exactly as before
+      const hands = b.workers;
       const made = Math.min(craftStockCap(b) - b.stock, hands * rate);
       b.stock += Math.max(0, made);
       state.goodsProduced += Math.max(0, made);
@@ -352,7 +336,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3) * (quarterOf(state, b) === 'scholars' ? 1.2 : 1));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * (state.materials.rayscale > 0 ? 1.1 : 1) * (hasMarvel(state, 'hallofmarvels') ? 1.5 + 0.05 * state.relics.complete.length : 1) * grandAcademyBonus(state);
+      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * grandAcademyBonus(state);
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -394,16 +378,14 @@ export function dailyBuildings(state: GameState): void {
       const left = b.seam ?? SEAM;
       let cut = SPENT_RATE;
       if (left > 0) {
-        cut = Math.min(left, def.leystone * (b.lit ? 1 : 0.5) + delverBonus(state, b));
+        cut = Math.min(left, def.leystone * (b.lit ? 1 : 0.5));
         b.seam = left - cut;
-        if (b.seam <= 0) pushMessage(state, `The seam under the ${def.name} at (${b.x},${b.y}) is cut out: ${SPENT_RATE} a day of dust from here, and the empty shaft wakes the deep. Bulldoze it or move on.`, 'warn', true, { x: b.x, y: b.y });
+        if (b.seam <= 0) pushMessage(state, `The seam under the ${def.name} at (${b.x},${b.y}) is cut out: ${SPENT_RATE} a day of dust from here. Bulldoze it or move on.`, 'warn', true, { x: b.x, y: b.y });
       }
       b.stock = Math.min(60, b.stock + cut);
     }
-    if (b.kind === 'mothloft') b.stock = 0; // last night's moths were counted by the works today; the next night counts afresh
     if (b.kind === 'portalarch') { if ((b.load ?? 0) > PORTAL_CAP) bumpRoadVersion(); b.load = 0; } // a new day's crossings
     if (b.flare && b.flare > 0) b.flare--;
-    if (b.kind === 'scaleward' && b.state === 'ok' && state.day % 30 === 0 && state.day > 0) b.plate = Math.max(0.3, (b.plate ?? 1) - 0.1); // the plating wears a tenth a season
   });
   state.population = pop;
   state.jobs = jobs;
@@ -570,12 +552,9 @@ export function updateSocial(state: GameState): void {
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
-  let uzulim = 0;
-  // the obelisks stop sapping the folk once the Heart of Belregi is shared with the Uzulim and the Great Gate stands (iteration 69)
-  if (!(state.heart.held === 'shared' && greatGateOf(state))) for (let i = 0; i < state.wall.length; i++) if (state.wall[i] === 3) uzulim++;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') - (scaleMailOn(state) ? SCALEMAIL_UNREST : 0) + modifierSum(state, 'unrest') + uzulim * 0.02),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
   state.unrestHigh = state.unrest > RIOT_UNREST ? state.unrestHigh + 1 : 0;

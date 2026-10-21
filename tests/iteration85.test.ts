@@ -4,13 +4,13 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, canPlaceBuilding } from '../src/sim/world';
 import { generateTerrain, MARSH_FOUNDING } from '../src/sim/terrain';
-import { MARSH_CAUSEWAY, paintZone, roadTileCost, wallTileCost } from '../src/sim/actions';
+import { MARSH_CAUSEWAY, paintZone, roadTileCost } from '../src/sim/actions';
 import { updateMiasma } from '../src/sim/services';
 import { reedBeds } from '../src/sim/water';
 import { DRAIN_PER_DAY, dailyDrainage, drainageCost, marshCount, nearestMarsh } from '../src/sim/marsh';
 import { edictUpkeep } from '../src/sim/edicts';
 import { deserialize, serialize } from '../src/sim/save';
-import { ROAD_BY_TYPE, WALL_COST } from '../src/sim/catalog';
+import { ROAD_BY_TYPE } from '../src/sim/catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../src/sim/types';
 
 const marshTiles = (t: Uint8Array) => { const out: number[] = []; t.forEach((v, i) => { if (v === Terrain.Marsh) out.push(i); }); return out; };
@@ -36,7 +36,7 @@ describe('M17 part 1: the marsh', () => {
       expect(Array.from(generateTerrain(seed).terrain)).toEqual(Array.from(r.terrain));
     }
   });
-  it('nothing is built or zoned on it; a road crosses it at a bridge\'s price, a wall at twice its own', () => {
+  it('nothing is built or zoned on it; a road crosses it at a bridge\'s price', () => {
     const s = createGame(42, 'Fen');
     s.sectors.fill(1); s.milestone = 8; s.treasury = 1e6;
     const i = openMarsh(s); expect(i).toBeGreaterThanOrEqual(0);
@@ -47,7 +47,6 @@ describe('M17 part 1: the marsh', () => {
     expect(MARSH_CAUSEWAY).toBe(4);
     expect(roadTileCost(s, RoadType.Track, i)).toBe(ROAD_BY_TYPE[RoadType.Track].cost * 4);
     expect(roadTileCost(s, RoadType.Cobble, i)).toBe(ROAD_BY_TYPE[RoadType.Cobble].cost * 4);
-    expect(wallTileCost(s, i)).toBe(WALL_COST * 2);
   });
   it('breeds miasma where nothing else does', () => {
     const s = createGame(42, 'Fen');

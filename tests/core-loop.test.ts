@@ -60,9 +60,10 @@ describe('core loop', () => {
   // saved demand one step further (growth.ts, 60/40), so the zone draws differ from day 11 on. Fixed with save version 8
   // in phase 1d; `it.fails` turns red then, and becomes `it`.
   it.fails('a save in the middle of a run changes nothing', () => {
-    const a = town(5);
+    // seed 42: since phase 1b seed 5 happens to come back equal over these days, though the demand still moves on load
+    const a = town(42);
     run(a, TICKS_PER_DAY * 20);
-    const b0 = town(5);
+    const b0 = town(42);
     run(b0, TICKS_PER_DAY * 10);
     const b = deserialize(serialize(b0), (seed) => createGame(seed));
     run(b, TICKS_PER_DAY * 10);

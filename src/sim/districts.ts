@@ -125,7 +125,7 @@ export function districtBuildings(s: GameState, d: number): Building[] {
   return out;
 }
 
-// marketStockCap has no state argument: the quarters are snapshotted once a tick, like the Fen-Nex district.
+// marketStockCap has no state argument: the quarters are snapshotted once a tick.
 let qGrid: Uint8Array | null = null;
 let qMap: Record<number, QuarterId | undefined> = {};
 export function setQuarterSnapshot(map: Record<number, QuarterId | undefined>, grid: Uint8Array): void {

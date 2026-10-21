@@ -11,7 +11,7 @@ import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, 
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
 import { reachesOf, type Reach } from '../sim/reach';
 import { lookName, zoneSpriteName } from './atlas';
-import { cartMirrored, cartSpriteName } from './carts';
+import { cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { faceLeft } from './facing';
 import { fordClosed, isFordTile } from '../sim/water';
@@ -96,7 +96,7 @@ export class Renderer {
   wind = 0.5;
   stats = { drawn: 0, ms: 0, ground: 0, objects: 0, sort: 0, particles: 0, lighting: 0, blit: 0 };
   /** What the camera currently sees, for the ambient audio mix (0..1). */
-  inView = { water: 0, fire: 0, market: 0, ley: 0, mills: 0, rays: 0, storm: 0, golems: 0 };
+  inView = { water: 0, fire: 0, market: 0, ley: 0, mills: 0 };
 
   constructor(screen: HTMLCanvasElement, atlas: SpriteAtlas) {
     this.screen = screen;
@@ -335,14 +335,6 @@ export class Renderer {
               ctx.globalAlpha = 1;
             }
           }
-        } else if (state.wall[i] === 1) {
-          let m = 0;
-          if (y > 0 && state.wall[idx(x, y - 1)]) m |= 1;
-          if (x < MAP_W - 1 && state.wall[idx(x + 1, y)]) m |= 2;
-          if (y < MAP_H - 1 && state.wall[idx(x, y + 1)]) m |= 4;
-          if (x > 0 && state.wall[idx(x - 1, y)]) m |= 8;
-          s = this.atlas.get(`wall_${m}`);
-          if (s) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
         } else if (state.zone[i] && state.bIndex[i] < 0) {
           const z = state.zone[i];
           const key = z === Zone.Hearth ? 'hearth' : z === Zone.Market ? 'market' : z === Zone.Craft ? 'craft' : 'arcane';
@@ -356,11 +348,6 @@ export class Renderer {
         const x = cx * CHUNK + tx;
         const y = cy * CHUNK + ty;
         const i = idx(x, y);
-        if (state.wall[i] >= 2) {
-          const [gx, gy] = tileToWorld(x, y);
-          cache.props.push({ name: `gate_${state.wall[i]}`, wx: gx, wy: gy + 8, d: x + y + 0.5, sway: 0 });
-          continue;
-        }
         if (state.bIndex[i] >= 0 || state.road[i]) continue;
         const t = state.terrain[i];
         const [wx, wy] = tileToWorld(x, y);
@@ -403,13 +390,6 @@ export class Renderer {
           const nodeHere = state.nodes.find((n) => n.x === x && n.y === y);
           cache.lights.push({ x: wx, y: wy + 8, r: 70, c: nodeHere?.aspect ? ASPECT_INFO[nodeHere.aspect].color : PAL.ley1, i: 0.9 });
           cache.props.push({ name: 'leynode', wx, wy, d: x + y + 0.4, sway: 0 });
-          const wn = state.wyrm && state.wyrm.node >= 0 ? state.nodes[state.wyrm.node] : null;
-          if (wn && wn.x === x && wn.y === y && state.wyrm.state !== 'none' && !(state.wyrm.flyover > 0)) {
-            const st = state.wyrm.state === 'bound' ? 'awake' : state.wyrm.state;
-            cache.props.push({ name: `wyrm_${st}_back`, wx, wy, d: x + y + 0.3, sway: 0 });
-            cache.props.push({ name: `wyrm_${st}_front`, wx, wy, d: x + y + 0.9, sway: 0 });
-            if (st !== 'dead') cache.lights.push({ x: wx, y: wy + 8, r: 90, c: PAL.ley2, i: 0.5 });
-          }
         }
       }
     cache.hasWater = hasWater;
@@ -557,7 +537,7 @@ export class Renderer {
     // objects: props, buildings, agents
     // every item may name the sprite it draws (occ: it covers the glows behind it) and a glow of its own (g)
     const items: { d: number; y: number; fn: () => void; occ?: { s: SpriteRect; x: number; y: number }; g?: { s: SpriteRect; x: number; y: number; a: number } }[] = [];
-    const sky: { s: SpriteRect | null; x: number; y: number; alt: number; line: number }[] = [];
+    const sky: { s: SpriteRect | null; x: number; y: number }[] = [];
     const icons: { x: number; y: number; name: string }[] = [];
     const lights: { x: number; y: number; r: number; c: string; i: number }[] = [];
     // glows under everything (the ward wall's inlays): laid down before the sorted items
@@ -572,7 +552,7 @@ export class Renderer {
         items.push({
           d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy),
           occ: s ? { s, x: p.wx + sw, y: p.wy } : undefined,
-          g: s && s.glow ? { s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' || p.name.startsWith('wyrm_') ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 } : undefined,
+          g: s && s.glow ? { s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 } : undefined,
         });
       }
       for (const l of c.lights) {
@@ -584,8 +564,6 @@ export class Renderer {
     const flameFrame = Math.floor(this.time * 8) % 3;
     let fireSeen = 0;
     let millSeen = 0;
-    let raySeen = 0;
-    let golemSeen = 0;
     let marketSeen = 0;
     let leySeen = 0;
     let waterSeen = 0;
@@ -672,32 +650,16 @@ export class Renderer {
     }
     this.inView.fire = Math.min(1, fireSeen / 3);
     this.inView.mills = Math.min(1, millSeen / 2);
-    this.inView.rays = Math.min(1, raySeen / 3);
-    this.inView.golems = Math.min(1, golemSeen / 2);
-    this.inView.storm = state.storms.some((st) => st.x >= minX - 6 && st.x <= maxX + 6 && st.y >= minY - 6 && st.y <= maxY + 6) ? 1 : 0;
     this.inView.market = Math.min(1, marketSeen / 12);
     this.inView.ley = Math.min(1, leySeen / 6);
     this.inView.water = Math.min(1, waterSeen / Math.max(6, visible.length * 0.5));
     // agents
     const cartPools = new Map<string, number>(); // the donkey-cart pools, counted once a frame (the paintings merge in after boot)
     const cartCount = (prefix: string): number => { let n = cartPools.get(prefix); if (n === undefined) { n = this.atlas.countVariants(prefix); cartPools.set(prefix, n); } return n; };
-    // the marsh-wyrms of Bloom (iteration 86): a back rolling in the water, or coiled under the bridge it lairs beneath
-    for (const mw of state.marshWyrms ?? []) {
-      if (mw.x < minX || mw.x > maxX + 1 || mw.y < minY || mw.y > maxY + 1) continue;
-      const [wx, wy] = tileToWorld(mw.x, mw.y);
-      const lair = mw.lair >= 0;
-      const s = this.atlas.get(lair ? 'marshwyrm_lair' : `marshwyrm_${Math.floor(this.time * 2 + mw.id) % 2}`);
-      const bob = Math.sin(this.time * 1.6 + mw.id) * (lair ? 0.4 : 1);
-      const left = !lair && Math.floor(this.time / 6 + mw.id) % 2 === 0;
-      const y = wy + (lair ? 12 : 10) + bob;
-      items.push({ d: mw.x + mw.y - (lair ? 0.45 : 0.2), y: wy, fn: () => this.drawFacing(s, wx, y, left), g: s ? { s, x: wx, y, a: 0.8 } : undefined });
-    }
     for (const a of state.agents) {
       // each walker keeps its own pace (its speed and its id), so a crowd on one road does not march in step
       const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
-      if (a.kind === AgentKind.Creature && a.species === 'skyray') raySeen++;
-      if (a.kind === AgentKind.Creature && a.species === 'golem' && a.path.length) golemSeen++;
       if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature && a.kind !== AgentKind.Walker) continue; // resting inside a building
       // a lane of its own: a small sideways offset by id, so agents sharing a tile do not stand on each other
       const lane = a.kind === AgentKind.Citizen || a.kind === AgentKind.Walker || a.kind === AgentKind.Builder ? ((a.id * 7) % 5) - 2 : 0;
@@ -705,12 +667,7 @@ export class Renderer {
       const wx = wx0 + lane;
       if (a.kind === AgentKind.Creature) {
         const sp = a.species;
-        if (sp === 'glimmoth') {
-          const s = this.atlas.get(`glimmoth_${Math.floor(this.time * 10 + a.id) % 2}`);
-          const bob = Math.sin(this.time * 4 + a.id) * 2 - 14;
-          items.push({ d: a.x + a.y + 0.6, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob), g: s ? { s, x: wx, y: wy + 8 + bob, a: 0.9 } : undefined });
-          if (night > 0.2 && Math.random() < 0.03) this.particles.emit({ x: wx, y: wy + 8 + bob, vx: (Math.random() - 0.5) * 3, vy: 2, maxLife: 1.5, size: 1, color: PAL.glimleaf, glow: true, kind: 'spark' });
-        } else if (isWild(sp)) {
+        if (isWild(sp)) {
           // the wild: a stride while moving (quicker on the run), mirrored when it heads left; a heron stands still most of the day
           const moving = a.path.length > 0 && a.timer <= 0;
           const s = this.atlas.get(`${sp}_${moving ? Math.floor(this.time * (a.load === 1 ? 12 : 6) + a.id) % 2 : 0}`);
@@ -723,81 +680,18 @@ export class Renderer {
           const bob = Math.sin(this.time * 2 + a.id) * 0.8;
           items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8 + bob, a.dir === 2) });
           if (night > 0.2) lights.push({ x: wx + (a.dir === 2 ? -6 : 6), y: wy + 4, r: 12, c: PAL.lampWarm, i: 0.5 });
-        } else if (sp === 'thrumhare') {
-          const s = this.atlas.get(`thrumhare_${a.path.length ? Math.floor(this.time * 8) % 2 : 0}`);
-          items.push({ d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8) });
-        } else if (sp === 'wyvern' || sp === 'wyrm') {
+        } else if (sp === 'airship') {
           const alt = a.alt ?? 0;
-          const big = sp === 'wyrm';
-          // the wyrm's wing beat (iteration 76): up, mid, down, mid at six frames a second when the painting has its flap frames
-          const beat = this.atlas.has('wyrm_fly_2') ? [0, 1, 2, 1] : [0, 1];
-          const s = this.atlas.get(big ? `wyrm_fly_${beat[Math.floor(this.time * 6 + a.id) % beat.length]}` : `wyvern_${a.variant}_${Math.floor(this.time * 7 + a.id) % 2}`);
-          // ground shadow, in the depth-sorted pass
+          const s = this.atlas.get(`airship_${Math.floor(this.time * 2) % 2}`);
           items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
             const ctx2 = this.ctx;
-            ctx2.fillStyle = `rgba(10,8,16,${(big ? 0.45 : 0.35) - alt / 160})`;
+            ctx2.fillStyle = `rgba(10,8,16,${0.4 - alt / 220})`;
             ctx2.beginPath();
-            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), big ? 26 : 10, big ? 10 : 4, 0, 0, Math.PI * 2);
+            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 20, 8, 0, 0, Math.PI * 2);
             ctx2.fill();
           } });
-          if (big && a.load > 0 && Math.random() < 0.3) this.particles.emit({ x: wx + (Math.random() - 0.5) * 20, y: wy + 6 - alt, vx: (Math.random() - 0.5) * 6, vy: 6, maxLife: 0.9, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
-          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
-          if (a.variant === 0 && Math.random() < 0.1) this.particles.emit({ x: wx, y: wy + 4 - alt, vx: (Math.random() - 0.5) * 4, vy: 2, maxLife: 0.8, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
-          if (a.variant === 4 && Math.random() < 0.2) this.particles.emit({ x: wx - 8, y: wy + 6 - alt, vx: -20, vy: 0, maxLife: 0.6, size: 1, color: PAL.flower3, glow: false, kind: 'mote' });
-        } else if (sp === 'drake' && state.dragons.find((x) => x.id === a.dragonId)?.role === 'mount') {
-          // a mounted drake (iteration 73): the rider sprite in the sky layer, a shadow beneath, its line's glow
-          const alt = a.alt ?? 0;
-          const s = this.atlas.get(`rider_${Math.floor(this.time * 6 + a.id) % 2}`);
-          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => { const ctx2 = this.ctx; ctx2.fillStyle = `rgba(10,8,16,${0.3 - alt / 220})`; ctx2.beginPath(); ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 10, 4, 0, 0, Math.PI * 2); ctx2.fill(); } });
-          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: a.variant });
-        } else if (sp === 'drake') {
-          const d = state.dragons.find((x) => x.id === a.dragonId);
-          const stage = d && d.stage >= 2 ? 2 : 1;
-          const s = this.atlas.get(`dragon_${a.variant}_${stage}_${a.path.length ? Math.floor(this.time * 6 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
-          if (a.variant === 0 && Math.random() < 0.08) this.particles.emit({ x: wx + 6, y: wy + 2, vx: (Math.random() - 0.5) * 4, vy: -8, maxLife: 1, size: 1, color: PAL.ember, glow: true, kind: 'ember' });
-          if (a.variant === 2) lights.push({ x: wx, y: wy + 4, r: 22, c: PAL.lampWarm, i: 0.6 });
-          if (a.variant === 1 && Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 2, vx: 0, vy: -4, maxLife: 1.5, size: 1, color: PAL.restless, glow: true, kind: 'restless' });
-        } else if (sp === 'hound') {
-          const s = this.atlas.get(`hound_${a.timer > 0 ? 0 : Math.floor(this.time * 8 + a.id) % 2}`);
-          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
-          if (Math.random() < 0.05) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 6, vx: (Math.random() - 0.5) * 3, vy: -3, maxLife: 2, size: 1, color: PAL.gloam3, glow: false, kind: 'mote' });
-        } else if (sp === 'golem' && a.duty !== 'haul') { // a warden in harness is drawn as its cart (iteration 72)
-          const s = this.atlas.get(`golem_${a.path.length ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y + 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow && a.load > 0 ? { s, x: wx, y: wy + 8, a: 0.8 } : undefined });
-          if (a.path.length && Math.random() < 0.15) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 8, vx: (Math.random() - 0.5) * 6, vy: -4, maxLife: 0.8, size: 1, color: PAL.stone3, glow: false, kind: 'mote' });
-        } else if (sp === 'tiger') {
-          const s = this.atlas.get(`tiger_${a.path.length ? Math.floor(this.time * 8 + a.id) % 2 : 0}`);
-          items.push({ d: a.x + a.y - 0.1, y: wy, fn: () => this.draw(s, wx, wy + 8), occ: s ? { s, x: wx, y: wy + 8 } : undefined, g: s && s.glow ? { s, x: wx, y: wy + 8, a: 0.9 } : undefined });
-        } else if (sp === 'rider' || sp === 'airship') {
-          const alt = a.alt ?? 0;
-          const big = sp === 'airship';
-          const s = this.atlas.get(big ? `airship_${Math.floor(this.time * 2) % 2}` : `rider_${Math.floor(this.time * 6 + a.id) % 2}`);
-          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
-            const ctx2 = this.ctx;
-            ctx2.fillStyle = `rgba(10,8,16,${(big ? 0.4 : 0.3) - alt / 220})`;
-            ctx2.beginPath();
-            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), big ? 20 : 8, big ? 8 : 3, 0, 0, Math.PI * 2);
-            ctx2.fill();
-          } });
-          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: 4 });
-          if (big && Math.random() < 0.3) this.particles.emit({ x: wx - 14, y: wy + 6 - alt, vx: -8, vy: -2, maxLife: 1.2, size: 1, color: PAL.smoke, glow: false, kind: 'smoke' });
-        } else if (sp === 'skyray') {
-          const alt = a.alt ?? 0;
-          const s = this.atlas.get(`skyray_${Math.floor(this.time * 1.5 + a.id) % 2}`);
-          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
-            const ctx2 = this.ctx;
-            ctx2.fillStyle = 'rgba(10,8,16,0.22)';
-            ctx2.beginPath();
-            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 16, 6, 0, 0, Math.PI * 2);
-            ctx2.fill();
-          } });
-          sky.push({ s, x: wx, y: wy + 8 - alt, alt, line: 4 });
-        } else if (sp === 'wisp') {
-          const s = this.atlas.get(`wisp_${Math.floor(this.time * 3 + a.id) % 2}`);
-          const bob = Math.sin(this.time * 2 + a.id) * 3 - 10;
-          items.push({ d: a.x + a.y + 0.5, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob, 0.85), g: s ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined });
-          lights.push({ x: wx, y: wy + bob, r: 14, c: PAL.restless, i: 0.4 });
+          sky.push({ s, x: wx, y: wy + 8 - alt });
+          if (Math.random() < 0.3) this.particles.emit({ x: wx - 14, y: wy + 6 - alt, vx: -8, vy: -2, maxLife: 1.2, size: 1, color: PAL.smoke, glow: false, kind: 'smoke' });
         }
         continue;
       }
@@ -809,8 +703,7 @@ export class Renderer {
       else if (a.kind === AgentKind.Citizen) name = `cit_${a.variant}_${a.pathIdx < a.path.length ? walkFrame : 0}`;
       else if (a.kind === AgentKind.Cart) name = cartSpriteName(a, cartCount);
       else name = `restless_${Math.floor(this.time * 2 + a.id) % 2}`;
-      const golemCart = a.kind === AgentKind.Cart && cartMirrored(a);
-      const s = golemCart ? this.atlas.mirrored(name) : this.atlas.get(name);
+      const s = this.atlas.get(name);
       const floating = a.kind === AgentKind.Cart && a.variant === 3;
       const bob = a.kind === AgentKind.Restless ? Math.sin(this.time * 3 + a.id) * 2 - 3 : floating ? Math.sin(this.time * 2.5 + a.id) * 1.5 - 5 : 0;
       if (floating && Math.random() < 0.2) this.particles.emit({ x: wx + (Math.random() - 0.5) * 8, y: wy + 10, vx: 0, vy: 3, maxLife: 0.5, size: 1, color: PAL.arcane2, glow: true, kind: 'spark' });
@@ -819,7 +712,7 @@ export class Renderer {
       items.push({
         d: a.x + a.y - 0.2, y: wy, fn: () => this.draw(s, wx, wy + 8 + bob),
         occ: s && !restless && !floating ? { s, x: wx, y: wy + 8 + bob } : undefined,
-        g: s && (restless || ((floating || a.variant === 6) && s.glow)) ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined,
+        g: s && (restless || (floating && s.glow)) ? { s, x: wx, y: wy + 8 + bob, a: 0.8 } : undefined,
       });
       if (restless) {
         lights.push({ x: wx, y: wy + 4, r: 18, c: PAL.restless, i: 0.5 });
@@ -834,18 +727,6 @@ export class Renderer {
       const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0) : lookName(this.atlas, `b_${g.key}`, g.x, g.y, this.looks);
       const s = faceLeft(state, { x: g.x, y: g.y, w: def.w, h: def.h }) ? this.atlas.mirrored(gname) : this.atlas.get(gname);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
-    }
-    // warding wall inlays glow, under everything
-    if (night > 0.05) {
-      for (let y = minY; y <= maxY; y++)
-        for (let x = minX; x <= maxX; x++) {
-          const i = idx(x, y);
-          if (state.wall[i] !== 1) continue;
-          const [wx, wy] = tileToWorld(x, y);
-          const s = this.atlas.get(`wall_${(y > 0 && state.wall[idx(x, y - 1)] ? 1 : 0) | (x < MAP_W - 1 && state.wall[idx(x + 1, y)] ? 2 : 0) | (y < MAP_H - 1 && state.wall[idx(x, y + 1)] ? 4 : 0) | (x > 0 && state.wall[idx(x - 1, y)] ? 8 : 0)}`);
-          if (s) groundGlows.push({ s, x: wx, y: wy, a: 0.6 });
-          if ((x + y) % 3 === 0) lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.ley1, i: 0.3 });
-        }
     }
     const tSort = performance.now();
     items.sort((p, q) => p.d - q.d || p.y - q.y);
@@ -905,10 +786,6 @@ export class Renderer {
           } else if (state.road[i] === RoadType.Glowvine && state.lit[i]) {
             const [wx, wy] = tileToWorld(x, y);
             lights.push({ x: wx, y: wy + 8, r: 18, c: PAL.glimleaf, i: 0.45 + 0.1 * Math.sin(this.time * 1.5 + x * 0.7 + y) });
-          } else if (state.dustLit[i] > state.day && state.road[i]) {
-            // a road tile scattered with glim-dust glows warm gold for a season (iteration 53)
-            const [wx, wy] = tileToWorld(x, y);
-            lights.push({ x: wx, y: wy + 8, r: 16, c: PAL.lampWarm, i: 0.4 + 0.08 * Math.sin(this.time * 2.1 + x * 1.3 + y * 0.7) });
           }
         }
     }
@@ -939,18 +816,6 @@ export class Renderer {
     for (const f of sky) {
       this.draw(f.s, f.x, f.y);
       if (f.s && f.s.glow && night > 0.05) { ctx.globalCompositeOperation = 'lighter'; this.drawGlow(f.s, f.x, f.y, 0.9 * night); ctx.globalCompositeOperation = 'source-over'; }
-    }
-    // mana-storms: a pocket of wild ley
-    for (const st of state.storms) {
-      if (st.x < minX - 6 || st.x > maxX + 6 || st.y < minY - 6 || st.y > maxY + 6) continue;
-      const [sx, sy] = tileToWorld(st.x, st.y);
-      lights.push({ x: sx, y: sy + 8, r: 90, c: PAL.arcane2, i: 0.5 + 0.2 * Math.sin(this.time * 3) });
-      for (let k = 0; k < 3; k++) {
-        const ang = Math.random() * Math.PI * 2;
-        const rr = Math.random() * 5;
-        const [px, py] = tileToWorld(st.x + Math.cos(ang) * rr, st.y + Math.sin(ang) * rr);
-        this.particles.emit({ x: px, y: py - Math.random() * 20, vx: (Math.random() - 0.5) * 10, vy: -6 - Math.random() * 8, maxLife: 1.2, size: 1, color: Math.random() < 0.5 ? PAL.arcane2 : PAL.ley1, glow: true, kind: 'surge' });
-      }
     }
     // icons (always on top, bobbing)
     const bobY = Math.round(Math.sin(this.time * 4) * 1.5);
@@ -1006,7 +871,6 @@ export class Renderer {
     if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant);
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
-    if (b.kind === 'cradle' && b.level >= 2 && this.atlas.has('b_greatcradle')) return 'b_greatcradle'; // the Great Cradle (iteration 53)
     return lookName(this.atlas, `b_${b.kind}`, b.x, b.y, this.looks);
   }
 
@@ -1076,7 +940,7 @@ export class Renderer {
         e.n++;
       }
     // per-district problems: unlit, dry, empty shelves
-    const prob = new Map<number, { unlit: number; dry: number; empty: number; fled: number }>();
+    const prob = new Map<number, { unlit: number; dry: number; empty: number }>();
     for (const b of state.buildings) {
       if (!b || b.state !== 'ok') continue;
       const def = BUILDING_BY_KEY[b.kind];
@@ -1084,8 +948,7 @@ export class Renderer {
       const d = state.district[idx(b.x, b.y)];
       if (!d) continue;
       let p = prob.get(d);
-      if (!p) prob.set(d, (p = { unlit: 0, dry: 0, empty: 0, fled: 0 }));
-      if (b.fled !== undefined) p.fled++; // fled from the hounds until the Thaw (iteration 70)
+      if (!p) prob.set(d, (p = { unlit: 0, dry: 0, empty: 0 }));
       if (!b.lit) p.unlit++;
       if (!b.watered) p.dry++;
       if (def.zone === Zone.Market && b.stock <= 0.5 && b.age > 3) p.empty++;
@@ -1100,8 +963,6 @@ export class Renderer {
       if (p?.unlit) bits.push(`${p.unlit} unlit`);
       if (p?.dry) bits.push(`${p.dry} dry`);
       if (p?.empty) bits.push(`${p.empty} empty`);
-      if (state.hush.emptied.includes(d)) bits.push('emptied by the hounds');
-      else if (p?.fled) bits.push(`${p.fled} fled the hounds`);
       const [wx, wy] = tileToWorld(e.x / e.n, e.y / e.n);
       const sx = Math.round(wx - this.camera.left);
       const sy = Math.round(wy - this.camera.top);

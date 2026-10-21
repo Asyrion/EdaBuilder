@@ -18,7 +18,7 @@ FACTIONS.test = {
   id: 'test' as never, name: 'The Test Folk', people: 'Testish', playable: true, lore: 'test',
   milestones: MILESTONES.map((m, i) => ({ ...m, name: `Depth ${i}` })),
   deny: ['garden'], replaces: { well: 'cistern' },
-  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, wallWard: 2, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false, milestoneGate: (_s, next) => next < 2 },
+  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false, milestoneGate: (_s, next) => next < 2 },
 };
 afterAll(() => { delete FACTIONS.test; });
 
@@ -85,10 +85,9 @@ describe('The faction scaffold', () => {
     const dt = t.manaSupply - before[1];
     expect(dv).toBeGreaterThan(0);
     expect(dt).toBeCloseTo(dv * 2, 3);
-    // gate ward doubles, lantern halves
-    for (const s of [v, t]) { s.wall[idx(f.x - 10, f.y)] = 2; placeBuildingRaw(s, 'spire', f.x + 3, f.y - 6); const l = placeBuildingRaw(s, 'wardlantern', f.x + 5, f.y - 4); recomputeAll(s); expect(l.lit).toBe(true); }
+    // lantern halves
+    for (const s of [v, t]) { placeBuildingRaw(s, 'spire', f.x + 3, f.y - 6); const l = placeBuildingRaw(s, 'wardlantern', f.x + 5, f.y - 4); recomputeAll(s); expect(l.lit).toBe(true); }
     updateCoverage(v, 'ward'); updateCoverage(t, 'ward');
-    expect(t.coverage.ward[idx(f.x - 10, f.y + 1)]).toBeCloseTo(Math.min(255, v.coverage.ward[idx(f.x - 10, f.y + 1)] * 2), -1);
     const li = idx(f.x + 5, f.y - 5);
     expect(t.coverage.ward[li]).toBeLessThan(v.coverage.ward[li]);
     // the milestone gate holds the city at its milestone

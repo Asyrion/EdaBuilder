@@ -2,14 +2,12 @@ import { initGuilds } from './guilds';
 import { initRelics } from './relics';
 import { FACTIONS, factionOf, type FactionId, milestonesOf } from '../data/factions';
 import { buildTicks, construction } from './construction';
-import { chooseWyrmNode, newWyrm, onNodeDeepened } from './wyrm';
 import type { Scenario } from './types';
 import { initialSectors, inCharter } from './sectors';
 import { assignAspects, aspectAt, drought, floodedAt } from './weave';
 import { Rng, hashString } from '../core/rng';
 import { seedWild } from './wild';
 import { lakeDistAt } from './water';
-import { greatGateReach, touchesBelregiGate } from './gate';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
 import {
@@ -53,7 +51,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     zone: new Uint8Array(n),
     road: new Uint8Array(n),
     district: new Uint8Array(n),
-    wall: new Uint8Array(n),
     bIndex: new Int32Array(n).fill(-1),
     lit: new Uint8Array(n),
     watered: new Uint8Array(n),
@@ -114,23 +111,13 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     trade: { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 },
     wild: { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] },
     water: { fish: [], spawnUntil: -1, fishAt: [], closed: [] },
-    dragons: [],
-    nextDragonId: 1,
-    materials: { scale: 0, wyrmfire: 0, eggshell: 0, rayscale: 0, glimdust: 0 },
     weather: null,
     pilgrimsDay: -1,
-    heart: { held: 'none', step: 0, day: -1 },
-    hush: { year: -1, emptied: [] },
     edictSince: {},
     quarterSince: {},
     remembranceDead: 0,
-    departed: [],
-    burnWyrmfire: true,
-    dustLit: new Uint16Array(n),
-    wyrm: newWyrm(chooseWyrmNode(t.nodes, t.founding)),
-    airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0, wyvern: false, wyvernId: -1, wyvernTale: 0 },
-    merchant: { visits: 0, spent: 0, eggs: 0, talks: 0 },
-    fenNex: 0,
+    airship: { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0 },
+    merchant: { visits: 0, spent: 0, talks: 0 },
     scenario,
     faction,
     daughter: null,
@@ -140,7 +127,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     lastBadDay: -30,
     challengeDay: -1,
     cleanDays: 0,
-    storms: [],
     artifactsSold: 0,
     tradeIncomeToday: 0,
     modifiers: [],
@@ -152,7 +138,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, caravanCrowns: 0, lastCaravanCrowns: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, eggsGreyed: 0, wyvernVoyages: 0, mountRescues: 0, brawlsParted: 0, golemHauls: 0, cartsBalked: 0, lastBalkDay: -1, wyrmTributes: 0, wyrmFlyovers: 0, wyrmStarvedMost: 0, houndFled: 0, houndEmptied: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, gatePilgrims: 0, gateAlms: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, wyrmsLaired: 0, wyrmsDriven: 0, tideNests: 0, watchRounds: 0, sextonRounds: 0, galeDays: 0 },
+    stats: { goodsDelivered: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, caravanCrowns: 0, lastCaravanCrowns: 0, lastCaravanDay: -1, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, brawlsParted: 0, relics: 0, portalTrips: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, fullDays: 0, brownoutsSurvived: 0, brownoutOpen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, quietHush: 0, hushPressureBreaks: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, guildHalls: 0, devUses: 0, relicsSold: 0, guildWars: 0, relicsAuctioned: 0, guildCharters: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, pilgrimPrayers: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, surgesAbsorbed: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, pilgrimShrines: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, watchRounds: 0, sextonRounds: 0, galeDays: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -205,7 +191,7 @@ export function pushMessage(state: GameState, text: string, kind: Message['kind'
   if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
 }
 
-/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, a raid, the wyrm, a tiger, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
+/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
 export function illTiding(state: GameState): void {
   state.lastBadDay = state.day;
 }
@@ -271,7 +257,6 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
         if (state.terrain[i] !== Terrain.Ruins) return 'Must stand on the ruin flagstones';
       } else if (!isBuildableTerrain(state.terrain[i]) && !(state.terrain[i] === Terrain.Hills && factionOf(state).rules.hillBuildable)) return 'Cannot build on this terrain';
       if (state.road[i]) return 'A road is in the way';
-      if (state.wall[i]) return 'The Warding Wall is in the way';
       if (def.onHills === false) { /* no-op */ }
       if (state.bIndex[i] >= 0) {
         const other = state.buildings[state.bIndex[i]];
@@ -285,13 +270,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
   if (def.nearHills && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Hills)) return 'Must be built against hills';
   if (def.nearWater && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Water)) return 'Must touch river or lake water';
   if (def.nearShore && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Shore || t === Terrain.Water)) return 'Must touch the shore or the water';
-  if (def.nearGate && !touchesBelregiGate(state, x, y, def.w, def.h)) return 'Must stand beside a Belregi gate in the Warding Wall';
   if (def.nearLake && !footprintNearLake(state, x, y, def.w, def.h)) return "Must stand on the lake's shore (within 3 of open water)";
-  if (def.key === 'mothloft' || def.key === 'cradle') {
-    let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
-    if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
-    if (!near) return def.key !== 'mothloft' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
-  }
   return null;
 }
 
@@ -438,7 +417,6 @@ export function timeOfDay(state: GameState): number {
 
 /** The radius a building reaches: its service, its water, or its light (spires read the people's reach). */
 export function influenceRadius(state: GameState, def: BuildingDef, b?: Building): number {
-  if (def.key === 'greatgate') return greatGateReach(state); // 30 with the Heart set (iteration 69)
   if (def.service) return def.service.radius;
   if (def.waterRadius) return b ? waterRadiusOf(state, b) : def.waterRadius;
   if (def.key === 'spire') return 5 + factionOf(state).rules.spireReach;
@@ -571,6 +549,5 @@ export function deepenNode(state: GameState, ni: number): string | null {
   state.treasury -= NODE_DEEPEN_COST[depth];
   n.depth = depth + 1;
   pushMessage(state, `The Wellspring at (${n.x},${n.y}) is deepened. Tallowkin bore-singers coax ${NODE_DEEPEN_MANA} more mana a day from the Vein.`, 'milestone');
-  onNodeDeepened(state, ni);
   return null;
 }

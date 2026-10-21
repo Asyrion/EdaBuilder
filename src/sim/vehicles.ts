@@ -1,7 +1,8 @@
-/** Vehicles: floating carts, river barges (Quay), drake riders (Drake Mews), the airship (Sky-Dock). See DESIGN.md 4.36. */
+/** Vehicles: floating carts, river barges (Quay), the airship (Sky-Dock). See DESIGN.md 4.36. The drake riders, the golem haulers,
+ *  the Tide drakes' barges and the Dock's wyvern are parked (scope reset, phase 1b). */
 import { BUILDING_BY_KEY } from './catalog';
 import { isGoodsSource } from './growth';
-import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type Building, type Dragon, type GameState } from './types';
+import { AgentKind, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { marketStockCap } from './agents';
 import { effects } from './hazards';
@@ -13,19 +14,10 @@ import { MOORINGS } from './catalog';
 
 export const FLOAT_VARIANT = 3; // cart variant: hovers, ignores congestion, 1 mana while moving
 export const BARGE_VARIANT = 4; // cart variant: travels water between quays
-export const GOLEM_VARIANT = 6; // cart variant: a Concord Warden in harness, hauling from one works (iteration 72)
-export const GOLEM_LOAD = 30; // goods a golem hauler carries a trip (a donkey cart carries 12)
-export const GOLEM_SPEED = 0.45; // a hauler's pace (a donkey cart's is 0.8)
-export const GOLEM_REST = 20; // ticks a hauler stands at a market before turning back (a donkey rests 150 + rng 450)
-export const CART_FEAR_REACH = 4; // a donkey cart balks with a Gloam-hound this near (tiles)
-export const CART_BALK_TICKS = 60; // and stands this long before it tries again
 export const BARGE_LOAD = 40;
 export const QUAY_REACH = 8;
-export const RIDER_RANGE = 40;
 export const AIRSHIP_LOAD = 200;
 export const AIRSHIP_DAYS = 10;
-export const WYVERN_LOAD = 100; // the Sky-Dock's wyvern carries half the airship's load (iteration 73)
-export const WYVERN_DAYS = 5; // and is back in half the time, needing no mana
 
 // ---------- floating carts ----------
 export function floatingTarget(s: GameState): number {
@@ -45,34 +37,6 @@ export function floatingMana(s: GameState): number {
   return n;
 }
 
-// ---------- golem haulers (iteration 72) ----------
-export function isGolemCart(a: Agent): boolean {
-  return a.kind === AgentKind.Cart && a.variant === GOLEM_VARIANT;
-}
-/** The donkey carts (the stone cart 0 and the goods carts 1–2) are the ones a hound can scare; floating carts, barges and haulers are not. */
-export function isDonkeyCart(a: Agent): boolean {
-  return a.kind === AgentKind.Cart && a.variant <= 2;
-}
-/** A golem cart for a warden in harness at this works, standing on the works' road tile. No rng. */
-export function spawnGolemCart(s: GameState, golem: Agent, works: Building, roadTile: number): Agent {
-  const a: Agent = {
-    id: s.nextAgentId++, kind: AgentKind.Cart, x: (roadTile % MAP_W) + 0.5, y: ((roadTile / MAP_W) | 0) + 0.5, path: [], pathIdx: 0, speed: GOLEM_SPEED,
-    homeId: works.id, targetId: -1, timer: 0, variant: GOLEM_VARIANT, dir: 0, load: 0, golemId: golem.id,
-  };
-  s.agents.push(a);
-  return a;
-}
-/** Golem carts whose warden is gone, wild or off haul duty are removed; returns how many went. */
-export function pruneGolemCarts(s: GameState): number {
-  const haulers = new Set<number>();
-  for (const a of s.agents) if (a.kind === AgentKind.Creature && a.species === 'golem' && a.load > 0 && a.duty === 'haul') haulers.add(a.id);
-  const before = s.agents.length;
-  s.agents = s.agents.filter((a) => !isGolemCart(a) || (a.golemId !== undefined && haulers.has(a.golemId) && s.buildings.some((b) => b && b.id === a.homeId && b.state === 'ok')));
-  return before - s.agents.length;
-}
-
-// ---------- water pathfinding ----------
-/** A* over water tiles (bridges pass overhead). Returns tile indices or null. */
 export function waterPath(s: GameState, start: number, goal: number, maxNodes = 9000): number[] | null {
   if (!isWater(s.terrain[start]) || !isWater(s.terrain[goal])) return null;
   const gx = goal % MAP_W;
@@ -137,8 +101,8 @@ function near(s: GameState, q: Building, test: (b: Building) => boolean): Buildi
   return out;
 }
 
-/** Send one barge from a mooring to the other mooring whose markets are emptiest; a dragon's barge carries its id. Returns the goods sent, 0 if none sailed. */
-function sendBarge(s: GameState, from: Building, qs: Building[], dragonId = -1): { total: number; to: Building } | null {
+/** Send one barge from a mooring to the other mooring whose markets are emptiest. Returns the goods sent, 0 if none sailed. */
+function sendBarge(s: GameState, from: Building, qs: Building[]): { total: number; to: Building } | null {
   const sources = near(s, from, (b) => isGoodsSource(b) && b.stock > 8);
   const avail = sources.reduce((n, b) => n + (b.stock - 8), 0);
   if (avail < 10) return null;
@@ -169,66 +133,25 @@ function sendBarge(s: GameState, from: Building, qs: Building[], dragonId = -1):
     id: s.nextAgentId++, kind: AgentKind.Cart, x: (w0 % MAP_W) + 0.5, y: ((w0 / MAP_W) | 0) + 0.5, path, pathIdx: 0, speed: 0.9,
     homeId: from.id, targetId: best.id, timer: 0, variant: BARGE_VARIANT, dir: 0, load: total,
   };
-  if (dragonId >= 0) a.dragonId = dragonId;
   s.agents.push(a);
   s.stats.bargeTrips++;
   effects.push({ x: from.x, y: from.y, kind: 'bell', tick: s.tick });
   return { total, to: best };
 }
 
-/** Daily: every quay sends a barge to a quay whose markets are emptier, along the water; then the Tide dragons swim theirs. */
+/** Daily: every quay sends a barge to a quay whose markets are emptier, along the water. */
 export function dailyBarges(s: GameState): void {
-  dailyQuayBarges(s);
-  dailyTideBarges(s);
-}
-function dailyQuayBarges(s: GameState): void {
   const qs = quays(s);
   if (qs.length < 2 || riverFrozen(s) || galeToday(s) || modifierSum(s, 'barges') < 0) return; // the bargemen may be on strike
   const rng = rngOf(s);
   for (const from of qs) {
-    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id && a.dragonId === undefined)) continue;
+    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.homeId === from.id)) continue;
     const sent = sendBarge(s, from, qs);
     if (sent && rng.chance(0.15)) pushMessage(s, `A barge casts off from the quay at (${from.x},${from.y}) with ${Math.round(sent.total)} goods for the markets at (${sent.to.x},${sent.to.y}).`, 'info');
   }
   commitRng(s, rng);
 }
 
-/** A Tide dragon's mooring: the nearest within TIDE_REACH of its cradle. */
-export const TIDE_REACH = 12;
-export function tideMooring(s: GameState, d: Dragon): Building | null {
-  const cradle = s.buildings.find((b) => b && b.id === d.cradleId);
-  if (!cradle) return null;
-  let best: Building | null = null;
-  let bd = TIDE_REACH + 0.001;
-  for (const q of quays(s)) {
-    const dist = Math.hypot(q.x - cradle.x, q.y - cradle.y);
-    if (dist < bd) { bd = dist; best = q; }
-  }
-  return best;
-}
-/** Does this dragon swim a barge: a Tide line at drake or older, radiating its aura (no role, or a warden). */
-export function swimsBarges(d: Dragon): boolean {
-  return d.line === 'tide' && d.stage >= 2 && (d.role === 'none' || d.role === 'warden');
-}
-/** Daily: every Tide dragon radiating its aura swims one barge from the mooring nearest its cradle: no crew, no strike, beside the mooring's own barge (iteration 53). */
-export function dailyTideBarges(s: GameState): void {
-  const qs = quays(s);
-  if (qs.length < 2 || riverFrozen(s) || galeToday(s)) return;
-  const rng = rngOf(s);
-  for (const d of s.dragons) {
-    if (!swimsBarges(d)) continue;
-    const from = tideMooring(s, d);
-    if (!from) continue;
-    if (s.agents.some((a) => a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT && a.dragonId === d.id)) continue;
-    const sent = sendBarge(s, from, qs, d.id);
-    if (!sent) continue;
-    s.stats.tideTrips++;
-    if (rng.chance(0.3)) pushMessage(s, `${d.name} swims out beside a barge from the quay at (${from.x},${from.y}): ${Math.round(sent.total)} goods for the markets at (${sent.to.x},${sent.to.y}), and no bargeman aboard.`, 'info', true, { x: from.x, y: from.y });
-  }
-  commitRng(s, rng);
-}
-
-/** A barge has reached its quay: fill the emptiest markets nearby. */
 export function deliverBarge(s: GameState, a: Agent): void {
   const to = s.buildings.find((b) => b && b.id === a.targetId);
   if (!to) return;
@@ -246,28 +169,8 @@ export function deliverBarge(s: GameState, a: Agent): void {
   a.load = 0;
 }
 
-// ---------- drake riders ----------
-export function riderTarget(s: GameState): number {
-  let n = 0;
-  forEachBuilding(s, (b) => { if (b.kind === 'drakemews' && b.state === 'ok' && b.lit) n += 2; });
-  return Math.min(4, n);
-}
-
 // ---------- airship ----------
-export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number; wyvern?: boolean; wyvernId?: number; wyvernTale?: number }
-export function newAirship(): AirshipState {
-  return { status: 'none', goods: 0, since: -1, tale: 0, voyages: 0, wyvern: false, wyvernId: -1, wyvernTale: 0 };
-}
-/** The wyvern the Dock would send: a wyvern-stage dragon with no role or a courier's, at home (iteration 73). */
-export function dockWyvern(s: GameState): Dragon | null {
-  return s.dragons.find((d) => d.stage >= 3 && (d.role === 'none' || d.role === 'courier') && d.voyage === undefined) ?? null;
-}
-/** The Dock's panel: send a wyvern instead of the airship, or the airship again. The reason it cannot, or null. */
-export function toggleSkyDockWyvern(s: GameState): string | null {
-  if (!skyDock(s)) return 'No Sky-Dock stands';
-  s.airship.wyvern = !s.airship.wyvern;
-  return null;
-}
+export interface AirshipState { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number }
 /** Surplus goods gathered from the works' shelves for a run beyond the Gloam, up to `cap`; nothing under 20. */
 function gatherSurplus(s: GameState, cap: number): number {
   let goods = 0;
@@ -278,42 +181,6 @@ function gatherSurplus(s: GameState, cap: number): number {
     goods += t;
   });
   return goods;
-}
-/** Day 3 in wyvern mode: a wyvern flies the surplus out, no mana asked, back in WYVERN_DAYS. False when none could go. */
-function sendWyvern(s: GameState, dock: Building): boolean {
-  const air = s.airship;
-  const d = dockWyvern(s);
-  if (!d) return false;
-  const goods = gatherSurplus(s, WYVERN_LOAD);
-  if (goods < 20) return false;
-  air.status = 'away';
-  air.goods = goods;
-  air.since = s.day;
-  air.wyvernId = d.id;
-  d.voyage = s.day + WYVERN_DAYS;
-  s.agents = s.agents.filter((a) => !(a.kind === AgentKind.Creature && (a.species === 'drake' || a.species === 'wyvern') && a.dragonId === d.id));
-  s.stats.wyvernVoyages++;
-  effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
-  pushMessage(s, `${d.name} takes the Sky-Dock's run with ${Math.round(goods)} goods in its panniers, for the wardlights beyond the Gloam. No mana, and back in ${WYVERN_DAYS} days.`, 'info', true, { x: dock.x, y: dock.y });
-  return true;
-}
-/** The wyvern is home: pay out, and one time in two it brings a tale of the rival wardlight. */
-function wyvernReturns(s: GameState, dock: Building | null): void {
-  const air = s.airship;
-  const crowns = Math.round(air.goods * s.trade.priceGoods * 1.6);
-  s.treasury += crowns;
-  s.stats.airshipCrowns += crowns;
-  const d = s.dragons.find((x) => x.id === air.wyvernId);
-  if (d) delete d.voyage;
-  air.wyvernId = -1;
-  air.status = 'docked';
-  const rng = rngOf(s);
-  const tale = rng.chance(0.5);
-  commitRng(s, rng);
-  if (tale) air.wyvernTale = s.day;
-  if (dock) effects.push({ x: dock.x, y: dock.y, kind: 'horn', tick: s.tick });
-  pushMessage(s, `${d ? d.name : 'The wyvern'} is home from beyond the Gloam: ${Math.round(air.goods)} goods sold for ${crowns} crowns.${tale ? ' It did not come back alone.' : ''}`, 'good', true, dock ? { x: dock.x, y: dock.y } : undefined);
-  air.goods = 0;
 }
 export function skyDock(s: GameState): Building | null {
   let out: Building | null = null;
@@ -327,12 +194,9 @@ export function dailyAirship(s: GameState): void {
   const air = s.airship;
   if (!dock) {
     if (air.status !== 'none') { air.status = 'none'; s.agents = s.agents.filter((a) => !(a.kind === AgentKind.Creature && a.species === 'airship')); }
-    if ((air.wyvernId ?? -1) >= 0) { const d = s.dragons.find((x) => x.id === air.wyvernId); if (d) delete d.voyage; air.wyvernId = -1; air.goods = 0; } // the Dock gone, the wyvern finds its own way home
     return;
   }
   if (air.status === 'none') air.status = 'docked';
-  if (air.status === 'away' && (air.wyvernId ?? -1) >= 0) { if (s.day - air.since >= WYVERN_DAYS) wyvernReturns(s, dock); return; }
-  if (air.status === 'docked' && air.wyvern && s.day % 30 === 3 && sendWyvern(s, dock)) return; // the wyvern instead of the airship (iteration 73); with none to send, the airship goes if the Dock is lit
   if (air.status === 'docked' && dock.lit && s.day % 30 === 3) {
     const goods = gatherSurplus(s, AIRSHIP_LOAD);
     if (goods < 20) return;

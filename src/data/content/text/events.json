@@ -284,38 +284,7 @@
       },
       {
         "label": "Keep the gates shut",
-        "desc": "No cost; hounds are about and the Watch is glad of it. The carters sulk (−8)."
-      }
-    ]
-  },
-  "egg_first": {
-    "title": "The Crown's gift",
-    "text": "A rider from Vell-on-Sable brings a crate packed with warm ash and a letter under the wyrm-seal: the Crown has heard you raised a cradle, and sends a first egg \"so that the valley may learn what it is to keep a dragon\".",
-    "choices": [
-      {
-        "label": "Accept the egg"
-      },
-      {
-        "label": "Decline politely",
-        "desc": "+800 crowns from the Crown for your modesty; no egg."
-      }
-    ]
-  },
-  "egg_poachers": {
-    "title": "Poachers at the gate",
-    "text": "Three hooded carters offer an egg wrapped in wet moss for 2,500 crowns. They will not say where it came from. The Watch would like a word with them.",
-    "choices": [
-      {
-        "label": "Buy the egg (2,500 crowns)",
-        "desc": "An ember, bone or glim egg, if a cradle has room."
-      },
-      {
-        "label": "Arrest them",
-        "desc": "Unrest −3% for 10 days; 40% chance the egg is recovered anyway."
-      },
-      {
-        "label": "Send them away",
-        "desc": "Nothing changes."
+        "desc": "No cost; the Watch is glad of it. The carters sulk (−8)."
       }
     ]
   },
@@ -334,52 +303,6 @@
       {
         "label": "Keep everything for the Academy",
         "desc": "Educated share +2%; the assessor leaves empty-handed."
-      }
-    ]
-  },
-  "fennex": {
-    "title": "The Fen-Nex come to market",
-    "text": "Fox-folk in travelling cloaks, seven of them, or nine, or five: they change between counts. They trade honestly exactly half the time and are proud of it. Their speaker offers a deal, or a quarter of the city to make their own.",
-    "choices": [
-      {
-        "label": "Trade with them",
-        "desc": "Half the time +3,000 crowns; half the time −1,500 crowns and a week of grumbling."
-      },
-      {
-        "label": "Grant them a quarter",
-        "desc": "The district with the most markets becomes the Fen-Nex quarter: its markets pay no tithe but hold twice the goods. Needs a painted district with markets."
-      },
-      {
-        "label": "Turn them away",
-        "desc": "No effect, probably."
-      }
-    ]
-  },
-  "fennex_gift": {
-    "title": "A gift from the quarter",
-    "text": "The Fen-Nex speaker brings a basket to the Founding Stake: in it, an egg the colour of fox fur, warm and purring. \"Half our gifts are real,\" she says. \"Guess which half.\"",
-    "choices": [
-      {
-        "label": "Take the egg",
-        "desc": "A fen-drake egg, if a cradle has room; or a basket of leaves."
-      },
-      {
-        "label": "Decline",
-        "desc": "Nothing changes."
-      }
-    ]
-  },
-  "longwood_sighting": {
-    "title": "Something out of Longwood",
-    "text": "Woodcutters at the forest edge saw a creature no bestiary in Vell describes: antlered, luminous, walking on the mist. It looked at them for a long moment and went back into the trees.",
-    "choices": [
-      {
-        "label": "Let it be told",
-        "desc": "Happiness +3 for 12 days."
-      },
-      {
-        "label": "Send hunters after it (400 crowns)",
-        "desc": "It is never found; unrest −3% for 10 days (the hunt is a holiday)."
       }
     ]
   },
@@ -443,7 +366,8 @@
         "label": "Trade"
       },
       {
-        "label": "Sell rare goods"
+        "label": "Trade news",
+        "desc": "No effect: the riders tell the news of the plains and buy nothing."
       },
       {
         "label": "Buy striders (2,000 crowns)",
@@ -461,10 +385,11 @@
   },
   "merchant": {
     "title": "The Wandering Merchant of Belerial",
-    "text": "A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a white egg in a basket of feathers, salts from the Ulum.",
+    "text": "A single wagon with a wandering merchant famous across three regions. The wagon holds things no cart in Vell has carried: seeds from Longwood, a basket of white feathers, salts from the Ulum.",
     "choices": [
       {
-        "label": "The egg"
+        "label": "Ask after the egg",
+        "desc": "No effect: the basket is empty this season."
       },
       {
         "label": "Longwood seeds"
@@ -483,11 +408,11 @@
   },
   "airship_tale": {
     "title": "The captain's story",
-    "text": "The airship captain will not take her fee until she has told it: a wardlight three lanterns east whose spires sing in a different key, a market that trades in dreams, a wyrm that asked after yours by name. She has brought something back.",
+    "text": "The airship captain will not take her fee until she has told it: a wardlight three lanterns east whose spires sing in a different key, a market that trades in dreams, a wyrm that asked after this valley by name. She has brought something back.",
     "choices": [
       {
-        "label": "Rayscale and glim-dust",
-        "desc": "Rayscale +4 (artifacts +10% while it lasts); Craft goods +10% for 15 days."
+        "label": "Foreign reagents",
+        "desc": "Craft goods +10% for 15 days."
       },
       {
         "label": "Passengers",
@@ -496,84 +421,6 @@
       {
         "label": "The story itself",
         "desc": "Happiness +5 for 20 days."
-      }
-    ]
-  },
-  "wyvern_tale": {
-    "title": "The wyvern's return",
-    "text": "The wyvern came back from the wardlight beyond the Gloam with more than crowns. A rider from that city followed it in, with a basket under one arm and a challenge in the other hand: their Ring would like a bout with yours, and their tamers have an egg to sell.",
-    "choices": [
-      {
-        "label": "The rival's egg (3,000 crowns)",
-        "desc": "An ember, bone, glim or storm egg, if a cradle has room."
-      },
-      {
-        "label": "Take the challenge"
-      },
-      {
-        "label": "Only the story",
-        "desc": "Happiness +4 for 15 days."
-      }
-    ]
-  },
-  "wyrm_tribute": {
-    "title": "The wyrm wants its due",
-    "text": "Its head rests on the ridge above the node, eyes like two ley-lamps. A Tallowkin who claims to understand it says the terms are simple: a tribute each season, rising, or it flies.",
-    "choices": [
-      {
-        "label": "Pay in crowns",
-        "desc": "Costs the current tribute; each tribute asks 750 crowns more than the last."
-      },
-      {
-        "label": "Pay in goods"
-      },
-      {
-        "label": "Refuse"
-      }
-    ]
-  },
-  "wyrm_binding": {
-    "title": "The song at the Court",
-    "text": "The Wyrm-Court is lit and the singers are ready. Tonight they can walk to the node and sing the binding: a night of song that ends, if the schools have taught them well, with a guardian.",
-    "choices": [
-      {
-        "label": "Sing the binding",
-        "desc": "Needs a third of the folk educated. Otherwise the singers falter and the wyrm demands tribute at once."
-      },
-      {
-        "label": "Not yet",
-        "desc": "Wait a season; the Court keeps its upkeep."
-      }
-    ]
-  },
-  "wyrm_sulks": {
-    "title": "The guardian sulks",
-    "text": "The markets have not fed the wyrm for ten days. It lies with its back to the city and the Gloam creeps a little closer each night. Its keeper says it would take leystone, or coin, as an apology.",
-    "choices": [
-      {
-        "label": "Send leystone (60)",
-        "desc": "Taken from Arcane workshops; the wyrm is content again at once."
-      },
-      {
-        "label": "Pay 3,000 crowns",
-        "desc": "Bought goods from Belerial are carted to it."
-      },
-      {
-        "label": "Let it sulk"
-      }
-    ]
-  },
-  "egg_vein": {
-    "title": "A vein egg",
-    "text": "The bound wyrm has been fed and content for a full season. At dawn the keepers find an egg on the warm stone of its node: ley-blue, veined with light, humming the note the spires hum.",
-    "choices": [
-      {
-        "label": "Keep the egg",
-        "desc": "Needs a Wyrm-Cradle with a free slot; otherwise it is sold to the Crown for 6,000 crowns."
-      },
-      {
-        "label": "Leave it with the wyrm",
-        "desc": "Happiness +5 for 20 days; the wyrm is grateful."
       }
     ]
   },
@@ -587,69 +434,6 @@
       {
         "label": "Pay the Crown's peace (600 crowns)",
         "desc": "Bread on the square and a Crown amnesty: no fire, and unrest −10 % for 10 days."
-      }
-    ]
-  },
-  "dragon_returns": {
-    "title": "A shadow over the cradle",
-    "text": "A dragon that left this city circles its old cradle at dawn, thinner and wilder, and lands on the roof. The tamers know it by name. It wants what it is owed.",
-    "choices": [
-      {
-        "label": "Pay its tribute"
-      },
-      {
-        "label": "Open a cradle"
-      },
-      {
-        "label": "Refuse it"
-      }
-    ]
-  },
-  "heart_warden": {
-    "title": "The High Warden of Belregi",
-    "text": "The High Warden of the Belregi Guardians comes through the Great Gate with a lead box under her cloak. In it is the Heart of Belregi.",
-    "choices": [
-      {
-        "label": "Set the Heart in the Great Gate"
-      },
-      {
-        "label": "Let the Guardians keep it"
-      },
-      {
-        "label": "Sell it to the Crown's assessor",
-        "desc": "+6,000 crowns and the Crown's favour +10. The Guardians close the Pass to you: no more pilgrims of the Pass, and the Great Gate wards at six tenths. The tales of the Heart end here."
-      }
-    ]
-  },
-  "heart_obelisks": {
-    "title": "The crimson obelisks",
-    "text": "Wardens of Uzulim, hooded, come to the Great Gate. The Heart, they say, belongs to the whole Pass, both its gates.",
-    "choices": [
-      {
-        "label": "Refuse them",
-        "desc": "The Heart stays whole in the Great Gate. Unrest +5 % for 15 days while the obelisks sulk."
-      },
-      {
-        "label": "Share the Heart"
-      },
-      {
-        "label": "Pay them off (2,500 crowns)",
-        "desc": "The Heart stays whole, and the Uzulim go home with a purse."
-      }
-    ]
-  },
-  "heart_wakes": {
-    "title": "The Heart of Belregi wakes",
-    "text": "The Hush, and the Heart of Belregi wakes. Whoever holds it, the old tales say, can ask the weather and the grey for a favour.",
-    "choices": [
-      {
-        "label": "Ask it to hold back the Gloam"
-      },
-      {
-        "label": "Ask it for rain and harvest"
-      },
-      {
-        "label": "Ask nothing of it"
       }
     ]
   }

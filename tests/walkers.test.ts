@@ -4,7 +4,6 @@ import { recomputeAll, run } from '../src/sim/sim';
 import { AgentKind, RoadType, TICKS_PER_DAY, idx } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { WALKER_JOBS, dailyWalkers, tickWalkers, walkersOf, spawnWalker, walkerBonus } from '../src/sim/walkers';
-import { spawnCreature } from '../src/sim/creatures';
 import { spawnRestless } from '../src/sim/agents';
 import { updateCoverage } from '../src/sim/services';
 import { serialize, deserialize } from '../src/sim/save';
@@ -83,7 +82,7 @@ describe('The walker framework', () => {
     expect(bonus.reduce((a, b) => a + b, 0)).toBeCloseTo(before / 2, 5);
   });
 
-  it('a watchman kills the hound and lays the restless it meets, two of each a day, and logs it', () => {
+  it('a watchman lays the restless it meets, two a day, and logs it', () => {
     const s = town();
     const f = s.founding;
     const wh = placeBuildingRaw(s, 'watchhouse', f.x + 4, f.y + 3);
@@ -91,19 +90,12 @@ describe('The walker framework', () => {
     const rt = idx(f.x + 4, f.y + 2);
     const w = spawnWalker(s, WALKER_JOBS.watchman, wh, rt);
     w.timer = 0;
-    for (let k = 0; k < 3; k++) spawnCreature(s, 'hound', f.x + 4, f.y + 2);
     for (let k = 0; k < 3; k++) spawnRestless(s, f.x + 4, f.y + 2);
-    expect(s.agents.filter((a) => a.species === 'hound').length).toBe(3);
     for (let t = 0; t < 10; t++) tickWalkers(s);
-    expect(s.agents.filter((a) => a.species === 'hound').length).toBe(1); // cap 2
     expect(s.agents.filter((a) => a.kind === AgentKind.Restless).length).toBe(1);
-    expect(s.stats.walkerKills).toBe(2);
     expect(s.stats.walkerLayings).toBe(2);
-    expect(s.stats.houndsKilled).toBe(2);
     expect(s.stats.restlessLaid).toBe(2);
-    expect(w.log!.length).toBe(3);
-    expect(w.log!.some((l) => l.includes('Killed a hound'))).toBe(true);
-    expect(activeQuests(s, 100).some((q) => q.id === 'w_patrol')).toBe(false);
+    expect(w.log!.length).toBe(2);
     // the day resets the counter
     dailyWalkers(s);
     const again = walkersOf(s, wh).find((a) => a.id === w.id)!;

@@ -154,7 +154,7 @@ describe('The bot', () => {
     const bot = new Bot(s);
     updateMana(s);
     const founding = s.nodes.findIndex((n) => n.x === s.founding.x && n.y === s.founding.y);
-    const other = s.nodes.map((n, k) => ({ k, d: Math.hypot(n.x - s.founding.x, n.y - s.founding.y) })).filter((e) => e.k !== founding && e.k !== s.wyrm.node).sort((a, b) => a.d - b.d)[0];
+    const other = s.nodes.map((n, k) => ({ k, d: Math.hypot(n.x - s.founding.x, n.y - s.founding.y) })).filter((e) => e.k !== founding).sort((a, b) => a.d - b.d)[0];
     expect(other).toBeDefined();
     const n = s.nodes[other.k];
     flatten(s, n.x - 7, n.y - 7, n.x + 7, n.y + 7);

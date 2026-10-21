@@ -64,18 +64,10 @@ export const SERVICE_TYPES: ServiceType[] = [
   'leisure',
 ];
 
-/** Where the Heart of Belregi is (iteration 69): not yet brought; set in the Great Gate; left with the Guardians; sold to the Crown;
- *  shared with the Uzulim. `step` counts the tales answered (the High Warden, the obelisks or their skip, the waking); `day` is the last. */
 /** What ended a charter (iteration 70). */
-export type LossKind = 'gloam' | 'restless' | 'crown' | 'wyrm' | 'hounds';
-/** The hounds' Hush (iteration 70): the year it belongs to, and the units (a painted district, or an unpainted march as 100 + its
- *  sector) whose homes have half fled from the hounds this Hush. */
-export interface HushState { year: number; emptied: number[]; warned?: number[]; quarter?: number[] } // warned: units told of a second night; quarter: units told of a quarter fled
-
-export type HeartHeld = 'none' | 'set' | 'guardians' | 'sold' | 'shared';
-export interface HeartState { held: HeartHeld; step: number; day: number }
-/** The Wandering Merchant's memory: visits made, crowns spent, eggs bought, visits spent only talking (iteration 73). */
-export interface MerchantState { visits: number; spent: number; eggs: number; talks: number }
+export type LossKind = 'gloam' | 'restless' | 'crown';
+/** The Wandering Merchant's memory: visits made, crowns spent, visits spent only talking (iteration 73). */
+export interface MerchantState { visits: number; spent: number; talks: number }
 
 export type BuildingState = 'ok' | 'burning' | 'ruin' | 'abandoned' | 'building';
 
@@ -104,8 +96,6 @@ export interface Building {
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
   tended?: number; // day a healer last tended this home (+4 happiness that day)
   relit?: number; // lit by a lamplighter's candle until this day (the Tallowkin, iteration 52)
-  visited?: number; // day a tamer last visited this cradle (growth ×1.1 that day)
-  grey?: number; // a cradle: days in a row the Gloam has stood at its door; at 3 the eggs go grey (iteration 73)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
   priority?: 0 | 1 | 2; // brownout tier: 0 essential, 1 normal, 2 dim (dark first); unset = by category
@@ -114,16 +104,12 @@ export interface Building {
   flare?: number; // days a Thrum Font's bore flare still smokes
   greyDays?: number; // days the Gloam has stood at the door of this dark, unwarded building
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
-  plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
   blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
-  quarry?: 'hounds' | WildSpecies; // a Hunters' Lodge's chosen quarry; unset = hounds (iteration 58)
+  quarry?: WildSpecies; // a Hunters' Lodge's chosen quarry; unset = the first game in reach (the hounds are parked, scope reset)
   meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 58)
   trophies?: number; // a lodge's trophies awaiting the Gloam road
   took?: number; // a lodge: the day it last brought in game
   tookSp?: string; // a lodge: what it brought in that day
-  hounded?: number; // a hearth: nights this Hush the hounds reached its door (iteration 70)
-  houndNight?: number; // the last such night's key
-  fled?: number; // a hearth whose folk fled the hounds: the Hush year it stands empty through (no move-ins until the Thaw)
   wolfDay?: number; // a hearth: the day the wolves took a hen (−6 happiness for five days)
   broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
   fish?: number; // a Fishers' Hut: today's catch, fresh; a market: fish on the shelves (iteration 60)
@@ -148,7 +134,7 @@ export const enum AgentKind {
 }
 
 export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 58)
-export type Species = 'glimmoth' | 'thrumhare' | 'wisp' | 'hound' | 'drake' | 'wyvern' | 'wyrm' | 'golem' | 'skyray' | 'rider' | 'airship' | 'tiger' | 'boat' | WildSpecies;
+export type Species = 'airship' | 'boat' | WildSpecies;
 
 /** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 58). */
 export interface Herd {
@@ -162,15 +148,6 @@ export interface Herd {
   by: number;
   taken: number; // the last day a lodge took one of it, -1
   prey: number; // a wolf pack: the hearth it stalks tonight (building id), -1
-}
-
-/** A marsh-wyrm (iteration 86, DESIGN §8.1): an eel-like wyrm of the rivers and lakes, out in Bloom. */
-export interface MarshWyrm {
-  id: number;
-  x: number;
-  y: number;
-  lair: number; // the bridge tile it lairs under, or -1
-  nest: number; // the marsh tile of its nest this Bloom, or -1
 }
 
 export interface WildState {
@@ -191,73 +168,9 @@ export interface WaterState {
   closed: number[]; // ford tiles closed by high water today
 }
 
+/** A ley node's aspect (weave.ts); the name is the dragon lines' it came from (the dragons are parked, scope reset phase 1b). */
 export type DragonLine = 'ember' | 'bone' | 'glim' | 'vein' | 'sky' | 'grey' | 'tide' | 'storm' | 'fen';
-export type DragonStage = 0 | 1 | 2 | 3 | 4; // egg, hatchling, drake, wyvern, wyrm
-export type DragonRole = 'none' | 'warden' | 'delver' | 'courier' | 'champion' | 'mount'; // mount: a Watch rider across the whole map, once a Wyrm-Court stands (iteration 73)
-export type Training = 'gentle' | 'hard' | 'wild';
-
-export interface Dragon {
-  id: number;
-  name: string;
-  line: DragonLine;
-  second?: DragonLine; // crossed: a second line and a second aura (breeding.ts)
-  trueblood?: boolean; // born of two crossed parents: both auras full, grows and sheds more
-  stage: DragonStage;
-  days: number; // days in the current stage
-  cradleId: number; // building id
-  role: DragonRole;
-  roleTarget: number; // district id (warden) or mine building id (delver)
-  mood: number; // 0..100
-  hungry: number; // consecutive unfed days
-  training: Training;
-  agentId: number; // creature agent when out of the cradle, else -1
-  born: number; // day
-  lastTrip?: { fx: number; fy: number; tx: number; ty: number; goods: number; day: number }; // a courier's last delivery (iteration 53)
-  lined?: boolean; // an egg whose nest is lined with eggshell warms a quarter faster (iteration 53)
-  voyage?: number; // away on the Sky-Dock's run: the day it returns (iteration 73)
-}
-
-/** A dragon that left the city (starved, trained wild, its cradle gone): it returns after a season, wild, to ask a tribute. */
-export interface DepartedDragon {
-  name: string;
-  line: DragonLine;
-  stage: DragonStage;
-  day: number; // day it left
-  x: number; // its cradle's tile
-  y: number;
-  returned: boolean; // its return tale has been answered
-}
-
 export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited' | 'atoll';
-
-export interface WyrmState {
-  node: number; // index into nodes, -1 none
-  state: 'none' | 'sleeping' | 'awake' | 'bound' | 'dead';
-  waking: number; // 0..100 while sleeping
-  tributes: number; // times a tribute was demanded and settled (raises the price)
-  tributeDay: number; // next day a tribute is due while awake, -1 none
-  unfed: number; // days without 40 goods while bound
-  sulking: number; // days sulking (0 = content)
-  fedDays: number; // consecutive fed days while bound (vein egg at a season)
-  refused: number;
-  flyover: number; // tick the current flyover started, 0 none
-  fires: number; // buildings set alight in the current flyover
-  bound: number; // day bound, -1
-  died: number; // day died, -1
-  askedBind: number; // day the binding was last offered, -1
-  courted: boolean; // a lit Wyrm-Court has stood since the binding (iteration 53)
-  courtDark: number; // days in a row the courted wyrm has had no lit Court
-  starved: number; // refusals in a row: a tribute paid, the binding or its death resets it; the third razes the Stake (iteration 70)
-  razing: boolean; // the third refusal's flight is on its way to the Founding Stake
-}
-
-export interface Materials {
-  scale: number;
-  wyrmfire: number;
-  eggshell: number;
-  rayscale: number;
-  glimdust: number;
-}
 
 export interface Agent {
   id: number;
@@ -274,7 +187,6 @@ export interface Agent {
   dir: number; // 0..3 facing for sprites
   load: number; // goods carried (carts)
   species?: Species; // creatures only
-  dragonId?: number; // drake/wyvern agents
   alt?: number; // altitude in px for flying agents
   phase?: number; // courier trip phase: 0 idle, 1 to source, 2 to destination
   anchorId?: number; // building id (or -1) a creature is tied to
@@ -283,8 +195,6 @@ export interface Agent {
   job?: string; // walkers: key into WALKER_JOBS
   log?: string[]; // walkers: what it did today, last three lines
   herdId?: number; // a wild animal's herd (iteration 58)
-  duty?: 'guard' | 'works' | 'haul'; // a bound golem's post: guard (ward 6 at its foundry), works (12 hands at targetId) or haul (a golem cart from the works at targetId, iteration 72); unset = labour (iteration 53)
-  golemId?: number; // a golem hauler cart: the bound warden in its harness (iteration 72)
 }
 
 export interface TaxRates {
@@ -372,7 +282,6 @@ export interface GameState {
   zone: Uint8Array;
   road: Uint8Array;
   district: Uint8Array; // 0 none, 1..MAX_DISTRICTS
-  wall: Uint8Array; // Warding Wall tiles: 0 none, 1 wall, 2 Belregi gate, 3 Uzulim gate
   bIndex: Int32Array; // building index or -1
   lit: Uint8Array; // tile lit by mana (0/1)
   watered: Uint8Array;
@@ -439,22 +348,12 @@ export interface GameState {
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
   trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
   wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
-  marshWyrms?: MarshWyrm[]; // the marsh-wyrms out in Bloom (marshwyrms.ts, iteration 86; absent in older saves)
   water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
-  dragons: Dragon[];
-  nextDragonId: number;
-  materials: Materials;
   weather: Weather | null; // today's spell, if any (iteration 54)
   pilgrimsDay: number; // the day pilgrims were last welcomed, −1: they ask for a shrine a month on
-  heart: HeartState; // the Heart of Belregi and its tales (iteration 69)
   edictSince: Record<string, number>; // the day each edict was turned on (key, or district:key): an edict runs ten days and costs 200 to repeal
   quarterSince: Record<number, number>; // the day each district took its charter: it holds thirty days
   remembranceDead: number; // unquieted dead the Remembrance stirred, drawn down as they rise
-  departed: DepartedDragon[]; // dragons that left and may return (iteration 53)
-  burnWyrmfire: boolean; // burn 0.05 wyrmfire a day for Craft +15 % (iteration 53)
-  dustLit: Uint16Array; // a road tile scattered with glim-dust: the day its light ends, 0 none (iteration 53)
-  wyrm: WyrmState;
-  fenNex: number; // district granted to the Fen-Nex, 0 none
   guilds: GuildState; // the council at the Guildhall (guilds.ts)
   relics: RelicState; // relic sets from the delve (relics.ts)
   relicStock: number; // loose relics the delve has brought up and not yet sold
@@ -467,8 +366,7 @@ export interface GameState {
   challengeDay: number; // day the challenge goal was met, -1
   daughter: { node: number; x: number; y: number; name: string; day: number; twin: number } | null;
   cleanDays: number; // inherited-collapse scenario: days in a row clean
-  storms: { x: number; y: number; until: number; vx: number; vy: number }[];
-  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number; wyvern?: boolean; wyvernId?: number; wyvernTale?: number };
+  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; tale: number; voyages: number };
   merchant: MerchantState; // the Wandering Merchant's record of past deals (iteration 73)
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
@@ -483,79 +381,43 @@ export interface GameState {
   goodsShort: number; // markets that ran dry today
   gameOver: string | null;
   lostTo?: LossKind; // what ended the charter (iteration 70)
-  hush: HushState; // the hounds' Hush: the units they emptied, reset at the Thaw (iteration 70)
   stats: {
     goodsDelivered: number;
-    houndsKilled: number;
     gloamBurned: number;
     restlessLaid: number;
     caravanGoods: number;
     caravanCrowns: number; // what the Belerial caravan paid this charter (iteration 63)
     lastCaravanCrowns: number; // and at its last halt
     lastCaravanDay: number; // the Belerial caravan's rhythm; −1 before the first
-    courierTrips: number;
-    boutsWon: number;
-    boutsLost: number;
     firesTotal: number;
     surgesTotal: number;
     restlessTotal: number;
-    houndsTotal: number;
-    houndRaids: number;
-    eggsGreyed: number; // eggs the Gloam turned grey in their cradle (iteration 73)
-    wyvernVoyages: number; // the Sky-Dock's wyvern runs (iteration 73)
-    mountRescues: number; // restless laid and fires doused by mounted drakes (iteration 73)
     brawlsParted: number; // sextons who reached a guild brawl on the square (iteration 73)
-    golemHauls: number; // goods delivered by golem haulers (iteration 72)
-    cartsBalked: number; // donkey carts that stopped for a hound (iteration 72)
-    lastBalkDay: number; // the day the carters last complained of hounds (iteration 72)
-    wyrmTributes: number;
     relics: number;
     portalTrips: number;
-    golemsWoken: number;
-    golemsBound: number;
-    skyraySchools: number;
-    rayscaleTotal: number;
     bargeTrips: number;
     airshipVoyages: number;
     airshipCrowns: number;
-    riderRescues: number;
-    stormWarps: number;
-    stormsDissolved: number; // storms the wards or a Storm ley ended early
     fullDays: number; // days in a row with no market short
-    tigersTotal: number;
-    tigersKilled: number;
     brownoutsSurvived: number;
     brownoutOpen: number; // 1 while an overdraw is running
-    mothsSeen: number;
     daughters: number;
     terraformed: number;
     stoneCut: number; // hills levelled or ground delved, and collapse rubble: what the Grimmen count as stone
     sectorsBought: number;
-    glimdustTotal: number;
-    marvels: number;
     quietHush: number;
     hushPressureBreaks: number; // days of the current Hush with pressure >= 0.45
-    wispRing: number;
-    wyrmFlyovers: number;
-    wyrmStarvedMost: number; // the most refusals of the wyrm in a row (iteration 70)
-    houndFled: number; // homes whose folk fled the hounds in the Hush
-    houndEmptied: number; // districts (or marches) the hounds emptied
     gloamTiles: number;
     peakPopulation: number;
     councils: number; // petitions heard
     twinGoods: number; // goods carried on the Twin Road
     feastGoods: number; // goods eaten at the last Thaw feast
-    crossEggs: number;
     guildHalls: number;
-    truebloods: number;
     devUses: number; // dev tools used in this charter (marks the daily result)
-    greatWyrms: number;
     relicsSold: number; // loose relics sold to the Crown
     guildWars: number;
-    wyrmDuels: number;
     relicsAuctioned: number;
     guildCharters: number;
-    walkerKills: number;
     walkerLayings: number;
     galeDays: number; // days a sea-gale blew (the Atoll, iteration 95)
     watchRounds: number; // patrol legs a watchman walked (iteration 92)
@@ -563,7 +425,6 @@ export interface GameState {
     healerVisits: number;
     wardenRounds: number;
     scholarTrips: number;
-    tamerVisits: number;
     pilgrimPrayers: number;
     floodDays: number; // days of the current Hush the Sable has been in flood (weave.ts)
     floodsWeathered: number; // Hushes a water people came through with the river in flood
@@ -571,16 +432,14 @@ export interface GameState {
     quarterDays: number; // days with at least one chartered district
     riots: number;
     goodsStolen: number; // goods taken from unwatched shelves
-    pelts: number; // hound pelts the lodges brought in
     rainDays: number; // iteration 54: the weather
     droughtDays: number;
     blizzardDays: number;
     levies: number; // the Crown's Thaw levies taken
     levied: number; // crowns they took
-    foxAudits: number; // the Fen-Nex quarter's seasonal audits
     hides: number; // hides the lodges brought in from game (iteration 58)
     meat: number; // meat the lodges brought in
-    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a tiger, a white hart)
+    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a white hart)
     herdsLost: number; // herds the city's spread drove off
     herdsHunted: number; // herds the hunters took to the last
     hensTaken: number; // hens the Hush wolves took from the hearths
@@ -592,15 +451,8 @@ export interface GameState {
     homesThatched: number; // level-1 homes the reed-cutters thatched
     fordDaysClosed: number; // days a ford stood closed by high water
     marshDrained?: number; // marsh tiles the Drainage edict turned to meadow (iteration 85; absent in older saves)
-    wyrmsLaired?: number; // marsh-wyrms that laired under a bridge (iteration 86)
-    wyrmsDriven?: number; // marsh-wyrms the Water-Mages\' Hall or a Quay drove from their lair (iteration 86)
-    tideNests?: number; // tide eggs brought in from a marsh-wyrm nest by a Quay (iteration 86)
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
-    gatePilgrims: number; // pilgrims of the Pass lodged through the Great Gate (iteration 69)
-    gateAlms: number; // the alms they paid
-    tideTrips: number; // barges a Tide dragon swam (iteration 53)
     surgesAbsorbed: number; // surges the Lantern of the Cores took
-    dragonsReturned: number; // departed dragons that came back to ask a tribute
     lastFeastDay: number;
   };
   // transient (rebuilt after load)

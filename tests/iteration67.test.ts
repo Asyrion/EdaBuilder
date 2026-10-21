@@ -1,10 +1,9 @@
 /** Iteration 67 (replays): every player change through one command, a replay file, and a replay that reproduces its recording bit
- *  for bit; a missing command found on the first day it shows; the aura cache keyed by the dragons; every op callable. */
+ *  for bit; a missing command found on the first day it shows; every op callable. */
 import { describe, expect, it } from 'vitest';
 import { COMMAND_OPS, CommandRunner, ReplayPlayer, checksum, stateFromHeader, verifyReplay, type ReplayHeader } from '../src/sim/commands';
 import { serialize } from '../src/sim/save';
 import { tick } from '../src/sim/sim';
-import { dragonAuras } from '../src/sim/weave';
 import { RoadType, TICKS_PER_DAY, Zone, idx, type GameState } from '../src/sim/types';
 import { roadPath } from '../src/sim/actions';
 
@@ -95,13 +94,13 @@ describe('The commands', () => {
     const r = new CommandRunner(s, vellish);
     const f = s.founding;
     const args: Record<string, unknown[]> = {
-      snap: ['test'], bulldoze: [f.x, f.y], terraform: ['clear', f.x + 3, f.y + 3], dust: [f.x, f.y], build: ['well', f.x + 2, f.y + 2],
-      gate: [2, f.x, f.y], road: [RoadType.Track, [idx(f.x + 3, f.y + 3)]], zone: [Zone.Hearth, f.x, f.y, f.x + 1, f.y + 1],
-      district: [1, f.x, f.y, f.x + 2, f.y + 2], wall: [[idx(f.x + 8, f.y + 8)]], undo: [],
+      snap: ['test'], bulldoze: [f.x, f.y], terraform: ['clear', f.x + 3, f.y + 3], build: ['well', f.x + 2, f.y + 2],
+      road: [RoadType.Track, [idx(f.x + 3, f.y + 3)]], zone: [Zone.Hearth, f.x, f.y, f.x + 1, f.y + 1],
+      district: [1, f.x, f.y, f.x + 2, f.y + 2], undo: [],
       tax: ['market', 9], edict: ['curfew', true, 0], loan: [], repay: [], sector: [0], deepen: [0], daughter: [0, 'Twin'],
-      quarter: [1, null], lesson: ['districts'], priority: [-1, 0], renameDistrict: [1, 'A'], training: [-1, 'gentle'],
-      vent: [-1], replate: [-1], rain: [-1], role: [-1, 'none', -1], cradle: [-1], nest: [-1], burnWyrmfire: [true],
-      sluice: [-1], skydock: [], golem: [-1, 'labour', -1], quarry: [-1, 'deer'], tale: [0, null], guild: ['carters'], dev: ['addcrowns', '100', f.x, f.y],
+      quarter: [1, null], lesson: ['districts'], priority: [-1, 0], renameDistrict: [1, 'A'],
+      vent: [-1], rain: [-1],
+      sluice: [-1], quarry: [-1, 'deer'], tale: [0, null], guild: ['carters'], dev: ['addcrowns', '100', f.x, f.y],
     };
     for (const op of COMMAND_OPS) {
       expect(args[op], `a test call for ${op}`).toBeDefined();
@@ -110,12 +109,4 @@ describe('The commands', () => {
     expect(r.log.length).toBe(COMMAND_OPS.length);
   });
 
-  it('the auras follow a role changed inside their 50-tick window', () => {
-    const s = stateFromHeader(vellish);
-    const cradle = s.buildings.find((b) => b)!;
-    s.dragons.push({ id: 1, name: 'Ash', line: 'ember', stage: 2, days: 0, cradleId: cradle.id, role: 'none', roleTarget: -1, mood: 80, hungry: 0, training: 'gentle', agentId: -1, born: 0 } as GameState['dragons'][number]);
-    expect(dragonAuras(s).length).toBe(1);
-    s.dragons[0].role = 'courier'; // a courier radiates no aura; the tick and the dragon count are unchanged
-    expect(dragonAuras(s).length).toBe(0);
-  });
 });

@@ -77,7 +77,7 @@
   "d_restless": {
     "chapter": "The dead",
     "title": "Lay a restless to rest",
-    "hint": "Watch coverage (6) and wards clear them; wisps show where they are."
+    "hint": "Watch coverage (6) and wards clear them."
   },
   "d_ossuary": {
     "chapter": "The dead",
@@ -93,31 +93,6 @@
     "chapter": "The grey edge",
     "title": "Burn back 50 tiles of Gloam",
     "hint": "Wards and Gloam view (g) show the grey and what holds it. A lit Ward Lantern burns the grey in its reach."
-  },
-  "g_wall": {
-    "chapter": "The grey edge",
-    "title": "Draw 20 tiles of Warding Wall",
-    "hint": "Services tab. The Gloam and its hounds never cross it."
-  },
-  "g_hounds": {
-    "chapter": "The grey edge",
-    "title": "Kill 10 Gloam-hounds",
-    "hint": "A Hunters' Lodge hunts within 12 tiles each night."
-  },
-  "g_gate": {
-    "chapter": "The grey edge",
-    "title": "Raise a gate of the Pass",
-    "hint": "A Belregi or Uzulim gate lets roads through the wall and wards the ground around it."
-  },
-  "g_greatgate": {
-    "chapter": "The grey edge",
-    "title": "Raise the Great Gate",
-    "hint": "A wonder of the Burgh: the gatehouse of the Pass, raised in the angle between a Belregi gate and its road (a corner counts). Lit, it wards 20 tiles, every Belregi gate reaches 12, and pilgrims of the Pass come each season."
-  },
-  "g_heart": {
-    "chapter": "The grey edge",
-    "title": "Answer the High Warden of Belregi",
-    "hint": "Ten days after the Great Gate stands lit, the High Warden brings the Heart of Belregi. What she has heard of your gates (the pilgrims, the Lantern Fair, the poachers, Belregi against Uzulim) colours the tale; in the Hush the Heart wakes."
   },
   "o_cart": {
     "chapter": "Goods",
@@ -199,55 +174,10 @@
     "title": "Hold a Thaw feast",
     "hint": "On Thaw-day of the second year, pay for the feast."
   },
-  "b_moths": {
-    "chapter": "Beasts",
-    "title": "See glimmoths at the node",
-    "hint": "They swarm lit ley at night. Zoom in on a spire after dusk."
-  },
-  "b_wisps": {
-    "chapter": "The dead",
-    "title": "Glimpse a wisp ring",
-    "hint": "Six or more wisps at once over a boneyard mean the dead are restless there."
-  },
   "s_hush": {
     "chapter": "Seasons",
     "title": "Survive a Hush",
-    "hint": "Long nights: hearths drink more mana, the Gloam grows bold, hounds hunt."
-  },
-  "b_loft": {
-    "chapter": "Beasts",
-    "title": "Build a Moth-Loft",
-    "hint": "Glimmoths swarm lit ley at night; a loft near it gathers glim-dust for the works."
-  },
-  "w_cradle": {
-    "chapter": "Wyrmcraft",
-    "title": "Raise a Wyrm-Cradle and a Tamer's Lodge",
-    "hint": "Cradle near a spire (it must be lit); lodge within 10 tiles."
-  },
-  "w_egg": {
-    "chapter": "Wyrmcraft",
-    "title": "Accept an egg",
-    "hint": "The Crown sends one to your first cradle; more come from mines, boneyards, lofts and poachers."
-  },
-  "w_hatch": {
-    "chapter": "Wyrmcraft",
-    "title": "Hatch it",
-    "hint": "Keep the cradle lit for 30 days. Then feed it from nearby markets."
-  },
-  "w_role": {
-    "chapter": "Wyrmcraft",
-    "title": "Give a drake a role",
-    "hint": "Wyrms panel: warden of a district or delver at a mine."
-  },
-  "w_courier": {
-    "chapter": "Wyrmcraft",
-    "title": "Fly goods with a wyvern courier",
-    "hint": "Ember, vein, sky and storm lines grow wings."
-  },
-  "w_ring": {
-    "chapter": "Wyrmcraft",
-    "title": "Win a bout in the Wyrm-Ring",
-    "hint": "Build the Ring (Market Town) and name a champion; bouts are on day 15 of each season."
+    "hint": "Long nights: hearths drink more mana and the Gloam grows bold."
   },
   "k_mill": {
     "chapter": "The riverbank",
@@ -294,26 +224,6 @@
     "title": "See the World Tree full-grown",
     "hint": "Three seasons after planting its shade reaches 24 tiles."
   },
-  "e_foundry": {
-    "chapter": "Beasts",
-    "title": "Bind a Concord Warden",
-    "hint": "Mines wake them in the hills. A Golem Foundry (Burgh) within 12 tiles binds them into labour."
-  },
-  "e_beacon": {
-    "chapter": "Beasts",
-    "title": "Keep a school of skyrays",
-    "hint": "Ley tab, Burgh. A lit Ley Beacon turns a passing school in Bloom or Ember."
-  },
-  "e_mews": {
-    "chapter": "Beasts",
-    "title": "Stable Watch drakes",
-    "hint": "Services tab, Burgh. A Drake Mews doubles the reach of every Watch House."
-  },
-  "e_edict": {
-    "chapter": "Beasts",
-    "title": "Set a taming edict",
-    "hint": "Edicts panel: Beastmasters' Charter, Hunters' Bounty or Wyrm-Peace."
-  },
   "q_quay": {
     "chapter": "Goods",
     "title": "Send a barge between two Quays",
@@ -324,18 +234,13 @@
     "title": "See a floating cart",
     "hint": "An Arcane workshop at level 3 sends two hovering carts onto the roads."
   },
-  "q_rider": {
-    "chapter": "Beasts",
-    "title": "A drake rider lays a restless down",
-    "hint": "Riders fly out from a lit Drake Mews to the restless and to fires."
-  },
   "q_airship": {
     "chapter": "The Crown",
     "title": "Launch the airship",
     "hint": "Leisure tab, Beacon of Eda: the Sky-Dock. The ship leaves on day 3 of each season with your surplus."
   },
   "w_meat": {
-    "chapter": "Beasts",
+    "chapter": "Goods",
     "title": "Put game on a market's shelves",
     "hint": "A Hunters' Lodge's panel names its quarry: choose the deer or the boar in its grounds, with a market within 16. The hearths within 10 of that market are happier."
   },
@@ -349,40 +254,15 @@
     "title": "Thatch ten homes",
     "hint": "Water tab: Reed-Cutters' Hut on the shore. It thatches the level-1 homes within 10: +3 happiness, but thatch burns."
   },
-  "w_wyrm": {
-    "chapter": "Goods",
-    "title": "Clear the bridge",
-    "hint": "A marsh-wyrm lairs under a bridge, and the carts crawl. A Water-Mages' Hall whose reach covers the bridge drives it off, and so does a Quay raised within 10 of it."
-  },
   "w_ford": {
     "chapter": "Goods",
     "title": "Ford the river",
     "hint": "A Dirt Track over a narrow river is a ford: a third of a bridge's price, but under water in the Thaw's first ten days (a Weir within 6 holds it)."
   },
-  "n_tiger": {
-    "chapter": "Beasts",
-    "title": "Bring down a war-tiger",
-    "hint": "Hunters' Lodges within 12, Watch Houses at full strength, or a warden drake's district."
-  },
   "n_font": {
     "chapter": "The dead",
     "title": "Raise the Font of Quieting",
     "hint": "Services tab, Free City. Deathcare +50% and the restless lie down easily."
-  },
-  "n_storm": {
-    "chapter": "Mana",
-    "title": "Dissolve a mana-storm with wards",
-    "hint": "After a surge a storm drifts; ward coverage over its eye ends it."
-  },
-  "y_attune": {
-    "chapter": "Wyrmcraft",
-    "title": "Attune a cradle to its node",
-    "hint": "Click a node to see its aspect; a cradle within 10 tiles grows matching eggs a quarter faster."
-  },
-  "y_marvel": {
-    "chapter": "The arcane",
-    "title": "Raise a Marvel",
-    "hint": "The Marvels tab spends scale, wyrmfire, eggshell, rayscale and glim-dust on buildings no crowns can buy."
   },
   "y_quiet": {
     "chapter": "The dead",
@@ -414,30 +294,15 @@
     "title": "Earn a guild hall",
     "hint": "Keep one guild at 70 or better for ten days and it raises its own hall by the Guildhall: a yard, a lyceum, a lodge or a chapel."
   },
-  "k_cross": {
-    "chapter": "Wyrmcraft",
-    "title": "Breed a crossed egg",
-    "hint": "Two drakes of different lines, content, in a lit cradle attuned to one of them: on Bloom day 20 they lay an egg that carries both auras. In a Great Cradle any such pair will do. Needs a free cradle slot."
-  },
   "k_relics": {
     "chapter": "The riverbank",
     "title": "Complete a relic set",
     "hint": "Every twelfth relic from the Ruin Delve is a piece of a set; an Academy catalogues one a day. Three pieces make a set and a lasting boon."
   },
-  "k_blood": {
-    "chapter": "Wyrmcraft",
-    "title": "Begin a bloodline",
-    "hint": "Two crossed dragons of different lines, content in a lit attuned cradle, lay a trueblood egg: both auras in full, faster growth, half again the scale. Two from one cradle may share their first line if their second lines differ."
-  },
   "k_relicbuild": {
     "chapter": "The riverbank",
     "title": "Raise a relic building",
     "hint": "Each complete relic set unlocks a building in the Marvels tab: a lantern, a hall, a font or a chart-room."
-  },
-  "k_wyrm": {
-    "chapter": "Wyrmcraft",
-    "title": "Raise a great wyrm",
-    "hint": "A trueblood wyvern grows on to the wyrm stage: auras half again as wide, the Gloam shrinks from it, and it eats 20 goods a day."
   },
   "k_assessor": {
     "chapter": "The riverbank",
@@ -449,15 +314,10 @@
     "title": "Charter a rivalry away",
     "hint": "In the Edicts panel a 2,000-crown charter ends a rivalry for good: no more drag, sting or brawls between the pair."
   },
-  "k_duel": {
-    "chapter": "The Vein-Wyrm",
-    "title": "A great wyrm meets the Vein-Wyrm",
-    "hint": "A great wyrm meets the Vein-Wyrm when the old wyrm flies over in anger: a refused or short tribute brings it. With a great wyrm in a cradle the flyover burns half as much, and the old wyrm sleeps deeper after."
-  },
   "w_patrol": {
     "chapter": "The Watch",
     "title": "See the Watch at work",
-    "hint": "Watch Posts and Watch Houses on a road send watchmen out; the streets they walk count as watched, and they kill the hounds and lay the restless they meet. Their first round done is the task done."
+    "hint": "Watch Posts and Watch Houses on a road send watchmen out; the streets they walk count as watched, and they lay the restless they meet. Their first round done is the task done."
   },
   "w_sexton": {
     "chapter": "The dead",
@@ -479,40 +339,10 @@
     "title": "A scholar at the delve",
     "hint": "A lit Academy on a road sends a scholar to the Ruin Delve; every relic piece is carried home and named by hand."
   },
-  "w_tamer": {
-    "chapter": "Wyrmcraft",
-    "title": "The tamer makes her rounds",
-    "hint": "A Tamer's Lodge on a road sends a tamer to every cradle within ten tiles that holds dragons: calmer and faster-growing that day."
-  },
   "w_pilgrim": {
     "chapter": "Faith",
     "title": "Pilgrims on the road",
     "hint": "Shrines and temples on roads send pilgrims to one another and to the Founding Stake; the roads they walk count as under faith."
-  },
-  "v_find": {
-    "chapter": "The Vein-Wyrm",
-    "title": "Stir the Sleeping Wyrm",
-    "hint": "One distant node is ringed with scale, not stone. A lit spire within 6 tiles of it stirs the wyrm; bulldoze the spire before it is 80% awake, or have a tribute ready."
-  },
-  "v_tribute": {
-    "chapter": "The Vein-Wyrm",
-    "title": "Settle a tribute",
-    "hint": "Awake, it asks each season: crowns or goods. Refuse and it burns."
-  },
-  "v_court": {
-    "chapter": "The Vein-Wyrm",
-    "title": "Raise the Wyrm-Court",
-    "hint": "Leisure tab, Free City. Needs 40 mana and a third of the folk educated for the song."
-  },
-  "v_bind": {
-    "chapter": "The Vein-Wyrm",
-    "title": "Bind the wyrm",
-    "hint": "When the Court is lit the singers offer the binding. A bound wyrm wards 30 tiles and eats 40 goods a day."
-  },
-  "v_egg": {
-    "chapter": "The Vein-Wyrm",
-    "title": "Keep the guardian fed for a season",
-    "hint": "Markets within reach must hold 40 goods a day. A content wyrm lays a vein egg: keep it, in a cradle with a free nest."
   },
   "z_daily": {
     "chapter": "The Charter",
@@ -527,7 +357,7 @@
   "z_island": {
     "chapter": "The Charter",
     "title": "The Gloam-locked island: Township and 300 tiles burned back",
-    "hint": "Ward Lanterns outward from the Stake; the Watch and a Hunters' Lodge for the hounds."
+    "hint": "Ward Lanterns outward from the Stake; the Watch for the restless."
   },
   "z_atoll": {
     "chapter": "The Charter",

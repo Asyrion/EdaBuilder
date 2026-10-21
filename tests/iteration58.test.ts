@@ -10,7 +10,7 @@ import { EVENTS } from '../src/sim/events';
 import { deserialize, serialize } from '../src/sim/save';
 import { generateSprites } from '../src/render/sprites';
 import { AgentKind, MAP_W, Terrain, idx, type GameState, type Herd, type WildSpecies } from '../src/sim/types';
-import { CLOSE_FLOOR, HUNT_REACH, MARKET_MEAT_CAP, WILD, WILD_SPECIES, builtGrid, dailyGame, dailyMeat, dailyWild, dailyWolves, habitat, houndChance, huntBlock, syncWildAgents } from '../src/sim/wild';
+import { CLOSE_FLOOR, HUNT_REACH, MARKET_MEAT_CAP, WILD, WILD_SPECIES, builtGrid, dailyGame, dailyMeat, dailyWild, dailyWolves, habitat, huntBlock, syncWildAgents } from '../src/sim/wild';
 import { HIDE_PRICE, MEAT_PRICE, TROPHY_PRICE } from '../src/sim/growth';
 import { flatten } from './helpers';
 
@@ -132,17 +132,6 @@ describe("The Hunters' Lodge hunts a quarry", () => {
     for (let d = 1; d <= 200 && !(l.trophies ?? 0); d++) { s.day = d; h.head = 5; dailyGame(s); }
     expect(l.trophies).toBeGreaterThan(0);
     expect(s.stats.trophies).toBeGreaterThan(0);
-  });
-
-  it('a lodge after game kills hounds at half the chance; on hounds, or in the Close Season\'s Bloom, at full', () => {
-    const { s, l } = lodgeField(7, 'deer', 6);
-    expect(houndChance(s, l)).toBe(0.4);
-    l.quarry = undefined;
-    expect(houndChance(s, l)).toBe(0.8);
-    l.quarry = 'deer';
-    s.edicts.closeseason = true;
-    s.day = 35;
-    expect(houndChance(s, l)).toBe(0.8);
   });
 
   it('the Close Season: no game in Bloom, and no herd taken below its floor', () => {
@@ -269,7 +258,7 @@ describe('Saves, sprites and determinism', () => {
   });
   it('every creature has a sprite, two frames', () => {
     const names = new Set(generateSprites().map((d) => d.name));
-    for (const sp of [...WILD_SPECIES, 'glimmoth', 'thrumhare', 'wisp', 'hound', 'golem', 'skyray', 'tiger', 'rider', 'airship']) for (const f of [0, 1]) expect(names.has(`${sp}_${f}`), `${sp}_${f}`).toBe(true);
+    for (const sp of [...WILD_SPECIES, 'airship']) for (const f of [0, 1]) expect(names.has(`${sp}_${f}`), `${sp}_${f}`).toBe(true);
   });
   it('the wild is the same twice for one seed, and stays off the map edge', () => {
     const run = () => {

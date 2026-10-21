@@ -5,7 +5,6 @@ import { districtsInUse } from './edicts';
 import { districtSlots } from './districts';
 import { MAX_DISTRICTS, RoadType, Terrain, Zone, idx, inBounds, type GameState } from './types';
 import { canPlaceBuilding, forEachBuilding, markDirtyAround, placeBuildingRaw, pushMessage } from './world';
-import { wyrmNode } from './wyrm';
 import { sectorOf } from './sectors';
 
 export const DAUGHTER_GRANT = 15000;
@@ -21,8 +20,6 @@ export function canFoundDaughter(s: GameState, ni: number): string | null {
   const n = s.nodes[ni];
   if (!n) return 'No such node';
   if (n.x === s.founding.x && n.y === s.founding.y) return 'This is the founding Wellspring';
-  const wn = wyrmNode(s);
-  if (wn && wn.x === n.x && wn.y === n.y) return 'The wyrm sleeps on this node';
   if (Math.hypot(n.x - s.founding.x, n.y - s.founding.y) < DAUGHTER_MIN_DIST) return `Too near the first wardlight (${DAUGHTER_MIN_DIST} tiles)`;
   if (!stakeSpot(s, ni)) return 'No room for a stake beside this node';
   return null;
@@ -39,7 +36,7 @@ function stakeSpot(s: GameState, ni: number): [number, number] | null {
         const y = n.y + dy;
         if (!inBounds(x + 1, y + 1)) continue;
         let ok = true;
-        for (let yy = y; yy <= y + 1 && ok; yy++) for (let xx = x; xx <= x + 1; xx++) { const i = idx(xx, yy); const t = s.terrain[i]; if ((t !== Terrain.Grass && t !== Terrain.Meadow && t !== Terrain.Forest) || s.bIndex[i] >= 0 || s.road[i] || s.wall[i] || s.gloam[i]) { ok = false; break; } }
+        for (let yy = y; yy <= y + 1 && ok; yy++) for (let xx = x; xx <= x + 1; xx++) { const i = idx(xx, yy); const t = s.terrain[i]; if ((t !== Terrain.Grass && t !== Terrain.Meadow && t !== Terrain.Forest) || s.bIndex[i] >= 0 || s.road[i] || s.gloam[i]) { ok = false; break; } }
         if (ok) return [x, y];
       }
   return null;

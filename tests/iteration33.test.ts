@@ -3,9 +3,8 @@ import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { AgentKind, RoadType, Terrain, idx } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { WALKER_JOBS, dailyWalkers, tickWalkers, walkersOf, walkerBonus } from '../src/sim/walkers';
+import { dailyWalkers, tickWalkers, walkersOf, walkerBonus } from '../src/sim/walkers';
 import { dailyRelics } from '../src/sim/relics';
-import { addEgg, dailyDragons } from '../src/sim/wyrmcraft';
 import { activeQuests } from '../src/sim/quests';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -60,45 +59,6 @@ describe('Scholars', () => {
     expect(walkersOf(s, ac).length).toBe(0);
     expect(s.relics.uncatalogued).toBe(1);
     void dv;
-  });
-});
-
-describe('Tamers', () => {
-  it('visit each cradle with dragons within ten tiles: mood +2, growth a tenth faster that day, three visits a day', () => {
-    const s = town();
-    const f = s.founding;
-    const lodge = placeBuildingRaw(s, 'tamerslodge', f.x + 4, f.y + 3);
-    const c1 = placeBuildingRaw(s, 'cradle', f.x - 3, f.y + 3);
-    const c2 = placeBuildingRaw(s, 'cradle', f.x + 10, f.y + 5);
-    recomputeAll(s);
-    const d1 = addEgg(s, 'ember')!;
-    expect(d1.cradleId).toBe(c1.id);
-    dailyWalkers(s);
-    const w = walkersOf(s, lodge)[0];
-    expect(w.job).toBe('tamer');
-    w.timer = 0;
-    expect(WALKER_JOBS.tamer.target!(s, w, lodge)).not.toBeNull(); // c1 has a dragon
-    d1.mood = 50;
-    expect(walkUntil(s, () => (c1.visited ?? -1) >= s.day)).toBeLessThan(3000);
-    expect(d1.mood).toBe(52);
-    expect(s.stats.tamerVisits).toBe(1);
-    expect(w.log![0]).toMatch(/Worked the 1 dragon/);
-    expect(WALKER_JOBS.tamer.target!(s, w, lodge)).not.toBeNull(); // the way home
-    expect(walkUntil(s, () => w.phase === 0)).toBeLessThan(3000);
-    expect(WALKER_JOBS.tamer.target!(s, w, lodge)).toBeNull(); // c1 visited, c2 empty: nothing to do (falls back to patrol)
-    // growth a tenth faster on a visited day
-    d1.stage = 1; d1.days = 0; d1.mood = 90; c1.lit = true;
-    for (const m of s.buildings) if (m && m.kind === 'market') m.stock = 50;
-    placeBuildingRaw(s, 'market', f.x - 3, f.y + 6, 2).stock = 40;
-    dailyDragons(s);
-    const gained = d1.days;
-    c1.visited = -1; d1.days = 0;
-    dailyDragons(s);
-    expect(gained / d1.days).toBeCloseTo(1.1, 2);
-    w.load = 3;
-    expect(WALKER_JOBS.tamer.target!(s, w, lodge)).toBeNull();
-    expect(activeQuests(s, 100).some((q) => q.id === 'w_tamer')).toBe(false);
-    void c2;
   });
 });
 
