@@ -137,7 +137,7 @@ this phase.
 - **Art:** 34 entries of `art/sources.json` and their PNGs; the drawn painters of the dragons, the wyvern, the wyrm,
   the wall, the gates, the golem cart, the tiger, the rider, the hound, the skyray and the 14 buildings. `npm run art`
   was rerun: the sheet is 2048×403 (was 2048×443), 747 images.
-- **Tests:** 8 files were deleted at the start of the phase and `iteration69` with the Great Gate. 40 mixed files were
+- **Tests:** 8 files were deleted at the start of the phase and `iteration69` with the Great Gate. 36 mixed files were
   cut to the core, and one refusal test is new. Three agents trimmed the test files in parallel; I checked their
   reports and ran the whole suite. The playtests of these systems are gone: 5, 6, 7, 53, 69, 70, 72, 73, 74, 76, 86 and
   `dbg_fly`.
