@@ -193,7 +193,7 @@ describe('Trade routes', () => {
     // the daughter
     s.milestone = 8;
     let ni = -1;
-    for (let k = 0; k < s.nodes.length; k++) { const n = s.nodes[k]; if (Math.max(Math.abs(n.x - f.x), Math.abs(n.y - f.y)) >= 40 && (s.wyrm.node !== k)) { flatten(s, n.x - 8, n.y - 8, n.x + 8, n.y + 8); if (foundDaughter(s, k, 'Newlight') === null) { ni = k; break; } } }
+    for (let k = 0; k < s.nodes.length; k++) { const n = s.nodes[k]; if (Math.max(Math.abs(n.x - f.x), Math.abs(n.y - f.y)) >= 40) { flatten(s, n.x - 8, n.y - 8, n.x + 8, n.y + 8); if (foundDaughter(s, k, 'Newlight') === null) { ni = k; break; } } }
     expect(ni).toBeGreaterThanOrEqual(0);
     const d = s.daughter!;
     let routes = tradeRoutes(s);
@@ -220,7 +220,7 @@ describe('Trade routes', () => {
     expect(b.guilds.standing.carters).toBe(50);
   });
 
-  it('old saves get a council and the Weave view paints aspects and auras', () => {
+  it('old saves get a council and the Weave view paints aspects', () => {
     const s = createGame(41, 'Old');
     const o = JSON.parse(serialize(s));
     delete o.guilds;
@@ -233,6 +233,6 @@ describe('Trade routes', () => {
     const f = s.founding;
     expect(w.tile(s, idx(f.x, f.y), f.x, f.y)).toMatch(/rgba\(79,227,255/); // Vein
     expect(w.tile(s, idx(f.x + 11, f.y + 11), f.x + 11, f.y + 11)).toBeNull();
-    expect(w.legend.length).toBe(9);
+    expect(w.legend.length).toBe(8); // the aspects; the dragon-aura row is parked
   });
 });

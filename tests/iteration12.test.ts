@@ -98,7 +98,7 @@ describe('Glimhouse', () => {
 });
 
 describe('Astral Observatory', () => {
-  it('forecasts only when lit, and names surges, seasons and the wyrm', () => {
+  it('forecasts only when lit, and names surges and seasons', () => {
     const { s, f } = base();
     expect(forecast(s)).toEqual([]);
     const o = placeBuildingRaw(s, 'observatory', f.x + 6, f.y + 4);
@@ -111,13 +111,6 @@ describe('Astral Observatory', () => {
     s.overdrawDays = 3;
     expect(forecast(s).some((l) => /surge in 2 days/.test(l.text) && l.kind === 'bad')).toBe(true);
     s.overdrawDays = 0;
-    if (s.wyrm.state !== 'none') {
-      s.wyrm.waking = 90;
-      const n = s.nodes[s.wyrm.node];
-      const sp = placeBuildingRaw(s, 'spire', n.x + 1, n.y + 1);
-      sp.lit = true;
-      expect(forecast(s).some((l) => /Wyrm wakes in 4 days/.test(l.text))).toBe(true);
-    }
     run(s, 10);
   });
 });

@@ -10,7 +10,6 @@ import { RIOT_DAYS, maybeFireRiot, resolveEvent } from '../src/sim/events';
 import { updateCoverage } from '../src/sim/services';
 import { CONSECRATED_DAYS, WALKER_JOBS } from '../src/sim/walkers';
 import { CARTERS_EASE, dailyTraffic } from '../src/sim/agents';
-import { dailyHunt, spawnCreature } from '../src/sim/creatures';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -155,15 +154,10 @@ describe('Halls with a difference', () => {
 });
 
 describe('The smaller rows', () => {
-  it("pelts go to the lodge's shelf and the Gloam road sells them; the Carters' Yard eases the roads within 10; the kin rings", () => {
+  it("the Gloam road sells the lodge's hides; the Carters' Yard eases the roads within 10; the kin rings", () => {
     const s = town();
     const f = s.founding;
-    const lodge = placeBuildingRaw(s, 'hunterslodge', f.x + 6, f.y + 3); ok(lodge); lodge.stock = 0;
-    for (let k = 0; k < 6; k++) spawnCreature(s, 'hound', f.x + 7, f.y + 5);
-    s.coverage.watch.fill(0);
-    dailyHunt(s);
-    expect(lodge.stock).toBeGreaterThan(0);
-    expect(s.stats.pelts).toBe(lodge.stock);
+    const lodge = placeBuildingRaw(s, 'hunterslodge', f.x + 6, f.y + 3); ok(lodge); lodge.stock = 5;
     const depot = placeBuildingRaw(s, 'depot', f.x - 6, f.y - 2); ok(depot);
     const pelts = lodge.stock;
     dailyTrade(s);

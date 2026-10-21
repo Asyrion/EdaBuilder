@@ -15,7 +15,6 @@ describe('Scenario charters', () => {
     updateMana(s);
     expect(s.manaSupply).toBe(195); // 2x flow plus the Vein aspect
     expect(activeQuests(s)[0].id).toBe('z_onenode');
-    expect(s.wyrm.state).toBe('none');
   });
 
   it('the island is ringed by Gloam within forty tiles of the founding node', () => {

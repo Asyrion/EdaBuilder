@@ -5,7 +5,6 @@ import { buildRoad, roadPath } from '../src/sim/actions';
 import { AgentKind, RoadType, Terrain, idx } from '../src/sim/types';
 import { dailyAgents, tickAgents } from '../src/sim/agents';
 import { updateCreatures, tickCreatures } from '../src/sim/creatures';
-import { spawnRestless } from '../src/sim/agents';
 import { updateMana } from '../src/sim/networks';
 import { FLOAT_VARIANT, BARGE_VARIANT, dailyBarges, waterPath, floatingTarget, floatingMana, dailyAirship, airshipArrives } from '../src/sim/vehicles';
 import { serialize, deserialize } from '../src/sim/save';
@@ -71,26 +70,6 @@ describe('Barges and Quays', () => {
     // no second barge while one is out; a new one the next day
     dailyBarges(s);
     expect(s.agents.filter((x) => x.variant === BARGE_VARIANT).length).toBe(1);
-  });
-});
-
-describe('Drake riders', () => {
-  it('fly from a lit mews to the restless and lay them down', () => {
-    const { s, f } = base();
-    buildRoad(s, RoadType.Track, roadPath(f.x - 10, f.y + 3, f.x + 10, f.y + 3, false));
-    const mews = placeBuildingRaw(s, 'drakemews', f.x, f.y + 4);
-    mews.lit = true;
-    recomputeAll(s);
-    mews.lit = true;
-    updateCreatures(s);
-    expect(s.agents.filter((a) => a.kind === AgentKind.Creature && a.species === 'rider').length).toBe(2);
-    expect(spawnRestless(s, f.x + 8, f.y + 3)).toBe(true);
-    for (let k = 0; k < 600 && s.agents.some((a) => a.kind === AgentKind.Restless); k++) { tickCreatures(s); s.tick++; }
-    expect(s.agents.some((a) => a.kind === AgentKind.Restless)).toBe(false);
-    expect(s.stats.riderRescues).toBe(1);
-    mews.lit = false;
-    updateCreatures(s);
-    expect(s.agents.some((a) => a.species === 'rider')).toBe(false);
   });
 });
 

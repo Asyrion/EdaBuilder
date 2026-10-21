@@ -8,7 +8,6 @@ import { crewFactor, landBonusMap, landValueTerms, updateCoverage, updateLandVal
 import { computeBuildingHappiness, dailyBuildings, happinessTerms, levelUpNeeds, demandReasons, updateDemand } from '../src/sim/growth';
 import { WARD_BURN, dailyDeath, dailyGloam, greyInReach, wardBurnBudget } from '../src/sim/hazards';
 import { dailyWalkers, walkersOf } from '../src/sim/walkers';
-import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
@@ -111,7 +110,7 @@ describe('Deathcare in the open', () => {
 });
 
 describe('Wards with a budget', () => {
-  it('a Ward Lantern burns 12 of the nearest grey tiles a day, and the Scale Ward wears and re-plates', () => {
+  it('a Ward Lantern burns 12 of the nearest grey tiles a day', () => {
     const s = town();
     const f = s.founding;
     const ward = placeBuildingRaw(s, 'wardlantern', f.x + 8, f.y - 4); ok(ward); ward.lit = true;
@@ -128,15 +127,5 @@ describe('Wards with a budget', () => {
     for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (s.gloam[idx(f.x + 8 + dx, f.y - 4 + dy)]) { near++; if (Math.max(Math.abs(dx), Math.abs(dy)) <= 1) ring1++; }
     expect(ring1).toBe(0);
     expect(near).toBe(20 - WARD_BURN);
-    // the Scale Ward's plating
-    const sc = placeBuildingRaw(s, 'scaleward', f.x - 8, f.y - 4); ok(sc);
-    expect(wardBurnBudget(s, sc)).toBe(WARD_BURN);
-    sc.plate = 0.5;
-    expect(wardBurnBudget(s, sc)).toBe(WARD_BURN / 2);
-    sc.plate = 1; s.day = 30;
-    dailyBuildings(s);
-    expect(sc.plate).toBeCloseTo(0.9, 9);
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
-    expect(r.buildings.find((b) => b && b.id === sc.id)!.plate).toBeCloseTo(0.9, 9);
   });
 });

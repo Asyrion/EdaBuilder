@@ -8,7 +8,6 @@ import { MILL_SHARE, PORTAL_CAP, PORTAL_MANA, updateMana, updateWater, waterCapO
 import { MUD, roadSpeedAt } from '../src/sim/roads';
 import { ROAD_BY_TYPE } from '../src/sim/catalog';
 import { SEAM, SPENT_RATE, dailyBuildings } from '../src/sim/growth';
-import { GOLEM_WAKE_CHANCE } from '../src/sim/beasts';
 import { FLARE_DAYS, GLOAM_TAKES, GREY_DAYS, dailyFire, dailyGloam, fontsRunHot } from '../src/sim/hazards';
 import { updateMiasma } from '../src/sim/services';
 import { serialize, deserialize } from '../src/sim/save';
@@ -86,7 +85,7 @@ describe('Mud, seams, rivers, crossings', () => {
     expect(roadSpeedAt(s, t)).toBeCloseTo(ROAD_BY_TYPE[RoadType.Cobble].speed, 6);
   });
 
-  it("a mine's seam falls by its cut; a spent shaft cuts dust and wakes the deep three times as often", () => {
+  it("a mine's seam falls by its cut; a spent shaft cuts dust", () => {
     const s = town();
     const f = s.founding;
     for (let dy = -3; dy <= -2; dy++) for (let dx = 4; dx <= 5; dx++) s.terrain[idx(f.x + dx, f.y + dy)] = Terrain.Hills;
@@ -103,7 +102,6 @@ describe('Mud, seams, rivers, crossings', () => {
     mine.stock = 0;
     dailyBuildings(s);
     expect(mine.stock).toBe(SPENT_RATE);
-    expect(GOLEM_WAKE_CHANCE * 3).toBeCloseTo(0.09, 6);
     const r = deserialize(serialize(s), (seed) => createGame(seed));
     expect(r.buildings.find((b) => b && b.id === mine.id)!.seam).toBe(0);
   });

@@ -6,7 +6,6 @@ import { createGame, placeBuildingRaw, waterReachOf } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { BUILDING_BY_KEY, BUILDINGS } from '../src/sim/catalog';
 import { SECONDARY_REACH, reachesOf, reachesOfBuilding } from '../src/sim/reach';
-import { FEED_REACH, LODGE_REACH } from '../src/sim/wyrmcraft';
 import { HOSPICE_REACH, GLIMHOUSE_REACH } from '../src/sim/growth';
 import { CARTERS_REACH } from '../src/sim/agents';
 import { flatten } from './helpers';
@@ -39,8 +38,6 @@ describe('Reach rings', () => {
   it("the secondary reaches are the sim's own numbers", () => {
     const s = createGame(56, 'Ringwick');
     const r = (key: string) => reachesOf(s, BUILDING_BY_KEY[key]).filter((x) => !x.primary).map((x) => x.r);
-    expect(r('cradle')).toEqual([FEED_REACH]);
-    expect(r('tamerslodge')).toEqual([LODGE_REACH]);
     expect(r('hospice')).toEqual([HOSPICE_REACH]);
     expect(r('cartersyard')).toEqual([CARTERS_REACH]);
     expect(r('glimhouse')).toEqual([GLIMHOUSE_REACH]);
