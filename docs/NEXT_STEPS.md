@@ -6,9 +6,14 @@ The game is being cut back to its core with the Vellish alone. The plan is **`do
 per phase; what each phase did is in `docs/RESET_LOG.md`, and what was parked, and how to bring it back, is in
 `docs/PARKED.md`. Done: phase 0 (archive branches, core smoke tests, checklist, smoke playtest, baselines) and phase 1a
 (the peoples down to the Vellish; six seeds bit-identical to main; RESET_LOG) and phase 1b (the creatures, dragons,
-wyrms, beasts, hounds, the Warding Wall and the Great Gate parked; the bot corridor against phase 0 in RESET_LOG).
+wyrms, beasts, hounds, the Warding Wall and the Great Gate parked; the bot corridor against phase 0 in RESET_LOG) and
+phase 1c-1 (the tales, the weave, the guilds, the walkers, the forecast and the Annals parked; the corridor fell by 41 %,
+because the caravan carried the mid-game economy: RESET_LOG has the trace and the gap for phase 2).
 
-1. **Phase 1c: park the cross-cutting add-ons** (events, weather, walkers, water extras, vehicles, scenarios, terraforming …).
+1. **Phase 1c-2: park the world add-ons and cut the content** (the wild, water extras, marsh, Atoll/isles/gales, vehicles
+   with the Sky-Dock, the scenarios, the daughter charter, the daily challenge, terraforming, relics, ruins, portals, the
+   World Tree, marvels, the Torrent Mill and the other borderline buildings; quests to ~20, edicts to 7; at most 15 daily
+   systems and 5 top-bar buttons).
 2. **Phase 1d: clean up** (save version 8 and the demand step on load, tests, assets, docs, `inspirations/` to eda-lore).
 3. **Phase 2: sharpen the core loop.**
 4. **Phase 3: the art foundation and pixel art.**

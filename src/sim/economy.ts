@@ -167,7 +167,7 @@ export function checkMilestones(state: GameState): void {
   }
   if (stakeStage(state) !== stage0) {
     forEachBuilding(state, (b) => { if (GROWING_HALLS.includes(b.kind)) markDirtyAround(state, b.x, b.y); });
-    pushMessage(state, `The halls are raised anew: the Founding Stake, the Guildhall and the Temple become ${stakeHallName(state).replace(/^the /, '')}s of their kind.`, 'info');
+    pushMessage(state, `The halls are raised anew: the Founding Stake and the Temple become ${stakeHallName(state).replace(/^the /, '')}s of their kind.`, 'info');
   }
 }
 
