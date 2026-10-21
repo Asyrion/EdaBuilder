@@ -29,7 +29,7 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
   });
   it('every look belongs to a real building, runs from v0 without a gap, and stands centred on its footprint', () => {
     const looks = Object.keys(manifest).filter((n) => /^b_\w+_v\d+$/.test(n));
-    expect(looks.length).toBeGreaterThan(110); // over 130 before the scope reset parked the peoples' looks, 116 after
+    expect(looks.length).toBeGreaterThan(100); // over 130 before the scope reset parked the peoples' looks, 116 after, 105 after the creature buildings (phase 1b)
     for (const n of looks) {
       const [, key, v] = /^b_(\w+)_v(\d+)$/.exec(n)!;
       expect(BUILDING_BY_KEY[key] || key === 'brickworks', n).toBeTruthy();
@@ -64,6 +64,6 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
     for (const n of ['b_boneyard', 'b_ossuary', 'b_sextonchapel', 'b_spire']) expect(manifest[`${n}_v0`], n).toEqual(manifest[n]);
   });
   it('the looks fronted on the left are mirrored', () => {
-    expect(batch2.filter((e) => e.flip).map((e) => e.name).sort()).toEqual(["b_drakemews_v0","b_fishershut_v0","b_golemfoundry_v0","b_healer_v0","b_househall_v0","b_hunterslodge_v0","b_hunterslodge_v3","b_lantern_v0","b_leybeacon_v0","b_ossuary_v5","b_shrine_v0","b_shrine_v1","b_shrine_v10","b_shrine_v3","b_shrine_v5","b_shrine_v6","b_shrine_v7","b_shrine_v8","b_shrine_v9","b_spire_v1","b_stormpeak_v0","b_tamerslodge_v0","b_wyrmforge_v0"]);
+    expect(batch2.filter((e) => e.flip).map((e) => e.name).sort()).toEqual(["b_fishershut_v0","b_healer_v0","b_househall_v0","b_hunterslodge_v0","b_hunterslodge_v3","b_lantern_v0","b_ossuary_v5","b_shrine_v0","b_shrine_v1","b_shrine_v10","b_shrine_v3","b_shrine_v5","b_shrine_v6","b_shrine_v7","b_shrine_v8","b_shrine_v9","b_spire_v1","b_stormpeak_v0"]);
   });
 });

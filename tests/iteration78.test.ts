@@ -43,10 +43,9 @@ describe('The scale of things: the small buildings against a citizen', () => {
   it('the academy is a hall of 5.5 citizens at most, like the other 2×2 halls', () => {
     expect(folk('b_academy')).toBeLessThanOrEqual(5.5);
   });
-  it('the towers keep their height: the spire, the watchpost, the moth-loft', () => {
+  it('the towers keep their height: the spire, the watchpost', () => {
     expect(folk('b_spire')).toBeGreaterThan(4);
     expect(folk('b_watchpost')).toBeGreaterThanOrEqual(3); // 36 opaque rows
-    expect(folk('b_mothloft')).toBeGreaterThan(3);
   });
   it('a small object stands in the middle of its tile, not at its front corner (the wells, drawn in code since iteration 79: the anchor ten rows above the last row)', () => {
     for (const n of ['b_well']) {
