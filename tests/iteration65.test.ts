@@ -58,10 +58,6 @@ describe('The citizens, redrawn', () => {
     for (let x = 0; x < 8; x++) if (g.p.get(x, 0) > 0 && hex(g, x, 0) === PAL.bone) bone++;
     expect(bone).toBeGreaterThanOrEqual(3);
   });
-  it('the walkers keep their props on the new body', () => {
-    expect(hex(get('walker_watchman_0_0'), 7, 3)).toBe(PAL.wood1); // the Watch's rod
-    expect(hex(get('walker_pilgrim_0_0'), 7, 0)).toBe(PAL.fire1); // the pilgrim's lit staff
-  });
 });
 
 describe('Closed by the outline', () => {

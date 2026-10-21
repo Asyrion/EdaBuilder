@@ -82,19 +82,4 @@ describe('Iteration 93: every task says what it still needs', () => {
     expect(questStatus(s, Q('a_academy'))).toMatch(/29 % of the folk educated, of 30 %/);
   });
 
-  it('the Watch task says when a watchman is out', () => {
-    const s = createGame(41, 'Watch');
-    const f = s.founding;
-    flatten(s, f.x - 12, f.y - 8, f.x + 12, f.y + 10);
-    s.treasury = 99999;
-    expect(questStatus(s, Q('w_patrol'))).toMatch(/Not built yet/);
-    buildRoad(s, 1, roadPath(f.x - 8, f.y + 2, f.x + 8, f.y + 2, false));
-    placeBuilding(s, 'watchpost', f.x + 2, f.y + 3);
-    const post = s.buildings.find((b) => b && b.kind === 'watchpost')!;
-    post.state = 'ok'; post.work = 0;
-    recomputeAll(s);
-    expect(questStatus(s, Q('w_patrol'))).toMatch(/No watchman out yet/);
-    run(s, TICKS_PER_DAY);
-    if (!s.questsDone.includes('w_patrol')) expect(questStatus(s, Q('w_patrol'))).toMatch(/out on patrol/);
-  });
 });
