@@ -1,7 +1,7 @@
 /** The balance table (DESIGN 4.93, 4.95): the bot's runs over peoples × seeds × draws, in parallel, with each row's spread, and with
  *  `--compare <ref>` the working tree against a git ref, paired by seed, with a verdict against the noise.
  *
- *  npx tsx scripts/table.ts [--bar wide] [--compare <ref>] [--ref <ref>] [--peoples vellish,grimmen,veshari,tallowkin,fennex]
+ *  npx tsx scripts/table.ts [--bar wide] [--compare <ref>] [--ref <ref>] [--peoples vellish]
  *                           [--seeds 42,43,44] [--draws 2] [--target 0.10] [--max-draws 8] [--days 150] [--jobs N]
  *                           [--no-cache] [--out shots/table.json]
  *  npx tsx scripts/table.ts --import-cache <dir> --ref <sha>   (old commit-keyed run files of that commit into the cache)
@@ -28,7 +28,7 @@ const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const args = process.argv.slice(2);
 const opt = (k: string, d?: string) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : d; };
 const wide = opt('bar') === 'wide';
-const peoples = opt('peoples', 'vellish,grimmen,veshari,tallowkin,fennex')!.split(','); // the Fen-Nex since iteration 96
+const peoples = opt('peoples', 'vellish')!.split(','); // the Vellish only since the scope reset (phase 1a)
 const seeds = opt('seeds', wide ? '42,43,44,45,46,47' : '42,43,44')!.split(',').map(Number);
 const draws = Number(opt('draws', '2'));
 const target = Number(opt('target', '0.10'));

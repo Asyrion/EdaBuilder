@@ -62,14 +62,6 @@ describe('Iteration 92: the Watch and the sexton count their rounds, not the thr
 });
 
 describe('Iteration 92: tasks that good play used to close off', () => {
-  it('a Great Weir standing when the first Hush ends weathers the flood', () => {
-    const s = town(41, 'veshari');
-    stands(s, 'greatweir');
-    s.day = 4 * DAYS_PER_SEASON - 1;
-    expect(Q('v_flood').done(s)).toBe(false);
-    s.day = 4 * DAYS_PER_SEASON;
-    expect(Q('v_flood').done(s)).toBe(true);
-  });
 
   it('the duel stays closed while the Vein-Wyrm is bound: a bound wyrm never flies over in anger', () => {
     const s = town();
@@ -92,9 +84,8 @@ describe('Iteration 92: tasks that good play used to close off', () => {
     expect(s.questsDone).toContain('w_wyrm');
   });
 
-  it('every people\'s cradle takes the vein egg', () => {
-    for (const kind of ['cradle', 'hatchery', 'tidepool']) expect(cradleAccepts({ kind } as Building, 'vein')).toBe(true);
-    expect(cradleAccepts({ kind: 'hatchery' } as Building, 'tide')).toBe(false);
+  it('the cradle takes the vein egg', () => {
+    expect(cradleAccepts({ kind: 'cradle' } as Building, 'vein')).toBe(true);
   });
 
   it('a lit Guildhall seats the council and opens the guild chapter, petition or none', () => {
@@ -168,13 +159,11 @@ describe('Iteration 92: breeding weighs every pair', () => {
 });
 
 describe('Iteration 92: the text says what completes the task', () => {
-  it('names the four markets, the Weir, the stirring, each people\'s Beacon gate and the Grimmen\'s cutting', () => {
+  it('names the four markets, the stirring and the Beacon gate', () => {
     expect(Q('o_full').title + Q('o_full').hint).toMatch(/four/i);
-    expect(Q('v_flood').hint).toMatch(/Great Weir/);
     expect(Q('v_find').title).toMatch(/Stir/);
-    expect(Q('c_beacon').hint).toMatch(/your people's gate/);
-    expect(Q('c_beacon').focus).toBeUndefined(); // no "Show me" to a Lantern three peoples cannot build
-    expect(Q('g_burn').hint).toMatch(/stone-sexton/);
+    expect(Q('c_beacon').hint).toMatch(/happiness gate/);
+    expect(Q('c_beacon').focus).toBeUndefined();
   });
   it('the four-market task stays on the Ledger while the shelves are full', () => {
     const s = town();

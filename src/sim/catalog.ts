@@ -124,8 +124,8 @@ export function isZoneUnlocked(milestone: number, zone: Zone): boolean {
   return key ? milestone >= BUILDING_BY_KEY[key].unlock : false;
 }
 
-/** The Gloam road's yards: the Trade Depot, and the Fen-Nex's Caravanserai that stands for it (iteration 96). */
-export const DEPOT_KINDS = ['depot', 'caravanserai'];
+/** The Gloam road's yards: the Trade Depot (the Fen-Nex's Caravanserai is parked, scope reset phase 1a). */
+export const DEPOT_KINDS = ['depot'];
 export function isDepot(kind: string): boolean {
   return DEPOT_KINDS.includes(kind);
 }
@@ -133,8 +133,10 @@ export function isDepot(kind: string): boolean {
 export const BULLDOZE_COST = 5;
 export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
-/** Great halls that relay the ley like a Nexus and light like the Lantern: one row per people's wonder. */
-export const WONDER_HALLS = ['lantern', 'underkingseat', 'greatweir', 'lanternofwicks', 'hallofwicks'];
+/** Great halls that relay the ley like a Nexus and light like the Lantern (the other peoples' halls are parked). */
+export const WONDER_HALLS = ['lantern'];
+/** Moorings: the buildings barges sail between (the Veshari's Landing is parked). */
+export const MOORINGS = ['quay'];
 
 export const WALL_COST = 60;
 export const WALL_UPKEEP = 0.4;

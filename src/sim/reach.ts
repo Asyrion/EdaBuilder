@@ -7,13 +7,12 @@ import { BUILDING_BY_KEY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { FISH_MARKET_REACH, FISH_REACH, REED_REACH, SMOKE_REACH, THATCH_REACH, WEIR_REACH } from './water';
 import { influenceRadius, waterReachOf } from './world';
 import { FEED_REACH, LODGE_REACH } from './wyrmcraft';
-import { FOUNDRY_RADIUS, FORGE_WAKE_RADIUS } from './beasts';
+import { FOUNDRY_RADIUS } from './beasts';
 import { QUAY_REACH } from './vehicles';
 import { GLIMHOUSE_REACH, HOSPICE_REACH } from './growth';
 import { CARTERS_REACH } from './agents';
 import { BRICK_REACH } from './construction';
-import { GLOWVINE_REACH, MILL_SHARE_REACH, SEAT_WARMTH, WICKS_REACH } from './networks';
-import { SLUICE_FLOOD_REACH } from './weave';
+import { GLOWVINE_REACH, MILL_SHARE_REACH } from './networks';
 import { HOUND_REACH, HUNT_REACH } from './wild';
 import type { Building, GameState } from './types';
 
@@ -31,20 +30,13 @@ const SERVICE_WORDS: Record<string, string> = { watch: 'watch', health: 'healing
 /** The secondary reaches, by building key; `when` limits one to a state of the building (the Weir's sluice). */
 export const SECONDARY_REACH: Record<string, { r: number; label: string; square?: boolean; when?: (b: Building) => boolean }[]> = {
   cradle: [{ r: FEED_REACH, label: 'fed from markets' }],
-  hatchery: [{ r: FEED_REACH, label: 'fed from markets' }],
-  tidepool: [{ r: FEED_REACH, label: 'fed from markets' }],
   tamerslodge: [{ r: LODGE_REACH, label: 'seats cradles' }],
   golemfoundry: [{ r: FOUNDRY_RADIUS, label: 'binds wardens' }],
-  forgetemple: [{ r: FOUNDRY_RADIUS, label: 'binds wardens' }, { r: FORGE_WAKE_RADIUS, label: 'wakes them bound' }],
   quay: [{ r: QUAY_REACH, label: 'works by barge', square: true }],
-  landing: [{ r: QUAY_REACH, label: 'works by barge', square: true }],
   hospice: [{ r: HOSPICE_REACH, label: 'draughts from markets', square: true }],
   cartersyard: [{ r: CARTERS_REACH, label: 'eases the roads', square: true }],
   hanginggardens: [{ r: GLOWVINE_REACH, label: 'glowvine alive' }],
   brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 83)
-  greatweir: [{ r: SLUICE_FLOOD_REACH, label: 'sluice floods', when: (b) => !!b.sluice }],
-  lanternofwicks: [{ r: WICKS_REACH, label: 'halves spires' }],
-  underkingseat: [{ r: SEAT_WARMTH, label: 'warms cradles' }],
   torrentmill: [{ r: MILL_SHARE_REACH, label: 'shares the river', square: true }],
   glimhouse: [{ r: GLIMHOUSE_REACH, label: 'Hush works', square: true }],
   hunterslodge: [{ r: HOUND_REACH, label: 'hounds' }, { r: HUNT_REACH, label: 'hunt and meat' }], // the grounds it hunts game in and carts meat across (iteration 57)
@@ -58,7 +50,7 @@ export const SECONDARY_REACH: Record<string, { r: number; label: string; square?
 function primaryWord(def: BuildingDef): string {
   if (def.service) return SERVICE_WORDS[def.service.type] ?? def.service.type;
   if (def.waterRadius) return 'water';
-  if (def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key)) return 'light';
+  if (def.key === 'spire' || def.key === 'nexus' || WONDER_HALLS.includes(def.key)) return 'light';
   return 'reach';
 }
 

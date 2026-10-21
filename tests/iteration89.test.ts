@@ -38,7 +38,6 @@ describe('the prompt studio', () => {
     expect(yardstick(b('well', 1)).citizens).toBe('1.5');
     expect(yardstick(b('shrine', 1)).citizens).toBe('2.5');
     expect(yardstick(b('smokehouse', 1)).citizens).toBe('2.8');
-    expect(yardstick(b('wickshed', 1, 'service', ['tallowkin'])).citizens).toBe('3.2');
     expect(yardstick(b('academy', 2)).citizens).toBe('5.5');
     expect(yardstick(b('greatgate', 3, 'wonder')).citizens).toBe('free');
   });

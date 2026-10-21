@@ -116,7 +116,6 @@ export interface Building {
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
   plate?: number; // a Scale Ward's plating, 1 new, wearing a tenth a season; multiplies its ward
   blessed?: number; // a shrine consecrated by a pilgrim's prayer at the Temple: the day it lasts until
-  sluice?: boolean; // the Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw (iteration 53)
   quarry?: 'hounds' | WildSpecies; // a Hunters' Lodge's chosen quarry; unset = hounds (iteration 58)
   meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 58)
   trophies?: number; // a lodge's trophies awaiting the Gloam road
@@ -438,7 +437,7 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; caravanGoods?: number; caravanCost?: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
   wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
   marshWyrms?: MarshWyrm[]; // the marsh-wyrms out in Bloom (marshwyrms.ts, iteration 86; absent in older saves)
   water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
@@ -448,7 +447,6 @@ export interface GameState {
   weather: Weather | null; // today's spell, if any (iteration 54)
   pilgrimsDay: number; // the day pilgrims were last welcomed, −1: they ask for a shrine a month on
   heart: HeartState; // the Heart of Belregi and its tales (iteration 69)
-  litHeld: number; // days in a row the Tallowkin's lit share has held the next gate (needs 3)
   edictSince: Record<string, number>; // the day each edict was turned on (key, or district:key): an edict runs ten days and costs 200 to repeal
   quarterSince: Record<number, number>; // the day each district took its charter: it holds thirty days
   remembranceDead: number; // unquieted dead the Remembrance stirred, drawn down as they rise
@@ -564,11 +562,9 @@ export interface GameState {
     sextonRounds: number; // rounds a sexton walked, brawl days aside (iteration 92)
     healerVisits: number;
     wardenRounds: number;
-    lamplighterRounds: number; // dark homes relit by lamplighters
     scholarTrips: number;
     tamerVisits: number;
     pilgrimPrayers: number;
-    trueVeins: number; // veins of true leystone left to the ley: +10 node mana each
     floodDays: number; // days of the current Hush the Sable has been in flood (weave.ts)
     floodsWeathered: number; // Hushes a water people came through with the river in flood
     bargemanRounds: number; // flooded homes bailed by bargemen
@@ -597,7 +593,7 @@ export interface GameState {
     fordDaysClosed: number; // days a ford stood closed by high water
     marshDrained?: number; // marsh tiles the Drainage edict turned to meadow (iteration 85; absent in older saves)
     wyrmsLaired?: number; // marsh-wyrms that laired under a bridge (iteration 86)
-    wyrmsDriven?: number; // marsh-wyrms the Veshari Hall or a Quay drove from their lair (iteration 86)
+    wyrmsDriven?: number; // marsh-wyrms the Water-Mages\' Hall or a Quay drove from their lair (iteration 86)
     tideNests?: number; // tide eggs brought in from a marsh-wyrm nest by a Quay (iteration 86)
     pilgrimShrines: number; // shrines raised at the pilgrims' asking
     gatePilgrims: number; // pilgrims of the Pass lodged through the Great Gate (iteration 69)

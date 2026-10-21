@@ -235,8 +235,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /** A zone building's sprite: every people its own (iteration 82). A people's slot shows its own imported painting or, where
  *  none was drawn yet, its own drawn house; no people borrows another's painting (iteration 51's shared look is gone). */
-export function zoneSpriteName(_atlas: { imported: Set<string> }, kind: string, level: number, variant: number, suffix: string): string {
-  return `${kind}_l${level}_v${variant % 4}${suffix}`;
+export function zoneSpriteName(_atlas: { imported: Set<string> }, kind: string, level: number, variant: number): string {
+  return `${kind}_l${level}_v${variant % 4}`;
 }
 
 /** A building's look (iteration 83): where the atlas holds `<base>_v0..N-1` (the user's paintings), one of them chosen by the

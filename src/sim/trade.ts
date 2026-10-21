@@ -1,10 +1,10 @@
 /** Trade routes: the Gloam road, the river, the sky, the arches and the Twin Road to a daughter wardlight. See DESIGN.md 4.45. */
-import { BUILDING_BY_KEY } from './catalog';
+import { BUILDING_BY_KEY, MOORINGS } from './catalog';
 import { Zone, type Building, type GameState } from './types';
 import { marketStockCap, roadTileOf } from './agents';
 import { riverFrozen } from './weave';
 import { forEachBuilding } from './world';
-import { MOORINGS, setRouteCounter } from '../data/factions';
+
 import { hallActive } from './guilds';
 
 export interface TradeRoute {
@@ -32,7 +32,7 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }): number 
 export function twinDepots(s: GameState): [Building, Building] | null {
   const d = s.daughter;
   if (!d) return null;
-  const depots = okOf(s, 'depot').concat(okOf(s, 'caravanserai'));
+  const depots = okOf(s, 'depot');
   let near: Building | null = null;
   let far: Building | null = null;
   for (const b of depots) {
@@ -46,7 +46,7 @@ export function twinDepots(s: GameState): [Building, Building] | null {
 /** Every route the city has, open or not, for the Ledger. */
 export function tradeRoutes(s: GameState): TradeRoute[] {
   const out: TradeRoute[] = [];
-  const depots = okOf(s, 'depot').concat(okOf(s, 'caravanserai'), hallActive(s, 'cartersyard') ? okOf(s, 'cartersyard') : []);
+  const depots = okOf(s, 'depot').concat(hallActive(s, 'cartersyard') ? okOf(s, 'cartersyard') : []);
   if (depots.length) out.push({ kind: 'road', name: 'The Gloam road', at: depots[0], to: null, note: `${depots.length} depot${depots.length > 1 ? 's' : ''}: surplus sold to the Crown at ${s.trade.priceGoods.toFixed(1)} a good${s.trade.priceHides !== undefined ? `, hides at ${s.trade.priceHides}, salted meat at ${s.trade.priceMeat}, trophies at ${s.trade.priceTrophy}` : ''}${s.trade.priceFish !== undefined ? `, smoked fish at ${s.trade.priceFish}` : ''}${s.stats.relicsSold ? `; ${s.stats.relicsSold} relics sold` : ''}${s.relicStock > 10 ? `; ${s.relicStock} loose relics in the camp` : ''}`, open: true });
   const quays = MOORINGS.flatMap((k) => okOf(s, k));
   if (quays.length) {
@@ -93,70 +93,3 @@ export function dailyTwinRoad(s: GameState): number {
   s.tradeIncomeToday += Math.round(total * TWIN_TOLL);
   return total;
 }
-
-/** The Fen-Nex's caravans (iteration 96, DESIGN 4.127): goods a Caravanserai brings in each day, and more for every route the city has open (its own included). */
-export const CARAVAN_GOODS = 24;
-export const CARAVAN_PER_ROUTE = 8;
-export const CARAVAN_REACH = 16;
-/** A Fox-Post's pack-train: fewer goods, a shorter reach. */
-export const FOXPOST_GOODS = 8;
-export const FOXPOST_REACH = 10;
-/** A Fox-Post opens a route of its own only this far (Chebyshev) from every Caravanserai and every other counted post. */
-export const FOXPOST_SPACING = 20;
-/** The fox's haggle: caravan goods are bought at this share of the day's price. */
-export const CARAVAN_PRICE = 0.6;
-
-/** The posts that open a road route each: every Caravanserai with a road at its door, and every Fox-Post far enough from the rest. */
-export function routePosts(s: GameState): Building[] {
-  const out = okOf(s, 'caravanserai').filter((b) => roadTileOf(s, b) >= 0);
-  for (const p of okOf(s, 'foxpost')) {
-    if (roadTileOf(s, p) < 0) continue;
-    if (out.every((o) => dist(o, p) >= FOXPOST_SPACING)) out.push(p);
-  }
-  return out;
-}
-
-/** Trade routes opened, the Fen-Nex's milestone count: a road route per post, and one for each other kind of route open. */
-export function routesOpened(s: GameState): number {
-  const kinds = new Set(tradeRoutes(s).filter((r) => r.open && r.kind !== 'road').map((r) => r.kind));
-  return routePosts(s).length + kinds.size;
-}
-
-/** Daily: each Caravanserai and Fox-Post fills the emptiest markets in its reach from the caravans, at the fox's price. Returns the crowns paid. */
-export function dailyCaravans(s: GameState): number {
-  const t = s.trade;
-  t.caravanGoods = 0;
-  t.caravanCost = 0;
-  const posts = okOf(s, 'caravanserai').concat(okOf(s, 'foxpost')).filter((b) => roadTileOf(s, b) >= 0);
-  if (!posts.length) return 0;
-  const routes = routesOpened(s);
-  const price = t.priceGoods * CARAVAN_PRICE;
-  for (const p of posts) {
-    const sera = p.kind === 'caravanserai';
-    let load = sera ? CARAVAN_GOODS + CARAVAN_PER_ROUTE * routes : FOXPOST_GOODS;
-    const reach = sera ? CARAVAN_REACH : FOXPOST_REACH;
-    const sinks: Building[] = [];
-    forEachBuilding(s, (b) => {
-      if (b.state === 'ok' && BUILDING_BY_KEY[b.kind].zone === Zone.Market && dist(b, p) <= reach && b.stock < marketStockCap(b)) sinks.push(b);
-    });
-    sinks.sort((a, b) => a.stock / marketStockCap(a) - b.stock / marketStockCap(b) || a.id - b.id);
-    // the emptiest first, a share at a time, round again while goods and room are left
-    for (let pass = 0; pass < 4 && load > 0.01; pass++) {
-      const share = Math.max(4, load / Math.max(1, sinks.length));
-      for (const m of sinks) {
-        if (load <= 0.01) break;
-        const put = Math.min(marketStockCap(m) - m.stock, load, share);
-        if (put <= 0) continue;
-        m.stock += put;
-        load -= put;
-        t.caravanGoods += put;
-      }
-    }
-  }
-  t.caravanGoods = Math.round(t.caravanGoods);
-  t.caravanCost = Math.round(t.caravanGoods * price);
-  s.stats.goodsDelivered += t.caravanGoods;
-  return t.caravanCost;
-}
-
-setRouteCounter(routesOpened);

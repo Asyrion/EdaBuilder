@@ -156,11 +156,8 @@ export function dailyEconomy(state: GameState): void {
 export function checkMilestones(state: GameState): void {
   const MS = milestonesOf(state);
   const gate = factionOf(state).rules.milestoneGate;
-  // the Tallowkin's lit share must hold the next gate three days running (iteration 54); the counter moves once a day, here
-  const held = factionOf(state).rules.gateHold;
-  if (held) state.litHeld = held(state, state.milestone + 1) ? state.litHeld + 1 : 0;
   // the Vellish Beacon of Eda needs the Lantern of Vell standing and lit: the Crown names no Beacon without one
-  const beaconLit = () => state.faction !== 'vellish' || state.buildings.some((b) => b && b.kind === 'lantern' && b.state === 'ok' && b.lit);
+  const beaconLit = () => state.buildings.some((b) => b && b.kind === 'lantern' && b.state === 'ok' && b.lit);
   const stage0 = stakeStage(state);
   while (state.milestone + 1 < MS.length && state.population >= MS[state.milestone + 1].pop && (!gate || gate(state, state.milestone + 1)) && (state.milestone + 1 < MS.length - 1 || beaconLit())) {
     state.milestone++;
@@ -172,7 +169,6 @@ export function checkMilestones(state: GameState): void {
     if (grant > 0) pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${grant.toLocaleString()} crowns${halls ? `, a tenth more for each of ${halls} lit wonder hall${halls === 1 ? '' : 's'}` : ''})`, 'milestone');
     else pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} The Crown's auditors hold the grant of ${m.grant.toLocaleString()} crowns: its favour stands at ${Math.round(state.crownFavour)}, under ${FAVOUR_AUDIT}.`, 'milestone');
     for (const line of districtUnlockNotes(state.milestone)) pushMessage(state, line, 'milestone');
-    if (held) state.litHeld = 0;
   }
   if (stakeStage(state) !== stage0) {
     forEachBuilding(state, (b) => { if (GROWING_HALLS.includes(b.kind)) markDirtyAround(state, b.x, b.y); });

@@ -102,12 +102,6 @@ export const EDICTS: EdictDef[] = [
     flavor: EDICT_TEXT.drainage.flavor,
     costPerDay: (s) => drainageCost(s), unlock: 3, cityOnly: true,
   },
-  {
-    key: 'deepcut', name: EDICT_TEXT.deepcut.name, faction: ['grimmen'],
-    desc: EDICT_TEXT.deepcut.desc,
-    flavor: EDICT_TEXT.deepcut.flavor,
-    costPerDay: (s) => Math.round(1.5 * s.buildings.filter((b) => b && b.kind === 'hearth' && b.state !== 'ruin' && s.terrain[idx(b.x, b.y)] === Terrain.Hills).length), unlock: 3,
-  },
 ];
 
 export const EDICT_BY_KEY: Record<string, EdictDef> = Object.fromEntries(EDICTS.map((e) => [e.key, e]));

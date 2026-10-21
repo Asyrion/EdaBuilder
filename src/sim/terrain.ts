@@ -11,7 +11,7 @@ export interface TerrainResult {
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean; atoll?: boolean; underhill?: boolean; riverside?: boolean; twinnode?: boolean; fen?: boolean }
+export interface TerrainOptions { nodes?: number; island?: boolean; atoll?: boolean }
 
 /** The shore rule: a land tile (not hills, not a node, not ruins) with water among its eight neighbours. */
 function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
@@ -31,12 +31,7 @@ export const MARSH_FOUNDING = 9;
 const MARSH_NODE = 4;
 export const MARSH_LOW = 0.02;
 export const MARSH_NOISE = 0.12;
-/** The fen start (the Fen-Nex, iteration 96): marsh comes to within FEN_FOUNDING of the founding, and within FEN_REACH of
- *  it the land needs no lowness to be wet, only the noise. */
-export const FEN_FOUNDING = 3;
-export const FEN_REACH = 14;
-export const FEN_NOISE = -0.1;
-function markMarsh(terrain: Uint8Array, height: Float32Array, nz: Noise2D, fx: number, fy: number, nodes: { x: number; y: number }[], fen = false): void {
+function markMarsh(terrain: Uint8Array, height: Float32Array, nz: Noise2D, fx: number, fy: number, nodes: { x: number; y: number }[]): void {
   const dist = new Uint8Array(MAP_W * MAP_H).fill(255);
   let frontier: number[] = [];
   for (let i = 0; i < terrain.length; i++) if (isWater(terrain[i])) { dist[i] = 0; frontier.push(i); }
@@ -58,40 +53,12 @@ function markMarsh(terrain: Uint8Array, height: Float32Array, nz: Noise2D, fx: n
     if (dist[i] < 1 || dist[i] > MARSH_REACH) continue;
     if (t !== Terrain.Shore && t !== Terrain.Grass && t !== Terrain.Meadow && t !== Terrain.Forest) continue;
     const df = Math.hypot(x - fx, y - fy);
-    if (df <= (fen ? FEN_FOUNDING : MARSH_FOUNDING)) continue;
+    if (df <= MARSH_FOUNDING) continue;
     if (nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= MARSH_NODE)) continue;
     const low = height[i] - (MARSH_REACH - dist[i]) * 0.06; // the nearer the water, the wetter
-    if (low > MARSH_LOW && !(fen && df <= FEN_REACH)) continue;
-    if (nz.fbm(x / 9, y / 9, 3) < (fen && df <= FEN_REACH ? FEN_NOISE : MARSH_NOISE)) continue;
+    if (low > MARSH_LOW) continue;
+    if (nz.fbm(x / 9, y / 9, 3) < MARSH_NOISE) continue;
     terrain[i] = Terrain.Marsh;
-  }
-}
-
-/** A two-wide channel from the nearest river or lake water toward the founding, stopping six tiles short, with shore on its banks. */
-function cutChannel(terrain: Uint8Array, fx: number, fy: number): void {
-  let wx = -1; let wy = -1; let wd = Infinity;
-  for (let y = 0; y < MAP_H; y++)
-    for (let x = 0; x < MAP_W; x++) {
-      if (terrain[idx(x, y)] !== Terrain.Water) continue;
-      const d = Math.max(Math.abs(x - fx), Math.abs(y - fy));
-      if (d < wd) { wd = d; wx = x; wy = y; }
-    }
-  if (wx >= 0 && wd > 6) {
-    const carved: [number, number][] = [];
-    const cut = (x: number, y: number) => {
-      if (!inBounds(x, y)) return;
-      const t = terrain[idx(x, y)];
-      if (t === Terrain.LeyNode || t === Terrain.Ruins || isWater(t)) return;
-      terrain[idx(x, y)] = Terrain.Water;
-      carved.push([x, y]);
-    };
-    let x = wx; let y = wy;
-    while (Math.max(Math.abs(x - fx), Math.abs(y - fy)) > 6) {
-      const ddx = fx - x; const ddy = fy - y;
-      if (Math.abs(ddx) >= Math.abs(ddy)) { x += Math.sign(ddx); cut(x, y); cut(x, y + 1); } else { y += Math.sign(ddy); cut(x, y); cut(x + 1, y); }
-    }
-    for (const [cx, cy] of carved)
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (inBounds(cx + dx, cy + dy) && shoreTile(terrain, cx + dx, cy + dy)) terrain[idx(cx + dx, cy + dy)] = Terrain.Shore;
   }
 }
 
@@ -219,37 +186,9 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
   // Founding clearing: make sure there is room to build.
   clearAround(fx, fy, 5);
 
-  // The twin node: a people born beside the Veins founds its city between two. The first buildable tile at Chebyshev
-  // distance 8 in fixed scan order; it keeps the founding's Vein aspect. No rng; other maps are untouched.
-  if (opts.twinnode && opts.nodes !== 1) {
-    let placed = false;
-    for (let dy = -8; dy <= 8 && !placed; dy++)
-      for (let dx = -8; dx <= 8 && !placed; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 8) continue;
-        const x = fx + dx; const y = fy + dy;
-        if (!buildable(x, y) || nodes.some((n) => Math.hypot(n.x - x, n.y - y) < 6)) continue;
-        clearAround(x, y, 2);
-        terrain[idx(x, y)] = Terrain.LeyNode;
-        nodes.push({ x, y, aspect: 'vein' });
-        placed = true;
-      }
-  }
-
-  // The Underhill: a people that builds in stone starts beside a hill ridge (6 to 9 tiles south of the founding).
-  if (opts.underhill) {
-    for (let dy = 5; dy <= 9; dy++)
-      for (let dx = -9; dx <= 9; dx++) {
-        const x = fx + dx;
-        const y = fy + dy;
-        if (!inBounds(x, y) || Math.max(Math.abs(dx), dy) < 6) continue;
-        const i = idx(x, y);
-        if (terrain[i] === Terrain.Grass || terrain[i] === Terrain.Meadow || terrain[i] === Terrain.Forest) terrain[i] = Terrain.Hills;
-      }
-  }
   terrain[idx(fx, fy)] = Terrain.LeyNode;
 
-  if (opts.fen) cutChannel(terrain, fx, fy); // the fen start: water first, then the marsh around it (no rng)
-  markMarsh(terrain, height, new Noise2D(seed + 9091), fx, fy, nodes, !!opts.fen);
+  markMarsh(terrain, height, new Noise2D(seed + 9091), fx, fy, nodes);
 
   // The Ruins of Lukuku: one flagstone cluster in a forest, well away from the founding node.
   for (let tries = 0; tries < 400; tries++) {
@@ -273,11 +212,6 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
     // undo a too-small cluster
     for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (inBounds(x + dx, y + dy) && terrain[idx(x + dx, y + dy)] === Terrain.Ruins) terrain[idx(x + dx, y + dy)] = Terrain.Forest;
   }
-
-  // The riverside: a people that lives on the water founds its city within six tiles of it. When the nearest river
-  // or lake water lies further, a two-wide channel is cut from it toward the founding, stopping at six (never into the
-  // clearing), with shore along its banks. No rng; the Vellish map is untouched.
-  if (opts.riverside) cutChannel(terrain, fx, fy);
 
   // Gloam on the map rim, with noisy pockets.
   for (let y = 0; y < MAP_H; y++)

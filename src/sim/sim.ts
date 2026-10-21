@@ -42,7 +42,7 @@ export interface SimHooks {
 
 /** Full recompute of derived layers (after load or big edits). */
 export function recomputeAll(state: GameState): void {
-  setFenNex(state.fenNex, state.district, factionOf(state).rules.marketStock ?? 1);
+  setFenNex(state.fenNex, state.district);
   updateMana(state);
   updateWater(state);
   updateMiasma(state);
@@ -53,7 +53,7 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  setFenNex(state.fenNex, state.district, factionOf(state).rules.marketStock ?? 1);
+  setFenNex(state.fenNex, state.district);
   setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver || state.pendingEvent) return;
   state.tick++;
@@ -137,7 +137,7 @@ const SEASON_TEXT = [
 function seasonMessage(state: GameState): void {
   const season = seasonOf(state);
   let text = SEASON_TEXT[season];
-  if (season === 3 && !factionOf(state).rules.riverFreezes) text = hasMarvel(state, 'greatweir') ? 'The Hush. Long nights and cold hearths; the Sable rises from the fifth night, and the Great Weir holds it.' : 'The Hush. Long nights and cold hearths; from the fifth night the Sable rises and the homes on the bank lose heart. Bargemen bail; a Great Weir would hold it.';
+  if (season === 3 && !factionOf(state).rules.riverFreezes) text = 'The Hush. Long nights and cold hearths; from the fifth night the Sable rises and the homes on the bank lose heart.';
   if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${text}`, season === 3 ? 'warn' : 'milestone', true);
   if (state.dirtyChunks) for (let i = 0; i < 256; i++) state.dirtyChunks.add(i);
 }

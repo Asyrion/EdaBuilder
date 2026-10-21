@@ -109,7 +109,6 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
 export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, x1: number, y1: number): ActionResult {
   if (zone !== Zone.None && !isZoneUnlocked(state.milestone, zone)) return { ok: false, reason: 'Not yet unlocked' };
   const rules = factionOf(state).rules;
-  if (zone === Zone.Craft && rules.noCraft) return { ok: false, reason: `The ${factionOf(state).people} make nothing: goods come by caravan` };
   const ax = Math.min(x0, x1);
   const bx = Math.max(x0, x1);
   const ay = Math.min(y0, y1);
@@ -121,7 +120,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || (t === Terrain.Hills && !rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || (t === Terrain.Marsh && !(rules.stiltHomes && (zone === Zone.Hearth || zone === Zone.None)))) continue; // the Fen-Nex raise homes on stilts in the marsh (iteration 96)
+      if (isWater(t) || (t === Terrain.Hills && !rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
       if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];
@@ -214,15 +213,6 @@ export function scatterDust(state: GameState, x: number, y: number): ActionResul
   return { ok: true, cost: 0 };
 }
 
-/** The Great Weir's sluice: open makes 90 mana and floods the bank below it in the Thaw. The reason it cannot be worked, or null. */
-export function toggleSluice(state: GameState, id: number): string | null {
-  const b = state.buildings.find((x) => x && x.id === id);
-  if (!b || b.kind !== 'greatweir') return 'No weir here';
-  if (b.state !== 'ok') return 'Finish it first';
-  b.sluice = !b.sluice;
-  return null;
-}
-
 export function setTax(state: GameState, zone: keyof GameState['taxRates'], rate: number): void {
   state.taxRates[zone] = Math.max(0, Math.min(30, Math.round(rate)));
 }
@@ -298,12 +288,11 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
   }
 }
 
-export type TerraformOp = 'clear' | 'plant' | 'level' | 'delve';
+export type TerraformOp = 'clear' | 'plant' | 'level';
 export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string; faction?: FactionId[] }> = {
   clear: { name: 'Clear forest', cost: 40, unlock: 0, desc: 'Fell a forest tile to grass. Woodcutters are cheap; glimwood is not replanted by itself.' },
   plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little, hide war-tigers, and shade the Gloam\'s approach not at all.' },
   level: { name: 'Level hills', cost: 220, unlock: 4, desc: 'Grimmen crews cut a hills tile down to grass. Slow, loud, and the only way to build a 2x2 where the rock was.' },
-  delve: { name: 'Delve', cost: 160, unlock: 2, faction: ['grimmen'], desc: 'Grimmen cutters dig a grass or meadow tile down and heap the rock: hill land for halls and seeps, and a stone counted toward the next depth.' },
 };
 
 /** Terraforming: one tile at a time. */
@@ -320,12 +309,11 @@ export function terraform(state: GameState, op: TerraformOp, x: number, y: numbe
   if (op === 'clear' && t !== Terrain.Forest) return { ok: false, reason: 'No forest here' };
   if (op === 'plant' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be planted' };
   if (op === 'level' && t !== Terrain.Hills) return { ok: false, reason: 'No hills here' };
-  if (op === 'delve' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be delved' };
   if (state.treasury < def.cost) return { ok: false, reason: 'Not enough crowns' };
   state.treasury -= def.cost;
-  state.terrain[i] = op === 'plant' ? Terrain.Forest : op === 'delve' ? Terrain.Hills : Terrain.Grass;
+  state.terrain[i] = op === 'plant' ? Terrain.Forest : Terrain.Grass;
   state.stats.terraformed++;
-  if (op === 'level' || op === 'delve') state.stats.stoneCut++;
+  if (op === 'level') state.stats.stoneCut++;
   markDirtyAround(state, x, y);
   return { ok: true, cost: def.cost };
 }

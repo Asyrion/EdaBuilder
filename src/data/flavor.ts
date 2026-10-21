@@ -20,7 +20,7 @@ export const FLAVOR_CHATTER: Chatter[] = [
   { text: 'Tobin says the tithe is too high. Tobin says this every day.', when: (s) => s.taxRates.hearth > 12 },
   { text: 'No tithe on the hearths this season? The Warden-Reeve must have found a Vein of gold.', when: (s) => s.taxRates.hearth < 5 },
   { text: 'Wick the enchanter sold a floating cart to a man from Vell-on-Sable. It floated off without him.', when: (s) => s.educated > 0.3 },
-  { text: 'The Veshari drill on the square every dawn. The fountain has never been so full.', when: (s) => s.coverage.fire.some((v) => v > 0) },
+  { text: 'The water-mages drill on the square every dawn. The fountain has never been so full.', when: (s) => s.coverage.fire.some((v) => v > 0) },
   { text: 'They say in Vell-on-Sable that our valley is a real wardlight now. They say it with a sniff.', when: (s) => s.milestone >= 5 },
   { text: 'A carter waited an hour on the bridge. He composed a song about it. It is not a kind song.', when: (s) => s.trafficSmooth.some((v) => v > 180) },
   { text: 'The Academy took three Tallowkin and a Grimmen girl this Thaw. The girl reads leystone like a book.', when: (s) => s.coverage.school.some((v) => v > 0) },

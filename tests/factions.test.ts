@@ -9,13 +9,13 @@ import { checkMilestones } from '../src/sim/economy';
 import { updateCoverage, updateLandValue } from '../src/sim/services';
 import { updateMana } from '../src/sim/networks';
 import { createScenario } from '../src/sim/scenario';
-import { serialize, deserialize } from '../src/sim/save';
+import { SaveVersionError, serialize, deserialize } from '../src/sim/save';
 import { Zone } from '../src/sim/types';
 import { flatten } from './helpers';
 
-// a throwaway people to prove every rule point
+// a throwaway people to prove every rule point: the seam another people would plug into (the scope reset keeps it, docs/PARKED.md)
 FACTIONS.test = {
-  id: 'grimmen', name: 'The Test Folk', people: 'Testish', playable: true, lore: 'test',
+  id: 'test' as never, name: 'The Test Folk', people: 'Testish', playable: true, lore: 'test',
   milestones: MILESTONES.map((m, i) => ({ ...m, name: `Depth ${i}` })),
   deny: ['garden'], replaces: { well: 'cistern' },
   rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, wallWard: 2, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false, milestoneGate: (_s, next) => next < 2 },
@@ -44,6 +44,12 @@ describe('The faction scaffold', () => {
     expect(r.faction).toBe('vellish');
     const o = JSON.parse(serialize(s)); delete o.faction;
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).faction).toBe('vellish');
+  });
+
+  it('a charter of a parked people is refused with a reason, not loaded half-built (scope reset, phase 1a)', () => {
+    const o = JSON.parse(serialize(town())); o.faction = 'grimmen';
+    expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(SaveVersionError);
+    expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(/parked/);
   });
 
   it('every rule point reads the people: hills, ward, mana, crowns, milestones, unlocks', () => {

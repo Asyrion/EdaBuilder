@@ -1,7 +1,7 @@
 /** Story events with choices. Fired every ~18-30 days when their condition holds; the game pauses until answered. */
 import { BUILDING_BY_KEY, isDepot } from './catalog';
 import { bodyOf, ensureShoals, shoalCap } from './water';
-import { moorings, factionOf } from '../data/factions';
+import { factionOf } from '../data/factions';
 import { DISTRICT_NAMES, Terrain, Zone, type Building, type DragonLine, type GameState } from './types';
 import { COUNCIL_EVENTS } from './guilds';
 import { LINE_INFO, STAGE_NAMES, addEgg, dueReturn, fightBout, freeCradle, homeReturn, isCradle, payReturn, refuseReturn, ringChampion, RETURN_TRIBUTE, RETURN_GOODS } from './wyrmcraft';
@@ -337,7 +337,7 @@ const EGGS: EventDef[] = [
     text: EVENT_TEXT.egg_first.text,
     when: (s) => s.buildings.some((b) => b && isCradle(b.kind) && b.state === 'ok') && s.dragons.length === 0,
     choices: [
-      { label: EVENT_TEXT.egg_first.choices[0].label, desc: (s) => `${s.faction === 'veshari' ? 'A tide' : s.faction === 'fennex' ? 'A fen' : 'An ember'} egg goes into your cradle.`, apply: (s) => { const d = addEgg(s, s.faction === 'veshari' ? 'tide' : s.faction === 'fennex' ? 'fen' : 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
+      { label: EVENT_TEXT.egg_first.choices[0].label, desc: () => 'An ember egg goes into your cradle.', apply: (s) => { const d = addEgg(s, 'ember'); return d ? `The egg hums the moment it touches the cradle stones. The tamers call it ${d.name}.` : 'The cradle is full; the rider takes the egg on to the next wardlight.'; } },
       { label: EVENT_TEXT.egg_first.choices[1].label, desc: EVENT_TEXT.egg_first.choices[1].desc!, apply: (s) => { s.treasury += 800; return 'The rider bows, leaves a purse, and rides on with the crate.'; } },
     ],
   },
@@ -402,7 +402,7 @@ const VISITORS: EventDef[] = [
   {
     id: 'fennex', title: EVENT_TEXT.fennex.title, once: true,
     text: EVENT_TEXT.fennex.text,
-    when: (s) => s.faction !== 'fennex' && s.milestone >= 4 && s.population > 250, // a Fen-Nex city does not receive the Fen-Nex as visitors (iteration 96)
+    when: (s) => s.milestone >= 4 && s.population > 250,
     choices: [
       { label: EVENT_TEXT.fennex.choices[0].label, desc: EVENT_TEXT.fennex.choices[0].desc, apply: (s) => { const rng = rngOf(s); const honest = rng.chance(0.5); commitRng(s, rng); if (honest) { s.treasury += 3000; return 'Honest, this time. Salts, dyes and a set of scales that weigh true, paid for in coin that stays coin.'; } s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: -3, until: s.day + 7, label: 'Swindled by foxes' }); return 'The coin turns to leaves by morning. The Fen-Nex are already two valleys away, laughing.'; } },
       { label: EVENT_TEXT.fennex.choices[1].label, desc: EVENT_TEXT.fennex.choices[1].desc, apply: (s) => { const d = marketDistrict(s); if (!d) { s.treasury += 500; return 'No painted district holds a market. The foxes shrug and trade honestly, for once: +500 crowns.'; } s.fenNex = d; pushMessage(s, `${districtName(s, d)} is the Fen-Nex quarter now: no tithe from its markets, twice the shelves.`, 'milestone', true); return `They move into ${districtName(s, d)} overnight. The market signs are already in two scripts.`; } },
@@ -552,111 +552,6 @@ export const WYRM_EVENTS: EventDef[] = [
     choices: [
       { label: EVENT_TEXT.egg_vein.choices[0].label, desc: EVENT_TEXT.egg_vein.choices[0].desc, apply: (s) => { s.wyrm.fedDays = 0; const d = addEgg(s, 'vein'); if (d) return `The vein egg is carried to the cradle under guard. The tamers call it ${d.name}.`; s.treasury += 6000; return 'No cradle had room. The Crown pays 6,000 crowns and sends a warded coach for it.'; } },
       { label: EVENT_TEXT.egg_vein.choices[1].label, desc: EVENT_TEXT.egg_vein.choices[1].desc, apply: (s) => { s.wyrm.fedDays = 0; s.modifiers.push({ kind: 'happiness', value: 5, until: s.day + 20, label: 'The wyrm is grateful' }); return 'The wyrm curls around it. Folk come to the edge of the lair to hear the two notes together.'; } },
-    ],
-  },
-];
-
-/** The Grimmen's own tales: the Underking's envoy, a collapse, a vein of true leystone. Only a Grimmen city hears them. */
-function hillBuildings(s: GameState): Building[] {
-  const out: Building[] = [];
-  forEachBuilding(s, (b) => { if (b.state === 'ok' && s.terrain[idx(b.x, b.y)] === Terrain.Hills) out.push(b); });
-  return out;
-}
-export const GRIMMEN: EventDef[] = [
-  {
-    id: 'underking_envoy', title: EVENT_TEXT.underking_envoy.title,
-    text: EVENT_TEXT.underking_envoy.text,
-    when: (s) => s.faction === 'grimmen' && s.milestone >= 3,
-    choices: [
-      { label: EVENT_TEXT.underking_envoy.choices[0].label, desc: EVENT_TEXT.underking_envoy.choices[0].desc, apply: (s) => { if (s.treasury < 1500) return 'The purse is too light. The envoy writes it down and goes.'; s.treasury -= 1500; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 15, label: 'The deep holds trade' }); return 'The envoy counts it twice and bows once. Deep-hold salt and lamp-oil come up the ramp for a season.'; } },
-      { label: EVENT_TEXT.underking_envoy.choices[1].label, desc: EVENT_TEXT.underking_envoy.choices[1].desc, apply: (s) => { const n = takeGoods(s, 30); s.modifiers.push({ kind: 'happiness', value: 2, until: s.day + 10, label: 'The deep holds fed' }); return `${n} goods go down the ramp on the wardens' backs. The envoy says the Underking will remember the weight.`; } },
-      { label: EVENT_TEXT.underking_envoy.choices[2].label, desc: EVENT_TEXT.underking_envoy.choices[2].desc, apply: (s) => { s.modifiers.push({ kind: 'happiness', value: -4, until: s.day + 12, label: 'The deep holds shut' }); return 'The envoy does not argue. The deep-hold doors are shut by nightfall, and the Grimmen of the Underhill feel the dark behind them.'; } },
-    ],
-  },
-  {
-    id: 'collapse', title: EVENT_TEXT.collapse.title,
-    text: EVENT_TEXT.collapse.text,
-    when: (s) => s.faction === 'grimmen' && hillBuildings(s).length >= 4,
-    choices: [
-      { label: EVENT_TEXT.collapse.choices[0].label, desc: EVENT_TEXT.collapse.choices[0].desc, apply: (s) => { if (s.treasury < 600) return 'There is no coin for timber. The crews do what they can with their hands, which is nothing.'; s.treasury -= 600; return 'Timber and prayer. The crack stops at the third prop and the street holds.'; } },
-      { label: EVENT_TEXT.collapse.choices[1].label, desc: EVENT_TEXT.collapse.choices[1].desc, apply: (s) => { const rng = rngOf(s); const list = hillBuildings(s).filter((b) => BUILDING_BY_KEY[b.kind].category === 'zone'); if (!list.length) { commitRng(s, rng); s.stats.stoneCut += 2; return 'The gallery falls under empty ground. The cutters carry out the stone and count it.'; } const b = rng.pick(list); commitRng(s, rng); b.state = 'ruin'; b.stateDays = 0; b.residents = 0; b.workers = 0; markDirty(s, b.x, b.y); s.stats.stoneCut += 2; return `The ${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) goes down into the dark with a sound like a door. The rubble is good stone.`; } },
-    ],
-  },
-  {
-    id: 'true_leystone', title: EVENT_TEXT.true_leystone.title, once: true,
-    text: EVENT_TEXT.true_leystone.text,
-    when: (s) => s.faction === 'grimmen' && s.buildings.some((b) => b && b.kind === 'mine' && b.state === 'ok'),
-    choices: [
-      { label: EVENT_TEXT.true_leystone.choices[0].label, desc: EVENT_TEXT.true_leystone.choices[0].desc, apply: (s) => { let n = 0; forEachBuilding(s, (b) => { if (b.kind === 'mine' && b.state === 'ok') { b.stock = Math.min(60, b.stock + 30); n++; } }); s.materials.scale += 3; return `${n} mine${n === 1 ? '' : 's'} fill with true leystone. The enchanters will not sleep this week.`; } },
-      { label: EVENT_TEXT.true_leystone.choices[1].label, desc: EVENT_TEXT.true_leystone.choices[1].desc, apply: (s) => { s.treasury += 2500; return "The Crown's assessor arrives with a purse and a very long lease. The seam is theirs now, and the crowns are yours."; } },
-      { label: EVENT_TEXT.true_leystone.choices[2].label, desc: EVENT_TEXT.true_leystone.choices[2].desc, apply: (s) => { s.stats.trueVeins++; return 'The miners wall the seam up with their own hands. That night every spire in the Underhill burns a shade brighter.'; } },
-    ],
-  },
-];
-
-/** The Veshari's own tales: the eggs of the water lines, and the bargemen. */
-function tidePool(s: GameState): Building | undefined {
-  return s.buildings.find((b) => b && b.kind === 'tidepool' && b.state === 'ok') ?? undefined;
-}
-export const VESHARI: EventDef[] = [
-  {
-    id: 'tide_net', title: EVENT_TEXT.tide_net.title, once: true,
-    text: EVENT_TEXT.tide_net.text,
-    when: (s) => s.faction === 'veshari' && !!tidePool(s) && s.dragons.length < 6,
-    choices: [
-      { label: EVENT_TEXT.tide_net.choices[0].label, desc: EVENT_TEXT.tide_net.choices[0].desc, apply: (s) => { const d = addEgg(s, 'tide'); if (d) return `${d.name} is laid in the pool and the fisher gets a landing named after her.`; s.treasury += 2500; return "No pool had room. The Crown's assessor pays 2,500 crowns and the fisher gets a drink."; } },
-      { label: EVENT_TEXT.tide_net.choices[1].label, desc: EVENT_TEXT.tide_net.choices[1].desc, apply: (s) => { s.treasury += 2500; return 'The assessor wraps it in wet cloth and rides for Vell-on-Sable. 2,500 crowns.'; } },
-      { label: EVENT_TEXT.tide_net.choices[2].label, desc: EVENT_TEXT.tide_net.choices[2].desc, apply: (s) => { s.modifiers.push({ kind: 'happiness', value: 3, until: s.day + 20, label: 'The egg in the net' }); return 'They set it on the pool wall and do not hatch it. Folk come down to the water to look.'; } },
-    ],
-  },
-  {
-    id: 'storm_egg', title: EVENT_TEXT.storm_egg.title, once: true,
-    text: EVENT_TEXT.storm_egg.text,
-    when: (s) => s.faction === 'veshari' && (s.stats.stormWarps > 0 || s.storms.length > 0) && s.dragons.length < 6,
-    choices: [
-      { label: EVENT_TEXT.storm_egg.choices[0].label, desc: EVENT_TEXT.storm_egg.choices[0].desc, apply: (s) => { const d = addEgg(s, 'storm'); if (d) return `${d.name} is laid in the pool. The water around it crackles for a week.`; s.treasury += 3000; return "No pool had room. The Crown's assessor pays 3,000 crowns and keeps his gloves on."; } },
-      { label: EVENT_TEXT.storm_egg.choices[1].label, desc: EVENT_TEXT.storm_egg.choices[1].desc, apply: (s) => { s.treasury += 3000; return 'The assessor pays 3,000 crowns and carries it in a lead box. 3,000 crowns.'; } },
-      { label: EVENT_TEXT.storm_egg.choices[2].label, desc: EVENT_TEXT.storm_egg.choices[2].desc, apply: (s) => { const p = tidePool(s); startStorm(s, p ? p.x : s.founding.x, p ? p.y : s.founding.y); return 'The egg splits in the shallows and the sky splits with it. Nobody sees what came out.'; } },
-    ],
-  },
-  {
-    id: 'bargemen_strike', title: EVENT_TEXT.bargemen_strike.title,
-    text: EVENT_TEXT.bargemen_strike.text,
-    when: (s) => s.faction === 'veshari' && moorings(s) >= 4,
-    choices: [
-      { label: EVENT_TEXT.bargemen_strike.choices[0].label, desc: EVENT_TEXT.bargemen_strike.choices[0].desc, apply: (s) => { s.treasury -= 900; return 'The purse goes round the landings. By dawn the poles are back in the water. 900 crowns.'; } },
-      { label: EVENT_TEXT.bargemen_strike.choices[1].label, desc: EVENT_TEXT.bargemen_strike.choices[1].desc, apply: (s) => { s.modifiers.push({ kind: 'barges', value: -1, until: s.day + 8, label: 'The bargemen strike' }); return 'They sit. The river goes on without them, which they find insulting. Eight days later they are back, poorer.'; } },
-    ],
-  },
-];
-
-/** The Tallowkin's tales (iteration 52). */
-export const TALLOWKIN: EventDef[] = [
-  {
-    id: 'wrights_strike', title: EVENT_TEXT.wrights_strike.title,
-    text: EVENT_TEXT.wrights_strike.text,
-    when: (s) => s.faction === 'tallowkin' && s.buildings.filter((b) => b && b.kind === 'spire' && b.state === 'ok').length >= 4,
-    choices: [
-      { label: EVENT_TEXT.wrights_strike.choices[0].label, desc: EVENT_TEXT.wrights_strike.choices[0].desc, apply: (s) => { s.treasury -= 700; return 'The purse goes round the lodge. By dawn there is blue chalk on every wall again. 700 crowns.'; } },
-      { label: EVENT_TEXT.wrights_strike.choices[1].label, desc: EVENT_TEXT.wrights_strike.choices[1].desc, apply: (s) => { s.modifiers.push({ kind: 'wrights', value: 0.5, until: s.day + 10, label: "The spire-wrights' strike" }); return 'They sit. Whoever sets a shard in the next ten days pays a stranger to do it, and strangers charge.'; } },
-    ],
-  },
-  {
-    id: 'surge_wickhouses', title: EVENT_TEXT.surge_wickhouses.title, once: true,
-    text: EVENT_TEXT.surge_wickhouses.text,
-    when: (s) => s.faction === 'tallowkin' && s.stats.surgesTotal >= 1 && s.buildings.filter((b) => b && b.kind === 'hearth' && b.state === 'ok' && b.lit).length >= 10,
-    choices: [
-      { label: EVENT_TEXT.surge_wickhouses.choices[0].label, desc: EVENT_TEXT.surge_wickhouses.choices[0].desc, apply: (s) => { s.treasury -= 300; s.modifiers.push({ kind: 'happiness', value: 4, until: s.day + 6, label: 'The candles relit' }); return 'The sextons go door to door with snuffers and new tallow. The city sleeps. 300 crowns.'; } },
-      { label: EVENT_TEXT.surge_wickhouses.choices[1].label, desc: EVENT_TEXT.surge_wickhouses.choices[1].desc, apply: (s) => { s.modifiers.push({ kind: 'mana', value: 0.15, until: s.day + 6, label: 'The candles burn blue' }); const lit = s.buildings.filter((b) => b && b.kind === 'hearth' && b.state === 'ok' && b.lit) as Building[]; const rng = rngOf(s); for (let k = 0; k < 2 && lit.length; k++) { const b = lit.splice(rng.int(lit.length), 1)[0]; igniteBuilding(s, b); } commitRng(s, rng); return 'They burn. For six days the ley runs high and blue through every wick; two houses burn with it.'; } },
-    ],
-  },
-  {
-    id: 'candle_child', title: EVENT_TEXT.candle_child.title, once: true,
-    text: EVENT_TEXT.candle_child.text,
-    when: (s) => s.faction === 'tallowkin' && s.milestone >= 3,
-    choices: [
-      { label: EVENT_TEXT.candle_child.choices[0].label, desc: EVENT_TEXT.candle_child.choices[0].desc, apply: (s) => { s.stats.trueVeins++; return 'She reads. The Veins answer with a flow the spire-wrights have no chalk for. Every node gives ten more, for good.'; } },
-      { label: EVENT_TEXT.candle_child.choices[1].label, desc: EVENT_TEXT.candle_child.choices[1].desc, apply: (s) => { s.educatedFloor = Math.min(0.2, s.educatedFloor + 0.02); return 'She reads at the shrine instead, where the words are older and the fire smaller. The children who sit with her learn.'; } },
     ],
   },
 ];
@@ -828,7 +723,7 @@ function merchantVisit(s: GameState): void {
   s.merchant.visits++;
 }
 
-export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, ...HEART_EVENTS, RIOT, DRAGON_RETURNS];
+export const ALL_EVENTS: EventDef[] = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...CALENDAR, ...WYRM_EVENTS, ...COUNCIL_EVENTS, ...HEART_EVENTS, RIOT, DRAGON_RETURNS];
 
 /** Fires the calendar event of today, if any (once per year). */
 export function maybeFireCalendar(s: GameState): void {
@@ -904,7 +799,7 @@ export function maybeFireEvent(s: GameState): void {
   const recent = s.firedEvents.slice(-4).map((f) => f.split(':')[0]);
   const fired = (id: string) => s.firedEvents.some((f) => f.split(':')[0] === id);
   // the caravan keeps its own rhythm (maybeFireCaravan) and is never drawn here
-  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN, ...GRIMMEN, ...VESHARI, ...TALLOWKIN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
+  const pool = [...EVENTS, ...CHAINS, ...EGGS, ...VISITORS, ...CROWN].filter((e) => e.id !== 'caravan' && e.when(s) && !recent.includes(e.id) && !(e.once && fired(e.id)));
   if (pool.length) {
     const e = pool.find((x) => x.priority) ?? rng.pick(pool);
     s.pendingEvent = { id: e.id, title: e.title, text: textOf(e, s), choices: e.choices.map((c) => ({ label: c.label, desc: descOf(c, s) })) };

@@ -7,7 +7,8 @@ import { modifierSum } from './edicts';
 import { treeStage, worldTree } from './growth';
 import { wyrmGuards } from './wyrm';
 import { districtTiles } from './wyrmcraft';
-import { factionOf, MOORINGS } from '../data/factions';
+import { factionOf } from '../data/factions';
+import { MOORINGS } from './catalog';
 
 export const ASPECT_RADIUS = 10;
 export const ASPECTS: DragonLine[] = ['ember', 'bone', 'glim', 'vein', 'sky', 'grey', 'tide', 'storm'];
@@ -151,22 +152,16 @@ export function pressureWord(p: number): string {
 export function riverFrozen(s: GameState): boolean {
   return (factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5) || modifierSum(s, 'freeze') > 0; // or forced from the dev panel (iteration 55)
 }
-/** The Hush flood: a people whose river never freezes sees it rise instead, from the fifth day, unless a Great Weir stands (a forced flood too). */
+/** The Hush flood: a people whose river never freezes sees it rise instead, from the fifth day (a forced flood too: the dev panel).
+ *  The Veshari and their Great Weir are parked (scope reset phase 1a); the Vellish river freezes. */
 export function flooding(s: GameState): boolean {
-  return ((!factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5) || modifierSum(s, 'flood') > 0) && !hasMarvel(s, 'greatweir');
+  return (!factionOf(s).rules.riverFreezes && seasonOf(s) === 3 && s.day % DAYS_PER_SEASON >= 5) || modifierSum(s, 'flood') > 0;
 }
-/** Buildings the flood does not touch: moorings, tide-wells, mills and the Weir live on the water. */
-export const FLOODPROOF = [...MOORINGS, 'tidewell', 'torrentmill', 'greatweir'];
-/** The Great Weir's sluice stands open: 90 mana instead of 45, and in the Thaw from day 5 the bank below it floods (iteration 53). */
-export const SLUICE_FLOOD_REACH = 30;
-export function sluiceFlooding(s: GameState): boolean {
-  return !factionOf(s).rules.riverFreezes && seasonOf(s) === 0 && s.day % DAYS_PER_SEASON >= 5 && s.buildings.some((b) => b && b.kind === 'greatweir' && b.state === 'ok' && !!b.sluice);
-}
-/** Is this tile in a flood today: the Hush flood (city-wide) or the open sluice's Thaw flood within reach of the Weir. Callers check the bank distance. */
-export function floodedAt(s: GameState, x: number, y: number): boolean {
-  if (flooding(s)) return true;
-  if (!sluiceFlooding(s)) return false;
-  return s.buildings.some((b) => b && b.kind === 'greatweir' && b.state === 'ok' && !!b.sluice && Math.hypot(b.x - x, b.y - y) <= SLUICE_FLOOD_REACH);
+/** Buildings the flood does not touch: moorings and mills live on the water. */
+export const FLOODPROOF = [...MOORINGS, 'torrentmill'];
+/** Is this tile in a flood today: the Hush flood is city-wide. Callers check the bank distance. */
+export function floodedAt(s: GameState, _x: number, _y: number): boolean {
+  return flooding(s);
 }
 /** The wonder halls standing and lit (or needing no mana): each delights the whole city and lifts the next grant (iteration 53). */
 export function litWonders(s: GameState): Building[] {

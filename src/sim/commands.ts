@@ -4,7 +4,7 @@
  * bump, its undo snapshot) so live play is unchanged. A command is stamped with the tick it came in after; a replay applies the
  * commands of each tick before running the next, and the sim's determinism does the rest.
  */
-import { buildRoad, buildWall, bulldoze, callRain, paintDistrict, paintZone, placeBuilding, placeGate, restoreSnapshot, scatterDust, setTax, takeSnapshot, terraform, toggleSluice, type Snapshot, type TerraformOp } from './actions';
+import { buildRoad, buildWall, bulldoze, callRain, paintDistrict, paintZone, placeBuilding, placeGate, restoreSnapshot, scatterDust, setTax, takeSnapshot, terraform, type Snapshot, type TerraformOp } from './actions';
 import { bumpRoadVersion } from './agents';
 import { setGolemDuty } from './beasts';
 import { toggleSkyDockWyvern } from './vehicles';
@@ -16,7 +16,7 @@ import { repayLoan, takeLoan } from './economy';
 import { setEdict } from './edicts';
 import { resolveEvent } from './events';
 import { charterGuilds, type GuildId } from './guilds';
-import { serialize } from './save';
+import { SaveVersionError, parkedPeopleMessage, serialize } from './save';
 import { buySector } from './sectors';
 import { recomputeAll, tick } from './sim';
 import { createChallenge, createScenario } from './scenario';
@@ -92,7 +92,6 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   nest: (s, _r, [id]) => { const why = lineNest(s, id); return { ok: !why, reason: why }; },
   burnWyrmfire: (s, _r, [on]) => { s.burnWyrmfire = !!on; return { ok: true }; },
   skydock: (s) => { const why = toggleSkyDockWyvern(s); return { ok: !why, reason: why }; },
-  sluice: (s, _r, [id]) => { const why = toggleSluice(s, id); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   golem: (s, _r, [id, duty, target]) => { const why = setGolemDuty(s, id, duty, target ?? -1); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   quarry: (s, _r, [id, q]) => { const x = b(s, id); return { ok: !!x && setQuarry(s, x, q as 'hounds' | WildSpecies) }; },
   tale: (s, _r, [choice, amount]) => { resolveEvent(s, choice, amount ?? undefined); return { ok: true }; },
@@ -142,6 +141,7 @@ export function checksum(s: GameState): string {
 
 /** A new charter from a header, with the module state a new game resets (the path cache, the dev's instant building). */
 export function stateFromHeader(h: ReplayHeader): GameState {
+  if (h.faction !== undefined && h.faction !== 'vellish') throw new SaveVersionError(parkedPeopleMessage(String(h.faction)));
   const s = h.scenario === 'daily' ? createChallenge(h.name, h.challenge) : h.scenario === 'valley' ? createGame(h.seed, h.name, 'valley', h.faction) : createScenario(h.seed, h.name, h.scenario as Scenario, h.faction);
   construction.instant = false;
   clearAuraCache();

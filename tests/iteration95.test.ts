@@ -22,7 +22,7 @@ import { tick } from '../src/sim/sim';
 import { MAP_H, MAP_W, RoadType, TICKS_PER_DAY, Terrain, idx, isWater, type Building, type GameState } from '../src/sim/types';
 import type { FactionId } from '../src/data/factions';
 
-const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
+const PEOPLES: FactionId[] = ['vellish'];
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
 const fnv = (a: ArrayLike<number>, h = 0x811c9dc5) => { for (let i = 0; i < a.length; i++) h = Math.imul(h ^ a[i], 16777619) >>> 0; return h; };
 
@@ -239,7 +239,7 @@ describe('Sea-gales in the Hush', () => {
 
 describe('Saves, replays and the bot on the Atoll', () => {
   it('a save of an Atoll loads as an Atoll, and a save from before the gales loads with the counter at zero', () => {
-    const s = createScenario(42, 'Save', 'atoll', 'grimmen');
+    const s = createScenario(42, 'Save', 'atoll');
     const raw = JSON.parse(serialize(s));
     delete raw.stats.galeDays;
     const r = deserialize(JSON.stringify(raw), (seed) => createGame(seed));
@@ -250,7 +250,7 @@ describe('Saves, replays and the bot on the Atoll', () => {
   });
 
   it('a recorded Atoll charter replays to the same state', () => {
-    const header: ReplayHeader = { seed: 95, name: 'Isleby', scenario: 'atoll', faction: 'veshari' };
+    const header: ReplayHeader = { seed: 95, name: 'Isleby', scenario: 'atoll', faction: 'vellish' };
     const s = stateFromHeader(header);
     const r = new CommandRunner(s, header);
     const f = s.founding;
@@ -265,7 +265,7 @@ describe('Saves, replays and the bot on the Atoll', () => {
     expect(v.matches).toBe(true);
   }, 120_000);
 
-  it('the bot plays each people\'s Atoll for thirty days without error and grows past the Village', () => {
+  it('the bot plays the Atoll for thirty days without error and grows past the Village', () => {
     for (const people of PEOPLES) {
       const s = createScenario(42, 'Botwick', 'atoll', people);
       const bot = new Bot(s);
@@ -276,20 +276,6 @@ describe('Saves, replays and the bot on the Atoll', () => {
     }
   }, 300_000);
 
-  it('the Veshari\'s founding stands by the shoal, and their bot builds tide-wells (seed 44 once left them dry at Hamlet)', () => {
-    for (const seed of [42, 43, 44, 45]) {
-      const s = createScenario(seed, 'Botwick', 'atoll', 'veshari');
-      const f = s.nodes[0];
-      let near = false;
-      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if (s.terrain[idx(f.x + dx, f.y + dy)] === Terrain.Water) near = true;
-      expect(near, `seed ${seed}`).toBe(true);
-    }
-    const s = createScenario(44, 'Botwick', 'atoll', 'veshari');
-    const bot = new Bot(s);
-    run(s, TICKS_PER_DAY * 20, { onDay: () => bot.step() });
-    expect(s.buildings.filter((b) => b && b.kind === 'tidewell').length).toBeGreaterThan(3);
-    expect(s.population).toBeGreaterThan(300);
-  }, 120_000);
 });
 
 describe('The Atoll\'s text', () => {

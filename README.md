@@ -18,11 +18,9 @@ npm run preview    # serve the production build
 npm test           # vitest: terrain, actions, networks, sim, hazards, creatures, wyrmcraft, quests, save/load
 npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
-npx tsx scripts/balance.ts 42 120 - grimmen   # the same bot playing the Grimmen
-npx tsx scripts/balance.ts 42 120 - veshari   # or the Veshari
 npx tsx scripts/balance.ts 42 150 - vellish roll=1   # the same run with one extra roll on day 10: another draw
-npx tsx scripts/table.ts --compare origin/main   # the balance table: 4 peoples × 3 seeds × 2 draws, paired, with a verdict
-npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until each people sees a tenth
+npx tsx scripts/table.ts --compare origin/main   # the balance table: 3 seeds × 2 draws, paired, with a verdict
+npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim change: draws added until the floor is a tenth
                                                             # (runs cached in balance/cache by the sim's files; commit it)
 npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
 npx tsx scripts/questCensus.ts 42 200 vellish valley   # which Charter tasks a bot game completes, and which never
@@ -80,7 +78,7 @@ main node.
    they touch. Draw more than the Veins give and the spires flicker; overdraw for five days
    and a **wild surge** warps buildings into ruins. Thrum Fonts and a Ley Nexus help later.
 4. **Water** — **Wells** water 8 tiles (10 near water); **Cisterns** water 12 but need mana.
-5. **Services** — Watch (unrest, restless dead), Healer's Shrine (health), Veshari Hall
+5. **Services** — Watch (unrest, restless dead), Healer's Shrine (health), Water-Mages' Hall
    (fire brigade), Shrine of Aume (happiness), Academy (schooling), **Boneyard/Ossuary**
    (deathcare: unquieted dead rise as the **restless**), **Ward Lantern** (burns back the
    Gloam), Garden and Market Square (land value).
@@ -226,7 +224,7 @@ Charter as `.json`.
   the marsh nearest the city to meadow, three tiles a day, for 30 crowns a day and a little more
   for every ten marsh tiles left.
 - Marsh-wyrms: in Bloom eel-like wyrms come up the river and the lake. One may lair under a bridge,
-  and the carts on it crawl; a Veshari Hall covering the bridge drives it off, and none lairs
+  and the carts on it crawl; a Water-Mages' Hall covering the bridge drives it off, and none lairs
   within ten tiles of a Quay. A wyrm's nest by a Quay gives the city a tide egg each Bloom.
 - The Patagoi Atoll: six isles on a 128 × 128 sea, a ley node on each, the founding node on the great
   isle. Three near isles lie over shallow bars (a bridge, at four times a road's price); two far isles
@@ -279,28 +277,10 @@ Charter as `.json`.
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
   Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
-- Peoples: the city belongs to a people chosen on the title screen. The Vellish are the
-  default; the Grimmen of the Underhill build in stone on the hills, drink from seeps, hold
-  the Gloam with standing stones, hatch only the stone lines, bind the Concord Wardens at a
-  Forge-Temple, cut the Underking's Seat as their wonder, follow their own Underhill chapter
-  and tales, start beside a hill ridge, field stone-sextons who cut the Gloam back with salt
-  and chisel, delve grass into hill land, cut stone at Quarries for the carts, dig the Deep
-  Cut, and climb milestones cut by depth that need stone quarried as well as folk. The
-  Veshari of the Sable found their city within six tiles of water, drink from tide-wells,
-  moor barges at landings, draw more from Torrent Mills than from the Veins, never see the
-  river freeze, hatch only the water lines in a Tide Pool, weather the Hush flood or hold it
-  with the Great Weir, follow the Sable chapter and tales, keep bargemen on the bank, and
-  climb milestones named by reach that need moorings as well as folk. The Tallowkin of the
-  Wick are born between two nodes: their spires reach further and cost double, Wick-Towers
-  light the corners, a house three days dark is abandoned, the Hush vigil is theirs to keep,
-  and their milestones are measured by how much of the city burns bright. The Fen-Nex of the
-  Reach, fox-folk traders, found their city on a fen and make nothing: no Craft zones, goods
-  bought off the caravans at a Caravanserai (a trade route of its own, its caravans growing
-  with every route open) and at Fox-Posts, markets that hold three times the stock and want a
-  hand for every two folk, homes on stilts in the marsh, a Fen Den that lays a fen cat-dragon
-  egg each Thaw, and milestones counted in trade routes opened.
-- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers, pilgrims,
-  the Grimmen's stone-sextons and the Veshari's bargemen walk the roads from their buildings and do their jobs where
+- One people, the Vellish (the scope reset, `docs/RESET_PLAN.md`): the Grimmen, the Veshari, the Tallowkin
+  and the Fen-Nex are parked with everything that served only them (`docs/PARKED.md` says how they would
+  come back); `src/data/factions.ts` stays as the seam another people would plug into.
+- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers and pilgrims walk the roads from their buildings and do their jobs where
   they go; the streets they walk
   count as covered.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
@@ -313,8 +293,7 @@ Charter as `.json`.
   blizzard, each with its price and its gift, read five days ahead by the Observatory); the
   Crown's Thaw levy, its favour that moves sector prices and withholds grants, interest on
   a debt and a loan from the Budget, a bankruptcy line that grows with the city; the next
-  milestone's gate named in the top bar (the Vellish need happiness, the Tallowkin must
-  hold their light three days); pilgrims who ask for a shrine, a collector who remembers
+  milestone's gate named in the top bar (happiness, and the Lantern of Vell lit for the Beacon); pilgrims who ask for a shrine, a collector who remembers
   each pleading, a fox audit every season.
 - Services have crews filled from the city's hands and watch, heal, teach and quiet by how
   many are filled; every happiness and land value shows its largest terms; a home lists what
@@ -324,12 +303,10 @@ Charter as `.json`.
   Hospice runs on draughts from the markets, a pilgrim's prayer at the Temple consecrates
   its shrine, Academies study loose relics for a lasting schooling, and placing a spire, a
   well or a hall draws the reach of the ones already standing.
-- The Tallowkin's light: the Wick chapter, three tales, lamplighters who light dark homes by
-  candle, and the Hall of Wicks sworn at the Hush vigil.
 - The painted set: the ground, the trees, bushes and mushrooms, the spire, the wells, the
   Depot, the chapels, the homes, works, shops and markets of the zones are imported from
   the reference paintings, sharpened and outlined to sit beside the procedural set; one
-  painting is the look for every people; the Stake, the Guildhall and the Temple grow with
+  painting is the look of its building; the Stake, the Guildhall and the Temple grow with
   the city; every building has a sprite. The painted heroes stand at the height of their
   procedural twins, centred on the tile, and the paintings fronted on the left are mirrored so
   the whole set faces lower-right; every building then turns toward its road (a mirror when the
@@ -343,7 +320,7 @@ Charter as `.json`.
   painting (`src/render/painted.ts`: boxes, gables along either axis, porches, verandas,
   dormers, chimneys and props where the painting has them), crisp at the citizen scale and
   one set with the procedural buildings. Since iteration 82 the zone houses are the user's own
-  houses from the eda-lore sheets, every people its own (192 houses, none used twice), and since
+  houses from the eda-lore sheets (48 for the Vellish, none used twice; the other peoples' 144 are parked), and since
   iteration 84 most service buildings carry several looks from the same sheets (37 wells, 11 shrines, 11 boneyards …),
   chosen per building by its tile, with the user's trees, bushes, mushrooms and ground tiles in the wild.
 - Drawn art where no painting exists: the Lantern of Vell is a leystone lighthouse (a coursed
@@ -387,7 +364,7 @@ Charter as `.json`.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
-  date (the valley, the sky and the people), lost on day 61 and scored by the days to spare
+  date (the valley and the sky), lost on day 61 and scored by the days to spare
   and the crowns, with a copyable result, and remappable keys in the Menu.
 - Aria labels and roles on the panels, and the whole UI works from the keyboard: Tab moves in
   screen order behind a *Skip to the map* link, F6 jumps between the top bar, the toolbar, the

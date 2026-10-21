@@ -108,27 +108,9 @@ export function generateAtoll(seed: number, opts: TerrainOptions): TerrainResult
 
   // the founding node, on the great isle near its centre
   let fx = great.x, fy = great.y;
-  // the Veshari's tide-wells must touch the shoal (a tile of Water) and a road: their founding stands
-  // within WELL_SHORE of one (as on the valley's riverside), so the first roads reach the water
-  const WELL_SHORE = 4;
-  const shoalNear = (x: number, y: number, r: number): boolean => {
-    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (inBounds(x + dx, y + dy) && terrain[idx(x + dx, y + dy)] === Terrain.Water) return true;
-    return false;
-  };
   for (let tries = 0; tries < 400; tries++) {
     const x = great.x + rng.int(9) - 4, y = great.y + rng.int(9) - 4;
-    if (buildable(x, y) && buildableCount(x, y, 6) > 90 && (!opts.riverside || shoalNear(x, y, WELL_SHORE))) { fx = x; fy = y; break; }
-  }
-  if (opts.riverside && !shoalNear(fx, fy, WELL_SHORE)) {
-    // none of the draws stood near the coast: take the buildable tile with room that is closest to it
-    let best = Infinity;
-    for (let y = great.y - 12; y <= great.y + 12; y++)
-      for (let x = great.x - 12; x <= great.x + 12; x++) {
-        if (!buildable(x, y) || buildableCount(x, y, 6) <= 90) continue;
-        let d = Infinity;
-        for (let r = 1; r <= 20 && d === Infinity; r++) if (shoalNear(x, y, r)) d = r;
-        if (d < best) { best = d; fx = x; fy = y; }
-      }
+    if (buildable(x, y) && buildableCount(x, y, 6) > 90) { fx = x; fy = y; break; }
   }
   const nodes: TerrainResult['nodes'] = [{ x: fx, y: fy }];
   // one node on every other isle, on a buildable tile near its centre, so every isle has mana of its own
@@ -148,30 +130,6 @@ export function generateAtoll(seed: number, opts: TerrainOptions): TerrainResult
   for (const n of nodes) { clearAround(n.x, n.y, 2); terrain[idx(n.x, n.y)] = Terrain.LeyNode; }
   clearAround(fx, fy, 5);
 
-  // the Tallowkin's twin node, eight tiles from the founding on the great isle
-  if (opts.twinnode) {
-    let placed = false;
-    for (let dy = -8; dy <= 8 && !placed; dy++)
-      for (let dx = -8; dx <= 8 && !placed; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 8) continue;
-        const x = fx + dx, y = fy + dy;
-        if (!buildable(x, y) || nodes.some((n) => Math.hypot(n.x - x, n.y - y) < 6)) continue;
-        clearAround(x, y, 2);
-        terrain[idx(x, y)] = Terrain.LeyNode;
-        nodes.push({ x, y, aspect: 'vein' });
-        placed = true;
-      }
-  }
-  // the Grimmen's hills: the Underhill ridge south of the founding, as in the valley
-  if (opts.underhill) {
-    for (let dy = 5; dy <= 9; dy++)
-      for (let dx = -9; dx <= 9; dx++) {
-        const x = fx + dx, y = fy + dy;
-        if (!inBounds(x, y) || Math.max(Math.abs(dx), dy) < 6) continue;
-        const i = idx(x, y);
-        if (terrain[i] === Terrain.Grass || terrain[i] === Terrain.Meadow || terrain[i] === Terrain.Forest) terrain[i] = Terrain.Hills;
-      }
-  }
   terrain[idx(fx, fy)] = Terrain.LeyNode;
 
   // the Ruins of Lukuku: one flagstone cluster in a forest on a near isle, if one has room

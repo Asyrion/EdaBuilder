@@ -13,7 +13,7 @@ import type { FactionId } from '../src/data/factions';
 import { flatten } from './helpers';
 
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
-const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
+const PEOPLES: FactionId[] = ['vellish'];
 
 describe('Iteration 93: every task says what it still needs', () => {
   it('the list of "build X" tasks with a larger goal matches their conditions', () => {
@@ -68,9 +68,7 @@ describe('Iteration 93: every task says what it still needs', () => {
     construction.instant = true;
   });
 
-  it('a Grimmen Seep answers for the Well, and the counters follow the city', () => {
-    const g = createGame(42, 'Hold', 'valley', 'grimmen');
-    expect(questStatus(g, Q('f_well'))).toMatch(/Seep/);
+  it('the counters follow the city', () => {
     const s = createGame(42, 'Counts');
     s.milestone = 2;
     s.buildings.push({ id: 9001, kind: 'wardlantern', x: 0, y: 0, w: 1, h: 1, state: 'ok', level: 1, lit: false } as never);

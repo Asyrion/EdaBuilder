@@ -149,7 +149,7 @@ throws(() => c.create('buildings', 0, { key: 'bad id!' }), BadRequest, 'a malfor
   c.undo(u.i);
   check(readFileSync(file, 'utf8') === before, 'undo restores the file');
 }
-check((unions(REPO).BuildingCategory ?? []).includes('wonder') && (unions(REPO).FactionId ?? []).includes('grimmen'), 'the string unions are read from src/');
+check((unions(REPO).BuildingCategory ?? []).includes('wonder') && (unions(REPO).FactionId ?? []).includes('vellish'), 'the string unions are read from src/');
 for (const name of Object.keys(CODE_KINDS)) check(codeEntries(name).length > 0, `the ${name} in code are found`);
 const tmpArt = tmp;   // removed after the importer's run below
 

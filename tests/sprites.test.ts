@@ -39,12 +39,11 @@ import { recolour } from '../scripts/lib/sprite.mjs';
 import { readFileSync } from 'node:fs';
 
 describe('the painted set, part 2', () => {
-  it('every people its own houses: an imported base is no longer the look for the others (iteration 82)', () => {
-    const atlas = { imported: new Set(['hearth_l2_v0', 'hearth_l2_v0_grimmen']) };
-    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_grimmen')).toBe('hearth_l2_v0_grimmen');
-    expect(zoneSpriteName(atlas, 'hearth', 2, 4, '_grimmen')).toBe('hearth_l2_v0_grimmen');
-    expect(zoneSpriteName(atlas, 'hearth', 2, 0, '_veshari')).toBe('hearth_l2_v0_veshari');
-    expect(zoneSpriteName(atlas, 'hearth', 1, 0, '')).toBe('hearth_l1_v0');
+  it('a zone house is named by zone, level and variant (the variant wraps at four)', () => {
+    const atlas = { imported: new Set(['hearth_l2_v0']) };
+    expect(zoneSpriteName(atlas, 'hearth', 2, 0)).toBe('hearth_l2_v0');
+    expect(zoneSpriteName(atlas, 'hearth', 2, 4)).toBe('hearth_l2_v0');
+    expect(zoneSpriteName(atlas, 'hearth', 1, 0)).toBe('hearth_l1_v0');
   });
 
   it('a hall that grows falls back to the highest lower stage, then the plain sprite', () => {

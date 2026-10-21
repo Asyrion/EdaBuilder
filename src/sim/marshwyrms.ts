@@ -1,5 +1,5 @@
 // The marsh-wyrms (iteration 86, DESIGN §17.1 item 2, §8.1 and §8.6): eel-like wyrms of the rivers and lakes, out in Bloom.
-// One may lair under a bridge, and the carts on it crawl (roads.ts reads the lair). The Veshari Hall's coverage drives it
+// One may lair under a bridge, and the carts on it crawl (roads.ts reads the lair). The Water-Mages' Hall's coverage drives it
 // off, and no wyrm lairs within a Quay's ward. In Bloom a wyrm by marsh makes a nest, and a nest by a Quay gives the city a
 // tide egg (the bargemen bring it in). Every roll comes from a side stream keyed by the seed and the day: the main stream
 // never moves for them, only their effects do.
@@ -21,7 +21,7 @@ export const WYRM_LAIR_CHANCE = 0.2;
 export const WYRM_LAIR_REACH = 12;
 /** A cart on a lair tile runs at this share of its speed (roads.ts applies it). */
 export { WYRM_CRAWL_SPEED as WYRM_CRAWL } from './roads';
-/** The Veshari Hall's fire coverage (0..1) at a lair that drives the wyrm off. */
+/** The Water-Mages' Hall's fire coverage (0..1) at a lair that drives the wyrm off. */
 export const WYRM_DRIVE = 0.3;
 /** No wyrm lairs within this many tiles of a Quay. */
 export const QUAY_WARD = 10;
@@ -93,7 +93,7 @@ function swim(s: GameState, wy: MarshWyrm, rng: Rng): void {
   }
 }
 
-/** The bridge a wyrm would lair under: the nearest in reach, outside a Quay's ward, not covered by the Veshari Hall. */
+/** The bridge a wyrm would lair under: the nearest in reach, outside a Quay's ward, not covered by the Water-Mages' Hall. */
 export function lairFor(s: GameState, wy: MarshWyrm, quays = quaysOf(s)): number {
   let best = -1; let bd = Infinity;
   for (let dy = -WYRM_LAIR_REACH; dy <= WYRM_LAIR_REACH; dy++) for (let dx = -WYRM_LAIR_REACH; dx <= WYRM_LAIR_REACH; dx++) {
@@ -142,14 +142,14 @@ export function dailyMarshWyrms(s: GameState): void {
   const rng = sideRng(s);
   if (sd === 0 || !s.marshWyrms) {
     s.marshWyrms = wyrmsFor(s, rng);
-    if (s.marshWyrms.length) pushMessage(s, `Bloom brings the marsh-wyrms up the river: ${s.marshWyrms.length} in the valley's water. They lair under bridges, where the carts crawl; a Veshari Hall drives them off, and none comes near a Quay.`, 'info');
+    if (s.marshWyrms.length) pushMessage(s, `Bloom brings the marsh-wyrms up the river: ${s.marshWyrms.length} in the valley's water. They lair under bridges, where the carts crawl; a Water-Mages\' Hall drives them off, and none comes near a Quay.`, 'info');
   }
   const quays = quaysOf(s);
   for (const wy of s.marshWyrms) {
     if (wy.lair >= 0) {
       const lx = wy.lair % MAP_W; const ly = (wy.lair / MAP_W) | 0;
       if (!isBridge(s, wy.lair)) { wy.lair = -1; continue; } // the bridge is gone
-      if (coverageAt(s, 'fire', lx, ly) >= WYRM_DRIVE) { leaveLair(s, wy, 'the Veshari Hall\'s water-mages drove it off'); swim(s, wy, rng); continue; }
+      if (coverageAt(s, 'fire', lx, ly) >= WYRM_DRIVE) { leaveLair(s, wy, 'the Water-Mages\' Hall\'s water-mages drove it off'); swim(s, wy, rng); continue; }
       if (inQuayWard(s, lx, ly, quays)) { leaveLair(s, wy, 'the Quay\'s bargemen poled it out'); swim(s, wy, rng); continue; }
       continue;
     }
@@ -160,7 +160,7 @@ export function dailyMarshWyrms(s: GameState): void {
         wy.lair = i; wy.x = i % MAP_W; wy.y = (i / MAP_W) | 0;
         s.stats.wyrmsLaired = (s.stats.wyrmsLaired ?? 0) + 1;
         markDirtyAround(s, wy.x, wy.y);
-        pushMessage(s, 'A marsh-wyrm lairs under a bridge: carts crawl across it. A Veshari Hall that covers the bridge drives it off; none lairs within ten tiles of a Quay.', 'bad', true, { x: wy.x, y: wy.y });
+        pushMessage(s, 'A marsh-wyrm lairs under a bridge: carts crawl across it. A Water-Mages\' Hall that covers the bridge drives it off; none lairs within ten tiles of a Quay.', 'bad', true, { x: wy.x, y: wy.y });
       }
     }
   }

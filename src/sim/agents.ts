@@ -154,14 +154,12 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 let fenD = 0;
 let fenGrid: Uint8Array | null = null;
 /** Set once a tick so marketStockCap can know the Fen-Nex quarter without a state argument. */
-let peopleShelf = 1;
-export function setFenNex(d: number, grid: Uint8Array, shelf = 1): void {
+export function setFenNex(d: number, grid: Uint8Array): void {
   fenD = d;
   fenGrid = grid;
-  peopleShelf = shelf; // the Fen-Nex people's shelves (iteration 96)
 }
 export function marketStockCap(b: Building): number {
-  return 20 * b.level * peopleShelf * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1) * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
+  return 20 * b.level * (fenD > 0 && fenGrid && fenGrid[idx(b.x, b.y)] === fenD ? 2 : 1) * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
 }
 
 /** The door: the first road tile on a side of the footprint, else a corner (a corner counts since iteration 49; the sides come first so every older door stays where it was). */
@@ -264,7 +262,7 @@ export function dailyAgents(state: GameState): void {
         homeId: home.id,
         targetId: -1,
         timer: rng.int(200),
-        variant: ((v) => (state.faction === 'tallowkin' && v < 3 ? 5 : state.faction === 'fennex' && v < 3 ? 6 : v))(rng.int(6)), // the Tallowkin are candle-eyed more often, with no extra draw
+        variant: rng.int(6),
         dir: 0,
         load: 0,
       });

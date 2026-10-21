@@ -700,6 +700,7 @@ Diese Antworten gelten und gehen §8 und den „?“-Zeilen von §2.1 vor.
 | 7 | Dev-Board inkl. Tripo/Aseprite/„Send to Claude“ | behalten |
 | 8 | `inspirations/` | nach `eda-lore/inspirations` verschieben. `eda-lore` hat schon 9 der 15 Ordner (102 MB). Es fehlen `trade_houses`, `trees`, `wells`, `wooden_houses`, `wyrm` und die Kopien der eda-lore-Sheets. Umsetzung in Phase 1d |
 | 9 | Issues 101–124, M18/M19-Liste, eda-lore PR 5 | als **geparkt** markieren (Phase 0) |
+| 10 | Name der Feuerwehr (gefragt in Phase 1a) | **„Water-Mages' Hall“**; der Schlüssel `veshari` bleibt (Sim und Sprite unverändert) |
 
 Folgen für den Plan:
 - **Phase 1c** parkt zusätzlich: Ley-Aspekte, Torrent Mill, Brickworks (und damit den Baubonus in `construction.ts`),

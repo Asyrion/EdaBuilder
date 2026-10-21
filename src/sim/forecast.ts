@@ -7,7 +7,7 @@ import { seasonOf } from './world';
 import { fontsRunHot } from './hazards';
 import { CALENDAR, RIOT_DAYS } from './events';
 import { spiresAtWyrm, WYRM_WAKE_PER_SPIRE, WYRM_SULK_AFTER } from './wyrm';
-import { WEATHER_WORD, blizzard, hasMarvel, pressureWord, weatherAt } from './weave';
+import { WEATHER_WORD, blizzard, pressureWord, weatherAt } from './weave';
 import { factionOf } from '../data/factions';
 
 export const FORECAST_DAYS = 5;
@@ -49,8 +49,7 @@ export function forecast(s: GameState): ForecastLine[] {
     else { const g = galeIn(s, FORECAST_DAYS); if (g !== null) out.push({ text: `A sea-gale in ${g} day${g === 1 ? '' : 's'}, for ${GALE_DAYS}: cobble the bridges you cannot do without, or raise a Quay beside them.`, kind: 'warn' }); }
   }
   // the river: the freeze or the flood from the fifth day of the Hush, the open sluice's flood from the fifth of the Thaw
-  { const freezes = factionOf(s).rules.riverFreezes; const hushFive = (Math.floor(s.day / DAYS_PER_SEASON) + (season === 3 && dayOfSeason < 5 ? 0 : 4 - season)) * DAYS_PER_SEASON + 5; const d5 = hushFive - s.day; if (season === 3 && dayOfSeason < 5 && d5 > 0 && d5 <= FORECAST_DAYS || (season !== 3 && d5 > 0 && d5 <= FORECAST_DAYS)) out.push(freezes ? { text: `The river freezes in ${d5} day${d5 === 1 ? '' : 's'}: the mills slow and the barges stop.`, kind: 'warn' } : hasMarvel(s, 'greatweir') ? { text: `The Sable rises in ${d5} day${d5 === 1 ? '' : 's'}; the Great Weir holds it.`, kind: 'info' } : { text: `The Sable rises in ${d5} day${d5 === 1 ? '' : 's'}: the homes on the bank lose heart and the bank wells foul. A Great Weir would hold it.`, kind: 'warn' });
-    if (season === 0 && dayOfSeason < 5 && 5 - dayOfSeason <= FORECAST_DAYS && s.buildings.some((b) => b && b.kind === 'greatweir' && b.state === 'ok' && b.sluice)) out.push({ text: `The open sluice floods the bank within 30 of the Weir in ${5 - dayOfSeason} day${5 - dayOfSeason === 1 ? '' : 's'}: close it, or take the double mana and the flooded bank.`, kind: 'warn' }); }
+  { const freezes = factionOf(s).rules.riverFreezes; const hushFive = (Math.floor(s.day / DAYS_PER_SEASON) + (season === 3 && dayOfSeason < 5 ? 0 : 4 - season)) * DAYS_PER_SEASON + 5; const d5 = hushFive - s.day; if (season === 3 && dayOfSeason < 5 && d5 > 0 && d5 <= FORECAST_DAYS || (season !== 3 && d5 > 0 && d5 <= FORECAST_DAYS)) out.push(freezes ? { text: `The river freezes in ${d5} day${d5 === 1 ? '' : 's'}: the mills slow and the barges stop.`, kind: 'warn' } : { text: `The Sable rises in ${d5} day${d5 === 1 ? '' : 's'}: the homes on the bank lose heart and the bank wells foul.`, kind: 'warn' }); }
   if (s.stats.gloamTiles > 0 && s.day >= 6) {
     const hush = season === 3;
     out.push(blizzard(s) ? { text: 'The blizzard keeps the hounds in their dens.', kind: 'good' } : { text: hush ? 'Hound packs will hunt every night this Hush.' : 'Hound packs likely at the grey edge on some nights this week.', kind: hush ? 'warn' : 'info' });

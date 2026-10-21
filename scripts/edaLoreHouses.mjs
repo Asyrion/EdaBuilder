@@ -1,6 +1,6 @@
 // Iteration 82 (the eda-lore swap, batch 1): writes the zone houses' entries in art/sources.json from the allocation below.
 //   node scripts/edaLoreHouses.mjs && npm run art
-// Each slot (people → zone → level → four variants) names a sheet in inspirations/eda-lore (the letter, see SHEETS) and an
+// Each slot (people → zone → level → four variants; the Vellish only since the scope reset) names a sheet in inspirations/eda-lore (the letter, see SHEETS) and an
 // island of it (node scripts/importSprites.mjs --islands <sheet> [white]); a trailing ! mirrors a house fronted on the left;
 // '-' leaves the slot to its people's drawn house (no painting is used twice, the user's rule). The entries carry
 // set: 'eda-lore-1', so a rerun replaces them; the older zone paintings are switched off.
@@ -14,24 +14,6 @@ const ALLOC = { // '-' = no painting of its own yet: the slot keeps its people's
     market: [['C10', 'C4', 'G125', 'V3'], ['B2!', 'O2!', 'I70!', 'J0'], ['Q2', 'K64!', 'A6', 'I54!']],
     arcane: [['G58!', 'G59!', 'G60!', 'V9'], ['B9', 'K2', 'Q3', 'J14'], ['B1', 'F51!', 'K3', 'B8!']],
   },
-  _grimmen: { // stone and slate, dug into the hill
-    hearth: [['I119!', 'J5', 'G128!', 'P3!'], ['J13', 'R0', 'G127', 'G0!'], ['C5', 'I1', 'O3!', 'G126']],
-    craft: [['D0!', 'D6', 'S0!', 'S53'], ['D5', 'D7', 'D3!', 'S3'], ['S2!', 'K63', 'B10', 'S54!']],
-    market: [['V0!', 'V22!', 'V6', 'X17'], ['L1!', 'L3!', 'C7', 'F52!'], ['N2!', 'I3!', 'L0!', 'G3!']],
-    arcane: [['V4!', 'W1', 'X13', 'V26'], ['Q1', 'S101!', 'a56', 'a1'], ['F2', 'N3', 'U0', 'Z1']],
-  },
-  _veshari: { // plank, reed and log, by the water
-    hearth: [['T0', 'A10', 'A11!', 'I52!'], ['T9', 'T13', 'T16', 'T11!'], ['T1!', 'I117', 'T7!', 'T8']],
-    craft: [['S52', 'D1', 'M2', 'T4!'], ['D8!', 'I68', 'E8', 'J1'], ['T3!', 'H4!', 'O128!', 'T10']],
-    market: [['I0', 'V1!', 'K65!', 'G2'], ['Q48!', 'I69!', 'T17', 'T15!'], ['T5', 'F53', 'T19!', 'T14']],
-    arcane: [['G179!', 'I116!', 'O1!', 'V5'], ['B4', 'I53', 'O61!', 'T12'], ['F3', 'E3', 'I118', 'O60!']],
-  },
-  _tallowkin: { // tall and narrow, whitewash and plaster under cones, a lit window on every floor
-    hearth: [['E4', 'E7', 'A8!', 'J2'], ['G182', 'G181', 'B7', 'E9'], ['N7', 'B3', 'I55!', 'T2']],
-    craft: [['Q47!', 'H5', 'V8!', 'J3'], ['F1', 'U2!', 'N12!', 'F0'], ['K1', 'U1', 'N10!', 'Y5']],
-    market: [['V20!', 'V10', 'W7', 'W11'], ['N6', 'U5', 'F54!', 'N15'], ['U6', 'N4!', 'U7', 'C6']],
-    arcane: [['V7', 'V2', 'R1', 'E10'], ['Q49', 'N5!', 'O59', 'O129!'], ['U3', 'T18!', 'Z50', 'Z52']],
-  },
 };
 const FILE = 'art/sources.json';
 const src = JSON.parse(readFileSync(FILE, 'utf8'));
@@ -39,7 +21,7 @@ const ZONE = /^(hearth|craft|market|arcane)_l\d_v\d(_\w+)?$/;
 const kept = src.sprites.filter((e) => e.set !== 'eda-lore-1');
 for (const e of kept) if (ZONE.test(e.name) && !e.off) e.off = true; // the older zone paintings give way (iteration 82)
 const out = [];
-const H = (p, z, l) => (l === 3 && (z === 'arcane' || p === '_tallowkin')) ? 56 : l === 3 ? 45 : l === 2 ? 40 : p === '_tallowkin' ? 36 : 31;
+const H = (p, z, l) => (l === 3 && z === 'arcane') ? 56 : l === 3 ? 45 : l === 2 ? 40 : 31;
 for (const [p, zs] of Object.entries(ALLOC)) for (const [z, lv] of Object.entries(zs)) lv.forEach((row, li) => {
   const l = li + 1; const ents = [];
   row.forEach((k, v) => {

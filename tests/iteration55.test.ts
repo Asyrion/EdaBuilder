@@ -19,8 +19,8 @@ import { MILESTONES } from '../src/sim/catalog';
 import { flatten } from './helpers';
 
 
-function town(seed = 55, faction: 'vellish' | 'grimmen' | 'veshari' | 'tallowkin' = 'vellish') {
-  const s = createGame(seed, 'Annalwick', 'valley', faction);
+function town(seed = 55) {
+  const s = createGame(seed, 'Annalwick', 'valley');
   const f = s.founding;
   flatten(s, f.x - 18, f.y - 14, f.x + 18, f.y + 14);
   buildRoad(s, RoadType.Track, roadPath(f.x - 16, f.y + 2, f.x + 16, f.y + 2, false));
@@ -93,9 +93,8 @@ describe('The bot keeps a purse', () => {
     expect((bot as any).goal).toBeNull();
   });
   it('takes the Crown\'s loan only as a bridge to a hall the ledger can carry, and repays it when nothing is saved for', () => {
-    const s = town(55, 'tallowkin');
-    s.milestone = 5;
-    s.firedEvents.push('vigil@0:0');
+    const s = town(55);
+    s.milestone = 7; // the Lantern of Vell is the hall (the Tallowkin's Hall of Wicks, which this test used, is parked)
     const bot = new Bot(s);
     (bot as any).goalBlocked.cradle = 999; // no cradle goal in the way of the repayment below
     s.treasury = 500;
@@ -103,14 +102,14 @@ describe('The bot keeps a purse', () => {
     s.ledger.net = 600;
     (bot as any).pursueGoal();
     expect(s.loan).toBe(0); // never for the Fonts
-    (bot as any).goal = { kind: 'hall', key: 'hallofwicks', cost: 6500, mana: false };
+    (bot as any).goal = { kind: 'hall', key: 'lantern', cost: 6500, mana: false };
     s.ledger.net = 400; // 50,000 at half a crown in a hundred is 250 a day: the ledger must carry twice that
     (bot as any).pursueGoal();
     expect(s.loan).toBe(0);
     s.ledger.net = 560;
     (bot as any).pursueGoal();
     expect(s.loan).toBe(50000);
-    expect(s.buildings.filter((b) => b && b.kind === 'hallofwicks').length).toBe(1);
+    expect(s.buildings.filter((b) => b && b.kind === 'lantern').length).toBe(1);
     expect(bot.loans).toBe(1);
     // while it is out, the reserve holds the loan; once the purse holds it and two thousand more and nothing is saved for, it goes back
     s.manaSupply = 500; s.manaDemand = 100; s.brownout = 0;
@@ -119,15 +118,15 @@ describe('The bot keeps a purse', () => {
     expect(s.loan).toBe(0);
   });
   it('abandons a goal it cannot place after five days, for twenty', () => {
-    const s = town(55, 'veshari');
-    s.milestone = 4;
+    const s = town(55);
+    s.milestone = 6;
     const bot = new Bot(s);
-    (bot as any).goal = { kind: 'mill', key: 'torrentmill', cost: 5400, mana: true };
+    (bot as any).goal = { kind: 'hall', key: 'greatgate', cost: 5400, mana: false };
     s.treasury = 60000;
-    // no bank beside a road in this flattened square: the mill cannot stand
+    // no Belregi gate in the wall: the Great Gate cannot stand
     for (let k = 0; k < 5; k++) (bot as any).pursueGoal();
     expect((bot as any).goal).toBeNull();
-    expect((bot as any).goalBlocked.mill).toBe(s.day + 20);
+    expect((bot as any).goalBlocked.greatgate).toBe(s.day + 20);
   });
 });
 
@@ -145,16 +144,6 @@ describe('The bot zones what it can light and moves the tithe', () => {
     s.brownout = 0; // the ley carries them: homes dark for want of a spire are keepLit's to fix
     (bot as any).zoneByDemand();
     expect(lots(s)).toBeGreaterThan(before);
-  });
-  it('the Tallowkin hold zoning while the lit share is under the next gate and a point and a half', () => {
-    const s = town(55, 'tallowkin');
-    const bot = new Bot(s);
-    const f = s.founding;
-    for (let k = 0; k < 24; k++) { const b = placeBuildingRaw(s, 'hearth', f.x - 12 + k, f.y + 3); b.lit = k < 12; }
-    s.demand.hearth = 1;
-    const before = lots(s);
-    (bot as any).zoneByDemand();
-    expect(lots(s)).toBe(before);
   });
   it('lowers the hearth tithe under the Vellish gate and the works, shops and studios carry the difference', () => {
     const s = town();
@@ -321,17 +310,6 @@ describe('Five dev commands', () => {
   });
 });
 
-describe('The Hall of Wicks is sworn at the vigil festival itself', () => {
-  it('a vigil kept as a festival (`vigil@year:0`) unlocks it; one skipped does not', () => {
-    const s = town(55, 'tallowkin');
-    s.milestone = 5;
-    expect(specialLock(s, 'hallofwicks')).toMatch(/vigil/);
-    s.firedEvents.push('vigil@0:1');
-    expect(specialLock(s, 'hallofwicks')).toMatch(/vigil/);
-    s.firedEvents.push('vigil@0:0');
-    expect(specialLock(s, 'hallofwicks')).toBeNull();
-  });
-});
 
 describe('A city in debt can still answer a tale', () => {
   it('a choice with no price is never refused as "0 crowns asked"; a priced one still is', () => {
