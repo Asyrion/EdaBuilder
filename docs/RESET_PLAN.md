@@ -1,6 +1,6 @@
 # Scope-Reset & Polish-Plan — Wardlight (Eda City Builder)
 
-Stand: 2026-10-21 · Basis: `main` @ `ac4e05f` (Iteration 96) · Status: **Entwurf, wartet auf Freigabe pro Phase**
+Stand: 2026-10-21 · Basis: `main` @ `ac4e05f` (Iteration 96) · Status: **Entscheidungen vom 2026-10-21 eingearbeitet (§9); jede Phase wartet auf Freigabe**
 
 Dieses Dokument ist das Ergebnis einer reinen Analyse. Es wurde kein Code geändert. Jede Phase startet erst nach
 ausdrücklicher Freigabe.
@@ -197,7 +197,7 @@ Legende: **B** = Behalten · **P** = Polieren · **Pk** = Parken (entfernen, im 
 | 19 | Handelsdepot/Karawane | P | CS1-Außenverbindung. Twin Road, Caravanserai raus | `trade.ts`, Teile `events.ts` | — |
 | 20 | Jahreszeiten (4 × 30 Tage) | P | Stimmung, Nachtlänge. Mechaniken daran meist Add-on | `sim.ts`, `weave.ts` | Hush-Belagerung, Fluten, Gales raus |
 | 21 | Wetter/Weave (Regen, Dürre, Blizzard) | Pk | Querschnittssystem mit ~25 Importeuren, wenig Kernnutzen | `weave.ts` | Vor dem Parken entkoppeln (Phase 1c) |
-| 22 | Ley-Aspekte der Knoten (Ember, Bone …) | Pk* | *Kandidat für Phase 2 als „Magie organisch“. Erst parken, dann gezielt schlank wieder einführen | `weave.ts`, `world.ts:assignAspects` | Entscheidung offen (§8) |
+| 22 | Ley-Aspekte der Knoten (Ember, Bone …) | Pk | Entschieden 2026-10-21: parken. Später ggf. schlank zurück (eigene Freigabe) | `weave.ts`, `world.ts:assignAspects` | Entscheidung offen (§8) |
 | 23 | Wellspring vertiefen | B | Einfaches Mana-Upgrade | `world.ts` | — |
 | 24 | Story-Events/Tales (52) | Pk | Pausieren das Spiel. Kein CS1-Element, stark verflochten | `events.ts`, `events.json`, `botPolicy.ts` | Feste, Karawane, Krawall-Auslöser |
 | 25 | Quests/Charter's Ledger (141) | P | Als **Tutorial + Meilenstein-Führung** auf ~15–20 Aufgaben kürzen, Rest parken | `data/quests.ts`, `quests.json`, `ui.ts:506` | 27 Volkszweige |
@@ -216,19 +216,19 @@ Legende: **B** = Behalten · **P** = Polieren · **Pk** = Parken (entfernen, im 
 | 38 | Wildnis, Jagd (Lodge, Herden, Wölfe) | Pk | Add-on (M16) | `wild.ts` | Markt-Fleisch |
 | 39 | Fischerei, Schilf, Räucherei, Furten, Weir, Hochwasser | Pk | Add-on (M16) | `water.ts` | Bot |
 | 40 | Fahrzeuge: Schwebekarren, Barken/Quays, Drachenreiter, Luftschiff/Sky-Dock | Pk | Add-on | `vehicles.ts` | Wyvern-Ersatz für Luftschiff |
-| 41 | Magische Gebäude: Torrent Mill, Glimhouse, Observatory, Hanging Gardens, Glowvine Lane | Pk* | *Torrent Mill wäre ein natürlicher Mana-Erzeuger (CS1: Wasserkraftwerk) → Kandidat Phase 2 | `buildings.json`, `networks.ts` | — |
+| 41 | Magische Gebäude: Torrent Mill, Glimhouse, Observatory, Hanging Gardens, Glowvine Lane | Pk | Entschieden 2026-10-21: parken (auch die Torrent Mill) | `buildings.json`, `networks.ts` | — |
 | 42 | Portal Arches, Ruinen von Lukuku/Ruin Delve, Relikte, Weltbaum | Pk | Add-on | `relics.ts`, `agents.ts` (Portale) | Portal-Bug |
 | 43 | Gilden (4) | Pk | Add-on | `guilds.ts` | Unruhe-Treiber |
 | 44 | Wunder: Lantern of Vell | P | Das eine Wunder des Basis-Volks, Meilenstein-Ziel | `buildings.json`, `drawn.ts` | `WONDER_HALLS` |
 | 45 | Übrige Wunder und 9 Marvels | Pk | Völker- oder Add-on-gebunden | `buildings.json` | — |
-| 46 | Brickworks | Pk/B? | Schönes Gebäude nach Nutzer-Gemälde, aber Zusatzmechanik (Baubeschleunigung) | `buildings.json` | Entscheidung offen (§8) |
+| 46 | Brickworks | Pk | Entschieden 2026-10-21: parken (Gemälde bleiben in `inspirations`) | `buildings.json` | Entscheidung offen (§8) |
 | 47 | **Völker Grimmen, Veshari, Tallowkin, Fen-Nex** | **Pk** | Vorgabe des Nutzers | `factions.ts`, 17 Gebäude, 26 Quests, 9 Events, 4 Walker, Terrain-Optionen, Bot-Strategien, `ZONE_LOOKS`, 9 Testdateien | siehe §3 Phase 1a |
-| 48 | Faction-Gerüst (`factionOf`, `FactionRules`) | E (später) | Mit nur einem Volk Ballast. Erst neutralisieren, dann inline | `factions.ts` + ~16 Leser | Kann als Nahtstelle bleiben, falls Völker zurückkommen (§8) |
+| 48 | Faction-Gerüst (`factionOf`, `FactionRules`) | B (dünn) | Entschieden 2026-10-21: als dünne Nahtstelle behalten (nur Vellish, neutrale Regeln) | `factions.ts` + ~16 Leser | Kann als Nahtstelle bleiben, falls Völker zurückkommen (§8) |
 | 49 | Szenarien: Valley | B | Standardspiel | `scenario.ts` | — |
-| 50 | Szenarien: One-Node, Island | P? | Klein, nutzen den Kern. Optional behalten | `scenario.ts` | — |
+| 50 | Szenarien: One-Node, Island | Pk | Entschieden 2026-10-21: parken. Nur das Valley bleibt | `scenario.ts` | — |
 | 51 | Szenarien: Atoll, Inherited Collapse | Pk | Atoll = M17-Add-on. Inherited läuft den Bot | `atoll.ts`, `isles.ts`, `gales.ts` | — |
 | 52 | Tochter-Charter (Endgame), Daily Challenge | Pk | Endgame-Add-on. Challenge hängt am Bot über 4 Völker | `charter.ts`, `scenario.ts` | — |
-| 53 | Terraforming (Land-Tab) | B? | CS1 hat Terraforming. Delve (Grimmen) raus | `actions.ts` | — |
+| 53 | Terraforming (Land-Tab) | Pk | Entschieden 2026-10-21: parken | `actions.ts` | — |
 | 54 | Undo | B | Kern-Komfort | `commands.ts` | — |
 | 55 | Command-Layer/Replays | B | Determinismus-Sicherheitsnetz für den Rückbau. UI-Teil „Watch a replay“ optional | `commands.ts`, `scripts/replay.ts` | Add-on-Ops entfernen |
 | 56 | Save/Load | P | Sauberer Schnitt: neue Version, klare Migration | `save.ts`, `types.ts` | §8 |
@@ -241,10 +241,10 @@ Legende: **B** = Behalten · **P** = Polieren · **Pk** = Parken (entfernen, im 
 | 63 | Renderer-Kern (Chunks, Tiefensortierung, Lightmap, Bloom, Partikel) | P | Gute Basis, Hotspots in §5 | `render/*` | — |
 | 64 | Audio | B | Klein und gut | `audio.ts` | Add-on-Cues raus |
 | 65 | Art-Pipeline (Importer, `sources.json`) | P | Ein Stil, eine Palette (Phase 3) | `scripts/importSprites.mjs`, `art/` | — |
-| 66 | Tripo-/Aseprite-Pipelines im Dev-Board | Pk? | Überdimensioniert für den aktuellen Stand, aber vom Nutzer gewünscht | `tools/devboard/tripo.ts`, `pipelines.*` | §8 |
+| 66 | Tripo-/Aseprite-Pipelines im Dev-Board | B | Entschieden 2026-10-21: behalten (wie das ganze Dev-Board) | `tools/devboard/tripo.ts`, `pipelines.*` | §8 |
 | 67 | Dev-Board (Content-Editor, Tracker) | B | Vom Nutzer gewünscht. `kinds.ts` mit dem Rückbau abgleichen | `tools/devboard` | Content-Schema |
 | 68 | 1075 Einzel-PNGs neben dem gepackten Sheet | E | Doppelt ausgeliefert (4,3 MB). Fallback per Sheet-Hash reicht | `public/art/sprites` | Importer |
-| 69 | `inspirations/` (148 MB im Repo) | Pk? | Gehört eher nach `eda-lore/inspirations` (dort ist der Ort laut eda-lore-CLAUDE.md) | `inspirations/` | Importer-Pfade, §8 |
+| 69 | `inspirations/` (148 MB im Repo) | E (verschieben) | Entschieden 2026-10-21: nach `eda-lore/inspirations` verschieben, Importer liest den Sibling-Checkout | `inspirations/` | Importer-Pfade, §8 |
 | 70 | 59 `iterationNN`-Testdateien, 89 Playtests | E/P | Historischer Ballast. In thematische Suiten überführen, ~5 Playtests behalten | `tests/`, `scripts/` | — |
 | 71 | Doku: DESIGN.md (514 KB), NEXT_STEPS (1169 Z.), HANDOFF, AUDIT | P | Ins Archiv verschieben, schlankes neues DESIGN (Kern) schreiben | `docs/` | CLAUDE.md |
 | 72 | Toter Code (Liste §1.4) | E | Ballast | diverse | — |
@@ -677,3 +677,33 @@ Die Tage sind Arbeits-Iterationen mit Claude, gerechnet in der bisherigen Taktun
    vorgesehene Ort) und den Importer auf eine Sibling-Checkout lesen lassen?
 9. **Offene GitHub-Issues 101–124 und NEXT_STEPS-Liste (M18/M19):** Alle als „geparkt“ markieren/schließen?
 10. **eda-lore PR 5 (Fen-Nex-Proposal):** offen lassen, schließen oder als „geparkt“ markieren?
+
+---
+
+## 9. Entscheidungen des Nutzers (2026-10-21)
+
+Diese Antworten gelten und gehen §8 und den „?“-Zeilen von §2.1 vor.
+
+| # | Frage | Entscheidung |
+|---|---|---|
+| 1 | Basis-Volk | **Vellish**, Name bleibt |
+| 2.1 | Ley-Aspekte, Torrent Mill | parken |
+| 2.2 | Brickworks | parken |
+| 2.3 | Szenarien One-Node/Island, Terraforming | parken (nur das Valley bleibt) |
+| 2.4 | Story-Events | komplett parken (kein Ersatz durch Toasts in Phase 1) |
+| 2.5 | Gloam-Hounds, Warding Wall | parken |
+| 2.6 | Walker | parken (auch nicht als reine Optik) |
+| 3 | Alte Spielstände | **ablehnen** mit klarer Meldung (`SAVE_VERSION 8`, keine Migration aus 7) |
+| 4 | Branch-Strategie | **phasenweise kleine PRs nach `main`** |
+| 5 | Prozessregeln (CLAUDE.md) | anpassen (Phase 0) |
+| 6 | Faction-Gerüst | als **dünne Nahtstelle behalten** (Phase 1d löst es nicht auf) |
+| 7 | Dev-Board inkl. Tripo/Aseprite/„Send to Claude“ | behalten |
+| 8 | `inspirations/` | nach `eda-lore/inspirations` verschieben. `eda-lore` hat schon 9 der 15 Ordner (102 MB). Es fehlen `trade_houses`, `trees`, `wells`, `wooden_houses`, `wyrm` und die Kopien der eda-lore-Sheets. Umsetzung in Phase 1d |
+| 9 | Issues 101–124, M18/M19-Liste, eda-lore PR 5 | als **geparkt** markieren (Phase 0) |
+
+Folgen für den Plan:
+- **Phase 1c** parkt zusätzlich: Ley-Aspekte, Torrent Mill, Brickworks (und damit den Baubonus in `construction.ts`),
+  die Szenarien One-Node/Island, Terraforming (Land-Tab) und alle Story-Events.
+- **Phase 1d:** Das Faction-Gerüst bleibt (`factionOf` → Vellish), `docs/PARKED.md` notiert es als Nahtstelle.
+  `inspirations/` wandert nach eda-lore.
+- **Save:** Version 8 lehnt jede ältere Version mit einer Meldung im Titelbildschirm ab. Das gilt auch für Import und Replays.
