@@ -1,5 +1,23 @@
 # Next steps
 
+## Prioritized ideas for the next iteration (the scope reset, since 2026-10-21)
+
+The game is being cut back to its core with the Vellish alone. The plan is **`docs/RESET_PLAN.md`**, one PR to `main`
+per phase; what each phase did is in `docs/RESET_LOG.md`, and what was parked, and how to bring it back, is in
+`docs/PARKED.md`. Phase 0 (archive branches, core smoke tests, checklist, smoke playtest, baselines) is done.
+
+1. **Phase 1a: the peoples down to the Vellish** (RESET_PLAN §3).
+2. **Phase 1b: park creatures, dragons, wyrms and beasts.**
+3. **Phase 1c: park the cross-cutting add-ons** (events, weather, walkers, water extras, vehicles, scenarios, terraforming …).
+4. **Phase 1d: clean up** (save version 8, tests, assets, docs, `inspirations/` to eda-lore).
+5. **Phase 2: sharpen the core loop.**
+6. **Phase 3: the art foundation and pixel art.**
+7. **Phase 4: shaders and effects.**
+8. **Phase 5: UX and feedback.**
+9. **Phase 6: performance and stability.**
+
+Everything below is the history before the reset. Its open list at the end is **parked**.
+
 ## Done in iteration 2
 
 - Goods flow by cart from Craft works to Markets, with shortages and gluts feeding demand.
@@ -1149,7 +1167,10 @@ Wandering Merchant, Hanging Gardens and Glowvine Lanes, the Torrent Mill, the Ru
 Lukuku, the World Tree sapling, Fen-Nex visitors, war-tigers, cameo events, the Great Gate and the Heart of Belregi
 (iteration 69). Not built: the swamp and atoll maps (items 4–6 below).
 
-## Prioritized ideas for the next iteration
+## Parked by the scope reset (2026-10-21): the list before it
+
+These wait in `docs/PARKED.md` and come back only with the user's approval.
+
 
 Written in iteration 68 from the audit of DESIGN.md against the code (DESIGN §4.99, §17). The order is the user's:
 the single items first (all done by iteration 77), then the milestones. Each numbered item is one iteration.
