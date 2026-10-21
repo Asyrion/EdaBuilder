@@ -5,7 +5,6 @@ import { buildRoad, roadPath } from '../src/sim/actions';
 import { AgentKind, DAYS_PER_SEASON, RoadType, TICKS_PER_DAY, Zone } from '../src/sim/types';
 import { dailyBuildings, craftStockCap } from '../src/sim/growth';
 import { dailyAgents, marketStockCap } from '../src/sim/agents';
-import { EVENTS, maybeFireEvent, resolveEvent } from '../src/sim/events';
 import { computeLedger } from '../src/sim/economy';
 import { edictUpkeep } from '../src/sim/edicts';
 import { serialize, deserialize } from '../src/sim/save';
@@ -71,38 +70,7 @@ describe('seasons', () => {
   });
 });
 
-describe('events and edicts', () => {
-  it('fires an event with a valid condition, pauses the sim, and resolves choices', () => {
-    const { s } = works(34);
-    run(s, TICKS_PER_DAY * 2);
-    s.lastEventDay = -100;
-    s.population = 200;
-    // force: pick the pilgrims event by trying until it fires
-    let tries = 0;
-    while (!s.pendingEvent && tries++ < 200) maybeFireEvent(s);
-    expect(s.pendingEvent).not.toBeNull();
-    const before = s.tick;
-    run(s, 50);
-    expect(s.tick).toBe(before); // paused while the event waits
-    const def = EVENTS.find((e) => e.id === s.pendingEvent!.id)!;
-    expect(def.choices.length).toBe(s.pendingEvent!.choices.length);
-    resolveEvent(s, 0);
-    expect(s.pendingEvent).toBeNull();
-    run(s, 50);
-    expect(s.tick).toBe(before + 50);
-    expect(s.messages[s.messages.length - 1].text).toContain(def.title);
-  });
-  it('every event choice applies without throwing and keeps numbers finite', () => {
-    for (const e of EVENTS) {
-      for (let i = 0; i < e.choices.length; i++) {
-        const { s } = works(40 + i);
-        e.choices[i].apply(s);
-        expect(Number.isFinite(s.treasury)).toBe(true);
-        expect(Number.isFinite(s.educated)).toBe(true);
-        for (const m of s.modifiers) expect(m.until).toBeGreaterThan(s.day);
-      }
-    }
-  });
+describe('edicts', () => {
   it('edicts cost upkeep and change the ledger; modifiers expire', () => {
     const { s } = works(35);
     run(s, TICKS_PER_DAY);
@@ -117,14 +85,12 @@ describe('events and edicts', () => {
     run(s, TICKS_PER_DAY * 3);
     expect(s.modifiers.length).toBe(0);
   });
-  it('round-trips edicts, stock and pending events through save/load', () => {
+  it('round-trips edicts and stock through save/load', () => {
     const { s } = works(36);
     run(s, TICKS_PER_DAY * 3);
     s.edicts.rites = true;
-    s.pendingEvent = { id: 'festival', title: 'x', text: 'y', choices: [{ label: 'a', desc: 'b' }] };
     const b = deserialize(serialize(s), (seed) => createGame(seed));
     expect(b.edicts.rites).toBe(true);
-    expect(b.pendingEvent?.id).toBe('festival');
     const stockA = s.buildings.filter(Boolean).map((x) => Math.round(x!.stock * 100));
     const stockB = b.buildings.filter(Boolean).map((x) => Math.round(x!.stock * 100));
     expect(stockB).toEqual(stockA);

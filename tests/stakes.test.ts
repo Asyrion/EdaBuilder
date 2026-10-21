@@ -7,7 +7,6 @@ import { buildRoad, roadPath } from '../src/sim/actions';
 import { crewFactor, landBonusMap, landValueTerms, updateCoverage, updateLandValue, DEATHCARE_LV } from '../src/sim/services';
 import { computeBuildingHappiness, dailyBuildings, happinessTerms, levelUpNeeds, demandReasons, updateDemand } from '../src/sim/growth';
 import { WARD_BURN, dailyDeath, dailyGloam, greyInReach, wardBurnBudget } from '../src/sim/hazards';
-import { dailyWalkers, walkersOf } from '../src/sim/walkers';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
@@ -77,7 +76,7 @@ describe('The breakdowns', () => {
 });
 
 describe('Deathcare in the open', () => {
-  it('the dead line counts the pipeline; the ground beside deathcare is worth 6 less; the Chapel fields two sextons; the Salt Font takes a relic', () => {
+  it('the dead line counts the pipeline; the ground beside deathcare is worth 6 less; the Salt Font takes a relic', () => {
     const s = town();
     const f = s.founding;
     const h = placeBuildingRaw(s, 'hearth', f.x - 4, f.y + 1, 3); ok(h); h.residents = 14;
@@ -91,21 +90,16 @@ describe('Deathcare in the open', () => {
     expect(s.quietCap).toBeCloseTo(12, 5);
     expect(s.quietedToday).toBeGreaterThan(0);
     expect(s.waitingDead).toBeCloseTo(s.unquieted, 9);
-    // the Sextons' Chapel fields two sextons like an Ossuary
-    const chapel = placeBuildingRaw(s, 'sextonchapel', f.x + 12, f.y + 3); ok(chapel); chapel.workers = 3; // at the road
-    recomputeAll(s);
-    dailyWalkers(s);
-    expect(walkersOf(s, chapel).length).toBe(2);
     // the Salt Font: a loose relic every three days, and twice the quieting while it lasts
     const font = placeBuildingRaw(s, 'saltfont', f.x - 12, f.y - 2); ok(font); font.workers = 3; font.cooldown = 0;
     s.relicStock = 1;
     dailyDeath(s);
     expect(s.relicStock).toBe(0);
     expect(font.cooldown).toBe(3);
-    expect(s.quietCap).toBeCloseTo(12 + 15 + 60, 5); // boneyard, chapel, the font doubled
+    expect(s.quietCap).toBeCloseTo(12 + 60, 5); // boneyard, the font doubled (the Sextons' Chapel and its 15 are parked)
     font.cooldown = 0;
     dailyDeath(s);
-    expect(s.quietCap).toBeCloseTo(12 + 15 + 30, 5); // no relic left: the font quiets its plain 30
+    expect(s.quietCap).toBeCloseTo(12 + 30, 5); // no relic left: the font quiets its plain 30
   });
 });
 

@@ -12,7 +12,6 @@ describe('Dev tools', () => {
     const s = createGame(41, 'Dev');
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
-    placeBuildingRaw(s, 'guildhall', f.x - 5, f.y + 3);
     recomputeAll(s);
     expect(DEV_GROUPS.length).toBeGreaterThanOrEqual(5); // the Wyrms group is parked (reset 1b)
     const at = { x: f.x + 8, y: f.y + 8 };
@@ -23,7 +22,6 @@ describe('Dev tools', () => {
       const out = runDev(s, c.id, arg, at);
       expect(typeof out).toBe('string');
       n++;
-      s.pendingEvent = null; // events and petitions would pause the game
     }
     expect(s.stats.devUses).toBe(n);
     expect(s.chronicle.some((c) => c.text.includes('dev tools'))).toBe(true);
@@ -32,7 +30,7 @@ describe('Dev tools', () => {
     construction.instant = true; // the toggle flipped it off
   });
 
-  it('commands do what they say: crowns, gloam, relics, guilds, finish', () => {
+  it('commands do what they say: crowns, gloam, relics, finish', () => {
     const s = createGame(41, 'Dev');
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
@@ -47,14 +45,9 @@ describe('Dev tools', () => {
     expect(s.gloam[idx(at.x, at.y)]).toBe(0);
     runDev(s, 'relic', 'saltspoons', at);
     expect(s.relics.complete).toEqual(['saltspoons']);
-    runDev(s, 'guildup', 'sextons', at);
-    expect(s.guilds.standing.sextons).toBe(75);
     const m0 = s.milestone;
     runDev(s, 'milestone', '', at);
     expect(s.milestone).toBe(m0 + 1);
-    runDev(s, 'event', 'thawday', at);
-    expect(s.pendingEvent?.id).toBe('thawday');
-    s.pendingEvent = null;
     construction.instant = false;
     placeBuildingRaw(s, 'well', f.x - 4, f.y + 3, 1, true);
     expect(s.buildings.some((b) => b && b.state === 'building')).toBe(true);

@@ -1,6 +1,6 @@
 /** Iteration 60 (M16 part 2, the water): bodies of water and the lake, shoals that regrow and can be fished out, fish that
  *  spoil in two days unless a market or a smokehouse takes them, reeds and thatch, the lake's land and wells, the Water
- *  Garden on its shore, fords that close at high water unless a Weir holds them, the spawning run, old saves, sprites and
+ *  Garden on its shore, fords that close at high water unless a Weir holds them, old saves, sprites and
  *  a water that is the same twice. */
 import { describe, expect, it } from 'vitest';
 import { createGame, canPlaceBuilding, placeBuildingRaw } from '../src/sim/world';
@@ -11,7 +11,6 @@ import { waterCapAt } from '../src/sim/networks';
 import { findPath, bumpRoadVersion } from '../src/sim/agents';
 import { roadTileCost } from '../src/sim/actions';
 import { tickCreatures } from '../src/sim/creatures';
-import { EVENTS } from '../src/sim/events';
 import { deserialize, serialize } from '../src/sim/save';
 import { distanceMap } from '../src/sim/terrain';
 import { generateSprites } from '../src/render/sprites';
@@ -261,25 +260,6 @@ describe('The ford and the weir', () => {
     s.day = 243; // the next Thaw, day 3
     dailyFords(s);
     expect(fordClosed(s, idx(river, y))).toBe(false);
-  });
-});
-
-describe('The spawning run', () => {
-  it('comes in Bloom to a hut on a full shoal; netting it pays and thins the shoal, letting it spawn doubles the regrowth', () => {
-    const { s, lake } = valley(12);
-    const h = hut(s, lake.x - 7, lake.y);
-    const e = EVENTS.find((x) => x.id === 'spawnrun')!;
-    s.day = 70;
-    expect(e.when(s)).toBe(false);
-    s.day = 40;
-    expect(e.when(s)).toBe(true);
-    const t0 = s.treasury;
-    e.choices[0].apply(s);
-    expect(s.treasury - t0).toBe(300);
-    const b = bodyOf(s, h);
-    expect(s.water.fish[b]).toBeCloseTo(shoalCap(ensureShoals(s), b) * 0.4, 5);
-    e.choices[1].apply(s);
-    expect(s.water.spawnUntil).toBe(100);
   });
 });
 

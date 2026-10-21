@@ -1,12 +1,11 @@
 /** Iteration 58 (M16 part 1, the wild): herds on their ground that thin where the city spreads, deer that run from the light,
  *  a lodge that hunts a chosen quarry for hides, meat and trophies, meat on the shelves, wolves in the Hush, the Close Season,
- *  two tales, old saves, a sprite for every creature, and a wild that is the same twice. */
+ *  old saves, a sprite for every creature, and a wild that is the same twice. */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { dailyTrade, happinessTerms } from '../src/sim/growth';
 import { tickCreatures } from '../src/sim/creatures';
-import { EVENTS } from '../src/sim/events';
 import { deserialize, serialize } from '../src/sim/save';
 import { generateSprites } from '../src/render/sprites';
 import { AgentKind, MAP_W, Terrain, idx, type GameState, type Herd, type WildSpecies } from '../src/sim/types';
@@ -203,42 +202,6 @@ describe('Wolves in the Hush', () => {
     s.wild.foldsUntil = 200;
     for (let d = 91; d < 115; d++) { s.day = d; dailyWolves(s); }
     expect(s.stats.hensTaken).toBe(0);
-  });
-});
-
-describe('Two tales of the wild', () => {
-  it('the white hart: hunting it pays and thins the deer; letting it run makes the herds thrive', () => {
-    const s = field(13);
-    const f = s.founding;
-    const e = EVENTS.find((x) => x.id === 'whitehart')!;
-    const d = herd(s, 'deer', f.x + 12, f.y + 12, 7);
-    s.day = 10;
-    expect(e.when(s)).toBe(false);
-    s.day = 25;
-    expect(e.when(s)).toBe(true);
-    const t0 = s.treasury;
-    e.choices[0].apply(s);
-    expect(s.treasury - t0).toBe(400);
-    expect(d.head).toBe(5);
-    e.choices[1].apply(s);
-    expect(s.wild.thriveUntil).toBe(85);
-  });
-  it('the wolf winter comes in the Hush after a hen; the hunt halves the packs, the lamps keep the hens', () => {
-    const s = field(14, Terrain.Forest);
-    const f = s.founding;
-    const a = herd(s, 'wolf', f.x + 12, f.y + 12, 4);
-    herd(s, 'wolf', f.x - 14, f.y - 14, 4);
-    placeBuildingRaw(s, 'hunterslodge', f.x + 8, f.y + 8);
-    const e = EVENTS.find((x) => x.id === 'wolfwinter')!;
-    s.day = 95;
-    expect(e.when(s)).toBe(false);
-    s.wild.hensDay = 93;
-    expect(e.when(s)).toBe(true);
-    e.choices[0].apply(s);
-    expect(a.head).toBe(2);
-    expect(s.stats.hides).toBe(8);
-    e.choices[1].apply(s);
-    expect(s.wild.foldsUntil).toBe(125);
   });
 });
 

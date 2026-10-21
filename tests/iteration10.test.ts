@@ -5,7 +5,6 @@ import { buildRoad, placeBuilding, roadPath, paintZone } from '../src/sim/action
 import { RoadType, Zone } from '../src/sim/types';
 import { activeQuests, checkQuests, questProgress } from '../src/sim/quests';
 import { QUESTS, advise } from '../src/data/quests';
-import { resolveEvent } from '../src/sim/events';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -100,8 +99,7 @@ describe('The Chronicle', () => {
 
   it('season changes are chronicled', () => {
     const s = createGame(5, 'Chron');
-    // a tale pauses the sim until it is answered (since iteration 85's marsh, seed 5's map brings the white hart by day 23)
-    for (let d = 0; d < 31; d++) { run(s, 900); if (s.pendingEvent) resolveEvent(s, 0); }
+    for (let d = 0; d < 31; d++) run(s, 900);
     expect(s.chronicle.some((e) => /begins/.test(e.text))).toBe(true);
   });
 });

@@ -1,12 +1,11 @@
 import { manaUseOf } from '../src/sim/networks';
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw, canPlaceBuilding } from '../src/sim/world';
-import { recomputeAll, run } from '../src/sim/sim';
+import { recomputeAll } from '../src/sim/sim';
 import { buildRoad, placeBuilding, roadPath } from '../src/sim/actions';
 import { RoadType, Terrain, Zone, idx } from '../src/sim/types';
 import { updateMana } from '../src/sim/networks';
 import { HUSH_CRAFT, dailyBuildings, glimhouseNear } from '../src/sim/growth';
-import { forecast, hasObservatory } from '../src/sim/forecast';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -26,7 +25,6 @@ describe('Torrent Mill', () => {
     expect(canPlaceBuilding(s, 'torrentmill', f.x + 2, f.y + 4)).toMatch(/water/);
     s.terrain[idx(f.x + 3, f.y + 4)] = Terrain.Water;
     expect(canPlaceBuilding(s, 'torrentmill', f.x + 2, f.y + 4)).toBeNull();
-    s.day = 40; // Bloom: the river runs at its normal flow
     updateMana(s);
     const before = s.manaSupply;
     expect(placeBuilding(s, 'torrentmill', f.x + 2, f.y + 4).ok).toBe(true);
@@ -94,23 +92,5 @@ describe('Glimhouse', () => {
     c.lit = true;
     dailyBuildings(s);
     expect(c.stock / cold).toBeCloseTo(1.1 / HUSH_CRAFT, 1);
-  });
-});
-
-describe('Astral Observatory', () => {
-  it('forecasts only when lit, and names surges and seasons', () => {
-    const { s, f } = base();
-    expect(forecast(s)).toEqual([]);
-    const o = placeBuildingRaw(s, 'observatory', f.x + 6, f.y + 4);
-    o.lit = false;
-    expect(hasObservatory(s)).toBe(false);
-    o.lit = true;
-    s.day = 27;
-    const lines = forecast(s).map((l) => l.text).join(' ');
-    expect(lines).toMatch(/Bloom begins in 3 days/);
-    s.overdrawDays = 3;
-    expect(forecast(s).some((l) => /surge in 2 days/.test(l.text) && l.kind === 'bad')).toBe(true);
-    s.overdrawDays = 0;
-    run(s, 10);
   });
 });

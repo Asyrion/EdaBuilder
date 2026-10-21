@@ -2,18 +2,15 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { RoadType, Terrain, Zone, idx } from '../src/sim/types';
+import { RoadType, Zone } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
-import { ALL_EVENTS, chose, maybeFireCalendar, maybeFireEvent, resolveEvent } from '../src/sim/events';
 import { QUESTS } from '../src/data/quests';
 import { checkQuests } from '../src/sim/quests';
 import { dailySurge } from '../src/sim/hazards';
-import { computeBuildingHappiness, dailyBuildings, dailyTrade, craftStockCap } from '../src/sim/growth';
-import { dailyWalkers, tickWalkers, walkersOf } from '../src/sim/walkers';
+import { computeBuildingHappiness, dailyTrade } from '../src/sim/growth';
 import { EDICT_BY_KEY, edictUpkeep } from '../src/sim/edicts';
 import { checkMilestones, computeLedger } from '../src/sim/economy';
-import { canBuild, specialLock } from '../src/data/factions';
 import { paintDistrict } from '../src/sim/actions';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -31,14 +28,8 @@ function town(seed = 41) {
 const ok = (b: { state: string; work: number }) => { b.state = 'ok'; b.work = 0; };
 
 describe('The sweep: quests', () => {
-  it('the Hush vigil and the Thaw feast complete; scenario goals pay only in their scenario; the failed daily leaves the Ledger', () => {
+  it('scenario goals pay only in their scenario; the failed daily leaves the Ledger', () => {
     const s = town();
-    s.day = 91; // the Hush's first day
-    maybeFireCalendar(s);
-    expect(s.pendingEvent?.id).toBe('vigil');
-    resolveEvent(s, 0);
-    expect(chose(s, 'vigil', 0)).toBe(true);
-    expect(QUESTS.find((q) => q.id === 's_vigil')!.done(s)).toBe(true);
     // a valley game at Burgh with ten clean days pays neither the one-node nor the inherited goal
     s.milestone = 6; s.cleanDays = 10; s.day = 120;
     const t0 = s.treasury;
@@ -67,25 +58,8 @@ describe('The sweep: quests', () => {
 });
 
 describe('The sweep: timing and counting', () => {
-  it("the healer's +4 lands in the stored happiness the next day", () => {
-    const s = town();
-    const f = s.founding;
-    const hs = placeBuildingRaw(s, 'healer', f.x + 4, f.y + 3);
-    const h = placeBuildingRaw(s, 'hearth', f.x - 4, f.y + 3, 1);
-    ok(hs); ok(h); h.residents = 4;
-    recomputeAll(s);
-    dailyWalkers(s);
-    const w = walkersOf(s, hs)[0];
-    w.timer = 0;
-    h.happiness = 20;
-    for (let t = 0; t < 600 && (h.tended ?? -1) < s.day; t++) tickWalkers(s);
-    expect(h.tended).toBe(s.day + 1);
-    const untended = computeBuildingHappiness(s, { ...h, tended: -1 } as never);
-    s.day++; // the day rolls over and the daily reader runs
-    expect(computeBuildingHappiness(s, h) - untended).toBe(4);
-  });
 
-  it('a Nexus store delays the surge count; the store drains by its deficit per day; once-tales stay fired past forty', () => {
+  it('a Nexus store delays the surge count; the store drains by its deficit per day', () => {
     const s = town();
     s.manaDemand = 300; s.manaSupply = 100; s.manaStorage = 50; s.manaStorageMax = 120;
     dailySurge(s);
@@ -93,15 +67,6 @@ describe('The sweep: timing and counting', () => {
     s.manaStorage = 0; s.overdrawDays = 0;
     dailySurge(s);
     expect(s.overdrawDays).toBe(1);
-    for (let k = 0; k < 60; k++) s.firedEvents.push(`filler_${k}:0`);
-    s.firedEvents.push('relic:0');
-    const relic = ALL_EVENTS.find((e) => e.id === 'relic')!;
-    expect(relic.once).toBe(true);
-    s.day = 200; s.lastEventDay = 100; s.lastBadDay = 0;
-    const seen = new Set<string>();
-    for (let k = 0; k < 300; k++) { s.pendingEvent = null; s.day += 20; s.lastEventDay = s.day - 40; s.lastBadDay = 0; maybeFireEvent(s); const pe = s.pendingEvent as { id: string } | null; if (pe) seen.add(pe.id); }
-    expect(seen.has('relic')).toBe(false);
-    expect(s.firedEvents.length).toBeGreaterThan(60);
   });
 
   it('the craft-tax cap is the lower one', () => {
@@ -122,7 +87,6 @@ describe('The sweep: edicts and promises', () => {
   it('city-only edicts are not billed per district and are hidden from a district scope', () => {
     const s = town();
     s.districtEdicts['1:closeseason'] = true; // the bounty this test used is parked
-    s.districtEdicts['1:wardens'] = true;
     paintDistrict(s, 1, s.founding.x - 4, s.founding.y - 4, s.founding.x + 4, s.founding.y + 4);
     expect(EDICT_BY_KEY.closeseason.cityOnly).toBe(true);
     expect(edictUpkeep(s)).toBe(0);
@@ -156,13 +120,6 @@ describe('The sweep: edicts and promises', () => {
     expect(s.milestone).toBe(8);
   });
 
-  it('the Peak needs its caller', () => {
-    const s = town();
-    expect(canBuild(s, 'stormpeak')).toBe(false);
-    expect(specialLock(s, 'stormpeak')).toMatch(/caller/);
-    s.firedEvents.push('stormcaller:0');
-    expect(canBuild(s, 'stormpeak')).toBe(true);
-  });
 });
 
 describe('The sweep: sim logic', () => {
@@ -182,14 +139,8 @@ describe('The sweep: sim logic', () => {
     expect(s.trade.exported).toBe(16);
   });
 
-  it('a priced choice needs the purse; old saves load', () => {
+  it('old saves load', () => {
     const s = town();
-    const council = ALL_EVENTS.find((e) => e.id === 'council_carters')!; // the poachers' egg this test used is parked
-    s.pendingEvent = { id: council.id, title: council.title, text: council.text, choices: council.choices.map((c) => ({ label: c.label, desc: String(c.desc) })) };
-    s.treasury = 100;
-    resolveEvent(s, council.choices.findIndex((c) => c.label.startsWith('Pay them off')));
-    expect(s.treasury).toBe(100);
-    expect(s.messages[s.messages.length - 1].text).toMatch(/purse is too light/);
     const o = JSON.parse(serialize(s));
     delete o.stats.firesTotal; delete o.stats.peakPopulation;
     const r = deserialize(JSON.stringify(o), (seed) => createGame(seed));
