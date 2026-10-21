@@ -377,7 +377,7 @@ for (const id of ['c_thorp', 'c_village', 'c_township', 'c_market', 'c_burgh', '
 
 /** "Build X" tasks whose goal is more than that building standing: their line must not say "Built." while they are open.
  *  A test holds this list to the conditions (a plain `has(s, key)` done is the generic case). */
-export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'g_hounds', 'a_academy', 's_brownout', 'w_cradle', 'w_ring', 'p_arch', 'e_foundry', 'e_beacon', 'q_quay', 'q_rider', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'w_wyrm', 'n_tiger', 'y_marvel', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'w_tamer', 'u_hatch', 'u_forge', 'v_landings', 'v_barge', 'v_hatch', 't_spire', 't_tower', 't_nexus', 'z_island']);
+export const NOT_PLAIN_BUILD = new Set(['f_watch', 'd_restless', 'g_hounds', 'a_academy', 's_brownout', 'w_cradle', 'w_ring', 'p_arch', 'e_foundry', 'e_beacon', 'q_quay', 'q_rider', 'q_airship', 'w_meat', 'w_fish', 'w_thatch', 'w_wyrm', 'n_tiger', 'y_marvel', 'y_quiet', 'k_council', 'k_twinroad', 'k_relics', 'k_relicbuild', 'k_assessor', 'w_scholar', 'w_tamer', 'z_island']);
 
 /** The task's status line: its own, else the generic one for a "build X" task whose goal is that building; else none. */
 export function questStatus(s: GameState, q: QuestDef): string | null {

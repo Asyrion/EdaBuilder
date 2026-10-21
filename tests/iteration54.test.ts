@@ -400,12 +400,12 @@ describe('Festivals seen, the daily challenge', () => {
     expect(thaw.choices[0].apply(s)).toMatch(/Foxmoor/);
   });
 
-  it('the daily challenge draws its people from the date, fails on day 61 and is scored by the days to spare and the crowns', () => {
+  it('the daily challenge is the Vellish on every date, fails on day 61 and is scored by the days to spare and the crowns', () => {
     const peoples = new Set(['2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'].map(challengePeople));
-    expect(peoples.size).toBeGreaterThan(1);
+    expect([...peoples]).toEqual(['vellish']); // the only people since the scope reset
     const key = '2026-10-02';
     const s = createChallenge('Daily', key);
-    expect(s.faction).toBe(CHALLENGE_PEOPLES[challengeSeed(key) % 4]);
+    expect(s.faction).toBe(CHALLENGE_PEOPLES[challengeSeed(key) % CHALLENGE_PEOPLES.length]);
     expect(s.challenge).toBe(key);
     expect(s.challengeDay).toBe(-1);
     s.day = CHALLENGE_DAYS;

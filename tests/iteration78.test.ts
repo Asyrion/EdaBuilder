@@ -20,37 +20,36 @@ function opaqueHeight(name: string): number {
   return bottom - top + 1;
 }
 const folk = (name: string) => opaqueHeight(name) / CITIZEN;
-const PEOPLES = ['', '_grimmen', '_veshari', '_tallowkin', '_fennex'];
+const PEOPLES = ['']; // the other peoples' looks are parked (scope reset)
 
 describe('The scale of things: the small buildings against a citizen', () => {
   it('a citizen is still 8×12', () => {
     const d = by.get('cit_0_0') as SpriteDef;
     expect([d.p.w, d.p.h, d.ax, d.ay]).toEqual([8, 12, 4, 12]);
   });
-  it('objects a person reaches over stand at most 1.5 citizens: the well, the tide-well, the seep', () => {
-    for (const n of ['b_well', 'b_tidewell', 'b_seep']) expect(folk(n), n).toBeLessThanOrEqual(1.5);
+  it('objects a person reaches over stand at most 1.5 citizens: the well', () => {
+    for (const n of ['b_well']) expect(folk(n), n).toBeLessThanOrEqual(1.5);
   });
-  it('posts and small shrines at most 2.5: the ward lantern, the shrine, the candle shrine', () => {
-    for (const n of ['b_wardlantern', 'b_shrine', 'b_candleshrine']) expect(folk(n), n).toBeLessThanOrEqual(2.5);
+  it('posts and small shrines at most 2.5: the ward lantern, the shrine', () => {
+    for (const n of ['b_wardlantern', 'b_shrine']) expect(folk(n), n).toBeLessThanOrEqual(2.5);
   });
-  it('sheds, works and level-1 houses at most 2.8 (the Tallowkin wickhouses a storey more, 3.2)', () => {
+  it('sheds, works and level-1 houses at most 2.8', () => {
     for (const n of ['b_fishershut', 'b_smokehouse', 'b_reedcutters', 'b_healer', 'b_torrentmill']) expect(folk(n), n).toBeLessThanOrEqual(2.8);
     for (const zone of ['hearth', 'craft', 'market', 'arcane']) for (const v of [0, 1, 2, 3]) for (const p of PEOPLES) {
       const n = `${zone}_l1_v${v}${p}`;
-      expect(folk(n), n).toBeLessThanOrEqual(p === '_tallowkin' ? 3.2 : 2.8);
+      expect(folk(n), n).toBeLessThanOrEqual(2.8);
     }
   });
   it('the academy is a hall of 5.5 citizens at most, like the other 2×2 halls', () => {
     expect(folk('b_academy')).toBeLessThanOrEqual(5.5);
   });
-  it('the towers keep their height: the spire, the Wick-Tower, the watchpost, the moth-loft', () => {
+  it('the towers keep their height: the spire, the watchpost, the moth-loft', () => {
     expect(folk('b_spire')).toBeGreaterThan(4);
-    expect(folk('b_wicktower')).toBeGreaterThan(3.5);
     expect(folk('b_watchpost')).toBeGreaterThanOrEqual(3); // 36 opaque rows
     expect(folk('b_mothloft')).toBeGreaterThan(3);
   });
   it('a small object stands in the middle of its tile, not at its front corner (the wells, drawn in code since iteration 79: the anchor ten rows above the last row)', () => {
-    for (const n of ['b_well', 'b_tidewell', 'b_seep']) {
+    for (const n of ['b_well']) {
       const d = by.get(n) as SpriteDef;
       expect(d.ay, n).toBe(d.p.h - 1 - 10);
     }

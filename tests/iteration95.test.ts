@@ -28,8 +28,9 @@ const fnv = (a: ArrayLike<number>, h = 0x811c9dc5) => { for (let i = 0; i < a.le
 
 describe('The valley is untouched', () => {
   it('every valley terrain option gives the map it gave before the Atoll (hashes taken on iteration 94\'s tree)', () => {
-    const want: Record<string, string> = { '42:plain': '8f6ef4', '42:island': '170d22bd', '42:one': 'fcd6dc30', '42:under': '96701308', '42:river': '8f6ef4', '42:twin': '285fdd11', '7:plain': 'fb9d04b9', '7:island': 'c2be27ac', '7:one': '88c7d9f8', '7:under': '18d9ec4b', '7:river': '11c20562', '7:twin': 'a82bb26c' };
-    for (const seed of [42, 7]) for (const [k, o] of Object.entries({ plain: {}, island: { island: true }, one: { nodes: 1 }, under: { underhill: true }, river: { riverside: true }, twin: { twinnode: true } })) {
+    // the peoples' starts (under, river, twin) are parked since the scope reset; the Vellish maps keep their hashes
+    const want: Record<string, string> = { '42:plain': '8f6ef4', '42:island': '170d22bd', '42:one': 'fcd6dc30', '7:plain': 'fb9d04b9', '7:island': 'c2be27ac', '7:one': '88c7d9f8' };
+    for (const seed of [42, 7]) for (const [k, o] of Object.entries({ plain: {}, island: { island: true }, one: { nodes: 1 } })) {
       const t = generateTerrain(seed, o);
       let h = fnv(t.terrain); h = fnv(t.gloam, h); h = fnv(t.nodes.flatMap((n) => [n.x, n.y]), h); h = fnv([t.founding.x, t.founding.y], h);
       expect(h.toString(16), `${seed}:${k}`).toBe(want[`${seed}:${k}`]);

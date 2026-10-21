@@ -29,7 +29,7 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
   });
   it('every look belongs to a real building, runs from v0 without a gap, and stands centred on its footprint', () => {
     const looks = Object.keys(manifest).filter((n) => /^b_\w+_v\d+$/.test(n));
-    expect(looks.length).toBeGreaterThan(130);
+    expect(looks.length).toBeGreaterThan(110); // over 130 before the scope reset parked the peoples' looks, 116 after
     for (const n of looks) {
       const [, key, v] = /^b_(\w+)_v(\d+)$/.exec(n)!;
       expect(BUILDING_BY_KEY[key] || key === 'brickworks', n).toBeTruthy();
@@ -46,7 +46,7 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
     for (const p of ['mushroom_', 'glowcap_']) for (let k = 0; k < count(p); k++) expect(manifest[`${p}${k}`].h / 12, `${p}${k}`).toBeLessThanOrEqual(0.6);
   });
   it('the wells keep the yardstick (1.5 citizens) and stand in the middle of their tile', () => {
-    for (const p of ['b_well_v', 'b_seep_v', 'b_tidewell_v']) for (let k = 0; k < count(p); k++) {
+    for (const p of ['b_well_v']) for (let k = 0; k < count(p); k++) {
       const m = manifest[`${p}${k}`];
       expect(m.h / 12, `${p}${k}`).toBeLessThanOrEqual(1.5 + 2 / 12); // the outline's two rows
     }
@@ -61,9 +61,9 @@ describe('The eda-lore swap, batch 2: every compatible asset', () => {
     expect(seen.size).toBe(5);
   });
   it('a painting imported before stays the first look of its building', () => {
-    for (const n of ['b_boneyard', 'b_ossuary', 'b_sextonchapel', 'b_wicktower', 'b_spire']) expect(manifest[`${n}_v0`], n).toEqual(manifest[n]);
+    for (const n of ['b_boneyard', 'b_ossuary', 'b_sextonchapel', 'b_spire']) expect(manifest[`${n}_v0`], n).toEqual(manifest[n]);
   });
   it('the looks fronted on the left are mirrored', () => {
-    expect(batch2.filter((e) => e.flip).map((e) => e.name).sort()).toEqual(["b_candleshrine_v0","b_drakemews_v0","b_fishershut_v0","b_forgetemple_v0","b_golemfoundry_v0","b_healer_v0","b_househall_v0","b_hunterslodge_v0","b_hunterslodge_v3","b_lantern_v0","b_leybeacon_v0","b_ossuary_v5","b_shrine_v0","b_shrine_v1","b_shrine_v10","b_shrine_v3","b_shrine_v5","b_shrine_v6","b_shrine_v7","b_shrine_v8","b_shrine_v9","b_spire_v1","b_stoneward_v0","b_stoneward_v1","b_stoneward_v2","b_stormpeak_v0","b_tamerslodge_v0","b_wyrmforge_v0"]);
+    expect(batch2.filter((e) => e.flip).map((e) => e.name).sort()).toEqual(["b_drakemews_v0","b_fishershut_v0","b_golemfoundry_v0","b_healer_v0","b_househall_v0","b_hunterslodge_v0","b_hunterslodge_v3","b_lantern_v0","b_leybeacon_v0","b_ossuary_v5","b_shrine_v0","b_shrine_v1","b_shrine_v10","b_shrine_v3","b_shrine_v5","b_shrine_v6","b_shrine_v7","b_shrine_v8","b_shrine_v9","b_spire_v1","b_stormpeak_v0","b_tamerslodge_v0","b_wyrmforge_v0"]);
   });
 });

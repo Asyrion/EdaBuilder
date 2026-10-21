@@ -14,11 +14,10 @@ function opaqueHeight(d: SpriteDef): number { let top = -1, bottom = -1; for (le
 const count = (d: { p: { w: number; h: number; data: Uint8ClampedArray; get: (x: number, y: number) => number } }, colour: string) => { let n = 0; for (let y = 0; y < d.p.h; y++) for (let x = 0; x < d.p.w; x++) if (d.p.get(x, y) > 0 && hex(d, x, y) === colour) n++; return n; };
 
 describe('The twelve redrawn by hand after their paintings', () => {
-  it('the atlas draws the hand-drawn houses for the Vellish look and the spec builds for the peoples', () => {
+  it('the atlas draws the hand-drawn houses', () => {
     expect(get('hearth_l2_v0').p.h).toBe(drawHearthL2v0().p.h);
     expect(get('craft_l1_v2').p.h).toBe(drawCraftL1v2().p.h);
     expect(get('b_depot').p.w).toBe(66);
-    for (const p of ['_grimmen', '_veshari', '_tallowkin', '_fennex']) expect(get(`hearth_l2_v0${p}`).p.h).not.toBe(drawHearthL2v0().p.h);
   });
   it('the four hearths differ in composition: their heights, roof colours and chimney kinds are not all alike', () => {
     const hs = [0, 1, 2, 3].map((v) => opaqueHeight(get(`hearth_l2_v${v}`)));

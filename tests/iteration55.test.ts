@@ -102,18 +102,18 @@ describe('The bot keeps a purse', () => {
     s.ledger.net = 600;
     (bot as any).pursueGoal();
     expect(s.loan).toBe(0); // never for the Fonts
-    (bot as any).goal = { kind: 'hall', key: 'lantern', cost: 6500, mana: false };
-    s.ledger.net = 400; // 50,000 at half a crown in a hundred is 250 a day: the ledger must carry twice that
+    (bot as any).goal = { kind: 'hall', key: 'lantern', cost: 9500, mana: false };
+    s.ledger.net = 600; // 70,000 at half a crown in a hundred is 350 a day: the ledger must carry twice that
     (bot as any).pursueGoal();
     expect(s.loan).toBe(0);
-    s.ledger.net = 560;
+    s.ledger.net = 750;
     (bot as any).pursueGoal();
-    expect(s.loan).toBe(50000);
+    expect(s.loan).toBe(70000);
     expect(s.buildings.filter((b) => b && b.kind === 'lantern').length).toBe(1);
     expect(bot.loans).toBe(1);
     // while it is out, the reserve holds the loan; once the purse holds it and two thousand more and nothing is saved for, it goes back
     s.manaSupply = 500; s.manaDemand = 100; s.brownout = 0;
-    s.treasury = 52500;
+    s.treasury = 72500;
     bot.step();
     expect(s.loan).toBe(0);
   });
@@ -276,7 +276,7 @@ describe('Five dev commands', () => {
     expect(flooding(s)).toBe(false);
     expect(riverFrozen(s)).toBe(false);
   });
-  it("complete a task pays its reward; another people's or a done task is refused", () => {
+  it("complete a task pays its reward; an unknown or a done task is refused", () => {
     const s = town();
     const q = questsFor(s).find((x) => x.reward > 0 && !s.questsDone.includes(x.id))!;
     const t0 = s.treasury;
@@ -284,7 +284,7 @@ describe('Five dev commands', () => {
     expect(s.questsDone).toContain(q.id);
     expect(s.treasury).toBe(t0 + q.reward);
     expect(runDev(s, 'quest', q.id, at(s))).toBe('Already done.');
-    expect(runDev(s, 'quest', 't_hall', at(s))).toMatch(/another people/);
+    expect(runDev(s, 'quest', 't_hall', at(s))).toMatch(/No such task/); // a parked people's task (scope reset)
   });
   it("set a standing: a guild's or the Crown's favour, clamped to 0..100", () => {
     const s = town();
