@@ -5,13 +5,11 @@ import { RELIC_SETS } from './relics';
 import { SERVICE_TYPES, Zone } from './types';
 
 const CATEGORIES: BuildingCategory[] = ['zone', 'ley', 'water', 'service', 'leisure', 'wonder', 'marvel', 'special'];
-const PEOPLES = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
+const PEOPLES = ['vellish'];
 const ZONE_KEYS = ['hearth', 'market', 'craft', 'arcane'];
 const KEY = /^[a-z][a-z0-9_]*$/;
 /** `unlock` of a building no milestone opens (a guild hall comes with its charter, guilds.ts). */
 export const NEVER = 99;
-/** Milestone unlocks that each people's swap table in data/factions.ts turns into its own building. */
-const SLOTS = ['lantern_wonder'];
 
 export function validateContent(defs = BUILDINGS, roads = ROADS, milestones = MILESTONES, relics = RELIC_SETS): string[] {
   const out: string[] = [];
@@ -38,7 +36,7 @@ export function validateContent(defs = BUILDINGS, roads = ROADS, milestones = MI
   const roadKeys = new Set(roads.map((r) => r.key));
   for (const r of roads) if (!(Number.isInteger(r.unlock) && r.unlock >= 0 && r.unlock < milestones.length)) out.push(`road ${r.key}: unlock ${r.unlock} is not a milestone`);
   milestones.forEach((m, i) => {
-    for (const u of m.unlocks) if (!seen.has(u) && !roadKeys.has(u) && !ZONE_KEYS.includes(u) && !PEOPLES.includes(u) && !SLOTS.includes(u)) out.push(`milestone ${i} (${m.name}): unlocks unknown "${u}"`);
+    for (const u of m.unlocks) if (!seen.has(u) && !roadKeys.has(u) && !ZONE_KEYS.includes(u) && !PEOPLES.includes(u)) out.push(`milestone ${i} (${m.name}): unlocks unknown "${u}"`);
     if (i > 0 && !(m.pop > milestones[i - 1].pop)) out.push(`milestone ${i} (${m.name}): needs more folk than the one before`);
   });
   const relicIds = new Set<string>();

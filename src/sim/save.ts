@@ -40,6 +40,10 @@ export function serialize(state: GameState): string {
 
 /** A save from a newer Wardlight than this one: refused with a reason the title screen and the import show (iteration 55). */
 export class SaveVersionError extends Error {}
+/** A charter of a people the scope reset parked (phase 1a, docs/PARKED.md): refused, it would load buildings this build no longer has. */
+export function parkedPeopleMessage(people: string): string {
+  return `This charter belongs to a people that is parked for now (${people}): this Wardlight plays the Vellish only.`;
+}
 
 /**
  * Save migrations by version (iteration 55). `MIGRATIONS[v]` lifts a save of version v to v + 1; they run in order from the
@@ -78,7 +82,6 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.pleadings = state.pleadings ?? 0;
     state.pilgrimsDay = state.pilgrimsDay ?? -1;
     state.heart = state.heart ?? { held: 'none', step: 0, day: -1 }; // iteration 69
-    state.litHeld = state.litHeld ?? 0;
     state.edictSince = state.edictSince ?? {}; // an edict with no stamp may be repealed
     state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
     state.remembranceDead = state.remembranceDead ?? 0;
@@ -116,6 +119,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   if (typeof o.seed !== 'number') throw new Error('Not a Wardlight save');
   const saved = typeof o.version === 'number' ? o.version : 6;
   if (saved > SAVE_VERSION) throw new SaveVersionError(`This charter was saved by a newer Wardlight (save version ${saved}); this one reads version ${SAVE_VERSION} and older.`);
+  if (o.faction !== undefined && o.faction !== 'vellish') throw new SaveVersionError(parkedPeopleMessage(String(o.faction)));
   const state = fresh(o.seed);
   const freshStats = { ...state.stats };
   for (const [k, v] of Object.entries(o)) {

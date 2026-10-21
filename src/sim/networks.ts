@@ -30,23 +30,12 @@ export const GLOWVINE_REACH = 12;
 export const PORTAL_CAP = 60;
 export const PORTAL_MANA = 0.1;
 /** How much mana of buildings a member of the chain can light; over it, its farthest go dark. Nodes carry anything. */
-export const LOAD_CAP: Record<string, number> = { spire: 80, wicktower: 20, stake: 60, nexus: 200 };
-/** The Underking's Seat warms cradles this far for no mana; the Lantern of Wicks halves the draw through lit spires this far (iteration 53). */
-export const SEAT_WARMTH = 30;
-export const WICKS_REACH = 30;
-/** Is this cradle warmed by a lit Underking's Seat (lit at no mana)? */
-export function seatWarmed(state: GameState, b: Building): boolean {
-  return isCradle(b.kind) && state.buildings.some((o) => o && o.kind === 'underkingseat' && o.state === 'ok' && o.lit && Math.hypot(o.x + 1 - b.x - 0.5, o.y + 1 - b.y - 0.5) <= SEAT_WARMTH);
-}
-/** Is this spire's draw halved by a lit Lantern of Wicks within reach? */
-export function wicksHalved(state: GameState, b: Building): boolean {
-  return b.kind === 'spire' && state.buildings.some((o) => o && o.kind === 'lanternofwicks' && o.state === 'ok' && o.lit && Math.hypot(o.x + 1 - b.x, o.y + 1 - b.y) <= WICKS_REACH);
-}
+export const LOAD_CAP: Record<string, number> = { spire: 80, stake: 60, nexus: 200 };
 export function loadCapOf(b: Building): number {
   return LOAD_CAP[b.kind] ?? (LEY_HALLS.includes(b.kind) ? 200 : 80);
 }
 export function isLeyMember(b: Building): boolean {
-  return b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'stake' || LEY_HALLS.includes(b.kind);
+  return b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake' || LEY_HALLS.includes(b.kind);
 }
 /** Brownout tier: 0 essential (wards, water), 1 normal, 2 dim (leisure): the dim go dark first. */
 export function priorityOf(b: Building): 0 | 1 | 2 {
@@ -88,7 +77,7 @@ export function updateMana(state: GameState): void {
     if (def.manaProduce) {
       // a mill with an older mill within 8 shares its river and runs at ×0.6
       const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= MILL_SHARE_REACH && Math.abs(o.y - b.y) <= MILL_SHARE_REACH);
-      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : b.kind === 'greatweir' && b.sluice ? 2 : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); // the Weir's open sluice doubles it (iteration 53)
+      const made = def.manaProduce * (b.kind === 'torrentmill' ? millFactor(state) * (aspectAt(state, b.x, b.y) === 'tide' ? 1.5 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); 
       supply += made;
       b.load = made;
     }
@@ -98,16 +87,16 @@ export function updateMana(state: GameState): void {
   // 2. spire chain: BFS from nodes over spires/nexus
   const spires: Building[] = [];
   forEachBuilding(state, (b) => {
-    if ((b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
+    if ((b.kind === 'spire' || b.kind === 'nexus' || LEY_HALLS.includes(b.kind) || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building') spires.push(b);
   });
   const spireLit = new Array(spires.length).fill(false);
   const linked: boolean[] = state.nodes.map(() => false);
   const members: MemberLoad[] = [];
   const sources: { x: number; y: number; r: number }[] = state.nodes.map((nd) => ({ x: nd.x, y: nd.y, r: NODE_RADIUS }));
   const queue: { x: number; y: number; node: number }[] = state.nodes.map((nd, k) => ({ x: nd.x, y: nd.y, node: k }));
-  const reach = factionOf(state).rules.spireReach; // the Tallowkin's spires reach a tile further
+  const reach = factionOf(state).rules.spireReach; // a people's spires may reach further (0 for the Vellish)
   const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK + reach);
-  const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : b.kind === 'wicktower' ? 4 : SPIRE_RADIUS + reach);
+  const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : SPIRE_RADIUS + reach);
   while (queue.length) {
     const q = queue.pop()!;
     for (let k = 0; k < spires.length; k++) {
@@ -120,7 +109,7 @@ export function updateMana(state: GameState): void {
         spireLit[k] = true;
         s.lit = true;
         if (q.node >= 0) linked[q.node] = true; // a member found straight from a node links it
-        if (s.kind !== 'wicktower') queue.push({ x: cx, y: cy, node: -1 }); // a Wick-Tower glows but relays nothing
+        queue.push({ x: cx, y: cy, node: -1 });
         sources.push({ x: cx, y: cy, r: radiusOf(s) });
         members.push({ b: s, x: cx, y: cy, cap: loadCapOf(s), load: 0, list: [] });
       }
@@ -238,21 +227,6 @@ export function updateMana(state: GameState): void {
   }
   // (lit road tiles are marked after the shortfall decides whether the lantern-ways dim)
 
-  // 4b. the Underking's Seat warms every cradle within SEAT_WARMTH for no mana (iteration 53); the Lantern of Wicks halves what lit spires within WICKS_REACH carry
-  const seats: { x: number; y: number }[] = [];
-  const wicks: { x: number; y: number }[] = [];
-  for (let s = 0; s < state.buildings.length; s++) {
-    const b = state.buildings[s];
-    if (!b || !litB[s] || b.state !== 'ok') continue;
-    if (b.kind === 'underkingseat') seats.push({ x: b.x + 1, y: b.y + 1 });
-    if (b.kind === 'lanternofwicks') wicks.push({ x: b.x + 1, y: b.y + 1 });
-  }
-  const warmed = new Set<number>();
-  if (seats.length) for (let s = 0; s < state.buildings.length; s++) {
-    const b = state.buildings[s];
-    if (!b || b.state !== 'ok' || !isCradle(b.kind)) continue;
-    if (seats.some((q) => Math.hypot(q.x - b.x - 0.5, q.y - b.y - 0.5) <= SEAT_WARMTH)) { warmed.add(s); litB[s] = true; }
-  }
   // 5. demand & brownout
   let consumers: Consumer[] = [];
   let demand = 0;
@@ -267,7 +241,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = warmed.has(s) ? 0 : manaUseOf(b, hush) * mult * (snow && BUILDING_BY_KEY[b.kind].zone === Zone.Hearth ? 1.1 : 1); // a blizzard: the hearths drink a tenth more (iteration 54)
+    const use = manaUseOf(b, hush) * mult * (snow && BUILDING_BY_KEY[b.kind].zone === Zone.Hearth ? 1.1 : 1); // a blizzard: the hearths drink a tenth more (iteration 54)
     if (use > 0) {
       demand += use;
       let dmin = Infinity;
@@ -286,7 +260,6 @@ export function updateMana(state: GameState): void {
       let bd = Infinity;
       for (const nd of state.nodes) { const d = Math.hypot(bx - nd.x, by - nd.y); if (d < bd) { bd = d; best = null; } }
       for (const m of members) { const d = Math.hypot(bx - m.x, by - m.y); if (d < bd) { bd = d; best = m; } }
-      if (best && best.b.kind === 'spire' && wicks.length && wicks.some((q) => Math.hypot(q.x - best!.x, q.y - best!.y) <= WICKS_REACH)) { demand -= c.use / 2; c.use /= 2; } // the Lantern of Wicks halves the draw through its spires
       if (best) { best.load += c.use; best.list.push({ c, d: bd }); }
     }
     const shed = new Set<number>();
@@ -374,7 +347,7 @@ export function updateMana(state: GameState): void {
 }
 
 /** How many zone levels a water building serves; the farthest homes beyond that are dry. */
-export const WATER_CAP: Record<string, number> = { well: 30, seep: 20, tidewell: 45, cistern: 90, stake: 20 };
+export const WATER_CAP: Record<string, number> = { well: 30, cistern: 90, stake: 20 };
 export function waterCapOf(b: Building): number {
   return WATER_CAP[b.kind] ?? 30;
 }

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { buildRoad, placeBuilding, roadPath, scatterDust, toggleSluice } from '../src/sim/actions';
+import { buildRoad, placeBuilding, roadPath, scatterDust } from '../src/sim/actions';
 import { AgentKind, DAYS_PER_SEASON, RoadType, TICKS_PER_DAY, Terrain, cracked, idx, isWater, type Agent, type Dragon } from '../src/sim/types';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
 import {
@@ -16,7 +16,7 @@ import { ALL_EVENTS, maybeFireReturn, resolveEvent } from '../src/sim/events';
 import { tickCreatures, updateCreatures } from '../src/sim/creatures';
 import { BARGE_VARIANT, dailyBarges, swimsBarges, tideMooring } from '../src/sim/vehicles';
 import { GOLEM_LABOUR, dailyBeasts, guardGolems, labourGolems, setGolemDuty, surgeMaddensGolems, worksGolems } from '../src/sim/beasts';
-import { manaUseOf, seatWarmed, updateMana, wicksHalved } from '../src/sim/networks';
+import { manaUseOf, updateMana } from '../src/sim/networks';
 import { dailySurge, CORES_BROKEN_DAYS } from '../src/sim/hazards';
 import { checkMilestones } from '../src/sim/economy';
 import { updateCoverage } from '../src/sim/services';
@@ -67,8 +67,8 @@ describe('Lines that do what they say', () => {
     expect(aurasAt(s, c.x, c.y).length).toBe(0);
   });
 
-  it("the Crown's gift matches the people: tide for the Veshari, ember for the rest", () => {
-    for (const [faction, kind, line] of [['vellish', 'cradle', 'ember'], ['grimmen', 'hatchery', 'ember'], ['veshari', 'tidepool', 'tide'], ['tallowkin', 'cradle', 'ember']] as const) {
+  it("the Crown's gift is an ember egg", () => {
+    for (const [faction, kind, line] of [['vellish', 'cradle', 'ember']] as const) {
       const s = createGame(7, 'Gift', 'valley', faction);
       const f = s.founding;
       flatten(s, f.x - 6, f.y - 6, f.x + 6, f.y + 6);
@@ -81,39 +81,6 @@ describe('Lines that do what they say', () => {
     }
   });
 
-  it('a Tide drake swims a barge a day from the mooring nearest its cradle, strike or no strike', () => {
-    const s = createGame(41, 'Sablemouth', 'valley', 'veshari');
-    const f = s.founding;
-    flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
-    for (let dx = -12; dx <= 12; dx++) for (let dy = 5; dy <= 6; dy++) s.terrain[idx(f.x + dx, f.y + dy)] = Terrain.Water;
-    for (let dx = -13; dx <= 13; dx++) for (const dy of [4, 7]) s.terrain[idx(f.x + dx, f.y + dy)] = Terrain.Shore;
-    s.waterDist = distanceMap((i) => isWater(s.terrain[i]), 15);
-    const a = placeBuildingRaw(s, 'landing', f.x - 10, f.y + 4); ok(a);
-    const b = placeBuildingRaw(s, 'landing', f.x + 10, f.y + 4); ok(b);
-    const pool = placeBuildingRaw(s, 'tidepool', f.x - 8, f.y + 1); ok(pool); pool.lit = true;
-    const works: ReturnType<typeof placeBuildingRaw>[] = [];
-    for (let k = 0; k < 3; k++) { const w = placeBuildingRaw(s, 'craft', f.x - 12 + k, f.y + 2, 2); ok(w); w.stock = 60; works.push(w); }
-    const markets: ReturnType<typeof placeBuildingRaw>[] = [];
-    for (let k = 0; k < 3; k++) { const m = placeBuildingRaw(s, 'market', f.x + 8 + k, f.y + 2, 2); ok(m); m.stock = 0; markets.push(m); }
-    recomputeAll(s);
-    const d = addEgg(s, 'tide')!;
-    d.stage = 2;
-    expect(swimsBarges(d)).toBe(true);
-    expect(tideMooring(s, d)?.id).toBe(a.id);
-    s.modifiers.push({ kind: 'barges', value: -1, until: s.day + 10, label: 'strike' }); // the bargemen are on strike
-    dailyBarges(s);
-    const barges = s.agents.filter((x) => x.kind === AgentKind.Cart && x.variant === BARGE_VARIANT);
-    expect(barges.length).toBe(1);
-    expect(barges[0].dragonId).toBe(d.id);
-    expect(barges[0].homeId).toBe(a.id);
-    expect(s.stats.tideTrips).toBe(1);
-    expect(s.stats.bargeTrips).toBe(1);
-    expect(works.reduce((n, w) => n + w.stock, 0)).toBeLessThan(180);
-    dailyBarges(s); // one out at a time
-    expect(s.stats.tideTrips).toBe(1);
-    d.role = 'delver'; // a drake with a working role radiates nothing and swims nothing
-    expect(swimsBarges(d)).toBe(false);
-  });
 });
 
 describe('Cradles with a ceiling', () => {
@@ -441,6 +408,12 @@ describe('Materials with sinks', () => {
 });
 
 describe('Marvels and wonders with a role', () => {
+  it('the Lantern draws 10; the Vellish river freezes, so no flood of either kind', () => {
+    expect(BUILDING_BY_KEY.lantern.manaUse).toBe(10);
+    const v = createGame(41, 'Dry');
+    expect(floodedAt(v, v.founding.x, v.founding.y)).toBe(false);
+  });
+
   it('the Hall of Marvels exhibits each rare good for +2, lit only', () => {
     const { s, f } = nest();
     const h = placeBuildingRaw(s, 'hearth', f.x - 8, f.y + 1, 1); ok(h);
@@ -518,73 +491,6 @@ describe('Marvels and wonders with a role', () => {
     expect(s.messages.some((m) => /a tenth more/.test(m.text))).toBe(true);
   });
 
-  it('the Lantern draws 10; the Weir makes 45, or 90 with the sluice open, which floods the bank below it in the Thaw', () => {
-    expect(BUILDING_BY_KEY.lantern.manaUse).toBe(10);
-    expect(BUILDING_BY_KEY.greatweir.manaProduce).toBe(45);
-    const s = createGame(41, 'Weir', 'valley', 'veshari');
-    const f = s.founding;
-    flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
-    for (let dx = -12; dx <= 12; dx++) for (let dy = 5; dy <= 6; dy++) s.terrain[idx(f.x + dx, f.y + dy)] = Terrain.Water;
-    for (let dx = -13; dx <= 13; dx++) for (const dy of [4, 7]) s.terrain[idx(f.x + dx, f.y + dy)] = Terrain.Shore;
-    s.waterDist = distanceMap((i) => isWater(s.terrain[i]), 15);
-    recomputeAll(s);
-    const before = s.manaSupply;
-    const weir = placeBuildingRaw(s, 'greatweir', f.x + 2, f.y + 7); ok(weir);
-    updateMana(s);
-    expect(s.manaSupply - before).toBeCloseTo(45, 5);
-    expect(toggleSluice(s, weir.id)).toBeNull();
-    updateMana(s);
-    expect(s.manaSupply - before).toBeCloseTo(90, 5);
-    s.day = 10; // the Thaw, past day 5
-    expect(floodedAt(s, weir.x + 3, weir.y)).toBe(true);
-    expect(floodedAt(s, weir.x + 40, weir.y)).toBe(false);
-    weir.sluice = false;
-    expect(floodedAt(s, weir.x + 3, weir.y)).toBe(false);
-    const v = createGame(41, 'Dry'); // the Vellish river freezes: no flood of either kind
-    expect(floodedAt(v, v.founding.x, v.founding.y)).toBe(false);
-  });
-
-  it("the Underking's Seat warms every hatchery within 30 for no mana", () => {
-    const s = createGame(41, 'Deep', 'valley', 'grimmen');
-    const f = s.founding;
-    flatten(s, f.x - 30, f.y - 12, f.x + 30, f.y + 12);
-    const seat = placeBuildingRaw(s, 'underkingseat', f.x - 4, f.y - 5); ok(seat);
-    const hatch = placeBuildingRaw(s, 'hatchery', f.x + 20, f.y - 4); ok(hatch);
-    recomputeAll(s);
-    expect(seat.lit).toBe(true);
-    expect(hatch.lit).toBe(true);
-    expect(seatWarmed(s, hatch)).toBe(true);
-    const demand = s.manaDemand;
-    const hatch2 = placeBuildingRaw(s, 'hatchery', f.x + 22, f.y + 4); ok(hatch2);
-    updateMana(s);
-    expect(hatch2.lit).toBe(true);
-    expect(s.manaDemand).toBe(demand); // warmed for nothing
-    const far = placeBuildingRaw(s, 'hatchery', f.x - 28, f.y + 8); ok(far); // 25 tiles: within reach
-    updateMana(s);
-    expect(far.lit).toBe(true);
-    seat.state = 'building';
-    updateMana(s);
-    expect(hatch.lit).toBe(false);
-    expect(seatWarmed(s, hatch)).toBe(false);
-  });
-
-  it('the Lantern of Wicks halves what lit spires within 30 carry', () => {
-    const s = createGame(41, 'Wicks', 'valley', 'tallowkin');
-    const f = s.founding;
-    flatten(s, f.x - 30, f.y - 12, f.x + 30, f.y + 12);
-    const spire = placeBuildingRaw(s, 'spire', f.x + 5, f.y - 2); ok(spire);
-    for (let k = 0; k < 4; k++) { const h = placeBuildingRaw(s, 'hearth', f.x + 7, f.y - 4 + k, 2); ok(h); h.residents = 3; }
-    recomputeAll(s);
-    expect(spire.lit).toBe(true);
-    const load0 = spire.load!;
-    expect(load0).toBeGreaterThan(0);
-    const wicks = placeBuildingRaw(s, 'lanternofwicks', f.x + 12, f.y - 6); ok(wicks); // linked: a hall of the chain, carrying its own draw
-    updateMana(s);
-    expect(wicks.lit).toBe(true);
-    expect(wicksHalved(s, spire)).toBe(true);
-    expect(spire.load!).toBeCloseTo(load0 / 2, 5);
-    expect(wicks.load).toBeGreaterThan(0);
-  });
 });
 
 describe('The Wyrm-Court after the binding, and golems assigned', () => {

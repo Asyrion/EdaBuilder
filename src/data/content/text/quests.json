@@ -92,7 +92,7 @@
   "g_burn": {
     "chapter": "The grey edge",
     "title": "Burn back 50 tiles of Gloam",
-    "hint": "Wards and Gloam view (g) show the grey and what holds it. A lit Ward Lantern burns the grey in its reach; a Grimmen Stone Ward only holds it, and its stone-sexton cuts two tiles a day beside any road it walks that touches the grey."
+    "hint": "Wards and Gloam view (g) show the grey and what holds it. A lit Ward Lantern burns the grey in its reach."
   },
   "g_wall": {
     "chapter": "The grey edge",
@@ -352,7 +352,7 @@
   "w_wyrm": {
     "chapter": "Goods",
     "title": "Clear the bridge",
-    "hint": "A marsh-wyrm lairs under a bridge, and the carts crawl. A Veshari Hall whose reach covers the bridge drives it off, and so does a Quay raised within 10 of it."
+    "hint": "A marsh-wyrm lairs under a bridge, and the carts crawl. A Water-Mages' Hall whose reach covers the bridge drives it off, and so does a Quay raised within 10 of it."
   },
   "w_ford": {
     "chapter": "Goods",
@@ -489,126 +489,6 @@
     "title": "Pilgrims on the road",
     "hint": "Shrines and temples on roads send pilgrims to one another and to the Founding Stake; the roads they walk count as under faith."
   },
-  "u_cut": {
-    "chapter": "The Underhill",
-    "title": "Cut the first hill",
-    "hint": "Stone quarried is counted from hills levelled (Land tab) and buildings standing on hills; every depth milestone needs it. Two stone opens the Cut."
-  },
-  "u_seep": {
-    "chapter": "The Underhill",
-    "title": "Cut a Seep at the hill foot",
-    "hint": "Water tab. A Seep must touch hills; it waters 6 tiles and asks no mana."
-  },
-  "u_street": {
-    "chapter": "The Underhill",
-    "title": "A street of six halls on the hill",
-    "hint": "Zone hearths on hill tiles beside a road: hills are the Grimmen's best land and grass is poor."
-  },
-  "u_ward": {
-    "chapter": "The Underhill",
-    "title": "Raise a Stone Ward",
-    "hint": "Services tab at the Gallery. A standing stone holds the Gloam back 8 tiles with no mana."
-  },
-  "u_gallery": {
-    "chapter": "The Underhill",
-    "title": "Reach the Gallery",
-    "hint": "A hundred folk and six stone quarried."
-  },
-  "u_hatch": {
-    "chapter": "The Underhill",
-    "title": "Hatch a stone line",
-    "hint": "A Hatchery (Deep Hold) takes Bone, Grey and Ember eggs only; the bright lines are sold on to the Crown."
-  },
-  "u_forge": {
-    "chapter": "The Underhill",
-    "title": "Bind a Warden at the Forge-Temple",
-    "hint": "Deephold. A Warden that mining wakes within 20 tiles of a lit Forge-Temple climbs out already bound."
-  },
-  "u_seat": {
-    "chapter": "The Underhill",
-    "title": "Cut the Underking's Seat",
-    "hint": "Leisure tab at the Underking's Hall. The deepest hall in Eda wards 30 tiles and counts ten stone."
-  },
-  "v_well": {
-    "chapter": "The Sable",
-    "title": "Sink a tide-well",
-    "hint": "Water tab. A Tide-Well must touch river or lake water; it waters 10 tiles and asks no mana."
-  },
-  "v_landings": {
-    "chapter": "The Sable",
-    "title": "Lay two landings",
-    "hint": "Services tab. Barges sail between landings, and every landing counts toward the next reach."
-  },
-  "v_barge": {
-    "chapter": "The Sable",
-    "title": "Send the first barge",
-    "hint": "A barge casts off when works within 8 tiles of one landing hold goods and markets within 8 of another have room."
-  },
-  "v_mill": {
-    "chapter": "The Sable",
-    "title": "A mill in the current",
-    "hint": "Ley tab from the Haven. A Torrent Mill on the bank makes a third more for the Veshari, and the river never freezes for them."
-  },
-  "v_pool": {
-    "chapter": "The Sable",
-    "title": "Dig a Tide Pool",
-    "hint": "Services tab from the Haven. A Tide Pool takes Tide, Storm and Glim eggs; it must touch water and sit within 6 of a node or spire."
-  },
-  "v_hatch": {
-    "chapter": "The Sable",
-    "title": "Hatch a water line",
-    "hint": "A tide egg comes up in a net once a Tide Pool stands; a storm egg after a mana-storm. Keep one."
-  },
-  "v_flood": {
-    "chapter": "The Sable",
-    "title": "Weather the first flood",
-    "hint": "From the fifth night of the Hush the Sable rises: homes on the bank lose heart unless bargemen bail them or a Great Weir stands. Come through one Hush, by bailing or behind a Great Weir."
-  },
-  "v_weir": {
-    "chapter": "The Sable",
-    "title": "Raise the Great Weir",
-    "hint": "Leisure tab at Vesh's Court. The Weir makes 90 mana from the current, wards 30 tiles across the water and holds the flood."
-  },
-  "t_spire": {
-    "chapter": "The Wick",
-    "title": "Light the first spire",
-    "hint": "Ley tab. A Tallowkin spire costs twice the Vellish price and reaches a tile farther; every window it lights counts toward the next milestone."
-  },
-  "t_tower": {
-    "chapter": "The Wick",
-    "title": "Raise a Wick-Tower",
-    "hint": "Ley tab. A Wick-Tower lights four tiles from a lit spire or node for a quarter of the price, and sends a lamplighter down the street each day."
-  },
-  "t_shrine": {
-    "chapter": "The Wick",
-    "title": "Set a Candle-Shrine",
-    "hint": "Services tab. The Candle-Shrine lights itself and asks no mana; faith within 6."
-  },
-  "t_half": {
-    "chapter": "The Wick",
-    "title": "Light half the city",
-    "hint": "Twenty buildings standing and half of them lit: the Taper asks half, the Hall of Wicks nine tenths. The Mana view (1) shows the dark ones in red."
-  },
-  "t_vigil": {
-    "chapter": "The Wick",
-    "title": "Keep the Hush vigil",
-    "hint": "On the first night of the Hush the city is asked to keep every window lit. The Tallowkin pay half the candle-money and may not refuse; the Hall of Wicks is sworn at that vigil."
-  },
-  "t_nexus": {
-    "chapter": "The Wick",
-    "title": "Raise a Nexus",
-    "hint": "Ley tab from the Lantern. A Nexus relays the ley nine tiles, holds a store against the surge and carries two hundred of load."
-  },
-  "t_hall": {
-    "chapter": "The Wick",
-    "title": "Raise the Hall of Wicks",
-    "hint": "Leisure tab from Beacon-Street, once the vigil has been kept. The Hall lights itself and nine tiles around it, relays the ley like a Nexus and sends three lamplighters out each day."
-  },
-  "t_lantern": {
-    "chapter": "The Wick",
-    "title": "Raise the Lantern of Wicks",
-    "hint": "Leisure tab at the Hall of Wicks milestone: nine tenths of the city lit. The Lantern wards 30 tiles and lights the street around it."
-  },
   "v_find": {
     "chapter": "The Vein-Wyrm",
     "title": "Stir the Sleeping Wyrm",
@@ -637,7 +517,7 @@
   "z_daily": {
     "chapter": "The Charter",
     "title": "Daily challenge: the fifth milestone by day 60",
-    "hint": "The same valley and people for everyone today. Speed matters: zone early, light everything, keep the tithe at 10%. Day 61 is too late; the score is the days to spare and a point a thousand crowns."
+    "hint": "The same valley for everyone today. Speed matters: zone early, light everything, keep the tithe at 10%. Day 61 is too late; the score is the days to spare and a point a thousand crowns."
   },
   "z_onenode": {
     "chapter": "The Charter",
@@ -692,7 +572,7 @@
   "c_beacon": {
     "chapter": "The Crown",
     "title": "Become a Beacon of Eda (2200 folk)",
-    "hint": "Reach 2200 folk and your people's gate (the top bar names it). The Vellish must also raise and light the Lantern of Vell."
+    "hint": "Reach 2200 folk and the happiness gate (the top bar names it), and raise and light the Lantern of Vell."
   },
   "c_daughter": {
     "chapter": "The Crown",

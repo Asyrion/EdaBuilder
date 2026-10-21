@@ -3,7 +3,7 @@ import { BUILDING_BY_KEY, isDepot } from './catalog';
 import { AgentKind, Zone, type Building, type GameState } from './types';
 import type { EventDef } from './events';
 import { tradeRoutes } from './trade';
-import { MOORINGS } from '../data/factions';
+import { MOORINGS } from './catalog';
 import { canPlaceBuilding, markDirty, placeBuildingRaw, pushMessage } from './world';
 import GUILD_TEXT from '../data/content/text/guilds.json';
 
@@ -276,7 +276,7 @@ function warEvent(a: GuildId): EventDef {
 /** Sextons out on the roads: the walkers of the boneyards, ossuaries and chapels (iteration 73). */
 export function sextonsAbroad(s: GameState): number {
   let n = 0;
-  for (const a of s.agents) if (a.kind === AgentKind.Walker && (a.job === 'sexton' || a.job === 'stonesexton')) n++;
+  for (const a of s.agents) if (a.kind === AgentKind.Walker && a.job === 'sexton') n++;
   return n;
 }
 /** The square the brawl is on: the Guildhall. */

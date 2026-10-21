@@ -22,14 +22,15 @@ import { tick } from '../src/sim/sim';
 import { MAP_H, MAP_W, RoadType, TICKS_PER_DAY, Terrain, idx, isWater, type Building, type GameState } from '../src/sim/types';
 import type { FactionId } from '../src/data/factions';
 
-const PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
+const PEOPLES: FactionId[] = ['vellish'];
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
 const fnv = (a: ArrayLike<number>, h = 0x811c9dc5) => { for (let i = 0; i < a.length; i++) h = Math.imul(h ^ a[i], 16777619) >>> 0; return h; };
 
 describe('The valley is untouched', () => {
   it('every valley terrain option gives the map it gave before the Atoll (hashes taken on iteration 94\'s tree)', () => {
-    const want: Record<string, string> = { '42:plain': '8f6ef4', '42:island': '170d22bd', '42:one': 'fcd6dc30', '42:under': '96701308', '42:river': '8f6ef4', '42:twin': '285fdd11', '7:plain': 'fb9d04b9', '7:island': 'c2be27ac', '7:one': '88c7d9f8', '7:under': '18d9ec4b', '7:river': '11c20562', '7:twin': 'a82bb26c' };
-    for (const seed of [42, 7]) for (const [k, o] of Object.entries({ plain: {}, island: { island: true }, one: { nodes: 1 }, under: { underhill: true }, river: { riverside: true }, twin: { twinnode: true } })) {
+    // the peoples' starts (under, river, twin) are parked since the scope reset; the Vellish maps keep their hashes
+    const want: Record<string, string> = { '42:plain': '8f6ef4', '42:island': '170d22bd', '42:one': 'fcd6dc30', '7:plain': 'fb9d04b9', '7:island': 'c2be27ac', '7:one': '88c7d9f8' };
+    for (const seed of [42, 7]) for (const [k, o] of Object.entries({ plain: {}, island: { island: true }, one: { nodes: 1 } })) {
       const t = generateTerrain(seed, o);
       let h = fnv(t.terrain); h = fnv(t.gloam, h); h = fnv(t.nodes.flatMap((n) => [n.x, n.y]), h); h = fnv([t.founding.x, t.founding.y], h);
       expect(h.toString(16), `${seed}:${k}`).toBe(want[`${seed}:${k}`]);
@@ -239,7 +240,7 @@ describe('Sea-gales in the Hush', () => {
 
 describe('Saves, replays and the bot on the Atoll', () => {
   it('a save of an Atoll loads as an Atoll, and a save from before the gales loads with the counter at zero', () => {
-    const s = createScenario(42, 'Save', 'atoll', 'grimmen');
+    const s = createScenario(42, 'Save', 'atoll');
     const raw = JSON.parse(serialize(s));
     delete raw.stats.galeDays;
     const r = deserialize(JSON.stringify(raw), (seed) => createGame(seed));
@@ -250,7 +251,7 @@ describe('Saves, replays and the bot on the Atoll', () => {
   });
 
   it('a recorded Atoll charter replays to the same state', () => {
-    const header: ReplayHeader = { seed: 95, name: 'Isleby', scenario: 'atoll', faction: 'veshari' };
+    const header: ReplayHeader = { seed: 95, name: 'Isleby', scenario: 'atoll', faction: 'vellish' };
     const s = stateFromHeader(header);
     const r = new CommandRunner(s, header);
     const f = s.founding;
@@ -265,7 +266,7 @@ describe('Saves, replays and the bot on the Atoll', () => {
     expect(v.matches).toBe(true);
   }, 120_000);
 
-  it('the bot plays each people\'s Atoll for thirty days without error and grows past the Village', () => {
+  it('the bot plays the Atoll for thirty days without error and grows past the Village', () => {
     for (const people of PEOPLES) {
       const s = createScenario(42, 'Botwick', 'atoll', people);
       const bot = new Bot(s);
@@ -276,20 +277,6 @@ describe('Saves, replays and the bot on the Atoll', () => {
     }
   }, 300_000);
 
-  it('the Veshari\'s founding stands by the shoal, and their bot builds tide-wells (seed 44 once left them dry at Hamlet)', () => {
-    for (const seed of [42, 43, 44, 45]) {
-      const s = createScenario(seed, 'Botwick', 'atoll', 'veshari');
-      const f = s.nodes[0];
-      let near = false;
-      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if (s.terrain[idx(f.x + dx, f.y + dy)] === Terrain.Water) near = true;
-      expect(near, `seed ${seed}`).toBe(true);
-    }
-    const s = createScenario(44, 'Botwick', 'atoll', 'veshari');
-    const bot = new Bot(s);
-    run(s, TICKS_PER_DAY * 20, { onDay: () => bot.step() });
-    expect(s.buildings.filter((b) => b && b.kind === 'tidewell').length).toBeGreaterThan(3);
-    expect(s.population).toBeGreaterThan(300);
-  }, 120_000);
 });
 
 describe('The Atoll\'s text', () => {

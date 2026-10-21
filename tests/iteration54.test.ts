@@ -17,7 +17,7 @@ import { CHARTER_LOCK_DAYS, CHARTER_SMOKE_SPILL, TEMPLE_TITHE_SHARE, charterCost
 import { forecast } from '../src/sim/forecast';
 import { CHALLENGE_PEOPLES, challengePeople, challengeScore, challengeSeed, createChallenge } from '../src/sim/scenario';
 import { checkQuests } from '../src/sim/quests';
-import { GATE_HOLD_DAYS, VELLISH_HAPPINESS, gateMet, milestonesOf, nextGate } from '../src/data/factions';
+import { VELLISH_HAPPINESS, gateMet, milestonesOf, nextGate } from '../src/data/factions';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
@@ -204,7 +204,7 @@ describe('The Crown that wants', () => {
 });
 
 describe('Gates and memory', () => {
-  it('the Vellish gate asks happiness 45 + 3 × the milestone, the Tallowkin must hold their light three days, and the top bar names the next gate', () => {
+  it('the Vellish gate asks happiness 45 + 3 × the milestone, and the top bar names the next gate', () => {
     const s = town();
     s.milestone = 2; s.population = 100000; s.happiness = VELLISH_HAPPINESS(3) - 1;
     checkMilestones(s);
@@ -216,12 +216,6 @@ describe('Gates and memory', () => {
     checkMilestones(s);
     expect(s.milestone).toBe(3); // and no further: the Township asks 57
     expect(s.happiness).toBeLessThan(VELLISH_HAPPINESS(4));
-    const t = createGame(5, 'Wick', 'valley', 'tallowkin');
-    expect(nextGate(t)).toMatch(new RegExp(`% lit for ${GATE_HOLD_DAYS} days$`));
-    const g = createGame(5, 'Deep', 'valley', 'grimmen');
-    expect(nextGate(g)).toMatch(/stone quarried$/);
-    const v = createGame(5, 'Weir', 'valley', 'veshari');
-    expect(nextGate(v)).toMatch(/mooring/);
     s.milestone = milestonesOf(s).length - 1;
     expect(nextGate(s)).toBeNull();
   });
@@ -406,12 +400,12 @@ describe('Festivals seen, the daily challenge', () => {
     expect(thaw.choices[0].apply(s)).toMatch(/Foxmoor/);
   });
 
-  it('the daily challenge draws its people from the date, fails on day 61 and is scored by the days to spare and the crowns', () => {
+  it('the daily challenge is the Vellish on every date, fails on day 61 and is scored by the days to spare and the crowns', () => {
     const peoples = new Set(['2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'].map(challengePeople));
-    expect(peoples.size).toBeGreaterThan(1);
+    expect([...peoples]).toEqual(['vellish']); // the only people since the scope reset
     const key = '2026-10-02';
     const s = createChallenge('Daily', key);
-    expect(s.faction).toBe(CHALLENGE_PEOPLES[challengeSeed(key) % 4]);
+    expect(s.faction).toBe(CHALLENGE_PEOPLES[challengeSeed(key) % CHALLENGE_PEOPLES.length]);
     expect(s.challenge).toBe(key);
     expect(s.challengeDay).toBe(-1);
     s.day = CHALLENGE_DAYS;
@@ -430,20 +424,20 @@ describe('Festivals seen, the daily challenge', () => {
   it('round-trips the new state through a save, and an old save gets the defaults', () => {
     const s = town();
     s.weather = { kind: 'rain', until: 12 };
-    s.crownFavour = 71; s.loan = 10000; s.pleadings = 2; s.pilgrimsDay = 4; s.litHeld = 2; s.remembranceDead = 24;
+    s.crownFavour = 71; s.loan = 10000; s.pleadings = 2; s.pilgrimsDay = 4; s.remembranceDead = 24;
     s.edictSince = { curfew: 3, '1:curfew': 5 };
     s.quarterSince = { 1: 7 };
     const t = deserialize(serialize(s), (seed) => createGame(seed));
     expect(t.weather).toEqual({ kind: 'rain', until: 12 });
-    expect([t.crownFavour, t.loan, t.pleadings, t.pilgrimsDay, t.litHeld, t.remembranceDead]).toEqual([71, 10000, 2, 4, 2, 24]);
+    expect([t.crownFavour, t.loan, t.pleadings, t.pilgrimsDay, t.remembranceDead]).toEqual([71, 10000, 2, 4, 24]);
     expect(t.edictSince).toEqual({ curfew: 3, '1:curfew': 5 });
     expect(t.quarterSince).toEqual({ 1: 7 });
     const raw = JSON.parse(serialize(s));
-    for (const k of ['weather', 'crownFavour', 'loan', 'pleadings', 'pilgrimsDay', 'litHeld', 'remembranceDead', 'edictSince', 'quarterSince']) delete raw[k];
+    for (const k of ['weather', 'crownFavour', 'loan', 'pleadings', 'pilgrimsDay', 'remembranceDead', 'edictSince', 'quarterSince']) delete raw[k];
     delete raw.stats.rainDays; delete raw.ledger.levy;
     const o = deserialize(JSON.stringify(raw), (seed) => createGame(seed));
     expect(o.weather).toBeNull();
-    expect([o.crownFavour, o.loan, o.pleadings, o.pilgrimsDay, o.litHeld, o.remembranceDead]).toEqual([50, 0, 0, -1, 0, 0]);
+    expect([o.crownFavour, o.loan, o.pleadings, o.pilgrimsDay, o.remembranceDead]).toEqual([50, 0, 0, -1, 0]);
     expect(o.edictSince).toEqual({});
     expect(o.quarterSince).toEqual({});
     expect(o.stats.rainDays).toBe(0);

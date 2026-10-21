@@ -124,7 +124,7 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
   state.stats.firesTotal++;
   effects.push({ x: b.x, y: b.y, kind: 'fire', tick: state.tick });
   const cov = state.coverage.fire[idx(b.x, b.y)];
-  pushMessage(state, `${why || 'Fire at'} ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Veshari Hall covers it.' : ''}`, 'bad');
+  pushMessage(state, `${why || 'Fire at'} ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Water-Mages\' Hall covers it.' : ''}`, 'bad');
   return true;
 }
 
@@ -202,7 +202,6 @@ export const WARD_BURN = 12;
 export function wardBurnBudget(state: GameState, b: Building): number {
   const def = BUILDING_BY_KEY[b.kind];
   if (!def.service || def.service.type !== 'ward') return 0;
-  if (b.kind === 'stoneward') return 0; // it holds; its sexton cuts
   let strength = def.service.strength * crewFactor(b, state);
   if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
   if (b.kind === 'scaleward') strength *= b.plate ?? 1;

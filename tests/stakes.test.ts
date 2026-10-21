@@ -111,7 +111,7 @@ describe('Deathcare in the open', () => {
 });
 
 describe('Wards with a budget', () => {
-  it('a Ward Lantern burns 12 of the nearest grey tiles a day, a Stone Ward none, and the Scale Ward wears and re-plates', () => {
+  it('a Ward Lantern burns 12 of the nearest grey tiles a day, and the Scale Ward wears and re-plates', () => {
     const s = town();
     const f = s.founding;
     const ward = placeBuildingRaw(s, 'wardlantern', f.x + 8, f.y - 4); ok(ward); ward.lit = true;
@@ -128,16 +128,6 @@ describe('Wards with a budget', () => {
     for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (s.gloam[idx(f.x + 8 + dx, f.y - 4 + dy)]) { near++; if (Math.max(Math.abs(dx), Math.abs(dy)) <= 1) ring1++; }
     expect(ring1).toBe(0);
     expect(near).toBe(20 - WARD_BURN);
-    // the Stone Ward holds and burns nothing
-    const g = createGame(41, 'Stone', 'valley', 'grimmen');
-    flatten(g, g.founding.x - 20, g.founding.y - 14, g.founding.x + 20, g.founding.y + 16);
-    const stone = placeBuildingRaw(g, 'stoneward', g.founding.x + 8, g.founding.y - 4); ok(stone);
-    expect(wardBurnBudget(g, stone)).toBe(0);
-    for (let dy = -3; dy <= 3; dy++) g.gloam[idx(g.founding.x + 8 + 3, g.founding.y - 4 + dy)] = 1;
-    g.day = 1;
-    const sg = greyInReach(g, stone);
-    dailyGloam(g);
-    expect(greyInReach(g, stone)).toBe(sg);
     // the Scale Ward's plating
     const sc = placeBuildingRaw(s, 'scaleward', f.x - 8, f.y - 4); ok(sc);
     expect(wardBurnBudget(s, sc)).toBe(WARD_BURN);

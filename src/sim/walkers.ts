@@ -10,7 +10,7 @@ import { AgentKind, MAP_H, MAP_W, SERVICE_TYPES, Zone, idx, inBounds, type Agent
 import { commitRng, forEachBuilding, markDirty, rngOf } from './world';
 import { catalogue } from './relics';
 import { CRADLE_KINDS, isCradle } from './wyrmcraft';
-import { MOORINGS, factionOf } from '../data/factions';
+
 import { flooding } from './weave';
 
 export interface WalkerJob {
@@ -164,21 +164,21 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
   pilgrim: {
     id: 'pilgrim', name: 'pilgrim', plural: 'pilgrims', prop: 'staff',
     desc: 'Walks from its shrine, temple or the Great Gate to a house of the Vigils, or the Founding Stake, and back: the roads it walks count as under faith, and it prays where it arrives.',
-    from: ['shrine', 'candleshrine', 'temple', 'greatgate'],
+    from: ['shrine', 'temple', 'greatgate'],
     count: (_s, b) => (b.kind === 'greatgate' ? (b.lit ? 3 : 0) : b.kind === 'temple' ? 2 : 1),
     radius: (b) => BUILDING_BY_KEY[b.kind].service?.radius ?? 8,
     cap: 99,
-    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'candleshrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),
+    target: (s, a, anchor) => errandTarget(s, a, anchor, () => nearestRoadOf(s, a, ['temple', 'shrine', 'stake'], (b) => Math.abs(b.x - anchor.x) + Math.abs(b.y - anchor.y) <= 30)),
     onTile: (s, _a, i) => paintBonus(s, 'faith', i, 0.04, 0.15),
     onArrive: (s, a, i) => {
       if (a.phase === 1) { if (atHome(s, a, i)) a.phase = 0; return; }
-      const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'candleshrine' || b.kind === 'stake');
+      const h = buildingsAt(s, i).find((b) => b.kind === 'temple' || b.kind === 'shrine' || b.kind === 'stake');
       if (h) {
         s.stats.pilgrimPrayers++;
         logLine(a, `Prayed at the ${BUILDING_BY_KEY[h.kind].name} at (${h.x},${h.y}).`);
         if (h.kind === 'temple') {
           const home = s.buildings.find((b) => b && b.id === a.anchorId);
-          if (home && (home.kind === 'shrine' || home.kind === 'candleshrine')) { home.blessed = s.day + CONSECRATED_DAYS; logLine(a, `Brought the Temple's blessing home: the shrine is consecrated for ${CONSECRATED_DAYS} days.`); }
+          if (home && home.kind === 'shrine') { home.blessed = s.day + CONSECRATED_DAYS; logLine(a, `Brought the Temple's blessing home: the shrine is consecrated for ${CONSECRATED_DAYS} days.`); }
         }
       }
       a.phase = 1;
@@ -262,112 +262,6 @@ export const WALKER_JOBS: Record<string, WalkerJob> = {
     target: (s, a) => { const rt = nearestRoadOf(s, a, ['spire', 'nexus'], (b) => Math.abs(b.x - a.x) + Math.abs(b.y - a.y) <= 24); return rt >= 0 ? rt : null; },
     onTile: (s, _a, i) => paintBonus(s, 'ward', i, 0.03, 0.12),
     onArrive: (s, a, i) => { const sp = buildingsAt(s, i).find((b) => b.kind === 'spire' || b.kind === 'nexus'); if (sp) { s.stats.wardenRounds++; logLine(a, `Checked the ${sp.kind === 'nexus' ? 'Nexus' : 'spire'} at (${sp.x},${sp.y}).`); } },
-  },
-  stonesexton: {
-    id: 'stonesexton', name: 'stone-sexton', plural: 'stone-sextons', prop: 'salt',
-    desc: 'A Grimmen sexton from a Stone Ward or the Forge-Temple, whom the Gloam cannot touch: the streets it walks count as warded, it cuts back a grey tile beside its road (two a day), and it lays the restless it meets, three a day.',
-    from: ['stoneward', 'forgetemple'],
-    count: () => 1,
-    radius: () => 10,
-    cap: 3,
-    onTile: (s, a, i) => {
-      paintBonus(s, 'ward', i, 0.04, 0.15);
-      if (Math.floor(a.load / 10) >= 2) return;
-      const x = i % MAP_W;
-      const y = (i / MAP_W) | 0;
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (!inBounds(nx, ny) || !s.gloam[idx(nx, ny)]) continue;
-        s.gloam[idx(nx, ny)] = 0;
-        s.stats.gloamBurned++;
-        markDirty(s, nx, ny);
-        recomputeGloamDist(s);
-        effects.push({ x: nx, y: ny, kind: 'ward', tick: s.tick });
-        a.load += 10;
-        logLine(a, `Cut the grey back at (${nx},${ny}) with salt and chisel.`);
-        return;
-      }
-    },
-    meets: [AgentKind.Restless],
-    onMeet: (s, a, o) => {
-      if (o.kind !== AgentKind.Restless || a.load % 10 >= 3) return false;
-      a.load += 1;
-      s.stats.restlessLaid++;
-      s.stats.walkerLayings++;
-      effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'bell', tick: s.tick });
-      logLine(a, `Laid one of the restless at (${Math.floor(a.x)},${Math.floor(a.y)}); the grey cannot hold a Grimmen.`);
-      return true;
-    },
-  },
-  bargeman: {
-    id: 'bargeman', name: 'bargeman', plural: 'bargemen', prop: 'pole',
-    desc: 'Walks the bank from its landing or quay: the streets it walks count as leisure, and when the Sable floods it bails the flooded homes in reach (+4 happiness there for a day, six a day). Only a people whose river never freezes keeps bargemen.',
-    from: MOORINGS,
-    count: (s) => (factionOf(s).rules.riverFreezes ? 0 : 1),
-    radius: () => 10,
-    cap: 6,
-    target: (s, a, anchor) => {
-      if (!flooding(s)) return null;
-      let best: Building | null = null;
-      let bd = Infinity;
-      forEachBuilding(s, (b) => {
-        if (b.state !== 'ok' || BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth) return;
-        if (Math.abs(b.x - anchor.x) > 10 || Math.abs(b.y - anchor.y) > 10) return;
-        if (s.waterDist[idx(b.x, b.y)] > 1 || (b.tended ?? -1) >= s.day) return;
-        const d = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
-        if (d < bd) { bd = d; best = b; }
-      });
-      if (!best) return null;
-      const rt = roadTileOf(s, best);
-      return rt >= 0 ? rt : null;
-    },
-    onTile: (s, _a, i) => paintBonus(s, 'leisure', i, 0.03, 0.12),
-    onArrive: (s, a, i) => {
-      if (a.load >= 6) return;
-      for (const b of buildingsAt(s, i)) {
-        if (BUILDING_BY_KEY[b.kind].zone !== Zone.Hearth || (b.tended ?? -1) >= s.day) continue;
-        b.tended = s.day + 1;
-        a.load += 1;
-        s.stats.bargemanRounds++;
-        logLine(a, `Bailed the hearths at (${b.x},${b.y}) as the Sable rose.`);
-        break;
-      }
-    },
-  },
-  lamplighter: {
-    id: 'lamplighter', name: 'lamplighter', plural: 'lamplighters', prop: 'lamp',
-    desc: "Walks from a lit Wick-Tower (one) or the Hall of Wicks (three): the streets it walks count as ward, and a dark home, shop or works it reaches is lit by its candle until the day ends (eight a day). A Tallowkin city's light where the ley does not reach.",
-    from: ['wicktower', 'hallofwicks'],
-    count: (_s, b) => (b.state !== 'ok' ? 0 : b.kind === 'hallofwicks' ? 3 : b.lit ? 1 : 0),
-    radius: () => 10,
-    cap: 8,
-    target: (s, a, anchor) => {
-      let best: Building | null = null;
-      let bd = Infinity;
-      forEachBuilding(s, (b) => {
-        if (b.state !== 'ok' || b.lit || BUILDING_BY_KEY[b.kind].category !== 'zone') return;
-        if (Math.abs(b.x - anchor.x) > 10 || Math.abs(b.y - anchor.y) > 10 || (b.relit ?? -1) >= s.day) return;
-        const d = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
-        if (d < bd) { bd = d; best = b; }
-      });
-      if (!best) return null;
-      const rt = roadTileOf(s, best);
-      return rt >= 0 ? rt : null;
-    },
-    onTile: (s, _a, i) => paintBonus(s, 'ward', i, 0.02, 0.08),
-    onArrive: (s, a, i) => {
-      if (a.load >= 8) return;
-      for (const b of buildingsAt(s, i)) {
-        if (BUILDING_BY_KEY[b.kind].category !== 'zone' || b.state !== 'ok' || b.lit || (b.relit ?? -1) >= s.day) continue;
-        b.relit = s.day + 1;
-        b.lit = true; // until updateMana's next pass, which honours relit
-        a.load += 1;
-        s.stats.lamplighterRounds++;
-        logLine(a, `Lit the candles at (${b.x},${b.y}).`);
-        break;
-      }
-    },
   },
   watchman: {
     id: 'watchman', name: 'watchman', plural: 'watchmen', prop: 'rod',

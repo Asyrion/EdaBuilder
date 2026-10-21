@@ -44,3 +44,63 @@ player's machine.
   after the recompute.
 - `scripts/perf.mjs` and `smoke.mjs` show no page errors. Typecheck and build are clean; Vite warns about the one large
   chunk (882 KB).
+
+## Phase 1a: the peoples down to the Vellish (2026-10-21)
+
+**Done.**
+- **The seam:** `src/data/factions.ts` holds the Vellish alone (`FactionId = 'vellish'`) with `factionOf`,
+  `FactionRules`, `NEUTRAL_RULES`, `buildsFor`, `canBuild`, `costOf`, `milestonesOf` and `nextGate`. The rule fields only
+  the other peoples used (`gateHold`, `noCraft`, `marketStock`, `marketJobs`, `stiltHomes`) are gone.
+  `tests/factions.test.ts` still proves the seam with a throwaway people.
+- **Parked:**
+  - the Grimmen, the Veshari (as a people), the Tallowkin and the Fen-Nex: 17 buildings, their milestone lists and
+    gates, their starts (`terrain.ts`, `atoll.ts`), 24 quests of their chapters plus the two Fen-Nex tasks, 9 tales,
+    the Deep Cut edict, the Delve, the Weir's sluice
+  - their walkers: the stone-sexton, the bargeman and the lamplighter
+  - the Fen-Nex caravans, the Fen Den's eggs, the Underking's Seat, the Lantern of Wicks, the Forge-Temple
+  - the bot's `quarry`/`moor`/`brighten`/`trade`, and the challenge's people draw
+- **Content, art and UI:**
+  - **Sprites:** the zone looks per people are gone, 192 drawn and 144 imported. So are 32 imported and 17 drawn
+    building looks, the fox citizen and 36 walker frames. `art/sources.json` went from 807 to 631 entries, and
+    `npm run art` was rerun: the packed sheet is now 2048×443 instead of 2048×612, and 266 PNGs are gone.
+  - **Title screen:** the peoples row is gone, and the top bar no longer names the people.
+  - **Fire hall:** it is shown as the **Water-Mages' Hall** (the user's choice). Its key stays `veshari`.
+  - **Help and texts:** cut to match. The texts of the Ledger tasks no longer name parked buildings.
+- **Saves and replays:** a charter or replay whose people is not the Vellish is refused with a message
+  (`parkedPeopleMessage`). A test holds it.
+- **Tests:** the 9 test files of the peoples are gone. 14 mixed files are cut to the Vellish. Shared behaviour moved
+  onto the Vellish: the bot's loan bridge now builds the Lantern of Vell, goal abandonment uses the Great Gate, and the
+  Atoll save and replay run on the Vellish. Eight playtests of the peoples' iterations are gone. The mixed ones stay
+  until 1d.
+- **Scripts and dev board:** `table.ts` defaults to the Vellish, and `balance.ts` drops the people fields of its day
+  line (its `json:` line is unchanged). The dev board's prompts and selftest are adapted.
+
+**Measured.**
+
+| Check | Result |
+|---|---|
+| Bit-identity: `npx tsx scripts/balance.ts <seed> 150`, main vs. branch, the whole `json:` line | **identical on all six seeds** (42, 1, 7, 13, 21, 45) |
+| Their numbers (folk, milestone, treasury, loan) | 42: 3,194 / 8 / 6,319 / 0 · 1: 2,812 / 7 / 2,335 / 0 · 7: 1,421 / 6 / 2,995 / 0 · 13: 2,587 / 7 / 272 / 0 · 21: 2,583 / 8 / 3,603 / 70,000 · 45: 2,864 / 8 / 5,976 / 70,000 |
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 87 files, 554 tests, all green (was 96 files, 626 tests: the peoples' 9 files and their cases are gone, one test of the refusal is new), 317 s on a busy container |
+| `scripts/smoke.mjs` | SMOKE OK; the same city as phase 0 (835 folk, day 30), no page errors |
+| Bundle | JS 811 KB (276 KB gzip), was 882 KB (295 KB) |
+| `npm run devboard:selftest` | OK |
+
+Seeds 21 and 45 end owing the Crown's 70,000 loan on main too. That is the bot's habit (HANDOFF's known issues), not
+this phase.
+
+**What stays with a people's name, on purpose.** These belong to the base game and are parked with their systems in
+1b/1c:
+- the fire hall's key `veshari`
+- the Fen-Nex **visitor** quarter (the `fennex` tales, the fox audit, the `fen` dragon line)
+- the Grimmen boneyard tale and the "Grimmen crews" of the Level-hills tool
+- the Tallowkin wardens (Spire Wardens edict), spire-wrights and bore-singers in the texts
+- the grey and candle-eyed citizens: `cit_4` and `cit_5`, which `rng.int(6)` draws in Vellish games too
+- flavour lines in `buildings.json`
+
+**Found.**
+- **The building data had its own layout.** A plain `JSON.stringify` would have rewritten every line of
+  `buildings.json`, so the 17 entries were cut as text. The dev board writes the same layout.
+- **Old single sprite PNGs are never deleted by the importer.** The parked ones were deleted by hand. Phase 1d drops
+  the single PNGs altogether.

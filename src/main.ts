@@ -16,7 +16,7 @@ import * as wyrmcraft from './sim/wyrmcraft';
 import * as beasts from './sim/beasts';
 import * as vehicles from './sim/vehicles';
 import { setGolemDuty } from './sim/beasts';
-import { scatterDust, toggleSluice } from './sim/actions';
+import { scatterDust } from './sim/actions';
 import { maybeFireReturn } from './sim/events';
 import { canBuild, costOf, specialLock } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
@@ -128,7 +128,7 @@ class Game {
       togglePause: () => { this.paused = !this.paused; this.ui.refresh(); },
       setTool: (t) => this.tools.setTool(t),
       setOverlay: (id) => { this.view.overlay = id as ViewState['overlay']; this.ui.refreshViews(); },
-      newGame: (seed, name, scenario, faction) => this.newGame(seed, name, scenario, faction),
+      newGame: (seed, name, scenario) => this.newGame(seed, name, scenario),
       continueGame: () => this.load(),
       hasSave: () => !!localStorage.getItem(SAVE_KEY),
       save: () => this.save(),
@@ -168,7 +168,6 @@ class Game {
       lineNest: (id) => { const why = this.cmd('nest', id).reason ?? null; if (!why) this.audio.click(); return why; },
       setBurnWyrmfire: (on) => { this.cmd('burnWyrmfire', on); this.audio.click(); },
       toggleSkyDock: () => { const why = this.cmd('skydock').reason ?? null; if (!why) this.audio.click(); this.ui.refresh(); return why; },
-      toggleSluice: (id) => { const why = this.cmd('sluice', id).reason ?? null; if (!why) this.audio.spire(); this.ui.refresh(); return why; },
       setGolemDuty: (id, duty, target) => { const why = this.cmd('golem', id, duty, target).reason ?? null; if (!why) this.audio.click(); return why; },
       scatterDust: (x, y) => { const r = this.cmd('dust', x, y); if (r.ok) { this.renderer.invalidateAll(); this.audio.spire(); } else this.ui.setHint(`<span class="bad">${r.reason ?? 'Nothing to dust there'}</span>`); this.ui.refresh(); return r.ok; },
       get undoLabel() { const u = game.runner?.undoStack ?? []; return u.length ? u[u.length - 1].label : null; },
@@ -267,7 +266,9 @@ class Game {
     file.text().then((text) => {
       let f: ReplayFile;
       try { f = JSON.parse(text) as ReplayFile; if (f.replay !== 1 || !f.header || !Array.isArray(f.commands)) throw new Error('not a replay'); } catch { this.ui.toast('<p class="bad">That file is not a Wardlight replay.</p>', 5000); return; }
-      this.bindState(stateFromHeader(f.header), f.header, f);
+      let fresh;
+      try { fresh = stateFromHeader(f.header); } catch (e) { this.ui.toast(`<p class="bad">${e instanceof SaveVersionError ? e.message : 'That replay cannot be played.'}</p>`, 6000); return; }
+      this.bindState(fresh, f.header, f);
       this.ui.toast(`<p><b>Replay</b> of ${f.header.name}: ${f.commands.length} commands over ${Math.floor(f.endTick / 900)} days.${f.build !== BUILD ? ` <span class="warn">It was recorded with another build (${f.build}, this is ${BUILD}): it may diverge.</span>` : ''}</p>`, 7000);
       this.ui.refresh();
     });

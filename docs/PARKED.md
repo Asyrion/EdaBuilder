@@ -18,6 +18,11 @@ alone (neutral rules). A people that comes back plugs in there, as the Grimmen d
 
 ## Peoples (phase 1a)
 
+Parked on 2026-10-21 (phase 1a, `docs/RESET_LOG.md`). A charter or replay of one of these peoples is refused with a
+message (`parkedPeopleMessage`, `src/sim/save.ts`). What stays of their names in the base game: the fire hall's key
+`veshari` (shown as the Water-Mages' Hall), the Fen-Nex visitor quarter, the Tallowkin warden walker, the Grimmen
+boneyard tale and the grey and candle-eyed citizens (parked with their systems in 1b/1c).
+
 | People | Introduced | Files and content | DESIGN | Back |
 |---|---|---|---|---|
 | Grimmen of the Underhill | `0826a06` (scaffold), `33f2ffc`, `f6a0ba3`, `61b76c5`, `89abe25` (iterations 34–38) | `factions.ts` entry; buildings seep, stoneward, quarry, hatchery, forgetemple, underkingseat; Underhill start in `terrain.ts`; Delve terraform; Deep Cut edict; stone-sexton walker; events `underking_envoy`, `collapse`, `true_leystone`; quests `u_*`; bot `quarry()`; `tests/grimmen*.test.ts` | §4.66–4.69, §14 | factions entry + buildings + start + bot policy |

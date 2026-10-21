@@ -9,7 +9,6 @@ import { SECONDARY_REACH, reachesOf, reachesOfBuilding } from '../src/sim/reach'
 import { FEED_REACH, LODGE_REACH } from '../src/sim/wyrmcraft';
 import { HOSPICE_REACH, GLIMHOUSE_REACH } from '../src/sim/growth';
 import { CARTERS_REACH } from '../src/sim/agents';
-import { SLUICE_FLOOD_REACH } from '../src/sim/weave';
 import { flatten } from './helpers';
 
 describe('Reach rings', () => {
@@ -37,7 +36,7 @@ describe('Reach rings', () => {
     expect(reachesOfBuilding(s, w)[0].r).toBe(waterReachOf(s, w));
     expect(reachesOfBuilding(s, w)[0].r).toBeLessThan(ring.r);
   });
-  it("the secondary reaches are the sim's own numbers, and the Weir floods only with its sluice open", () => {
+  it("the secondary reaches are the sim's own numbers", () => {
     const s = createGame(56, 'Ringwick');
     const r = (key: string) => reachesOf(s, BUILDING_BY_KEY[key]).filter((x) => !x.primary).map((x) => x.r);
     expect(r('cradle')).toEqual([FEED_REACH]);
@@ -46,12 +45,6 @@ describe('Reach rings', () => {
     expect(r('cartersyard')).toEqual([CARTERS_REACH]);
     expect(r('glimhouse')).toEqual([GLIMHOUSE_REACH]);
     expect(reachesOf(s, BUILDING_BY_KEY.hospice).find((x) => !x.primary)!.square).toBe(true);
-    const f = s.founding;
-    flatten(s, f.x - 10, f.y - 10, f.x + 10, f.y + 10);
-    const weir = placeBuildingRaw(s, 'greatweir', f.x + 4, f.y + 4);
-    expect(reachesOfBuilding(s, weir).some((x) => !x.primary && x.r === SLUICE_FLOOD_REACH)).toBe(false); // its ward is 30 too: the flood is the secondary ring
-    weir.sluice = true;
-    expect(reachesOfBuilding(s, weir).some((x) => !x.primary && x.r === SLUICE_FLOOD_REACH && /sluice/.test(x.label))).toBe(true);
   });
 });
 
@@ -63,7 +56,6 @@ describe('The painted buildings at the procedural scale, facing the procedural w
     expect(manifest.b_spire.h).toBeLessThanOrEqual(53);
     expect(manifest.b_nexus.h).toBeLessThanOrEqual(60);
     expect(manifest.b_cistern.h).toBeLessThanOrEqual(64);
-    expect(manifest.b_hallofwicks.h).toBeLessThanOrEqual(116); // 114 since iteration 77: the castle fills its 3×3 diamond
     for (const k of [0, 1, 2, 3]) expect(manifest[`b_stake_s${k}`].h).toBeLessThanOrEqual(68);
   });
   it('a scaled hero stands centred on its tile, and the paintings fronted on the left face are mirrored', () => {

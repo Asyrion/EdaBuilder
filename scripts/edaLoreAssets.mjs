@@ -120,20 +120,13 @@ looks('well', 1, 16, [
   ...range(0, 5).map((i) => ['wells_wood_6b', i]), ...[1, 3, 5, 7].map((i) => ['wells_stone_9', i]), ...[2, 4, 5].map((i) => ['wells_6', i]),
   ...[0, 1, 3, 5, 6, 7, 9, 10, 11].map((i) => ['wells_wood_12', i]),
 ], 0, WELL);
-looks('seep', 1, 16, [
-  ...[1, 6, 12].map((i) => ['wells_cut_15', i]), ['wells_5', 3], ...[0, 2, 4, 6, 8].map((i) => ['wells_stone_9', i]), ...[0, 1, 3].map((i) => ['wells_6', i]),
-], 0, WELL);
-looks('tidewell', 1, 16, [['wells_9', 8], ...range(0, 5).map((i) => ['wells_wood_6a', i]), ...[2, 4, 8].map((i) => ['wells_wood_12', i])], 0, WELL);
 looks('shrine', 1, 28, [['shrines_12', 0, F], ['shrines_12', 2, F], ['shrines_12', 3], ['shrines_12', 4, F], ['shrines_12', 8], ['shrines_altars_12', 1, F], ['shrines_altars_12', 3, F], ['shrines_altars_12', 9, F], ['shrines_altars_12', 10, F], ['shrines_altars_12', 16, F], ['magic_buildings_8', 0, F]]);
 looks('stormpeak', 1, 45, [['shrines_12', 5, F], ['shrines_12', 9]]);
-looks('stoneward', 1, 28, [['shrines_12', 6, F], ['shrines_12', 10, F], ['shrines_altars_12', 5, F]]);
-looks('candleshrine', 1, 28, [['shrines_altars_12', 0, F]]);
 const AL = 'inspirations/craft_houses/alchemists_house/';
 looks('healer', 1, 31, [['shrines_altars_12', 6, F], ['shrines_altars_12', 14], [`${AL}image_1(1).png`], [`${AL}image_2(1).png`], [`${AL}image_3(2).png`]]);
 looks('eggshellfont', 1, 35, [['shrines_altars_12', 2], ['shrines_16', 16]]);
 looks('leybeacon', 1, 51, [['light_towers_6', 0, F]]);
 looks('watchpost', 1, 36, [['light_towers_6', 51], ['hunters_lodges_7', 4]]);
-looks('wicktower', 1, 43, [['lantern_towers_7', 1]], 1);
 const WH = 'inspirations/wooden_houses/';
 looks('fishershut', 1, 31, [[`${WH}image_0(1).png`, undefined, F], [`${WH}image_1(1).png`]]);
 looks('reedcutters', 1, 31, [[`${WH}image_2(1).png`]]);
@@ -146,7 +139,6 @@ looks('hunterslodge', 2, 50, [['hunters_lodges_7', 2, F], ['hunters_lodges_7', 3
 looks('tamerslodge', 2, 50, [['hunters_lodges_7', 11, F], ['hunters_lodges_7', 12]]);
 const FG = 'inspirations/craft_houses/forge/';
 looks('wyrmforge', 2, 51, [[`${FG}image_0(1).png`, undefined, F], [`${FG}image_1(1).png`]]);
-looks('forgetemple', 2, 52, [[`${FG}image_2(1).png`, undefined, F]]);
 looks('golemfoundry', 2, 58, [[`${FG}image_3(2).png`, undefined, F]]);
 const TH = 'inspirations/trade_houses/';
 looks('depot', 2, 62, [[`${TH}image_0(1).png`], [`${TH}image_2(1).png`], [`${TH}image_3(2).png`]]);
@@ -167,7 +159,7 @@ looks('hallofmarvels', 3, 80, [['lantern_towers_7', 3]]);
 looks('grandacademy', 3, 85, [['lantern_towers_7', 6]]);
 
 // a building whose base painting was imported before keeps it as its first look
-const BASE_LOOKS = ['b_boneyard', 'b_ossuary', 'b_sextonchapel', 'b_wicktower', 'b_spire'];
+const BASE_LOOKS = ['b_boneyard', 'b_ossuary', 'b_sextonchapel', 'b_spire'];
 for (const e of kept) if (BASE_LOOKS.includes(e.name) && !e.off) e.aliases = [`${e.name}_v0`];
 // the glowing caps of iteration 50 are their own pool now; the recoloured repeats of tree paintings give way (no painting twice)
 for (const e of kept) {

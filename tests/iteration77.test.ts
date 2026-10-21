@@ -16,8 +16,7 @@ describe('The painted buildings fitted to their tiles', () => {
     expect(manifest.b_stake_s2.w).toBeGreaterThanOrEqual(62);
     expect(h[2]).toBeGreaterThanOrEqual(50);
   });
-  it('the Hall of Wicks fills its 3×3 diamond, and no painted building spills far past its footprint', () => {
-    expect(manifest.b_hallofwicks.w).toBeGreaterThanOrEqual(Math.round(0.85 * 96));
+  it('no painted building spills far past its footprint', () => {
     for (const e of buildings) {
       const m = manifest[e.name];
       expect(m, e.name).toBeDefined();

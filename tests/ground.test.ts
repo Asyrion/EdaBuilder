@@ -14,8 +14,8 @@ import { updateMiasma } from '../src/sim/services';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
-function town(seed = 41, faction: 'vellish' | 'veshari' = 'vellish') {
-  const s = createGame(seed, 'Ground', 'valley', faction);
+function town(seed = 41) {
+  const s = createGame(seed, 'Ground', 'valley');
   const f = s.founding;
   flatten(s, f.x - 20, f.y - 14, f.x + 20, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 18, f.y + 2, f.x + 18, f.y + 2, false));
@@ -51,7 +51,7 @@ describe('Wells with capacity', () => {
     expect(hs.every((b) => b.watered)).toBe(true);
   });
 
-  it('a plain well far from water reaches 4, a cistern keeps 12; the Seep follows the season; the flood fouls a bank well and not a Tide-Well', () => {
+  it('a plain well far from water reaches 4, a cistern keeps 12; a flood fouls a bank well', () => {
     const s = town();
     const f = s.founding;
     const well = placeBuildingRaw(s, 'well', f.x + 4, f.y + 4); ok(well);
@@ -61,20 +61,14 @@ describe('Wells with capacity', () => {
     expect(waterRadiusOf(s, cistern)).toBe(12);
     s.waterDist.fill(5);
     expect(waterRadiusOf(s, well)).toBe(8);
-    const seep = placeBuildingRaw(s, 'seep', f.x + 10, f.y - 4); ok(seep);
-    s.day = 0; expect(waterRadiusOf(s, seep)).toBe(9); // the Thaw
-    s.day = 30; expect(waterRadiusOf(s, seep)).toBe(6);
-    s.day = 60; expect(waterRadiusOf(s, seep)).toBe(3); // the Ember
-    // the Veshari's Hush flood fouls a well within 2 of the river; the Tide-Well drinks the flood
-    const v = town(41, 'veshari');
+    // a flood (forced, as from the dev panel: the Vellish river freezes instead) fouls a well within 2 of the river
+    const v = town(41);
     const bw = placeBuildingRaw(v, 'well', v.founding.x + 4, v.founding.y + 4); ok(bw);
-    const tw = placeBuildingRaw(v, 'tidewell', v.founding.x - 4, v.founding.y + 4); ok(tw);
     v.waterDist.fill(2);
     v.day = 0;
     expect(waterRadiusOf(v, bw)).toBe(8);
-    v.day = 96; // the Hush, past its fifth day: the river is over the bank
+    v.modifiers.push({ kind: 'flood', value: 1, until: v.day + 5, label: 'flood' });
     expect(waterRadiusOf(v, bw)).toBe(0);
-    expect(waterRadiusOf(v, tw)).toBe(10);
     updateWater(v);
     expect(bw.load).toBe(0);
   });

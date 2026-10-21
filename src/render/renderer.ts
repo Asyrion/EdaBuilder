@@ -22,7 +22,7 @@ import { lightSprite } from './lights';
 import { PAL, ambientFor, liftAmbient, nightFactor } from './palette';
 import { groveCtx, treeFor } from './groves';
 import { Particles } from './particles';
-import { TILE_H, TILE_W, ZONE_LOOKS } from './sprites';
+import { TILE_H, TILE_W } from './sprites';
 import { h2 } from './painter';
 import { DISTRICT_COLORS, OVERLAYS, type OverlayId } from './overlays';
 
@@ -461,7 +461,6 @@ export class Renderer {
 
   // ---------- main ----------
   render(state: GameState, view: ViewState, dt: number): void {
-    this.zoneSuffix = ZONE_LOOKS.includes(state.faction) ? `_${state.faction}` : '';
     this.stakeStage = stakeStage(state);
     const t0 = performance.now();
     this.stats.drawn = 0;
@@ -655,8 +654,8 @@ export class Renderer {
         if (Math.random() < 0.6) this.particles.emit({ x: cx + (Math.random() - 0.5) * 16, y: cy - 6, vx: (Math.random() - 0.5) * 6, vy: -14 - Math.random() * 10, maxLife: 1.2, size: 1, color: Math.random() < 0.5 ? PAL.fire1 : PAL.ember, glow: true, kind: 'ember' });
         if (Math.random() < 0.3) this.particles.emit({ x: cx, y: cy - 10, vx: 0, vy: -10, maxLife: 3, size: 2, color: PAL.smoke, glow: false, kind: 'smoke' });
       } else if (b.lit && b.state === 'ok') {
-        const ley = b.kind === 'spire' || b.kind === 'wicktower' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || b.kind === 'greatgate' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
-        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) || b.kind === 'greatgate' ? 100 : b.kind === 'spire' ? 34 : b.kind === 'wicktower' ? 28 : 46, c: b.kind === 'wicktower' ? PAL.lampWarm : PAL.ley1, i: 0.8 });
+        const ley = b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'font' || b.kind === 'wardlantern' || b.kind === 'greatgate' || WONDER_HALLS.includes(b.kind) || def.zone === Zone.Arcane;
+        if (ley) lights.push({ x: cx, y: cy - 8, r: b.kind === 'lantern' ? 120 : WONDER_HALLS.includes(b.kind) || b.kind === 'greatgate' ? 100 : b.kind === 'spire' ? 34 : 46, c: PAL.ley1, i: 0.8 });
         else if ((def.category === 'zone' && (cam.zoom > 1 || (b.x + b.y) % 3 === 0)) || def.category === 'service' || def.category === 'leisure' || def.category === 'special') lights.push({ x: cx, y: cy - 4, r: 14 + b.level * 4 + (b.w - 1) * 12, c: PAL.lampWarm, i: 0.55 });
         if (s && s.glow) item.g = { s, x: wx, y: wy, a: 0.9 };
         // spire sparkles
@@ -832,7 +831,7 @@ export class Renderer {
       const g = view.ghost;
       const def = BUILDING_BY_KEY[g.key];
       const [wx, wy] = tileToWorld(g.x, g.y);
-      const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0, this.zoneSuffix) : lookName(this.atlas, `b_${g.key}`, g.x, g.y, this.looks);
+      const gname = def.category === 'zone' ? zoneSpriteName(this.atlas, g.key, 1, 0) : lookName(this.atlas, `b_${g.key}`, g.x, g.y, this.looks);
       const s = faceLeft(state, { x: g.x, y: g.y, w: def.w, h: def.h }) ? this.atlas.mirrored(gname) : this.atlas.get(gname);
       items.push({ d: g.x + def.w - 1 + g.y + def.h - 1 + 0.6, y: wy, fn: () => this.draw(s, wx, wy, 0.6) });
     }
@@ -989,7 +988,6 @@ export class Renderer {
     this.stats.blit = tEnd - tBlit;
   }
 
-  private zoneSuffix = '';
   private treeCount = 4;
   private bushCount = 1;
   private mushroomCount = 2;
@@ -1005,7 +1003,7 @@ export class Renderer {
   private spriteNameFor(b: Building): string {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
-    if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant, this.zoneSuffix);
+    if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant);
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
     if (b.kind === 'cradle' && b.level >= 2 && this.atlas.has('b_greatcradle')) return 'b_greatcradle'; // the Great Cradle (iteration 53)
@@ -1039,7 +1037,7 @@ export class Renderer {
     const pulse = 0.5 + 0.5 * Math.sin(this.time * 1.5);
     for (const b of state.buildings) {
       if (!b || !b.lit || b.state !== 'ok') continue;
-      if (b.kind !== 'spire' && b.kind !== 'wicktower' && b.kind !== 'nexus' && b.kind !== 'wardlantern' && b.kind !== 'font' && !WONDER_HALLS.includes(b.kind)) continue;
+      if (b.kind !== 'spire' && b.kind !== 'nexus' && b.kind !== 'wardlantern' && b.kind !== 'font' && !WONDER_HALLS.includes(b.kind)) continue;
       if (b.x + b.w < minX || b.x > maxX || b.y + b.h < minY || b.y > maxY) continue;
       const cx = b.x + b.w / 2;
       const cy = b.y + b.h / 2;
@@ -1179,8 +1177,8 @@ export class Renderer {
           this.draw(this.atlas.get(g.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
         }
       // the reach of the ones already standing, so the player sees where a new spire links or where a service has gaps
-      const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
-      if (g.radius > 0 || def.key === 'wicktower') for (const k of kinReach(state, def)) this.reachRing(k.cx, k.cy, k.r, false, ley ? 'rgba(120,220,255,0.03)' : 'rgba(255,220,120,0.04)', ley ? 'rgba(120,220,255,0.55)' : 'rgba(255,220,120,0.55)');
+      const ley = def.key === 'spire' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
+      if (g.radius > 0) for (const k of kinReach(state, def)) this.reachRing(k.cx, k.cy, k.r, false, ley ? 'rgba(120,220,255,0.03)' : 'rgba(255,220,120,0.04)', ley ? 'rgba(120,220,255,0.55)' : 'rgba(255,220,120,0.55)');
       this.ownRings(g.x + (def.w - 1) / 2, g.y + (def.h - 1) / 2, reachesOf(state, def), 'rgba(120,220,255,0.12)', 'rgba(140,230,255,0.95)');
     } else if (view.selected) {
       // the selected building shows everything it reaches, and its kin's reach faintly, so the gaps show from either side (iteration 56)

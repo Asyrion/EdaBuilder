@@ -34,7 +34,7 @@ import {
 export const CITY_NAMES = ['Thornwick', 'Ashmere', 'Glimford', 'Hollowmoor', 'Candlecross', 'Wickholm', 'Sablemere', 'Morrowford'];
 
 export function createGame(seed: number, cityName?: string, scenario: Scenario = 'valley', faction: FactionId = 'vellish'): GameState {
-  const t = generateTerrain(seed, { ...(scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : scenario === 'atoll' ? { atoll: true } : {}), underhill: faction === 'grimmen', riverside: faction === 'veshari', twinnode: faction === 'tallowkin', fen: faction === 'fennex' });
+  const t = generateTerrain(seed, { ...(scenario === 'onenode' ? { nodes: 1 } : scenario === 'island' ? { island: true } : scenario === 'atoll' ? { atoll: true } : {}) });
   const n = MAP_W * MAP_H;
   const coverage = {} as Record<ServiceType, Uint8Array>;
   for (const s of SERVICE_TYPES) coverage[s] = new Uint8Array(n);
@@ -121,7 +121,6 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     pilgrimsDay: -1,
     heart: { held: 'none', step: 0, day: -1 },
     hush: { year: -1, emptied: [] },
-    litHeld: 0,
     edictSince: {},
     quarterSince: {},
     remembranceDead: 0,
@@ -153,7 +152,7 @@ export function createGame(seed: number, cityName?: string, scenario: Scenario =
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
-    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, caravanCrowns: 0, lastCaravanCrowns: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, eggsGreyed: 0, wyvernVoyages: 0, mountRescues: 0, brawlsParted: 0, golemHauls: 0, cartsBalked: 0, lastBalkDay: -1, wyrmTributes: 0, wyrmFlyovers: 0, wyrmStarvedMost: 0, houndFled: 0, houndEmptied: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, lamplighterRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, trueVeins: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, gatePilgrims: 0, gateAlms: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, wyrmsLaired: 0, wyrmsDriven: 0, tideNests: 0, watchRounds: 0, sextonRounds: 0, galeDays: 0 },
+    stats: { goodsDelivered: 0, houndsKilled: 0, gloamBurned: 0, restlessLaid: 0, caravanGoods: 0, caravanCrowns: 0, lastCaravanCrowns: 0, lastCaravanDay: -1, courierTrips: 0, boutsWon: 0, boutsLost: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, houndsTotal: 0, houndRaids: 0, eggsGreyed: 0, wyvernVoyages: 0, mountRescues: 0, brawlsParted: 0, golemHauls: 0, cartsBalked: 0, lastBalkDay: -1, wyrmTributes: 0, wyrmFlyovers: 0, wyrmStarvedMost: 0, houndFled: 0, houndEmptied: 0, relics: 0, portalTrips: 0, golemsWoken: 0, golemsBound: 0, skyraySchools: 0, rayscaleTotal: 0, bargeTrips: 0, airshipVoyages: 0, airshipCrowns: 0, riderRescues: 0, stormWarps: 0, stormsDissolved: 0, fullDays: 0, tigersTotal: 0, tigersKilled: 0, brownoutsSurvived: 0, brownoutOpen: 0, mothsSeen: 0, daughters: 0, terraformed: 0, stoneCut: 0, sectorsBought: 0, glimdustTotal: 0, marvels: 0, quietHush: 0, hushPressureBreaks: 0, wispRing: 0, gloamTiles: 0, peakPopulation: 0, councils: 0, twinGoods: 0, feastGoods: 0, lastFeastDay: -99, crossEggs: 0, guildHalls: 0, truebloods: 0, devUses: 0, greatWyrms: 0, relicsSold: 0, guildWars: 0, wyrmDuels: 0, relicsAuctioned: 0, guildCharters: 0, walkerKills: 0, walkerLayings: 0, healerVisits: 0, wardenRounds: 0, scholarTrips: 0, tamerVisits: 0, pilgrimPrayers: 0, floodDays: 0, floodsWeathered: 0, bargemanRounds: 0, quarterDays: 0, riots: 0, goodsStolen: 0, pelts: 0, tideTrips: 0, surgesAbsorbed: 0, dragonsReturned: 0, rainDays: 0, droughtDays: 0, blizzardDays: 0, levies: 0, levied: 0, foxAudits: 0, pilgrimShrines: 0, gatePilgrims: 0, gateAlms: 0, hides: 0, meat: 0, trophies: 0, herdsLost: 0, herdsHunted: 0, hensTaken: 0, huntCrowns: 0, fishCaught: 0, fishSpoiled: 0, fishSmoked: 0, fishCrowns: 0, homesThatched: 0, fordDaysClosed: 0, marshDrained: 0, wyrmsLaired: 0, wyrmsDriven: 0, tideNests: 0, watchRounds: 0, sextonRounds: 0, galeDays: 0 },
     relicStock: 0,
     guilds: initGuilds(),
     relics: initRelics(),
@@ -288,7 +287,7 @@ export function canPlaceBuilding(state: GameState, key: string, x: number, y: nu
   if (def.nearShore && !touchesTerrain(state, x, y, def.w, def.h, (t) => t === Terrain.Shore || t === Terrain.Water)) return 'Must touch the shore or the water';
   if (def.nearGate && !touchesBelregiGate(state, x, y, def.w, def.h)) return 'Must stand beside a Belregi gate in the Warding Wall';
   if (def.nearLake && !footprintNearLake(state, x, y, def.w, def.h)) return "Must stand on the lake's shore (within 3 of open water)";
-  if (def.key === 'mothloft' || def.key === 'cradle' || def.key === 'hatchery' || def.key === 'tidepool' || def.key === 'fenden') {
+  if (def.key === 'mothloft' || def.key === 'cradle') {
     let near = state.nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= 6);
     if (!near) forEachBuilding(state, (b) => { if ((b.kind === 'spire' || b.kind === 'nexus') && Math.hypot(b.x - x, b.y - y) <= 6) near = true; });
     if (!near) return def.key !== 'mothloft' ? 'A cradle must be warmed: ley node or spire within 6 tiles' : 'Needs a ley node or spire within 6 tiles';
@@ -443,7 +442,6 @@ export function influenceRadius(state: GameState, def: BuildingDef, b?: Building
   if (def.service) return def.service.radius;
   if (def.waterRadius) return b ? waterRadiusOf(state, b) : def.waterRadius;
   if (def.key === 'spire') return 5 + factionOf(state).rules.spireReach;
-  if (def.key === 'wicktower') return 4;
   if (def.key === 'nexus' || WONDER_HALLS.includes(def.key)) return 9;
   return 0;
 }
@@ -451,7 +449,7 @@ export function influenceRadius(state: GameState, def: BuildingDef, b?: Building
 /** The reach of the buildings a new one of this kind would join: for a ley member, the link reach of every node and lit relay (place the new spire inside one and it links); for a service, the coverage of every building of that service; for a well, every well's water. */
 export function kinReach(state: GameState, def: BuildingDef): { cx: number; cy: number; r: number }[] {
   const out: { cx: number; cy: number; r: number }[] = [];
-  const ley = def.key === 'spire' || def.key === 'wicktower' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
+  const ley = def.key === 'spire' || def.key === 'nexus' || WONDER_HALLS.includes(def.key);
   if (ley) {
     const reach = factionOf(state).rules.spireReach;
     for (const n of state.nodes) out.push({ cx: n.x, cy: n.y, r: 6 + reach });
@@ -526,7 +524,6 @@ export function waterRadiusOf(state: GameState, b: Building): number {
   let r = def.waterRadius ?? 0;
   if (!r) return 0;
   const season = seasonOf(state);
-  if (b.kind === 'seep') r = Math.round(r * (season === 0 ? 1.5 : season === 2 ? 0.5 : 1));
   if (b.kind === 'well') {
     const wd = state.waterDist[idx(b.x, b.y)];
     if (wd > 8) r = 4; // dry land: the Cistern's reason
@@ -547,7 +544,6 @@ export function nodeFlow(state: GameState, linked?: boolean[]): number {
     m += NODE_MANA + (n.depth ?? 0) * NODE_DEEPEN_MANA + (n.aspect === 'vein' ? 15 : 0);
   });
   if (state.scenario === 'onenode') m += 90; // the one Vein runs deep
-  m += (state.stats.trueVeins ?? 0) * 10; // veins of true leystone left to the ley (the Grimmen's choice)
   return m;
 }
 /** One node's flow as its panel shows it. */

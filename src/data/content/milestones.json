@@ -18,7 +18,7 @@
     "pop": 100,
     "grant": 3000,
     "unlocks": ["veshari", "wardlantern", "cistern", "mothloft", "smokehouse", "weir"],
-    "text": "A hundred hearths. The Veshari answer your call, and the first Ward Lantern is yours to raise."
+    "text": "A hundred hearths. The water-mages answer your call, and the first Ward Lantern is yours to raise."
   },
   {
     "name": "Village",
@@ -52,7 +52,7 @@
     "name": "Free City",
     "pop": 1500,
     "grant": 16000,
-    "unlocks": ["lantern_wonder", "wyrmcourt", "fontquieting"],
+    "unlocks": ["lantern", "wyrmcourt", "fontquieting"],
     "text": "The Crown grants you the right to raise a Lantern of Vell, and a Wyrm-Court if a wyrm has woken."
   },
   {

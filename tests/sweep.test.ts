@@ -21,8 +21,8 @@ import { serialize, deserialize } from '../src/sim/save';
 import { wyrmBoneQuiet } from '../src/sim/wyrm';
 import { flatten } from './helpers';
 
-function town(faction: 'vellish' | 'grimmen' | 'veshari' = 'vellish', seed = 41) {
-  const s = createGame(seed, 'Sweep', 'valley', faction);
+function town(seed = 41) {
+  const s = createGame(seed, 'Sweep', 'valley');
   const f = s.founding;
   flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 14, f.y + 2, f.x + 14, f.y + 2, false));
@@ -220,26 +220,9 @@ describe('The sweep: sim logic', () => {
     for (const w of ws) w.stock = 30;
     dailyTrade(s);
     expect(s.trade.exported).toBe(16);
-    const g = town('grimmen');
-    const q = placeBuildingRaw(g, 'quarry', g.founding.x + 3, g.founding.y - 3); ok(q);
-    g.terrain[idx(q.x, q.y)] = Terrain.Hills;
-    q.workers = 8; q.stock = 0; q.lit = true;
-    dailyBuildings(g);
-    const full = q.stock;
-    q.workers = 2; q.stock = 0;
-    dailyBuildings(g);
-    expect(q.stock).toBeCloseTo(full * 0.25, 5);
-    expect(craftStockCap(q)).toBeGreaterThan(0);
   });
 
-  it('bred and bought eggs respect the cradle lines; the Crown gifts the Veshari a tide egg; a gate is bulldozed before its road', () => {
-    const g = town('grimmen');
-    const hatchery = placeBuildingRaw(g, 'hatchery', g.founding.x + 3, g.founding.y - 3); ok(hatchery);
-    expect(freeCradle(g, 'tide')).toBeNull();
-    expect(freeCradle(g, 'ember')?.id).toBe(hatchery.id);
-    const v = town('veshari');
-    const gift = ALL_EVENTS.find((e) => e.id === 'egg_first')!;
-    expect(String(typeof gift.choices[0].desc === 'function' ? gift.choices[0].desc(v) : gift.choices[0].desc)).toMatch(/tide/);
+  it('a gate is bulldozed before its road', () => {
     const s = town();
     const i = idx(s.founding.x, s.founding.y + 2);
     expect(s.road[i]).toBe(RoadType.Track);

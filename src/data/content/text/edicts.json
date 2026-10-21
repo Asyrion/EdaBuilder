@@ -67,10 +67,5 @@
   "drainage": {
     "name": "The Drainage",
     "flavor": "The fen gives up an acre a week and the frogs file a complaint."
-  },
-  "deepcut": {
-    "name": "The Deep Cut",
-    "desc": "Halls on the hill dig a level deeper: a hill hearth reaches its third level without schooling and holds two more folk there. 1.5 crowns a day per hill hearth.",
-    "flavor": "Down is a direction the Vellish forget they have."
   }
 }

@@ -215,9 +215,8 @@ describe('The hauler is drawn as a vehicle', () => {
     expect(cartMirrored({ variant: 1, dir: 2 })).toBe(false); // the donkeys have painted twins
   });
 
-  it('the Foundry and the Forge-Temple say so, and the Annals count the hauls and the balks', () => {
+  it('the Foundry says so, and the Annals count the hauls and the balks', () => {
     expect(BUILDING_BY_KEY.golemfoundry.desc).toMatch(/haul/);
-    expect(BUILDING_BY_KEY.forgetemple.desc).toMatch(/haul/);
     const rows = ANNALS.flatMap((c) => c.rows.map((r) => r.stat));
     expect(rows).toContain('golemHauls');
     expect(rows).toContain('cartsBalked');

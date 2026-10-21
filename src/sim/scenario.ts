@@ -66,9 +66,9 @@ function inherit(s: GameState): void {
   pushMessage(s, `${s.cityName} is yours by default. The last Warden-Reeve left ${-s.treasury} crowns of debt, ${ruined} ruins, ${s.unquieted} unquieted dead and a surge two days out. Five days below ${Math.round(debtLine(s)).toLocaleString()} ends the Charter.`, 'bad', true);
 }
 
-/** The daily challenge: the open valley on a seed made from today's date, the people drawn from it too; the goal is Market Town by day 60, failed at day 61 and scored. */
+/** The daily challenge: the open valley on a seed made from today's date, the people drawn from it too (only the Vellish since the scope reset); the goal is Market Town by day 60, failed at day 61 and scored. */
 export { CHALLENGE_DAYS };
-export const CHALLENGE_PEOPLES: FactionId[] = ['vellish', 'grimmen', 'veshari', 'tallowkin'];
+export const CHALLENGE_PEOPLES: FactionId[] = ['vellish'];
 export function challengePeople(key: string): FactionId {
   return CHALLENGE_PEOPLES[challengeSeed(key) % CHALLENGE_PEOPLES.length];
 }

@@ -8,7 +8,7 @@
  * Observatory can read them ahead. The closed tiles ride on `state.water.closed`, the set the roads' A* already refuses.
  */
 import { Rng, hashString } from '../core/rng';
-import { MOORINGS } from '../data/factions';
+import { MOORINGS } from './catalog';
 import { modifierSum } from './edicts';
 import { DAYS_PER_SEASON, MAP_W, RoadType, Terrain, type GameState } from './types';
 
@@ -16,7 +16,7 @@ export const GALES_PER_HUSH = 2;
 export const GALE_DAYS = 2;
 /** A Quay, a Landing, a Weir or a Great Weir within this many tiles holds the bridges round it. */
 export const GALE_HOLD = 6;
-const HOLDERS = [...MOORINGS, 'weir', 'greatweir'];
+const HOLDERS = [...MOORINGS, 'weir'];
 
 /** The first day (within the Hush, 0..29) of each gale of the Hush of the given year: one in each half, two days apart at least. */
 export function galeStarts(seed: number, year: number): number[] {

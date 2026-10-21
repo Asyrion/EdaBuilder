@@ -62,10 +62,10 @@ export const LINE_INFO: Record<DragonLine, { name: string; scale: number; desc: 
 };
 const NAMES = ['Ashvel', 'Tammet', 'Orrin', 'Sablewick', 'Morrowlight', 'Pell', 'Vessa', 'Glimmer', 'Cinder', 'Ossa', 'Hollow', 'Brightscale', 'Quiet', 'Ember-of-Vell', 'Wick', 'Thrum'];
 
-/** Buildings that hold dragons: the Vellish Wyrm-Cradle, the Grimmen Hatchery, the Veshari Tide Pool. */
-export const CRADLE_KINDS = ['cradle', 'hatchery', 'tidepool', 'fenden'];
+/** Buildings that hold dragons: the Wyrm-Cradle (the other peoples' cradles are parked). */
+export const CRADLE_KINDS = ['cradle'];
 /** A people's cradle takes only its lines; a kind not listed takes any. */
-export const CRADLE_LINES: Partial<Record<string, DragonLine[]>> = { hatchery: ['bone', 'grey', 'ember'], tidepool: ['tide', 'storm', 'glim'], fenden: ['fen'] };
+export const CRADLE_LINES: Partial<Record<string, DragonLine[]>> = {};
 export function isCradle(kind: string): boolean {
   return CRADLE_KINDS.includes(kind);
 }
@@ -269,20 +269,8 @@ export function dailyGreyEggs(state: GameState): void {
 }
 
 /** Daily dragon upkeep: warmth, food, growth, training mishaps, materials, roles. */
-/** The Fen Den lays a fen egg at every Thaw, one a lit den, while it has room (the Fen-Nex, iteration 96). */
-export function dailyFenEggs(state: GameState): void {
-  if (state.day <= 0 || state.day % (4 * DAYS_PER_SEASON) !== 0) return;
-  for (const b of state.buildings) {
-    if (!b || b.kind !== 'fenden' || b.state !== 'ok' || !b.lit) continue;
-    if (dragonsIn(state, b.id).length >= cradleCapacity(b)) continue;
-    const d = addEgg(state, 'fen');
-    if (d) pushMessage(state, `The Thaw: a fen egg in the Fen Den, the colour of fox fur and purring. The tamers call it ${d.name}.`, 'good');
-  }
-}
-
 export function dailyDragons(state: GameState): void {
   dailyGreyEggs(state);
-  dailyFenEggs(state);
   const rng = rngOf(state);
   const gone: Dragon[] = [];
   const seats = lodgeSeats(state);

@@ -163,7 +163,7 @@ export function refuse(s: GameState): string {
   startFlyover(s, true);
   if (w.starved === WYRM_STARVE_LIMIT - 1) pushMessage(s, `The wyrm has been refused ${w.starved} times running. Its keeper says it is no longer hungry for coin: refuse it once more and it comes for the Founding Stake itself, and the charter ends with it.`, 'bad', true);
   else pushMessage(s, 'The wyrm will remember the refusal. Its keeper says a second would be unwise, and a third would be the last.', 'warn', true);
-  return 'The wyrm rises. Ring the Veshari bells.';
+  return 'The wyrm rises. Ring the water-mages\' bells.';
 }
 
 /** The razing flight reaches the Founding Stake: the Stake burns, and the valley belongs to the wyrm. */

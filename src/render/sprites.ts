@@ -255,7 +255,6 @@ export interface BuildingSpec {
   fence?: boolean; // pickets along the left front edge
   dormer?: boolean; // a dormer window on the front slope
   balcony?: boolean; // a railing across the right face at mid height
-  stilts?: boolean; // raised on posts over the fen: the lowest rows of the walls are open, posts at the corners and every few pixels (the Fen-Nex, iteration 96)
   brickChimney?: boolean; // the chimney in brick instead of stone
 }
 
@@ -362,21 +361,6 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
   };
   texWall(L[0], L[1], B[0], B[1], false);
   texWall(B[0], B[1], R[0], R[1], true);
-  if (spec.stilts) {
-    // the open underfloor: four dark rows under each face, a post at the corners and every fifth pixel, a floor beam over them
-    const under = (x0: number, y0: number, x1: number, y1: number) => {
-      const len = Math.abs(x1 - x0);
-      for (let i = 0; i <= len; i++) {
-        const x = x0 + (x1 > x0 ? i : -i);
-        const gy = Math.floor(y0 + ((y1 - y0) * i) / len);
-        const post = i === 0 || i === len || i % 5 === 0;
-        for (let d = 0; d < 4; d++) p.px(x, gy - d, post ? 'wood2' : 'outline', post ? 255 : 150);
-        p.px(x, gy - 4, 'wood1');
-      }
-    };
-    under(L[0], L[1], B[0], B[1]);
-    under(B[0], B[1], R[0], R[1]);
-  }
   // wall bottom edge and vertical corner
   p.line(L[0], L[1], B[0], B[1], 'outline');
   p.line(B[0], B[1], R[0], R[1], 'outline');
@@ -1343,7 +1327,7 @@ function rock(variant: number): Painter {
   return p;
 }
 
-function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean, fox = false): { p: Painter; glow: Painter } {
+function citizen(variant: number, frame: number, grimmen: boolean, tallow: boolean): { p: Painter; glow: Painter } {
   // drawn by hand (iteration 65): two-tone cloth lit from the right, a belt, boots, arms that swing against the stride.
   // The layout is the walkers' (hair or cap on row t-1, the face on t..t+1, the body on t+2..t+5, props in columns 6 and 7).
   const p = new Painter(8, 12);
@@ -1351,7 +1335,7 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   const cloth: Col[] = ['cloth1', 'cloth2', 'cloth3', 'cloth4', 'cloth5', 'wood2'];
   const c = cloth[variant % cloth.length];
   const skin: Col = grimmen ? 'skinGrey' : 'skin';
-  const t = tallow ? 3 : fox ? 2 : 1;
+  const t = tallow ? 3 : 1;
   const f = frame % 4;
   // arms first, so the body overlaps their shoulders: the forward arm reaches a row lower, and its hand shows
   const armL = f === 0 ? 3 : f === 2 ? 1 : 2;
@@ -1371,7 +1355,6 @@ function citizen(variant: number, frame: number, grimmen: boolean, tallow: boole
   p.rect(3, t, 2, 2, skin);
   p.px(3, t + 1, 'outline', 60);
   if (grimmen) { p.rect(2, t - 1, 4, 1, 'bone'); p.px(2, t - 1, 'stone2'); }
-  else if (fox) { p.rect(2, t - 1, 4, 1, 'copper'); p.px(2, t - 2, 'copper'); p.px(5, t - 2, 'copper'); p.px(2, t - 1, 'outline', 70); p.px(1, t + 5, 'copper'); p.px(0, t + 6, 'copper'); p.px(0, t + 7, 'whitewash'); } // russet fur, two ears and a brush: the Fen-Nex (iteration 96)
   else if (variant % 3 === 0) { p.rect(2, t - 1, 4, 1, c); p.px(2, t, c); p.px(5, t, c); p.px(2, t, 'outline', 80); }
   else p.rect(3, t - 1, 2, 1, variant % 2 ? 'wood1' : 'outline');
   if (tallow) { for (const x of [3, 4]) { p.px(x, t, 'windowLit'); glow.px(x, t, 'windowLit'); } }
@@ -1433,25 +1416,6 @@ function walker(prop: string, variant: number, frame: number): Painter {
       p.px(2, 1, 'bone'); p.px(5, 1, 'bone');
       p.rect(7, 1, 1, 7, 'wood3');
       p.px(7, 0, 'fire1');
-      break;
-    case 'salt': // a Grimmen stone-sexton: grey hood, a salt bag at the hip and a chisel
-      p.rect(2, 0, 4, 1, 'stone2');
-      p.px(2, 1, 'stone2'); p.px(5, 1, 'stone2');
-      p.rect(6, 5, 2, 2, 'bone');
-      p.rect(7, 1, 1, 3, 'stone3');
-      p.px(7, 0, 'outline');
-      break;
-    case 'pole': // a Veshari bargeman: a wide reed hat and a long pole
-      p.rect(1, 0, 6, 1, 'wood2');
-      p.rect(2, 1, 4, 1, 'wood1');
-      p.rect(7, 0, 1, 10, 'wood1');
-      p.px(7, 9, 'ironDark');
-      break;
-    case 'lamp': // a Tallowkin lamplighter: candle-eyed, a pole with a lit lantern over the shoulder
-      p.px(3, 1, 'windowLit'); p.px(4, 1, 'windowLit');
-      p.rect(7, 0, 1, 6, 'wood2');
-      p.rect(6, 0, 3, 2, 'gold');
-      p.px(7, 1, 'fire1');
       break;
     case 'candle': // a Tallowkin warden: candle-eyed, a tallow candle held up
       p.px(3, 1, 'windowLit'); p.px(4, 1, 'windowLit');
@@ -1634,43 +1598,7 @@ function icon(kind: string): Painter {
 // ---------- building specs ----------
 const V = (n: number) => n;
 
-/** The Grimmen cut in stone: every wall stone or dark stone, every roof slate, flat or none. */
-function stoneSpec(spec: BuildingSpec, level: number, variant: number): BuildingSpec {
-  const walls: Wall[] = ['stone', 'darkstone', 'stone', 'darkstone'];
-  const roofs: Roof[] = level === 1 ? ['flat', 'none', 'flat', 'slate'] : level === 2 ? ['slate', 'flat', 'slate', 'none'] : ['slate', 'slate', 'flat', 'slate'];
-  return { ...spec, wall: walls[variant % 4], roof: roofs[variant % 4], roofH: Math.max(2, spec.roofH - 3), chimney: false, lanternPost: false, runeBand: level >= 2 || spec.runeBand, seed: (spec.seed ?? 0) + 500 };
-}
-
-/** The Veshari build in plank and reed: timber and washed walls, thatch and awnings, a lantern on every market post. */
-function reedSpec(spec: BuildingSpec, level: number, variant: number, zone: string): BuildingSpec {
-  const walls: Wall[] = ['timber', 'plaster', 'timber', 'bluewash'];
-  const roofs: Roof[] = level === 1 ? ['thatch', 'thatch', 'moss', 'thatch'] : level === 2 ? ['thatch', 'shingle', 'thatch', 'awning'] : ['tile', 'thatch', 'copper', 'slate'];
-  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], lanternPost: spec.lanternPost || zone === 'market', seed: (spec.seed ?? 0) + 700 };
-}
-
-/** The Tallowkin build wickhouses: tall, narrow, an overhang, a lit window on every floor, whitewash and plaster under cones and shingles. */
-function wickSpec(spec: BuildingSpec, level: number, variant: number): BuildingSpec {
-  const walls: Wall[] = ['whitewash', 'plaster', 'whitewash', 'timber'];
-  const roofs: Roof[] = level === 1 ? ['cone', 'shingle', 'cone', 'shingle'] : level === 2 ? ['shingle', 'cone', 'cone', 'tile'] : ['cone', 'copper', 'cone', 'slate'];
-  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: roofs[variant % 4], height: spec.height + 4, overhang: true, glowWindows: true, windowRows: (spec.windowRows ?? 1) + 1, seed: (spec.seed ?? 0) + 900 };
-}
-
-/** The Fen-Nex build on stilts over the fen: plank, log and russet brick under reed thatch, awnings and banners at the markets (iteration 96). */
-function fenSpec(spec: BuildingSpec, level: number, variant: number, zone: string): BuildingSpec {
-  const walls: Wall[] = ['timber', 'brick', 'log', 'plaster'];
-  const roofs: Roof[] = level === 1 ? ['thatch', 'thatch', 'moss', 'thatch'] : level === 2 ? ['thatch', 'awning', 'thatch', 'shingle'] : ['thatch', 'copper', 'tile', 'thatch'];
-  const hearth = zone === 'hearth';
-  return { ...spec, wall: spec.wall === 'arcane' ? 'arcane' : walls[variant % 4], roof: zone === 'market' && variant % 2 === 1 ? 'awning' : roofs[variant % 4], height: spec.height + 3, hip: variant % 2 === 1, stilts: true, lanternPost: spec.lanternPost || variant % 2 === 0, banner: spec.banner || zone === 'market', sign: spec.sign || zone === 'market', glowWindows: true, chimney: false, porch: false, flowerBox: false, woodpile: false, sideTree: undefined, fence: false, bush: false, dormer: false, balcony: false, brickChimney: false, reedBundles: hearth && variant === 2, fishRack: hearth && variant === 3, seed: (spec.seed ?? 0) + 1100 };
-}
-
-/** Peoples with a zone look of their own: the atlas carries a `_people` copy of every zoned sprite. */
-export const ZONE_LOOKS = ['grimmen', 'veshari', 'tallowkin', 'fennex'];
-
-function zoneSpecs(zone: string, level: number, variant: number, people?: string): BuildingSpec {
-  if (people === 'grimmen') return stoneSpec(zoneSpecs(zone, level, variant), level, variant);
-  if (people === 'veshari') return reedSpec(zoneSpecs(zone, level, variant), level, variant, zone);
-  if (people === 'tallowkin') return wickSpec(zoneSpecs(zone, level, variant), level, variant);
-  if (people === 'fennex') return fenSpec(zoneSpecs(zone, level, variant), level, variant, zone);
+function zoneSpecs(zone: string, level: number, variant: number): BuildingSpec {
   const seed = level * 100 + variant * 7 + zone.length;
   if (zone === 'hearth') {
     if (level === 1) {
@@ -1731,13 +1659,6 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
   cradle: { w: 2, h: 2, height: 6, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true },
   greatcradle: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'flat', windows: 0, seed: 27, runeBand: true, orbit: true, leyLamps: true, standingStones: true, crystal: true }, // a cradle at level 2 (iteration 53)
-  hatchery: { w: 2, h: 2, height: 5, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 33, runeBand: true, leyLamps: true, standingStones: true },
-  seep: { w: 1, h: 1, height: 3, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 9 },
-  stoneward: { w: 1, h: 1, height: 12, roofH: 2, wall: 'darkstone', roof: 'flat', windows: 0, seed: 21, runeBand: true, standingStones: true },
-  quarry: { w: 1, h: 1, height: 6, roofH: 2, wall: 'darkstone', roof: 'none', windows: 0, seed: 46, lanternPost: true, stonePile: true },
-  tidewell: { w: 1, h: 1, height: 4, roofH: 4, wall: 'stone', roof: 'thatch', windows: 0, seed: 48, lanternPost: true },
-  landing: { w: 1, h: 1, height: 3, roofH: 2, wall: 'timber', roof: 'none', windows: 0, seed: 49, lanternPost: true, banner: true },
-  tidepool: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'none', windows: 0, seed: 50, runeBand: true, leyLamps: true, wisps: true },
   tamerslodge: { w: 2, h: 2, height: 12, roofH: 7, wall: 'plaster', roof: 'copper', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 28, lanternPost: true, ridgeOrnament: true },
   stormpeak: { w: 1, h: 1, height: 20, roofH: 6, wall: 'stone', roof: 'cone', windows: 1, windowRows: 2, seed: 29, spire: true, runeBand: true },
   torrentmill: { w: 1, h: 1, height: 9, roofH: 5, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
@@ -1745,8 +1666,6 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   observatory: { w: 2, h: 2, height: 14, roofH: 8, wall: 'darkstone', roof: 'dome', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 32, orbit: true, spire: true, runeBand: true },
   hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
   golemfoundry: { w: 2, h: 2, height: 14, roofH: 6, wall: 'darkstone', roof: 'copper', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 37, runeBand: true, alembic: true },
-  forgetemple: { w: 2, h: 2, height: 15, roofH: 4, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 1, door: true, chimney: true, glowWindows: true, seed: 41, runeBand: true, standingStones: true, bellTower: true },
-  underkingseat: { w: 3, h: 3, height: 30, roofH: 6, wall: 'darkstone', roof: 'flat', windows: 2, windowRows: 4, door: true, glowWindows: true, seed: 44, crystal: true, runeBand: true, standingStones: true, leyLamps: true },
   leybeacon: { w: 1, h: 1, height: 24, roofH: 5, wall: 'stone', roof: 'cone', windows: 1, windowRows: 3, seed: 38, spire: true, crystal: true, runeBand: true },
   drakemews: { w: 2, h: 2, height: 9, roofH: 7, wall: 'timber', roof: 'thatch', windows: 2, windowRows: 1, door: true, banner: true, glowWindows: true, seed: 39, lanternPost: true, ridgeOrnament: true },
   scaleward: { w: 1, h: 1, height: 14, roofH: 4, wall: 'bone', roof: 'cone', windows: 1, windowRows: 2, seed: 43, leyLamps: true, runeBand: true, spire: true },
@@ -1767,12 +1686,6 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   hospice: { w: 2, h: 2, height: 16, roofH: 8, wall: 'whitewash', roof: 'green', windows: 3, windowRows: 3, door: true, chimney: true, glowWindows: true, seed: 10, hip: true, bottles: true, glassDome: true, lanternPost: true },
   veshari: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'slate', windows: 2, windowRows: 2, door: true, banner: true, glowWindows: true, seed: 11, hip: true, runeBand: true, bellTower: true },
   shrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, door: true, glowWindows: true, seed: 12, lanternPost: true },
-  candleshrine: { w: 1, h: 1, height: 5, roofH: 6, wall: 'whitewash', roof: 'cone', windows: 1, windowRows: 2, door: true, glowWindows: true, seed: 52, lanternPost: true, leyLamps: true },
-  // the Fen-Nex (iteration 96): a caravan yard of russet brick under awnings, a waystation on stilts, a reed den on warm stones
-  caravanserai: { w: 2, h: 2, height: 12, roofH: 7, wall: 'brick', roof: 'awning', windows: 2, windowRows: 1, door: true, sign: true, banner: true, stalls: true, lanternPost: true, glowWindows: true, hip: true, fence: true, seed: 96 },
-  foxpost: { w: 1, h: 1, height: 9, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, banner: true, lanternPost: true, glowWindows: true, stilts: true, seed: 97 },
-  fenden: { w: 2, h: 2, height: 7, roofH: 8, wall: 'stone', roof: 'thatch', windows: 1, door: true, glowWindows: true, leyLamps: true, reedBundles: true, standingStones: true, seed: 98 },
-  wicktower: { w: 1, h: 1, height: 14, roofH: 3, wall: 'plaster', roof: 'cone', windows: 1, windowRows: 3, seed: 53, glowWindows: true, lanternPost: true },
   temple: { w: 3, h: 3, height: 22, roofH: 12, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true },
   academy: { w: 2, h: 2, height: 13, roofH: 6, wall: 'bluewash', roof: 'copper', windows: 3, windowRows: 3, door: true, glowWindows: true, seed: 14, spire: true, hip: true, runeBand: true, glassDome: true },
   grandacademy: { w: 3, h: 3, height: 26, roofH: 10, wall: 'stone', roof: 'arcane', windows: 4, windowRows: 4, door: true, glowWindows: true, seed: 15, crystal: true, hip: true, orbit: true, runeBand: true, bellTower: true },
@@ -1785,14 +1698,12 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   depot: { w: 2, h: 2, height: 16, roofH: 8, wall: 'plaster', roof: 'slate', windows: 3, windowRows: 2, door: true, chimney: true, brickChimney: true, sign: true, banner: true, stalls: true, lanternPost: true, flowerBox: true, overhang: true, dormer: true, glowWindows: true, seed: 24 }, // the trade_houses painting redrawn (iteration 79): a half-timbered hall over a slate roof, awnings and a stall along its front
   ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
-  lanternofwicks: { w: 3, h: 3, height: 40, roofH: 10, wall: 'whitewash', roof: 'cone', windows: 3, windowRows: 6, door: true, glowWindows: true, seed: 54, crystal: true, orbit: true, runeBand: true, leyLamps: true, lanternPost: true },
   // the water (iteration 60)
   fishershut: { w: 1, h: 1, height: 7, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 71, fishRack: true, lanternPost: true, glowWindows: true },
   smokehouse: { w: 1, h: 1, height: 8, roofH: 5, wall: 'stone', roof: 'shingle', windows: 0, door: true, chimney: true, seed: 72, smokeRack: true },
   reedcutters: { w: 1, h: 1, height: 6, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 73, reedBundles: true },
   weir: { w: 1, h: 1, height: 4, roofH: 2, wall: 'stone', roof: 'flat', windows: 0, seed: 74, weirStones: true, lanternPost: true },
   watergarden: { w: 2, h: 2, height: 7, roofH: 6, wall: 'plaster', roof: 'copper', windows: 0, seed: 75, lilyPond: true, ridgeOrnament: true, lanternPost: true },
-  greatweir: { w: 2, h: 2, height: 10, roofH: 3, wall: 'stone', roof: 'flat', windows: 0, seed: 51, runeBand: true, leyLamps: true, waterWheel: true, lanternPost: true, crystal: true },
   // the nine that drew nothing until iteration 50 (the Carters' Yard, the Lyceum and the Sextons' Chapel also have paintings)
   cartersyard: { w: 2, h: 2, height: 8, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, sign: true, lanternPost: true, seed: 67 },
   chartroom: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'copper', windows: 2, windowRows: 2, door: true, glassDome: true, banner: true, glowWindows: true, seed: 65 },
@@ -1804,7 +1715,6 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   wrightslodge: { w: 2, h: 2, height: 14, roofH: 8, wall: 'bluewash', roof: 'slate', windows: 2, windowRows: 2, door: true, chimney: true, overhang: true, sign: true, glowWindows: true, runeBand: true, seed: 66 },
   greatgate: { w: 3, h: 3, height: 46, roofH: 16, wall: 'stone', roof: 'none', windows: 2, windowRows: 2, door: true, glowWindows: true, seed: 69, runeBand: true }, // drawn by hand (drawn.ts, iteration 69)
   wyrmcourt: { w: 3, h: 3, height: 2, roofH: 1, wall: 'stone', roof: 'none', standingStones: true, runeBand: true, seed: 61 },
-  hallofwicks: { w: 3, h: 3, height: 24, roofH: 10, wall: 'stone', roof: 'cone', windows: 3, windowRows: 3, door: true, glowWindows: true, leyLamps: true, crystal: true, runeBand: true, banner: true, lanternPost: true, seed: 70 },
   // halls that grow with the city (iteration 51): stage 1 from the Village, stage 2 from the Burgh
   guildhall_s1: { w: 2, h: 2, height: 22, roofH: 9, wall: 'plaster', roof: 'copper', windows: 3, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true },
   guildhall_s2: { w: 2, h: 2, height: 26, roofH: 10, wall: 'stone', roof: 'copper', windows: 4, windowRows: 4, door: true, sign: true, banner: true, glowWindows: true, seed: 21, hip: true, overhang: true, bellTower: true, ridgeOrnament: true, lanternPost: true, runeBand: true, glassDome: true, crystal: true },
@@ -1884,33 +1794,6 @@ function drawWell(): { p: Painter; glow: Painter; ax: number; ay: number } {
   p.circle(28, 15, 1, 'thatch1'); p.px(28, 15, 'thatch2');
   wellRing(p, 'water1', 'water3', true);
   wellRoof(p, 'shingle1', 'shingle2', 'wood1');
-  p.outline('outline');
-  return { p, glow, ax: 17, ay: 7 };
-}
-function drawSeep(): { p: Painter; glow: Painter; ax: number; ay: number } {
-  const p = new Painter(34, 18);
-  const glow = new Painter(34, 18);
-  // the painting: the same well under a violet slate roof, grass and flowers about its foot
-  for (let x = 4; x <= 30; x += 2) p.px(x, 16, x % 4 ? 'grass2' : 'grass3');
-  p.px(5, 15, 'flower3'); p.px(29, 15, 'flower1'); p.px(27, 16, 'flower2');
-  wellRing(p, 'water2', 'waterHi', true);
-  wellRoof(p, 'bluewash2', 'deepPurple', 'wood1');
-  p.outline('outline');
-  return { p, glow, ax: 17, ay: 7 };
-}
-function drawTidewell(): { p: Painter; glow: Painter; ax: number; ay: number } {
-  const p = new Painter(34, 18);
-  const glow = new Painter(34, 18);
-  // the painting: a shrine well, its water glowing blue, under a green pagoda roof with upturned eaves and a finial, runes on
-  // the arch beneath it, a lantern hung at each eave
-  for (const x of [8, 26]) p.px(x, 16, 'stone3');
-  wellRing(p, 'ley1', 'leyGlow', false);
-  glow.poly([[17, 11], [21, 12], [17, 13], [13, 12]], 'ley1', 200);
-  wellRoof(p, 'copperRoof', 'copperRoof2', 'wood1');
-  for (const [x, y] of [[14, 9], [17, 8], [20, 9]] as [number, number][]) { p.px(x, y, 'rune'); glow.px(x, y, 'rune', 200); }
-  p.px(8, 6, 'copperRoof'); p.px(26, 6, 'copperRoof'); // the upturned eaves
-  p.px(17, 0, 'ironDark'); // the finial
-  for (const x of [7, 27]) { p.px(x, 8, 'ironDark'); p.px(x, 9, 'lampWarm'); glow.rect(x - 1, 8, 3, 3, 'lampWarm', 220); }
   p.outline('outline');
   return { p, glow, ax: 17, ay: 7 };
 }
@@ -2135,7 +2018,7 @@ export function generateSprites(): SpriteDef[] {
   // zoned buildings
   for (const z of ['hearth', 'market', 'craft', 'arcane'])
     for (let lvl = 1; lvl <= 3; lvl++)
-      for (let v = 0; v < 4; v++) { const hand = PAINTED[`${z}_l${lvl}`]?.[v]; push(`${z}_l${lvl}_v${v}`, hand ? hand() : drawBuilding(zoneSpecs(z, lvl, v))); for (const p of ZONE_LOOKS) push(`${z}_l${lvl}_v${v}_${p}`, drawBuilding(zoneSpecs(z, lvl, v, p))); } // the level-2 hearths and level-1 crafts are drawn by hand after their paintings (iteration 81); the peoples keep their own looks
+      for (let v = 0; v < 4; v++) { const hand = PAINTED[`${z}_l${lvl}`]?.[v]; push(`${z}_l${lvl}_v${v}`, hand ? hand() : drawBuilding(zoneSpecs(z, lvl, v))); } // the level-2 hearths and level-1 crafts are drawn by hand after their paintings (iteration 81); the peoples keep their own looks
   // ruin
   {
     const p = new Painter(34, 26);
@@ -2173,8 +2056,6 @@ export function generateSprites(): SpriteDef[] {
     if (key === 'spire') push('b_spire', drawSpire());
     else if (key === 'depot') push('b_depot', drawDepot()); // after the trade house painting (iteration 81)
     else if (key === 'well') push('b_well', drawWell());
-    else if (key === 'seep') push('b_seep', drawSeep()); // the three wells after their paintings (iteration 79)
-    else if (key === 'tidewell') push('b_tidewell', drawTidewell());
     else if (key === 'garden') push('b_garden', drawGarden());
     else if (key === 'square') push('b_square', drawSquare());
     else if (key === 'boneyard') push('b_boneyard', drawBoneyard());
@@ -2186,10 +2067,10 @@ export function generateSprites(): SpriteDef[] {
     else push(`b_${key}`, drawBuilding(spec));
   }
   // agents
-  for (let v = 0; v < 7; v++)
-    for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5, v === 6); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
+  for (let v = 0; v < 6; v++)
+    for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
-  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff'], ['stonesexton', 'salt'], ['bargeman', 'pole'], ['lamplighter', 'lamp']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
+  for (const [job, prop] of [['watchman', 'rod'], ['sexton', 'spoon'], ['healer', 'satchel'], ['warden', 'candle'], ['scholar', 'book'], ['tamer', 'leash'], ['pilgrim', 'staff']]) for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `walker_${job}_${v}_${f}`, p: walker(prop, v, f), ax: 4, ay: 12 });
   for (let v = 0; v < 5; v++) {
     const p = cart(v);
     if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }

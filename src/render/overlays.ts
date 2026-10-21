@@ -107,7 +107,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
   },
   coverageOverlay('watch', 'Watch', '6', 'watch', 'Watch coverage lowers unrest and lays the restless to rest.'),
   coverageOverlay('health', 'Healing', '7', 'health', 'Healer coverage raises health and lowers deaths.'),
-  coverageOverlay('fire', 'Fire brigade', '8', 'fire', 'Veshari coverage puts out fires.'),
+  coverageOverlay('fire', 'Fire brigade', '8', 'fire', 'The Water-Mages\' Hall puts out fires.'),
   coverageOverlay('school', 'Schooling', '9', 'school', 'Schooling makes educated folk: needed for Arcane districts and level 3.'),
   coverageOverlay('death', 'Deathcare', '0', 'death', 'Boneyard coverage quiets the dead. Uncovered homes breed the restless.'),
   coverageOverlay('faith', 'Faith', '-', 'faith', 'Shrines and temples raise happiness and land value.'),

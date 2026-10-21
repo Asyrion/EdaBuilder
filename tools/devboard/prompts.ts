@@ -28,11 +28,10 @@ export const blank = (sprite: string, building?: string): PromptData =>
 
 /** How tall it may stand, in citizens of 12 px (DESIGN 4.109's yardstick). */
 export function yardstick(b: Building): { citizens: string; px: number | null; why: string } {
-  if (['well', 'tidewell', 'seep'].includes(b.key)) return { citizens: '1.5', px: 18, why: 'an object a person reaches over' };
-  if (['wardlantern', 'shrine', 'candleshrine', 'stoneward'].includes(b.key)) return { citizens: '2.5', px: 30, why: 'a post or small shrine' };
+  if (['well'].includes(b.key)) return { citizens: '1.5', px: 18, why: 'an object a person reaches over' };
+  if (['wardlantern', 'shrine'].includes(b.key)) return { citizens: '2.5', px: 30, why: 'a post or small shrine' };
   if (['wonder', 'marvel'].includes(b.category) || b.w >= 3) return { citizens: 'free', px: null, why: 'a wonder or great work, meant to rise over the roofs' };
-  if (b.w * b.h === 1) return b.faction?.includes('tallowkin')
-    ? { citizens: '3.2', px: 38, why: 'a Tallowkin shed or cottage' } : { citizens: '2.8', px: 33, why: 'a one-tile shed, works or cottage' };
+  if (b.w * b.h === 1) return { citizens: '2.8', px: 33, why: 'a one-tile shed, works or cottage' };
   return { citizens: '5.5', px: 66, why: 'a two-by-two hall' };
 }
 
@@ -52,14 +51,10 @@ export function houseRules(b?: Building): string[] {
 
 const PEOPLE_LOOK: Record<string, string> = {
   vellish: 'Vellish: timber and plaster under slate, iron lanterns, the Ashen Crown\'s charter seals.',
-  grimmen: 'Grimmen: ash-grey stone cut into the hill, heavy lintels, standing stones, turf and slab roofs.',
-  veshari: 'Veshari: river folk of the Sable, reed and tarred timber, stilts and moorings, blue-dyed cloth, water-mage sigils.',
-  tallowkin: 'Tallowkin: small candle-lit timber buildings, wax and tallow, many lamps and wicks, soot-dark beams.',
-  fennex: 'Fen-Nex: fox-folk traders of the fen, plank and russet brick on stilts over the marsh, reed thatch, striped awnings, banners and signs in two scripts.',
 };
 
 export function peopleOf(b: Building): string[] {
-  return b.faction?.length ? b.faction : ['vellish', 'grimmen', 'veshari', 'tallowkin', 'fennex'];
+  return b.faction?.length ? b.faction : ['vellish'];
 }
 
 /** Paragraphs of the lore docs that name the building (its name, or the name without "The"). */
