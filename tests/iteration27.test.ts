@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { BREED_DAY, canBreed, dailyBreeding } from '../src/sim/breeding';
-import { addEgg } from '../src/sim/wyrmcraft';
-import { dragonAuras } from '../src/sim/weave';
 import { isBuildingUnlocked } from '../src/sim/catalog';
 import { placeBuilding, buildRoad, roadPath } from '../src/sim/actions';
 import { RoadType, idx } from '../src/sim/types';
@@ -21,38 +18,6 @@ function town(seed = 41) {
   flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
   return s;
 }
-
-describe('Bloodlines', () => {
-  it('two crossed parents lay a trueblood egg with both auras in full', () => {
-    const s = town();
-    const f = s.founding;
-    const c1 = placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
-    placeBuildingRaw(s, 'cradle', f.x - 5, f.y + 3);
-    recomputeAll(s);
-    const a = addEgg(s, 'vein')!;
-    const b = addEgg(s, 'ember')!;
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    expect(canBreed(s, c1).trueblood).toBe(false);
-    a.second = 'grey'; b.second = 'sky';
-    const chk = canBreed(s, c1);
-    expect(chk.ok).toBe(true);
-    expect(chk.trueblood).toBe(true);
-    expect(chk.why).toMatch(/trueblood/);
-    s.day = BREED_DAY;
-    dailyBreeding(s);
-    const egg = s.dragons[2];
-    expect(egg.trueblood).toBe(true);
-    expect(egg.line).toBe('vein');
-    expect(egg.second).toBe('ember');
-    expect(s.stats.truebloods).toBe(1);
-    egg.stage = 2;
-    expect(dragonAuras(s).filter((x) => x.name === egg.name).map((x) => x.r)).toEqual([8, 8]);
-    expect(s.chronicle.some((c) => c.text.includes('bloodline'))).toBe(true);
-    expect(activeQuests(s, 100).some((q) => q.id === 'k_blood')).toBe(false);
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
-    expect(r.dragons[2].trueblood).toBe(true);
-  });
-});
 
 describe('Relic buildings', () => {
   it('unlock with their set, pay their boons, and the chart-room reads the forecast', () => {

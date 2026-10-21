@@ -177,8 +177,7 @@ export class Bot {
   }
 
   /**
-   * The hunt (iteration 58): the first lodge stays on hounds while a pack came within 15 days; the others hunt the most
-   * valuable game in their grounds, but only herds above half their cap (and the Close Season's floor), so the bot does not
+   * The hunt (iteration 58): every lodge hunts the most valuable game in its grounds, but only herds above half their cap (and the Close Season's floor), so the bot does not
    * hunt a herd out. The Close Season goes on when the herds a lodge hunts fall under half their cap and the ledger can pay.
    */
   private hunt(): void {

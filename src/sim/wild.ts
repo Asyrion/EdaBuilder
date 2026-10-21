@@ -401,7 +401,7 @@ export function meatNear(state: GameState, x: number, y: number): boolean {
   return false;
 }
 
-/** Daily: the wild's day. Called after the hunt for hounds. */
+/** Daily: the wild's day. */
 export function dailyWild(state: GameState): void {
   const w = state.wild;
   const built = builtGrid(state);

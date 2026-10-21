@@ -552,7 +552,7 @@ export class Renderer {
         items.push({
           d: p.d, y: p.wy, fn: () => this.draw(s, p.wx + sw, p.wy),
           occ: s ? { s, x: p.wx + sw, y: p.wy } : undefined,
-          g: s && s.glow ? { s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' || p.name.startsWith('wyrm_') ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 } : undefined,
+          g: s && s.glow ? { s, x: p.wx + sw, y: p.wy, a: p.name === 'leynode' ? 0.6 + 0.3 * Math.sin(this.time * 2 + p.wx) : 0.7 } : undefined,
         });
       }
       for (const l of c.lights) {
@@ -871,7 +871,6 @@ export class Renderer {
     if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant);
     if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
-    if (b.kind === 'cradle' && b.level >= 2 && this.atlas.has('b_greatcradle')) return 'b_greatcradle'; // the Great Cradle (iteration 53)
     return lookName(this.atlas, `b_${b.kind}`, b.x, b.y, this.looks);
   }
 

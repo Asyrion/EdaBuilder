@@ -112,7 +112,7 @@ export const QUESTS: QuestDef[] = [
   { id: 'w_fish', chapter: QUEST_TEXT.w_fish.chapter, title: QUEST_TEXT.w_fish.title, hint: QUEST_TEXT.w_fish.hint, when: (s) => s.milestone >= 1, done: (s) => s.water.fishAt.length > 0, focus: { build: 'fishershut' }, reward: 400, priority: 57 },
   { id: 'w_thatch', chapter: QUEST_TEXT.w_thatch.chapter, title: QUEST_TEXT.w_thatch.title, hint: QUEST_TEXT.w_thatch.hint, when: (s) => s.milestone >= 1, done: (s) => s.stats.homesThatched >= 10, focus: { build: 'reedcutters' }, reward: 400, priority: 58 },
   { id: 'w_ford', chapter: QUEST_TEXT.w_ford.chapter, title: QUEST_TEXT.w_ford.title, hint: QUEST_TEXT.w_ford.hint, when: (s) => s.milestone >= 1 && s.day >= 5, done: (s) => { for (let i = 0; i < s.road.length; i++) if (s.road[i] && isFordTile(s, i)) return true; return false; }, focus: { tool: 'road' }, reward: 300, priority: 58 },
-  // Longwood and the Fen-Nex
+  // The Font of Quieting
   { id: 'n_font', chapter: QUEST_TEXT.n_font.chapter, title: QUEST_TEXT.n_font.title, hint: QUEST_TEXT.n_font.hint, when: (s) => s.milestone >= 7, done: (s) => has(s, 'fontquieting'), focus: { build: 'fontquieting' }, reward: 1500, priority: 59 },
   // The ley-weave
   { id: 'y_quiet', chapter: QUEST_TEXT.y_quiet.chapter, title: QUEST_TEXT.y_quiet.title, hint: QUEST_TEXT.y_quiet.hint, when: (s) => s.day >= 60, done: (s) => s.stats.quietHush > 0, focus: { build: 'shrine' }, reward: 1500, priority: 42 },
@@ -233,7 +233,7 @@ const STATUS: Record<string, (s: GameState) => string> = {
   l_water: (s) => { const d = dry(s); return d ? `${d} building${d === 1 ? '' : 's'} without water: the Water view shows them.` : `All watered; it needs more than 10 buildings (${zoneBuildings(s).length} now).`; },
   l_deepen: (s) => `No node deepened yet (${s.nodes.length} node${s.nodes.length === 1 ? '' : 's'}): click a ley node and Deepen the Wellspring.`,
   l_font: after('font', () => 'Built.'),
-  d_restless: (s) => `Restless out now: ${s.agents.filter((a) => a.kind === AgentKind.Restless).length}. A Watch, a sexton or a drake rider lays them.`,
+  d_restless: (s) => `Restless out now: ${s.agents.filter((a) => a.kind === AgentKind.Restless).length}. A Watch or a sexton lays them.`,
   g_burn: after('wardlantern', (s) => of(s.stats.gloamBurned, 50, 'tiles of Gloam burned back')), // an unlit lantern burns nothing: say so first
   o_cart: (s) => `${zoneBuildings(s, Zone.Craft).length} working Craft, ${zoneBuildings(s, Zone.Market).length} Market: a cart sets out once both stand on one road.`,
   o_full: (s) => `${n0(Math.min(s.stats.fullDays, 5))} of 5 days with every shelf stocked; ${n0(Math.min(zoneBuildings(s, Zone.Market).length, 4))} of 4 markets${s.day <= 20 ? '; from day 21' : ''}.`,

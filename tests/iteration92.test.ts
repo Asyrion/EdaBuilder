@@ -4,12 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { BREED_DAY, canBreed, dailyBreeding } from '../src/sim/breeding';
-import { addEgg, cradleAccepts } from '../src/sim/wyrmcraft';
 import { QUESTS } from '../src/data/quests';
-import { checkQuests } from '../src/sim/quests';
 import { deserialize, serialize } from '../src/sim/save';
-import { DAYS_PER_SEASON, TICKS_PER_DAY, type Building, type GameState } from '../src/sim/types';
+import { TICKS_PER_DAY, type Building, type GameState } from '../src/sim/types';
 import { flatten } from './helpers';
 
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
@@ -34,7 +31,6 @@ describe('Iteration 92: the Watch and the sexton count their rounds, not the thr
     expect(Q('w_patrol').done(s)).toBe(false);
     run(s, TICKS_PER_DAY * 4);
     expect(s.stats.watchRounds).toBeGreaterThan(0);
-    expect(s.stats.walkerKills).toBe(0);
     expect(s.questsDone).toContain('w_patrol');
   });
 
@@ -63,31 +59,6 @@ describe('Iteration 92: the Watch and the sexton count their rounds, not the thr
 
 describe('Iteration 92: tasks that good play used to close off', () => {
 
-  it('the duel stays closed while the Vein-Wyrm is bound: a bound wyrm never flies over in anger', () => {
-    const s = town();
-    s.stats.greatWyrms = 1;
-    s.wyrm.state = 'awake';
-    expect(Q('k_duel').when(s)).toBe(true);
-    s.wyrm.state = 'bound';
-    expect(Q('k_duel').when(s)).toBe(false);
-  });
-
-  it('"Clear the bridge" is open only while a wyrm lairs', () => {
-    const s = town();
-    s.stats.wyrmsLaired = 1;
-    s.marshWyrms = [{ id: 1, x: 5, y: 5, lair: 1234, nest: -1 }];
-    expect(Q('w_wyrm').when(s)).toBe(true);
-    s.marshWyrms[0].lair = -1; // Bloom ended, or the bridge was guarded: the task leaves the Ledger
-    expect(Q('w_wyrm').when(s)).toBe(false);
-    s.stats.wyrmsDriven = 1; // a drive-off ends the lair in the same stroke, and still pays
-    checkQuests(s);
-    expect(s.questsDone).toContain('w_wyrm');
-  });
-
-  it('the cradle takes the vein egg', () => {
-    expect(cradleAccepts({ kind: 'cradle' } as Building, 'vein')).toBe(true);
-  });
-
   it('a lit Guildhall seats the council and opens the guild chapter, petition or none', () => {
     const s = town();
     s.milestone = 5;
@@ -102,66 +73,9 @@ describe('Iteration 92: tasks that good play used to close off', () => {
   });
 });
 
-describe('Iteration 92: breeding weighs every pair', () => {
-  function cradleTown() {
-    const s = town();
-    const f = s.founding;
-    const c = placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3)!;
-    c.level = 2; // a Great Cradle: four slots
-    recomputeAll(s);
-    return { s, c };
-  }
-  it('a Great Cradle of ember, ember and vein (attuned to vein) breeds the vein and an ember', () => {
-    const { s, c } = cradleTown();
-    const ds = [addEgg(s, 'ember')!, addEgg(s, 'ember')!, addEgg(s, 'vein')!];
-    for (const d of ds) { d.stage = 2; d.mood = 80; }
-    const chk = canBreed(s, c);
-    expect(chk.ok).toBe(true);
-    expect(chk.line).toBe('vein');
-    expect(chk.second).toBe('ember');
-    s.day = BREED_DAY;
-    c.lit = true;
-    dailyBreeding(s);
-    const egg = s.dragons[3];
-    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'ember', undefined]);
-    expect(s.stats.crossEggs).toBe(1);
-  });
-  it('mirror crosses still lay a trueblood, and a plain dragon with a crossed one of its line breeds nothing', () => {
-    const { s, c } = cradleTown();
-    const a = addEgg(s, 'vein')!; const b = addEgg(s, 'ember')!;
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    a.second = 'ember'; b.second = 'vein';
-    const chk = canBreed(s, c);
-    expect([chk.ok, chk.line, chk.second, chk.trueblood]).toEqual([true, 'vein', 'ember', true]);
-    b.line = 'vein'; b.second = undefined; // plain vein beside vein+ember: the egg would copy the crossed parent
-    expect(canBreed(s, c).ok).toBe(false);
-  });
-  it('two crossed dragons of one first line and different second lines lay a trueblood', () => {
-    const { s, c } = cradleTown();
-    const a = addEgg(s, 'vein')!; const b = addEgg(s, 'vein')!;
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    expect(canBreed(s, c).ok).toBe(false); // two of one line, uncrossed: nothing new
-    a.second = 'grey'; b.second = 'sky';
-    const chk = canBreed(s, c);
-    expect(chk.ok).toBe(true);
-    expect(chk.trueblood).toBe(true);
-    expect(chk.line).toBe('vein');
-    expect(chk.second).toBe('sky');
-    s.day = BREED_DAY;
-    c.lit = true;
-    dailyBreeding(s);
-    const egg = s.dragons[2];
-    expect([egg?.line, egg?.second, egg?.trueblood]).toEqual(['vein', 'sky', true]);
-    expect(s.stats.truebloods).toBe(1);
-    a.second = 'sky'; // the same lines exactly
-    expect(canBreed(s, c).ok).toBe(false);
-  });
-});
-
 describe('Iteration 92: the text says what completes the task', () => {
-  it('names the four markets, the stirring and the Beacon gate', () => {
+  it('names the four markets and the Beacon gate', () => {
     expect(Q('o_full').title + Q('o_full').hint).toMatch(/four/i);
-    expect(Q('v_find').title).toMatch(/Stir/);
     expect(Q('c_beacon').hint).toMatch(/happiness gate/);
     expect(Q('c_beacon').focus).toBeUndefined();
   });

@@ -77,7 +77,7 @@ export const ANNALS: AnnalChapter[] = [
       { label: 'Fires', stat: 'firesTotal', note: 'Buildings that caught fire.' },
       { label: 'Hides from game', stat: 'hides', note: "Hides of deer, elk, boar, goats, otters and wolves the lodges brought in (iteration 58)." },
       { label: 'Meat brought in', stat: 'meat', note: 'Meat for the markets\' shelves; what the shelves cannot take is salted for the Gloam road.' },
-      { label: 'Trophies', stat: 'trophies', note: 'Antlers, tusks, plumes, wolf heads, a war-tiger or a white hart.' },
+      { label: 'Trophies', stat: 'trophies', note: 'Antlers, tusks, plumes, wolf heads or a white hart.' },
       { label: 'Crowns from the hunt', stat: 'huntCrowns', note: 'What the Gloam road paid for hides, salted meat and trophies.' },
       { label: 'Herds driven off', stat: 'herdsLost', note: 'Herds that left as the city took their ground (or the wolves and the winter took them).' },
       { label: 'Herds hunted out', stat: 'herdsHunted', note: 'Herds the hunters took to the last head.' },
@@ -104,7 +104,7 @@ export const ANNALS: AnnalChapter[] = [
     rows: [
       { label: 'Days of rain', stat: 'rainDays', note: 'Bloom rain: fires ×0.4, works +15 %, miasma ×0.3.' },
       { label: 'Days of drought', stat: 'droughtDays', note: 'Ember drought: fires ×2, wells two tiles shorter.' },
-      { label: 'Days of blizzard', stat: 'blizzardDays', note: 'Hush blizzard: hearths draw a tenth more mana, no new hound packs.' },
+      { label: 'Days of blizzard', stat: 'blizzardDays', note: 'Hush blizzard: hearths draw a tenth more mana.' },
       { label: 'Quiet Hushes', stat: 'quietHush', note: 'Hushes the Gloam never pressed hard.' },
       { label: 'Gale days', stat: 'galeDays', note: 'Days a sea-gale blew over the Patagoi Atoll: the barges stay in, and plain track bridges are under the surf.' },
       { label: 'Floods weathered', stat: 'floodsWeathered', note: 'Hushes a water people came through with the river in flood.' },
@@ -114,7 +114,7 @@ export const ANNALS: AnnalChapter[] = [
     chapter: 'Walkers',
     rows: [
       { label: 'Dead laid by walkers', stat: 'walkerLayings', note: 'The restless laid by sextons and pilgrims on their rounds.' },
-      { label: 'Watch rounds', stat: 'watchRounds', note: 'Patrol legs the watchmen walked, hounds or no hounds.' },
+      { label: 'Watch rounds', stat: 'watchRounds', note: 'Patrol legs the watchmen walked.' },
       { label: 'Sexton rounds', stat: 'sextonRounds', note: 'Rounds the sextons walked with their salt, and the dead they laid.' },
       { label: 'Healer visits', stat: 'healerVisits', note: 'Homes tended by healers (+4 happiness for a day).' },
       { label: 'Spire-warden rounds', stat: 'wardenRounds', note: 'Spires checked by the Tallowkin wardens.' },

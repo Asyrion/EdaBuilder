@@ -2,9 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { idx } from '../src/sim/types';
-import { BREED_DAY, canBreed, dailyBreeding } from '../src/sim/breeding';
-import { addEgg, dailyDragons } from '../src/sim/wyrmcraft';
-import { dragonAuras } from '../src/sim/weave';
 import { RELIC_SETS, dailyRelics, initRelics, relicDone } from '../src/sim/relics';
 import { BOON_AT, HALL_DAYS, HALL_OF, dailyGuilds, hallActive } from '../src/sim/guilds';
 import { dailyTrade } from '../src/sim/growth';
@@ -23,58 +20,6 @@ function town(seed = 41) {
   flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
   return s;
 }
-
-describe('Cross-line breeding', () => {
-  it('needs two content drakes of different lines in a lit cradle attuned to one, and a free slot', () => {
-    const s = town();
-    const f = s.founding; // Vein node
-    const c1 = placeBuildingRaw(s, 'cradle', f.x + 3, f.y + 3);
-    recomputeAll(s);
-    expect(canBreed(s, c1).why).toMatch(/two grown/);
-    const a = addEgg(s, 'vein')!;
-    const b = addEgg(s, 'ember')!;
-    expect(a.cradleId).toBe(c1.id);
-    expect(canBreed(s, c1).why).toMatch(/drakes/);
-    a.stage = 2; b.stage = 2; a.mood = 80; b.mood = 80;
-    expect(canBreed(s, c1).why).toMatch(/free slot/);
-    const c2 = placeBuildingRaw(s, 'cradle', f.x - 5, f.y + 3);
-    recomputeAll(s);
-    const ok = canBreed(s, c1);
-    expect(ok.ok).toBe(true);
-    expect(ok.line).toBe('vein');
-    expect(ok.second).toBe('ember');
-    b.line = 'vein';
-    expect(canBreed(s, c1).why).toMatch(/one line/);
-    b.line = 'ember';
-    s.nodes[0].aspect = 'grey';
-    expect(canBreed(s, c1).why).toMatch(/attuned/);
-    s.nodes[0].aspect = 'vein';
-    // lays on Bloom day 20 only
-    s.day = BREED_DAY - 1;
-    dailyBreeding(s);
-    expect(s.dragons.length).toBe(2);
-    s.day = BREED_DAY;
-    dailyBreeding(s);
-    expect(s.dragons.length).toBe(3);
-    const egg = s.dragons[2];
-    expect(egg.line).toBe('vein');
-    expect(egg.second).toBe('ember');
-    expect(egg.cradleId).toBe(c2.id);
-    expect(s.stats.crossEggs).toBe(1);
-    expect(activeQuests(s, 100).some((q) => q.id === 'k_cross')).toBe(false);
-    // the crossed dragon carries a fainter second aura, is attuned to either line, and breathes wyrmfire
-    egg.stage = 2;
-    const auras = dragonAuras(s).filter((x) => x.name === egg.name);
-    expect(auras.map((x) => [x.line, x.r])).toEqual([['vein', 8], ['ember', 5]]);
-    s.day = 120; s.materials.wyrmfire = 0;
-    for (const m of s.buildings) if (m && m.kind === 'market') m.stock = 20;
-    placeBuildingRaw(s, 'market', f.x - 5, f.y + 6, 2).stock = 40;
-    dailyDragons(s);
-    expect(s.materials.wyrmfire).toBeGreaterThan(0);
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
-    expect(r.dragons[2].second).toBe('ember');
-  });
-});
 
 describe('Relic sets', () => {
   it('a piece every twelve relics, catalogued by an Academy; three make a set with a lasting boon', () => {

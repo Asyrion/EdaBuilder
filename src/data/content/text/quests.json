@@ -77,7 +77,7 @@
   "d_restless": {
     "chapter": "The dead",
     "title": "Lay a restless to rest",
-    "hint": "Watch coverage (6) and wards clear them; wisps show where they are."
+    "hint": "Watch coverage (6) and wards clear them."
   },
   "d_ossuary": {
     "chapter": "The dead",
@@ -357,7 +357,7 @@
   "z_island": {
     "chapter": "The Charter",
     "title": "The Gloam-locked island: Township and 300 tiles burned back",
-    "hint": "Ward Lanterns outward from the Stake; the Watch and a Hunters' Lodge for the hounds."
+    "hint": "Ward Lanterns outward from the Stake; the Watch for the restless."
   },
   "z_atoll": {
     "chapter": "The Charter",

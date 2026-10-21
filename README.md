@@ -15,7 +15,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # production build in dist/
 npm run preview    # serve the production build
-npm test           # vitest: terrain, actions, networks, sim, hazards, creatures, wyrmcraft, quests, save/load
+npm test           # vitest: terrain, actions, networks, sim, hazards, quests, save/load
 npm run headless   # scripted balance run (see scripts/)
 npx tsx scripts/balance.ts 42 150   # bot-played balance run, seed 42, 150 days
 npx tsx scripts/balance.ts 42 150 - vellish roll=1   # the same run with one extra roll on day 10: another draw
@@ -95,11 +95,6 @@ main node.
    hungrier hearths and a bolder Gloam. Festivals on fixed days ask for a choice.
 10. **Trade and the Wellspring** — a Trade Depot sells surplus goods at seasonal prices;
     click a ley node to see its flow and, from Burgh, deepen it for more mana.
-11. **The Sleeping Wyrm** — one distant node is ringed with scale. Spires there wake it;
-    awake it wants tribute each season (crowns or goods) or it flies over the city with
-    wyrmfire. A **Wyrm-Court** (Free City) binds it as the city's guardian: a 30-tile
-    ward, no hounds, +10 happiness, 40 goods a day to eat, and a vein egg each content
-    season. Starve it and it sulks, then dies; its bones quiet the dead.
 12. **Huruhui and Gekiryu craft** — a **Torrent Mill** on the riverbank makes mana from
     falling water; **Hanging Gardens** against hills make goods, health and light with no
     mana and unlock the **Glowvine Lane**; a **Glimhouse** keeps Craft works warm through
@@ -112,30 +107,11 @@ main node.
     Delve** there brings up relics (artifacts sell for more) and opens old doors. At Free
     City plant the **World Tree Sapling**: four seasons later its shade reaches 24 tiles and
     the Gloam will not cross it. The **minimap** (bottom right) jumps the camera where you click.
-14. **Beasts of the Concord and the sky** — mining wakes **Concord Wardens** in the hills;
-    a **Golem Foundry** (Burgh) binds them into twelve hands of labour each, no housing,
-    ten mana a day, or sets them to guard, to a Craft bench, or **in harness**: a stone
-    cart of 30 goods, slow and tireless, that fears no hound, where the donkey carts balk
-    and stand when Gloam-hounds come within four tiles; a surge sets them loose. In Bloom and Ember **skyrays** cross the sky;
-    a lit **Ley Beacon** keeps a school for the season (happiness, rayscale for the
-    enchanters). A **Drake Mews** doubles Watch House reach. Three taming edicts trade
-    one beast for another.
 15. **Vehicles** — a level-3 Arcane workshop puts two **floating carts** on the roads
     (no congestion, a little mana). Two **Quays** on the same water send **barges** with
-    goods from works to markets. A lit **Drake Mews** flies **riders** to the restless and
-    to fires. At Beacon of Eda the **Sky-Dock** launches an **airship** each season with
-    your surplus; it returns with crowns and sometimes a story. From its panel it sends a
-    **wyvern** of your own instead: half the load, back in five days, no mana, and one time
-    in two a rival wardlight follows it home with an egg to sell or a challenge for the
-    Ring. Once a Wyrm-Court stands a drake may be a **mount**: a Watch rider across the
-    whole map. A cradle with the Gloam at its door three days running sees its **eggs go
-    grey**, whatever line they were.
-16. **Longwood and the Fen-Nex** — on forest-heavy maps **war-tigers** stalk hearths by
-    night; hunters, strong Watch or a warden drake's district kill them. The **Fen-Nex**
-    fox-folk trade honestly half the time and may take a market district as their
-    tithe-free, double-shelved quarter. Every wild surge leaves a drifting **mana-storm**
-    that warps buildings until wards dissolve it. The **Font of Quieting** (Free City)
-    makes the dead easy to lay down.
+    goods from works to markets. At Beacon of Eda the **Sky-Dock** launches an **airship**
+    each season with your surplus; it returns with crowns and sometimes a story.
+16. **The Font of Quieting** (Free City) makes the dead easy to lay down.
 17. **The Charter's Ledger and the Chronicle** — the left panel lists the next three
     tasks with a hint, a reward and a *Show me* button that picks the tool, opens the
     panel or moves the camera, and under most a live line of what the task still needs
@@ -180,9 +156,9 @@ Charter as `.json`.
 
 - Deterministic, seeded, fixed-tick simulation separated from rendering (`src/sim`), with
   a headless bot player for balance runs and a vitest suite. The bot plays the levers a player
-  has: it saves for one goal at a time (its people's hall, a cradle, the cheapest mana) and takes
+  has: it saves for one goal at a time (its people's hall, a depot, the cheapest mana) and takes
   the Crown's loan as a bridge to a hall. It zones what it can light, moves the tithe off the
-  hearths, and sets the curfew, draughts and imports. It walls the Gloam side and stands a cradle.
+  hearths, and sets the curfew, draughts and imports. It hunts with one lodge.
   It saves for a depot once the works' surplus (at the Belerial caravan's price), hides, trophies
   and smoked fish waiting for the Gloam road would fetch half its price. It thatches with a Reed-Cutters' Hut, raises a Weir where its
   Fishers' Hut fishes the shoal down, and bridges its fords before the Thaw's high water. It answers
@@ -196,17 +172,12 @@ Charter as `.json`.
 - Goods flow by cart (potions and leystone), four seasons, ten story events with choices
   and chains, seven edicts city-wide or per district, eight paintable districts.
 - Menu settings for colour-blind overlay ramps and UI scale; camera-driven ambience.
-- Creatures: glimmoths swarm the ley at night, thrumhares graze the meadows, wisps rise
-  over boneyards when the dead are restless; a Moth-Loft harvests glim-dust. Gloam-hounds
-  hunt at the edge of the light, bolder in the Hush: raise a Hunters' Lodge or draw a
-  Warding Wall (Services tab) that hounds and the Gloam cannot cross.
 - The wild: herds of deer and elk graze the meadows by day, run from lit ground and bed down in
   the woods at night; boar keep the forests, goats the hills, otters and herons the banks. Herds
   breed in Bloom and thin where the city builds over their ground (a ward or a lit Glimhouse helps
-  them recover). A Hunters' Lodge hunts the quarry its panel names within 16 tiles: hides, meat and
+  them recover). A Hunters' Lodge hunts the fullest herd within 16 tiles, or the quarry its panel names: hides, meat and
   trophies with their own prices on the Gloam road, and meat for the markets in reach, which makes
-  the hearths near them happier. Hunters out after game kill hounds at half the chance, and a herd
-  hunted to the last is gone; the Close Season edict keeps a floor. In the Hush, wolves leave the
+  the hearths near them happier. A herd hunted to the last is gone; the Close Season edict keeps a floor. In the Hush, wolves leave the
   forest at night to take hens from the dark hearths at the edge. Two tales: the white hart and
   the wolf winter. The creatures are painted from the animal sheets where a painting reads at the
   game's scale.
@@ -223,35 +194,18 @@ Charter as `.json`.
   tiles. Its reeds count twice for the Reed-Cutters. The Drainage edict (from the Village) cuts
   the marsh nearest the city to meadow, three tiles a day, for 30 crowns a day and a little more
   for every ten marsh tiles left.
-- Marsh-wyrms: in Bloom eel-like wyrms come up the river and the lake. One may lair under a bridge,
-  and the carts on it crawl; a Water-Mages' Hall covering the bridge drives it off, and none lairs
-  within ten tiles of a Quay. A wyrm's nest by a Quay gives the city a tide egg each Bloom.
 - The Patagoi Atoll: six isles on a 128 × 128 sea, a ley node on each, the founding node on the great
   isle. Three near isles lie over shallow bars (a bridge, at four times a road's price); two far isles
-  lie across deep channels that only barges, a Portal Arch pair or drake riders cross, and the Gloam
+  lie across deep channels that only barges or a Portal Arch pair cross, and the Gloam
   lies on their outer halves. Twice each Hush a sea-gale blows for two days: the barges stay in port and
   every plain Track bridge is under the surf; cobbled bridges hold, and so does any bridge within six
   tiles of a Quay, a Landing or a Weir. Goal: Burgh with four isles settled (six zone buildings each).
-- Wyrmcraft: raise a Wyrm-Cradle near the ley and a Tamer's Lodge (it seats four); dragon
-  eggs arrive through events; hatch and train them into drakes and wyverns, set them as
-  district wardens (fed by their district), mine delvers (wardens wake half as often),
-  flying couriers (their last trip shown) or champions of the Wyrm-Ring (the odds shown
-  before each bout, against a challenger of their own weight), and collect scale and
-  wyrmfire in the Wyrms panel. Dragons eat from markets within 12 of the cradle; ten unfed
-  days cost a stage; one that leaves returns after a season to ask a tribute. A cradle
-  becomes a Great Cradle (four nests) from the Burgh; an eggshell lines a nest. Every
-  building inside a dragon's aura names it: an Ember drake lifts Craft a tenth, a Sky
-  wyvern speeds the carts, a Tide drake swims a barge a day.
-- Gates of the Pass in the Warding Wall, Storm-Caller's Peak (call rain), Belerial
+- Storm-Caller's Peak (call rain), Belerial
   caravans (every twelve days at a Trade Depot; the depot panel counts them down, and the Budget
   and the Annals count what they pay) and the
-  Wandering Merchant, who remembers every visit: the egg on offer changes, bought eggs cut
-  her prices, and two evenings of stories are a favour owed.
+  Wandering Merchant, who remembers every visit: two evenings of stories are a favour owed.
 - The Charter's Ledger (140 guided tasks with hints, *Show me* and a live line of what each still needs), the Advisor line, and
   the Chronicle of real in-world events with jump-to-place.
-- The Sleeping Wyrm: a Vein-Wyrm on the farthest node that wakes, demands tribute, burns,
-  or is bound at the Wyrm-Court as the city's guardian: lit, the Court halves its appetite;
-  dark two days, the wyrm sulks.
 - Huruhui and Gekiryu craft: the Torrent Mill (river mana), Glimhouse (warm works through
   the Hush), Astral Observatory (a five-day forecast in the Ledger), Hanging Gardens
   (goods, health and light with no mana) and the vine-lit Glowvine Lane.
@@ -261,26 +215,19 @@ Charter as `.json`.
   drag. The minimap jumps the camera where you click.
 - The ley-weave: every node has an aspect that changes the rules around it (Ember works,
   Bone deathcare, Glim moths, Vein mana, Sky couriers, Grey stillness, Tide water, Storm
-  calm); cradles attune to matching eggs; grown dragons radiate their line's aura; rare
-  goods build the Marvels tab, sell to caravans by a slider, and have sinks of their own
-  (the Scale-Mail edict, a Wyrmfire Forge that burns 0.1 a day and goes cold, a burn
-  toggle for the Craft bonus, glim-dust scattered on a dark lane from the Land tab, rays
-  over a Rayscale Mirror shedding dust); the Hall of Marvels exhibits each one for +2;
-  every lit wonder hall delights the city and lifts the next grant a tenth; the Lantern of
-  the Cores takes the first 30 of a surge and cracks for ten days; the Great Weir's sluice
-  trades a flooded bank for double mana; the Underking's Seat warms hatcheries; the
-  Lantern of Wicks halves its spires' draw; a bound Concord Warden labours, guards its
-  foundry, works a Craft bench or hauls a stone cart of 30 that no hound scares; the Gloam presses harder as the dead go unquieted and
+  calm); every lit wonder hall delights the city and lifts the next grant a tenth; the Lantern of
+  the Cores takes the first 30 of a surge and cracks for ten days; the Gloam presses harder as the dead go unquieted and
   eases under faith; the river freezes in the Hush.
 - The guild council (sextons walk to a brawl on the square and can part it): a lit Guildhall seats carters, alchemists, spire-wrights and sextons,
   who petition for edicts every 20 days and pay boons or strike; festivals spend the city
   (the feast eats shelves, the vigil drains the Nexus rings, the Remembrance needs the
   Ossuary, the Lantern Fair raises prices); the Ledger lists every trade route including the
-  Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects and auras.
+  Twin Road to a daughter wardlight; the Weave view (W) paints ley aspects.
 - One people, the Vellish (the scope reset, `docs/RESET_PLAN.md`): the Grimmen, the Veshari, the Tallowkin
   and the Fen-Nex are parked with everything that served only them (`docs/PARKED.md` says how they would
-  come back); `src/data/factions.ts` stays as the seam another people would plug into.
-- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars, tamers and pilgrims walk the roads from their buildings and do their jobs where
+  come back); `src/data/factions.ts` stays as the seam another people would plug into. Phase 1b parked the
+  creatures, the dragons, the wyrms, the beasts, the hounds and the Warding Wall in the same way.
+- Walkers: watchmen, sextons, healers, Tallowkin wardens, scholars and pilgrims walk the roads from their buildings and do their jobs where
   they go; the streets they walk
   count as covered.
 - Districts: paint a district from the Hamlet and give it a charter (a Hearth, Craft, Market,
@@ -350,17 +297,15 @@ Charter as `.json`.
   result): among them jump to a day, flood or freeze the river, complete a Charter task, set a
   guild's standing or the Crown's favour, and reset the tales, the ledger history or the Chronicle.
 - The Annals (**N**, or the top bar): every counter the charter keeps, by chapter (riots and
-  levies, rain days and hound raids, bouts, relics, walkers' rounds), each with a note on what it
+  levies, rain days, relics, walkers' rounds), each with a note on what it
   counts.
 - Saves carry their version and migrate step by step; a save from a newer Wardlight is refused
   with the reason.
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
-- Crossed eggs from attuned cradles (two auras in one dragon) and trueblood eggs from two
-  crossed parents; relic sets catalogued by the Academy from the Ruin Delve, each unlocking
+- Relic sets catalogued by the Academy from the Ruin Delve, each unlocking
   a building; guild halls that pleased guilds raise for themselves, guild rivalries and
-  brawls and charters; great wyrms from trueblood lines that meet the Vein-Wyrm in the
-  air; relics sold to the Crown's assessor or auctioned to the caravans.
+  brawls and charters; relics sold to the Crown's assessor or auctioned to the caravans.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from
   Hamlet and the Gloam inside them draws back.
 - Land tools (clear forest, plant glimwood, level hills), a daily challenge seeded from the
@@ -380,26 +325,10 @@ Charter as `.json`.
 - Scenario charters on the title screen: the one-node valley, the Gloam-locked island, the
   Patagoi Atoll and the inherited collapse, each with a goal; a Done page in the Ledger; per-district
   problem counts in the Districts view.
-- Longwood and the Fen-Nex: war-tigers on forest-heavy maps, the Fen-Nex fox-folk and
-  their tithe-free quarter (and fen-drake eggs), mana-storms after every surge, the Font
-  of Quieting, and cameo visitors.
-- Vehicles: floating carts from level-3 Arcane workshops, barges between Quays, drake
-  riders from the Drake Mews, mounted drakes once a Wyrm-Court stands, and the Sky-Dock's
-  airship (or a wyvern of your own) that trades the season's surplus beyond the Gloam.
-- Beasts of the Concord and the sky: Concord Wardens woken by mining and bound at the
-  Golem Foundry into tireless labour, skyray schools kept by a Ley Beacon, the Drake
-  Mews, and three taming edicts.
-- The Great Gate and the Heart of Belregi: a gatehouse wonder of the Burgh raised beside a
-  Belregi gate in the Warding Wall. Lit, it wards 20 tiles, lengthens every Belregi gate's reach
-  from 8 to 12, sends three pilgrims and lodges pilgrims of the Pass each season. Ten days on, the
-  High Warden brings the Heart and recites what the city did at its gates before (the pilgrims, the
-  Lantern Fair, the poachers, Belregi against Uzulim). Set it in the arch, leave it with the
-  Guardians or sell it; the Uzulim may come for a share, and in the Hush the Heart wakes and grants
-  one favour, by half to a city with a poor record.
-- Five ways to lose, each named on the game-over screen: the Gloam at the founding node, forty
-  restless walking, the Crown's revocation, a wyrm refused three times running that comes down on
-  the Founding Stake, and the Long Night early when the Hush's hounds drive the folk out of three
-  districts (three nights at a dark home's door and its folk flee until the Thaw).
+- Vehicles: floating carts from level-3 Arcane workshops, barges between Quays, and the
+  Sky-Dock's airship that trades the season's surplus beyond the Gloam.
+- Three ways to lose, each named on the game-over screen: the Gloam at the founding node, forty
+  restless walking, and the Crown's revocation.
 - Longwood and Lukuku: a pair of Portal Arches carts step through, the Ruins of Lukuku
   with a Ruin Delve and its relic chain, and the World Tree Sapling wonder that grows over
   four seasons.
@@ -413,8 +342,8 @@ Charter as `.json`.
   paintings in `inspirations/` as `art/sources.json` says, and packs them into one or a few
   sheets (`public/art/sheets/`) that the page loads at once, with a loading line until the
   town is up. Drop `public/art/atlas.png` + `atlas.json` to replace the whole set instead.
-- Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (hounds
-  howl, the wyrm roars, barges ring, skyrays sing) panned by where they happen, and
+- Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (the
+  airship's horn, barges ring, builders' hammers, called rain) panned by where they happen, and
   generative ambient music that follows day, night, season and danger (Menu to toggle).
 
 ## Docs

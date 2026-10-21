@@ -99,7 +99,6 @@ export function dailyFire(state: GameState): void {
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
     if (thatched(state, b)) p *= THATCH_FIRE; // thatch burns (water.ts, iteration 60)
     if (def.key === 'font') p *= 6;
-    if (def.key === 'drakemews' && state.happiness < 40) p *= 12; // spooked drakes
     const asp = aspectAt(state, b.x, b.y);
     if (asp === 'ember') p *= 1.5;
     else if (asp === 'tide') p *= 0.7;
@@ -112,7 +111,7 @@ export function dailyFire(state: GameState): void {
   commitRng(state, rng);
 }
 
-/** Set a building alight (fire hazard, wyrm flyover). */
+/** Set a building alight (the fire hazard). */
 export function igniteBuilding(state: GameState, b: Building, why = ''): boolean {
   if (b.state !== 'ok') return false;
   b.state = 'burning';

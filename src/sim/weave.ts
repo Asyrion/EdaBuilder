@@ -1,4 +1,4 @@
-/** The ley-weave: node aspects, dragon auras, Gloam pressure and the season's touch on the river. See DESIGN.md 13. */
+/** The ley-weave: node aspects, Gloam pressure and the season's touch on the river. See DESIGN.md 13. */
 import { BUILDING_BY_KEY } from './catalog';
 import { AgentKind, DAYS_PER_SEASON, Zone, idx, type Building, type DragonLine, type GameState, type Weather, type WeatherKind } from './types';
 import { forEachBuilding, markDirty, pushMessage, seasonOf } from './world';

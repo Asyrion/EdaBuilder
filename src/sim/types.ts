@@ -439,7 +439,7 @@ export interface GameState {
     levied: number; // crowns they took
     hides: number; // hides the lodges brought in from game (iteration 58)
     meat: number; // meat the lodges brought in
-    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a tiger, a white hart)
+    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a white hart)
     herdsLost: number; // herds the city's spread drove off
     herdsHunted: number; // herds the hunters took to the last
     hensTaken: number; // hens the Hush wolves took from the hearths

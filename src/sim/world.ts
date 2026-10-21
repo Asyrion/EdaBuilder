@@ -191,7 +191,7 @@ export function pushMessage(state: GameState, text: string, kind: Message['kind'
   if (world || kind === 'milestone' || kind === 'bad') pushChronicle(state, text, kind, at);
 }
 
-/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, a raid, the wyrm, a tiger, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
+/** An ill tiding: the storyteller waits six days after one before another tale. Only the hazards call this (a surge, a flare, the restless, the Gloam, a riot), not every burnt roof (iteration 54). */
 export function illTiding(state: GameState): void {
   state.lastBadDay = state.day;
 }
