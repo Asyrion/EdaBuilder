@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
-import { RoadType, TICKS_PER_DAY, Zone, idx, CHALLENGE_DAYS } from '../src/sim/types';
+import { RoadType, TICKS_PER_DAY, idx, CHALLENGE_DAYS } from '../src/sim/types';
 import { buildRoad, paintDistrict, roadPath } from '../src/sim/actions';
 import { DEBT_DAYS, FAVOUR_AUDIT, checkMilestones, computeLedger, crownLevy, dailyEconomy, debtLine, favourFactor, grantFor, levyDue, loanLimit, repayLoan, takeLoan } from '../src/sim/economy';
 import { sectorCost } from '../src/sim/sectors';
