@@ -5,6 +5,24 @@ Read `docs/HANDOFF.md` first: it says where the project stands and what comes ne
 to. Do not re-audit the game or re-plan the milestones: the plan is written down, and the
 order of the list is itself a decision the user made.
 
+## Scope reset (since 2026-10-21; the user's decision, it overrides the rules below until the reset is done)
+
+The game is being cut back to its core with one people, the Vellish (`docs/RESET_PLAN.md`, the user's answers in its §9).
+- **The list is `docs/RESET_PLAN.md`**, phase by phase (0, 1a–1d, 2–6). NEXT_STEPS' milestones M18/M19 and GitHub issues
+  labelled `parked` are parked; nothing parked comes back without the user's approval (`docs/PARKED.md` says how).
+- **Unchanged:** one plan per "Continue" on the Plan panel, and shipping autonomously (PR to `main` per phase, merge,
+  fast-forward, Pages check).
+- **Verification per iteration** (instead of rule 4 below): `npx tsc --noEmit -p .`, `npx vitest run`, `npm run build`,
+  `node scripts/smoke.mjs` against `npx vite preview --port 4173` (instead of a new `playtestNN.mjs`), and for a sim
+  change the bot corridor: `npx tsx scripts/balance.ts <seed> 150` for seed 42 and five more (Vellish only, instead of
+  the wide bar over five peoples), its numbers against the phase 0 baseline in `docs/RESET_LOG.md`. Losses are reported
+  as losses. The checklist `docs/CORE_CHECKLIST.md` is walked when the UI changes.
+- **Docs** (instead of rule 5 below): a section per phase in `docs/RESET_LOG.md`, not a `### 4.NN` in DESIGN.md;
+  README and the in-game help follow what is removed. `docs/PARKED.md` gets a row for everything parked.
+- **Saves:** the reset breaks old saves on purpose (version 8 refuses older ones with a message); no migrations from 7.
+- **The archive:** `archive/full-scope` is `main` before the reset (`ac4e05f`); `archive/core-iter4` and
+  `archive/core-iter5-art` are the core before the scope grew. The session could not push tags, so these are branches.
+
 ## The standing process (the user's rules)
 
 1. **One iteration per "Continue".** Every iteration starts with a plan on the Plan panel
