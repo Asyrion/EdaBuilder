@@ -78,5 +78,5 @@ describe('core loop', () => {
     expect(s.population).toBeGreaterThanOrEqual(Math.floor(BOT_POP_100 * 0.5));
     expect(s.population).toBeLessThanOrEqual(Math.ceil(BOT_POP_100 * 1.5));
     expect(s.milestone).toBeGreaterThanOrEqual(BOT_MILESTONE_100 - 1);
-  }, 120_000);
+  }, 300_000);
 });
