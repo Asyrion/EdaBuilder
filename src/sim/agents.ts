@@ -13,16 +13,19 @@ const MAX_RESTLESS = 60;
 // depends on the roads and their speeds alone, so the cache is a pure memo and a loaded charter walks the same paths
 // (scope reset phase 1d; congestion slows a cart on its way but no longer steers A*, whose cache kept the first day's jams).
 const pathCaches = new WeakMap<GameState, { version: number; map: Map<number, number[] | null> }>();
-export let roadVersion = 0;
-export function bumpRoadVersion(): void {
-  roadVersion++;
+// The road version, one per state (phase 2-5: it was a module global, and only the command layer bumped it, so the bot's
+// own roads and a second state in the same page shared or missed it). The road writes in actions.ts bump it themselves.
+const roadVersions = new WeakMap<GameState, number>();
+export function bumpRoadVersion(state: GameState): void {
+  roadVersions.set(state, (roadVersions.get(state) ?? 0) + 1);
 }
 
 /** A* over road tiles (4-neighbour). Returns tile indices from start to goal, or null. */
 export function findPath(state: GameState, start: number, goal: number, maxNodes = 6000): number[] | null {
   let cache = pathCaches.get(state);
-  if (!cache || cache.version !== roadVersion) {
-    cache = { version: roadVersion, map: new Map() };
+  const version = roadVersions.get(state) ?? 0;
+  if (!cache || cache.version !== version) {
+    cache = { version, map: new Map() };
     pathCaches.set(state, cache);
   }
   const pathCache = cache.map;
