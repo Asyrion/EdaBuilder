@@ -113,7 +113,7 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
     // markets like customers, leisure and full shelves
     add('leisure for the trade', (cov.leisure[i] / 255) * 6);
     if (state.population < 20) add('no customers', -8);
-    const fill = b.stock / marketStockCap(b);
+    const fill = b.stock / marketStockCap(state, b);
     if (fill <= 0.05) add('empty shelves', -14);
     else if (fill > 0.5) add('full shelves', 5);
     if (edictOn(state, 'lanternlevy', b)) add('the Lantern Levy', -6);
@@ -331,11 +331,12 @@ export function dailyBuildings(state: GameState): void {
   commitRng(state, rng);
 }
 
-/** Demand bars in [-1,1]. Recomputed every few seconds. */
-let lastDemandWhy: string[] = [];
-/** One line per demand bar, from the last updateDemand (for the bars' tooltip). */
-export function demandReasons(): string[] {
-  return lastDemandWhy;
+/** What the last updateDemand of a state found, for the bars' tooltips: one per state, never saved (scope reset phase 1d:
+ *  it was a module global, which two states, a replay and the live game, would have shared). */
+const demandNotes = new WeakMap<GameState, { why: string[]; facts: DemandFacts }>();
+/** One line per demand bar, from the last updateDemand. */
+export function demandReasons(state: GameState): string[] {
+  return demandNotes.get(state)?.why ?? [];
 }
 
 export type DemandZone = 'hearth' | 'market' | 'craft' | 'arcane';
@@ -345,7 +346,6 @@ interface DemandFacts {
   craftJobs: number; craftWant: number; goodsShort: number; unemployment: number;
   arcaneJobs: number; educated: number; arcaneOpen: boolean;
 }
-let lastDemandFacts: DemandFacts | null = null;
 export const DEMAND_EVEN = 0.05;
 const DEMAND_NAMES: Record<DemandZone, string> = { hearth: 'Hearths', market: 'Markets', craft: 'Craft works', arcane: 'Arcane shops' };
 
@@ -355,7 +355,7 @@ export function demandExplain(state: GameState, zone: DemandZone): { sign: '+' |
   const pct = Math.round(Math.abs(v) * 100);
   const sign: '+' | '−' | '0' = v > DEMAND_EVEN ? '+' : v < -DEMAND_EVEN ? '−' : '0';
   const name = DEMAND_NAMES[zone];
-  const f = lastDemandFacts;
+  const f = demandNotes.get(state)?.facts ?? null;
   const lead = sign === '0' ? `${name} about even:` : `${name} ${sign}${pct} %:`;
   let verdict = '';
   let detail = f ? '' : 'no reckoning yet.';
@@ -440,13 +440,14 @@ export function updateDemand(state: GameState): void {
     arcane -= (state.taxRates.arcane - 10) * 0.04;
     if (state.educated < 0.2) arcane = -0.5;
   }
-  lastDemandFacts = { jobs, workforce, jobSurplus, happiness: state.happiness, unrest: state.unrest, emptyHomes: hearthCap - hearthRes > Math.max(8, pop * 0.25), marketJobs, marketWant, pop, craftFull, craftN, craftJobs, craftWant, goodsShort: state.goodsShort, unemployment, arcaneJobs, educated: state.educated, arcaneOpen: isZoneUnlocked(state.milestone, Zone.Arcane) };
-  lastDemandWhy = [
+  const facts: DemandFacts = { jobs, workforce, jobSurplus, happiness: state.happiness, unrest: state.unrest, emptyHomes: hearthCap - hearthRes > Math.max(8, pop * 0.25), marketJobs, marketWant, pop, craftFull, craftN, craftJobs, craftWant, goodsShort: state.goodsShort, unemployment, arcaneJobs, educated: state.educated, arcaneOpen: isZoneUnlocked(state.milestone, Zone.Arcane) };
+  const why = [
     `Hearth: ${jobs} jobs for ${workforce} hands${jobSurplus > 0 ? ' (work to spare: folk want homes)' : ' (no work: nobody comes)'} · happiness ${Math.round(state.happiness)} · unrest ${Math.round(state.unrest * 100)} %${hearthCap - hearthRes > Math.max(8, pop * 0.25) ? ' · many homes stand empty' : ''}`,
     `Market: ${marketJobs} market jobs, ${Math.round(marketWant)} wanted for ${pop} folk${craftN > 0 && craftFull > 0 ? ` · ${craftFull} of ${craftN} works cannot sell` : ''}`,
     `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
     `Arcane: ${arcaneJobs} arcane jobs${state.educated < 0.2 ? ` · educated ${Math.round(state.educated * 100)} % (needs 20 %)` : ` · educated ${Math.round(state.educated * 100)} %`}`,
   ];
+  demandNotes.set(state, { why, facts });
   const clamp = (v: number) => Math.max(-1, Math.min(1, v));
   // smooth
   const s = state.demand;
@@ -563,7 +564,7 @@ export function dailyTrade(state: GameState): void {
     forEachBuilding(state, (b) => {
       if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
       if (b.stock > 2) return;
-      const buy = Math.min(8, marketStockCap(b) - b.stock);
+      const buy = Math.min(8, marketStockCap(state, b) - b.stock);
       b.stock += buy;
       t.imported += buy;
       t.importCost += buy * t.priceGoods * 2;

@@ -71,13 +71,13 @@ describe('District charters', () => {
     s.day += 30; // each charter holds thirty days (iteration 54)
     setQuarter(s, 1, 'market');
     run(s, 1);
-    expect(marketStockCap(mIn)).toBe(marketStockCap(mOut) * 1.5);
+    expect(marketStockCap(s, mIn)).toBe(marketStockCap(s, mOut) * 1.5);
     const l = computeLedger(s);
     expect(l.taxMarket).toBeGreaterThan(0);
     s.day += 30;
     setQuarter(s, 1, null);
     run(s, 1);
-    expect(marketStockCap(mIn)).toBe(marketStockCap(mOut));
+    expect(marketStockCap(s, mIn)).toBe(marketStockCap(s, mOut));
     expect(computeLedger(s).taxMarket).toBeLessThan(l.taxMarket);
   });
 

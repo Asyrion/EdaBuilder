@@ -70,8 +70,8 @@ describe('The breakdowns', () => {
     h.level = 3;
     expect(levelUpNeeds(s, h)).toEqual([]);
     updateDemand(s);
-    expect(demandReasons().length).toBe(4);
-    expect(demandReasons()[0]).toMatch(/^Hearth:/);
+    expect(demandReasons(s).length).toBe(4);
+    expect(demandReasons(s)[0]).toMatch(/^Hearth:/);
   });
 });
 

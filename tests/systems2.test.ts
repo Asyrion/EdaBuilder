@@ -35,7 +35,7 @@ describe('goods flow', () => {
     expect(carts.length).toBeGreaterThan(0);
     const delivered = markets.reduce((n, m) => n + m.stock, 0);
     expect(delivered).toBeGreaterThan(0);
-    expect(markets.every((m) => m.stock <= marketStockCap(m))).toBe(true);
+    expect(markets.every((m) => m.stock <= marketStockCap(s, m))).toBe(true);
     expect(crafts.every((c) => c.stock >= 0 && c.stock <= craftStockCap(c))).toBe(true);
   });
   it('markets with no craft works run dry and complain', () => {

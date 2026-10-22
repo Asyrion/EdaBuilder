@@ -117,8 +117,8 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 }
 
 /** A road tile adjacent to the building footprint, or -1. */
-export function marketStockCap(b: Building): number {
-  return 20 * b.level * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
+export function marketStockCap(s: GameState, b: Building): number {
+  return 20 * b.level * (marketQuarterAt(s, idx(b.x, b.y)) ? 1.5 : 1);
 }
 
 /** The door: the first road tile on a side of the footprint, else a corner (a corner counts since iteration 49; the sides come first so every older door stays where it was). */
@@ -437,7 +437,7 @@ export function tickAgents(state: GameState): void {
         if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
           const m = buildingById(state, a.targetId);
           if (m && m.state === 'ok') {
-            const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(m);
+            const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(state, m);
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
           }

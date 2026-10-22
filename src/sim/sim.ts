@@ -3,7 +3,6 @@ import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameS
 import { seasonOf } from './world';
 import { checkQuests } from './quests';
 import { dailyConstruction, tickConstruction } from './construction';
-import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -30,7 +29,6 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver) return;
   state.tick++;
   const t = state.tick;

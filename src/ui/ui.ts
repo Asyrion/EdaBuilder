@@ -679,7 +679,7 @@ export class UI {
       rows.push(`<div class="why muted">${whyLine(landValueTerms(s, i, this.landBonus(s)))}</div>`);
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
       { const needs = levelUpNeeds(s, b); if (needs.length) rows.push(`<div class="why muted">Level ${b.level + 1} needs: ${needs.map((n) => `<span class="${n.met ? 'good' : 'warn'}">${n.met ? '✓' : '✗'} ${n.text}</span>`).join(' · ')}</div>`); }
-      if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(b)}`));
+      if (def.zone === Zone.Market) rows.push(row('Goods on the shelves', `${Math.round(b.stock)} / ${marketStockCap(s, b)}`));
       if (def.zone === Zone.Market) { const door = roadTileOf(s, b); const f = marketRoadMultAt(s, door); rows.push(row('Road', `<span class="${f < 1 ? 'warn' : f > 1 ? 'good' : ''}">at the door, ${marketRoadWords(s, door)}</span>`)); if (f < 1 && door >= 0) problems.push('A dirt track at the door: cobble it and the market trades in full.'); }
       if (def.zone === Zone.Market && theftAt(s, b)) problems.push(`Theft: a tenth of the shelves a night. Watch here ${Math.round((s.coverage.watch[i] / 255) * 100)} %, unrest ${Math.round(s.unrest * 100)} %: a Watch Post over the market, or less unrest, stops it.`);
       if (def.zone === Zone.Craft) rows.push(row('Goods awaiting carts', `${Math.round(b.stock)} / ${craftStockCap(b)}`));

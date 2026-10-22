@@ -125,13 +125,7 @@ export function districtBuildings(s: GameState, d: number): Building[] {
   return out;
 }
 
-// marketStockCap has no state argument: the quarters are snapshotted once a tick.
-let qGrid: Uint8Array | null = null;
-let qMap: Record<number, QuarterId | undefined> = {};
-export function setQuarterSnapshot(map: Record<number, QuarterId | undefined>, grid: Uint8Array): void {
-  qMap = map;
-  qGrid = grid;
-}
-export function marketQuarterAt(i: number): boolean {
-  return !!qGrid && qGrid[i] > 0 && qMap[qGrid[i]] === 'market';
+/** Is tile i in a district chartered as a Market quarter? */
+export function marketQuarterAt(s: GameState, i: number): boolean {
+  return s.district[i] > 0 && s.districtQuarters[s.district[i]] === 'market';
 }
