@@ -210,7 +210,6 @@ export interface GameState {
   ledger: DayLedger;
   ledgerHistory: number[]; // net per day, exports included, last 30
   bankruptDays: number;
-  crownFavour: number; // 0..100, 50 neutral: each point is −0.3 % on the levy and on sector prices; under 20 the next grant is withheld (iteration 54)
   loan: number; // the Crown's loan outstanding, 0.5 % a day
   // demographics
   population: number;

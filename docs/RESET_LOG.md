@@ -866,3 +866,34 @@ The fifth iteration of phase 2 (RESET_PLAN §3 "Phase 2", P1 traffic: renew the 
 | `npx tsc --noEmit -p .`, `npm run build` | clean; JS 361 KB (125 KB gzip) |
 | `npx vitest run` | 15 files, 285 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
+
+## Phase 2-6: the Crown's favour struck out (2026-10-22)
+
+The first P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 budget: "strike or simplify the Crown favour and levy").
+
+**Why.**
+- The favour (iteration 54) moved the Thaw levy and the sector prices by 0.3 % a point from 50, and under 20 the
+  Crown's auditors held the next milestone grant.
+- Its movers were the tales (1c-1) and the relics (1c-2), both parked; `addFavour` went in 1d-1. It stood at 50 and did
+  nothing, while the Budget still showed it with "nothing moves it".
+- The user chose to strike it rather than give it a mover in the core.
+
+**Done.**
+- `crownFavour`, `favourFactor`, `FAVOUR_NEUTRAL/STEP/AUDIT` and the auditors are gone (`economy.ts`, `sectors.ts`,
+  `types.ts`, `world.ts`).
+- Gone from the screen: the Budget row, the favour line in the help, the milestone toast's audit line, the Thaw
+  message's favour clause and the "Set a standing" dev command.
+- The levy (5 % above 10,000 each Thaw), the sector prices, the loan and the debt's interest stay as they were.
+- **Saves stay version 8:** a save from before carries the field, and `deserialize`, which keeps only the fields a fresh
+  state has, drops it (a test holds it).
+- `docs/PARKED.md` has a row ("Struck out in phase 2") with what would bring it back.
+
+**Measured.** At 50 the favour's factor was exactly 1 and the audit never held a grant, so nothing changes:
+`balance.ts 42 150` and `45 150` give the same JSON line before and after, and no corridor run was needed.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 359 KB (124 KB gzip) |
+| `npx vitest run` | 15 files, 284 tests, all green (the favour's three tests went or became tests of the levy and the grant without it) |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
+| `grep favour` in `src`, `scripts`, `tools` | only the two comments that say it was struck out |

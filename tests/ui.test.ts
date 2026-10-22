@@ -260,7 +260,7 @@ describe('Dev tools', () => {
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
     recomputeAll(s);
-    expect(DEV_GROUPS.length).toBeGreaterThanOrEqual(5); // the Wyrms group is parked (reset 1b)
+    expect(DEV_GROUPS.length).toBeGreaterThanOrEqual(4); // the Wyrms group is parked (reset 1b), the Crown's struck out (2-6)
     const at = { x: f.x + 8, y: f.y + 8 };
     let n = 0;
     for (const c of DEV_COMMANDS) {
@@ -339,15 +339,6 @@ describe('Dev commands', () => {
     expect(s.treasury).toBe(t0 + q.reward);
     expect(runDev(s, 'quest', q.id, at(s))).toBe('Already done.');
     expect(runDev(s, 'quest', 't_hall', at(s))).toMatch(/No such task/); // a parked people's task (scope reset)
-  });
-  it("set a standing: the Crown's favour, clamped to 0..100", () => {
-    const s = town();
-    runDev(s, 'standing', 'crown:15', at(s));
-    expect(s.crownFavour).toBe(15);
-    runDev(s, 'standing', 'crown:140', at(s));
-    expect(s.crownFavour).toBe(100);
-    const c = DEV_COMMANDS.find((x) => x.id === 'standing')!;
-    expect(devDefaultArg(c, s)).toBe('crown:80');
   });
   it('reset the history: the ledger; the Chronicle keeps the dev mark', () => {
     const s = town();

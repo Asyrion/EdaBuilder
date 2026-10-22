@@ -67,7 +67,6 @@ export function createGame(seed: number, cityName?: string, faction: FactionId =
     ledger: emptyLedger(),
     ledgerHistory: [],
     bankruptDays: 0,
-    crownFavour: 50,
     loan: 0,
     population: 0,
     jobs: 0,

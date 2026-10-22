@@ -6,7 +6,7 @@ import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { RoadType, TICKS_PER_DAY, idx } from '../src/sim/types';
 import { buildRoad, paintDistrict, roadPath } from '../src/sim/actions';
-import { DEBT_DAYS, FAVOUR_AUDIT, checkMilestones, computeLedger, crownLevy, dailyEconomy, debtLine, favourFactor, grantFor, levyDue, loanLimit, repayLoan, takeLoan } from '../src/sim/economy';
+import { DEBT_DAYS, checkMilestones, computeLedger, crownLevy, dailyEconomy, debtLine, grantFor, levyDue, loanLimit, repayLoan, takeLoan } from '../src/sim/economy';
 import { sectorCost } from '../src/sim/sectors';
 import { updateMiasma } from '../src/sim/services';
 import { EDICT_MIN_DAYS, EDICT_REPEAL, edictLocked, setEdict } from '../src/sim/edicts';
@@ -27,7 +27,7 @@ function town(seed = 54) {
 const ok = (b: { state: string; work: number }) => { b.state = 'ok'; b.work = 0; };
 
 describe('The Crown that wants', () => {
-  it('levies five percent of the treasury above ten thousand each Thaw, less or more by its favour, and favour moves the sector prices', () => {
+  it('levies five percent of the treasury above ten thousand each Thaw (its favour was struck out in phase 2-6)', () => {
     const s = town();
     s.day = 120; s.treasury = 30000;
     expect(levyDue(s)).toBe(1000);
@@ -44,16 +44,10 @@ describe('The Crown that wants', () => {
     crownLevy(s); // nothing under the floor
     expect(s.treasury).toBe(8000);
     expect(s.stats.levies).toBe(1);
-    s.crownFavour = 100; s.treasury = 30000;
-    expect(favourFactor(s)).toBeCloseTo(0.85);
-    expect(levyDue(s)).toBe(850);
-    s.crownFavour = 0;
-    expect(favourFactor(s)).toBeCloseTo(1.15);
-    const c50 = (() => { s.crownFavour = 50; return sectorCost(s, 1); })();
-    s.crownFavour = 0;
-    expect(sectorCost(s, 1)).toBeCloseTo(c50 * 1.15, 0);
-    s.crownFavour = 100;
-    expect(sectorCost(s, 1)).toBeCloseTo(c50 * 0.85, 0);
+    s.treasury = 30000;
+    expect(levyDue(s)).toBe(1000);
+    expect(s.messages[s.messages.length - 1].text).not.toMatch(/favour/);
+    expect(sectorCost(s, 1)).toBeGreaterThan(0);
   });
 
   it('a debt pays interest, the loan is one at a time and repaid in full, trade joins the history, and the line scales with the milestone', () => {
@@ -93,19 +87,16 @@ describe('The Crown that wants', () => {
     expect(s.gameOver).toBeTruthy();
   });
 
-  it('the auditors hold the grant while the favour is under twenty, and the toast and the sim agree on the grant', () => {
+  it('every milestone pays its grant (no auditors since phase 2-6), and the toast and the sim agree on the grant', () => {
     const s = town();
     s.milestone = 0; s.population = 10000; s.happiness = 80;
-    s.crownFavour = FAVOUR_AUDIT - 1;
     const MS = milestonesOf(s);
-    expect(grantFor(s, MS[1].grant)).toBe(0);
+    expect(grantFor(s, MS[1].grant)).toBe(MS[1].grant);
     const t0 = s.treasury;
     checkMilestones(s);
     expect(s.milestone).toBeGreaterThanOrEqual(1);
-    expect(s.treasury).toBe(t0);
-    expect(s.messages.some((m) => /auditors hold the grant/.test(m.text))).toBe(true);
-    s.crownFavour = 50;
-    expect(grantFor(s, MS[1].grant)).toBe(MS[1].grant);
+    expect(s.treasury).toBeGreaterThan(t0);
+    expect(s.messages.some((m) => /auditors/.test(m.text))).toBe(false);
   });
 });
 
@@ -202,11 +193,11 @@ describe('Edicts as commitments, charters with a price', () => {
 describe('The new state in a save', () => {
   it('round-trips the new state through a save', () => {
     const s = town();
-    s.crownFavour = 71; s.loan = 10000; s.remembranceDead = 24;
+    s.loan = 10000; s.remembranceDead = 24;
     s.edictSince = { curfew: 3, '1:curfew': 5 };
     s.quarterSince = { 1: 7 };
     const t = deserialize(serialize(s), (seed) => createGame(seed));
-    expect([t.crownFavour, t.loan, t.remembranceDead]).toEqual([71, 10000, 24]);
+    expect([t.loan, t.remembranceDead]).toEqual([10000, 24]);
     expect(t.edictSince).toEqual({ curfew: 3, '1:curfew': 5 });
     expect(t.quarterSince).toEqual({ 1: 7 });
     run(t, TICKS_PER_DAY);

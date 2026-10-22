@@ -1,7 +1,7 @@
 import { buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, nextGate, specialLock, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ZONE_KEY, ROADS, ROAD_BY_TYPE, isDepot, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
-import { DEBT_DAYS, FAVOUR_AUDIT, FAVOUR_NEUTRAL, FAVOUR_STEP, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, favourFactor, grantFor, levyDue, loanLimit } from '../sim/economy';
+import { DEBT_DAYS, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, grantFor, levyDue, loanLimit } from '../sim/economy';
 import { HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
@@ -440,7 +440,7 @@ export class UI {
     this.refreshInfo();
     this.el.perf.textContent = `${h.perf.fps} fps · render ${h.perf.ms.toFixed(1)} ms · ${h.perf.drawn} sprites · ${s.agents.length} agents · tick ${s.tick}`;
     if (s.milestone !== this.lastMilestone) {
-      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p>${districtUnlockNotes(s.milestone).map((l) => `<p>${l}</p>`).join('')}<p class="muted">${grantFor(s, this.ms()[s.milestone].grant) > 0 ? `Grant: +${grantFor(s, this.ms()[s.milestone].grant).toLocaleString()} crowns.` : `The Crown's auditors hold the grant: its favour is under ${FAVOUR_AUDIT}.`} New buildings unlocked in the toolbar.</p>`, 9000);
+      if (this.lastMilestone >= 0) this.toast(`<h2>${s.cityName} is now a ${this.ms()[s.milestone].name}</h2><p>${this.ms()[s.milestone].text}</p>${districtUnlockNotes(s.milestone).map((l) => `<p>${l}</p>`).join('')}<p class="muted">${grantFor(s, this.ms()[s.milestone].grant) > 0 ? `Grant: +${grantFor(s, this.ms()[s.milestone].grant).toLocaleString()} crowns.` : ''} New buildings unlocked in the toolbar.</p>`, 9000);
       this.lastMilestone = s.milestone;
       this.refreshItems();
     }
@@ -1055,7 +1055,7 @@ export class UI {
             <li>Panels: the <b>Info views</b>, <b>minimap</b> and message ticker can be dragged by their ⋮⋮ grip. Click or drag on the <b>minimap</b> to jump there; scroll on it to zoom.</li>
             <li><b>Unrest</b>: an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are. Selecting a building rings everything it reaches, labelled (its water, watch or light, and the rest: the Hospice's draughts), above the houses and through the night, with its kin's reach faint around it.</li>
             <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A charter costs a crown a building a day and holds ${CHARTER_LOCK_DAYS} days; a Craft quarter's smoke drifts four tiles past its edge, a Temple quarter takes a tenth of the city's market tithe. An <b>edict</b> holds ${EDICT_MIN_DAYS} days and costs ${EDICT_REPEAL} crowns to repeal. A road at a building's corner counts as its door.</li>
-            <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. Its <b>favour</b> (50 is neutral) moves sector prices and the levy by 0.3 % a point; under ${FAVOUR_AUDIT} the auditors hold the next grant. The top bar names the <b>next gate</b>: happiness 45 + 3 × the milestone, and for the Beacon the Lantern of Vell lit.</li>
+            <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. The top bar names the <b>next gate</b>: happiness 45 + 3 × the milestone, and for the Beacon the Lantern of Vell lit.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1271,7 +1271,6 @@ export class UI {
           <tr><td>Treasury</td><td class="r gold" data-k="treasury"></td></tr>
           <tr><td>Grants today</td><td class="r good" data-k="grants"></td></tr>
           <tr><td>The Crown's Thaw levy (next, as the treasury stands)</td><td class="r bad" data-k="levy"></td></tr>
-          <tr><td>The Crown's favour</td><td class="r" data-k="favour"></td></tr>
           <tr><td>The Crown's loan</td><td class="r" data-k="loan"></td></tr>
         </table>
         <h3 style="margin-top:10px">Tax rates (10% is what folk expect)</h3>
@@ -1324,11 +1323,6 @@ export class UI {
     const nextThaw = DAYS_PER_SEASON * 4 - (st.day % (DAYS_PER_SEASON * 4));
     const levy = levyDue(st);
     set('levy', levy > 0 ? `−${levy.toLocaleString()} in ${nextThaw} day${nextThaw === 1 ? '' : 's'}` : `0 (${Math.round(LEVY_RATE * 100)} % above ${LEVY_FLOOR.toLocaleString()}, in ${nextThaw} days)`);
-    const favEl = this.el.budget.querySelector('[data-k="favour"]') as HTMLElement;
-    const ff = favourFactor(st);
-    favEl.textContent = `${Math.round(st.crownFavour)} / 100${ff !== 1 ? ` · sectors and the levy ${ff < 1 ? '−' : '+'}${Math.round(Math.abs(1 - ff) * 100)} %` : ''}${st.crownFavour < FAVOUR_AUDIT ? ' · grants withheld' : ''}`;
-    favEl.className = `r ${st.crownFavour < FAVOUR_AUDIT ? 'bad' : st.crownFavour > FAVOUR_NEUTRAL ? 'good' : ''}`;
-    favEl.title = `The Crown's favour (nothing moves it since the tales and the relics are parked). Each point from ${FAVOUR_NEUTRAL} is ${FAVOUR_STEP * 100} % on sector prices and the Thaw levy; under ${FAVOUR_AUDIT} the auditors hold the next grant.`;
     const loanEl = this.el.budget.querySelector('[data-k="loan"]') as HTMLElement;
     loanEl.innerHTML = st.loan > 0 ? `${Math.round(st.loan).toLocaleString()} out at ${LOAN_INTEREST * 100} %/day <button class="show" id="b-repay">Repay</button>` : `none <button class="show" id="b-loan">Take ${loanLimit(st).toLocaleString()}</button>`;
     loanEl.className = `r ${st.loan > 0 ? 'warn' : ''}`;
@@ -1476,7 +1470,7 @@ export class UI {
   private renderDev(last: string): void {
     const s = this.host.state;
     const el = this.el.dev;
-    const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · favour ${Math.round(s.crownFavour)} · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
+    const status = `Day ${s.day} tick ${s.tick} · ${s.population} folk · ${Math.round(s.treasury)} crowns · mana ${Math.round(s.manaSupply)}/${Math.round(s.manaDemand)} · pressure ${Math.round(s.gloamPressure * 100)}% · ${sites(s).length} sites, ${s.agents.filter((a) => a.kind === 4).length} builders · instant build ${construction.instant ? 'on' : 'off'} · dev uses ${s.stats.devUses}`;
     // an argument is a list or a number (iteration 55); a second one rides beside the first and both go as `first:second`
     const input = (a: DevArg | undefined, id: string, attr: string) => !a ? '' : a.kind === 'select' ? `<select ${attr}="${id}">${devOptions(a, s).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>` : `<input type="number" ${attr}="${id}" min="${a.min}" max="${a.max}" value="${devNumber(a, s)}">`;
     const groups = DEV_GROUPS.map((g) => `<h3>${g}</h3><div class="devgrid">${DEV_COMMANDS.filter((c) => c.group === g).map((c) => `<div class="devcmd"><button data-id="${c.id}" title="${c.desc}">${c.name}</button>${input(c.arg, c.id, 'data-arg')}${input(c.arg2, c.id, 'data-arg2')}</div>`).join('')}</div>`).join('');
