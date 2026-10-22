@@ -111,7 +111,7 @@ describe('Trees by region', () => {
       for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) {
         const t = s.terrain[idx(x + dx, y + dy)];
         if (t === Terrain.Hills) hills = true;
-        if (Math.abs(dx) <= WET_REACH && Math.abs(dy) <= WET_REACH && (t === Terrain.Water || t === Terrain.DeepWater || t === Terrain.Marsh)) wet = true;
+        if (Math.abs(dx) <= WET_REACH && Math.abs(dy) <= WET_REACH && (t === Terrain.Water || t === Terrain.DeepWater)) wet = true;
         if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3 && t === Terrain.Forest) forest++;
       }
       const c = groveCtx(s, x, y);

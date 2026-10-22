@@ -141,26 +141,16 @@ export interface BuildingSpec {
   glowWindows?: boolean;
   seed?: number;
   leyLamps?: boolean;
-  gloomy?: boolean;
   overhang?: boolean; // upper floor juts out (crooked fantasy townhouse)
   runeBand?: boolean; // glowing rune band around the walls
   alembic?: boolean; // copper alembic with green glass on the roof
   bottles?: boolean; // potion bottles displayed along the front
   lanternPost?: boolean; // a hanging lantern by the door
   orbit?: boolean; // small crystals orbiting a central crystal
-  standingStones?: boolean;
   wisps?: boolean; // little green-blue wisps
   bellTower?: boolean;
   ridgeOrnament?: boolean; // carved beast heads on the roof ridge
   glassDome?: boolean;
-  waterWheel?: boolean; // a mill wheel on the left face
-  vines?: boolean; // glowing vines down the walls
-  stonePile?: boolean; // cut blocks stepped beside the right face and a windlass post over them (the Quarry)
-  fishRack?: boolean; // a drying rack hung with fish and an upturned boat by the right face (the Fishers' Hut, iteration 60)
-  reedBundles?: boolean; // sheaves of cut reed leaning on the right face (the Reed-Cutters)
-  smokeRack?: boolean; // a smoking rack of fish under a little roof by the right face (the Smokehouse)
-  lilyPond?: boolean; // a pond with lilies and stepping stones in front (the Water Garden)
-  weirStones?: boolean; // a low stone sill with white water over it (the Weir)
   // the paintings' features, redrawn in the set's manner (iteration 79)
   porch?: boolean; // a small lean-to roof over the door on two posts
   flowerBox?: boolean; // a box of flowers under the ground-floor windows of the right face
@@ -511,28 +501,6 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
     }
     p.line(B[0] + Math.round(len * 0.42), Math.floor(B[1] + ((R[1] - B[1]) * 0.42)) - 2, B[0] + Math.round(len * 0.9), Math.floor(B[1] + ((R[1] - B[1]) * 0.9)) - 2, 'wood1');
   }
-  if (spec.waterWheel) {
-    const cx = L[0] + 7;
-    const cy = L[1] - 2;
-    p.circle(cx, cy, 6, 'wood2');
-    p.circle(cx, cy, 5, 'wood1');
-    p.circle(cx, cy, 3, 'wood3');
-    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; p.line(cx, cy, Math.round(cx + Math.cos(a) * 5), Math.round(cy + Math.sin(a) * 5), 'wood2'); }
-    p.circle(cx, cy, 1, 'ironDark');
-    for (let k = 0; k < 6; k++) p.px(cx - 6 + k, cy + 6, 'waterHi');
-  }
-  if (spec.vines) {
-    for (let k = 0; k < 7; k++) {
-      const x = ox + 3 + Math.floor(h2(k, seed, 5) * (W - 6));
-      const top = base + Math.floor(h2(seed, k, 6) * 4);
-      const len = 6 + Math.floor(h2(k, seed + 1, 7) * (H + 6));
-      for (let y = top; y < top + len; y++) if (p.get(x, y)) p.px(x, y, (y + k) % 3 === 0 ? 'glimleaf' : 'leaf2');
-      const gy = top + len - 1;
-      p.px(x, gy, 'leyGlow');
-      glow.px(x, gy, 'glimleaf', 200);
-      if (k % 2 === 0) { p.px(x + 1, gy - 3, 'flower1'); glow.px(x + 1, gy - 3, 'lampWarm', 160); }
-    }
-  }
   if (spec.lanternPost) {
     const x = R[0] - 3;
     const y = R[1] - 1;
@@ -541,69 +509,6 @@ export function drawBuilding(spec: BuildingSpec): { p: Painter; glow: Painter; a
     p.rect(x + 1, y - 8, 2, 3, 'lampWarm');
     p.px(x + 1, y - 8, 'windowLit');
     glow.rect(x, y - 9, 4, 5, 'lampWarm', 230);
-  }
-  if (spec.stonePile) {
-    // dressed blocks in three stepped rows, and the windlass: a post with an arm and an iron hook
-    const x = R[0] - 11;
-    const y = R[1] - 2;
-    for (let k = 0; k < 3; k++) {
-      p.rect(x + k, y - 2 * k - 2, 7 - 2 * k, 2, k % 2 ? 'stone2' : 'stone1');
-      p.px(x + k + 2, y - 2 * k - 2, 'stone3');
-    }
-    p.rect(x + 8, y - 11, 1, 10, 'wood2');
-    p.line(x + 8, y - 11, x + 2, y - 11, 'wood1');
-    p.rect(x + 2, y - 10, 1, 3, 'ironDark');
-    p.px(x + 3, y - 7, 'ironDark');
-  }
-  if (spec.fishRack) {
-    // a drying rack: two posts, a bar, four fish hanging; and an upturned boat on the ground before it
-    const x = R[0] - 11;
-    const y = R[1] - 1;
-    p.rect(x, y - 9, 1, 8, 'wood2');
-    p.rect(x + 7, y - 9, 1, 8, 'wood2');
-    p.line(x, y - 9, x + 7, y - 9, 'wood1');
-    for (let k = 0; k < 4; k++) { p.rect(x + 1 + k * 2, y - 8, 1, 3, k % 2 ? 'stone3' : 'whitewash2'); p.px(x + 1 + k * 2, y - 5, 'water2'); }
-    p.rect(x - 1, y - 2, 9, 2, 'wood1');
-    p.rect(x, y - 3, 7, 1, 'wood3');
-  }
-  if (spec.reedBundles) {
-    // four sheaves of reed leaning on the right face, tied in the middle
-    const x = R[0] - 12;
-    const y = R[1] - 1;
-    for (let k = 0; k < 4; k++) {
-      const bx = x + k * 3;
-      p.rect(bx, y - 9, 2, 9, k % 2 ? 'thatch1' : 'thatch2');
-      p.px(bx, y - 10, 'thatch1');
-      p.px(bx + 1, y - 5, 'wood1');
-    }
-  }
-  if (spec.smokeRack) {
-    // a rack of fish under a small lean-to roof, and smoke curling over it
-    const x = R[0] - 11;
-    const y = R[1] - 1;
-    p.rect(x, y - 7, 8, 1, 'wood1');
-    p.line(x - 1, y - 9, x + 8, y - 8, 'thatch2');
-    for (let k = 0; k < 3; k++) p.rect(x + 1 + k * 2, y - 6, 1, 3, 'copper');
-    p.rect(x, y - 2, 8, 2, 'stone1');
-    p.px(x + 3, y - 3, 'ember');
-    glow.px(x + 3, y - 3, 'ember', 200);
-    for (let k = 0; k < 3; k++) p.px(x + 4 + k, y - 11 - k * 2, 'smoke');
-  }
-  if (spec.lilyPond) {
-    // a pond across the front of the footprint, lilies on it and stepping stones over it
-    const cx = B[0];
-    const cy = B[1] - 5;
-    for (let dy = -3; dy <= 3; dy++) for (let dx = -10; dx <= 10; dx++) if ((dx * dx) / 100 + (dy * dy) / 9 <= 1) p.px(cx + dx, cy + dy, dy < 0 ? 'water2' : 'water1');
-    for (const [dx, dy] of [[-6, 0], [5, -1], [1, 2]]) { p.px(cx + dx, cy + dy, 'leaf2'); p.px(cx + dx + 1, cy + dy, 'leaf1'); p.px(cx + dx, cy + dy - 1, 'flower1'); }
-    for (let k = -8; k <= 8; k += 4) p.rect(cx + k, cy + (k > 0 ? 1 : 0), 2, 1, 'stone3');
-    p.px(cx - 2, cy - 1, 'waterHi');
-  }
-  if (spec.weirStones) {
-    // a low sill of dressed stone and white water spilling over it
-    const x = L[0] + 2;
-    const y = L[1] + 2;
-    for (let k = 0; k < 12; k++) p.px(x + k, y - Math.floor(k / 2), k % 3 ? 'stone2' : 'stone3');
-    for (let k = 0; k < 12; k += 2) { p.px(x + k, y + 1 - Math.floor(k / 2), 'waterHi'); p.px(x + k + 1, y + 2 - Math.floor(k / 2), 'water2'); }
   }
   if (spec.alembic) {
     // copper still with a green glass bulb on the roof
@@ -910,33 +815,6 @@ function builder(variant: number, frame: number): Painter {
 
 function cart(variant: number): Painter {
   const p = new Painter(18, 12);
-  if (variant === 3) {
-    // floating cart: no mule, a leystone keel and a violet load
-    p.rect(5, 4, 11, 4, 'cartWood');
-    p.rect(5, 4, 11, 1, 'wood1');
-    p.rect(7, 2, 6, 2, 'arcane2');
-    p.px(8, 1, 'arcane1');
-    p.px(11, 1, 'arcane1');
-    p.rect(6, 8, 9, 1, 'ley2');
-    p.px(6, 9, 'ley1');
-    p.px(14, 9, 'ley1');
-    p.rect(16, 1, 1, 4, 'ironDark');
-    p.px(16, 0, 'ley1');
-    p.outline('outline');
-    return p;
-  }
-  if (variant === 4) {
-    // barge: a flat hull, a cargo hump and a stern lantern
-    p.poly([[0, 7], [17, 7], [15, 11], [2, 11]], 'wood2');
-    p.rect(1, 6, 16, 1, 'wood1');
-    p.rect(5, 3, 8, 3, 'cloth5');
-    p.rect(5, 3, 8, 1, 'wood3');
-    p.rect(16, 2, 1, 4, 'ironDark');
-    p.px(16, 1, 'lampWarm');
-    p.px(1, 5, 'wood3');
-    p.outline('outline');
-    return p;
-  }
   // mule
   p.rect(1, 5, 5, 3, 'wood1');
   p.rect(0, 4, 2, 2, 'wood1');

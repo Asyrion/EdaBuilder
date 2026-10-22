@@ -2,7 +2,7 @@ import { buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, next
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, isDepot, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { DEBT_DAYS, FAVOUR_AUDIT, FAVOUR_NEUTRAL, FAVOUR_STEP, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, favourFactor, grantFor, levyDue, loanLimit } from '../sim/economy';
-import { HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, demandReasons, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
+import { HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
@@ -16,13 +16,13 @@ import { builderTarget, buildersAt, construction, sites } from '../sim/construct
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
 import { tradeRoutes } from '../sim/trade';
 import { TIPS } from '../data/flavor';
-import { EDICT_BY_KEY, EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
+import { EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
-import { DISTRICT_COLORS, ramps } from '../render/overlays';
+import { DISTRICT_COLORS } from '../render/overlays';
 import { marketStockCap, roadTileOf } from '../sim/agents';
 import { marketRoadMultAt, marketRoadWords } from '../sim/roads';
 import { craftStockCap } from '../sim/growth';
-import { SEASON_NAMES, DAYS_PER_SEASON, DISTRICT_NAMES, MAX_DISTRICTS } from '../sim/types';
+import { SEASON_NAMES, DAYS_PER_SEASON, MAX_DISTRICTS } from '../sim/types';
 import type { Tool } from './tools';
 import type { Camera } from '../render/camera';
 import { SECTOR, SECTORS_X, canBuySector, charteredCount, inCharter, sectorCost, sectorName } from '../sim/sectors';
@@ -1411,13 +1411,11 @@ export class UI {
         <div class="flavor">${e.flavor}</div>
       </div>`;
     });
-    const mods = st.modifiers.filter((m) => m.until > st.day).map((m) => `<li>${m.label} (${m.until - st.day} days left)</li>`).join('');
     this.el.edicts.innerHTML = `<div class="box panel">
       <h2>Edicts of the Warden-Reeve</h2>
       <p class="muted">Edicts take effect immediately and cost their upkeep every day; an edict holds ${EDICT_MIN_DAYS} days once made and costs ${EDICT_REPEAL} crowns to repeal. Scope: ${scopeSel}${inUse.length ? '' : ' <span class="muted">(paint districts from the toolbar to set edicts per district)</span>'}</p>
       ${stats}
       ${rows.join('')}
-      ${mods ? `<h3 style="margin-top:8px">Active effects</h3><ul class="muted">${mods}</ul>` : ''}
       <div style="text-align:right"><button id="e-close">Close</button></div>
     </div>`;
     this.el.edicts.querySelectorAll('input[type=checkbox]').forEach((inp) => {

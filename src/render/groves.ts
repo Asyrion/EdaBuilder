@@ -69,7 +69,7 @@ export function groveCtx(s: GameState, x: number, y: number): GroveCtx {
       const t = s.terrain[idx(nx, ny)];
       if (t === Terrain.Hills) hills = true;
       if (Math.abs(dx) > WET_REACH || Math.abs(dy) > WET_REACH) continue;
-      if (isWater(t) || t === Terrain.Marsh) wet = true;
+      if (isWater(t)) wet = true;
       if (t === Terrain.Forest && Math.abs(dx) <= 3 && Math.abs(dy) <= 3) forest++;
     }
   return { node, wet, hills, deep: forest >= 36 };

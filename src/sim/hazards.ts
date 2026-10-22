@@ -7,7 +7,7 @@ import { spawnRestless, dailyRestless, restlessCount } from './agents';
 import { crewFactor } from './services';
 import { factionOf } from '../data/factions';
 import { manaUseOf } from './networks';
-import { edictOn, modifierSum } from './edicts';
+import { edictOn } from './edicts';
 import { seasonOf } from './world';
 
 export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | SoundCue;
@@ -231,7 +231,6 @@ export function dailyGloam(state: GameState): void {
           const i = idx(x, y);
           if (state.gloam[i]) {
             state.gloam[i] = 0;
-            state.stats.gloamBurned++;
             markDirty(state, x, y);
             changed = true;
             budget--;
@@ -241,7 +240,7 @@ export function dailyGloam(state: GameState): void {
   });
   // 2. creep
   const creepEvery = 4;
-  if (state.day % creepEvery === 0 && state.day > 0 && modifierSum(state, 'gloamHold') <= 0) {
+  if (state.day % creepEvery === 0 && state.day > 0) {
     const p = Math.min(0.6, 0.22 + state.day * 0.002) * (seasonOf(state) === 3 ? 1.6 : seasonOf(state) === 1 ? 0.7 : 1) * (0.5 + state.gloamPressure);
     const gloam = state.gloam;
     const newTiles: number[] = [];
@@ -343,7 +342,7 @@ export function dailyGloam(state: GameState): void {
 export function dailyDeath(state: GameState): void {
   const rng = rngOf(state);
   // deaths
-  const rate = 0.0035 * (1.7 - state.health) * (1 + modifierSum(state, 'deaths')) * (seasonOf(state) === 3 ? 1.2 : 1);
+  const rate = 0.0035 * (1.7 - state.health) * (seasonOf(state) === 3 ? 1.2 : 1);
   const expected = state.population * rate;
   let deaths = Math.floor(expected);
   if (rng.chance(expected - deaths)) deaths++;
@@ -426,13 +425,7 @@ export function computeGloamPressure(s: GameState): number {
 export function pressureWord(p: number): string {
   return p < 0.25 ? 'quiet' : p < 0.45 ? 'restless' : p < 0.65 ? 'pressing' : 'hungry';
 }
-/** Daily: the Gloam's pressure, and a quiet Hush counted (every day of the season under 0.45). */
+/** Daily: the Gloam's pressure. */
 export function dailyGloamPressure(s: GameState): void {
   s.gloamPressure = computeGloamPressure(s);
-  const dos = s.day % DAYS_PER_SEASON;
-  if (seasonOf(s) === 3) {
-    if (dos === 0) s.stats.hushPressureBreaks = 0;
-    if (s.gloamPressure >= 0.45) s.stats.hushPressureBreaks++;
-    if (dos === DAYS_PER_SEASON - 1 && s.stats.hushPressureBreaks === 0) s.stats.quietHush++;
-  }
 }

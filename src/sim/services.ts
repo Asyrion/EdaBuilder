@@ -6,7 +6,6 @@ import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
 import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
-import { modifierSum } from './edicts';
 import { capacityOf } from './growth';
 
 /** Land value lost within 4 tiles of any deathcare. */
@@ -50,7 +49,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
-  if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
   // the quarters: a temple quarter's faith counts half again, a scholars' quarter's schooling a quarter more
   if (type === 'faith' || type === 'school') for (let i = 0; i < n; i++) { const q = state.district[i] ? state.districtQuarters[state.district[i]] : undefined; if (type === 'faith' && q === 'temple') acc[i] *= 1.5; else if (type === 'school' && q === 'scholars') acc[i] *= 1.25; }
   const out = state.coverage[type];

@@ -71,7 +71,7 @@ describe('seasons', () => {
 });
 
 describe('edicts', () => {
-  it('edicts cost upkeep and change the ledger; modifiers expire', () => {
+  it('edicts cost upkeep and change the ledger', () => {
     const { s } = works(35);
     run(s, TICKS_PER_DAY);
     const base = computeLedger(s).net;
@@ -79,11 +79,6 @@ describe('edicts', () => {
     s.edicts.draughts = true;
     expect(edictUpkeep(s)).toBeGreaterThan(0);
     expect(computeLedger(s).net).toBeLessThan(base);
-    s.modifiers.push({ kind: 'tithe', value: -0.5, until: s.day + 2, label: 't' });
-    const audited = computeLedger(s).net;
-    expect(audited).toBeLessThan(computeLedger({ ...s, modifiers: [] }).net);
-    run(s, TICKS_PER_DAY * 3);
-    expect(s.modifiers.length).toBe(0);
   });
   it('round-trips edicts and stock through save/load', () => {
     const { s } = works(36);

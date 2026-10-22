@@ -3,10 +3,10 @@ import { milestonesOf } from '../data/factions';
 import { QUARTERS, QUARTER_BY_ID, setQuarter, type QuarterId } from './districts';
 import { construction, dailyConstruction, sites, tickConstruction } from './construction';
 import { dailySurge, igniteBuilding, recomputeGloamDist } from './hazards';
-import { roadTileOf, spawnRestless } from './agents';
+import { spawnRestless } from './agents';
 import { checkMilestones } from './economy';
 import { run } from './sim';
-import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, SEASON_NAMES, TICKS_PER_DAY, Terrain, idx, inBounds, type Building, type GameState } from './types';
+import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, SEASON_NAMES, TICKS_PER_DAY, Terrain, idx, inBounds, type GameState } from './types';
 import { questsFor } from './quests';
 import { QUESTS } from '../data/quests';
 import { BUILDING_BY_KEY } from './catalog';
@@ -70,10 +70,8 @@ export const DEV_COMMANDS: DevCommand[] = [
     const target = Math.floor(Number(a));
     if (!Number.isFinite(target) || target <= s.day) return `Only forward: today is day ${s.day}.`;
     if (target > s.day + 360) return 'At most a year ahead.';
-    const season0 = Math.floor(s.day / DAYS_PER_SEASON);
     s.tick = target * TICKS_PER_DAY + (s.tick % TICKS_PER_DAY);
     s.day = target;
-    if (Math.floor(target / DAYS_PER_SEASON) !== season0) s.stats.hushPressureBreaks = 0;
     markAllDirty(s);
     return `Day ${target}, ${SEASON_NAMES[seasonOf(s)]}.`;
   } },

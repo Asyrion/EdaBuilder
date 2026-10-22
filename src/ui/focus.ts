@@ -68,11 +68,11 @@ export function watchDialogs(root: HTMLElement): void {
   const openers = new WeakMap<HTMLElement, Element | null>();
   const enter = (m: HTMLElement) => {
     openers.set(m, document.activeElement);
-    // a tale is answered by its first choice; any other dialog by its first control
+    // a dialog is answered by its first control
     requestAnimationFrame(() => {
       if (m.classList.contains('hidden')) return;
       if (m.contains(document.activeElement)) return;
-      const first = m.querySelector<HTMLElement>('[data-autofocus], .choices button') ?? focusables(m)[0];
+      const first = m.querySelector<HTMLElement>('[data-autofocus]') ?? focusables(m)[0];
       if (first) first.focus();
       else { m.tabIndex = -1; m.focus(); }
     });
@@ -166,7 +166,7 @@ export function roving(container: HTMLElement, opts: { selected: () => HTMLEleme
 }
 
 /**
- * Panels that rebuild their contents (the Budget each refresh, the building panel, a tale's next page) would drop the keyboard's
+ * Panels that rebuild their contents (the Budget each refresh, the building panel) would drop the keyboard's
  * focus to the page. When the focused element leaves the page, focus moves to its replacement: the same id, else a control with the
  * same label in the same panel, else that panel's first control.
  */

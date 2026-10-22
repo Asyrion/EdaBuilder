@@ -22,7 +22,7 @@ export const enum Terrain {
   Hills = 6,
   LeyNode = 7,
   Ruins = 8, // the Ruins of Lukuku: flagstones and broken columns; nothing is built here (the Ruin Delve is parked, scope reset phase 1c)
-  Marsh = 9, // the marsh (iteration 85) is parked (scope reset phase 1c): no map has it, and a loaded save's marsh turns to meadow
+  // 9 was the marsh (iteration 85; parked, scope reset phase 1c)
 }
 
 export const enum Zone {
@@ -172,14 +172,6 @@ export interface DayLedger {
   net: number;
 }
 
-export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights';
-  value: number;
-  until: number; // day
-  label: string;
-  district?: number; // only buildings in this district feel it (0 = undistricted)
-}
-
 export interface GameState {
   version: number;
   seed: number;
@@ -265,7 +257,6 @@ export interface GameState {
   sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
-  modifiers: Modifier[];
   /** Lessons the player has closed (the districts card at the Hamlet). */
   lessonsSeen: string[];
   goodsProduced: number; // per day, for UI
@@ -274,18 +265,12 @@ export interface GameState {
   gameOver: string | null;
   lostTo?: LossKind; // what ended the charter (iteration 70)
   stats: {
-    goodsDelivered: number;
-    gloamBurned: number;
-    restlessLaid: number;
     firesTotal: number;
     surgesTotal: number;
     restlessTotal: number;
-    fullDays: number; // days in a row with no market short
     brownoutsSurvived: number;
     brownoutOpen: number; // 1 while an overdraw is running
     sectorsBought: number;
-    quietHush: number;
-    hushPressureBreaks: number; // days of the current Hush with pressure >= 0.45
     gloamTiles: number;
     peakPopulation: number;
     devUses: number; // dev tools used in this charter (marks the daily result)

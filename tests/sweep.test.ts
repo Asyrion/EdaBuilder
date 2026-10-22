@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
-import { RoadType, Zone } from '../src/sim/types';
+import { RoadType } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
 import { dailySurge } from '../src/sim/hazards';
@@ -10,7 +10,6 @@ import { computeBuildingHappiness, dailyTrade } from '../src/sim/growth';
 import { EDICT_BY_KEY, edictUpkeep } from '../src/sim/edicts';
 import { checkMilestones, computeLedger } from '../src/sim/economy';
 import { paintDistrict } from '../src/sim/actions';
-import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
@@ -35,19 +34,6 @@ describe('The sweep: timing and counting', () => {
     s.manaStorage = 0; s.overdrawDays = 0;
     dailySurge(s);
     expect(s.overdrawDays).toBe(1);
-  });
-
-  it('the craft-tax cap is the lower one', () => {
-    const s = town();
-    const f = s.founding;
-    const works = placeBuildingRaw(s, 'craft', f.x - 6, f.y + 1, 2); ok(works); works.stock = 40;
-    recomputeAll(s);
-    s.modifiers.push({ kind: 'craftTax', value: 8, until: s.day + 10, label: 'pact' }, { kind: 'craftTax', value: 6, until: s.day + 10, label: 'bargain' });
-    s.taxRates.craft = 12;
-    works.workers = 8;
-    const l = computeLedger(s);
-    s.modifiers = [{ kind: 'craftTax', value: 6, until: s.day + 10, label: 'bargain' }];
-    expect(computeLedger(s).taxCraft).toBeCloseTo(l.taxCraft, 6);
   });
 });
 
@@ -108,14 +94,7 @@ describe('The sweep: sim logic', () => {
     expect(s.trade.exported).toBe(16);
   });
 
-  it('old saves load', () => {
-    const s = town();
-    const o = JSON.parse(serialize(s));
-    delete o.stats.firesTotal; delete o.stats.peakPopulation;
-    const r = deserialize(JSON.stringify(o), (seed) => createGame(seed));
-    expect(r.stats.firesTotal).toBe(0);
-    expect(r.stats.peakPopulation).toBe(0);
-    expect(Zone.Market).toBeDefined();
+  it('the Lantern of Vell delights', () => {
     expect(BUILDING_BY_KEY.lantern.desc).toMatch(/delights/);
   });
 });

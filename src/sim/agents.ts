@@ -1,10 +1,9 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
-import { effects } from './hazards';
 import { marketQuarterAt } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
+import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
 
 const MAX_AGENTS = 1400;
@@ -441,7 +440,6 @@ export function tickAgents(state: GameState): void {
             const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(m);
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
-            state.stats.goodsDelivered += a.load;
           }
           a.load = 0;
         }
@@ -488,7 +486,6 @@ export function dailyRestless(state: GameState): number {
     return true;
   });
   commitRng(state, rng);
-  state.stats.restlessLaid += cleared;
   return cleared;
 }
 

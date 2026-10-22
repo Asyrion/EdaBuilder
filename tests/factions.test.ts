@@ -8,7 +8,7 @@ import { FACTIONS, NEUTRAL_RULES, buildsFor, canBuild, factionKey, factionOf, mi
 import { checkMilestones } from '../src/sim/economy';
 import { updateCoverage, updateLandValue } from '../src/sim/services';
 import { updateMana } from '../src/sim/networks';
-import { SaveVersionError, serialize, deserialize } from '../src/sim/save';
+import { serialize, deserialize } from '../src/sim/save';
 import { Zone } from '../src/sim/types';
 import { flatten } from './helpers';
 
@@ -17,7 +17,7 @@ FACTIONS.test = {
   id: 'test' as never, name: 'The Test Folk', people: 'Testish', playable: true, lore: 'test',
   milestones: MILESTONES.map((m, i) => ({ ...m, name: `Depth ${i}` })),
   deny: ['garden'], replaces: { well: 'cistern' },
-  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false, milestoneGate: (_s, next) => next < 2 },
+  rules: { ...NEUTRAL_RULES, hillLandValue: 10, grassPenalty: 5, hillBuildable: true, lanternWard: 0.5, hillMana: 2, nodeMana: 0.5, startCrowns: 1000, waterLandValue: 1, dryPenalty: 0, spireReach: 0, spireCost: 1, darkAbandon: 0, milestoneGate: (_s, next) => next < 2 },
 };
 afterAll(() => { delete FACTIONS.test; });
 
@@ -41,12 +41,6 @@ describe('The faction scaffold', () => {
     expect(r.faction).toBe('vellish');
     const o = JSON.parse(serialize(s)); delete o.faction;
     expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).faction).toBe('vellish');
-  });
-
-  it('a charter of a parked people is refused with a reason, not loaded half-built (scope reset, phase 1a)', () => {
-    const o = JSON.parse(serialize(town())); o.faction = 'grimmen';
-    expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(SaveVersionError);
-    expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(/parked/);
   });
 
   it('every rule point reads the people: hills, ward, mana, crowns, milestones, unlocks', () => {

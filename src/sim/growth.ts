@@ -1,7 +1,7 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isDepot, isZoneUnlocked } from './catalog';
-import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
-import { bumpRoadVersion, marketStockCap } from './agents';
+import { edictOn, edictShare } from './edicts';
+import { marketStockCap } from './agents';
 
 /** The Hospice holds this many goods of draughts; without them it heals at six tenths. */
 export const HOSPICE_DRAUGHTS = 10;
@@ -22,7 +22,7 @@ export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
-import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
+import { MAP_W, Zone, idx, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
 export function capacityOf(b: Building, s?: GameState): number {
@@ -102,7 +102,6 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
   add('the tithe', -(tax - 10) * 1.6);
-  add('effects', modifierSumAt(state, 'happiness', state.district[i]));
   for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
   if (seasonOf(state) === 1) add('Bloom', 2);
@@ -258,7 +257,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 ? HUSH_CRAFT : 1) * (1 + modifierSum(state, 'goods'));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 ? HUSH_CRAFT : 1);
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const hands = b.workers;
@@ -484,14 +483,14 @@ export function updateSocial(state: GameState): void {
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
   state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
-  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts') + modifierSum(state, 'health')));
+  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
 }
@@ -516,23 +515,13 @@ export function theftAt(state: GameState, b: Building): boolean {
   return state.unrest > THEFT_UNREST && state.coverage.watch[idx(b.x, b.y)] < THEFT_WATCH * 255;
 }
 
-export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: number): boolean {
-  for (let dy = -r; dy <= r; dy++)
-    for (let dx = -r; dx <= r; dx++) {
-      const tx = x + dx;
-      const ty = y + dy;
-      if (inBounds(tx, ty) && state.bIndex[idx(tx, ty)] >= 0) return true;
-    }
-  return false;
-}
-
 /** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. The hunt's,
  *  the fishers' and the relics' goods are parked (scope reset phase 1c). */
 export function dailyTrade(state: GameState): void {
   const t = state.trade;
   const season = seasonOf(state);
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
-  t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
+  t.priceGoods = [2, 2, 2.5, 3][season];
   t.priceLeystone = [3, 4, 3, 2.5][season];
   t.exported = 0;
   t.imported = 0;

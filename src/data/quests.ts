@@ -1,5 +1,5 @@
 /** The Charter's Ledger: guided goals for every mechanic. See DESIGN.md 4.27. */
-import { AgentKind, DAYS_PER_SEASON, Terrain, Zone, idx, type GameState } from '../sim/types';
+import { AgentKind, Zone, type GameState } from '../sim/types';
 import { canBuild, milestonesOf, nextGate } from './factions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { factionKey, type FactionId } from './factions';
@@ -126,19 +126,6 @@ export function buildStatus(s: GameState, key0: string, n = 1, showMe = true): s
   return showMe ? `Not built yet${count}: pick the ${def.name} with Show me and place it.` : `Not built yet${count}: the ${def.name} is in the build menu.`;
 }
 
-/** A task that wants the building lit, not only standing. */
-function litStatus(s: GameState, key: string): string {
-  const b = s.buildings.find((x) => x && x.kind === key && x.state === 'ok');
-  return b && !b.lit ? `Built, but unlit: it needs a lit node or spire within reach.` : buildStatus(s, key);
-}
-
-/** First the building (until it stands, and is lit if it needs mana), then what the task asks of it. */
-const after = (key: string, then: (s: GameState) => string, n = 1) => (s: GameState) => {
-  const k = factionKey(s, key);
-  const def = BUILDING_BY_KEY[k];
-  const standing = s.buildings.filter((b) => b && b.kind === k && b.state !== 'ruin' && b.state !== 'building');
-  return standing.length >= n && (!def?.needsMana || standing.some((b) => b!.lit)) ? then(s) : buildStatus(s, key, n);
-};
 const anyOf = (s: GameState, keys: string[]) => keys.some((k) => has(s, k));
 
 const STATUS: Record<string, (s: GameState) => string> = {

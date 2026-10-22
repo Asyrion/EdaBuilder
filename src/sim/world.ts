@@ -1,7 +1,7 @@
 import { FACTIONS, factionOf, type FactionId, milestonesOf } from '../data/factions';
 import { buildTicks, construction } from './construction';
 import { initialSectors, inCharter } from './sectors';
-import { Rng, hashString } from '../core/rng';
+import { Rng } from '../core/rng';
 import { lakeDistAt } from './water';
 import { BUILDING_BY_KEY, NODE_MANA, START_TREASURY, WONDER_HALLS, type BuildingDef } from './catalog';
 import { distanceMap, generateTerrain } from './terrain';
@@ -14,7 +14,6 @@ import {
   SAVE_VERSION,
   SERVICE_TYPES,
   Terrain,
-  Zone,
   idx,
   inBounds,
   isWater,
@@ -110,14 +109,13 @@ export function createGame(seed: number, cityName?: string, faction: FactionId =
     gloamPressure: 0.3,
     artifactsSold: 0,
     tradeIncomeToday: 0,
-    modifiers: [],
     lessonsSeen: [],
     goodsProduced: 0,
     goodsSold: 0,
     goodsShort: 0,
     gameOver: null,
     lostTo: undefined, // present from the start, so a save carries it (phase 1d)
-    stats: { goodsDelivered: 0, gloamBurned: 0, restlessLaid: 0, firesTotal: 0, surgesTotal: 0, restlessTotal: 0, fullDays: 0, brownoutsSurvived: 0, brownoutOpen: 0, sectorsBought: 0, quietHush: 0, hushPressureBreaks: 0, gloamTiles: 0, peakPopulation: 0, devUses: 0, quarterDays: 0, goodsStolen: 0, levies: 0, levied: 0 },
+    stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, brownoutsSurvived: 0, brownoutOpen: 0, sectorsBought: 0, gloamTiles: 0, peakPopulation: 0, devUses: 0, quarterDays: 0, goodsStolen: 0, levies: 0, levied: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],
@@ -140,10 +138,6 @@ export function createGame(seed: number, cityName?: string, faction: FactionId =
 
 export function emptyLedger() {
   return { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, upkeepCharters: 0, charterTithe: 0, interest: 0, levy: 0, grants: 0, net: 0 };
-}
-
-export function seedFromName(name: string): number {
-  return hashString(name.trim().toLowerCase()) || 1;
 }
 
 export function rngOf(state: GameState): Rng {
@@ -340,20 +334,6 @@ export function removeBuilding(state: GameState, b: Building): void {
 
 export function forEachBuilding(state: GameState, fn: (b: Building) => void): void {
   for (const b of state.buildings) if (b) fn(b);
-}
-
-export function buildingCenter(b: Building): { x: number; y: number } {
-  return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
-}
-
-export function zoneOfKey(key: string): Zone {
-  switch (key) {
-    case 'hearth': return Zone.Hearth;
-    case 'market': return Zone.Market;
-    case 'craft': return Zone.Craft;
-    case 'arcane': return Zone.Arcane;
-    default: return Zone.None;
-  }
 }
 
 export function refreshZoneList(state: GameState): number[] {

@@ -1,12 +1,11 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
-import { buildsFor, canBuild, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
-import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
+import { buildsFor, canBuild, factionOf, milestonesOf, costOf } from '../data/factions';
+import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
 import { canPlaceBuilding, districtName, markAllDirty, markDirty, markDirtyAround, placeBuildingRaw, pushMessage, removeBuilding, buildingAt } from './world';
 import { districtInUse, districtOpenAt, districtSlots } from './districts';
 import { MAX_DISTRICTS } from './types';
 import { inCharter } from './sectors';
-import { effects } from './hazards';
 import { MAP_W } from './types';
 
 export interface ActionResult {
@@ -111,7 +110,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
       const i = idx(x, y);
       if (state.road[i]) continue;
       const t = state.terrain[i];
-      if (isWater(t) || (t === Terrain.Hills && !rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
+      if (isWater(t) || (t === Terrain.Hills && !rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
       if (!inCharter(state, x, y)) continue;
       if (state.bIndex[i] >= 0) {
         const b = state.buildings[state.bIndex[i]];

@@ -2,13 +2,10 @@ import { LAKE_WELL_CAP, LAKE_WELL_REACH, lakeDistAt } from './water';
 /** Great halls that relay the ley like a Nexus: the Lantern of Vell and the Underking's Seat. */
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
-import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WONDER_HALLS } from './catalog';
-import { MAP_H, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState, Terrain } from './types';
+import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from './catalog';
+import { MAP_H, MAP_W, RoadType, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
-import { modifierSum } from './edicts';
 import { factionOf } from '../data/factions';
-import { bumpRoadVersion } from './agents';
-import { edictOn } from './edicts';
 
 const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
@@ -38,10 +35,6 @@ export function manaUseOf(b: Building, hush = false): number {
   if (b.state === 'ruin' || b.state === 'abandoned') return 0;
   const base = def.category === 'zone' ? Math.round(def.manaUse * (1 + (b.level - 1) * 0.5) * 2) / 2 : def.manaUse;
   return hush && def.category === 'zone' ? base * 1.25 : base;
-}
-
-function manaMult(state: GameState): number {
-  return 1 + modifierSum(state, 'mana');
 }
 
 /** Recomputes lit tiles, building.lit, supply/demand and brownout share. */
@@ -194,7 +187,6 @@ export function updateMana(state: GameState): void {
   let consumers: Consumer[] = [];
   let demand = 0;
   const hush = seasonOf(state) === 3;
-  const mult = manaMult(state);
   const f = state.founding;
   for (let s = 0; s < state.buildings.length; s++) {
     const b = state.buildings[s];
@@ -203,7 +195,7 @@ export function updateMana(state: GameState): void {
       b.lit = false;
       continue;
     }
-    const use = manaUseOf(b, hush) * mult;
+    const use = manaUseOf(b, hush);
     if (use > 0) {
       demand += use;
       let dmin = Infinity;
@@ -383,10 +375,4 @@ export function updateWater(state: GameState): void {
   state.watered = watered;
   state.waterSupply = supply;
   state.waterDemand = demand;
-}
-
-export function roadManaUse(state: GameState): number {
-  let m = 0;
-  for (let i = 0; i < state.road.length; i++) if (state.road[i] === RoadType.Lantern && state.lit[i]) m += ROADS[2].manaUse;
-  return m;
 }
