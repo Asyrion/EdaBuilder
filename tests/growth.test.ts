@@ -8,7 +8,7 @@ import { RoadType, TICKS_PER_DAY, Zone, AgentKind, DAYS_PER_SEASON, idx } from '
 import { serialize, deserialize } from '../src/sim/save';
 import { computeLedger, checkMilestones } from '../src/sim/economy';
 import { findPath, dailyAgents, marketStockCap } from '../src/sim/agents';
-import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings, growthBlock } from '../src/sim/growth';
+import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings, growthBlock, demandTerms } from '../src/sim/growth';
 import { edictUpkeep, EDICT_BY_KEY } from '../src/sim/edicts';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
 import { updateCoverage, crewFactor, landBonusMap, landValueTerms, updateLandValue, DEATHCARE_LV } from '../src/sim/services';
@@ -201,6 +201,36 @@ describe('a lot grows only where light and water reach it (phase 2-2)', () => {
     const h = placeBuildingRaw(s, 'hearth', nb[0], nb[1]);
     h.lit = true;
     expect(growthBlock(s, dark)).not.toBe('noMana');
+  });
+});
+
+// Phase 2-4 of the scope reset: each demand bar shows its factors, and they add up to the target the bar moves toward.
+describe('the demand bars show their factors', () => {
+  it('the factors of each bar add up to its target, for a young town and a grown one', () => {
+    for (const days of [1, 25]) {
+      const s = town();
+      run(s, TICKS_PER_DAY * days);
+      s.taxRates.market = 14; s.unrest = 0.1;
+      updateDemand(s);
+      for (const z of ['hearth', 'market', 'craft', 'arcane'] as const) {
+        const d = demandTerms(s, z)!;
+        expect(d, z).not.toBeNull();
+        expect(d.terms.length).toBeGreaterThan(0);
+        expect(d.terms.reduce((a, t) => a + t.v, 0), `${z} on day ${days}`).toBeCloseTo(d.target, 9);
+        expect(d.now).toBe(s.demand[z]);
+      }
+    }
+  });
+
+  it('the smoothing brings a jump from −1 to +1 nine tenths of the way in five updates (250 ticks)', () => {
+    const s = town();
+    run(s, TICKS_PER_DAY * 3);
+    updateDemand(s);
+    const target = Math.max(-1, Math.min(1, demandTerms(s, 'craft')!.target));
+    s.demand.craft = -1;
+    for (let k = 0; k < 5; k++) updateDemand(s);
+    // 0.6^5 of the gap is left: 0.078
+    expect(Math.abs(s.demand.craft - target)).toBeLessThan((target + 1) * 0.08 + 1e-6);
   });
 });
 

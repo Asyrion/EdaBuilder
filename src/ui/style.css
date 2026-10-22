@@ -78,6 +78,9 @@ h3 { font-size: 13px; color: var(--gold); }
 
 #tooltip { position: absolute; max-width: 300px; padding: 8px 10px; font-size: 12px; z-index: 20; }
 #tooltip .t { color: var(--gold); font-weight: 600; margin-bottom: 3px; }
+#tooltip table.factors { border-collapse: collapse; margin: 4px 0 3px; }
+#tooltip table.factors td { padding: 0 6px 1px 0; vertical-align: top; }
+#tooltip table.factors td.r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 #views { position: absolute; right: 8px; top: 50px; width: 190px; padding: 8px; max-height: calc(100vh - 260px); overflow: auto; }
 .grip { cursor: move; color: var(--muted); font-size: 11px; letter-spacing: -2px; user-select: none; padding: 0 4px; }

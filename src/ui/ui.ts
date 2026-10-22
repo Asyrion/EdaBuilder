@@ -9,7 +9,7 @@ import { manaUseOf } from '../sim/networks';
 import { AgentKind, MAP_H, MAP_W, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { isLeyMember, lakeFed, loadCapOf, priorityOf, waterCapAt } from '../sim/networks';
-import { SEAM, SPENT_RATE, ARCANE_SCHOOL, growthBlock } from '../sim/growth';
+import { SEAM, SPENT_RATE, ARCANE_SCHOOL, growthBlock, demandTerms } from '../sim/growth';
 import { GREY_DAYS, SURGE_DAYS, fontsRunHot } from '../sim/hazards';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
@@ -326,11 +326,12 @@ export class UI {
       does or does not grow, with what to do; the Growth view (6) shows the same for every lot. */
   hoverTile(t: [number, number] | null, x: number, y: number): void {
     const html = t ? growthWhy(this.host.state, t[0], t[1]) : null;
-    if (html) { this.showTooltip(html, x, y); this.hoverWhy = true; }
+    if (html) { this.showTooltip(html, x, y); this.hoverWhy = true; } // after showTooltip, which clears the flag
     else if (this.hoverWhy) { this.hideTooltip(); this.hoverWhy = false; }
   }
 
   showTooltip(html: string, x: number, y: number): void {
+    this.hoverWhy = false; // another tooltip (a bar, a button) is not the map's to hide (phase 2-4's fix of 2-1)
     const t = this.el.tooltip;
     t.innerHTML = html;
     t.classList.remove('hidden');
@@ -617,12 +618,13 @@ export class UI {
       el.innerHTML = `<div class="col"><div class="lbl muted" style="width:60px">Demand <button class="help" id="demand-help" title="What the bars mean" aria-label="What the demand bars mean">?</button></div></div>` + bars.map(([l, , c, z]) => `<div class="col" data-zone="${z}"><div class="bar"><div style="background:${c}"></div></div><div class="lbl" style="color:${c}">${l}</div><div class="sign muted">–</div></div>`).join('');
       el.querySelectorAll('.col[data-zone]').forEach((col) => {
         const zone = (col as HTMLElement).dataset.zone as DemandZone;
-        const tip = () => { const x = demandExplain(s, zone); return `<div class="t">${x.headline}</div>${x.detail}<br><span class="muted">${x.advice}</span>`; };
+        // the state of now, not of the first refresh (a new charter replaces it; phase 2-4 found the bars explaining the title valley)
+        const tip = () => { const st = this.host.state, x = demandExplain(st, zone); return `<div class="t">${x.headline}</div>${demandFactorsHtml(st, zone)}<span class="muted">${x.advice}</span>`; };
         (col as HTMLElement).onmouseenter = (e) => this.showTooltip(tip(), e.clientX, e.clientY);
         (col as HTMLElement).onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY);
         (col as HTMLElement).onmouseleave = () => this.hideTooltip();
       });
-      (el.querySelector('#demand-help') as HTMLButtonElement).onclick = () => this.toast('<h2>The demand bars</h2><p>Each bar is how much the folk want more of a zone: Hearths (homes), Markets, Craft works, Arcane shops. A bar above the line means zoned lots of that kind will grow; at or below it, nothing of that kind grows, however much you paint. Hover a bar for the numbers behind it and what to do.</p>', 12000);
+      (el.querySelector('#demand-help') as HTMLButtonElement).onclick = () => this.toast('<h2>The demand bars</h2><p>Each bar is how much the folk want more of a zone: Hearths (homes), Markets, Craft works, Arcane shops. A bar above the line means zoned lots of that kind will grow; at or below it, nothing of that kind grows, however much you paint. Hover a bar for its factors (what lifts it and what holds it down, in points), where it is heading, how many lots of the zone can grow and why the rest cannot, and what to do. A bar moves toward its target over about a quarter of a day.</p>', 12000);
     }
     const fills = el.querySelectorAll('.bar div');
     const signs = el.querySelectorAll('.sign');
@@ -1569,4 +1571,33 @@ export function manaTip(s: GameState): string {
   if (overdrawn(s)) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps a few lit houses into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
   else if (s.manaDemand > s.manaSupply) lines.push('The draw is over the flow: past a quarter over, a surge counts down from five days.');
   return lines.join('\n');
+}
+
+const ZONE_OF_DEMAND: Record<DemandZone, Zone> = { hearth: Zone.Hearth, market: Zone.Market, craft: Zone.Craft, arcane: Zone.Arcane };
+const LOT_REASON: Record<string, string> = { noRoad: 'no road', noMana: 'no light', noWater: 'no water', noDemand: 'no demand', gloam: 'the Gloam', noSchool: 'no schooling' };
+
+/** A demand bar's tooltip body (phase 2-4): its factors, biggest first, where the bar is heading, and the zone's lots. */
+export function demandFactorsHtml(s: GameState, zone: DemandZone): string {
+  const d = demandTerms(s, zone);
+  const pct = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(Math.round(v * 100))}`;
+  let html = '';
+  if (d) {
+    const rows = d.terms.filter((t) => Math.round(t.v * 100) !== 0).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+    html += `<table class="factors">${rows.map((t) => `<tr><td class="r ${t.v > 0 ? 'good' : 'bad'}">${pct(t.v)}</td><td>${t.label}</td></tr>`).join('')}</table>`;
+    const target = Math.max(-1, Math.min(1, d.target));
+    html += `<div class="muted">heading to ${pct(target)} %, now ${pct(d.now)} %</div>`;
+  }
+  // the zone's empty lots: how many can grow, and why the rest cannot (the Growth view, 6, shows them)
+  let can = 0;
+  const why: Record<string, number> = {};
+  const z = ZONE_OF_DEMAND[zone];
+  for (let i = 0; i < s.zone.length; i++) {
+    if (s.zone[i] !== z || s.bIndex[i] >= 0 || s.road[i]) continue;
+    const g = growthBlock(s, i);
+    if (g === 'ok') can++;
+    else if (LOT_REASON[g]) why[LOT_REASON[g]] = (why[LOT_REASON[g]] ?? 0) + 1;
+  }
+  const blocked = Object.values(why).reduce((a, b) => a + b, 0);
+  html += `<div>${can + blocked ? `${can} empty lot${can === 1 ? '' : 's'} can grow${blocked ? ` · ${blocked} cannot: ${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${k}`).join(', ')} (Growth view, 6)` : ''}` : 'no empty lots zoned: paint some beside a road'}</div>`;
+  return html;
 }

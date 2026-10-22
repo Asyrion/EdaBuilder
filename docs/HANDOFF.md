@@ -21,9 +21,9 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 ## The next item
 
 **Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Done: 2-1 (growth from the lots that can grow), 2-2 (a lot grows
-only in light and water, the Font at 100 mana for 4,500, the surge's countdown) and 2-3 (the bot's streets only where its
-town is, the budget by kind). Next: demand with its factors shown, then traffic, one change at a time against the bot
-corridor. Plan it on the Plan panel first.
+only in light and water, the Font at 100 mana for 4,500, the surge's countdown), 2-3 (the bot's streets only where its
+town is, the budget by kind) and 2-4 (the demand bars show their factors and lots). Next: traffic, then the P2 items,
+one change at a time against the bot corridor. Plan it on the Plan panel first.
 
 ## Known issues
 

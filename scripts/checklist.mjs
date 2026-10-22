@@ -79,6 +79,15 @@ r.hoverWhy = await (async () => {
   return null;
 })();
 await page.screenshot({ path: 'shots/checklist_hover.png' });
+// 7: hovering a demand bar shows its factors, where it is heading and the zone's lots (scope reset phase 2-4)
+await hide();
+{
+  const bar = await page.evaluate(() => { const r = document.querySelector('#demand .col[data-zone="hearth"]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  await page.mouse.move(bar[0], bar[1]); await page.waitForTimeout(250);
+  r.demandWhy = await page.evaluate(() => { const el = document.getElementById('tooltip'); return el && !el.classList.contains('hidden') ? el.textContent : null; });
+  await page.screenshot({ path: 'shots/checklist_demand.png' });
+  await page.mouse.move(5, 5);
+}
 await page.mouse.move(5, 5);
 // 11: every info view draws
 r.views = await page.evaluate(async () => {
@@ -119,7 +128,7 @@ for (const [when, t] of [['day', 180], ['night', 630]]) {
   await page.screenshot({ path: `shots/checklist_${when}.png` });
 }
 r.errors = errors;
-const ok = typeof r.hoverWhy === 'string' && /lot|level/.test(r.hoverWhy) && r.founded && r.topbar.length === 5 && r.helpFromMenu && r.helpFromKey && r.city.milestone >= 4 && r.views === 9 && r.saveLoad && !errors.length;
+const ok = typeof r.demandWhy === 'string' && /heading to/.test(r.demandWhy) && /lot/.test(r.demandWhy) && typeof r.hoverWhy === 'string' && /lot|level/.test(r.hoverWhy) && r.founded && r.topbar.length === 5 && r.helpFromMenu && r.helpFromKey && r.city.milestone >= 4 && r.views === 9 && r.saveLoad && !errors.length;
 console.log(JSON.stringify(r));
 console.log(ok ? 'CHECKLIST OK' : 'CHECKLIST FAILED');
 await browser.close();

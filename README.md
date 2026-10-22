@@ -64,7 +64,8 @@ main node.
    Lantern-way a tenth more.
 2. **Zones** — drag rectangles next to roads: **Hearth** (homes), **Market** (trade),
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
-   schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.
+   schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left;
+   hover one for its factors in points and how many of its lots can grow.
    Hover a lot or a house with Select to see why it does or does not grow; the **Growth**
    view (`6`) colours every lot by it (no road, no light, no water, no demand, the Gloam, no
    schooling). A lot grows only where light and water reach it.
