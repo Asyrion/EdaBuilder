@@ -10,9 +10,9 @@ import { edictOn } from './edicts';
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
 
-// Path cache keyed by from|to tile, invalidated when roads change.
-let cacheVersion = -1;
-let pathCache = new Map<number, number[] | null>();
+// Path cache keyed by from|to tile, one per state: emptied when the roads change and each day when the traffic is smoothed
+// (scope reset phase 1d), so a path is always what A* would find today and a loaded charter walks the same paths.
+const pathCaches = new WeakMap<GameState, { version: number; map: Map<number, number[] | null> }>();
 export let roadVersion = 0;
 export function bumpRoadVersion(): void {
   roadVersion++;
@@ -20,10 +20,12 @@ export function bumpRoadVersion(): void {
 
 /** A* over road tiles (4-neighbour). Returns tile indices from start to goal, or null. */
 export function findPath(state: GameState, start: number, goal: number, maxNodes = 6000): number[] | null {
-  if (cacheVersion !== roadVersion) {
-    pathCache = new Map();
-    cacheVersion = roadVersion;
+  let cache = pathCaches.get(state);
+  if (!cache || cache.version !== roadVersion) {
+    cache = { version: roadVersion, map: new Map() };
+    pathCaches.set(state, cache);
   }
+  const pathCache = cache.map;
   const key = start * 65536 + goal;
   const cached = pathCache.get(key);
   if (cached !== undefined) return cached ? cached.slice() : null;
@@ -458,6 +460,7 @@ export function tickAgents(state: GameState): void {
 
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
+  pathCaches.delete(state); // the congestion changes below: yesterday's paths are not today's
   for (let i = 0; i < state.traffic.length; i++) {
     const rt = roadAt(state, i);
     let v = 0;

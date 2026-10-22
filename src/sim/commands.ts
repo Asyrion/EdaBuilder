@@ -11,7 +11,7 @@ import { runDev } from './dev';
 import { setQuarter, type QuarterId } from './districts';
 import { repayLoan, takeLoan } from './economy';
 import { setEdict } from './edicts';
-import { SaveVersionError, parkedContentMessage, parkedPeopleMessage, serialize } from './save';
+import { SaveVersionError, oldSaveMessage, serialize } from './save';
 import { buySector } from './sectors';
 import { recomputeAll, tick } from './sim';
 import { createGame, deepenNode } from './world';
@@ -23,11 +23,13 @@ export interface Command { t: number; op: string; args: unknown[] }
 export interface CommandResult { ok: boolean; reason?: string | null; out?: string }
 
 /** A charter's start: enough to create the same state again. */
-/** `scenario` is always 'valley' now: the other scenarios and the daily challenge are parked (scope reset phase 1c). */
+/** `scenario` is always 'valley': the other scenarios and the daily challenge are parked (scope reset phase 1c). */
 export interface ReplayHeader { seed: number; name: string; scenario: string; faction: FactionId; challenge?: string }
+/** The replay format: 2 since the scope reset's save version 8 (phase 1d); a replay of 1 is refused. */
+export const REPLAY_VERSION = 2;
 /** A replay file: the start, the commands, a checkpoint each day, the end. */
 export interface ReplayFile {
-  replay: 1;
+  replay: number;
   build: string;
   header: ReplayHeader;
   commands: Command[];
@@ -72,12 +74,6 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   dev: (s, _r, [id, arg, x, y]) => { const out = runDev(s, id, arg, { x, y }); recomputeAll(s); return { ok: true, out }; },
 };
 export const COMMAND_OPS = Object.keys(OPS);
-/** The ops of the systems the scope reset parked: in phase 1b glim-dust, the Warding Wall and its gates, the dragons, the Scale
- *  Ward, wyrmfire, the Sky-Dock's wyvern and the golems; in 1c the tales, the guilds, the Wright's Lodge's vent, the
- *  Storm-Caller's rain, terraforming, the daughter charter and the hunters' quarry. A replay that uses one is refused
- *  (docs/PARKED.md), and so is one of a scenario other than the valley. */
-export const PARKED_OPS = ['dust', 'gate', 'wall', 'training', 'replate', 'role', 'cradle', 'nest', 'burnWyrmfire', 'skydock', 'golem', 'tale', 'guild', 'vent', 'rain', 'terraform', 'daughter', 'quarry'];
-
 /** Runs commands against a state: logs them while recording, and keeps the undo stack both the live game and a replay rebuild. */
 export class CommandRunner {
   log: Command[] = [];
@@ -105,7 +101,7 @@ export class CommandRunner {
   /** The replay file of what has been recorded so far. */
   toFile(build: string): ReplayFile {
     if (!this.header) throw new Error('this charter was loaded from a save: a replay begins with a new charter');
-    return { replay: 1, build, header: this.header, commands: this.log.slice(), checkpoints: this.checkpoints.slice(), endTick: this.state.tick, checksum: checksum(this.state) };
+    return { replay: REPLAY_VERSION, build, header: this.header, commands: this.log.slice(), checkpoints: this.checkpoints.slice(), endTick: this.state.tick, checksum: checksum(this.state) };
   }
 }
 
@@ -119,8 +115,6 @@ export function checksum(s: GameState): string {
 
 /** A new charter from a header, with the module state a new game resets (the path cache, the dev's instant building). */
 export function stateFromHeader(h: ReplayHeader): GameState {
-  if (h.faction !== undefined && h.faction !== 'vellish') throw new SaveVersionError(parkedPeopleMessage(String(h.faction)));
-  if (h.scenario !== 'valley') throw new SaveVersionError(parkedContentMessage(h.scenario === 'daily' ? 'a daily challenge' : `the scenario "${h.scenario}"`));
   const s = createGame(h.seed, h.name, h.faction);
   construction.instant = false;
   recomputeAll(s);
@@ -133,8 +127,7 @@ export class ReplayPlayer {
   runner: CommandRunner;
   next = 0;
   constructor(public file: ReplayFile, state: GameState) {
-    const parked = file.commands.find((c) => PARKED_OPS.includes(c.op));
-    if (parked) throw new SaveVersionError(parkedContentMessage(`the "${parked.op}" command`));
+    if (file.replay !== REPLAY_VERSION) throw new SaveVersionError(oldSaveMessage(`replay ${file.replay}`));
     this.runner = new CommandRunner(state, file.header, false);
   }
   get state(): GameState { return this.runner.state; }

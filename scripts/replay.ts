@@ -8,7 +8,7 @@ import { verifyReplay, type ReplayFile } from '../src/sim/commands';
 const path = process.argv[2];
 if (!path) { console.error('usage: npx tsx scripts/replay.ts <file.wardlight-replay.json>'); process.exit(2); }
 const file = JSON.parse(readFileSync(path, 'utf8')) as ReplayFile;
-if (file.replay !== 1) { console.error('not a Wardlight replay'); process.exit(2); }
+if (typeof file.replay !== 'number') { console.error('not a Wardlight replay'); process.exit(2); }
 let head = 'unknown';
 try { head = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { /* not a checkout */ }
 console.log(`${file.header.name}: ${file.header.scenario}, ${file.header.faction}, seed ${file.header.seed}${file.header.challenge ? `, challenge ${file.header.challenge}` : ''}`);

@@ -56,20 +56,22 @@ describe('core loop', () => {
     expect(high.demand.hearth).toBeLessThan(low.demand.hearth);
   });
 
-  // Known bug, found in phase 0 (docs/RESET_LOG.md): deserialize() calls recomputeAll(), whose updateDemand() blends the
-  // saved demand one step further (growth.ts, 60/40), so the zone draws differ from day 11 on. Fixed with save version 8
-  // in phase 1d; `it.fails` turns red then, and becomes `it`.
-  it.fails('a save in the middle of a run changes nothing', () => {
-    // seed 42: since phase 1b seed 5 happens to come back equal over these days, though the demand still moves on load
-    const a = town(42);
-    run(a, TICKS_PER_DAY * 20);
-    const b0 = town(42);
-    run(b0, TICKS_PER_DAY * 10);
-    const b = deserialize(serialize(b0), (seed) => createGame(seed));
-    run(b, TICKS_PER_DAY * 10);
-    expect(b.tick).toBe(a.tick);
-    expect(b.population).toBe(a.population);
-    expect(b.treasury).toBe(a.treasury);
+  // Found in phase 0, fixed in phase 1d (save version 8): the load recomputed the derived layers and blended the demand a step,
+  // and the path cache outlived it. Now every layer is saved and nothing is recomputed, and the path cache is a pure memo
+  // (emptied each day with the traffic), so a charter saved at any tick runs on exactly as it would have.
+  it('a save in the middle of a run changes nothing', () => {
+    for (const [seed, extra] of [[42, 0], [5, 437]]) {
+      const a = town(seed);
+      run(a, TICKS_PER_DAY * 20);
+      const b0 = town(seed);
+      run(b0, TICKS_PER_DAY * 10 + extra);
+      const b = deserialize(serialize(b0), (s) => createGame(s));
+      run(b, TICKS_PER_DAY * 10 - extra);
+      expect(b.tick).toBe(a.tick);
+      expect(b.population).toBe(a.population);
+      expect(b.treasury).toBe(a.treasury);
+      expect(serialize(b)).toBe(serialize(a));
+    }
   });
 
   it('the bot grows seed 42 inside its corridor in 100 days', () => {

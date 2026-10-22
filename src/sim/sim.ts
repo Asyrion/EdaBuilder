@@ -19,7 +19,7 @@ export interface SimHooks {
   onDay?: (state: GameState) => void;
 }
 
-/** Full recompute of derived layers (after load or big edits). */
+/** Full recompute of derived layers (after big edits). */
 export function recomputeAll(state: GameState): void {
   updateMana(state);
   updateWater(state);
