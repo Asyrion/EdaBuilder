@@ -373,7 +373,7 @@
     "key": "depot",
     "name": "Trade Depot",
     "category": "leisure",
-    "desc": "Carters' yard for the Gloam road. Works with full storage and mines with no buyers send their surplus here to be sold; prices drift with the season. With the Import edict it also buys goods for empty markets. Within 12 tiles of a daughter wardlight's stake it opens the Twin Road.",
+    "desc": "Carters' yard for the Gloam road. Works with full storage and mines with no buyers send their surplus here to be sold; prices drift with the season. With the Import edict it also buys goods for empty markets.",
     "flavor": "Every cart that leaves is counted twice: once by the guild, once by the Crown.",
     "w": 2,
     "h": 2,
