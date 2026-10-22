@@ -24,7 +24,7 @@ npx tsx scripts/table.ts --bar wide --compare origin/main   # the bar for a sim 
                                                             # (runs cached in balance/cache by the sim's files; commit it)
 npx tsx scripts/replay.ts Thornwick_day30.wardlight-replay.json   # replays an exported charter headless: MATCH, or the first day it diverged
 npx tsx scripts/questCensus.ts 42 200 vellish   # which Charter tasks a bot game completes, and which never
-npm run art        # reference paintings → game sprites (art/sources.json → public/art/sprites, packed into public/art/sheets; commit both)
+npm run art        # reference paintings (eda-lore's inspirations/: EDA_LORE or ../eda-lore) → game sprites (art/sources.json → public/art/sheets and sprites.json; commit both)
 npm run art:check  # the same, plus shots/import_check.png: every sprite over its footprint diamond
 node scripts/importSprites.mjs --islands inspirations/bushes/image_3.png   # list a sheet's items by index
 npm run devboard   # the dev board, http://127.0.0.1:8771: content, text, sprites and art; prompts and pipelines; next steps, GitHub, balance; Send to Claude (tools/devboard)
@@ -209,7 +209,7 @@ Charter as `.json`.
   a three-step lesson card when they arrive. The demand bars carry a zero line, a word under
   each bar and a tooltip that says the sign, the numbers and what to do. The Founding
   Stake's hall grows through four stages with the city, drawn from the reference paintings
-  in `inspirations/` through the art import pipeline.
+  in eda-lore's `inspirations/` through the art import pipeline.
 - The ground has limits: wells serve a capacity of homes (the nearest first), a far-from-water
   well reaches less, the Seep follows the season, mud slows tracks in the wet seasons, mine
   seams run out, a hot Font may flare, and the
@@ -280,8 +280,7 @@ scripts       headless balance run, Playwright screenshot/perf/playtest harnesse
               importSprites (the art pipeline) and its lib (png codec, sprite steps)
 art           sources.json: which paintings become which sprites, with hand-set anchors;
               prompts/: the image prompt of each sprite (the dev board's prompt studio)
-public/art    the imported sprites and their manifest (shipped with the build)
-inspirations  reference paintings by building type (the style guide, DESIGN §5)
+public/art    the imported sprite sheets and their manifest (shipped with the build)
 tools/devboard  the dev board (server, lossless JSON edits, art status, checks, the tracker, Send to
               Claude, the prompt studio and the pipelines, the page)
 ```

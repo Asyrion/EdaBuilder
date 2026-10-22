@@ -113,9 +113,13 @@ for (const [name, k] of Object.entries(KINDS).filter(([, k]) => k.textOnly)) {
   check(parseRefined('PROMPT:\nA tower.\nNOTE:\nTaller.').prompt === 'A tower.' && parseRefined('just text').prompt === 'just text', 'prompts: the refined answer is parsed');
 }
 
-// paintings (iteration 89): saved under inspirations/, PNG only, never over another, nothing outside
+// paintings (iteration 89): saved under eda-lore's inspirations/, PNG only, never over another, nothing outside. The
+// eda-lore checkout is the scratch folder here (EDA_LORE, scripts/lib/lore.mjs), the painting a drawn 160×120 well
+process.env.EDA_LORE = tmp;
 {
-  const png = readFileSync(join(REPO, 'inspirations/wells/image_0(1).png'));
+  const well = new Uint8ClampedArray(160 * 120 * 4).fill(255);
+  for (let y = 20; y < 100; y++) for (let x = 20; x < 140; x++) { const o = (y * 160 + x) * 4; well[o] = 90; well[o + 1] = 70; well[o + 2] = 60; }
+  const png = Buffer.from(encodePng({ w: 160, h: 120, data: well }));
   const a = savePainting(tmp, 'selftest', 'My Well.png', png.toString('base64')), b = savePainting(tmp, 'selftest', 'My Well.png', png.toString('base64'));
   check(a === 'inspirations/selftest/my_well.png' && b === 'inspirations/selftest/my_well_2.png', 'paintings: saved by a clean name, never over another');
   throws(() => savePainting(tmp, 'selftest', 'x.png', Buffer.from('not a png').toString('base64')), Error, 'paintings: only PNG');

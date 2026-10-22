@@ -30,7 +30,9 @@ docs 04 §2 and §11 there. The decisions are in DESIGN §4.80–§4.87 and §4.
 - **The front is on the right face** (§4.90). A painting fronted on its left gets `flip: true`.
 - **The importer sharpens and outlines a painting,** so the set reads as one. A sprite drawn at its game size
   (`pixel: true`) is taken as drawn.
-- **Paintings live in `inspirations/<folder>/` and are committed.** Only images that are used go in. Rounds, contact
+- **Paintings live in eda-lore's `inspirations/<folder>/` and are committed there** (since the scope reset, 1d-2): a
+  sibling checkout, `EDA_LORE` or `../eda-lore` (`scripts/lib/lore.mjs`); `npm run art` stops with a message without
+  it, the build and the tests do not need it. An entry's `src` is the path inside eda-lore. Only images that are used go in. Rounds, contact
   sheets and previews are never committed.
 - **Every sprite is shown to the user in the game before its commit,** old beside new, by day and night
   (CLAUDE.md rule 7).
@@ -39,7 +41,7 @@ docs 04 §2 and §11 there. The decisions are in DESIGN §4.80–§4.87 and §4.
 
 `scripts/importSprites.mjs`; its header lists every key.
 
-1. Copy the painting into `inspirations/<folder>/`. On the board, drop it on the Art panel.
+1. Copy the painting into eda-lore's `inspirations/<folder>/` (and commit it there). On the board, drop it on the Art panel.
 2. Pick its item on the sheet: `node scripts/importSprites.mjs --islands <src> [white]` lists the islands, and the board
    draws them over the painting. A `white` of about 200 keys out a light-grey shadow or grid paper.
 3. Add its entry to `art/sources.json`:
@@ -84,7 +86,7 @@ Both routes start from the sprite's prompt and end in the importer. **Claude ask
 1. Copy the prompt from the Art panel into Tripo Studio's Image tab (Nano Banana 2, 1:1), and the exclusions into the
    negative-prompt field.
 2. Generate 4 and keep the best one. Another run with the prompt adjusted where it missed beats fixing a bad one.
-3. Drop it on the Art panel (Tripo Studio selected). It is saved as `inspirations/tripo/<sprite>.png`.
+3. Drop it on the Art panel (Tripo Studio selected). It is saved as eda-lore's `inspirations/tripo/<sprite>.png`.
 4. Then the importer, steps 2–5.
 
 **Route 2, step by step:**
@@ -113,7 +115,7 @@ Both routes start from the sprite's prompt and end in the importer. **Claude ask
    on the right, the design the brief asked for. You choose.
 5. Not right yet? Another round with the prompt rewritten where this one missed.
 6. "Use this one" turns the pick into a PNG (Tripo may send WebP or JPEG; the importer reads PNG) and saves it as
-   `inspirations/tripo/<sprite>.png`.
+   eda-lore's `inspirations/tripo/<sprite>.png`.
 7. Then the importer, steps 2–5. Only the image used is committed; the rounds stay in `art/tripo/` and in your Tripo
    account.
 
@@ -159,7 +161,7 @@ shows its log.
 | Tripo Studio | the login, Generate 4, the round's contact sheet with its measures, Use this one; then the importer | `tools/devboard/tripo.ts` |
 | Aseprite | Trace (with `--force`), Export, the previews, Install after the review tick | `scripts/aseprite.ts`, `scripts/aseprite/build_sprite.lua` |
 
-**Tested here, not on your PC:** the self-test (`npm run devboard:selftest`) and `scripts/playtest91.mjs` run the
+**Tested here, not on your PC:** the self-test (`npm run devboard:selftest`) runs the
 Tripo and Aseprite steps against fakes that answer as the real tools do (the CLI's task line, its bug, the poll, the
 downloads; the Lua build and the export). The real Tripo CLI with your login and real Aseprite run on your PC; the
 commands are Tamer's proven ones.

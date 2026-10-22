@@ -2,12 +2,13 @@
    each comes from. Imported sprites come from public/art/sprites.json (the paintings through `npm run art`); procedural
    ones come from the painter (src/render/sprites.ts), rendered here to PNG files in the temp folder for the page. Also what
    the art pipeline holds: the art/sources.json entries, whether each is `checked`, and whether its painting is in
-   inspirations/. Run by the board in a fresh process when the code or the art changes; prints one `ART_JSON {...}` line.
+   eda-lore's inspirations/ (EDA_LORE or ../eda-lore). Run by the board in a fresh process when the code or the art changes; prints one `ART_JSON {...}` line.
    Run by hand: npx tsx tools/devboard/art.ts <out dir> */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { generateSprites } from '../../src/render/sprites';
 import { BUILDINGS } from '../../src/sim/catalog';
+import { paintingFile } from '../../scripts/lib/lore.mjs';
 import { encodePng } from '../../scripts/lib/png.mjs';
 
 const ROOT = resolve(import.meta.dirname, '../..');
@@ -41,7 +42,7 @@ for (const b of BUILDINGS) {
     looks: looks.map((n) => ({ name: n, from: imported[n] ? 'imported' : 'drawn', file: imported[n]?.file ?? null })),
     // tests/sprites.test.ts: every non-zone building needs a b_<key> (or b_<key>_0) sprite drawn in code
     drawnBase: zone || drawn.has(`b_${b.key}`) || drawn.has(`b_${b.key}_0`),
-    sources: entries.map((s) => ({ name: s.name, src: s.src, checked: !!s.checked, off: !!s.off, painting: existsSync(join(ROOT, s.src)) })),
+    sources: entries.map((s) => ({ name: s.name, src: s.src, checked: !!s.checked, off: !!s.off, painting: existsSync(paintingFile(ROOT, s.src)) })),
   };
 }
 console.log('ART_JSON ' + JSON.stringify({ out, buildings: status }));

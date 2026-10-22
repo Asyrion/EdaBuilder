@@ -201,7 +201,7 @@ const ArtUI = (() => {
     const list = Object.values(P.paintings).flat().map(f => `<option ${f === painting ? "selected" : ""}>${esc(f)}</option>`).join("");
     const isl = cur.isl ? `<div class="sheet" id="asheet"><img id="aimg" src="/painting?src=${encodeURIComponent(painting)}" alt="">${cur.isl.map(i => `<div class="box${String(i.i) === String(cur.island ?? e.island) ? " on" : ""}" data-art-island="${i.i}" data-r="${i.x},${i.y},${i.w},${i.h}" title="island ${i.i}: ${i.w}×${i.h}"><span>${i.i}</span></div>`).join("")}</div>` : painting ? '<p class="dim small">Listing its islands…</p>' : "";
     return `<p class="banner small">Don't run the balance bar while an import runs or an entry is saved: each run reads the files when it starts (DESIGN §4.118).</p>
-      <div class="field"><label>1 · Painting</label><div><select id="apaint"><option value="">choose one in inspirations/ …</option>${list}</select>
+      <div class="field"><label>1 · Painting</label><div><select id="apaint"><option value="">choose one in eda-lore's inspirations/ …</option>${list}</select>
         <div class="drop" id="adrop">or drop a PNG here <input type="file" id="afile" accept="image/png"> into <input type="text" id="afolder" class="mono" value="${esc(painting.split("/")[1] ?? (cur.data.pipeline === "tripo" ? "tripo" : "board"))}" size="14"></div></div></div>
       <div class="field"><label>2 · Island</label><div>${isl}<span class="small">white <input type="number" id="awhite" value="${esc(cur.white)}" min="150" max="255" style="width:5em"> <button class="btn small ghost" data-art-islands>List again</button> (about 200 keys out a grey shadow or grid paper)</span></div></div>
       <div class="field"><label>3 · Entry</label><div class="entry small">

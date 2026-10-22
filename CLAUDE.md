@@ -48,7 +48,7 @@ The game is being cut back to its core with one people, the Vellish (`docs/RESET
    reordered list; README.md's feature list and the in-game help follow.
 6. **Determinism:** no `Math.random` in `src/sim`; use `rngOf`/`commitRng`. New state
    fields get a default in `save.ts` so old saves load.
-7. **Art:** sprites come from the paintings in `inspirations/` through `npm run art`
+7. **Art:** sprites come from the paintings in eda-lore's `inspirations/` (`../eda-lore` or `EDA_LORE`) through `npm run art`
    (`art/sources.json`, hand-set anchors, `npm run art:check` judged by eye) or from the
    procedural painter; every building must have a sprite (a test holds it); imported sprites
    are sharpened and outlined so they read as one set with the procedural ones.

@@ -25,7 +25,7 @@
   "edicts": { "desc": { "text": true }, "flavor": { "text": true } },
   "quests": { "hint": { "text": true } },
   "artsources": {
-    "src": { "help": "The painting, under inspirations/." },
+    "src": { "help": "The painting, under eda-lore's inspirations/ (EDA_LORE or ../eda-lore)." },
     "kind": { "values": ["building", "prop", "ground", "vehicle"] },
     "island": { "help": "Which item of the sheet, row-major (the Art panel draws them over the painting)." },
     "anchor": { "help": "'centre' for a building, 'auto', or { ax, ay }." },

@@ -8,7 +8,7 @@
       "doc": "docs/ART_PIPELINES.md (the paintings importer); the header of scripts/importSprites.mjs",
       "for": "A painting (a generator's image, a sheet of the user's paintings) becomes the sprite of the same name.",
       "steps": [
-        "Drop the painting on the card: it is saved into inspirations/<folder>/ (PNG, never overwriting).",
+        "Drop the painting on the card: it is saved into eda-lore's inspirations/<folder>/ (EDA_LORE or ../eda-lore; PNG, never overwriting; commit it there).",
         "Pick its island on the sheet (the importer's --islands, drawn over the painting); raise 'white' to about 200 to key out a light-grey shadow or grid paper.",
         "Fill its art/sources.json entry: footprint, targetHeight from the yardstick, anchor 'centre', flip if fronted on the left, shift for a small object.",
         "Import: npm run art -- --check writes public/art/sprites, the packed sheet in public/art/sheets, sprites.json and the check sheet shots/import_check.png (commit the sprites, the sheet and the manifest).",
@@ -30,7 +30,7 @@
       "for": "A painting made from the sprite's prompt with Nano Banana 2 in Tripo Studio, by you (Route 1) or by Claude through the Tripo CLI on your Studio credits (Route 2), then brought in through the paintings importer.",
       "steps": [
         "Write the prompt on the Art panel (refine it with Claude): under 1000 characters, positive phrasing, one subject on plain white, the isometric 2:1 view, the front on the right face, the yardstick height.",
-        "Route 1 (you): Tripo Studio, Image tab, Nano Banana 2, 1:1, 4 images; the house exclusions in the negative-prompt field. Drop the best one on the panel: it is saved as inspirations/tripo/<sprite>.png.",
+        "Route 1 (you): Tripo Studio, Image tab, Nano Banana 2, 1:1, 4 images; the house exclusions in the negative-prompt field. Drop the best one on the panel: it is saved as eda-lore's inspirations/tripo/<sprite>.png.",
         "Route 2 (Claude): log in once in your own terminal (tripo auth login, about 2 h; the panel shows whoami). 'Generate 4' runs tripo image with Nano Banana 2 (about 8 credits a round) into art/tripo/<sprite>/round<n>/ (not committed).",
         "Pick from the round's contact sheet: each image is measured (how much of it is the white the importer keys out, how flat its corners are, its size). Claude recommends one; another round rewrites the prompt where this one missed. 'Use this one' saves it as inspirations/tripo/<sprite>.png.",
         "Then the paintings importer: its island, its art/sources.json entry, the import, judged by eye and marked checked."

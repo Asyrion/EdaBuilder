@@ -1,12 +1,13 @@
 /* The pipelines registry (iteration 89, DESIGN 4.120): tools/devboard/pipelines.json lists the asset pipelines; a 'board'
    one runs its steps here, a 'handoff' one writes a task for Claude. The paintings importer (scripts/importSprites.mjs)
-   runs from the board: a painting is saved into inspirations/, its islands are listed, its art/sources.json entry is
+   runs from the board: a painting is saved into eda-lore's inspirations/ (scripts/lib/lore.mjs: EDA_LORE or ../eda-lore), its islands are listed, its art/sources.json entry is
    edited as the 'artsources' kind (content.ts, lossless and undoable), and `npm run art -- --check` runs in a child
    process, one at a time, its log kept for the page. */
 import { spawn } from 'node:child_process';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
+import { loreRoot } from '../../scripts/lib/lore.mjs';
 
 export interface Pipeline { id: string; name: string; runs: 'board' | 'handoff'; doc: string | null; for: string; steps?: string[]; tests?: string[]; task?: string }
 export const pipelines = (root: string): Pipeline[] =>
@@ -17,42 +18,43 @@ const PAINTINGS = 'inspirations';
 export const MAX_UPLOAD = 12 * 1024 * 1024;
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-/** A path inside inspirations/ (refused otherwise). */
+/** A path inside eda-lore's inspirations/ (refused otherwise). */
 export function paintingPath(root: string, src: string): string {
-  const base = resolve(root, PAINTINGS), p = resolve(root, src);
+  const lore = loreRoot(root), base = resolve(lore, PAINTINGS), p = resolve(lore, src);
   if (!p.startsWith(base + sep) || !/\.png$/i.test(p)) throw new Error(`refused painting path ${src}`);
   return p;
 }
 
-/** Save a dropped painting into inspirations/<folder>/, never over another; returns its repo path. */
+/** Save a dropped painting into eda-lore's inspirations/<folder>/ (committed there, not here), never over another; returns its repo path. */
 export function savePainting(root: string, folder: string, name: string, base64: string): string {
   if (!/^[a-z0-9][a-z0-9_-]{0,40}$/.test(folder)) throw new Error('A folder is lower case letters, digits, _ or -.');
   const data = Buffer.from(base64, 'base64');
   if (data.length > MAX_UPLOAD) throw new Error(`The painting is over ${MAX_UPLOAD / 1024 / 1024} MB.`);
   if (!data.subarray(0, 8).equals(PNG)) throw new Error('Only PNG paintings (the importer reads PNG).');
   const stem = name.replace(/\.png$/i, '').toLowerCase().replace(/[^a-z0-9_()-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'painting';
-  mkdirSync(join(root, PAINTINGS, folder), { recursive: true });
+  const lore = loreRoot(root);
+  mkdirSync(join(lore, PAINTINGS, folder), { recursive: true });
   let rel = `${PAINTINGS}/${folder}/${stem}.png`;
-  for (let n = 2; existsSync(join(root, rel)); n++) rel = `${PAINTINGS}/${folder}/${stem}_${n}.png`;
+  for (let n = 2; existsSync(join(lore, rel)); n++) rel = `${PAINTINGS}/${folder}/${stem}_${n}.png`;
   writeFileSync(paintingPath(root, rel), data);
   return rel;
 }
 
 /** The sheet's islands, row-major (the importer's --islands): what an entry's `island` picks. */
 export function islands(root: string, src: string, white = 235) {
-  paintingPath(root, src);
-  if (!existsSync(join(root, src))) throw new Error(`no painting ${src}`);
+  if (!existsSync(paintingPath(root, src))) throw new Error(`no painting ${src}`);
   const out = execFileSync(process.execPath, ['scripts/importSprites.mjs', '--islands', src, String(Math.round(white))], { cwd: root, encoding: 'utf8', maxBuffer: 8e6 });
   return out.split('\n').map((l) => /^\s*(\d+)\s+x (\d+) y (\d+) w (\d+) h (\d+) px (\d+)/.exec(l)).filter(Boolean)
     .map((m) => ({ i: +m![1], x: +m![2], y: +m![3], w: +m![4], h: +m![5], px: +m![6] }));
 }
 
-/** The paintings already in inspirations/, by folder (the importer's sources). */
+/** The paintings already in eda-lore's inspirations/, by folder (the importer's sources). */
 export function paintings(root: string): Record<string, string[]> {
   const out: Record<string, string[]> = {};
   try {
-    const list = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '--', PAINTINGS], { cwd: root, encoding: 'utf8' });
-    for (const f of list.split('\n').filter((f) => /\.png$/i.test(f) && existsSync(join(root, f)))) {
+    const lore = loreRoot(root);
+    const list = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '--', PAINTINGS], { cwd: lore, encoding: 'utf8' });
+    for (const f of list.split('\n').filter((f) => /\.png$/i.test(f) && existsSync(join(lore, f)))) {
       const folder = f.split('/').slice(1, -1).join('/') || '.';
       (out[folder] ??= []).push(f);
     }

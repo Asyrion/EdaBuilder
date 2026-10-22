@@ -1,4 +1,4 @@
-// The art import pipeline (iterations 49–50): reference paintings in inspirations/ become game sprites under
+// The art import pipeline (iterations 49–50): reference paintings in eda-lore's inspirations/ (EDA_LORE or ../eda-lore) become game sprites under
 // sheets in public/art/sheets, listed in public/art/sprites.json, which the atlas merges over its procedural sprites at boot. Each
 // sprite is also written alone under art/build/sprites (not committed, not shipped) for the tools that want one file.
 //   node scripts/importSprites.mjs           writes the sprites and the manifest
@@ -18,7 +18,9 @@
 // quantized or outlined.
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import { decodePng, encodePng } from './lib/png.mjs';
+import { needLore } from './lib/lore.mjs';
 import { packSheets } from './lib/sprite.mjs';
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, isoTopDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
@@ -35,7 +37,9 @@ function mirror(img) {
 const args = process.argv.slice(2);
 const check = args.includes('--check');
 const decoded = new Map();
-const load = (src) => { if (!decoded.has(src)) decoded.set(src, decodePng(readFileSync(src))); return decoded.get(src); };
+const LORE = needLore();
+const painting = (src) => join(LORE, src);
+const load = (src) => { if (!decoded.has(src)) decoded.set(src, decodePng(readFileSync(painting(src)))); return decoded.get(src); };
 
 if (args[0] === '--islands') {
   const img = keyBackground(load(args[1]), Number(args[2] ?? 235));
@@ -140,7 +144,7 @@ for (const r of results) {
   put(entry.file, sprite);
   let glowCount = 0;
   if (e.glow !== false && kind !== 'ground' && kind !== 'vehicle') {
-    const glow = e.glowSrc ? { img: e.flip ? mirror(decodePng(readFileSync(e.glowSrc))) : decodePng(readFileSync(e.glowSrc)), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
+    const glow = e.glowSrc ? { img: e.flip ? mirror(decodePng(readFileSync(painting(e.glowSrc)))) : decodePng(readFileSync(painting(e.glowSrc))), count: 1 } : glowLayer(r.img, { minLum: 0.5, ...(e.glow ?? {}) }); // from the unquantized scale, where a window keeps its colour
     if (glow.count > 0) { entry.glow = `sprites/${e.name}_glow.png`; put(entry.glow, glow.img); glowCount = glow.count; }
   }
   manifest.sprites[e.name] = entry;

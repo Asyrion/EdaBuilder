@@ -184,11 +184,12 @@ describe('the importer takes a pixel: true sprite as drawn', () => {
     const dir = mkdtempSync(join(tmpdir(), 'iter91-')), script = resolve('scripts/importSprites.mjs');
     try {
       mkdirSync(join(dir, 'art'), { recursive: true });
+      mkdirSync(join(dir, 'inspirations'), { recursive: true }); // the scratch folder is the eda-lore checkout too (EDA_LORE)
       const img = drawing();
       img.data.set([0, 0, 0, 0], (5 * 6 + 5) * 4); // without the speck: the crop is the 4×4 block
-      writeFileSync(join(dir, 'art/drawn.png'), encodePng(img));
-      writeFileSync(join(dir, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_test', src: 'art/drawn.png', pixel: true, w: 1, h: 1, anchor: 'centre', checked: true, glow: false }] }));
-      execFileSync(process.execPath, [script], { cwd: dir, stdio: 'pipe' });
+      writeFileSync(join(dir, 'inspirations/drawn.png'), encodePng(img));
+      writeFileSync(join(dir, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_test', src: 'inspirations/drawn.png', pixel: true, w: 1, h: 1, anchor: 'centre', checked: true, glow: false }] }));
+      execFileSync(process.execPath, [script], { cwd: dir, stdio: 'pipe', env: { ...process.env, EDA_LORE: dir } });
       const out = decodePng(readFileSync(join(dir, 'art/build/sprites/b_test.png')));
       expect([out.w, out.h]).toEqual([4, 4]);
       for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {

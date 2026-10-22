@@ -85,13 +85,13 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
   - saved as `art/prompts/<sprite>.json`, undoable.
 - **Pipelines** (`pipelines.json`, `pipelines.ts`):
   - **The paintings importer runs here:**
-    1. drop a PNG (into `inspirations/<folder>/`, never over another) or choose one;
+    1. drop a PNG (into eda-lore's `inspirations/<folder>/`, `EDA_LORE` or `../eda-lore`, never over another) or choose one;
     2. click its island on the sheet;
     3. fill its `art/sources.json` entry;
     4. run the import (`importSprites.mjs --check`, one at a time, about 90 s, its log on the page);
     5. judge the sprite beside the code one and mark it checked; Send to Claude hands over the tests and the commit.
   - **Tripo Studio** (iteration 91, `tripo.ts`, `docs/ART_PIPELINES.md`):
-    - Route 1: you generate in Studio and drop the pick (saved as `inspirations/tripo/<sprite>.png`);
+    - Route 1: you generate in Studio and drop the pick (saved as eda-lore's `inspirations/tripo/<sprite>.png`);
     - Route 2: the login state (`tripo auth whoami`; you log in once in your own terminal), then "Generate 4" (`tripo
       image`, Nano Banana 2, polled by task id past the CLI's bug), with the round in `art/tripo/` (ignored by git);
     - the round shows as a contact sheet, each image measured;
