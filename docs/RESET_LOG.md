@@ -504,3 +504,54 @@ attempts:
 | Bundle | JS 350 KB (121 KB gzip), was 358 KB (123 KB) |
 | Playwright | a version 7 save in the browser is refused on Continue with the message; a new charter saves as 8; no page errors |
 | `grep` | `modifierSum`, `MIGRATIONS`, `parkedContentIn`, `PARKED_OPS`, `Terrain.Marsh`: none left in `src` |
+
+## Phase 1d-2: test suites, the single sprites, the paintings in eda-lore, the docs (2026-10-22)
+
+The second PR of phase 1d, and the last of phase 1: the tests, the assets, `inspirations/` and the docs (RESET_PLAN §3
+1d points 3 to 6, §9.8). The sim does not change.
+
+**Done.**
+- **Tests in themed suites:** the 58 test files, most named after the iteration that wrote them, are 15 suites
+  (core-loop, roads, networks, growth, economy, hazards, districts, save, bot, ui, render-atlas, art-pipeline, content,
+  balance-tools, terrain), each with a head comment saying what it holds; `tests/helpers.ts` shares the helpers. Every
+  test moved verbatim: 275 before, 275 after. Then step 2 replaced the atlas's five single-file fallback tests with two
+  and added one (below): 273.
+- **Browser scripts from 58 to four:** `smoke.mjs`, the new `checklist.mjs` (the scripted walk of `CORE_CHECKLIST.md`:
+  the founding, the top bar of five, the help from the Menu and from H, 40 bot days, the Ledger, every info view, a quick
+  save and load inside a day, day and night; prints CHECKLIST OK), `playtest-ui.mjs` and `playtest-keyboard.mjs`. The
+  dev board's playtest (89) and the sheets' (90) were not kept: `npm run devboard:selftest` and the smoke (the page loads
+  from the sheet, no console errors) cover them. `archive/full-scope` has every old script.
+- **`public/art/sprites/` leaves the build:** 709 files (297 KB) out of the repository and the deploy. `npm run art`
+  writes the single PNGs to `art/build/sprites/` (ignored) and ships only the sheets and `sprites.json`. The atlas loses
+  its single-file fallback: a sheet that fails to load leaves the drawn sprites standing. The tools that read single
+  sprites (the dev board's `sprite()`, `scripts/aseprite.ts`, the tests) cut them from the sheet through
+  `scripts/lib/sheet.mjs`. **No `sources.json` entry was unused** (1c-2 had removed them); a test in `art-pipeline` now
+  holds every entry to a sprite family the game shows.
+- **The paintings live in eda-lore** (§9.8): its `inspirations/` already held the 89 topic paintings byte for byte; the
+  two folders only EdaBuilder had (`eda-lore/`, 47 sheets, 62 MB; `wyrm/`, 0.5 MB) went there in Asyrion/eda-lore#6
+  (merged; its `validate` check got no runner, as EdaBuilder's Actions did while private, and passed locally).
+  EdaBuilder's `inspirations/` is gone (137 files, 154 MB). `scripts/lib/lore.mjs` resolves an entry's `src` against
+  `EDA_LORE` or `../eda-lore`; without it `npm run art` stops with a message (exit 2). The dev board saves and lists
+  paintings there. The build and the tests need no eda-lore. `docs/ART_PIPELINES.md` and `pipelines.json` say so.
+- **The docs:** `DESIGN.md` (7,040 lines), `NEXT_STEPS.md` (1,197), `AUDIT.md` and the old `HANDOFF.md` are in
+  `docs/archive/`. New: a slim `DESIGN.md` (the core loop, the buildings, milestones, hazards, art and tech, the numbers
+  read from the code), `NEXT_STEPS.md` (phases 2 to 6, the known issues) and `HANDOFF.md` (the state after phase 1).
+  CLAUDE.md's references to the old DESIGN point at the archive; README lists the new docs.
+- **The dev board's tracker:** the open list from the new NEXT_STEPS, the done list from this file's `## Phase …`
+  sections, the design index from `## N.` headings ("DESIGN §2" chips). The selftest's balance check expects the
+  Vellish-only cache (it asked for four peoples, failing since 1a).
+
+**Measured.**
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 350 KB (121 KB gzip), as 1d-1 |
+| `npx vitest run` | 15 files, 273 tests, all green |
+| `npm run art` (eda-lore beside) | `sheet_0.88478e9d351c.png`, 2048×326, 694 images: the same hash as committed |
+| `EDA_LORE=/nope node scripts/importSprites.mjs` | stops with the message, exit 2 |
+| `npm run devboard:selftest` | OK |
+| Dev board in Playwright | Next steps shows phases 2 to 6 and the six phases done; 83 building sprites from the sheet, none broken; no page errors |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
+| Control seed (`balance.ts 42 150`) | 1,011 folk, Market Town: the same as 1d-1, the sim unchanged |
+
+**Phase 1 is complete.** Next: phase 2, sharpen the core loop (`docs/NEXT_STEPS.md` item 1).
