@@ -113,7 +113,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
   coverageOverlay('faith', 'Faith', '-', 'faith', 'Shrines and temples raise happiness and land value.'),
   coverageOverlay('leisure', 'Leisure', '=', 'leisure', 'Gardens and squares raise land value and joy.'),
   {
-    id: 'growth', name: 'Growth', key: '6', desc: 'Why each zoned lot does or does not grow (scope reset phase 2-1). Empty lots: green can grow; red no road touches it (a corner counts); navy no light reaches it; cyan no well waters it; grey its demand bar is at or below the line; violet the Gloam; blue an Arcane lot without schooling. Zone buildings: yellow cannot climb a level (hover one for the need), pale green climbing.',
+    id: 'growth', name: 'Growth', key: 'n', desc: 'Why each zoned lot does or does not grow (scope reset phase 2-1). Empty lots: green can grow; red no road touches it (a corner counts); navy no light reaches it; cyan no well waters it; grey its demand bar is at or below the line; violet the Gloam; blue an Arcane lot without schooling. Zone buildings: yellow cannot climb a level (hover one for the need), pale green climbing.',
     legend: [[GROWTH_COLOURS.ok, 'can grow'], [GROWTH_COLOURS.noRoad, 'no road'], [GROWTH_COLOURS.noMana, 'no light'], [GROWTH_COLOURS.noWater, 'no water'], [GROWTH_COLOURS.noDemand, 'no demand'], [GROWTH_COLOURS.gloam, 'Gloam'], [GROWTH_COLOURS.noSchool, 'no schooling'], [GROWTH_COLOURS.landValue, 'cannot level up'], [GROWTH_COLOURS.climbing, 'climbing a level']],
     tile: (s, i) => {
       const g = growthBlock(s, i);

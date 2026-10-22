@@ -35,7 +35,7 @@ Road → zone → demand → growth → services and supply → budget → happi
    50 ticks, nine tenths in a quarter day) and how many of the zone's lots can grow (phase 2-4). **Growth** (phase 2-1): every 10 ticks three draws among the lots that can grow (empty, a road
    touching, out of the Gloam, schooled for Arcane, demand for their zone above zero), each growing with chance
    min(1, demand) × 0.45. Since phase 2-2 a lot grows only where light and water reach it (`noMana`, `noWater`).
-   `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth view (`6`) show it.
+   `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth view (`N`) show it.
 4. **Supply:** mana flows from the ley nodes (the founding one 105 a day, each other linked node 90), carried and
    spread by Ley Spires (link 6, light 5, 80 mana of load each); a Thrum Font adds 100 a day for 4,500 crowns (phase
    2-2; it was 40 for 6,500), a Nexus stores 120. Water from Wells and the Cistern. A lot needs both, and a road, to

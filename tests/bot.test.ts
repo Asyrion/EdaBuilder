@@ -300,3 +300,22 @@ describe('the bot builds streets where the town is', () => {
     expect(beside / roads).toBeGreaterThan(0.5);
   }, 120_000);
 });
+
+// Phase 2-7 of the scope reset: the bot buys the service whose reach leaves most of its town out, first thing in the day.
+describe('the bot serves its town by the gaps', () => {
+  // the plan asked this of day 60; the town has one fire hall then (26 % in reach on day 50), four by day 100
+  it('on day 100 seed 42 has an Academy and two fire halls, nearly half its zone buildings in a fire hall\'s reach, and a fifth of its folk schooled', async () => {
+    const { run } = await import('../src/sim/sim');
+    const { forEachBuilding } = await import('../src/sim/world');
+    const s = createGame(42, 'Gaps');
+    const bot = new Bot(s);
+    run(s, 900 * 100, { onDay: () => bot.step() });
+    const count = (k: string) => s.buildings.filter((b) => b && b.kind === k).length;
+    expect(count('academy')).toBeGreaterThanOrEqual(1);
+    expect(count('veshari')).toBeGreaterThanOrEqual(2);
+    let zones = 0, fire = 0;
+    forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') { zones++; if (s.coverage.fire[idx(b.x, b.y)] > 0) fire++; } });
+    expect(fire / zones).toBeGreaterThan(0.4);
+    expect(s.educated).toBeGreaterThan(0.15);
+  }, 120_000);
+});

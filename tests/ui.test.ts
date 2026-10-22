@@ -435,3 +435,13 @@ describe('The faction scaffold', () => {
     expect(buildsFor(factionOf(t), { key: 'x', faction: ['vellish'] } as never)).toBe(false);
   });
 });
+
+// Phase 2-7 of the scope reset: 2-1 gave the Growth view key 6, which the Watch view already had (6 opened Watch).
+describe('the info views keep their own keys', () => {
+  it('no two views share a key, and N opens the Growth view', async () => {
+    const { OVERLAY_LIST } = await import('../src/render/overlays');
+    const keys = OVERLAY_LIST.map((o) => o.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(OVERLAY_LIST.find((o) => o.key === 'n')!.id).toBe('growth');
+  });
+});
