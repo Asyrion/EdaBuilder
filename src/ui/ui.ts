@@ -409,7 +409,14 @@ export class UI {
     mana.textContent = `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}${s.manaStorageMax > 0 ? ` · store ${Math.round(s.manaStorage)}/${Math.round(s.manaStorageMax)}` : ''}`;
     if (s.overdrawDays > 0) mana.textContent += ` · surge in ${SURGE_DAYS - s.overdrawDays} d`;
     mana.className = `v ${s.overdrawDays > 0 || s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
-    mana.title = manaTip(s);
+    if (!mana.dataset.tip) {
+      // the mana field explains itself like the demand bars (phase 2-2): flow, draw, store, brownout and the surge's countdown
+      mana.dataset.tip = '1';
+      const stat = mana.parentElement as HTMLElement;
+      stat.onmouseenter = (e) => this.showTooltip(manaTip(this.host.state).split('\n').map((l, k) => (k ? l : `<div class="t">${l}</div>`)).join('<br>'), e.clientX, e.clientY + 16);
+      stat.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY + 16);
+      stat.onmouseleave = () => this.hideTooltip();
+    }
     const hp = this.q('#tb-happy');
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
     hp.className = `v ${s.happiness > 55 ? 'good' : s.happiness < 35 ? 'bad' : ''}`;

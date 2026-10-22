@@ -72,8 +72,8 @@ main node.
    see its flow). A **Ley Spire** within 6 tiles of a node
    (or of another lit spire) lights 5 tiles around it; lit buildings light the buildings
    they touch. Draw more than the Veins give and the spires flicker; overdraw for five days
-   and a **wild surge** warps buildings into ruins; the top bar counts the days down. Thrum
-   Fonts and a Ley Nexus help later.
+   and a **wild surge** warps buildings into ruins; the top bar counts the days down. A Thrum
+   Font (100 mana a day, from Township) and a Ley Nexus help later.
 4. **Water** — **Wells** water 8 tiles (10 near water); **Cisterns** water 12 but need mana.
 5. **Services** — Watch (unrest, restless dead), Healer's Shrine (health), Water-Mages' Hall
    (fire brigade), Shrine of Aume (happiness), Academy (schooling), **Boneyard/Ossuary**

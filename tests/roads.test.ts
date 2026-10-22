@@ -217,6 +217,7 @@ describe('A road at the corner', () => {
     const g = t.founding;
     const i = idx(g.x + 6, g.y + 3);
     t.zone[i] = Zone.Hearth;
+    t.lit[i] = 1; t.watered[i] = 1; // since phase 2-2 a lot grows only in light and water; this test is about the road
     t.demand.hearth = 1;
     for (let k = 0; k < 400 && t.bIndex[i] < 0; k++) trySpawnBuildings(t, 5);
     expect(t.bIndex[i]).toBeGreaterThanOrEqual(0);
