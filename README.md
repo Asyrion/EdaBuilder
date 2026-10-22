@@ -67,7 +67,7 @@ main node.
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left;
    hover one for its factors in points and how many of its lots can grow.
    Hover a lot or a house with Select to see why it does or does not grow; the **Growth**
-   view (`6`) colours every lot by it (no road, no light, no water, no demand, the Gloam, no
+   view (`N`) colours every lot by it (no road, no light, no water, no demand, the Gloam, no
    schooling). A lot grows only where light and water reach it.
 3. **Mana** — ley nodes give 90 mana/day each (the founding Wellspring 105; click one to
    see its flow). A **Ley Spire** within 6 tiles of a node
@@ -98,7 +98,7 @@ main node.
     target); the *Advisor* line above it names the worst current
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
-12. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
+12. **Info views** — keys `1`–`0`, `-`, `=`, `n`, `g`, `m` or the *Views* button: mana, water,
     land value, happiness, traffic, growth, each service, wards & gloam, miasma. The **minimap**
     (bottom right) jumps the camera where you click.
 
@@ -121,7 +121,7 @@ node; forty restless dead walk the streets.
 | `Z` | zone tool (press again to cycle zone) |
 | `B` / `X` / `Esc` | bulldoze / select / cancel |
 | `Space`, `,` `.` , `Shift`+`1 2 3` | pause, slower/faster, set speed |
-| `1`–`0` `-` `=` `g` `m` `o` `i` | info views · `Tab` view list |
+| `1`–`0` `-` `=` `n` `g` `m` `o` `i` | info views · `Tab` view list |
 | `H` | help · `C` Chronicle · `Shift`+`G` grid · `F5` / `F9` quick save / load |
 | `Ctrl`+`Z` | undo the last road, zone, district, building or bulldoze |
 

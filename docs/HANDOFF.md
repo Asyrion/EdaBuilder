@@ -20,15 +20,16 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 
 ## The next item
 
-**Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5) and 2-6 (the Crown's favour
-struck out, the user's choice). Next: services, happiness terms, milestone pacing, hazards' warnings, one change at a
-time against the bot corridor. Plan it on the Plan panel first.
+**Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5), 2-6 (the Crown's favour
+struck out) and 2-7 (the bot serves its town by the gaps; the Growth view on N). Next: hazards (the fire's spread and a
+herald, a remedy and a view for each), happiness terms, milestone pacing, one change at a time against the bot corridor.
+Plan it on the Plan panel first.
 
 ## Known issues
 
-- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,574 · 1,488 after 2-3, 2,155 ·
-  1,847 after 2-5; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 (1d-1) → 1,937 → 1,218 → 1,800 →
-  2,063 (2-5). `core-loop.test.ts` holds seed 42 on day 100 at 2,648 folk and the Beacon (±50 %; 2-5 has 2,394).
+- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 2,155 · 1,847 after 2-5, 3,254 ·
+  2,148 after 2-7; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 (1d-1) → 1,937 → 1,218 → 1,800 →
+  2,063 → 2,645 (2-7). `core-loop.test.ts` holds seed 42 on day 100 at 2,648 folk and the Beacon (±50 %; 2-7 has 2,897).
 - **The bot is a measuring instrument and follows the rules:** in 2-2 its `keepLit`/`keepWatered` had to aim at dark
   and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look. In 2-3 its
   street grid was what bound its income (two in three street tiles empty); before turning an economic knob, look at the

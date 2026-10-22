@@ -114,6 +114,12 @@ await page.evaluate(() => {
 await page.waitForTimeout(500); await hide();
 await page.screenshot({ path: 'shots/checklist_growth.png' });
 await page.evaluate(() => { window.__game.view.overlay = null; window.__game.renderer.invalidateAll(); });
+// the Growth view on its own key, N (phase 2-7: 2-1 gave it 6, which opened the Watch view)
+await hide();
+await page.mouse.move(640, 430);
+await page.keyboard.press('n'); await page.waitForTimeout(200);
+r.growthKey = await page.evaluate(() => window.__game.view.overlay);
+await page.keyboard.press('n'); await page.waitForTimeout(100);
 // 12: a quick save and load inside a day
 const before = await page.evaluate(() => { const s = window.__game.state; return [s.population, Math.round(s.treasury), s.day]; });
 await page.keyboard.press('F5'); await page.waitForTimeout(400);
@@ -128,7 +134,7 @@ for (const [when, t] of [['day', 180], ['night', 630]]) {
   await page.screenshot({ path: `shots/checklist_${when}.png` });
 }
 r.errors = errors;
-const ok = typeof r.demandWhy === 'string' && /heading to/.test(r.demandWhy) && /lot/.test(r.demandWhy) && typeof r.hoverWhy === 'string' && /lot|level/.test(r.hoverWhy) && r.founded && r.topbar.length === 5 && r.helpFromMenu && r.helpFromKey && r.city.milestone >= 4 && r.views === 9 && r.saveLoad && !errors.length;
+const ok = r.growthKey === 'growth' && typeof r.demandWhy === 'string' && /heading to/.test(r.demandWhy) && /lot/.test(r.demandWhy) && typeof r.hoverWhy === 'string' && /lot|level/.test(r.hoverWhy) && r.founded && r.topbar.length === 5 && r.helpFromMenu && r.helpFromKey && r.city.milestone >= 4 && r.views === 9 && r.saveLoad && !errors.length;
 console.log(JSON.stringify(r));
 console.log(ok ? 'CHECKLIST OK' : 'CHECKLIST FAILED');
 await browser.close();

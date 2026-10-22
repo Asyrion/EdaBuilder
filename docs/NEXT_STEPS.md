@@ -9,10 +9,10 @@ its open items are parked.
 ## Prioritized ideas for the next iteration
 
 1. **Phase 2: sharpen the core loop, the P2 items** (RESET_PLAN §3, Phase 2; DESIGN §2). Done: the P1 items (2-1 to
-   2-5: growth, light and water, the bot's streets and the budget, the demand bars' factors, traffic) and 2-6 (the
-   Crown's favour struck out). Next, one change at a time with the bot corridor: services (reach and costs without the
-   walkers), happiness terms (about six, listed in the inspector), milestone pacing (now that runs reach the Beacon in
-   150 days), hazards' warnings (a herald, a remedy and a view for each).
+   2-5), 2-6 (the Crown's favour struck out) and 2-7 (the bot serves its town by the gaps; the Growth view on N). Next,
+   one change at a time with the bot corridor: hazards (the fire's spread, 22 % a day to an uncovered neighbour and two
+   days to burn down, judged with the services now filled; a herald, a remedy and a view for each hazard), happiness
+   terms (about six, listed in the inspector), milestone pacing (half the runs reach the Beacon in 150 days).
 2. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7).
 3. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 4. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
@@ -20,8 +20,9 @@ its open items are parked.
 
 ## Known issues
 
-- **The bot corridor** after 2-5: the six-seed mean is 2,063 folk on day 150 (1,800 in 2-3/2-4); seed 42 has 2,155 and
-  1,847 against phase 0's 3,194; every run reaches the Burgh, three the Beacon of Eda. RESET_LOG 2-5.
+- **The bot corridor** after 2-7: the six-seed mean is 2,645 folk on day 150 (2,063 in 2-5/2-6); seed 42 has 3,254 and
+  2,148 against phase 0's 3,194; half the runs reach the Beacon of Eda; the draws of a seed spread wide (up to 2,376),
+  and seed 13 is the weakest. RESET_LOG 2-7.
 - **Citizen looks 4 and 5** (the Grimmen and Tallowkin looks) can still be rolled in a Vellish game (RESET_PLAN §1.4,
   point 7; phase 3 with the citizens' sprites).
 - **`devicePixelRatio` is ignored** (`renderer.ts`): on a 125 % or 150 % display the browser scales the canvas and the

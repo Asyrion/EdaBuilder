@@ -11,7 +11,7 @@ import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
 import { roadTileOf } from './agents';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
-import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
+import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding } from './world';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
 import { growthBlock } from './growth';
@@ -58,6 +58,9 @@ export class Bot {
   private goalBlocked: Record<string, number> = {};
   /** Loans taken. */
   loans = 0;
+  /** The service kind whose reach leaves most zone buildings out (phase 2-7), bought before anything else that costs. */
+  serviceGap: string | null = null;
+  private goalReserve = 0;
   constructor(private s: GameState, private opts: BotOptions = {}) {}
 
   private get cx(): number {
@@ -84,7 +87,9 @@ export class Bot {
     this.pursueGoal();
     // the Crown's loan goes back once the purse can carry it and nothing is being saved for; while it is out, growth waits for that
     if (s.loan > 0 && !this.goal && s.treasury >= s.loan + 2000) repayLoan(s);
+    this.goalReserve = this.reserve; // the goal's alone, before the loan's joins it (the service gap spends past the loan's, phase 2-7)
     if (s.loan > 0) this.reserve = Math.max(this.reserve, s.loan);
+    this.fillServiceGap(); // before the day's growth spends the purse (phase 2-7)
     this.ensureGrid();
     this.paveDoors();
     this.charterDistricts();
@@ -487,24 +492,17 @@ export class Bot {
     const s = this.s;
     const buildings = s.buildings.filter((b) => b && BUILDING_BY_KEY[b.kind].category === 'zone').length;
     const buffer = 1500;
-    const want = (key0: string, target: number, nearGloam = false) => {
+    const want = (key0: string, target: number, nearGloam = false, manaFree = false) => {
       const key = factionKey(s, key0);
       if (!canBuild(s, key)) return;
       const def = BUILDING_BY_KEY[key];
       if (this.countKind(key) >= target) return;
       if (this.spendable() < costOf(s, def) + buffer) return; // growth spends only what the goal leaves
       if (s.day >= 30 && s.ledger.net - def.upkeep < 200) return; // and buys nothing that leaves the ledger under 200 a day (iteration 55: upkeep outran income on seed 44)
-      if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply) return;
+      if (def.needsMana && !manaFree && s.manaDemand + def.manaUse > s.manaSupply) return;
       if (!this.placeService(key, nearGloam) && !nearGloam && this.radius < 40 && !this.zoningHeld) this.radius += 5; // no room: grow the town
     };
-    want('watchpost', 1 + Math.floor(buildings / 60));
-    want('shrine', 1 + Math.floor(buildings / 80));
-    want('boneyard', 1 + Math.floor(s.population / 700));
-    want('healer', 1 + Math.floor(buildings / 90));
-    want('garden', 1 + Math.floor(buildings / 50));
-    want('veshari', 1 + Math.floor(buildings / 120));
     want('wardlantern', 1 + Math.floor(s.day / 30), true);
-    want('academy', 1 + Math.floor(buildings / 200));
     want('square', 1);
     want('watchhouse', Math.floor(buildings / 150));
     want('ossuary', Math.floor(s.population / 1200));
@@ -516,6 +514,37 @@ export class Bot {
     want('grandacademy', 1);
     // the Fonts, the deepening, the mills and the halls are the goal's (pickGoal), bought from a purse saved for them
     void MILESTONES;
+  }
+
+  /** The services with a reach, by the gap (phase 2-7): the kind that leaves most zone buildings outside any reach, once a
+      tenth are outside, bought first thing in the day, before the streets, wells and spires spend the purse, with a buffer
+      of 500. Before, buyServices counted buildings in a fixed order after growth had spent: on seed 42 one fire hall for
+      500 zone buildings, and never an Academy (its mana check failed from the Township on). */
+  private fillServiceGap(): void {
+    const s = this.s;
+    const zones: number[] = [];
+    forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') zones.push(idx(b.x, b.y)); });
+    this.serviceGap = null;
+    if (!zones.length) return;
+    const gaps = (([['veshari', 'fire'], ['healer', 'health'], ['watchpost', 'watch'], ['academy', 'school'], ['boneyard', 'death'], ['shrine', 'faith'], ['garden', 'leisure']] as [string, ServiceType][])
+      .map(([key0, type]) => ({ key: factionKey(s, key0), gap: zones.filter((i) => s.coverage[type][i] === 0).length / zones.length }))
+      .filter((g) => g.gap >= 0.1 && canBuild(s, g.key)));
+    gaps.sort((a, b) => b.gap - a.gap);
+    // the widest gap first; the purse waits only for money: a kind barred by its mana, its upkeep or its room gives way to
+    // the next (an Academy barred by a brownout kept seed 42 from its fire halls for a week)
+    for (const g of gaps) {
+      const key = g.key, def = BUILDING_BY_KEY[key];
+      // the upkeep must leave the ledger 100 a day; before day 30 a cheap kind (upkeep 20 or less) comes anyway (without the
+      // first, seed 42 bought an Academy at the Township on a ledger of 50 a day and stopped growing on day 18)
+      if (s.ledger.net - def.upkeep < 100 && !(s.day < 30 && def.upkeep <= 20)) continue;
+      // an Academy draws mana; while the brownout is light, its light is keepLit's and the Fonts' to find
+      if (def.needsMana && s.manaDemand + def.manaUse > s.manaSupply && !(key === 'academy' && s.brownout <= 0.05)) continue;
+      this.serviceGap = key;
+      // it holds back the goal's price but not the loan's: a town that borrowed for a hall kept the whole loan unspent
+      // for the rest of the game (seed 45: 57,000 idle by day 70)
+      if (s.treasury - this.goalReserve < costOf(s, def) + 500) return; // the purse waits for it: the cheap kinds no longer take it first
+      if (this.placeService(key)) return;
+    }
   }
 
   /** Place a service: toward the Gloam for a ward, else beside the zone buildings farthest from one of its kind. */

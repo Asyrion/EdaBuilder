@@ -323,7 +323,7 @@ export class UI {
 
   private hoverWhy = false;
   /** The map tile under the pointer with the Select tool (scope reset phase 2-1): on a zoned lot or a zone building, why it
-      does or does not grow, with what to do; the Growth view (6) shows the same for every lot. */
+      does or does not grow, with what to do; the Growth view (N) shows the same for every lot. */
   hoverTile(t: [number, number] | null, x: number, y: number): void {
     const html = t ? growthWhy(this.host.state, t[0], t[1]) : null;
     if (html) { this.showTooltip(html, x, y); this.hoverWhy = true; } // after showTooltip, which clears the flag
@@ -1039,7 +1039,7 @@ export class UI {
           <h3>The loop</h3>
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
-            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why). Hover a lot or a house with Select to see why it does or does not grow; the <b>Growth</b> view (6) shows it for every lot.</li>
+            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why). Hover a lot or a house with Select to see why it does or does not grow; the <b>Growth</b> view (N) shows it for every lot.</li>
             <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel). A lot grows only where light and water reach it. Overdrawn by more than a quarter, the top bar counts down five days to a wild surge; hover the mana for what stops it.</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Water-Mages\' Hall (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
@@ -1581,7 +1581,7 @@ export function demandFactorsHtml(s: GameState, zone: DemandZone): string {
     const target = Math.max(-1, Math.min(1, d.target));
     html += `<div class="muted">heading to ${pct(target)} %, now ${pct(d.now)} %</div>`;
   }
-  // the zone's empty lots: how many can grow, and why the rest cannot (the Growth view, 6, shows them)
+  // the zone's empty lots: how many can grow, and why the rest cannot (the Growth view, N, shows them)
   let can = 0;
   const why: Record<string, number> = {};
   const z = ZONE_OF_DEMAND[zone];
@@ -1592,6 +1592,6 @@ export function demandFactorsHtml(s: GameState, zone: DemandZone): string {
     else if (LOT_REASON[g]) why[LOT_REASON[g]] = (why[LOT_REASON[g]] ?? 0) + 1;
   }
   const blocked = Object.values(why).reduce((a, b) => a + b, 0);
-  html += `<div>${can + blocked ? `${can} empty lot${can === 1 ? '' : 's'} can grow${blocked ? ` · ${blocked} cannot: ${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${k}`).join(', ')} (Growth view, 6)` : ''}` : 'no empty lots zoned: paint some beside a road'}</div>`;
+  html += `<div>${can + blocked ? `${can} empty lot${can === 1 ? '' : 's'} can grow${blocked ? ` · ${blocked} cannot: ${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${k}`).join(', ')} (Growth view, N)` : ''}` : 'no empty lots zoned: paint some beside a road'}</div>`;
   return html;
 }

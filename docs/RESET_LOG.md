@@ -897,3 +897,91 @@ The first P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 budget: "strike or si
 | `npx vitest run` | 15 files, 284 tests, all green (the favour's three tests went or became tests of the levy and the grant without it) |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
 | `grep favour` in `src`, `scripts`, `tools` | only the two comments that say it was struck out |
+
+## Phase 2-7: services; the bot serves its town by the gaps, and the Growth view gets its own key (2026-10-22)
+
+A P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 services: "reach and costs rebalanced without the walkers; fire fair;
+the brigade's reach visible"). Before turning reaches or costs, this iteration measured how well the bot served its
+towns: of the zone buildings, the share inside any reach / inside half strength, seeds 42 and 45, on main (2-6).
+
+| Seed 42, main | watch | health | fire | faith | school | death | educated | fires so far |
+|---|---|---|---|---|---|---|---|---|
+| Day 50 | 48/14 | 53/21 | 35/23 | 48/3 | 0/0 | 30/15 | 5 % | 40 |
+| Day 150 | 51/17 | 53/13 | 28/18 | 52/4 | 0/0 | 61/27 | 5 % | 273 |
+
+- **The bot never built a school,** so the educated share stayed at 5 % and Arcane and level 3 went unused.
+- **A quarter of the houses lay in a fire hall's reach,** and there were nearly two fires a day: an uncovered neighbour
+  catches at 22 % a day.
+- **The cause was the bot's `buyServices`:**
+  - It counted buildings, not gaps (it wanted five fire halls and had one).
+  - It bought in a fixed order after the day's growth had spent the purse.
+  - The Academy's mana check failed from the Township on.
+  - Service upkeep was only 15–20 % of the tithes; the measuring player was at fault, not the rules.
+
+**Done.**
+- **The Growth view's key is N** (`n`). 2-1 gave it 6, which the Watch view already had, so 6 opened Watch while the
+  help and the tooltips said "Growth view (6)". A test holds every view to its own key, and `checklist.mjs` presses N.
+- **`fillServiceGap`** (`bot.ts`) runs first thing in the bot's day, before streets, wells and spires spend the purse.
+  - **The pick:** of fire, health, watch, school, death, faith and leisure, the kind whose reach leaves most zone
+    buildings out goes first, once a tenth are out. It buys the small building of the kind; the big ones (Watch House,
+    Hospice, Ossuary, Temple, Grand Academy) keep their old rules.
+  - **The purse waits only for money:** a kind barred by its upkeep (it must leave the ledger 100 a day; a cheap kind
+    with upkeep up to 20 comes anyway before day 30), its mana (an Academy may come while the brownout is under 5 %) or
+    its room gives way to the next.
+  - It holds back the goal's price, not the loan's.
+- **Test:** on day 100 seed 42 has an Academy and two fire halls, over 40 % of its zone buildings in a fire hall's reach
+  and over 15 % educated.
+- **How the rule came to be** (each step measured):
+  - Gaps alone: worse. The cheap kinds took the purse on the days the fire hall could not be paid; fire 0 %, school 0 %.
+  - Only the widest gap: the purse never reached the Academy's price before growth spent it, so the purchase moved to
+    the start of the day with a buffer of 500.
+  - Seed 45 had borrowed 70,000 for the Lantern and kept the whole loan as a reserve, with 57,000 idle by day 70 (as on
+    main), so the gap purchase holds back the goal's price only.
+  - The first corridor run: seed 42 bought an Academy on day 18 on a ledger of 50 a day and stopped at 500 folk for the
+    rest of the game (mean 1,867, −9.5 %). Hence the upkeep rule at any time.
+  - An Academy barred by a brownout blocked every other kind for days. Hence a barred kind gives way.
+- **Deviation from the plan, stated:** the plan's test asked two fire halls and over half the town in reach on day
+  60. The town has one hall then (four by day 100), so the test asks it of day 100, with 40 %.
+
+**The rules did not change.** The bot-free town (60 days, seed 42) gives the same folk (200), treasury (23,073.423), rng
+and map on main and on this branch.
+
+**Measured.**
+- **Served, after** (seed 45 on day 100: 87/41 watch, 89/48 health, 83/57 fire, 92/20 school; seed 42 on day 150: 54/27
+  fire, 56/14 school):
+
+| | fires by day 150 | educated on day 150 | service upkeep / tithes, day 150 |
+|---|---|---|---|
+| Seed 42, main → 2-7 | 273 → 222 | 5 % → 26 % | 674 / 2,836 → 1,261 / 5,505 |
+| Seed 45, main → 2-7 | 152 → 43 | 5 % → 41 % | 427 / 5,229 → 1,795 / 9,300 |
+
+- **The corridor** (six seeds × two draws, 150 days, against main, 2-6):
+
+| Seed | main, draws 0 · 1 | 2-7, draws 0 · 1 |
+|---|---|---|
+| 42 | 2,155 · 1,847 | 3,254 (Beacon) · 2,148 |
+| 1 | 3,212 · 1,435 | 1,300 · 3,676 (Beacon) |
+| 7 | 1,598 · 2,100 | 1,519 · 1,780 |
+| 13 | 1,617 · 1,472 | 1,379 · 829 (Market Town) |
+| 21 | 3,354 · 2,833 | 4,860 · 2,572 |
+| 45 | 2,010 · 1,125 | 3,684 · 4,734 (Beacon on both) |
+| **Mean** | **2,063** | **2,645 (+28.2 %, ± 710: within the noise)** |
+
+- **Gates:** the Beacon in 6 of 12 runs (main 3), the Free City in 9 (main 10), the Burgh in 11 (main 12).
+- **Seed 42's draw 0 (3,254) passes phase 0's 3,194** for the first time since the reset began.
+- **Losses:** six of twelve draws are below main:
+  - seed 1 draw 0 (1,300 against 3,212);
+  - seed 7 on both (1,519 and 1,780 against 1,598 and 2,100);
+  - seed 13 on both (1,379 and 829 against 1,617 and 1,472; draw 1 ends at Market Town);
+  - seed 21 draw 1 (2,572 against 2,833).
+- **The spread** between a seed's draws grew (seed 1: 2,376; seed 21: 2,288).
+- **The corridor test holds without re-anchoring:** seed 42 on day 100 has 2,897 folk at the Beacon (anchor 2,648, ±50 %).
+- **What the numbers say about the rules:** with the gaps filled, seed 45 is served at 83–92 % and burns rarely, while
+  seed 42 is served at about half and still has 222 fires. The reaches and costs look workable; the fire's spread
+  (22 % a day to an uncovered neighbour, two days to burn down) is the next thing to judge, with the hazards' warnings.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 360 KB (125 KB gzip) |
+| `npx vitest run` | 15 files, 286 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK, N opens the Growth view |
