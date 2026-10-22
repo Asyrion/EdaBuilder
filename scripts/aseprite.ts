@@ -13,6 +13,7 @@
          (switched off, kept for the record), then `npm run art` (unless --no-art).
 
    Aseprite runs headless (`-b`) on the user's PC: its path is ASEPRITE, else the Steam install on Windows, else `aseprite`. */
+import { readManifest, spriteImage } from './lib/sheet.mjs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -126,11 +127,11 @@ function aseprite(...args: string[]) {
   if (r.stdout.trim()) console.log(r.stdout.trim());
 }
 
-/** The sprite as the game has it: the imported PNG (public/art/sprites.json), else the one drawn in code. */
+/** The sprite as the game has it: the imported one (cut from its sheet, public/art/sprites.json), else the one drawn in code. */
 async function source(name: string): Promise<Img> {
-  const manifest = JSON.parse(readFileSync(join(ROOT, 'public/art/sprites.json'), 'utf8')) as { sprites: Record<string, { file: string }> };
-  const file = manifest.sprites[name]?.file;
-  if (file && existsSync(join(ROOT, 'public/art', file))) return decodePng(readFileSync(join(ROOT, 'public/art', file)));
+  const manifest = readManifest(ROOT);
+  const imported = spriteImage(ROOT, manifest, manifest?.sprites[name]);
+  if (imported) return imported;
   const { generateSprites } = await import('../src/render/sprites');
   const d = generateSprites().find((s) => s.name === name);
   if (!d) throw new Error(`no sprite ${name}: neither imported nor drawn in code (use --from <png>)`);

@@ -10,12 +10,13 @@
 
    Listens on 127.0.0.1 only; refuses other Host headers (DNS rebinding) and writes without JSON plus the X-Dev-Board
    header (so another web page can't post to it). One instance serves every session: check it answers before starting. */
+import { spritePng } from '../../scripts/lib/sheet.mjs';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve, sep } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BadRequest, Conflict, Content } from './content';
 import { CODE_KINDS, KINDS } from './kinds';
@@ -26,7 +27,7 @@ import { toClaude, toIssue } from './session';
 import { blank, draftFor, houseRules, jobOf, loreFor, promptFile, refineTask, startRefine, type PromptData } from './prompts';
 import { Busy, asepriteState, handoffTask, importState, islands, paintingPath, paintings, pipelines, runAseprite, runImport, savePainting } from './pipelines';
 import { Busy as TripoBusy, generate, roundFile, roundState, roundsOf, whoami } from './tripo';
-import { balance, designIndex, designSection, nextSteps } from './tracker';
+import { balance, designIndex, designSection, nextSteps, resetLog } from './tracker';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2), opt = (k: string, d: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -147,16 +148,14 @@ function promptList() {
 }
 const TYPES: Record<string, string> = { html: 'text/html', js: 'text/javascript', css: 'text/css' };
 
-/** A sprite by name: the imported PNG (public/art/sprites.json names its file; variants may share one) first, else the one
-    drawn in code (rendered by art.ts). */
+/** A sprite by name: the imported one (public/art/sprites.json, cut from its sheet) first, else the one drawn in code
+    (rendered by art.ts). */
 function sprite(name: string, prefer?: string | null): Buffer | null {
   if (!/^[A-Za-z0-9_]+$/.test(name)) return null;
   const drawn = join(SPRITES, `${name}.png`);
   if (prefer === 'drawn' && existsSync(drawn)) return readFileSync(drawn);
-  let file: string | undefined;
-  try { file = (JSON.parse(readFileSync(join(ROOT, 'public/art/sprites.json'), 'utf8')) as { sprites: Record<string, { file: string }> }).sprites[name]?.file; } catch { /* no manifest */ }
-  const base = resolve(ROOT, 'public/art'), imp = file ? resolve(base, file) : '';
-  if (imp && imp.startsWith(base + sep) && existsSync(imp)) return readFileSync(imp);
+  const imp = spritePng(ROOT, name);
+  if (imp) return imp;
   return existsSync(drawn) ? readFileSync(drawn) : null;
 }
 
@@ -191,11 +190,11 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       return send(res, 200, { sig: `${content.signature()}.${artSig()}`, kinds, code, errors, unions: unions(ROOT), hints: hints(ROOT), art: await artStatus() });
     }
     if (path === '/api/tracker') {
-      const ns = nextSteps(readFileSync(join(ROOT, 'docs/NEXT_STEPS.md'), 'utf8'));
+      const ns = { open: nextSteps(readFileSync(join(ROOT, 'docs/NEXT_STEPS.md'), 'utf8')).open, done: resetLog(readFileSync(join(ROOT, 'docs/RESET_LOG.md'), 'utf8')) };
       const design = designIndex(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8')).map(({ id, title, iteration }) => ({ id, title, iteration }));
       return send(res, 200, { ...ns, design, balance: balance(ROOT) });
     }
-    const dm = /^\/api\/design\/(4\.\d+)$/.exec(path);
+    const dm = /^\/api\/design\/(\d+)$/.exec(path);
     if (dm) {
       const text = designSection(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8'), dm[1]);
       return text ? send(res, 200, { id: dm[1], text }) : send(res, 404, { error: `no section ${dm[1]}` });

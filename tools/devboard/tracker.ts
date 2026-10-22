@@ -1,15 +1,18 @@
-/* The dev board's project side (iteration 88, DESIGN 4.119): what is planned and done, read from docs/NEXT_STEPS.md and
-   docs/DESIGN.md, and the balance bar's runs, read from balance/cache/. Read-only: the board never writes these files. */
+/* The dev board's project side (iteration 88): what is planned, read from docs/NEXT_STEPS.md, what is done, read from
+   docs/RESET_LOG.md's "## Phase …" sections (the scope reset, 1d-2; the iterations before it are in docs/archive/), the
+   design's "## N. Title" sections in docs/DESIGN.md, and the balance runs, read from balance/cache/. Read-only: the
+   board never writes these files. */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { SIM_DIRS, simKeyOf } from '../../scripts/tableStats';
 
 export interface OpenItem { n: number; title: string; text: string; design: string[] }
-export interface DoneIteration { n: number; title: string; bullets: string[]; design: string[] }
+export interface DoneIteration { n: number; label: string; title: string; bullets: string[]; design: string[] }
 export interface DesignHeading { id: string; title: string; iteration: number | null; from: number; to: number }
 
-const sections = (text: string) => [...new Set(text.match(/§\s?4\.\d+/g)?.map((s) => s.replace(/\s/g, '')) ?? [])];
+/** The DESIGN sections a text names ("DESIGN §2", "DESIGN §2.1"), as "§2". */
+const sections = (text: string) => [...new Set([...text.matchAll(/DESIGN §\s?(\d+(?:\.\d+)?)/g)].map((m) => `§${m[1]}`))];
 const clean = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 /** The open list ("Prioritized ideas for the next iteration": `N. **Title** text`) and every "## Done in iteration NN". */
@@ -25,7 +28,7 @@ export function nextSteps(text: string): { open: OpenItem[]; done: DoneIteration
         if (/^\s*- /.test(line)) bullets.push(line.replace(/^\s*- /, ''));
         else if (bullets.length && /^\s{2,}\S/.test(line)) bullets[bullets.length - 1] += ' ' + line.trim();
       }
-      done.push({ n: Number(d[1]), title: d[2] ?? '', bullets: bullets.map(clean), design: sections(body) });
+      done.push({ n: Number(d[1]), label: `Iteration ${d[1]}`, title: d[2] ?? '', bullets: bullets.map(clean), design: sections(body) });
     }
     if (/^Prioritized ideas/.test(head)) {
       const items = body.split(/^(?=\d+\.\s)/m).filter((s) => /^\d+\.\s/.test(s));
@@ -40,18 +43,36 @@ export function nextSteps(text: string): { open: OpenItem[]; done: DoneIteration
   return { open, done };
 }
 
-/** DESIGN's "### 4.NN Title (iteration NN)" sections, with their line ranges. */
+/** RESET_LOG's "## Phase 1c-2: title (date)" sections, newest first, each with its top-level bullets. */
+export function resetLog(text: string): DoneIteration[] {
+  const out: DoneIteration[] = [];
+  const parts = text.split(/^## /m).slice(1);
+  parts.forEach((part, i) => {
+    const nl = part.indexOf('\n'), head = part.slice(0, nl), body = part.slice(nl + 1);
+    const m = /^(Phase [\w-]+):\s*(.*?)\s*(?:\(([\d-]+)\))?\s*$/.exec(head);
+    if (!m) return;
+    const bullets: string[] = [];
+    for (const line of body.split('\n')) {
+      if (/^- /.test(line)) bullets.push(line.slice(2));
+      else if (bullets.length && /^\s{2,}[^\s-]/.test(line)) bullets[bullets.length - 1] += ' ' + line.trim();
+    }
+    out.push({ n: i + 1, label: m[1], title: m[2], bullets: bullets.map(clean), design: sections(body) });
+  });
+  return out.reverse();
+}
+
+/** DESIGN's "## N. Title" sections, with their line ranges. */
 export function designIndex(text: string): DesignHeading[] {
   const lines = text.split('\n'), out: DesignHeading[] = [];
   lines.forEach((l, i) => {
-    const m = /^### (4\.\d+)\s+(.*)$/.exec(l);
+    const m = /^## (\d+)\.\s+(.*)$/.exec(l);
     if (!m) return;
     if (out.length) out[out.length - 1].to = i;
     const it = /\(iteration (\d+)\)\s*$/.exec(m[2]);
     out.push({ id: m[1], title: m[2].replace(/\s*\(iteration \d+\)\s*$/, ''), iteration: it ? Number(it[1]) : null, from: i, to: lines.length });
   });
-  // a section ends at the next heading of level 1 to 3 too
-  for (const h of out) for (let i = h.from + 1; i < h.to; i++) if (/^#{1,3} /.test(lines[i])) { h.to = i; break; }
+  // a section ends at the next heading of level 1 or 2 too
+  for (const h of out) for (let i = h.from + 1; i < h.to; i++) if (/^#{1,2} /.test(lines[i])) { h.to = i; break; }
   return out;
 }
 

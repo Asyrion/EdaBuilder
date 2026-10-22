@@ -117,12 +117,10 @@ export class SpriteAtlas {
   /**
    * Per-sprite overrides (iteration 49): public/art/sprites.json lists PNGs made by scripts/importSprites.mjs
    * ({ sheets?, sprites: { name: { file, glow?, w, h, ax, ay, sheet?, sx?, sy?, gsheet?, gx?, gy?, gw?, gh? } } }). Each is
-   * packed below the current atlas and replaces the sprite of that name; a file that fails to load leaves the generated
-   * sprite in place. Since iteration 90 the pixels come from a few sheets loaded at once (a thousand single files, fetched
-   * one after another, kept the page blank for a minute over the internet); a manifest without sheets, or an entry whose
-   * sheet failed, loads its single files, 24 at a time. A sheet's name carries its content hash; a single file is asked for
-   * with the hash of the sheet that holds it (`?v=`), so the browser's cache never pairs a new manifest with an old file. `onProgress` hears
-   * the sprites done (never fewer than before) out of all. Resolves to the count merged.
+   * packed below the current atlas and replaces the sprite of that name. The pixels come from a few sheets loaded at once
+   * (iteration 90); a sheet's name carries its content hash, so the browser's cache never pairs a new manifest with an old
+   * sheet. The build ships the sheets only (scope reset phase 1d): an entry whose sheet failed keeps the sprite drawn in
+   * code. `onProgress` hears the sprites done out of all. Resolves to the count merged.
    */
   async mergeOverrides(base: string, onProgress?: (done: number, total: number) => void): Promise<number> {
     let manifest: ImportManifest;
@@ -148,21 +146,8 @@ export class SpriteAtlas {
       if (!glow) return null;
       return { body: { src: body, x: e.sx ?? 0, y: e.sy ?? 0, w: e.w, h: e.h }, glow: { src: glow, x: e.gx ?? 0, y: e.gy ?? 0, w: e.gw ?? e.w, h: e.gh ?? e.h } };
     });
-    const single = entries.map((_, i) => i).filter((i) => !cuts[i]);
-    let done = entries.length - single.length; // progress counts sprites: the sheets' all at once, then each single file
-    onProgress?.(done, entries.length);
-    await pool(24, single.map((i) => async () => {
-      const [name, e] = entries[i];
-      const v = (n?: number) => (n !== undefined && sheetList[n] ? `?v=${sheetList[n].hash}` : '');
-      try {
-        const img = await loadImage(`${base}art/${e.file}${v(e.sheet)}`);
-        const glow = e.glow ? await loadImage(`${base}art/${e.glow}${v(e.gsheet)}`).catch(() => null) : null;
-        cuts[i] = { body: whole(img), glow: glow && whole(glow) };
-      } catch {
-        console.warn('imported sprite failed to load', name);
-      }
-      onProgress?.(++done, entries.length);
-    }));
+    if (cuts.some((c) => !c)) console.warn('sprites without their sheet keep the drawn ones:', cuts.filter((c) => !c).length);
+    onProgress?.(entries.length, entries.length);
     const loaded = entries.flatMap(([name, e], i) => { const c = cuts[i]; return c ? [{ name, e, ...c }] : []; });
     if (!loaded.length) return 0;
     const items: { w: number; h: number }[] = [];
@@ -212,17 +197,9 @@ export interface ImportEntry {
 export interface ImportSheet { file: string; w: number; h: number; hash: string }
 export interface ImportManifest { sheets?: ImportSheet[]; sprites: Record<string, ImportEntry> }
 
-/** A piece of an image: a sheet's rect, or a whole single file. */
+/** A piece of an image: a sheet's rect. */
 interface Cut { src: CanvasImageSource; x: number; y: number; w: number; h: number }
 interface Loaded { body: Cut; glow: Cut | null }
-const whole = (img: HTMLImageElement): Cut => ({ src: img, x: 0, y: 0, w: img.width, h: img.height });
-
-/** Runs the jobs at most n at a time. */
-async function pool(n: number, jobs: (() => Promise<void>)[]): Promise<void> {
-  let next = 0;
-  const worker = async () => { while (next < jobs.length) await jobs[next++](); };
-  await Promise.all(Array.from({ length: Math.min(n, jobs.length) }, worker));
-}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

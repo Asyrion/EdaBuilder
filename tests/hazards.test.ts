@@ -1,10 +1,13 @@
+/** The hazards: the restless dead, the Gloam and its pressure, wild surges, fire, a full bot-run town, and the losses each
+ *  named by its cause. */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { run, recomputeAll } from '../src/sim/sim';
 import { buildRoad, paintZone, placeBuilding, roadPath } from '../src/sim/actions';
 import { AgentKind, RoadType, TICKS_PER_DAY, Zone, idx } from '../src/sim/types';
-import { dailyDeath, dailyGloam, dailySurge, dailyFire } from '../src/sim/hazards';
+import { dailyDeath, dailyGloam, dailySurge, dailyFire, computeGloamPressure, dailyGloamPressure } from '../src/sim/hazards';
 import { updateMana } from '../src/sim/networks';
+import { deserialize, serialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 describe('restless dead', () => {
@@ -139,4 +142,41 @@ describe('a full bot-run town', () => {
     for (const b of s.buildings) if (b) { expect(Number.isFinite(b.progress)).toBe(true); expect(b.residents).toBeGreaterThanOrEqual(0); }
     for (const a of s.agents) { expect(Number.isFinite(a.x)).toBe(true); expect(Number.isFinite(a.y)).toBe(true); }
   }, 60000);
+});
+
+// The Gloam's pressure.
+describe('Gloam pressure', () => {
+  it('pressure rises with the dead and with overdraw', () => {
+    const s = createGame(41, 'Press');
+    const base = computeGloamPressure(s);
+    s.unquieted = 80;
+    expect(computeGloamPressure(s)).toBeGreaterThan(base);
+    s.unquieted = 0;
+    s.overdrawDays = 2;
+    expect(computeGloamPressure(s)).toBeCloseTo(base + 0.15, 5);
+    dailyGloamPressure(s);
+    expect(s.gloamPressure).toBeGreaterThan(0);
+  });
+});
+
+/** Every loss names its cause (DESIGN 4.101); old saves load. The wyrm's razing and the hounds' Hush siege were parked in the
+ *  scope reset (phase 1b); the causes left are the Gloam, the restless and the Crown. A cause survives a save since phase 1d. */
+describe('Causes and old saves', () => {
+  it('a loss cause survives a save (it did not before phase 1d: createGame never set the field, so the load skipped it)', () => {
+    const s = createGame(70, 'Losswick');
+    s.gameOver = 'The restless overran the city.';
+    s.lostTo = 'restless';
+    const back = deserialize(serialize(s), (seed) => createGame(seed, 'x'));
+    expect(back.lostTo).toBe('restless');
+    expect(back.gameOver).toBe(s.gameOver);
+  });
+
+  it('a save without a loss cause loads with none', () => {
+    const s = createGame(70, 'Losswick');
+    s.lostTo = 'restless';
+    const o = JSON.parse(serialize(s));
+    delete o.lostTo;
+    const old = deserialize(JSON.stringify(o), (seed) => createGame(seed, 'x'));
+    expect(old.lostTo).toBeUndefined();
+  });
 });

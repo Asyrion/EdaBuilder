@@ -6,7 +6,7 @@
    CLI 0.8.1 may end with "no image URLs in result" or return while the task still runs, so the task id is read from its
    "Task created" line and `tripo image get <id> --output-format json` is polled until `status` is success; its `urls`
    (signed, valid a few hours) are downloaded into art/tripo/<sprite>/round<n>/ (git-ignored: only the image used is ever
-   committed, as a painting in inspirations/tripo/). One round at a time. */
+   committed, as a painting in eda-lore's inspirations/tripo/). One round at a time. */
 import { execFile, execFileSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
