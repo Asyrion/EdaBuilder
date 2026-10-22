@@ -2,15 +2,16 @@
 import { marketQuarterAt } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
-import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
+import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
 
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
 
-// Path cache keyed by from|to tile, one per state: emptied when the roads change and each day when the traffic is smoothed
-// (scope reset phase 1d), so a path is always what A* would find today and a loaded charter walks the same paths.
+// Path cache keyed by from|to tile, one per state: emptied when the roads change and when the season turns (the mud). A path
+// depends on the roads and their speeds alone, so the cache is a pure memo and a loaded charter walks the same paths
+// (scope reset phase 1d; congestion slows a cart on its way but no longer steers A*, whose cache kept the first day's jams).
 const pathCaches = new WeakMap<GameState, { version: number; map: Map<number, number[] | null> }>();
 export let roadVersion = 0;
 export function bumpRoadVersion(): void {
@@ -103,8 +104,7 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
       const j = nb[k];
       const rt = roadAt(state, j);
       if (!rt) continue;
-      const congestion = state.trafficSmooth[j] / 255;
-      const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5; // mud on a track
+      const cost = 1 / roadSpeedAt(state, j); // mud on a track; the jams slow a cart on its way, they do not reroute it
       const ng = gc + cost;
       if (ng < (g.get(j) ?? Infinity)) {
         g.set(j, ng);
@@ -458,7 +458,7 @@ export function tickAgents(state: GameState): void {
 
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
-  pathCaches.delete(state); // the congestion changes below: yesterday's paths are not today's
+  if (state.day % DAYS_PER_SEASON === 0) pathCaches.delete(state); // a new season: the mud comes or goes, and with it the roads' speeds
   for (let i = 0; i < state.traffic.length; i++) {
     const rt = roadAt(state, i);
     let v = 0;

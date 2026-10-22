@@ -28,10 +28,11 @@ function town(seed = 42) {
   return s;
 }
 
-// Seed 42's bot run on main at ac4e05f (docs/RESET_LOG.md, phase 0). The corridor is wide on purpose: the reset's
-// phase 1 parks systems the bot plays, and one extra roll can move a seed a long way (HANDOFF, known issues).
-const BOT_POP_100 = 1945;
-const BOT_MILESTONE_100 = 6;
+// Seed 42's bot run on day 100, re-anchored in phase 1d-1 (docs/RESET_LOG.md): the phase 0 baseline (1,945 folk, the
+// Burgh, at ac4e05f) held through 1c-2, and fell under its half when the carts stopped routing by the first day's jams
+// (926 folk, Market Town). The corridor stays wide on purpose: one extra roll can move a seed a long way.
+const BOT_POP_100 = 926;
+const BOT_MILESTONE_100 = 5;
 
 describe('core loop', () => {
   it('grows homes along a road, lit by spires and watered by wells, in 30 days', () => {

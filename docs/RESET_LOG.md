@@ -405,3 +405,102 @@ while placing (8), and the bars' hover explanations (7).
   caller, so the favour stays at 50 and the sector price and Thaw levy run at their neutral rate. Phase 2 decides whether
   the core gets a mover or the favour goes.
 - `scripts/balance.ts`'s json line had commented out its own `gameOver` field since 1c-1 (a comment swallowed it); fixed.
+
+## Phase 1d-1: save version 8, the save bugs, dead code and module globals (2026-10-22)
+
+Phase 1d ships in two PRs, as 1c did. This first one is the code; the tests, the assets, `inspirations/` and the docs
+follow in 1d-2.
+
+**Done.**
+- **Save version 8** (`SAVE_VERSION = 8`):
+  - **Every save before it is refused with one message**, whatever it holds (§9.3): "This charter was saved by an older
+    Wardlight (version 7). The game was cut back to its core, and old charters cannot be loaded: found a new one."
+  - The title screen's Continue and the import show the message (Playwright: a version 7 save in the storage is refused,
+    and a new charter saves as 8).
+  - **Gone with it:** the migrations (`MIGRATIONS[6]` and its `??` fallbacks), the per-phase refusals (`parkedContentIn`,
+    `parkedPeopleMessage`, `PARKED_OPS`) and the clean-up of parked fields on load.
+- **Replays have format 2.** A replay of format 1 is refused with the same message (the title screen, the
+  `ReplayPlayer`, `scripts/replay.ts`).
+- **The save bug of phase 0 is fixed: a load changes nothing.** Three things diverged a loaded charter from one that ran
+  on:
+  - The load ran `recomputeAll`, whose `updateDemand` blends the demand a step.
+  - The load recomputed fresh what the running game holds as staggered snapshots (land value, miasma, the water's
+    distance, the mana demand).
+  - The path cache lived in a module global: a page reload started it empty, while the running game kept paths A* had
+    found under older jams.
+- **The fix:**
+  - The save now holds every layer, the coverage too, and the load recomputes nothing.
+  - The path cache is one per state and depends on the roads and their speeds alone. It empties on a road change and
+    when the season turns (the mud), so it is a pure memo.
+  - **The jams no longer steer A*.** They still slow a cart on its way (×(1 − 0.6 × congestion)).
+  - The `it.fails` test in `core-loop.test.ts` is now an `it`: a save at day 10, and one at an odd tick of day 10, run on
+    bit for bit like an unbroken run (all of `serialize` equal on day 20).
+  - The save grows from 432 KB to 791 KB on day 30 (the layers).
+- **`lostTo` survives a save:** `createGame` sets the field, so the load copies it (`iteration70.test.ts`).
+- **Dead code:**
+  - The modifier system: nothing has made a modifier since 1c, so `s.modifiers`, `modifierSum` and `modifierSumAt` and
+    their reads (all 0), the craft-tax cap and the Edicts panel's "Active effects" are gone.
+  - The dead functions of §1.4 that were left: `totalCapacity`, `tileHasLitNeighbor`, `roadManaUse`, `seedFromName`,
+    `buildingCenter`, `zoneOfKey`. Also `addFavour` (no caller since 1c), `litStatus`, `after` and `drawFacing`, and the
+    unused imports 1a to 1c left behind.
+  - `Terrain.Marsh` (9) and its checks; the faction rules no code reads (`riverFreezes`, `millMana`, `vigilCost`,
+    `vigilMandatory`).
+  - Six counters that were only written: `goodsDelivered`, `gloamBurned`, `restlessLaid`, `fullDays`, `quietHush`,
+    `hushPressureBreaks`. `brownoutsSurvived`, `quarterDays`, `levies` and `levied` stay, because tests and
+    `balance.ts` read them.
+  - Ten painter options of parked buildings (`waterWheel`, `fishRack`, `reedBundles`, `smokeRack`, `lilyPond`,
+    `weirStones`, `vines`, `stonePile`, `gloomy`, `standingStones`) and the floating cart's and the barge's painter.
+- **Module globals:**
+  - The demand bars' notes are kept per state (`demandReasons(state)`).
+  - The market quarter is read from the state (`marketStockCap(state, b)`), not from a snapshot each tick set.
+  - The path cache is per state.
+  - **Not moved: the dev's instant-build switch** (`construction.instant`). The test setup turns it on for every test,
+    and a replay turns it off; on the state it would touch every test and change no run.
+- **Tests:**
+  - `parked1b/1c/1c2.test.ts` are replaced by `save8.test.ts`: version 8 with its layers; 7, 6 and none refused; replay
+    format 2, and 1 refused.
+  - The tests of loading old saves went (construction, iteration22, iteration54, iteration55, sweep, factions), and so
+    did the two tests of the modifiers.
+
+**Measured.** Steps 2 and 3 (the modifiers, the dead code, the globals) are bit-identical to main: with the old path
+cache put back for a probe, seed 42 gives main's 1,700 folk. All the difference comes from the routing, in two
+attempts:
+
+| Variant | Mean folk on day 150 | Δ against 1c-2 (1,420) | ± 2·SE | Burgh |
+|---|---|---|---|---|
+| A path cache emptied each day (paths follow each day's jams) | 1,017 | −403 (−28.4 %), **seen** | 268 | 6 of 12 |
+| **Kept: A* without the jams**, the cache a pure memo | 1,177 | −244 (−17.1 %), within the noise | 274 | 7 of 12 |
+
+- **Why the first attempt lost:** the old cache kept the first path A* found between two tiles until a road changed.
+  Most were found early, on empty roads, so the carts drove nearly jam-free routes all game. Rerouted each day around
+  the day's jams, they drive detours and deliver less.
+- **The kept variant:**
+  - It routes as the old cache did in effect (by the roads' speeds) and slows the carts in the jams.
+  - Its mean is lower than 1c-2's, inside the noise.
+  - Seed 42 is the worst pair (1,011 and 1,040 against 1,700 and 2,712), and seed 21 the best (1,756 and 1,246 against
+    1,430 and 1,452).
+  - The spread between two draws of a seed fell from up to 1,012 to at most 510. Routing no longer hangs on when a
+    path was first asked for.
+  - Whether the jams should steer the carts again, deterministically, is phase 2's (§1.4 point 3).
+
+| Seed | 1c-2 (main), draws 0 · 1 | 1d-1, draws 0 · 1 |
+|---|---|---|
+| 42 | 1,700 · 2,712 | 1,011 · 1,040 |
+| 1 | 1,116 · 1,671 | 1,191 · 1,040 |
+| 7 | 946 · 1,228 | 1,011 · 1,175 |
+| 13 | 1,079 · 2,008 | 1,352 · 1,456 |
+| 21 | 1,430 · 1,452 | 1,756 · 1,246 |
+| 45 | 1,003 · 695 | 887 · 953 |
+
+- **The corridor test is re-anchored, not loosened silently.** Seed 42 on day 100 now has 926 folk at Market Town,
+  under the half (972) of phase 0's 1,945. `core-loop.test.ts` now holds 926 and Market Town as its centre, with the
+  same ±50 % and the phase 0 value named in its comment.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 58 files, 275 tests, all green (the corridor test re-anchored, above) |
+| `scripts/smoke.mjs` | SMOKE OK; save and load the same, save 791 KB |
+| Bundle | JS 350 KB (121 KB gzip), was 358 KB (123 KB) |
+| Playwright | a version 7 save in the browser is refused on Continue with the message; a new charter saves as 8; no page errors |
+| `grep` | `modifierSum`, `MIGRATIONS`, `parkedContentIn`, `PARKED_OPS`, `Terrain.Marsh`: none left in `src` |
