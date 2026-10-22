@@ -15,7 +15,7 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.
 await page.goto('http://localhost:4173/');
 await page.waitForFunction(() => window.__game && window.__wardlight && window.__wardlight.atlas, null, { timeout: 120000 });
 await page.waitForTimeout(600);
-const hide = () => page.evaluate(() => { document.getElementById('lesson-close')?.click(); for (const el of document.querySelectorAll('#toast, #lesson, .panel.modal')) el.classList.add('hidden'); });
+const hide = () => page.evaluate(() => { document.getElementById('lesson-close')?.click(); if (!document.getElementById('help')?.classList.contains('hidden')) document.getElementById('help-close')?.click(); for (const el of document.querySelectorAll('#toast, #lesson, .panel.modal')) el.classList.add('hidden'); });
 const r = {};
 // 1. the title screen founds the valley
 await page.screenshot({ path: 'shots/checklist_title.png' });

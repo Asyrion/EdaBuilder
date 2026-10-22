@@ -554,4 +554,10 @@ The second PR of phase 1d, and the last of phase 1: the tests, the assets, `insp
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
 | Control seed (`balance.ts 42 150`) | 1,011 folk, Market Town: the same as 1d-1, the sim unchanged |
 
+**Follow-up (PR after #133).** The checklist's day shot showed the help still open over the city (the script hid
+`.panel.modal`; the help is `#help.modal`): `checklist.mjs` now closes it through its button. The help and the budget
+still named parked things (a quay's works and a lodge's hunting grounds in the reach rings; quays, arches, a Sky-Dock and a
+daughter wardlight as trade routes; the depot's Twin Road): gone. DESIGN §5 now names the three ways to lose as the help
+does (the treasury under −8,000 × (1 + milestone ÷ 2) for five days, the Gloam at the founding node, forty restless dead).
+
 **Phase 1 is complete.** Next: phase 2, sharpen the core loop (`docs/NEXT_STEPS.md` item 1).

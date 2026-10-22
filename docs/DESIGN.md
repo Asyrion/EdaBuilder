@@ -38,8 +38,8 @@ Road → zone → demand → growth → services and supply → budget → happi
    buildings' reach.
 6. **Goods:** Craft works make goods, carts carry them to Markets over the roads (`agents.ts`); empty shelves and gluts
    feed the demand.
-7. **Budget** (`economy.ts`): taxes and tithes in, upkeep out. Start with 15,000 crowns. In debt the city pays 1 % a day
-   and is lost after 5 days; the Crown lends 10,000 a milestone at 0.5 % a day. The Crown's levy each Thaw takes 5 % of
+7. **Budget** (`economy.ts`): taxes and tithes in, upkeep out. Start with 15,000 crowns. A debt pays 1 % a day (the
+   ways to lose, §5); the Crown lends 10,000 a milestone at 0.5 % a day. The Crown's levy each Thaw takes 5 % of
    a treasury over 10,000. Crown favour (neutral 50) exists but stands still since phase 1c (a known issue).
 8. **Happiness:** the services, land value, miasma, the Gloam and the edicts; the inspector shows the terms.
 
@@ -75,7 +75,9 @@ Scholars' Stipend, settable per district.
 - **The restless dead:** deathcare failing (Boneyard, Ossuary, the Rite Subsidy).
 - **The Gloam:** the dark at the map's edge, pushed back by light and Ward Lanterns; it greys and takes tiles.
 - **Miasma** from crafts, which spoils land value and health.
-- **Debt:** five days in the red and the charter is lost.
+
+The charter is lost three ways (the help's "Ways to lose"): the treasury below −8,000 × (1 + milestone ÷ 2) for five
+days, the Gloam reaching the founding ley node, or forty restless dead walking the streets.
 
 ## 6. The world and the views
 
