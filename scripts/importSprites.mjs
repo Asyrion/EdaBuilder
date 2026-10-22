@@ -1,5 +1,6 @@
 // The art import pipeline (iterations 49–50): reference paintings in inspirations/ become game sprites under
-// public/art/sprites, listed in public/art/sprites.json, which the atlas merges over its procedural sprites at boot.
+// sheets in public/art/sheets, listed in public/art/sprites.json, which the atlas merges over its procedural sprites at boot. Each
+// sprite is also written alone under art/build/sprites (not committed, not shipped) for the tools that want one file.
 //   node scripts/importSprites.mjs           writes the sprites and the manifest
 //   node scripts/importSprites.mjs --check   also renders shots/import_check.png (every sprite at 4×)
 //   node scripts/importSprites.mjs --islands <src> [white]   lists a sheet's islands, row-major, for picking by index
@@ -43,11 +44,12 @@ if (args[0] === '--islands') {
 }
 
 const sources = JSON.parse(readFileSync('art/sources.json', 'utf8'));
-mkdirSync('public/art/sprites', { recursive: true });
+rmSync('art/build/sprites', { recursive: true, force: true });
+mkdirSync('art/build/sprites', { recursive: true });
 const manifest = { sheets: [], sprites: {} };
 const sheet = [];
 const pngs = new Map(); // every file written this run → its image, packed into the sheets at the end (iteration 90)
-const put = (file, img) => { writeFileSync(`public/art/${file}`, encodePng(img)); pngs.set(file, img); };
+const put = (file, img) => { writeFileSync(`art/build/${file}`, encodePng(img)); pngs.set(file, img); };
 const families = new Map(); // family → [{ e, img }] for the shared quantize
 const results = [];
 

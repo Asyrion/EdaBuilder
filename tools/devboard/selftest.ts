@@ -167,7 +167,7 @@ const tmpArt = tmp;   // removed after the importer's run below
   check(nums.length === headings && new Set(nums).size === nums.length && nums.includes(1) && Math.max(...nums) >= 118, 'DESIGN: every 4.NN section is indexed once (in the file\'s own order)');
   check((designSection(readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8'), '4.118') ?? '').includes('content as data'), 'DESIGN: a section is read whole');
   const b = balance(REPO);
-  check(b.files.length > 0 && b.files.every((x) => Object.keys(x.stats).length > 0) && b.files.some((x) => Object.keys(x.stats).length === 4), 'balance: every cache file read (a bar still running writes a partial one), a whole one with four peoples');
+  check(b.files.length > 0 && b.files.every((x) => Object.keys(x.stats).length > 0) && b.files.some((x) => 'vellish' in x.stats), 'balance: every cache file read (a bar still running writes a partial one), one with the Vellish (scope reset: one people)');
 
   const bin = mkdtempSync(join(tmpdir(), 'devboard-fakes-')), log = join(bin, 'log');
   const script = (name: string, body: string) => { writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`); chmodSync(join(bin, name), 0o755); };

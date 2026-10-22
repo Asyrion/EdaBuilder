@@ -1,6 +1,7 @@
 /** The sprites and the atlas: the drawn sprite set and its outline, the painted sprites and how they fit their tiles (the
  *  citizen is the yardstick), the eda-lore houses and looks, the donkey carts, buildings facing their road, the light cache,
  *  the sprite sheets the atlas loads, and the trees chosen by region. */
+import { readManifest, spriteImage } from '../scripts/lib/sheet.mjs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -119,10 +120,11 @@ describe('Hotfix: the light sprite cache is bounded', () => {
 /** The donkey carts: the painted carts carry the goods and the leystone, at a folk's scale, facing the way they drive; a
  *  missing painting falls back to the procedural cart. */
 interface CartEntry { file: string; w: number; h: number; ax: number; ay: number }
-const cartManifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8')) as { sprites: Record<string, CartEntry> };
+const cartManifestFull = readManifest('.');
+const cartManifest = cartManifestFull as { sprites: Record<string, CartEntry> };
 const cartSources = JSON.parse(readFileSync('art/sources.json', 'utf8')) as { sprites: { name: string; kind?: string; checked?: boolean; mirrored?: boolean }[] };
 const carts = cartSources.sprites.filter((e) => e.kind === 'vehicle');
-const cartPng = (e: CartEntry) => decodePng(readFileSync(`public/art/${e.file}`)) as { w: number; h: number; data: Uint8ClampedArray };
+const cartPng = (e: CartEntry) => spriteImage('.', cartManifestFull, e) as { w: number; h: number; data: Uint8ClampedArray };
 const opaqueBox = (img: { w: number; h: number; data: Uint8ClampedArray }) => {
   let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
   for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) if (img.data[(y * img.w + x) * 4 + 3] > 0) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
@@ -584,6 +586,8 @@ const sheets = importManifest.sheets ?? [];
 type Img = { w: number; h: number; data: Uint8ClampedArray };
 const decoded = new Map<string, Img>();
 const png = (file: string): Img => { if (!decoded.has(file)) decoded.set(file, decodePng(readFileSync(`public/art/${file}`)) as Img); return decoded.get(file)!; };
+/** A sprite's own PNG, which `npm run art` writes under art/build (not committed, not shipped: scope reset phase 1d); null without it. */
+const single = (file: string): Img | null => (existsSync(`art/build/${file}`) ? (decodePng(readFileSync(`art/build/${file}`)) as Img) : null);
 
 /** The rect of `sheet` at (x, y), w × h, equals `img` in every byte. */
 function same(sheet: Img, x: number, y: number, img: Img): boolean {
@@ -610,22 +614,20 @@ describe('The sprite sheets', () => {
     }
   });
 
-  it('every sprite and glow sits inside its sheet and matches its own PNG pixel for pixel', () => {
+  it('every sprite and glow sits inside its sheet, and matches its own PNG pixel for pixel where `npm run art` left one', () => {
     let glows = 0;
     for (const [name, e] of entries) {
       expect(e.sheet, name).toBeTypeOf('number');
       const sheet = png(sheets[e.sheet!].file);
-      const body = png(e.file);
-      expect([body.w, body.h], name).toEqual([e.w, e.h]);
       expect(e.sx! >= 0 && e.sy! >= 0 && e.sx! + e.w <= sheet.w && e.sy! + e.h <= sheet.h, name).toBe(true);
-      expect(same(sheet, e.sx!, e.sy!, body), name).toBe(true);
+      const body = single(e.file);
+      if (body) { expect([body.w, body.h], name).toEqual([e.w, e.h]); expect(same(sheet, e.sx!, e.sy!, body), name).toBe(true); }
       if (!e.glow) continue;
       glows++;
       const gs = png(sheets[e.gsheet!].file);
-      const glow = png(e.glow);
-      expect([glow.w, glow.h], name).toEqual([e.gw, e.gh]);
-      expect(e.gx! >= 0 && e.gy! >= 0 && e.gx! + glow.w <= gs.w && e.gy! + glow.h <= gs.h, name).toBe(true);
-      expect(same(gs, e.gx!, e.gy!, glow), name).toBe(true);
+      expect(e.gx! >= 0 && e.gy! >= 0 && e.gx! + e.gw! <= gs.w && e.gy! + e.gh! <= gs.h, name).toBe(true);
+      const glow = single(e.glow);
+      if (glow) { expect([glow.w, glow.h], name).toEqual([e.gw, e.gh]); expect(same(gs, e.gx!, e.gy!, glow), name).toBe(true); }
     }
     expect(entries.length).toBeGreaterThan(550); // 834 before the scope reset parked the other peoples' looks (659 after, 589 after phase 1c-1)
     expect(glows).toBeGreaterThan(100);
@@ -721,6 +723,24 @@ async function merge(serve: ImportManifest, fail: (url: string) => boolean = () 
 }
 
 describe('The atlas loads the sheets', () => {
+  it('the build ships the sheets only: a failed sheet, a sheet of the wrong size or a manifest without sheets keeps the drawn sprites', async () => {
+    for (const r of [await merge(importManifest, (url) => url.includes('sheets/')), await merge({ ...importManifest, sheets: sheets.map((s) => ({ ...s, h: s.h + 1 })) }), await merge({ sprites: importManifest.sprites })]) {
+      expect(r.n).toBe(0);
+      expect(r.requested.some((u) => u.includes('/sprites/'))).toBe(false);
+      for (const [name] of entries) expect(r.atlas.sprites[name]).toEqual(DRAWN);
+      expect(r.progress.at(-1)).toEqual([entries.length, entries.length]);
+    }
+  });
+  it('an entry whose glow sheet fails keeps its drawn sprite; the others are still cut from their sheet', async () => {
+    const two: ImportManifest = {
+      sheets: [...sheets, { file: 'sheets/missing.png', w: 2048, h: 10, hash: 'f00' }],
+      sprites: Object.fromEntries(entries.map(([name, e]) => [name, e.glow ? { ...e, gsheet: 1 } : e])),
+    };
+    const r = await merge(two);
+    expect(r.n).toBe(entries.filter(([, e]) => !e.glow).length);
+    for (const [name, e] of entries) if (e.glow) expect(r.atlas.sprites[name], name).toEqual(DRAWN);
+  });
+
   it('with sheets it asks for the sheets only, by hash, and cuts every sprite from them', async () => {
     const r = await merge(importManifest);
     expect(r.requested).toEqual(sheets.map((s) => `/art/${s.file}`));
@@ -738,70 +758,6 @@ describe('The atlas loads the sheets', () => {
     expect(r.draws.length).toBe(entries.length + entries.filter(([, e]) => e.glow).length);
   });
 
-  it('a failed sheet, or a importManifest without sheets, loads the single files 24 at a time into the same rects', async () => {
-    const fromSheets = await merge(importManifest);
-    const failed = await merge(importManifest, (url) => url.includes('sheets/'));
-    const old = await merge({ sprites: importManifest.sprites });
-    for (const r of [failed, old]) {
-      expect(r.n).toBe(entries.length);
-      expect(r.atlas.sprites).toEqual(fromSheets.atlas.sprites);
-      expect(r.peak()).toBeLessThanOrEqual(24);
-      expect(r.peak()).toBeGreaterThan(1);
-      expect(r.progress.at(-1)).toEqual([entries.length, entries.length]);
-      for (let k = 1; k < r.progress.length; k++) expect(r.progress[k][0]).toBeGreaterThanOrEqual(r.progress[k - 1][0]); // never back
-      expect(new Set(r.progress.map((p) => p[1])).size).toBe(1);
-      const [name, e] = entries.find(([, x]) => x.glow)!;
-      const rect = r.atlas.sprites[name];
-      const v = r === failed ? `?v=${sheets[e.sheet!].hash}` : ''; // a single file is asked for with its sheet's hash, when it has one
-      expect(r.draws.find((x) => x.dx === rect.glow!.x && x.dy === rect.glow!.y)).toMatchObject({ src: `/art/${e.glow}${v}`, sx: 0, sy: 0 });
-      expect(r.draws.find((x) => x.dx === rect.x && x.dy === rect.y)).toMatchObject({ src: `/art/${e.file}${v}`, sx: 0, sy: 0 });
-    }
-  });
-
-  it('a sheet of the wrong size is refused like a failed one', async () => {
-    const fromSheets = await merge(importManifest);
-    const r = await merge({ ...importManifest, sheets: sheets.map((s) => ({ ...s, h: s.h + 1 })) });
-    expect(r.n).toBe(entries.length);
-    expect(r.atlas.sprites).toEqual(fromSheets.atlas.sprites);
-    expect(r.draws.every((d) => d.src.startsWith('/art/sprites/'))).toBe(true);
-  });
-
-  it('an entry whose glow sheet fails loads body and glow as single files; the others are still cut from their sheet', async () => {
-    const fromSheets = await merge(importManifest);
-    const two: ImportManifest = {
-      sheets: [...sheets, { file: 'sheets/missing.png', w: 2048, h: 10, hash: 'f00' }],
-      sprites: Object.fromEntries(entries.map(([name, e]) => [name, e.glow ? { ...e, gsheet: 1 } : e])),
-    };
-    const r = await merge(two);
-    expect(r.n).toBe(entries.length);
-    expect(r.atlas.sprites).toEqual(fromSheets.atlas.sprites);
-    const at = new Map(r.draws.map((d) => [`${d.dx},${d.dy}`, d]));
-    for (const [name, e] of entries) {
-      const rect = r.atlas.sprites[name];
-      const body = at.get(`${rect.x},${rect.y}`)!;
-      if (e.glow) {
-        expect(body.src, name).toBe(`/art/${e.file}?v=${sheets[e.sheet!].hash}`);
-        expect(at.get(`${rect.glow!.x},${rect.glow!.y}`)!.src, name).toBe(`/art/${e.glow}?v=f00`); // the glow's own sheet's hash
-      } else expect(body.src, name).toBe(`/art/${sheets[e.sheet!].file}`);
-    }
-  });
-
-  it('a sprite whose single file fails keeps the drawn sprite; the rest still load', async () => {
-    const [lost] = entries[0];
-    const r = await merge({ sprites: importManifest.sprites }, (url) => url.endsWith(`/${lost}.png`));
-    expect(r.n).toBe(entries.filter(([, e]) => e.file !== `sprites/${lost}.png`).length);
-    expect(r.atlas.imported.has(lost)).toBe(false);
-    expect(r.atlas.sprites[lost]).toEqual(DRAWN);
-  });
-
-  it('a sprite whose glow file fails is imported without its glow', async () => {
-    const [lit, e] = entries.find(([, x]) => x.glow)!;
-    const r = await merge({ sprites: importManifest.sprites }, (url) => url.endsWith(`/${e.glow!.split('/').pop()}`));
-    expect(r.n).toBe(entries.length);
-    expect(r.atlas.imported.has(lit)).toBe(true);
-    expect(r.atlas.sprites[lit].glow).toBeUndefined();
-    expect([r.atlas.sprites[lit].w, r.atlas.sprites[lit].h]).toEqual([e.w, e.h]);
-  });
 });
 
 /** Trees by region (DESIGN §4.125): each forest tile draws the trees of the land it stands on: crystal and spirit trees only

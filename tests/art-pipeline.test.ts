@@ -10,6 +10,7 @@ import { autoAnchor, blank, boxScale, centreAnchor, colourCount, crop, cropRect,
 import { installEntries, luaData, render, trace, type Img } from '../scripts/aseprite';
 import { shelfPack } from '../src/render/atlas';
 import { BUILDINGS } from '../src/sim/catalog';
+import { generateSprites } from '../src/render/sprites';
 import { resultOf, taskIdOf } from '../tools/devboard/tripo';
 import { draftFor, TRIPO_MAX } from '../tools/devboard/prompts';
 
@@ -188,7 +189,7 @@ describe('the importer takes a pixel: true sprite as drawn', () => {
       writeFileSync(join(dir, 'art/drawn.png'), encodePng(img));
       writeFileSync(join(dir, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_test', src: 'art/drawn.png', pixel: true, w: 1, h: 1, anchor: 'centre', checked: true, glow: false }] }));
       execFileSync(process.execPath, [script], { cwd: dir, stdio: 'pipe' });
-      const out = decodePng(readFileSync(join(dir, 'public/art/sprites/b_test.png')));
+      const out = decodePng(readFileSync(join(dir, 'art/build/sprites/b_test.png')));
       expect([out.w, out.h]).toEqual([4, 4]);
       for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
         const a = (y * 4 + x) * 4, b = ((y + 1) * 6 + x + 1) * 4;
@@ -264,5 +265,18 @@ describe('the board\'s draft prompt keeps the prompt rules', () => {
       expect(d, b.key).toMatch(/plain flat white background/);
     }
     expect(draftFor(BUILDINGS[0] as never, 'b_x', 'word '.repeat(400)).length).toBeLessThanOrEqual(TRIPO_MAX); // a long brief gives way
+  });
+});
+
+describe('art/sources.json names only sprites the game shows (scope reset 1d-2)', () => {
+  it('every entry belongs to a drawn sprite family, a building or a counted import pool', () => {
+    // a family is the name without its variant suffix (_3, _v1, _s2, _l2_v0); the counted pools are the ones the renderer
+    // sizes from the atlas (carts.ts, groves.ts, renderer.ts) that the painter draws none of
+    const fam = (n: string) => n.replace(/_(v|s|l)?\d+$/, '').replace(/_(v|s|l)?\d+$/, '');
+    const fams = new Set(generateSprites().map((d) => fam(d.name)));
+    for (const p of ['cartp_goods', 'cartp_stone', 'tree_autumn', 'glowcap']) fams.add(p);
+    for (const b of BUILDINGS) { fams.add(`b_${b.key}`); fams.add(b.key); }
+    const sources = (JSON.parse(readFileSync('art/sources.json', 'utf8')) as { sprites: { name: string }[] }).sprites;
+    expect(sources.filter((s) => !fams.has(fam(s.name))).map((s) => s.name)).toEqual([]);
   });
 });
