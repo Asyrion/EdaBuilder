@@ -509,7 +509,7 @@ async function boot(): Promise<void> {
   await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
   say('Raising the town…');
   await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0))); // let the line paint before the town is built
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, economy, edicts, districts, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, water, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, createGame, economy, edicts, districts, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, water, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
   line?.remove();

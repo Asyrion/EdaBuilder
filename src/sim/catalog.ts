@@ -12,7 +12,7 @@ const buildingsData = buildingsJson as unknown as Named<BuildingDef, 'zone'>[];
 const roadsData = roadsJson as unknown as (Omit<RoadDef, 'type'> & { type: string })[];
 const milestonesData = milestonesJson as unknown as Milestone[];
 
-export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'marvel' | 'special';
+export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'special';
 
 export interface ServiceDef {
   type: ServiceType;

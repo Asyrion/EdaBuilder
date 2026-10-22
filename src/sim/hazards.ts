@@ -10,7 +10,7 @@ import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
 import { seasonOf } from './world';
 
-export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
+export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
 export type SoundCue = 'horn' | 'bell' | 'hammer';
 export const SOUND_CUES: SoundCue[] = ['horn', 'bell', 'hammer'];
