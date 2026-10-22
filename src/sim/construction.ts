@@ -12,9 +12,6 @@ export const MAX_BUILDERS = 10;
 export const BUILDERS_PER_SITE = 3;
 export const BASE_RATE = 0.25; // work per tick with no builder present: the folk raise it themselves, slowly
 export const ZONE_RATE = 1; // zone buildings are raised by the folk who will live and work there: a day, no builders
-/** A working Brickworks within this many tiles (centre to centre) speeds a site by BRICK_SPEED (iteration 83, DESIGN 4.114). */
-export const BRICK_REACH = 12;
-export const BRICK_SPEED = 1.5;
 
 /** Days one builder needs: zone buildings a day, others by cost, wonders longer. */
 export function buildDaysFor(def: BuildingDef): number {
@@ -79,20 +76,6 @@ function finish(s: GameState, b: Building): void {
   effects.push({ x: b.x, y: b.y, kind: 'bell', tick: s.tick });
 }
 
-/** The nearest working (staffed) Brickworks within BRICK_REACH of a site, or null. */
-export function brickworksNear(s: GameState, b: Building): Building | null {
-  const cx = b.x + (b.w - 1) / 2;
-  const cy = b.y + (b.h - 1) / 2;
-  let best: Building | null = null;
-  let bestD = Infinity;
-  for (const o of s.buildings) {
-    if (!o || o.kind !== 'brickworks' || o.state !== 'ok' || o.workers <= 0) continue;
-    const d = Math.hypot(o.x + (o.w - 1) / 2 - cx, o.y + (o.h - 1) / 2 - cy);
-    if (d <= BRICK_REACH && d < bestD) { bestD = d; best = o; }
-  }
-  return best;
-}
-
 /** Every tick: builders pick sites, walk the roads to them, and work; sites with nobody still rise slowly. */
 export function tickConstruction(s: GameState): void {
   const list = sites(s);
@@ -140,11 +123,10 @@ export function tickConstruction(s: GameState): void {
     if (a.pathIdx >= a.path.length) a.phase = 2;
   }
   // work
-  const kilns = s.buildings.some((o) => o && o.kind === 'brickworks' && o.state === 'ok');
   for (const b of list) {
     const zone = BUILDING_BY_KEY[b.kind].category === 'zone';
     const { present } = zone ? { present: 0 } : buildersAt(s, b);
-    b.work -= zone ? ZONE_RATE : (BASE_RATE + present) * (kilns && brickworksNear(s, b) ? BRICK_SPEED : 1);
+    b.work -= zone ? ZONE_RATE : BASE_RATE + present; // the Brickworks' speed-up is parked (scope reset phase 1c)
     if (present > 0 && (s.tick + b.id) % 120 === 0) effects.push({ x: b.x, y: b.y, kind: 'hammer', tick: s.tick });
     if (b.work <= 0) {
       finish(s, b);
@@ -155,7 +137,7 @@ export function tickConstruction(s: GameState): void {
 
 export const WALK_SPEED = 1.3; // tiles per second, a builder on foot
 
-/** One road step for a builder: no congestion, no portals. Returns true when a new tile was reached. */
+/** One road step for a builder: no congestion. Returns true when a new tile was reached. */
 export function stepRoad(a: Agent, dt: number, speedMul = 1): boolean {
   if (a.pathIdx >= a.path.length) return false;
   const t = a.path[a.pathIdx];

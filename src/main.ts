@@ -4,26 +4,18 @@ import { repayLoan, takeLoan } from './sim/economy';
 import * as economy from './sim/economy';
 import * as edicts from './sim/edicts';
 import * as districts from './sim/districts';
-import * as scenario from './sim/scenario';
-import * as wild from './sim/wild';
 import * as water from './sim/water';
-import * as gales from './sim/gales';
-import * as vehicles from './sim/vehicles';
 import { canBuild, costOf, specialLock } from './data/factions';
 import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
 import { faceLeft } from './render/facing';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, districtName, timeOfDay } from './sim/world';
-import { createScenario } from './sim/scenario';
-import { canFoundDaughter, foundDaughter } from './sim/charter';
 import { SOUND_CUES, type SoundCue } from './sim/hazards';
 import { buySector } from './sim/sectors';
 import { tileToWorld, worldToTile } from './render/iso';
 import { runDev } from './sim/dev';
-import { createChallenge } from './sim/scenario';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
-import type { Scenario } from './sim/types';
 import { tick, recomputeAll } from './sim/sim';
 import { SaveVersionError, serialize, deserialize } from './sim/save';
 import { TICKS_PER_SEC, Zone, type Building, type GameState } from './sim/types';
@@ -115,7 +107,7 @@ class Game {
       togglePause: () => { this.paused = !this.paused; this.ui.refresh(); },
       setTool: (t) => this.tools.setTool(t),
       setOverlay: (id) => { this.view.overlay = id as ViewState['overlay']; this.ui.refreshViews(); },
-      newGame: (seed, name, scenario) => this.newGame(seed, name, scenario),
+      newGame: (seed, name) => this.newGame(seed, name),
       continueGame: () => this.load(),
       hasSave: () => !!localStorage.getItem(SAVE_KEY),
       save: () => this.save(),
@@ -139,8 +131,6 @@ class Game {
       buySector: (k) => { const why = this.cmd('sector', k).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); this.selectedSector = -1; } return why; },
       deepenNode: (i) => { const why = this.cmd('deepen', i).reason ?? null; if (why) this.ui.setHint(`<span class="bad">${why}</span>`); else this.audio.spire(); this.ui.refresh(); },
       canDeepenNode: (i) => canDeepenNode(this.state, i),
-      canFoundDaughter: (i) => canFoundDaughter(this.state, i),
-      foundDaughter: (i, name) => { const why = this.cmd('daughter', i, name).reason ?? null; if (!why) { this.renderer.invalidateAll(); this.audio.milestone(); } return why; },
       setQuarter: (d, q) => { const why = this.cmd('quarter', d, q).reason ?? null; if (!why) { this.renderer.overlayVersion++; this.audio.click(); } return why; },
       seeLesson: (id) => { if (!this.state.lessonsSeen.includes(id)) this.cmd('lesson', id); },
       setPriority: (id, p) => { /* a changed tier is judged afresh: the brownout darkens the already-dark first */ if (this.cmd('priority', id, p).ok) this.audio.click(); },
@@ -210,9 +200,9 @@ class Game {
     this.setSetting('colorBlind', this.settings.colorBlind);
   }
 
-  newGame(seed: number, name: string, scenario: Scenario | 'daily' = 'valley', faction: FactionId = 'vellish'): void {
-    const s = scenario === 'daily' ? createChallenge(name) : scenario === 'valley' ? createGame(seed, name, 'valley', faction) : createScenario(seed, name, scenario, faction);
-    this.bindState(s, { seed, name, scenario, faction, challenge: s.challenge ?? undefined });
+  newGame(seed: number, name: string, faction: FactionId = 'vellish'): void {
+    const s = createGame(seed, name, faction);
+    this.bindState(s, { seed, name, scenario: 'valley', faction });
     this.audio.milestone();
   }
 
@@ -416,7 +406,7 @@ class Game {
     let hint = `<b>${toolLabel(t)}</b> — `;
     switch (t.kind) {
       case 'select': hint += 'click a building for details. Pick a tool on the left.'; break;
-      case 'road': hint += `drag to draw. Roads over shallow water become bridges (4× cost); a Dirt Track over a narrow river is a ford (1.5×), under water in the Thaw's first ten days after a Hush unless a Weir stands within 6${this.state.water.closed.length ? ` (${this.state.water.closed.length} ford${this.state.water.closed.length === 1 ? ' is' : 's are'} under water now)` : ''}.`; break;
+      case 'road': hint += `drag to draw. Roads over shallow water become bridges (4× cost).`; break;
       case 'zone': hint += 'drag a rectangle beside a road (a corner counts). Buildings grow when demand is high.'; break;
       case 'build': {
         const d = BUILDING_BY_KEY[t.key];
@@ -520,7 +510,7 @@ async function boot(): Promise<void> {
   await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
   say('Raising the town…');
   await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0))); // let the line paint before the town is built
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, vehicles, economy, edicts, districts, scenario, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, wild, water, gales, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, economy, edicts, districts, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, water, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
   line?.remove();

@@ -4,13 +4,8 @@
  * read from the constant the sim itself uses, so a ring can never disagree with what the building does.
  */
 import { BUILDING_BY_KEY, WONDER_HALLS, type BuildingDef } from './catalog';
-import { FISH_MARKET_REACH, FISH_REACH, REED_REACH, SMOKE_REACH, THATCH_REACH, WEIR_REACH } from './water';
 import { influenceRadius, waterReachOf } from './world';
-import { QUAY_REACH } from './vehicles';
-import { GLIMHOUSE_REACH, HOSPICE_REACH } from './growth';
-import { BRICK_REACH } from './construction';
-import { GLOWVINE_REACH, MILL_SHARE_REACH } from './networks';
-import { HUNT_REACH } from './wild';
+import { HOSPICE_REACH } from './growth';
 import type { Building, GameState } from './types';
 
 export interface Reach {
@@ -24,19 +19,9 @@ export interface Reach {
 
 const SERVICE_WORDS: Record<string, string> = { watch: 'watch', health: 'healing', fire: 'fire', faith: 'faith', school: 'schooling', death: 'quieting', ward: 'ward', leisure: 'leisure' };
 
-/** The secondary reaches, by building key; `when` limits one to a state of the building (the Weir's sluice). */
+/** The secondary reaches, by building key; `when` limits one to a state of the building. */
 export const SECONDARY_REACH: Record<string, { r: number; label: string; square?: boolean; when?: (b: Building) => boolean }[]> = {
-  quay: [{ r: QUAY_REACH, label: 'works by barge', square: true }],
   hospice: [{ r: HOSPICE_REACH, label: 'draughts from markets', square: true }],
-  hanginggardens: [{ r: GLOWVINE_REACH, label: 'glowvine alive' }],
-  brickworks: [{ r: BRICK_REACH, label: 'bricks for builders' }], // sites rise faster (iteration 83)
-  torrentmill: [{ r: MILL_SHARE_REACH, label: 'shares the river', square: true }],
-  glimhouse: [{ r: GLIMHOUSE_REACH, label: 'Hush works', square: true }],
-  hunterslodge: [{ r: HUNT_REACH, label: 'hunt and meat' }], // the grounds it hunts game in and carts meat across (iteration 57)
-  fishershut: [{ r: FISH_REACH, label: 'fishes' }, { r: FISH_MARKET_REACH, label: 'fish to markets' }], // the water (iteration 60)
-  smokehouse: [{ r: SMOKE_REACH, label: 'takes the huts\' fish' }],
-  reedcutters: [{ r: REED_REACH, label: 'reed beds' }, { r: THATCH_REACH, label: 'thatches homes' }],
-  weir: [{ r: WEIR_REACH, label: 'holds the fords' }],
 };
 
 /** The word for a building's primary reach. */

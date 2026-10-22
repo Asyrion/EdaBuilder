@@ -14,7 +14,7 @@ import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
-  const s = createGame(seed, 'Ground', 'valley');
+  const s = createGame(seed, 'Ground');
   const f = s.founding;
   flatten(s, f.x - 20, f.y - 14, f.x + 20, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 18, f.y + 2, f.x + 18, f.y + 2, false));

@@ -1,6 +1,4 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
-import { isWild } from '../sim/wild';
-import { treeStage } from '../sim/growth';
 import { factionOf } from '../data/factions';
 import { QUARTER_BY_ID } from '../sim/districts';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
@@ -13,7 +11,6 @@ import { lookName, zoneSpriteName } from './atlas';
 import { cartSpriteName } from './carts';
 import { roadTileOf } from '../sim/agents';
 import { faceLeft } from './facing';
-import { fordClosed, isFordTile } from '../sim/water';
 import { SpriteAtlas, type SpriteRect } from './atlas';
 import { Camera } from './camera';
 import { tileToWorld } from './iso';
@@ -63,10 +60,6 @@ interface ChunkCache {
 /** How far a view lifts the night's ambient toward daylight (iteration 94): 0 is the plain night, 1 is full day. */
 export const VIEW_LIFT = 0.45;
 
-/** The marsh's dawn mist (iteration 85): strongest at MIST_HOUR of the day (0 = midnight), gone MIST_SPAN either side. */
-export const MIST_HOUR = 0.27;
-export const MIST_SPAN = 0.08;
-
 export class Renderer {
   screen: HTMLCanvasElement;
   sctx: CanvasRenderingContext2D;
@@ -112,7 +105,7 @@ export class Renderer {
     this.gloamTreeCount = Math.max(1, atlas.countVariants('gloamtree_'));
     this.glowcapCount = atlas.countVariants('glowcap_');
     this.autumnCount = atlas.countVariants('tree_autumn_');
-    for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins', 'marsh']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
+    for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
   }
 
   resize(): void {
@@ -234,7 +227,6 @@ export class Renderer {
       case Terrain.Hills: return this.atlas.get(`hills_${Math.floor(h2(x, y, 4) * this.groundCount.hills)}`);
       case Terrain.LeyNode: return this.atlas.get('grass_1');
       case Terrain.Ruins: return this.atlas.get(`ruins_${Math.floor(h2(x, y, 8) * this.groundCount.ruins)}`);
-      case Terrain.Marsh: return this.atlas.get(`marsh_${Math.floor(h2(x, y, 9) * this.groundCount.marsh)}`);
     }
     return null;
   }
@@ -290,29 +282,11 @@ export class Renderer {
         }
         const r = state.road[i];
         if (r) {
-          const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : r === RoadType.Glowvine ? 'glowvine' : 'lantern';
+          const key = r === RoadType.Track ? 'track' : r === RoadType.Cobble ? 'cobble' : 'lantern';
           s = this.atlas.get(`road_${key}_${this.roadMask(state, x, y)}`);
           if (s) {
-            const ford = isWater(t) && isFordTile(state, i); // a track over a narrow river (iteration 60): stepping stones, under water at high water
-            if (ford) {
-              ctx.fillStyle = PAL.stone2;
-              for (const [ox, oy] of [[-8, 9], [-2, 6], [4, 10], [9, 8], [0, 13], [-6, 12]]) ctx.fillRect(dx + ox, dy + oy, 3, 2);
-              ctx.globalAlpha = 0.7;
-              ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
-              ctx.globalAlpha = 1;
-              if (fordClosed(state, i)) {
-                ctx.fillStyle = PAL.water2;
-                ctx.globalAlpha = 0.75;
-                ctx.beginPath();
-                ctx.moveTo(dx, dy + 1);
-                ctx.lineTo(dx + 16, dy + 9);
-                ctx.lineTo(dx, dy + 17);
-                ctx.lineTo(dx - 16, dy + 9);
-                ctx.fill();
-                ctx.globalAlpha = 1;
-              }
-            } else if (isWater(t) || t === Terrain.Marsh) {
-              // bridge, or a causeway over the marsh (iteration 85): draw plank base
+            if (isWater(t)) {
+              // bridge: draw plank base
               ctx.fillStyle = PAL.wood1;
               ctx.beginPath();
               ctx.moveTo(dx, dy + 1);
@@ -321,18 +295,7 @@ export class Renderer {
               ctx.lineTo(dx - 16, dy + 9);
               ctx.fill();
             }
-            if (!ford) ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
-            if (!ford && isWater(t) && fordClosed(state, i)) { // a bridge under the surf in a sea-gale (iteration 95)
-              ctx.fillStyle = PAL.water2;
-              ctx.globalAlpha = 0.6;
-              ctx.beginPath();
-              ctx.moveTo(dx, dy + 1);
-              ctx.lineTo(dx + 16, dy + 9);
-              ctx.lineTo(dx, dy + 17);
-              ctx.lineTo(dx - 16, dy + 9);
-              ctx.fill();
-              ctx.globalAlpha = 1;
-            }
+            ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
           }
         } else if (state.zone[i] && state.bIndex[i] < 0) {
           const z = state.zone[i];
@@ -372,10 +335,6 @@ export class Renderer {
             const mv = Math.floor(h2(x, y, 45) * (glow ? this.glowcapCount : this.mushroomCount));
             cache.props.push({ name: glow ? `glowcap_${mv}` : `mushroom_${mv}`, wx: wx + (h2(x, y, 46) - 0.5) * 18, wy: wy + 12, d: x + y - 0.1, sway: 0 });
           }
-        } else if (t === Terrain.Marsh) {
-          // reed beds (iteration 85): one or two clumps on most marsh tiles
-          const n = h2(x, y, 70) < 0.15 ? 1 : h2(x, y, 71) < 0.5 ? 2 : 3;
-          for (let k = 0; k < n; k++) cache.props.push({ name: `reeds_${Math.floor(h2(x, y, 72 + k) * 3)}`, wx: wx + (h2(x, y, 74 + k) - 0.5) * 20, wy: wy + 9 + (h2(x, y, 76 + k) - 0.5) * 8, d: x + y, sway: h2(x, y, 78 + k) });
         } else if (t === Terrain.Hills) {
           if (h2(x, y, 24) < 0.35) cache.props.push({ name: `rock_${Math.floor(h2(x, y, 25) * 3)}`, wx: wx + (h2(x, y, 26) - 0.5) * 12, wy: wy + 10, d: x + y, sway: 0 });
         } else if (t === Terrain.Ruins && state.bIndex[i] < 0 && !state.road[i]) {
@@ -658,41 +617,11 @@ export class Renderer {
       // each agent keeps its own pace (its speed and its id), so a crowd on one road does not march in step
       const walkFrame = (Math.floor(this.time * 8 * (a.speed || 1)) + a.id) % 4;
       if (a.x < minX || a.x > maxX + 1 || a.y < minY || a.y > maxY + 1) continue;
-      if (a.timer > 0 && a.kind !== AgentKind.Restless && a.kind !== AgentKind.Creature) continue; // resting inside a building
+      if (a.timer > 0 && a.kind !== AgentKind.Restless) continue; // resting inside a building
       // a lane of its own: a small sideways offset by id, so agents sharing a tile do not stand on each other
       const lane = a.kind === AgentKind.Citizen || a.kind === AgentKind.Builder ? ((a.id * 7) % 5) - 2 : 0;
       const [wx0, wy] = tileToWorld(a.x - 0.5, a.y - 0.5);
       const wx = wx0 + lane;
-      if (a.kind === AgentKind.Creature) {
-        const sp = a.species;
-        if (isWild(sp)) {
-          // the wild: a stride while moving (quicker on the run), mirrored when it heads left; a heron stands still most of the day
-          const moving = a.path.length > 0 && a.timer <= 0;
-          const s = this.atlas.get(`${sp}_${moving ? Math.floor(this.time * (a.load === 1 ? 12 : 6) + a.id) % 2 : 0}`);
-          const left = a.dir === 2;
-          items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8, left), occ: s ? { s, x: wx, y: wy + 8 } : undefined });
-        } else if (sp === 'boat') {
-          // a fishers' boat (iteration 60): the oar strokes while it rows, a lamp in the bow at night
-          const moving = a.path.length > 0 && a.timer <= 0;
-          const s = this.atlas.get(`boat_${moving ? Math.floor(this.time * 3 + a.id) % 2 : 0}`);
-          const bob = Math.sin(this.time * 2 + a.id) * 0.8;
-          items.push({ d: a.x + a.y - 0.15, y: wy, fn: () => this.drawFacing(s, wx, wy + 8 + bob, a.dir === 2) });
-          if (night > 0.2) lights.push({ x: wx + (a.dir === 2 ? -6 : 6), y: wy + 4, r: 12, c: PAL.lampWarm, i: 0.5 });
-        } else if (sp === 'airship') {
-          const alt = a.alt ?? 0;
-          const s = this.atlas.get(`airship_${Math.floor(this.time * 2) % 2}`);
-          items.push({ d: a.x + a.y - 0.3, y: wy, fn: () => {
-            const ctx2 = this.ctx;
-            ctx2.fillStyle = `rgba(10,8,16,${0.4 - alt / 220})`;
-            ctx2.beginPath();
-            ctx2.ellipse(Math.round(wx - left), Math.round(wy + 8 - top), 20, 8, 0, 0, Math.PI * 2);
-            ctx2.fill();
-          } });
-          sky.push({ s, x: wx, y: wy + 8 - alt });
-          if (Math.random() < 0.3) this.particles.emit({ x: wx - 14, y: wy + 6 - alt, vx: -8, vy: -2, maxLife: 1.2, size: 1, color: PAL.smoke, glow: false, kind: 'smoke' });
-        }
-        continue;
-      }
       let name: string;
       if (a.kind === AgentKind.Builder) {
         name = `builder_${a.variant % 3}_${a.phase === 2 ? 2 + (Math.floor(this.time * 4 + a.id) % 2) : a.phase === 1 && a.pathIdx < a.path.length ? walkFrame % 2 : 0}`;
@@ -752,26 +681,6 @@ export class Renderer {
     }
     ctx.globalAlpha = 1;
 
-    // mist on the marsh at dawn (iteration 85): pale banks that drift and thin as the morning goes
-    const mist = Math.max(0, 1 - Math.abs(tod - MIST_HOUR) / MIST_SPAN);
-    if (mist > 0.02 && !view.overlay) {
-      ctx.fillStyle = PAL.mist;
-      for (let y = minY; y <= maxY; y++)
-        for (let x = minX; x <= maxX; x++) {
-          if (!inBounds(x, y) || state.terrain[idx(x, y)] !== Terrain.Marsh) continue;
-          const [wx, wy] = tileToWorld(x, y);
-          const drift = Math.sin(this.time * 0.4 + x * 0.9 + y * 0.6) * 4;
-          for (let k = 0; k < 2; k++) {
-            ctx.globalAlpha = mist * (0.14 + 0.08 * h2(x, y, 90 + k));
-            const rx = 12 + h2(x, y, 93 + k) * 10;
-            ctx.beginPath();
-            ctx.ellipse(wx - left + drift + (k - 0.5) * 10, wy - top + 6 + k * 4, rx, rx * 0.3, 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      ctx.globalAlpha = 1;
-    }
-
     // lantern-way road lights
     if (night > 0.05) {
       for (let y = minY; y <= maxY; y++)
@@ -780,9 +689,6 @@ export class Renderer {
           if (state.road[i] === RoadType.Lantern && state.lit[i] && (x + y) % 2 === 0) {
             const [wx, wy] = tileToWorld(x, y);
             lights.push({ x: wx, y: wy + 8, r: 22, c: PAL.lanternLight, i: 0.6 });
-          } else if (state.road[i] === RoadType.Glowvine && state.lit[i]) {
-            const [wx, wy] = tileToWorld(x, y);
-            lights.push({ x: wx, y: wy + 8, r: 18, c: PAL.glimleaf, i: 0.45 + 0.1 * Math.sin(this.time * 1.5 + x * 0.7 + y) });
           }
         }
     }
@@ -857,7 +763,7 @@ export class Renderer {
   private gloamTreeCount = 2;
   private glowcapCount = 0;
   private autumnCount = 0;
-  private groundCount: Record<string, number> = { grass: 4, meadow: 3, forest: 3, hills: 3, shore: 2, ruins: 3, marsh: 3 };
+  private groundCount: Record<string, number> = { grass: 4, meadow: 3, forest: 3, hills: 3, shore: 2, ruins: 3 };
   /** Looks per building kind: `b_<key>_v0..N-1` (iteration 83), counted on first use. */
   private looks = new Map<string, number>();
   private stakeStage = 0;
@@ -866,7 +772,6 @@ export class Renderer {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state === 'ruin') return def.w === 1 ? 'ruin' : def.w === 2 ? 'ruin2' : 'ruin3';
     if (def.category === 'zone') return zoneSpriteName(this.atlas, b.kind, b.level, b.variant);
-    if (b.kind === 'worldtree') return `b_worldtree_${treeStage(b)}`;
     if (GROWING_HALLS.includes(b.kind)) return stagedSpriteName(b.kind, this.stakeStage, (n) => this.atlas.has(n));
     return lookName(this.atlas, `b_${b.kind}`, b.x, b.y, this.looks);
   }
@@ -1258,7 +1163,7 @@ export class Renderer {
   burst(kind: EffectKind, x: number, y: number): void {
     if (SOUND_CUES.includes(kind as SoundCue)) return;
     const [wx, wy] = tileToWorld(x, y);
-    const n = kind === 'surge' ? 60 : kind === 'portal' ? 14 : 20;
+    const n = kind === 'surge' ? 60 : 20;
     for (let k = 0; k < n; k++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 20 + Math.random() * 60;
@@ -1269,7 +1174,7 @@ export class Renderer {
         vy: Math.sin(a) * sp * 0.5 - 10,
         maxLife: 1 + Math.random(),
         size: kind === 'surge' ? 2 : 1,
-        color: kind === 'surge' ? PAL.ley1 : kind === 'fire' ? PAL.ember : kind === 'restless' ? PAL.restless : kind === 'gloam' ? PAL.gloamEye : kind === 'portal' ? PAL.arcane2 : PAL.leyGlow,
+        color: kind === 'surge' ? PAL.ley1 : kind === 'fire' ? PAL.ember : kind === 'restless' ? PAL.restless : kind === 'gloam' ? PAL.gloamEye : PAL.leyGlow,
         glow: true,
         kind: 'surge',
       });

@@ -19,7 +19,7 @@ const faction = (process.argv[5] ?? 'vellish') as FactionId;
 const rolls = rollsOf(process.argv[6]);
 const scenario = (process.argv.find((a) => a.startsWith('scenario='))?.slice(9) ?? 'valley') as Scenario; // iteration 95: a charter other than the valley, e.g. scenario=atoll (after roll=N)
 if (!['valley', 'onenode', 'island', 'atoll', 'inherited'].includes(scenario)) throw new Error(`unknown scenario "${scenario}"`);
-const state = scenario === 'valley' ? createGame(seed, 'Botwick', 'valley', faction) : createScenario(seed, 'Botwick', scenario, faction);
+const state = scenario === 'valley' ? createGame(seed, 'Botwick', faction) : createScenario(seed, 'Botwick', scenario, faction);
 if (process.argv[4] && process.argv[4] !== '-') state.treasury = Number(process.argv[4]);
 const bot = new Bot(state);
 const t0 = Date.now();

@@ -1,6 +1,4 @@
 /** Player commands. All mutate GameState and return a result string (null = ok). */
-import { RELIC_SETS } from './relics';
-import { FORD_COST, fordable } from './water';
 import { buildsFor, canBuild, factionOf, milestonesOf, type FactionId, costOf } from '../data/factions';
 import { BUILDING_BY_KEY, BULLDOZE_COST, ROAD_BY_TYPE, isBuildingUnlocked, isRoadUnlocked, isZoneUnlocked } from './catalog';
 import { RoadType, Terrain, Zone, idx, inBounds, isWater, type GameState } from './types';
@@ -17,9 +15,6 @@ export interface ActionResult {
   cost?: number;
 }
 
-/** A road across marsh is a causeway, at a bridge's price (iteration 85, DESIGN §17.1). */
-export const MARSH_CAUSEWAY = 4;
-
 export function roadTileCost(state: GameState, type: RoadType, i: number): number {
   const def = ROAD_BY_TYPE[type];
   const t = state.terrain[i];
@@ -29,9 +24,8 @@ export function roadTileCost(state: GameState, type: RoadType, i: number): numbe
   if (state.gloam[i]) return -1;
   if (!inCharter(state, i % MAP_W, (i / MAP_W) | 0)) return -1; // beyond the Charter
   let cost = def.cost;
-  if (t === Terrain.Water) cost *= type === RoadType.Track && fordable(state, i) ? FORD_COST : 4; // a track fords a narrow river (iteration 60); else a bridge
+  if (t === Terrain.Water) cost *= 4; // a bridge (the fords are parked, scope reset phase 1c)
   if (t === Terrain.Hills) cost *= 3; // cut into rock
-  if (t === Terrain.Marsh) cost *= MARSH_CAUSEWAY; // a causeway at a bridge's price (iteration 85)
   if (t === Terrain.Forest) cost += 5;
   if (state.road[i] === type) return 0;
   if (state.road[i] && state.road[i] > type) return -1; // no downgrade by drawing
@@ -139,7 +133,7 @@ export function paintZone(state: GameState, zone: Zone, x0: number, y0: number, 
 export function placeBuilding(state: GameState, key: string, x: number, y: number): ActionResult {
   const def = BUILDING_BY_KEY[key];
   if (!def) return { ok: false, reason: 'Unknown building' };
-  if (!canBuild(state, key)) return { ok: false, reason: def.relic && !state.relics?.complete.includes(def.relic) ? `Needs ${RELIC_SETS.find((r) => r.id === def.relic)?.name} entire` : !buildsFor(factionOf(state), def) ? `The ${factionOf(state).people} do not build this` : 'Not yet unlocked' };
+  if (!canBuild(state, key)) return { ok: false, reason: !buildsFor(factionOf(state), def) ? `The ${factionOf(state).people} do not build this` : 'Not yet unlocked' };
   if (def.wonder && state.buildings.some((b) => b && b.kind === key)) return { ok: false, reason: 'Only one may be raised' };
   const why = canPlaceBuilding(state, key, x, y);
   if (why) return { ok: false, reason: why };
@@ -252,34 +246,4 @@ export function restoreSnapshot(state: GameState, snap: Snapshot): void {
     if (a.homeId >= 0 && !ids.has(a.homeId)) a.homeId = -1;
     if (a.targetId >= 0 && !ids.has(a.targetId)) { a.targetId = -1; a.path = []; a.pathIdx = 0; }
   }
-}
-
-export type TerraformOp = 'clear' | 'plant' | 'level';
-export const TERRAFORM: Record<TerraformOp, { name: string; cost: number; unlock: number; desc: string; faction?: FactionId[] }> = {
-  clear: { name: 'Clear forest', cost: 40, unlock: 0, desc: 'Fell a forest tile to grass. Woodcutters are cheap; glimwood is not replanted by itself.' },
-  plant: { name: 'Plant glimwood', cost: 60, unlock: 2, desc: 'Plant a grass or meadow tile with forest. Trees raise land value a little and shade the Gloam\'s approach not at all.' },
-  level: { name: 'Level hills', cost: 220, unlock: 4, desc: 'Grimmen crews cut a hills tile down to grass. Slow, loud, and the only way to build a 2x2 where the rock was.' },
-};
-
-/** Terraforming: one tile at a time. */
-export function terraform(state: GameState, op: TerraformOp, x: number, y: number): ActionResult {
-  if (!inBounds(x, y)) return { ok: false };
-  if (!inCharter(state, x, y)) return { ok: false, reason: 'Beyond the Charter' };
-  const i = idx(x, y);
-  const def = TERRAFORM[op];
-  if (state.milestone < def.unlock) return { ok: false, reason: 'Not yet unlocked' };
-  if (def.faction && !def.faction.includes(state.faction)) return { ok: false, reason: `The ${factionOf(state).people} do not ${def.name.toLowerCase()}` };
-  if (state.bIndex[i] >= 0 || state.road[i]) return { ok: false, reason: 'Something stands here' };
-  if (state.gloam[i]) return { ok: false, reason: 'The Gloam holds this ground' };
-  const t = state.terrain[i];
-  if (op === 'clear' && t !== Terrain.Forest) return { ok: false, reason: 'No forest here' };
-  if (op === 'plant' && t !== Terrain.Grass && t !== Terrain.Meadow) return { ok: false, reason: 'Only grass or meadow can be planted' };
-  if (op === 'level' && t !== Terrain.Hills) return { ok: false, reason: 'No hills here' };
-  if (state.treasury < def.cost) return { ok: false, reason: 'Not enough crowns' };
-  state.treasury -= def.cost;
-  state.terrain[i] = op === 'plant' ? Terrain.Forest : Terrain.Grass;
-  state.stats.terraformed++;
-  if (op === 'level') state.stats.stoneCut++;
-  markDirtyAround(state, x, y);
-  return { ok: true, cost: def.cost };
 }

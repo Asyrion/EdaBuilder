@@ -10,7 +10,7 @@ import { WARD_BURN, dailyDeath, dailyGloam, greyInReach, wardBurnBudget } from '
 import { flatten } from './helpers';
 
 function town(seed = 41) {
-  const s = createGame(seed, 'Stakes', 'valley');
+  const s = createGame(seed, 'Stakes');
   const f = s.founding;
   flatten(s, f.x - 20, f.y - 14, f.x + 20, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 18, f.y + 2, f.x + 18, f.y + 2, false));

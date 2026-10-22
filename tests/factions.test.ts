@@ -23,7 +23,7 @@ FACTIONS.test = {
 afterAll(() => { delete FACTIONS.test; });
 
 function town(faction = 'vellish') {
-  const s = createGame(41, 'Peoples', 'valley', faction as 'vellish');
+  const s = createGame(41, 'Peoples', faction as 'vellish');
   const f = s.founding;
   flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 14, f.y + 2, f.x + 14, f.y + 2, false));

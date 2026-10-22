@@ -19,7 +19,7 @@ export function roadSpeedAt(s: GameState, i: number): number {
 
 /** The road at a market's door counts for its trade (iteration 75, AUDIT B40): the market tithe is scaled by the tier there,
  *  as the sim reads it (an unlit Lantern-way is cobble), and a dirt track in the mud of the Thaw and the Hush loses a fifth. */
-export const MARKET_ROAD_TRADE: Record<number, number> = { [RoadType.None]: 0.8, [RoadType.Track]: 0.9, [RoadType.Cobble]: 1.0, [RoadType.Lantern]: 1.1, [RoadType.Glowvine]: 1.1 };
+export const MARKET_ROAD_TRADE: Record<number, number> = { [RoadType.None]: 0.8, [RoadType.Track]: 0.9, [RoadType.Cobble]: 1.0, [RoadType.Lantern]: 1.1 };
 export const MARKET_MUD_TRADE = 0.8;
 export function muddySeason(s: GameState): boolean {
   const season = Math.floor(s.day / DAYS_PER_SEASON) % 4;

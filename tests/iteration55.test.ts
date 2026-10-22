@@ -15,7 +15,7 @@ import { flatten } from './helpers';
 
 
 function town(seed = 55) {
-  const s = createGame(seed, 'Annalwick', 'valley');
+  const s = createGame(seed, 'Annalwick');
   const f = s.founding;
   flatten(s, f.x - 18, f.y - 14, f.x + 18, f.y + 14);
   buildRoad(s, RoadType.Track, roadPath(f.x - 16, f.y + 2, f.x + 16, f.y + 2, false));

@@ -79,15 +79,15 @@ export function buildsFor(f: FactionDef, def: BuildingDef): boolean {
   return true;
 }
 
-/** Unlocked for this city: milestone, relic set, and the people. */
 /** A building's own gate beyond the milestone: the reason it cannot be raised now, or null. */
 export function specialLock(s: GameState, key: string): string | null {
   return null;
 }
+/** Unlocked for this city: the milestone and the people. */
 export function canBuild(s: GameState, key: string): boolean {
   const def = BUILDING_BY_KEY[key];
   if (!def) return false;
-  return buildsFor(factionOf(s), def) && isBuildingUnlocked(s.milestone, key, s.relics?.complete) && !specialLock(s, key);
+  return buildsFor(factionOf(s), def) && isBuildingUnlocked(s.milestone, key) && !specialLock(s, key);
 }
 
 /** The next milestone's gate in words, for the top bar: folk, and the people's own condition (iteration 54). */

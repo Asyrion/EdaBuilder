@@ -8,7 +8,7 @@ import { flatten } from './helpers';
 
 const Q = (id: string) => QUESTS.find((q) => q.id === id)!;
 function town(seed = 41, faction?: Parameters<typeof createGame>[3]) {
-  const s = createGame(seed, 'Audit', 'valley', faction);
+  const s = createGame(seed, 'Audit', faction);
   const f = s.founding;
   flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
   return s;

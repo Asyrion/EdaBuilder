@@ -4,9 +4,8 @@
  * bump, its undo snapshot) so live play is unchanged. A command is stamped with the tick it came in after; a replay applies the
  * commands of each tick before running the next, and the sim's determinism does the rest.
  */
-import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, restoreSnapshot, setTax, takeSnapshot, terraform, type Snapshot, type TerraformOp } from './actions';
+import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, restoreSnapshot, setTax, takeSnapshot, type Snapshot } from './actions';
 import { bumpRoadVersion } from './agents';
-import { foundDaughter } from './charter';
 import { construction } from './construction';
 import { runDev } from './dev';
 import { setQuarter, type QuarterId } from './districts';
@@ -15,10 +14,8 @@ import { setEdict } from './edicts';
 import { SaveVersionError, parkedContentMessage, parkedPeopleMessage, serialize } from './save';
 import { buySector } from './sectors';
 import { recomputeAll, tick } from './sim';
-import { createChallenge, createScenario } from './scenario';
-import { setQuarry } from './wild';
 import { createGame, deepenNode } from './world';
-import type { GameState, RoadType, Scenario, WildSpecies, Zone } from './types';
+import type { GameState, RoadType, Zone } from './types';
 import type { FactionId } from '../data/factions';
 
 export interface Command { t: number; op: string; args: unknown[] }
@@ -26,7 +23,8 @@ export interface Command { t: number; op: string; args: unknown[] }
 export interface CommandResult { ok: boolean; reason?: string | null; out?: string }
 
 /** A charter's start: enough to create the same state again. */
-export interface ReplayHeader { seed: number; name: string; scenario: Scenario | 'daily' | 'valley'; faction: FactionId; challenge?: string }
+/** `scenario` is always 'valley' now: the other scenarios and the daily challenge are parked (scope reset phase 1c). */
+export interface ReplayHeader { seed: number; name: string; scenario: string; faction: FactionId; challenge?: string }
 /** A replay file: the start, the commands, a checkpoint each day, the end. */
 export interface ReplayFile {
   replay: 1;
@@ -48,7 +46,6 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   // the map tools (src/ui/tools.ts): a snapshot first where the tool took one, then the action, then recomputeAll on success
   snap: (s, r, [label]) => { r.undoStack.push(takeSnapshot(s, String(label))); if (r.undoStack.length > UNDO_DEPTH) r.undoStack.shift(); return { ok: true }; },
   bulldoze: (s, _r, [x, y]) => { const res = bulldoze(s, x, y); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
-  terraform: (s, _r, [op, x, y]) => { const res = terraform(s, op as TerraformOp, x, y); if (res.ok) recomputeAll(s); return res; },
   build: (s, _r, [key, x, y]) => { const res = placeBuilding(s, key, x, y); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
   road: (s, _r, [type, tiles]) => { const res = buildRoad(s, type as RoadType, tiles as number[]); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
   zone: (s, _r, [zone, x0, y0, x1, y1]) => { const res = paintZone(s, zone as Zone, x0, y0, x1, y1); if (res.ok) recomputeAll(s); return res; },
@@ -68,20 +65,18 @@ const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandR
   repay: (s) => { const why = repayLoan(s); return { ok: !why, reason: why }; },
   sector: (s, _r, [k]) => { const why = buySector(s, k); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   deepen: (s, _r, [i]) => { const why = deepenNode(s, i); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
-  // the daughter charter builds roads: the path cache is bumped (it was not before iteration 67)
-  daughter: (s, _r, [i, name]) => { const why = foundDaughter(s, i, name); if (!why) { bumpRoadVersion(); recomputeAll(s); } return { ok: !why, reason: why }; },
   quarter: (s, _r, [d, q]) => { const why = setQuarter(s, d, (q ?? null) as QuarterId | null); if (!why) recomputeAll(s); return { ok: !why, reason: why }; },
   lesson: (s, _r, [id]) => { if (!s.lessonsSeen.includes(id)) s.lessonsSeen.push(id); return { ok: true }; },
   priority: (s, _r, [id, p]) => { const x = b(s, id); if (!x) return { ok: false }; x.priority = p; x.lit = true; recomputeAll(s); return { ok: true }; },
   renameDistrict: (s, _r, [d, name]) => { s.districtNames[d] = String(name).trim().slice(0, 18); return { ok: true }; },
-  quarry: (s, _r, [id, q]) => { const x = b(s, id); return { ok: !!x && setQuarry(s, x, (q || null) as WildSpecies | null) }; },
   dev: (s, _r, [id, arg, x, y]) => { const out = runDev(s, id, arg, { x, y }); recomputeAll(s); return { ok: true, out }; },
 };
 export const COMMAND_OPS = Object.keys(OPS);
 /** The ops of the systems the scope reset parked: in phase 1b glim-dust, the Warding Wall and its gates, the dragons, the Scale
- *  Ward, wyrmfire, the Sky-Dock's wyvern and the golems; in 1c the tales, the guilds, the Wright's Lodge's vent and the
- *  Storm-Caller's rain. A replay that uses one is refused (docs/PARKED.md). */
-export const PARKED_OPS = ['dust', 'gate', 'wall', 'training', 'replate', 'role', 'cradle', 'nest', 'burnWyrmfire', 'skydock', 'golem', 'tale', 'guild', 'vent', 'rain'];
+ *  Ward, wyrmfire, the Sky-Dock's wyvern and the golems; in 1c the tales, the guilds, the Wright's Lodge's vent, the
+ *  Storm-Caller's rain, terraforming, the daughter charter and the hunters' quarry. A replay that uses one is refused
+ *  (docs/PARKED.md), and so is one of a scenario other than the valley. */
+export const PARKED_OPS = ['dust', 'gate', 'wall', 'training', 'replate', 'role', 'cradle', 'nest', 'burnWyrmfire', 'skydock', 'golem', 'tale', 'guild', 'vent', 'rain', 'terraform', 'daughter', 'quarry'];
 
 /** Runs commands against a state: logs them while recording, and keeps the undo stack both the live game and a replay rebuild. */
 export class CommandRunner {
@@ -125,7 +120,8 @@ export function checksum(s: GameState): string {
 /** A new charter from a header, with the module state a new game resets (the path cache, the dev's instant building). */
 export function stateFromHeader(h: ReplayHeader): GameState {
   if (h.faction !== undefined && h.faction !== 'vellish') throw new SaveVersionError(parkedPeopleMessage(String(h.faction)));
-  const s = h.scenario === 'daily' ? createChallenge(h.name, h.challenge) : h.scenario === 'valley' ? createGame(h.seed, h.name, 'valley', h.faction) : createScenario(h.seed, h.name, h.scenario as Scenario, h.faction);
+  if (h.scenario !== 'valley') throw new SaveVersionError(parkedContentMessage(h.scenario === 'daily' ? 'a daily challenge' : `the scenario "${h.scenario}"`));
+  const s = createGame(h.seed, h.name, h.faction);
   construction.instant = false;
   recomputeAll(s);
   bumpRoadVersion();

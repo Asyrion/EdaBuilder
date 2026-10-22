@@ -16,7 +16,7 @@ import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
-  const s = createGame(seed, 'Sweep', 'valley');
+  const s = createGame(seed, 'Sweep');
   const f = s.founding;
   flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 14, f.y + 2, f.x + 14, f.y + 2, false));
@@ -37,7 +37,7 @@ describe('The sweep: quests', () => {
     expect(s.questsDone).not.toContain('z_onenode');
     expect(s.questsDone).not.toContain('z_inherited');
     expect(s.treasury - t0).toBeLessThan(5000);
-    const c = createGame(7, 'Daily', 'valley'); c.challenge = 'x' as never; c.day = 61;
+    const c = createGame(7, 'Daily'); c.challenge = 'x' as never; c.day = 61;
     expect(QUESTS.find((q) => q.id === 'z_daily')!.when(c)).toBe(false);
   });
 

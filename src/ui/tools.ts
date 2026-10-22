@@ -1,6 +1,5 @@
 /** Mouse/keyboard input → tool state → sim actions. */
 import { shortcutTarget } from './focus';
-import { TERRAFORM, terraform, type TerraformOp } from '../sim/actions';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
 import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
@@ -20,7 +19,7 @@ export type Tool =
   | { kind: 'build'; key: string }
   | { kind: 'district'; id: number }
   | { kind: 'bulldoze' }
-  | { kind: 'terrain'; op: TerraformOp };
+;
 
 export interface ToolHost {
   state: GameState;
@@ -115,11 +114,6 @@ export class Tools {
         this.host.beforeAction('bulldoze');
         this.doBulldoze(t);
         break;
-      case 'terrain':
-        this.bulldozed.clear();
-        this.host.beforeAction('terrain');
-        this.doTerraform(t);
-        break;
       case 'build':
         this.doBuild(t);
         break;
@@ -145,7 +139,6 @@ export class Tools {
     const t = this.tileAt(e);
     this.host.view.hover = t;
     if (this.tool.kind === 'bulldoze' && this.dragButton === 0 && e.buttons & 1) this.doBulldoze(t);
-    if (this.tool.kind === 'terrain' && this.dragButton === 0 && e.buttons & 1) this.doTerraform(t);
     this.updatePreview();
   }
 
@@ -186,16 +179,6 @@ export class Tools {
   private roadTiles(a: [number, number], b: [number, number]): number[] {
     const vertical = Math.abs(b[1] - a[1]) > Math.abs(b[0] - a[0]);
     return roadPath(a[0], a[1], b[0], b[1], vertical);
-  }
-
-  private doTerraform(t: [number, number]): void {
-    if (this.tool.kind !== 'terrain' || !inBounds(t[0], t[1])) return;
-    const i = idx(t[0], t[1]);
-    if (this.bulldozed.has(i)) return;
-    this.bulldozed.add(i);
-    const r = this.host.exec('terraform', this.tool.op, t[0], t[1]);
-    if (r.ok) this.host.onAction('terrain');
-    else if (r.reason) this.host.onAction('error', r.reason);
   }
 
   private doBulldoze(t: [number, number]): void {
@@ -336,7 +319,6 @@ export function toolLabel(t: Tool): string {
     case 'build': return `Build: ${BUILDING_BY_KEY[t.key].name}`;
     case 'district': return t.id === 0 ? 'District: clear' : `District: ${DISTRICT_NAMES[t.id - 1]}`;
     case 'bulldoze': return 'Bulldoze';
-    case 'terrain': return `Land: ${TERRAFORM[t.op].name}`;
   }
 }
 

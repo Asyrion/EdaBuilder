@@ -14,16 +14,9 @@ export interface EdictDef {
   cityOnly?: boolean; // read city-wide only: never offered or billed per district
 }
 
-import { DRAIN_BASE, DRAIN_PER_DAY, DRAIN_PER_TEN, drainageCost } from './marsh';
 import EDICT_TEXT from '../data/content/text/edicts.json';
 
 export const EDICTS: EdictDef[] = [
-  {
-    key: 'closeseason', name: EDICT_TEXT.closeseason.name,
-    desc: EDICT_TEXT.closeseason.desc,
-    flavor: EDICT_TEXT.closeseason.flavor,
-    costPerDay: (s) => 10 + s.buildings.filter((b) => b && b.kind === 'hunterslodge').length * 10, unlock: 2, cityOnly: true,
-  },
   {
     key: 'curfew', name: EDICT_TEXT.curfew.name,
     desc: EDICT_TEXT.curfew.desc,
@@ -65,12 +58,6 @@ export const EDICTS: EdictDef[] = [
     desc: EDICT_TEXT.scholars.desc,
     flavor: EDICT_TEXT.scholars.flavor,
     costPerDay: (s) => Math.round(s.population * 0.2), unlock: 3,
-  },
-  {
-    key: 'drainage', name: EDICT_TEXT.drainage.name,
-    desc: `Ditchers cut the marsh nearest the city to meadow, ${DRAIN_PER_DAY} tiles a day: no causeway needed there, no miasma from it, and land to build on. The land loses its reeds. ${DRAIN_BASE} crowns a day and ${DRAIN_PER_TEN} more for every ten marsh tiles left.`,
-    flavor: EDICT_TEXT.drainage.flavor,
-    costPerDay: (s) => drainageCost(s), unlock: 3, cityOnly: true,
   },
 ];
 

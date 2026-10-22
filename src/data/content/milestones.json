@@ -10,21 +10,21 @@
     "name": "Hamlet",
     "pop": 40,
     "grant": 2000,
-    "unlocks": ["cobble", "boneyard", "healer", "garden", "fishershut", "reedcutters"],
+    "unlocks": ["cobble", "boneyard", "healer", "garden"],
     "text": "Forty souls under your light. The Crown sends cobbles, a sexton and a healer, and grants you two districts: paint one and charter it a Hearth or Craft quarter."
   },
   {
     "name": "Thorp",
     "pop": 100,
     "grant": 3000,
-    "unlocks": ["veshari", "wardlantern", "cistern", "smokehouse", "weir"],
+    "unlocks": ["veshari", "wardlantern", "cistern"],
     "text": "A hundred hearths. The water-mages answer your call, and the first Ward Lantern is yours to raise."
   },
   {
     "name": "Village",
     "pop": 220,
     "grant": 4500,
-    "unlocks": ["academy", "watchhouse", "square", "depot", "brickworks"],
+    "unlocks": ["academy", "watchhouse", "square", "depot"],
     "text": "A village with a name on the Crown's maps. Scholars, a proper Watch and the carters' guild follow."
   },
   {
@@ -38,7 +38,7 @@
     "name": "Market Town",
     "pop": 650,
     "grant": 8000,
-    "unlocks": ["ossuary", "hospice", "watergarden"],
+    "unlocks": ["ossuary", "hospice"],
     "text": "Carts from three valleys come to your market. The Ossuary and the Hospice may be raised."
   },
   {
@@ -52,14 +52,14 @@
     "name": "Free City",
     "pop": 1500,
     "grant": 16000,
-    "unlocks": ["lantern", "fontquieting"],
-    "text": "The Crown grants you the right to raise a Lantern of Vell and a Font of Quieting."
+    "unlocks": ["lantern"],
+    "text": "The Crown grants you the right to raise a Lantern of Vell."
   },
   {
     "name": "Beacon of Eda",
     "pop": 2200,
     "grant": 25000,
-    "unlocks": ["skydock"],
+    "unlocks": [],
     "text": "Your light is seen from the next wardlight. Songs are sung in Vell-on-Sable of your valley."
   }
 ]

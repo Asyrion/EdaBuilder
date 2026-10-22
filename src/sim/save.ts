@@ -1,8 +1,6 @@
 /** JSON serialization of GameState. Typed arrays are base64-encoded. */
-import { initRelics } from './relics';
-import { AgentKind, SAVE_VERSION, SERVICE_TYPES, isWater, type GameState, type ServiceType } from './types';
+import { SAVE_VERSION, SERVICE_TYPES, Terrain, isWater, type GameState, type ServiceType } from './types';
 import { BUILDING_BY_KEY } from './catalog';
-import { isWild } from './wild';
 import { emptyLedger, markAllDirty } from './world';
 import { recomputeAll } from './sim';
 import { distanceMap } from './terrain';
@@ -41,16 +39,21 @@ export class SaveVersionError extends Error {}
 export function parkedPeopleMessage(people: string): string {
   return `This charter belongs to a people that is parked for now (${people}): this Wardlight plays the Vellish only.`;
 }
-/** A charter that holds what the scope reset parked in phase 1b (dragons, the Warding Wall, their buildings): refused with the
- *  first such thing named, as it would load what this build no longer has (docs/PARKED.md). */
+/** A charter that holds what the scope reset parked in phases 1b and 1c (dragons, the Warding Wall, a parked building, a
+ *  glowvine lane, a scenario other than the valley, a daughter wardlight, a daily challenge): refused with the first such
+ *  thing named, as it would load what this build no longer has (docs/PARKED.md). */
 export function parkedContentMessage(what: string): string {
   return `This charter holds something that is parked for now (${what}): this Wardlight cannot load it.`;
 }
-/** The first parked thing a raw save holds, or null: a building this build no longer has, a dragon, a stretch of the Warding Wall. */
+/** The first parked thing a raw save holds, or null. */
 export function parkedContentIn(o: Record<string, any>): string | null {
   for (const b of (o.buildings ?? []) as ({ kind: string } | null)[]) if (b && !BUILDING_BY_KEY[b.kind]) return `the building "${b.kind}"`;
   if (Array.isArray(o.dragons) && o.dragons.length) return 'dragons';
   if (o.wall && typeof o.wall === 'object' && 'u8' in o.wall && fromB64(o.wall.u8).some((v) => v !== 0)) return 'the Warding Wall';
+  if (o.road && typeof o.road === 'object' && 'u8' in o.road && fromB64(o.road.u8).some((v) => v === 4)) return 'a glowvine lane';
+  if (o.scenario !== undefined && o.scenario !== 'valley') return `the scenario "${o.scenario}"`;
+  if (o.daughter) return 'a daughter wardlight';
+  if (o.challenge) return 'a daily challenge';
   return null;
 }
 
@@ -63,7 +66,7 @@ export function parkedContentIn(o: Record<string, any>): string | null {
 export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, any>) => void> = {
   6: (state, o) => {
     if (!('sectors' in o)) state.sectors.fill(1); // saves from before map sectors own the whole map
-    for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; b.cooldown = b.cooldown ?? 0; }
+    for (const b of state.buildings) if (b) { b.stock = b.stock ?? 0; b.problemDays = b.problemDays ?? 0; }
     state.chronicle = state.chronicle ?? [];
     state.questsDone = state.questsDone ?? [];
     for (const a of state.agents) a.load = a.load ?? 0;
@@ -80,20 +83,9 @@ export const MIGRATIONS: Record<number, (state: GameState, raw: Record<string, a
     state.quarterSince = state.quarterSince ?? {}; // a charter with no stamp may be changed
     state.remembranceDead = state.remembranceDead ?? 0;
     state.gloamPressure = state.gloamPressure ?? 0.3;
-    state.educatedFloor = state.educatedFloor ?? 0;
     state.trade = state.trade ?? { exported: 0, imported: 0, importCost: 0, priceGoods: 2, priceLeystone: 3 };
-    // the stats object is replaced whole by the save: stone before iteration 38 was every terraform op; the rest fill from a fresh game below
-    if (state.stats.stoneCut === undefined) state.stats.stoneCut = state.stats.terraformed ?? 0;
-    state.relics = state.relics ?? initRelics();
-    state.relicStock = state.relicStock ?? 0;
     for (const b of state.buildings) if (b) { b.work = b.work ?? 0; b.workTotal = b.workTotal ?? 0; }
-    state.airship = state.airship ?? { status: 'none', goods: 0, since: -1, voyages: 0 };
-    state.scenario = state.scenario ?? 'valley';
     state.faction = state.faction ?? 'vellish';
-    state.daughter = state.daughter ?? null;
-    state.challenge = state.challenge ?? null;
-    state.challengeDay = state.challengeDay ?? -1;
-    state.cleanDays = state.cleanDays ?? 0;
   },
 };
 
@@ -121,11 +113,13 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
   for (let v = Math.max(6, saved); v < SAVE_VERSION; v++) MIGRATIONS[v](state, o);
   // the fill every version gets: a counter or a ledger row the save lacks starts where a fresh game's does
   state.stats = { ...freshStats, ...state.stats };
-  if (!('wild' in o)) { state.wild = { herds: [], nextId: 1, seeded: false, foldsUntil: -1, thriveUntil: -1, hensDay: -99, meatAt: [] }; state.agents = state.agents.filter((a) => a.herdId === undefined); } // a save from before the wild seeds its herds on its own land the next day (iteration 58)
-  if (!('water' in o)) state.water = { fish: [], spawnUntil: -1, fishAt: [], closed: [] }; // a save from before the water: every shoal starts full (iteration 60)
   state.ledger = { ...emptyLedger(), ...(state.ledger ?? {}) };
-  // the parked creatures (phase 1b) and walkers (1c, kind 5) leave the map; the wild, the boats and the airship stay
-  state.agents = state.agents.filter((a) => (a.kind as number) !== 5 && (a.kind !== AgentKind.Creature || a.species === 'airship' || a.species === 'boat' || isWild(a.species)));
+  // the parked creatures (kind 3: phase 1b, and the wild, the boats and the airship in 1c), walkers (1c, kind 5) and barges
+  // and floating carts (cart variants 3 and 4) leave the map; the marsh (1c) turns to meadow
+  state.agents = state.agents.filter((a) => (a.kind as number) !== 3 && (a.kind as number) !== 5 && !(a.kind === 1 && (a.variant === 3 || a.variant === 4)));
+  for (const a of state.agents) for (const k of ['species', 'alt', 'anchorId', 'ax', 'ay', 'herdId']) delete (a as unknown as Record<string, unknown>)[k];
+  for (const b of state.buildings) if (b) for (const k of ['cooldown', 'quarry', 'meat', 'trophies', 'took', 'tookSp', 'wolfDay', 'broken', 'fish', 'fishOld', 'caught', 'spoiled', 'thatchUntil']) delete (b as unknown as Record<string, unknown>)[k];
+  for (let i = 0; i < state.terrain.length; i++) if (state.terrain[i] === Terrain.Marsh) state.terrain[i] = Terrain.Meadow;
   for (const n of state.nodes) delete (n as { aspect?: string }).aspect; // the ley aspects are parked (1c)
   for (const k of Object.keys(state.stats)) if (!(k in freshStats)) delete (state.stats as Record<string, number>)[k]; // the parked systems' counters
   if (!state.district || state.district.length !== state.w * state.h) state.district = new Uint8Array(state.w * state.h);

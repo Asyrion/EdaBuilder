@@ -25,7 +25,7 @@ describe('Iteration 93: every task says what it still needs', () => {
 
   it('every building task has a line, and no line throws or comes back empty, early, a month in and from an old save, for every people', () => {
     for (const people of PEOPLES) {
-      const s = createGame(42, 'Lines', 'valley', people);
+      const s = createGame(42, 'Lines', people);
       const states = [s];
       const bot = new Bot(s);
       run(s, TICKS_PER_DAY * 30, { onDay: () => bot.step() });
@@ -33,7 +33,7 @@ describe('Iteration 93: every task says what it still needs', () => {
       const raw = JSON.parse(serialize(s));
       delete raw.stats.watchRounds;
       states.push(deserialize(JSON.stringify(raw), (seed) => createGame(seed)));
-      const fresh = createGame(7, 'Fresh', 'valley', people);
+      const fresh = createGame(7, 'Fresh', people);
       states.push(fresh);
       for (const st of states) for (const q of QUESTS) {
         const line = questStatus(st, q);

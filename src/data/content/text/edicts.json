@@ -1,9 +1,4 @@
 {
-  "closeseason": {
-    "name": "The Close Season",
-    "desc": "Wardens of the chase: no lodge takes game in Bloom while the herds drop their young, no lodge takes a herd below 6 head, and the herds breed a quarter faster. 10 crowns a day and 10 a lodge.",
-    "flavor": "The hart is the Crown's in Bloom and the cook's in Ember. The wardens of the chase keep the calendar."
-  },
   "curfew": {
     "name": "Night Curfew",
     "desc": "The Watch clears the streets after dark. Unrest −10, restless cleared faster; happiness −4.",
@@ -36,11 +31,7 @@
   },
   "scholars": {
     "name": "Scholars' Stipend",
-    "desc": "Free schooling for Grimmen and Tallowkin children. Educated share grows 50% faster. 0.2 crowns per resident per day.",
+    "desc": "Free schooling for every child of the city. Educated share grows 50% faster. 0.2 crowns per resident per day.",
     "flavor": "The girl who reads leystone like a book now has forty classmates."
-  },
-  "drainage": {
-    "name": "The Drainage",
-    "flavor": "The fen gives up an acre a week and the frogs file a complaint."
   }
 }

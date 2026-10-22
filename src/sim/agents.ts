@@ -1,12 +1,8 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
 import { effects } from './hazards';
-import { fordClosed } from './water';
 import { marketQuarterAt } from './districts';
-import { BARGE_VARIANT, FLOAT_VARIANT, deliverBarge, floatingCarts, floatingTarget } from './vehicles';
-import { fontOfQuieting } from './hazards';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
-import { PORTAL_CAP } from './networks';
 import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
 import { edictOn } from './edicts';
@@ -38,33 +34,7 @@ export function findPath(state: GameState, start: number, goal: number, maxNodes
   return result ? result.slice() : null;
 }
 
-/** Road tiles next to each lit Portal Arch, if exactly two stand lit: [tilesAtA, tilesAtB]. */
-export function portalGates(state: GameState): [number[], number[]] | null {
-  const arches: Building[] = [];
-  forEachBuilding(state, (b) => { if (b.kind === 'portalarch' && b.state === 'ok' && b.lit) arches.push(b); });
-  if (arches.length < 2) return null;
-  const roadsAround = (b: Building) => {
-    const out: number[] = [];
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as [number, number][]) {
-      const x = b.x + dx;
-      const y = b.y + dy;
-      if (inBounds(x, y) && state.road[idx(x, y)]) out.push(idx(x, y));
-    }
-    return out;
-  };
-  const a = roadsAround(arches[0]);
-  const b = roadsAround(arches[1]);
-  return a.length && b.length ? [a, b] : null;
-}
-
 function astar(state: GameState, start: number, goal: number, maxNodes: number): number[] | null {
-  const gates = portalGates(state);
-  const portal = new Map<number, number[]>();
-  const portalBusy = !!gates && state.buildings.some((b) => b && b.kind === 'portalarch' && (b.load ?? 0) > PORTAL_CAP);
-  if (gates) {
-    for (const t of gates[0]) portal.set(t, gates[1]);
-    for (const t of gates[1]) portal.set(t, gates[0]);
-  }
   const gx = goal % MAP_W;
   const gy = (goal / MAP_W) | 0;
   const g = new Map<number, number>();
@@ -125,16 +95,15 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
     const x = cur % MAP_W;
     const y = (cur / MAP_W) | 0;
     const gc = g.get(cur)!;
-    const far = portal.get(cur);
-    const nb = [cur - 1, cur + 1, cur - MAP_W, cur + MAP_W, ...(far ?? [])];
+    const nb = [cur - 1, cur + 1, cur - MAP_W, cur + MAP_W];
     const ok = [x > 0, x < MAP_W - 1, y > 0, y < MAP_H - 1];
     for (let k = 0; k < nb.length; k++) {
-      if (k < 4 && !ok[k]) continue;
+      if (!ok[k]) continue;
       const j = nb[k];
       const rt = roadAt(state, j);
-      if (!rt || fordClosed(state, j)) continue; // a ford under high water (water.ts, iteration 60)
+      if (!rt) continue;
       const congestion = state.trafficSmooth[j] / 255;
-      const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5 + (k >= 4 && portalBusy ? 1.5 : 0); // mud on a track; a busy arch costs like a jammed road
+      const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5; // mud on a track
       const ng = gc + cost;
       if (ng < (g.get(j) ?? Infinity)) {
         g.set(j, ng);
@@ -209,15 +178,15 @@ export function dailyAgents(state: GameState): void {
   let carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart) carts++;
   }
   // remove agents whose home vanished
-  state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.kind === AgentKind.Creature || a.homeId >= 0);
+  state.agents = state.agents.filter((a) => a.kind === AgentKind.Restless || a.homeId >= 0);
   citizens = 0;
   carts = 0;
   for (const a of state.agents) {
     if (a.kind === AgentKind.Citizen) citizens++;
-    else if (a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT) carts++;
+    else if (a.kind === AgentKind.Cart) carts++;
   }
   while (citizens > targetCitizens) {
     const i = state.agents.findIndex((a) => a.kind === AgentKind.Citizen);
@@ -226,7 +195,7 @@ export function dailyAgents(state: GameState): void {
     citizens--;
   }
   while (carts > targetCarts) {
-    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && a.variant !== BARGE_VARIANT && !mines.some((m) => m.id === a.homeId));
+    const i = state.agents.findIndex((a) => a.kind === AgentKind.Cart && !mines.some((m) => m.id === a.homeId));
     if (i < 0) break;
     state.agents.splice(i, 1);
     carts--;
@@ -271,7 +240,6 @@ export function dailyAgents(state: GameState): void {
     }
   }
   const cartHomes = crafts;
-  let floatLeft = floatingTarget(state) - floatingCarts(state);
   if (cartHomes.length && markets.length) {
     let spawned = 0;
     while (carts < targetCarts && spawned < 30) {
@@ -290,7 +258,7 @@ export function dailyAgents(state: GameState): void {
         homeId: home.id,
         targetId: -1,
         timer: rng.int(300),
-        variant: home.kind === 'mine' ? 0 : floatLeft-- > 0 ? FLOAT_VARIANT : 1 + rng.int(2),
+        variant: home.kind === 'mine' ? 0 : 1 + rng.int(2), // the floating carts (variant 3) are parked (scope reset phase 1c)
         dir: 0,
         load: 0,
       });
@@ -437,12 +405,11 @@ export function tickAgents(state: GameState): void {
   };
   const dt = 1 / TICKS_PER_SEC;
   for (const a of state.agents) {
-    if (a.kind === AgentKind.Creature || a.kind === AgentKind.Builder) continue;
+    if (a.kind === AgentKind.Builder) continue;
     if (a.timer > 0) {
       a.timer--;
       continue;
     }
-    if (a.pathIdx >= a.path.length && a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT) { a.homeId = -2; continue; }
     if (a.pathIdx >= a.path.length) {
       chooseTrip(state, a, rng, getPools());
       if (a.pathIdx >= a.path.length && a.timer === 0) a.timer = 60 + rng.int(120);
@@ -453,37 +420,16 @@ export function tickAgents(state: GameState): void {
     const ty = ((t / MAP_W) | 0) + 0.5;
     const rt = roadAt(state, t) || 1;
     const congestion = state.trafficSmooth[t] / 255;
-    const floating = a.kind === AgentKind.Cart && a.variant === FLOAT_VARIANT;
-    const barge = a.kind === AgentKind.Cart && a.variant === BARGE_VARIANT;
-    let sp = a.speed * (barge ? 1.2 : floating ? ROAD_BY_TYPE[rt].speed : roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (floating || barge ? 1 : 1 - congestion * 0.6) * dt;
+    let sp = a.speed * (roadSpeedAt(state, t) || ROAD_BY_TYPE[rt].speed) * (1 - congestion * 0.6) * dt;
     if (a.kind === AgentKind.Cart) sp *= 1.1;
     const dx = tx - a.x;
     const dy = ty - a.y;
-    let d = Math.hypot(dx, dy);
-    if (d > 1.6) {
-      // a Portal Arch: step out of the far arch, if both arches still stand lit; every crossing counts on both
-      const archAt = (x: number, y: number) => state.buildings.find((b) => b && b.kind === 'portalarch' && b.state === 'ok' && b.lit && Math.abs(b.x + (b.w - 1) / 2 - x) <= 2.5 && Math.abs(b.y + (b.h - 1) / 2 - y) <= 2.5) ?? null;
-      const a1 = archAt(a.x, a.y);
-      const a2 = archAt(tx, ty);
-      if (!a1 || !a2) { a.path = []; a.pathIdx = 0; return; }
-      for (const ar of [a1, a2]) { ar.load = (ar.load ?? 0) + 1; if (ar.load === PORTAL_CAP + 1) bumpRoadVersion(); }
-      effects.push({ x: Math.floor(a.x), y: Math.floor(a.y), kind: 'portal', tick: state.tick });
-      effects.push({ x: t % MAP_W, y: (t / MAP_W) | 0, kind: 'portal', tick: state.tick });
-      state.stats.portalTrips++;
-      a.x = tx;
-      a.y = ty;
-      d = 0;
-    }
+    const d = Math.hypot(dx, dy);
     if (d <= sp) {
       a.x = tx;
       a.y = ty;
       a.pathIdx++;
-      if (t < state.traffic.length && !floating && !barge) state.traffic[t] += a.kind === AgentKind.Cart ? 3 : 1;
-      if (a.pathIdx >= a.path.length && barge) {
-        deliverBarge(state, a);
-        a.homeId = -2; // removed below
-        continue;
-      }
+      if (t < state.traffic.length) state.traffic[t] += a.kind === AgentKind.Cart ? 3 : 1;
       if (a.pathIdx >= a.path.length) {
         // arrived
         a.timer = a.kind === AgentKind.Restless ? 20 + rng.int(60) : 150 + rng.int(450);
@@ -531,7 +477,7 @@ export function dailyRestless(state: GameState): number {
   state.agents = state.agents.filter((a) => {
     if (a.kind !== AgentKind.Restless) return true;
     const i = idx(Math.max(0, Math.min(MAP_W - 1, Math.floor(a.x))), Math.max(0, Math.min(MAP_H - 1, Math.floor(a.y))));
-    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew', i) ? 1.4 : 1) + (fontOfQuieting(state) ? 0.25 : 0);
+    const p = ((state.coverage.watch[i] / 255) * 0.6 + (state.coverage.ward[i] / 255) * 0.7 + (state.coverage.faith[i] / 255) * 0.2) * (edictOn(state, 'curfew', i) ? 1.4 : 1);
     if (rng.chance(Math.min(0.9, p))) {
       cleared++;
       return false;
