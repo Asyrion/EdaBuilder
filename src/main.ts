@@ -76,6 +76,7 @@ class Game {
       camera: this.renderer.camera,
       onAction: (kind, msg) => this.onAction(kind, msg),
       onSelect: (b) => this.select(b),
+      onHover: (t, cx, cy) => this.ui.hoverTile(t, cx, cy),
       onSelectNode: (i) => { this.selectedNode = i; this.ui.refresh(); },
       onSelectSector: (k) => { this.selectedSector = k; this.ui.refresh(); },
       beforeAction: (label) => this.pushUndo(label),

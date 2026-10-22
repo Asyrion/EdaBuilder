@@ -43,23 +43,52 @@ function demandFor(state: GameState, zone: Zone): number {
   }
 }
 
-/** Called every 10 ticks: try to spawn a few buildings on zoned tiles. */
+/** Why a zoned tile does or does not grow (scope reset phase 2-1). An empty lot: `ok` (it can grow), `noRoad`, `noDemand`
+    (its zone's bar at or below zero), `gloam`, `noSchool` (an Arcane lot needs school coverage 40). A zone building: `ok`
+    (it is climbing a level), `top` (level 3), `abandoned`, or the first unmet level-up need from levelUpNeeds: `landValue`,
+    `dark`, `dry`, `unhappy`, `school`. `none` for a tile that is not zoned or holds another building. */
+export type GrowthBlock = 'ok' | 'noRoad' | 'noDemand' | 'gloam' | 'noSchool' | 'top' | 'abandoned' | 'landValue' | 'dark' | 'dry' | 'unhappy' | 'school' | 'none';
+export const ARCANE_SCHOOL = 40;
+
+export function growthBlock(state: GameState, i: number): GrowthBlock {
+  const z = state.zone[i] as Zone;
+  const bi = state.bIndex[i];
+  if (bi >= 0) {
+    const b = state.buildings[bi];
+    if (!b || BUILDING_BY_KEY[b.kind].category !== 'zone') return 'none';
+    if (b.state === 'abandoned' || b.state === 'ruin') return 'abandoned';
+    const needs = levelUpNeeds(state, b);
+    if (!needs.length) return 'top';
+    const first = needs.findIndex((n) => !n.met);
+    return first < 0 ? 'ok' : (['landValue', 'dark', 'dry', 'unhappy', 'school', 'school'] as GrowthBlock[])[first];
+  }
+  if (!z || state.road[i]) return 'none';
+  if (state.gloam[i]) return 'gloam';
+  if (!touchesRoad(state, i % MAP_W, (i / MAP_W) | 0, 1, 1)) return 'noRoad';
+  if (demandFor(state, z) <= 0) return 'noDemand';
+  if (z === Zone.Arcane && state.coverage.school[i] < ARCANE_SCHOOL) return 'noSchool';
+  return 'ok';
+}
+
+/** Called every 10 ticks: up to `attempts` draws among the lots that can grow (empty, by a road, out of the Gloam, schooled
+    for Arcane, with demand for their zone); each grows with chance min(1, demand) × 0.45. Before phase 2-1 a draw took any
+    zoned tile, built or not, so a full city wasted most of its draws. */
 export function trySpawnBuildings(state: GameState, attempts = 5): void {
   const list = refreshZoneList(state);
   if (list.length === 0) return;
+  const lots: number[] = [];
+  for (const i of list) if (state.bIndex[i] < 0 && growthBlock(state, i) === 'ok') lots.push(i);
+  if (lots.length === 0) return;
   const rng = rngOf(state);
-  for (let k = 0; k < attempts; k++) {
-    const i = list[rng.int(list.length)];
-    const z = state.zone[i];
-    if (!z || state.bIndex[i] >= 0 || state.gloam[i] || state.road[i]) continue;
-    const d = demandFor(state, z);
-    if (d <= 0) continue;
-    if (!rng.chance(Math.min(1, d) * 0.45)) continue;
+  for (let k = 0; k < attempts && lots.length; k++) {
+    const pick = rng.int(lots.length);
+    const i = lots[pick];
+    const z = state.zone[i] as Zone;
+    if (!rng.chance(Math.min(1, demandFor(state, z)) * 0.45)) continue;
+    lots[pick] = lots[lots.length - 1];
+    lots.pop();
     const x = i % MAP_W;
     const y = (i / MAP_W) | 0;
-    if (!touchesRoad(state, x, y, 1, 1)) continue;
-    // arcane requires schooling coverage at the tile
-    if (z === Zone.Arcane && state.coverage.school[i] < 40) continue;
     commitRng(state, rng);
     const b = placeBuildingRaw(state, ZONE_KEY[z], x, y, 1, true);
     if (z === Zone.Hearth) b.residents = 2;

@@ -8,7 +8,7 @@ import { RoadType, TICKS_PER_DAY, Zone, AgentKind, DAYS_PER_SEASON, idx } from '
 import { serialize, deserialize } from '../src/sim/save';
 import { computeLedger, checkMilestones } from '../src/sim/economy';
 import { findPath, dailyAgents, marketStockCap } from '../src/sim/agents';
-import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings } from '../src/sim/growth';
+import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings, growthBlock } from '../src/sim/growth';
 import { edictUpkeep, EDICT_BY_KEY } from '../src/sim/edicts';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
 import { updateCoverage, crewFactor, landBonusMap, landValueTerms, updateLandValue, DEATHCARE_LV } from '../src/sim/services';
@@ -107,6 +107,64 @@ function works(seed = 31) {
   s.population = 88;
   recomputeAll(s);
   return { s, crafts, markets };
+}
+
+// Phase 2-1 of the scope reset: every zoned tile has one reason it grows or not, and growth draws only among lots that can.
+describe('why a lot grows or not, and growth from the lots that can', () => {
+  const lot = (s: ReturnType<typeof town>, dx: number, dy: number) => idx(s.founding.x + 2 + dx, s.founding.y + 1 + dy);
+  it('names one reason per lot: ok, no road, no demand, the Gloam, an Arcane lot without school; a dark house', () => {
+    const s = town();
+    recomputeAll(s);
+    const near = lot(s, -5, 1), far = lot(s, -5, 2);
+    s.demand.hearth = 0.5;
+    expect(growthBlock(s, near)).toBe('ok');
+    expect(growthBlock(s, far)).toBe('noRoad');
+    s.demand.hearth = 0;
+    expect(growthBlock(s, near)).toBe('noDemand');
+    s.demand.hearth = 0.5;
+    s.gloam[near] = 1;
+    expect(growthBlock(s, near)).toBe('gloam');
+    s.gloam[near] = 0;
+    s.zone[near] = Zone.Arcane;
+    s.demand.arcane = 0.5;
+    s.coverage.school[near] = 0;
+    expect(growthBlock(s, near)).toBe('noSchool');
+    s.coverage.school[near] = 200;
+    expect(growthBlock(s, near)).toBe('ok');
+    s.zone[near] = Zone.Hearth;
+    const b = placeBuildingRaw(s, 'hearth', s.founding.x - 3, s.founding.y + 2);
+    s.landValue[idx(b.x, b.y)] = 100;
+    b.lit = false; b.watered = true; b.happiness = 80;
+    expect(growthBlock(s, idx(b.x, b.y))).toBe('dark');
+    b.lit = true;
+    expect(growthBlock(s, idx(b.x, b.y))).toBe('ok');
+    b.level = 3;
+    expect(growthBlock(s, idx(b.x, b.y))).toBe('top');
+    expect(growthBlock(s, idx(s.founding.x + 2, s.founding.y + 1))).toBe('none'); // a road
+  });
+
+  it('a nearly full district still grows its last lot within a day at a small demand, and never where a lot cannot grow', () => {
+    const s = town();
+    recomputeAll(s);
+    const open = lot(s, -5, 1), noRoad = lot(s, -5, 2);
+    for (const i of refreshLots(s)) if (i !== open && i !== noRoad && s.zone[i] === Zone.Hearth && s.bIndex[i] < 0) placeBuildingRaw(s, 'hearth', i % 128, (i / 128) | 0);
+    s.demand.hearth = 0.1; s.demand.market = 0; s.demand.craft = 0;
+    let calls = 0;
+    for (; calls < TICKS_PER_DAY / 10 && s.bIndex[open] < 0; calls++) trySpawnBuildings(s, 3);
+    expect(s.bIndex[open]).toBeGreaterThanOrEqual(0);
+    expect(s.bIndex[noRoad]).toBe(-1);
+    // no lot left that can grow (the last one has no road, the other zones no demand): nothing grows, no draw is spent
+    const before = s.buildings.length, rng = s.rngState;
+    for (let k = 0; k < 200; k++) trySpawnBuildings(s, 3);
+    expect(s.buildings.length).toBe(before);
+    expect(s.rngState).toBe(rng);
+  });
+});
+
+function refreshLots(s: ReturnType<typeof town>): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < s.zone.length; i++) if (s.zone[i]) out.push(i);
+  return out;
 }
 
 describe('goods flow', () => {

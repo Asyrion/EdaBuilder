@@ -42,7 +42,7 @@ await page.screenshot({ path: 'shots/smoke_day.png' });
 // every info view, by the overlay the renderer reads
 const views = await page.evaluate(async () => {
   const g = window.__game, seen = [];
-  for (const v of ['mana', 'water', 'landvalue', 'happiness', 'traffic', 'ward', 'district', 'miasma']) {
+  for (const v of ['growth', 'mana', 'water', 'landvalue', 'happiness', 'traffic', 'ward', 'district', 'miasma']) {
     g.view.overlay = v; g.renderer.overlayVersion++;
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     seen.push(v);
