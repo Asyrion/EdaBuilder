@@ -10,7 +10,7 @@ import { START_TREASURY, BUILDING_BY_KEY, BUILDINGS } from '../src/sim/catalog';
 import { run, recomputeAll } from '../src/sim/sim';
 import { SECTOR, SECTORS_X, sectorOf, inCharter, canBuySector, buySector, sectorCost, charteredCount, adjacentToCharter } from '../src/sim/sectors';
 import { serialize, deserialize } from '../src/sim/save';
-import { findPath, roadTileOf } from '../src/sim/agents';
+import { dailyTraffic, findPath, roadTileOf } from '../src/sim/agents';
 import { demandExplain, demandReasons, trySpawnBuildings, updateDemand, HOSPICE_REACH } from '../src/sim/growth';
 import { DISTRICT_SLOTS, charterLocked, districtInUse, districtOpenAt, districtSlots, districtUnlockNotes, setQuarter } from '../src/sim/districts';
 import { activeQuests } from '../src/sim/quests';
@@ -541,6 +541,19 @@ describe('paths follow every road', () => {
     buildRoad(one.s, RoadType.Track, roadPath(one.x0 + 5, one.y0, one.x0 + 5, one.y0 + 10, true));
     expect(findPath(one.s, one.a, one.b)!.length).toBe(11);
     expect(findPath(two.s, two.a, two.b)!.length).toBe(21);
+  });
+
+  it('a jammed side of the block is driven round, from the next day on (the cache empties with the day\'s traffic)', () => {
+    const { s, a, b } = ring();
+    const first = findPath(s, a, b)!;
+    // jam every tile of the way the cart took, past the corners: a day's traffic of three times the capacity
+    const way = new Set(first.slice(1, -1));
+    for (const t of way) s.traffic[t] = 3 * 60 * 3;
+    expect(findPath(s, a, b)).toEqual(first); // the day's paths stand until the day turns
+    dailyTraffic(s);
+    const next = findPath(s, a, b)!;
+    expect(next.length).toBe(first.length); // the other side of the block is as long
+    expect(next.slice(1, -1).some((t) => way.has(t))).toBe(false); // and free of the jam
   });
 
   it('no path cuts a corner: every step of every walking agent in a bot town is a road tile beside the last', () => {

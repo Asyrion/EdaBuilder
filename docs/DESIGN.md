@@ -42,7 +42,9 @@ Road → zone → demand → growth → services and supply → budget → happi
    grow. Overdrawn by more than a quarter with the store spent, the top bar counts five days down to a wild surge.
 5. **Services** (eight coverage layers: watch, health, fire, faith, school, death, ward, leisure), each from its
    buildings' reach.
-6. **Goods:** Craft works make goods, carts carry them to Markets over the roads (`agents.ts`); empty shelves and gluts
+6. **Goods:** Craft works make goods, carts carry them to Markets over the roads (`agents.ts`: A* over road tiles, a step
+   costing 1 / speed × (1 + 0.5 × yesterday's jam), the paths kept for the day; a jam also slows a cart by up to 60 %);
+   empty shelves and gluts
    feed the demand.
 7. **Budget** (`economy.ts`): taxes and tithes in, upkeep out. Start with 15,000 crowns. A debt pays 1 % a day (the
    ways to lose, §5); the Crown lends 10,000 a milestone at 0.5 % a day. The Crown's levy each Thaw takes 5 % of

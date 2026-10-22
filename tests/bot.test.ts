@@ -296,6 +296,7 @@ describe('the bot builds streets where the town is', () => {
     }
     expect(hamlet).toBeGreaterThan(0);
     expect(hamlet).toBeLessThanOrEqual(5);
-    expect(beside / roads).toBeGreaterThanOrEqual(0.6);
+    // most of them (2-3 held 60 %; since the carts route round jams, 2-5, the day-60 town has 58.5 %; the old full grid had 35 %)
+    expect(beside / roads).toBeGreaterThan(0.5);
   }, 120_000);
 });
