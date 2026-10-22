@@ -9,6 +9,11 @@ that parked it lists them in `docs/RESET_LOG.md`. Then add the feature's content
 `src/data/content/buildings.json`, quests, text, sprites in `art/sources.json`), and the save fields with a new save
 version. The DESIGN sections are in `docs/DESIGN.md` on the archive branch.
 
+**Saves and replays (since phase 1d):** save version 8 refuses every save and replay from before it, whatever it holds,
+with one message (`oldSaveMessage`, `src/sim/save.ts`). The per-phase refusals the sections below name (`parkedContentIn`,
+`parkedPeopleMessage`, `PARKED_OPS`) and the clean-up of parked fields on load are gone with it. A feature that comes back
+brings its state fields with it; since a v8 save holds only the core, a returning feature's save needs no migration.
+
 **The seam that stays:** `src/data/factions.ts` keeps `factionOf()`, `FactionRules` and `buildsFor()` with the Vellish
 alone (neutral rules). A people that comes back plugs in there, as the Grimmen did in iteration 34 (`0826a06`).
 

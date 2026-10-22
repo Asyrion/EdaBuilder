@@ -1,10 +1,8 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
-import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
 import { seasonOf } from './world';
 import { checkQuests } from './quests';
 import { dailyConstruction, tickConstruction } from './construction';
-import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
 import { updateAllCoverage, updateCoverage, updateLandValue, updateMiasma } from './services';
 import { dailyBuildings, trySpawnBuildings, updateDemand, updateSocial } from './growth';
@@ -19,7 +17,7 @@ export interface SimHooks {
   onDay?: (state: GameState) => void;
 }
 
-/** Full recompute of derived layers (after load or big edits). */
+/** Full recompute of derived layers (after big edits). */
 export function recomputeAll(state: GameState): void {
   updateMana(state);
   updateWater(state);
@@ -31,7 +29,6 @@ export function recomputeAll(state: GameState): void {
 }
 
 export function tick(state: GameState, hooks?: SimHooks): void {
-  setQuarterSnapshot(state.districtQuarters, state.district);
   if (state.gameOver) return;
   state.tick++;
   const t = state.tick;
@@ -50,7 +47,6 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   if (t % TICKS_PER_DAY === 0) {
     state.day++;
     dailyBuildings(state);
-    state.stats.fullDays = state.goodsShort === 0 ? state.stats.fullDays + 1 : 0;
     updateSocial(state);
     dailyTraffic(state);
     dailyAgents(state);
@@ -62,7 +58,6 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailyGloamPressure(state);
     dailyConstruction(state);
     checkMilestones(state);
-    state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (Object.values(state.districtQuarters).some(Boolean)) state.stats.quarterDays++;
     if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) crownLevy(state); // the season tick: the Crown's Thaw levy (iteration 54)
@@ -81,7 +76,6 @@ const SEASON_TEXT = [
 function seasonMessage(state: GameState): void {
   const season = seasonOf(state);
   let text = SEASON_TEXT[season];
-  if (season === 3 && !factionOf(state).rules.riverFreezes) text = 'The Hush. Long nights and cold hearths; from the fifth night the Sable rises and the homes on the bank lose heart.';
   if (state.day > 0) pushMessage(state, `${SEASON_NAMES[season]} begins. ${text}`, season === 3 ? 'warn' : 'milestone', true);
   if (state.dirtyChunks) for (let i = 0; i < 256; i++) state.dirtyChunks.add(i);
 }

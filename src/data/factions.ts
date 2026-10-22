@@ -15,13 +15,9 @@ export interface FactionRules {
   startCrowns: number; // added to the starting treasury
   waterLandValue: number; // × the land value the river gives its banks (services.ts)
   dryPenalty: number; // land value taken off every tile more than 8 from water
-  riverFreezes: boolean; // false: the river runs through the Hush (barges sail, mills turn)
-  millMana: number; // × the mana a Torrent Mill makes
   spireReach: number; // added to a Ley Spire's link and light radius (networks.ts)
   spireCost: number; // × the crowns a Ley Spire costs (costOf)
   darkAbandon: number; // days unlit before a zone building is abandoned; 0 = never (growth.ts)
-  vigilCost: number; // × the mana the Hush vigil draws (events.ts)
-  vigilMandatory: boolean; // skipping the vigil costs the people dearly (events.ts)
   milestoneGate?: (s: GameState, next: number) => boolean; // false holds the city at its milestone
 }
 
@@ -42,7 +38,7 @@ export function VELLISH_HAPPINESS(next: number): number {
   return 45 + 3 * next;
 }
 
-export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, riverFreezes: true, millMana: 1, spireReach: 0, spireCost: 1, darkAbandon: 0, vigilCost: 1, vigilMandatory: false };
+export const NEUTRAL_RULES: FactionRules = { hillLandValue: 0, grassPenalty: 0, hillBuildable: false, lanternWard: 1, hillMana: 1, nodeMana: 1, startCrowns: 0, waterLandValue: 1, dryPenalty: 0, spireReach: 0, spireCost: 1, darkAbandon: 0 };
 
 export const FACTIONS: Record<string, FactionDef> = {
   vellish: {

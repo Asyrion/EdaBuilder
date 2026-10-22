@@ -198,7 +198,7 @@ describe('Edicts as commitments, charters with a price', () => {
 });
 
 describe('The new state in a save', () => {
-  it('round-trips the new state through a save, and an old save gets the defaults', () => {
+  it('round-trips the new state through a save', () => {
     const s = town();
     s.crownFavour = 71; s.loan = 10000; s.remembranceDead = 24;
     s.edictSince = { curfew: 3, '1:curfew': 5 };
@@ -207,14 +207,6 @@ describe('The new state in a save', () => {
     expect([t.crownFavour, t.loan, t.remembranceDead]).toEqual([71, 10000, 24]);
     expect(t.edictSince).toEqual({ curfew: 3, '1:curfew': 5 });
     expect(t.quarterSince).toEqual({ 1: 7 });
-    const raw = JSON.parse(serialize(s));
-    for (const k of ['crownFavour', 'loan', 'remembranceDead', 'edictSince', 'quarterSince']) delete raw[k];
-    delete raw.ledger.levy;
-    const o = deserialize(JSON.stringify(raw), (seed) => createGame(seed));
-    expect([o.crownFavour, o.loan, o.remembranceDead]).toEqual([50, 0, 0]);
-    expect(o.edictSince).toEqual({});
-    expect(o.quarterSince).toEqual({});
-    expect(o.ledger.levy).toBe(0);
-    run(o, TICKS_PER_DAY);
+    run(t, TICKS_PER_DAY);
   });
 });

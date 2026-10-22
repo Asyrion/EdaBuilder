@@ -2,7 +2,7 @@
  *  for bit; a missing command found on the first day it shows; every op callable. */
 import { describe, expect, it } from 'vitest';
 import { COMMAND_OPS, CommandRunner, ReplayPlayer, checksum, stateFromHeader, verifyReplay, type ReplayHeader } from '../src/sim/commands';
-import { SaveVersionError, serialize } from '../src/sim/save';
+import { serialize } from '../src/sim/save';
 import { tick } from '../src/sim/sim';
 import { RoadType, TICKS_PER_DAY, Zone, idx, type GameState } from '../src/sim/types';
 import { roadPath } from '../src/sim/actions';
@@ -56,14 +56,6 @@ describe('A replay reproduces its recording', () => {
     expect(v.divergedOnDay).toBe(-1);
     expect(v.checksum).toBe(checksum(s));
   }, 120_000);
-
-  it('a parked people\'s replay is refused, and so is a daily challenge\'s or another scenario\'s', () => {
-    expect(() => stateFromHeader({ seed: 68, name: 'Deepwick', scenario: 'valley', faction: 'grimmen' as never })).toThrow(/parked/);
-    expect(() => stateFromHeader({ seed: 0, name: 'Dailywick', scenario: 'daily', faction: 'vellish', challenge: '2026-10-03' })).toThrow(SaveVersionError);
-    expect(() => stateFromHeader({ seed: 0, name: 'Dailywick', scenario: 'daily', faction: 'vellish', challenge: '2026-10-03' })).toThrow(/daily challenge/);
-    expect(() => stateFromHeader({ seed: 69, name: 'Reefwick', scenario: 'atoll', faction: 'vellish' })).toThrow(SaveVersionError);
-    expect(() => stateFromHeader({ seed: 69, name: 'Reefwick', scenario: 'atoll', faction: 'vellish' })).toThrow(/parked/);
-  });
 
   it('a missing command is found: the verifier names the first day the recording and the replay part', () => {
     const { runner } = play(vellish, 6);

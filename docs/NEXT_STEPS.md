@@ -11,9 +11,12 @@ phase 1c-1 (the tales, the weave, the guilds, the walkers, the forecast and the 
 because the caravan carried the mid-game economy: RESET_LOG has the trace and the gap for phase 2) and phase 1c-2 (the
 wild, the water's extras, the marsh, the Atoll, the vehicles, the scenarios, the daughter, the challenge, terraforming, the
 relics, the marvels and the borderline buildings parked; the Ledger at 21 tasks, 7 edicts, 13 daily systems, a top bar of
-5; the corridor within the noise of 1c-1).
+5; the corridor within the noise of 1c-1) and phase 1d-1 (save version 8 refuses older saves and replays; a load
+changes nothing; the modifier system, dead code and module globals gone; routing no longer by the first day's jams,
+the corridor −17 % and within the noise, its test re-anchored).
 
-1. **Phase 1d: clean up** (save version 8 and the demand step on load, tests, assets, docs, `inspirations/` to eda-lore).
+1. **Phase 1d-2: clean up the rest** (tests into themed suites and about five playtests, `public/art/sprites/` out of
+   the build, unused `sources.json` entries, `inspirations/` to eda-lore, the docs archived and rewritten slim).
 2. **Phase 2: sharpen the core loop.**
 3. **Phase 3: the art foundation and pixel art.**
 4. **Phase 4: shaders and effects.**

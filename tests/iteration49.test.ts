@@ -147,8 +147,8 @@ describe('The demand bars explained', () => {
     updateDemand(s);
     s.demand.arcane = -0.5;
     expect(demandExplain(s, 'arcane').advice).toMatch(/an Academy/);
-    expect(demandReasons().length).toBe(4);
-    expect(demandReasons()[0]).toMatch(/^Hearth:/);
+    expect(demandReasons(s).length).toBe(4);
+    expect(demandReasons(s)[0]).toMatch(/^Hearth:/);
   });
 });
 

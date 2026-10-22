@@ -2,9 +2,9 @@
 import { shortcutTarget } from './focus';
 import { keyFor, type KeyAction } from './keys';
 import { inCharter, sectorOf } from '../sim/sectors';
-import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, roadTileCost } from '../sim/actions';
+import { previewRoad, roadPath, roadTileCost } from '../sim/actions';
 import { BUILDING_BY_KEY } from '../sim/catalog';
-import { canBuild, costOf, factionOf, milestonesOf } from '../data/factions';
+import { canBuild, costOf } from '../data/factions';
 import { DISTRICT_NAMES, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState } from '../sim/types';
 import { buildingAt, canPlaceBuilding, influenceRadius, roadInRing } from '../sim/world';
 import type { CommandResult } from '../sim/commands';

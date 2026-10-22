@@ -3,7 +3,7 @@ import { factionOf } from '../data/factions';
 import { QUARTER_BY_ID } from '../sim/districts';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
 import { inCharter } from '../sim/sectors';
-import { BUILDING_BY_KEY, ROAD_BY_TYPE, WONDER_HALLS } from '../sim/catalog';
+import { BUILDING_BY_KEY, WONDER_HALLS } from '../sim/catalog';
 import { AgentKind, DISTRICT_NAMES, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from '../sim/types';
 import { CHUNK, CHUNKS_X, CHUNKS_Y, GROWING_HALLS, timeOfDay, kinReach, stagedSpriteName, stakeStage } from '../sim/world';
 import { reachesOf, type Reach } from '../sim/reach';
@@ -142,21 +142,6 @@ export class Renderer {
     if (alpha !== 1) ctx.globalAlpha = alpha;
     ctx.drawImage(s.src ?? this.atlas.image, s.x, s.y, s.w, s.h, x, y, s.w, s.h);
     if (alpha !== 1) ctx.globalAlpha = 1;
-    this.stats.drawn++;
-  }
-  /** Draw a sprite mirrored about its anchor when it faces left (the wild walks both ways; iteration 58). */
-  private drawFacing(s: SpriteRect | null, wx: number, wy: number, left: boolean): void {
-    if (!s) return;
-    if (!left) { this.draw(s, wx, wy); return; }
-    const ctx = this.ctx;
-    const x = Math.round(wx - this.camera.left);
-    const y = Math.round(wy - s.ay - this.camera.top);
-    if (x + s.w < 0 || y + s.h < 0 || x - s.w > this.back.width || y > this.back.height) return;
-    ctx.save();
-    ctx.translate(x, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(this.atlas.image, s.x, s.y, s.w, s.h, -s.ax, y, s.w, s.h);
-    ctx.restore();
     this.stats.drawn++;
   }
   private drawGlow(s: SpriteRect | null, wx: number, wy: number, alpha: number): void {

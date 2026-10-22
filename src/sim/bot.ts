@@ -9,10 +9,10 @@ import { buySector, canBuySector, sectorCost, sectorOf } from './sectors';
 import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, previewRoad, roadPath, setTax } from './actions';
 import { setQuarter } from './districts';
 import { EDICT_BY_KEY, edictLocked, edictsFor, setEdict } from './edicts';
-import { marketStockCap, roadTileOf } from './agents';
+import { roadTileOf } from './agents';
 import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
-import { DAYS_PER_SEASON, MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
-import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding, seasonOf, touchesTerrain } from './world';
+import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
+import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding } from './world';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
 
 /** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
@@ -287,7 +287,7 @@ export class Bot {
           if (tier(i) !== want) continue;
           if (s.zone[i] || s.road[i] || s.bIndex[i] >= 0 || s.gloam[i]) continue;
           const t = s.terrain[i];
-          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh) continue;
+          if (isWater(t) || (t === Terrain.Hills && !hillOK) || t === Terrain.LeyNode || t === Terrain.Ruins) continue;
           if (!roadOnSide(s, x, y)) continue;
           // craft away from the centre, hearth near
           const dist = Math.max(Math.abs(x - this.cx), Math.abs(y - this.cy));
@@ -583,7 +583,7 @@ export class Bot {
             for (let fx = 0; fx < def.w; fx++) {
               const i = idx(px + fx, py + fy);
               const t = s.terrain[i];
-              if (isWater(t) || (t === Terrain.Hills && !factionOf(s).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || t === Terrain.Marsh || s.road[i] || s.gloam[i]) {
+              if (isWater(t) || (t === Terrain.Hills && !factionOf(s).rules.hillBuildable) || t === Terrain.LeyNode || t === Terrain.Ruins || s.road[i] || s.gloam[i]) {
                 ok = false;
                 break;
               }

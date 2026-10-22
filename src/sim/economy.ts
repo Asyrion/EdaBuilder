@@ -4,8 +4,7 @@ import { charterUpkeep, districtUnlockNotes, quarterOf, templeQuarterStands, TEM
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { Zone, type Building, type GameState } from './types';
 import { GROWING_HALLS, forEachBuilding, litWonders, markDirtyAround, pushMessage, stakeHallName, stakeStage } from './world';
-import { edictOn, edictUpkeep, modifierSum } from './edicts';
-import { capacityOf } from './growth';
+import { edictOn, edictUpkeep } from './edicts';
 import { roadTileOf } from './agents';
 import { marketRoadMultAt } from './roads';
 
@@ -25,9 +24,6 @@ export const DEBT_DAYS = 5;
 
 export function favourFactor(state: GameState): number {
   return 1 - (state.crownFavour - FAVOUR_NEUTRAL) * FAVOUR_STEP;
-}
-export function addFavour(state: GameState, delta: number): void {
-  state.crownFavour = Math.max(0, Math.min(100, state.crownFavour + delta));
 }
 /** The treasury the Charter is revoked under, after DEBT_DAYS days: −8,000 × (1 + milestone/2). */
 export function debtLine(state: GameState): number {
@@ -79,12 +75,7 @@ export function taxOf(state: GameState, zone: Zone): number {
   switch (zone) {
     case Zone.Hearth: return state.taxRates.hearth;
     case Zone.Market: return state.taxRates.market;
-    case Zone.Craft: {
-      // a cap is a ceiling: two caps give the lower one, not their sum
-      let cap = 0;
-      for (const m of state.modifiers) if (m.kind === 'craftTax' && !m.district && (cap === 0 || m.value < cap)) cap = m.value;
-      return cap > 0 ? Math.min(state.taxRates.craft, cap) : state.taxRates.craft;
-    }
+    case Zone.Craft: return state.taxRates.craft;
     case Zone.Arcane: return state.taxRates.arcane;
     default: return 0;
   }
@@ -93,7 +84,7 @@ export function taxOf(state: GameState, zone: Zone): number {
 /** Projected ledger for the current day (used for the UI and for the actual daily collection). */
 export function computeLedger(state: GameState) {
   const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, upkeepCharters: 0, charterTithe: 0, interest: 0, levy: 0, grants: 0, net: 0 };
-  const unrestMod = (1 - state.unrest * 0.5) * (1 + modifierSum(state, 'tithe'));
+  const unrestMod = 1 - state.unrest * 0.5;
   // a Market Square's trade: markets within 8 of a square pay 15 % more
   const squares = state.buildings.filter((q) => q && q.kind === 'square' && q.state === 'ok') as Building[];
   const nearSquare = (b: Building) => squares.some((q) => Math.abs(q.x - b.x) <= 8 && Math.abs(q.y - b.y) <= 8);
@@ -169,12 +160,4 @@ export function checkMilestones(state: GameState): void {
     forEachBuilding(state, (b) => { if (GROWING_HALLS.includes(b.kind)) markDirtyAround(state, b.x, b.y); });
     pushMessage(state, `The halls are raised anew: the Founding Stake and the Temple become ${stakeHallName(state).replace(/^the /, '')}s of their kind.`, 'info');
   }
-}
-
-export function totalCapacity(state: GameState, zone: Zone): number {
-  let c = 0;
-  forEachBuilding(state, (b) => {
-    if (BUILDING_BY_KEY[b.kind].zone === zone) c += capacityOf(b, state);
-  });
-  return c;
 }

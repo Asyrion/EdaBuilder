@@ -1,39 +1,34 @@
 import type { FactionId } from './data/factions';
-import { setEdict } from './sim/edicts';
-import { repayLoan, takeLoan } from './sim/economy';
 import * as economy from './sim/economy';
 import * as edicts from './sim/edicts';
 import * as districts from './sim/districts';
 import * as water from './sim/water';
 import { canBuild, costOf, specialLock } from './data/factions';
-import { QUARTER_BY_ID, districtBuildings, setQuarter } from './sim/districts';
+import { QUARTER_BY_ID, districtBuildings } from './sim/districts';
 import { SpriteAtlas } from './render/atlas';
 import { faceLeft } from './render/facing';
 import { Renderer, type ViewState } from './render/renderer';
 import { createGame, districtName, timeOfDay } from './sim/world';
 import { SOUND_CUES, type SoundCue } from './sim/hazards';
-import { buySector } from './sim/sectors';
 import { tileToWorld, worldToTile } from './render/iso';
 import { runDev } from './sim/dev';
 import { DEFAULT_KEYS, keyFor, type KeyAction } from './ui/keys';
 import { tick, recomputeAll } from './sim/sim';
-import { SaveVersionError, serialize, deserialize } from './sim/save';
+import { SaveVersionError, oldSaveMessage, serialize, deserialize } from './sim/save';
 import { TICKS_PER_SEC, Zone, type Building, type GameState } from './sim/types';
-import { Tools, toolLabel, type Tool } from './ui/tools';
+import { Tools, toolLabel } from './ui/tools';
 import { UI } from './ui/ui';
 import { Audio } from './audio/audio';
-import { setTax } from './sim/actions';
 import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
 import { bumpRoadVersion } from './sim/agents';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
-import { takeSnapshot, restoreSnapshot, type Snapshot } from './sim/actions';
-import { deepenNode, canDeepenNode, placeBuildingRaw } from './sim/world';
+import { canDeepenNode, placeBuildingRaw } from './sim/world';
 import { migrateKeys } from './ui/focus';
 import { Bot } from './sim/bot';
-import { CommandRunner, ReplayPlayer, checksum, stateFromHeader, type CommandResult, type ReplayFile, type ReplayHeader } from './sim/commands';
+import { CommandRunner, REPLAY_VERSION, ReplayPlayer, checksum, stateFromHeader, type CommandResult, type ReplayFile, type ReplayHeader } from './sim/commands';
 import { BUILD } from './core/build';
 
 const SAVE_KEY = 'wardlight.save.v1';
@@ -228,7 +223,8 @@ class Game {
   watchReplay(file: File): void {
     file.text().then((text) => {
       let f: ReplayFile;
-      try { f = JSON.parse(text) as ReplayFile; if (f.replay !== 1 || !f.header || !Array.isArray(f.commands)) throw new Error('not a replay'); } catch { this.ui.toast('<p class="bad">That file is not a Wardlight replay.</p>', 5000); return; }
+      try { f = JSON.parse(text) as ReplayFile; if (typeof f.replay !== 'number' || !f.header || !Array.isArray(f.commands)) throw new Error('not a replay'); } catch { this.ui.toast('<p class="bad">That file is not a Wardlight replay.</p>', 5000); return; }
+      if (f.replay !== REPLAY_VERSION) { this.ui.toast(`<p class="bad">${oldSaveMessage(`replay ${f.replay}`)}</p>`, 6000); return; }
       let fresh;
       try { fresh = stateFromHeader(f.header); } catch (e) { this.ui.toast(`<p class="bad">${e instanceof SaveVersionError ? e.message : 'That replay cannot be played.'}</p>`, 6000); return; }
       this.bindState(fresh, f.header, f);

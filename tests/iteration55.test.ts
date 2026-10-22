@@ -1,12 +1,12 @@
 /** Iteration 55 (M14 part 5, the bot plays it all): the bot's purse, light-first zoning, taxes, edicts and depot; saves
- *  that branch on their version; the dev commands. The tale policy and the Annals were parked in the scope reset (phase 1c). */
+ *  that carry their version; the dev commands. The tale policy and the Annals were parked in the scope reset (phase 1c). */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
 import { RoadType, SAVE_VERSION, Terrain, TICKS_PER_DAY, idx, type GameState } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { Bot } from '../src/sim/bot';
-import { MIGRATIONS, SaveVersionError, deserialize, serialize } from '../src/sim/save';
+import { SaveVersionError, deserialize, serialize } from '../src/sim/save';
 import { devDefaultArg, DEV_COMMANDS, runDev } from '../src/sim/dev';
 import { questsFor } from '../src/sim/quests';
 import { specialLock, VELLISH_HAPPINESS } from '../src/data/factions';
@@ -135,36 +135,18 @@ describe('The bot stands a depot', () => {
   });
 });
 
-describe('Saves branch on their version', () => {
-  it('a save from before iteration 55 (version 6, fields missing) loads with the old defaults and runs a day', () => {
-    const s = town();
-    run(s, TICKS_PER_DAY * 2);
-    const o = JSON.parse(serialize(s));
-    expect(o.version).toBe(SAVE_VERSION);
-    o.version = 6;
-    delete o.crownFavour; delete o.edictSince; delete o.stats.levies; delete o.sectors;
-    const r = deserialize(JSON.stringify(o), (seed) => createGame(seed));
-    expect(r.version).toBe(SAVE_VERSION);
-    expect(r.crownFavour).toBe(50);
-    expect(r.edictSince).toEqual({});
-    expect(r.stats.levies).toBe(0);
-    expect([...r.sectors].every((v) => v === 1)).toBe(true);
-    run(r, TICKS_PER_DAY);
-    expect(r.day).toBe(s.day + 1);
-  });
-  it('a version 7 save round-trips its fields; a save with no version counts as 6; a newer save is refused with the reason', () => {
+describe('Saves carry their version', () => {
+  it('a save round-trips its fields; an older or a newer save is refused with the reason (save version 8, phase 1d)', () => {
     const s = town();
     s.crownFavour = 61;
     const r = deserialize(serialize(s), (seed) => createGame(seed));
+    expect(r.version).toBe(SAVE_VERSION);
     expect(r.crownFavour).toBe(61);
     expect(r.stats).toEqual(s.stats);
     const o = JSON.parse(serialize(s));
-    delete o.version; delete o.crownFavour;
-    expect(deserialize(JSON.stringify(o), (seed) => createGame(seed)).crownFavour).toBe(50);
     o.version = 99;
     expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(SaveVersionError);
     expect(() => deserialize(JSON.stringify(o), (seed) => createGame(seed))).toThrow(/version 99/);
-    for (let v = 6; v < SAVE_VERSION; v++) expect(typeof MIGRATIONS[v]).toBe('function');
   });
 });
 

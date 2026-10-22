@@ -220,8 +220,9 @@ Charter as `.json`.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
   result): among them jump to a day, complete a Charter task, set the Crown's favour, and reset
   the ledger history or the Chronicle.
-- Saves carry their version and migrate step by step; a save from a newer Wardlight is refused
-  with the reason.
+- Saves carry their version (8 since the scope reset): a save holds every layer of the city, so a
+  charter saved at any moment and loaded again runs on exactly as it would have. A save or a replay
+  from before the reset, or from a newer Wardlight, is refused with the reason.
 - Buildings take days to raise: builders from the Founding Stake walk to each site and the
   building rises out of its foundations under a progress bar.
 - The Charter line: the map is sixteen sectors; buy the dimmed ones beyond the Charter from

@@ -1,7 +1,7 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isDepot, isZoneUnlocked } from './catalog';
-import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
-import { bumpRoadVersion, marketStockCap } from './agents';
+import { edictOn, edictShare } from './edicts';
+import { marketStockCap } from './agents';
 
 /** The Hospice holds this many goods of draughts; without them it heals at six tenths. */
 export const HOSPICE_DRAUGHTS = 10;
@@ -22,7 +22,7 @@ export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
-import { MAP_W, Terrain, Zone, idx, inBounds, type Building, type GameState } from './types';
+import { MAP_W, Zone, idx, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
 export function capacityOf(b: Building, s?: GameState): number {
@@ -102,7 +102,6 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
   add('the tithe', -(tax - 10) * 1.6);
-  add('effects', modifierSumAt(state, 'happiness', state.district[i]));
   for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
   if (seasonOf(state) === 1) add('Bloom', 2);
@@ -114,7 +113,7 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
     // markets like customers, leisure and full shelves
     add('leisure for the trade', (cov.leisure[i] / 255) * 6);
     if (state.population < 20) add('no customers', -8);
-    const fill = b.stock / marketStockCap(b);
+    const fill = b.stock / marketStockCap(state, b);
     if (fill <= 0.05) add('empty shelves', -14);
     else if (fill > 0.5) add('full shelves', 5);
     if (edictOn(state, 'lanternlevy', b)) add('the Lantern Levy', -6);
@@ -258,7 +257,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 ? HUSH_CRAFT : 1) * (1 + modifierSum(state, 'goods'));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 ? HUSH_CRAFT : 1);
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const hands = b.workers;
@@ -332,11 +331,12 @@ export function dailyBuildings(state: GameState): void {
   commitRng(state, rng);
 }
 
-/** Demand bars in [-1,1]. Recomputed every few seconds. */
-let lastDemandWhy: string[] = [];
-/** One line per demand bar, from the last updateDemand (for the bars' tooltip). */
-export function demandReasons(): string[] {
-  return lastDemandWhy;
+/** What the last updateDemand of a state found, for the bars' tooltips: one per state, never saved (scope reset phase 1d:
+ *  it was a module global, which two states, a replay and the live game, would have shared). */
+const demandNotes = new WeakMap<GameState, { why: string[]; facts: DemandFacts }>();
+/** One line per demand bar, from the last updateDemand. */
+export function demandReasons(state: GameState): string[] {
+  return demandNotes.get(state)?.why ?? [];
 }
 
 export type DemandZone = 'hearth' | 'market' | 'craft' | 'arcane';
@@ -346,7 +346,6 @@ interface DemandFacts {
   craftJobs: number; craftWant: number; goodsShort: number; unemployment: number;
   arcaneJobs: number; educated: number; arcaneOpen: boolean;
 }
-let lastDemandFacts: DemandFacts | null = null;
 export const DEMAND_EVEN = 0.05;
 const DEMAND_NAMES: Record<DemandZone, string> = { hearth: 'Hearths', market: 'Markets', craft: 'Craft works', arcane: 'Arcane shops' };
 
@@ -356,7 +355,7 @@ export function demandExplain(state: GameState, zone: DemandZone): { sign: '+' |
   const pct = Math.round(Math.abs(v) * 100);
   const sign: '+' | '−' | '0' = v > DEMAND_EVEN ? '+' : v < -DEMAND_EVEN ? '−' : '0';
   const name = DEMAND_NAMES[zone];
-  const f = lastDemandFacts;
+  const f = demandNotes.get(state)?.facts ?? null;
   const lead = sign === '0' ? `${name} about even:` : `${name} ${sign}${pct} %:`;
   let verdict = '';
   let detail = f ? '' : 'no reckoning yet.';
@@ -441,13 +440,14 @@ export function updateDemand(state: GameState): void {
     arcane -= (state.taxRates.arcane - 10) * 0.04;
     if (state.educated < 0.2) arcane = -0.5;
   }
-  lastDemandFacts = { jobs, workforce, jobSurplus, happiness: state.happiness, unrest: state.unrest, emptyHomes: hearthCap - hearthRes > Math.max(8, pop * 0.25), marketJobs, marketWant, pop, craftFull, craftN, craftJobs, craftWant, goodsShort: state.goodsShort, unemployment, arcaneJobs, educated: state.educated, arcaneOpen: isZoneUnlocked(state.milestone, Zone.Arcane) };
-  lastDemandWhy = [
+  const facts: DemandFacts = { jobs, workforce, jobSurplus, happiness: state.happiness, unrest: state.unrest, emptyHomes: hearthCap - hearthRes > Math.max(8, pop * 0.25), marketJobs, marketWant, pop, craftFull, craftN, craftJobs, craftWant, goodsShort: state.goodsShort, unemployment, arcaneJobs, educated: state.educated, arcaneOpen: isZoneUnlocked(state.milestone, Zone.Arcane) };
+  const why = [
     `Hearth: ${jobs} jobs for ${workforce} hands${jobSurplus > 0 ? ' (work to spare: folk want homes)' : ' (no work: nobody comes)'} · happiness ${Math.round(state.happiness)} · unrest ${Math.round(state.unrest * 100)} %${hearthCap - hearthRes > Math.max(8, pop * 0.25) ? ' · many homes stand empty' : ''}`,
     `Market: ${marketJobs} market jobs, ${Math.round(marketWant)} wanted for ${pop} folk${craftN > 0 && craftFull > 0 ? ` · ${craftFull} of ${craftN} works cannot sell` : ''}`,
     `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
     `Arcane: ${arcaneJobs} arcane jobs${state.educated < 0.2 ? ` · educated ${Math.round(state.educated * 100)} % (needs 20 %)` : ` · educated ${Math.round(state.educated * 100)} %`}`,
   ];
+  demandNotes.set(state, { why, facts });
   const clamp = (v: number) => Math.max(-1, Math.min(1, v));
   // smooth
   const s = state.demand;
@@ -484,14 +484,14 @@ export function updateSocial(state: GameState): void {
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
   state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
-  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts') + modifierSum(state, 'health')));
+  const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
   const unemployment = workforce > 0 ? Math.max(0, 1 - state.employed / workforce) : 0;
   const restless = state.agents.filter((a) => a.kind === 2).length;
   const targetUnrest = Math.max(
     0,
-    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew') + modifierSum(state, 'unrest')),
+    Math.min(1, 0.08 + unemployment * 0.5 + (state.taxRates.hearth - 10) * 0.02 - watchCov * 0.35 + Math.min(0.4, restless * 0.02) + (state.happiness < 35 ? 0.15 : 0) + (idleScholars(state) ? IDLE_SCHOLARS : 0) - 0.1 * edictShare(state, 'curfew')),
   );
   state.unrest += (targetUnrest - state.unrest) * 0.2;
 }
@@ -516,23 +516,13 @@ export function theftAt(state: GameState, b: Building): boolean {
   return state.unrest > THEFT_UNREST && state.coverage.watch[idx(b.x, b.y)] < THEFT_WATCH * 255;
 }
 
-export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: number): boolean {
-  for (let dy = -r; dy <= r; dy++)
-    for (let dx = -r; dx <= r; dx++) {
-      const tx = x + dx;
-      const ty = y + dy;
-      if (inBounds(tx, ty) && state.bIndex[idx(tx, ty)] >= 0) return true;
-    }
-  return false;
-}
-
 /** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. The hunt's,
  *  the fishers' and the relics' goods are parked (scope reset phase 1c). */
 export function dailyTrade(state: GameState): void {
   const t = state.trade;
   const season = seasonOf(state);
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
-  t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
+  t.priceGoods = [2, 2, 2.5, 3][season];
   t.priceLeystone = [3, 4, 3, 2.5][season];
   t.exported = 0;
   t.imported = 0;
@@ -574,7 +564,7 @@ export function dailyTrade(state: GameState): void {
     forEachBuilding(state, (b) => {
       if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
       if (b.stock > 2) return;
-      const buy = Math.min(8, marketStockCap(b) - b.stock);
+      const buy = Math.min(8, marketStockCap(state, b) - b.stock);
       b.stock += buy;
       t.imported += buy;
       t.importCost += buy * t.priceGoods * 2;

@@ -1,18 +1,18 @@
 /** Citizens, carts and the restless: pathfinding on the road graph and movement. */
-import { effects } from './hazards';
 import { marketQuarterAt } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
-import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
-import { commitRng, forEachBuilding, pushMessage, rngOf } from './world';
+import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
+import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
 
 const MAX_AGENTS = 1400;
 const MAX_RESTLESS = 60;
 
-// Path cache keyed by from|to tile, invalidated when roads change.
-let cacheVersion = -1;
-let pathCache = new Map<number, number[] | null>();
+// Path cache keyed by from|to tile, one per state: emptied when the roads change and when the season turns (the mud). A path
+// depends on the roads and their speeds alone, so the cache is a pure memo and a loaded charter walks the same paths
+// (scope reset phase 1d; congestion slows a cart on its way but no longer steers A*, whose cache kept the first day's jams).
+const pathCaches = new WeakMap<GameState, { version: number; map: Map<number, number[] | null> }>();
 export let roadVersion = 0;
 export function bumpRoadVersion(): void {
   roadVersion++;
@@ -20,10 +20,12 @@ export function bumpRoadVersion(): void {
 
 /** A* over road tiles (4-neighbour). Returns tile indices from start to goal, or null. */
 export function findPath(state: GameState, start: number, goal: number, maxNodes = 6000): number[] | null {
-  if (cacheVersion !== roadVersion) {
-    pathCache = new Map();
-    cacheVersion = roadVersion;
+  let cache = pathCaches.get(state);
+  if (!cache || cache.version !== roadVersion) {
+    cache = { version: roadVersion, map: new Map() };
+    pathCaches.set(state, cache);
   }
+  const pathCache = cache.map;
   const key = start * 65536 + goal;
   const cached = pathCache.get(key);
   if (cached !== undefined) return cached ? cached.slice() : null;
@@ -102,8 +104,7 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
       const j = nb[k];
       const rt = roadAt(state, j);
       if (!rt) continue;
-      const congestion = state.trafficSmooth[j] / 255;
-      const cost = 1 / roadSpeedAt(state, j) + congestion * 1.5; // mud on a track
+      const cost = 1 / roadSpeedAt(state, j); // mud on a track; the jams slow a cart on its way, they do not reroute it
       const ng = gc + cost;
       if (ng < (g.get(j) ?? Infinity)) {
         g.set(j, ng);
@@ -116,8 +117,8 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
 }
 
 /** A road tile adjacent to the building footprint, or -1. */
-export function marketStockCap(b: Building): number {
-  return 20 * b.level * (marketQuarterAt(idx(b.x, b.y)) ? 1.5 : 1);
+export function marketStockCap(s: GameState, b: Building): number {
+  return 20 * b.level * (marketQuarterAt(s, idx(b.x, b.y)) ? 1.5 : 1);
 }
 
 /** The door: the first road tile on a side of the footprint, else a corner (a corner counts since iteration 49; the sides come first so every older door stays where it was). */
@@ -436,10 +437,9 @@ export function tickAgents(state: GameState): void {
         if (a.kind === AgentKind.Cart && a.targetId !== -1 && a.load > 0) {
           const m = buildingById(state, a.targetId);
           if (m && m.state === 'ok') {
-            const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(m);
+            const cap = BUILDING_BY_KEY[m.kind].zone === Zone.Arcane ? 20 * m.level : marketStockCap(state, m);
             m.stock = Math.min(cap, m.stock + a.load);
             state.goodsSold += a.load;
-            state.stats.goodsDelivered += a.load;
           }
           a.load = 0;
         }
@@ -458,6 +458,7 @@ export function tickAgents(state: GameState): void {
 
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
+  if (state.day % DAYS_PER_SEASON === 0) pathCaches.delete(state); // a new season: the mud comes or goes, and with it the roads' speeds
   for (let i = 0; i < state.traffic.length; i++) {
     const rt = roadAt(state, i);
     let v = 0;
@@ -485,7 +486,6 @@ export function dailyRestless(state: GameState): number {
     return true;
   });
   commitRng(state, rng);
-  state.stats.restlessLaid += cleared;
   return cleared;
 }
 

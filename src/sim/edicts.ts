@@ -1,6 +1,6 @@
 /** City-wide edicts (policies). Toggled by the player; effects are read by the systems. */
 import { BUILDING_BY_KEY } from './catalog';
-import { Terrain, Zone, idx, type Building, type GameState } from './types';
+import { Zone, idx, type Building, type GameState } from './types';
 import type { FactionId } from '../data/factions';
 
 export interface EdictDef {
@@ -151,18 +151,4 @@ export function setEdict(s: GameState, key: string, on: boolean, district = 0): 
   if (district) s.districtEdicts[k] = false; else s.edicts[key] = false;
   delete s.edictSince[k];
   return null;
-}
-
-/** Sum of active temporary modifiers of a kind. */
-export function modifierSum(s: GameState, kind: string): number {
-  let v = 0;
-  for (const m of s.modifiers) if (m.kind === kind && m.until > s.day && m.district === undefined) v += m.value;
-  return v;
-}
-
-/** City-wide modifiers plus those scoped to one district. */
-export function modifierSumAt(s: GameState, kind: string, district: number): number {
-  let v = 0;
-  for (const m of s.modifiers) if (m.kind === kind && m.until > s.day && (m.district === undefined || m.district === district)) v += m.value;
-  return v;
 }
