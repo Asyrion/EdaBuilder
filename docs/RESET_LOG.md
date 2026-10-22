@@ -600,9 +600,10 @@ follows demand, and "why does this not grow?").
 - **The Burgh:** 12 of 12 runs (main 7 of 12), on a median day 36 (main 45). Every earlier gate comes a day to four
   sooner (Market Town median day 19 against 23).
 - **Against phase 0:** seed 42 has 1,397 and 2,606, against 3,194 in phase 0. The mean is above every phase 1 table.
-- **Losses:** seeds 7 and 45 (draw 1) are below main on one draw (939 against 1,175; 910 against 953). The spread
-  between the two draws of a seed grew on seeds 42 (1,209) and 45 (1,446): a faster city reaches the mana cap at
-  different times. The checklist's day-40 city shows it: 273 buildings without mana. Mana is phase 2's next item.
+- **Losses:** three of twelve draws are below main: seed 7 draw 1 (939 against 1,175), seed 21 draw 0 (1,578 against
+  1,756) and seed 45 draw 1 (910 against 953). The spread between the two draws of a seed grew on seeds 42 (1,209) and
+  45 (1,446). Likely, not probed: a faster city runs into the mana cap at different times; the checklist's day-40 city
+  has 273 buildings without mana. Mana is phase 2's next item.
 - **The corridor test is re-anchored, openly, upward:** seed 42 on day 100 now has 2,855 folk at the Burgh (926 at Market
   Town before). `core-loop.test.ts` holds 2,855 and the Burgh, with the same ±50 %, and names 926 and phase 0's 1,945.
 
