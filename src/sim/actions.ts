@@ -7,6 +7,7 @@ import { districtInUse, districtOpenAt, districtSlots } from './districts';
 import { MAX_DISTRICTS } from './types';
 import { inCharter } from './sectors';
 import { MAP_W } from './types';
+import { bumpRoadVersion } from './agents';
 
 export interface ActionResult {
   ok: boolean;
@@ -90,6 +91,7 @@ export function buildRoad(state: GameState, type: RoadType, tiles: number[]): Ac
     built++;
     markDirtyAround(state, i % state.w, (i / state.w) | 0);
   }
+  if (built) bumpRoadVersion(state); // the paths through the town change (phase 2-5: the bot's roads went unseen until the season turned)
   if (built === 0) return { ok: false, reason: 'Nothing to build there' };
   state.treasury -= cost;
   state.zoneListDirty = true;
@@ -162,6 +164,7 @@ export function bulldoze(state: GameState, x: number, y: number): ActionResult {
   }
   if (state.road[i]) {
     state.road[i] = RoadType.None;
+    bumpRoadVersion(state);
     state.treasury -= BULLDOZE_COST;
     markDirtyAround(state, x, y);
     return { ok: true, cost: BULLDOZE_COST };
@@ -233,6 +236,7 @@ export function takeSnapshot(state: GameState, label: string): Snapshot {
 export function restoreSnapshot(state: GameState, snap: Snapshot): void {
   if (snap.terrain) { state.terrain.set(snap.terrain); markAllDirty(state); }
   state.road.set(snap.road);
+  bumpRoadVersion(state);
   state.zone.set(snap.zone);
   state.district.set(snap.district);
   state.bIndex.set(snap.bIndex);

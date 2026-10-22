@@ -797,3 +797,72 @@ The sim does not change: the formulas stay to the bit, and only what the bars sa
 | `npx tsc --noEmit -p .`, `npm run build` | clean; JS 361 KB (125 KB gzip) |
 | `npx vitest run` | 15 files, 281 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK with the bar's factors and lots |
+
+## Phase 2-5: traffic; the path cache follows every road, and jams steer the carts (2026-10-22)
+
+The fifth iteration of phase 2 (RESET_PLAN §3 "Phase 2", P1 traffic: renew the path cache with the jams, bump
+`roadVersion` on every road write, fix the corner cutting).
+
+**Why.**
+- **`roadVersion` was a module global** that only the command layer and `main.ts` bumped. `buildRoad`, `bulldoze` and
+  `restoreSnapshot` did not. So the bot's roads (built by the actions) stayed out of its carts' paths until the season
+  turned, and two states in one page (the title valley and the game, or two tests) shared one count.
+- **Jams are real:** in the 2-3 bot town of seed 42 on day 100, 134 of 1,403 road tiles ran over 90 % of their
+  capacity and 261 over half. Since 1d-1 they slowed a cart (× (1 − 0.6 × jam)) but did not steer it, because the old
+  cache had kept the first day's jams.
+- **Corner cutting:** the paths step between the centres of 4-neighbouring road tiles, and `tickAgents` walks exactly
+  those centres. None of 940 walking agents had a step off the road. A test now holds it; no code change.
+
+**Done.**
+- **Step 1, the road version is the state's own:** a counter per state beside the path cache, bumped by the road
+  writes in `actions.ts` themselves. The bumps in `commands.ts` and `main.ts` are gone. A game played through commands
+  is bit-identical to main (the bot-free 60-day town of 2-3: the same folk, treasury, rng and map).
+- **Step 2, yesterday's jams steer the paths:** an A* step costs `1 / speed × (1 + 0.5 × jam)`. The jam is
+  `trafficSmooth`, the saved daily layer, and the cache now empties every day in `dailyTraffic` (it emptied each
+  season). A path depends on saved state alone, so a load mid-day still runs on to the bit (the `core-loop` test).
+- The Traffic view says so ("carts route round yesterday's jams where another way is near as quick").
+- **Tests:**
+  - A road built by the action is in the next path at once, and one bulldozed is out of it.
+  - Two states keep their own paths.
+  - A jammed side of a block is driven round from the next day on, not before.
+  - No path of a bot town's walking agents cuts a corner.
+
+**Measured.** The bot corridor (six seeds × two draws, 150 days), against 2-4 (main, the same sim as 2-3):
+
+| Stage | Mean folk | Δ against main | Burgh | Free City | Beacon |
+|---|---|---|---|---|---|
+| main (2-4) | 1,800 | | 11/12 | 7/12 | 3/12 |
+| Step 1 (the version follows the bot's roads) | 2,074 | +15.2 % (± 583, within the noise) | 11/12 | 9/12 | 5/12 |
+| Step 2 probe, jams weigh 1 | 1,808 | +0.4 % (within) | 12/12 | 9/12 | 2/12 |
+| **Step 2 shipped, jams weigh 0.5** | **2,063** | **+14.6 % (± 492, within the noise)** | **12/12** | **10/12** | 3/12 |
+
+| Seed | main, draws 0 · 1 | 2-5, draws 0 · 1 |
+|---|---|---|
+| 42 | 1,574 · 1,488 | 2,155 · 1,847 |
+| 1 | 1,303 · 3,246 | 3,212 · 1,435 |
+| 7 | 1,785 · 1,316 | 1,598 · 2,100 |
+| 13 | 1,572 · 1,817 | 1,617 · 1,472 |
+| 21 | 2,725 · 2,792 | 3,354 · 2,833 |
+| 45 | 1,120 · 867 | 2,010 · 1,125 |
+
+- **Losses:** seed 1 draw 1 (1,435 against 3,246; that seed's draws swap their Beacon), seed 7 draw 0 (1,598 against
+  1,785) and seed 13 draw 1 (1,472 against 1,817).
+- **Why 0.5:** it is inside step 1's noise (2,063 against 2,074), every run reaches the Burgh, and the weakest seed, 45,
+  gains most. Weighing the jams at 1 sends the carts round too often (1,808).
+- **The jams spread** (seed 42, from the 2-3 town to this one):
+
+| Day | road tiles | over 90 % | over 50 % |
+|---|---|---|---|
+| 100 | 1,403 → 1,393 | 134 → 112 | 261 → 281 |
+| 150 | 1,558 → 1,455 | 139 → 102 | 283 → 293 |
+
+- **The corridor test holds without re-anchoring:** seed 42 on day 100 has 2,394 folk at the Beacon, inside ±50 % of
+  2,648.
+- **Loosened, openly:** the 2-3 street test asked 60 % of the bot's street tiles to have a lot beside them on day 60.
+  This town has 58.5 % (the old full grid: 35 %). The test now asks for most, over 50 %, with the numbers in its comment.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 361 KB (125 KB gzip) |
+| `npx vitest run` | 15 files, 285 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |

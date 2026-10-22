@@ -101,7 +101,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
     },
   },
   {
-    id: 'traffic', name: 'Traffic', key: '5', desc: 'Road congestion relative to capacity. Red roads slow carts and annoy neighbours.',
+    id: 'traffic', name: 'Traffic', key: '5', desc: 'Road congestion relative to capacity. Red roads slow carts and annoy neighbours, and carts route round yesterday\'s jams where another way is near as quick.',
     get legend() { return rampLegend().slice().reverse() as [string, string][]; },
     tile: (s, i) => (s.road[i] ? ramp(1 - s.trafficSmooth[i] / 255) : null),
   },

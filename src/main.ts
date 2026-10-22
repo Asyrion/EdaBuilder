@@ -22,7 +22,6 @@ import { Audio } from './audio/audio';
 import { drainEffects } from './sim/hazards';
 import { nightFactor } from './render/palette';
 import { BUILDING_BY_KEY, MILESTONES } from './sim/catalog';
-import { bumpRoadVersion } from './sim/agents';
 import { ramps } from './render/overlays';
 import * as actions from './sim/actions';
 import { canDeepenNode, placeBuildingRaw } from './sim/world';
@@ -160,7 +159,6 @@ class Game {
     this.view.overlay = null;
     this.lastDay = s.day;
     recomputeAll(s);
-    bumpRoadVersion();
     // a new charter records its commands; a loaded one cannot be replayed (a save is rebuilt, not the live state); a replay feeds its own
     this.replay = replay ? new ReplayPlayer(replay, s) : null;
     this.runner = this.replay ? this.replay.runner : new CommandRunner(s, header);

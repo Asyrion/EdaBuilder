@@ -5,7 +5,6 @@
  * commands of each tick before running the next, and the sim's determinism does the rest.
  */
 import { buildRoad, bulldoze, paintDistrict, paintZone, placeBuilding, restoreSnapshot, setTax, takeSnapshot, type Snapshot } from './actions';
-import { bumpRoadVersion } from './agents';
 import { construction } from './construction';
 import { runDev } from './dev';
 import { setQuarter, type QuarterId } from './districts';
@@ -47,16 +46,15 @@ const b = (s: GameState, id: number) => s.buildings.find((x) => x && x.id === id
 const OPS: Record<string, (s: GameState, r: CommandRunner, a: any[]) => CommandResult> = {
   // the map tools (src/ui/tools.ts): a snapshot first where the tool took one, then the action, then recomputeAll on success
   snap: (s, r, [label]) => { r.undoStack.push(takeSnapshot(s, String(label))); if (r.undoStack.length > UNDO_DEPTH) r.undoStack.shift(); return { ok: true }; },
-  bulldoze: (s, _r, [x, y]) => { const res = bulldoze(s, x, y); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
-  build: (s, _r, [key, x, y]) => { const res = placeBuilding(s, key, x, y); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
-  road: (s, _r, [type, tiles]) => { const res = buildRoad(s, type as RoadType, tiles as number[]); if (res.ok) { bumpRoadVersion(); recomputeAll(s); } return res; },
+  bulldoze: (s, _r, [x, y]) => { const res = bulldoze(s, x, y); if (res.ok) recomputeAll(s); return res; },
+  build: (s, _r, [key, x, y]) => { const res = placeBuilding(s, key, x, y); if (res.ok) recomputeAll(s); return res; },
+  road: (s, _r, [type, tiles]) => { const res = buildRoad(s, type as RoadType, tiles as number[]); if (res.ok) recomputeAll(s); return res; },
   zone: (s, _r, [zone, x0, y0, x1, y1]) => { const res = paintZone(s, zone as Zone, x0, y0, x1, y1); if (res.ok) recomputeAll(s); return res; },
   district: (s, _r, [id, x0, y0, x1, y1]) => { const res = paintDistrict(s, id, x0, y0, x1, y1); if (res.ok) recomputeAll(s); return res; },
   undo: (s, r) => {
     const snap = r.undoStack.pop();
     if (!snap) return { ok: false, reason: 'Nothing to undo' };
     restoreSnapshot(s, snap);
-    bumpRoadVersion();
     recomputeAll(s);
     return { ok: true, out: snap.label };
   },
@@ -113,12 +111,11 @@ export function checksum(s: GameState): string {
   return h.toString(16).padStart(8, '0');
 }
 
-/** A new charter from a header, with the module state a new game resets (the path cache, the dev's instant building). */
+/** A new charter from a header, with the module state a new game resets (the dev's instant building; the path cache is the state's own since phase 2-5). */
 export function stateFromHeader(h: ReplayHeader): GameState {
   const s = createGame(h.seed, h.name, h.faction);
   construction.instant = false;
   recomputeAll(s);
-  bumpRoadVersion();
   return s;
 }
 

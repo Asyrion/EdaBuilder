@@ -10,7 +10,7 @@ import { START_TREASURY, BUILDING_BY_KEY, BUILDINGS } from '../src/sim/catalog';
 import { run, recomputeAll } from '../src/sim/sim';
 import { SECTOR, SECTORS_X, sectorOf, inCharter, canBuySector, buySector, sectorCost, charteredCount, adjacentToCharter } from '../src/sim/sectors';
 import { serialize, deserialize } from '../src/sim/save';
-import { roadTileOf } from '../src/sim/agents';
+import { dailyTraffic, findPath, roadTileOf } from '../src/sim/agents';
 import { demandExplain, demandReasons, trySpawnBuildings, updateDemand, HOSPICE_REACH } from '../src/sim/growth';
 import { DISTRICT_SLOTS, charterLocked, districtInUse, districtOpenAt, districtSlots, districtUnlockNotes, setQuarter } from '../src/sim/districts';
 import { activeQuests } from '../src/sim/quests';
@@ -509,4 +509,67 @@ describe('The bot paves its market doors', () => {
     expect(bot.doorsPaved).toBe(2); // nothing left to pave
     expect(marketRoadMultAt(s, a)).toBe(1);
   });
+});
+
+// Phase 2-5 of the scope reset: the path cache is the state's own and follows every road the actions write.
+describe('paths follow every road', () => {
+  /** A ring of track around a 10×10 block by the stake, and two tiles on opposite sides of it. */
+  function ring() {
+    const s = createGame(42, 'Paths');
+    const f = s.founding;
+    const x0 = f.x - 14, y0 = f.y + 6;
+    flatten(s, x0 - 1, y0 - 1, x0 + 11, y0 + 11);
+    s.treasury = 1e6;
+    for (const [ax, ay, bx, by, v] of [[x0, y0, x0 + 10, y0, false], [x0, y0 + 10, x0 + 10, y0 + 10, false], [x0, y0, x0, y0 + 10, true], [x0 + 10, y0, x0 + 10, y0 + 10, true]] as [number, number, number, number, boolean][]) buildRoad(s, RoadType.Track, roadPath(ax, ay, bx, by, v));
+    return { s, x0, y0, a: idx(x0 + 5, y0), b: idx(x0 + 5, y0 + 10) };
+  }
+
+  it('a road built by the action (not a command) is in the next path at once; one bulldozed is out of it', () => {
+    const { s, x0, y0, a, b } = ring();
+    const around = findPath(s, a, b)!;
+    expect(around.length).toBe(21); // 5 + 10 + 5 steps, both ways round the block are as long
+    buildRoad(s, RoadType.Track, roadPath(x0 + 5, y0, x0 + 5, y0 + 10, true)); // straight across
+    const across = findPath(s, a, b)!;
+    expect(across.length).toBe(11);
+    bulldoze(s, x0 + 5, y0 + 5);
+    expect(findPath(s, a, b)!.length).toBe(21);
+  });
+
+  it('two states keep their own paths: a road in one is not a road in the other', () => {
+    const one = ring(), two = ring();
+    expect(findPath(two.s, two.a, two.b)!.length).toBe(21);
+    buildRoad(one.s, RoadType.Track, roadPath(one.x0 + 5, one.y0, one.x0 + 5, one.y0 + 10, true));
+    expect(findPath(one.s, one.a, one.b)!.length).toBe(11);
+    expect(findPath(two.s, two.a, two.b)!.length).toBe(21);
+  });
+
+  it('a jammed side of the block is driven round, from the next day on (the cache empties with the day\'s traffic)', () => {
+    const { s, a, b } = ring();
+    const first = findPath(s, a, b)!;
+    // jam every tile of the way the cart took, past the corners: a day's traffic of three times the capacity
+    const way = new Set(first.slice(1, -1));
+    for (const t of way) s.traffic[t] = 3 * 60 * 3;
+    expect(findPath(s, a, b)).toEqual(first); // the day's paths stand until the day turns
+    dailyTraffic(s);
+    const next = findPath(s, a, b)!;
+    expect(next.length).toBe(first.length); // the other side of the block is as long
+    expect(next.slice(1, -1).some((t) => way.has(t))).toBe(false); // and free of the jam
+  });
+
+  it('no path cuts a corner: every step of every walking agent in a bot town is a road tile beside the last', () => {
+    const s = createGame(42, 'Corners');
+    const bot = new Bot(s);
+    run(s, 900 * 30, { onDay: () => bot.step() });
+    let paths = 0;
+    for (const a of s.agents) {
+      if (a.path.length < 2) continue;
+      paths++;
+      for (let k = 1; k < a.path.length; k++) {
+        const p = a.path[k - 1], q = a.path[k];
+        expect(Math.abs((p % 128) - (q % 128)) + Math.abs(((p / 128) | 0) - ((q / 128) | 0))).toBe(1);
+        expect(s.road[q]).toBeGreaterThan(0);
+      }
+    }
+    expect(paths).toBeGreaterThan(200);
+  }, 120_000);
 });

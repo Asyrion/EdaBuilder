@@ -2,7 +2,7 @@
 import { marketQuarterAt } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { roadAt, roadSpeedAt } from './roads';
-import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
+import { AgentKind, MAP_H, MAP_W, TICKS_PER_SEC, Zone, idx, inBounds, type Agent, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, rngOf } from './world';
 import { edictOn } from './edicts';
 
@@ -12,17 +12,22 @@ const MAX_RESTLESS = 60;
 // Path cache keyed by from|to tile, one per state: emptied when the roads change and when the season turns (the mud). A path
 // depends on the roads and their speeds alone, so the cache is a pure memo and a loaded charter walks the same paths
 // (scope reset phase 1d; congestion slows a cart on its way but no longer steers A*, whose cache kept the first day's jams).
+/** How much a full road weighs on a path: a jammed tile costs (1 + JAM_ROUTE) times its time (phase 2-5). */
+export const JAM_ROUTE = 0.5;
 const pathCaches = new WeakMap<GameState, { version: number; map: Map<number, number[] | null> }>();
-export let roadVersion = 0;
-export function bumpRoadVersion(): void {
-  roadVersion++;
+// The road version, one per state (phase 2-5: it was a module global, and only the command layer bumped it, so the bot's
+// own roads and a second state in the same page shared or missed it). The road writes in actions.ts bump it themselves.
+const roadVersions = new WeakMap<GameState, number>();
+export function bumpRoadVersion(state: GameState): void {
+  roadVersions.set(state, (roadVersions.get(state) ?? 0) + 1);
 }
 
 /** A* over road tiles (4-neighbour). Returns tile indices from start to goal, or null. */
 export function findPath(state: GameState, start: number, goal: number, maxNodes = 6000): number[] | null {
   let cache = pathCaches.get(state);
-  if (!cache || cache.version !== roadVersion) {
-    cache = { version: roadVersion, map: new Map() };
+  const version = roadVersions.get(state) ?? 0;
+  if (!cache || cache.version !== version) {
+    cache = { version, map: new Map() };
     pathCaches.set(state, cache);
   }
   const pathCache = cache.map;
@@ -104,7 +109,9 @@ function astar(state: GameState, start: number, goal: number, maxNodes: number):
       const j = nb[k];
       const rt = roadAt(state, j);
       if (!rt) continue;
-      const cost = 1 / roadSpeedAt(state, j); // mud on a track; the jams slow a cart on its way, they do not reroute it
+      // mud on a track, and yesterday's jams (phase 2-5): the daily traffic layer is saved and changes only in dailyTraffic,
+      // which empties the cache, so a path depends on saved state alone and a loaded charter walks the same ones
+      const cost = (1 / roadSpeedAt(state, j)) * (1 + JAM_ROUTE * (state.trafficSmooth[j] / 255));
       const ng = gc + cost;
       if (ng < (g.get(j) ?? Infinity)) {
         g.set(j, ng);
@@ -458,7 +465,7 @@ export function tickAgents(state: GameState): void {
 
 /** Daily traffic smoothing: traffic count vs road capacity -> 0..255. */
 export function dailyTraffic(state: GameState): void {
-  if (state.day % DAYS_PER_SEASON === 0) pathCaches.delete(state); // a new season: the mud comes or goes, and with it the roads' speeds
+  pathCaches.delete(state); // a new day: yesterday's jams steer the paths (phase 2-5), and a new season brings or takes the mud
   for (let i = 0; i < state.traffic.length; i++) {
     const rt = roadAt(state, i);
     let v = 0;
