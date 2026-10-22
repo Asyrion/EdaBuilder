@@ -1,11 +1,9 @@
 /** Iteration 57 (the donkey carts): the painted carts carry the goods and the leystone, at a folk's scale, facing the way they
- *  drive; the floating carts and barges stay as they were; the first-cart quest's Show me finds a cart on the road. */
+ *  drive; a missing painting falls back to the procedural cart. */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { decodePng } from '../scripts/lib/png.mjs';
 import { CART_GOODS_PREFIX, CART_STONE_PREFIX, cartPick, cartSpriteName, facesRight } from '../src/render/carts';
-import { BARGE_VARIANT, FLOAT_VARIANT } from '../src/sim/vehicles';
-import { QUESTS } from '../src/data/quests';
 
 interface Entry { file: string; w: number; h: number; ax: number; ay: number }
 const sources = JSON.parse(readFileSync('art/sources.json', 'utf8')) as { sprites: { name: string; kind?: string; checked?: boolean; mirrored?: boolean }[] };
@@ -50,7 +48,7 @@ describe('The donkey carts', () => {
     }
   });
 
-  it('picks a painting by id and a facing by heading; floating carts, barges and a missing set keep the procedural carts', () => {
+  it('picks a painting by id and a facing by heading; a missing set keeps the procedural carts', () => {
     const n = (p: string) => (p === CART_GOODS_PREFIX ? 27 : p === CART_STONE_PREFIX ? 4 : 0);
     expect(facesRight(0)).toBe(true);
     expect(facesRight(3)).toBe(true);
@@ -59,18 +57,10 @@ describe('The donkey carts', () => {
     expect(cartSpriteName({ id: 7, variant: 1, dir: 0 }, n)).toBe(`${CART_GOODS_PREFIX}${cartPick(7, 27)}`);
     expect(cartSpriteName({ id: 7, variant: 2, dir: 1 }, n)).toBe(`${CART_GOODS_PREFIX}${cartPick(7, 27)}_l`);
     expect(cartSpriteName({ id: 7, variant: 0, dir: 2 }, n)).toBe(`${CART_STONE_PREFIX}${cartPick(7, 4)}_l`);
-    expect(cartSpriteName({ id: 7, variant: FLOAT_VARIANT, dir: 0 }, n)).toBe(`cart_${FLOAT_VARIANT}`);
-    expect(cartSpriteName({ id: 7, variant: BARGE_VARIANT, dir: 1 }, n)).toBe(`cart_${BARGE_VARIANT}`);
     expect(cartSpriteName({ id: 7, variant: 1, dir: 0 }, () => 0)).toBe('cart_1');
     // consecutive carts spread over the pool
     const picks = new Set(Array.from({ length: 40 }, (_, id) => cartPick(id, 27)));
     expect(picks.size).toBeGreaterThan(15);
     for (const p of picks) expect(p).toBeLessThan(27);
-  });
-
-  it("the first-cart quest's Show me finds a cart on the road", () => {
-    const q = QUESTS.find((x) => x.id === 'o_cart')!;
-    expect(q.focus).toEqual({ center: 'cart' });
-    expect(q.hint).toMatch(/[Dd]onkey carts/);
   });
 });

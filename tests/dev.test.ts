@@ -30,7 +30,7 @@ describe('Dev tools', () => {
     construction.instant = true; // the toggle flipped it off
   });
 
-  it('commands do what they say: crowns, gloam, relics, finish', () => {
+  it('commands do what they say: crowns, gloam, finish', () => {
     const s = createGame(41, 'Dev');
     const f = s.founding;
     flatten(s, f.x - 14, f.y - 10, f.x + 14, f.y + 14);
@@ -43,8 +43,6 @@ describe('Dev tools', () => {
     expect(s.gloam[idx(at.x, at.y)]).toBe(1);
     runDev(s, 'cleargloam', '', at);
     expect(s.gloam[idx(at.x, at.y)]).toBe(0);
-    runDev(s, 'relic', 'saltspoons', at);
-    expect(s.relics.complete).toEqual(['saltspoons']);
     const m0 = s.milestone;
     runDev(s, 'milestone', '', at);
     expect(s.milestone).toBe(m0 + 1);

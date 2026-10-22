@@ -117,7 +117,6 @@ class Game {
       watchReplay: (f) => this.watchReplay(f),
       skipReplay: () => this.skipReplay(),
       get replaying() { return !!game.replay; },
-      setQuarry: (id, q) => { this.cmd('quarry', id, q); },
       setMuted: (m) => { this.muted = m; this.audio.setMuted(m); },
       get musicOn() { return game.audio.musicOn; },
       setMusic: (on) => { this.audio.setMusic(on); try { localStorage.setItem('wardlight.music', on ? '1' : '0'); } catch { /* ignore */ } },

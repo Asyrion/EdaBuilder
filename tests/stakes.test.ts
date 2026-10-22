@@ -76,7 +76,7 @@ describe('The breakdowns', () => {
 });
 
 describe('Deathcare in the open', () => {
-  it('the dead line counts the pipeline; the ground beside deathcare is worth 6 less; the Salt Font takes a relic', () => {
+  it('the dead line counts the pipeline; the ground beside deathcare is worth 6 less', () => {
     const s = town();
     const f = s.founding;
     const h = placeBuildingRaw(s, 'hearth', f.x - 4, f.y + 1, 3); ok(h); h.residents = 14;
@@ -90,16 +90,6 @@ describe('Deathcare in the open', () => {
     expect(s.quietCap).toBeCloseTo(12, 5);
     expect(s.quietedToday).toBeGreaterThan(0);
     expect(s.waitingDead).toBeCloseTo(s.unquieted, 9);
-    // the Salt Font: a loose relic every three days, and twice the quieting while it lasts
-    const font = placeBuildingRaw(s, 'saltfont', f.x - 12, f.y - 2); ok(font); font.workers = 3; font.cooldown = 0;
-    s.relicStock = 1;
-    dailyDeath(s);
-    expect(s.relicStock).toBe(0);
-    expect(font.cooldown).toBe(3);
-    expect(s.quietCap).toBeCloseTo(12 + 60, 5); // boneyard, the font doubled (the Sextons' Chapel and its 15 are parked)
-    font.cooldown = 0;
-    dailyDeath(s);
-    expect(s.quietCap).toBeCloseTo(12 + 30, 5); // no relic left: the font quiets its plain 30
   });
 });
 

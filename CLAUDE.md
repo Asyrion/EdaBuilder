@@ -61,7 +61,7 @@ The game is being cut back to its core with one people, the Vellish (`docs/RESET
 ## Dev board (the user's ask, 2026-10-08)
 
 `npm run devboard` serves http://127.0.0.1:8771, a local page to browse and edit the content in `src/data/content/`
-(buildings, roads, milestones, relic sets), with each building's sprites and art status, checked by `validateContent`
+(buildings, roads, milestones), with each building's sprites and art status, checked by `validateContent`
 after every save; `tools/devboard/README.md` has the details. At the start of a session on the user's machine, check it
 answers (`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8771/` gives 200) and start it in the background if not
 (`dev-board` in `.claude/launch.json`); never a second instance on another port. New content goes into

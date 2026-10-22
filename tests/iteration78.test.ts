@@ -34,7 +34,7 @@ describe('The scale of things: the small buildings against a citizen', () => {
     for (const n of ['b_wardlantern', 'b_shrine']) expect(folk(n), n).toBeLessThanOrEqual(2.5);
   });
   it('sheds, works and level-1 houses at most 2.8', () => {
-    for (const n of ['b_fishershut', 'b_smokehouse', 'b_reedcutters', 'b_healer', 'b_torrentmill']) expect(folk(n), n).toBeLessThanOrEqual(2.8);
+    for (const n of ['b_healer', 'hearth_l1_v0', 'craft_l1_v0']) expect(folk(n), n).toBeLessThanOrEqual(2.8);
     for (const zone of ['hearth', 'craft', 'market', 'arcane']) for (const v of [0, 1, 2, 3]) for (const p of PEOPLES) {
       const n = `${zone}_l1_v${v}${p}`;
       expect(folk(n), n).toBeLessThanOrEqual(2.8);

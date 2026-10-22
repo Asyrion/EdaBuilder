@@ -114,7 +114,9 @@ describe('Districts in steps', () => {
     expect(districtUnlockNotes(5)).toEqual(['Two more districts open: six of eight.', 'The Temple charter is yours.']);
     expect(districtUnlockNotes(6)).toEqual(['The last two districts open.']);
     s.milestone = 1;
-    expect(activeQuests(s, 3, 'Districts')[0].chapter).toBe('Districts');
+    paintDistrict(s, 1, s.founding.x - 8, s.founding.y - 4, s.founding.x - 2, s.founding.y); // a painted district opens the charter task
+    expect(activeQuests(s, 3, 'Districts')[0].id).toBe('x_charter');
+    expect(activeQuests(s, 3)[0].chapter).not.toBe('Districts');
   });
 });
 

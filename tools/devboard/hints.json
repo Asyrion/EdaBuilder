@@ -5,8 +5,7 @@
     "zone": { "values": ["hearth", "market", "craft", "arcane"], "help": "Zone buildings only: which zone it houses." },
     "faction": { "enum": "FactionId", "help": "A people's own building; none ticked = every people." },
     "service.type": { "enum": "ServiceType" },
-    "relic": { "ref": "relics", "help": "Needs this relic set entire (relics.ts)." },
-    "unlock": { "help": "The milestone (0 = Founding Stake ... 8); 99 = never by a milestone (a guild hall comes with its charter)." },
+    "unlock": { "help": "The milestone (0 = Founding Stake ... 8); 99 = never by a milestone (none since the guild halls were parked)." },
     "capacity": { "help": "Residents or jobs per level, levels 1 to 3." },
     "desc": { "text": true },
     "flavor": { "text": true },
@@ -15,16 +14,13 @@
     "manaUse": { "help": "Mana per day (zone: per level)." }
   },
   "roads": {
-    "type": { "values": ["track", "cobble", "lantern", "glowvine"] },
+    "type": { "values": ["track", "cobble", "lantern"] },
     "requires": { "ref": "buildings" },
     "desc": { "text": true }
   },
   "milestones": {
     "unlocks": { "help": "Building, road or zone keys opened at this milestone (lantern_wonder: each people's own wonder)." },
     "text": { "text": true }
-  },
-  "relics": {
-    "bonus": { "help": "What the set gives once entire." }
   },
   "edicts": { "desc": { "text": true }, "flavor": { "text": true } },
   "quests": { "hint": { "text": true } },

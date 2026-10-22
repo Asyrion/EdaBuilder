@@ -1485,39 +1485,6 @@
    "checked": true
   },
   {
-   "name": "deer_0",
-   "kind": "prop",
-   "src": "inspirations/animals/image_2(1).png",
-   "targetHeight": 14,
-   "colors": 20,
-   "glow": false,
-   "hop": true,
-   "island": 2,
-   "checked": true
-  },
-  {
-   "name": "elk_0",
-   "kind": "prop",
-   "src": "inspirations/animals/images_1 (4).png",
-   "targetHeight": 17,
-   "colors": 20,
-   "glow": false,
-   "hop": true,
-   "island": 17,
-   "checked": true
-  },
-  {
-   "name": "wolf_0",
-   "kind": "prop",
-   "src": "inspirations/animals/images_1 (3).png",
-   "targetHeight": 11,
-   "colors": 20,
-   "glow": false,
-   "hop": true,
-   "island": 46,
-   "checked": true
-  },
-  {
    "name": "hearth_l1_v0",
    "set": "eda-lore-1",
    "src": "inspirations/eda-lore/houses_12.png",
@@ -7032,18 +6999,6 @@
    "checked": true
   },
   {
-   "name": "boar_0",
-   "set": "eda-lore-2",
-   "kind": "prop",
-   "src": "inspirations/animals/image_3(1).png",
-   "island": 26,
-   "targetHeight": 9,
-   "colors": 20,
-   "glow": false,
-   "hop": true,
-   "checked": true
-  },
-  {
    "name": "b_well_v0",
    "set": "eda-lore-2",
    "src": "inspirations/eda-lore/wells_9.png",
@@ -8244,79 +8199,6 @@
    "checked": true
   },
   {
-   "name": "b_fishershut_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/wooden_houses/image_0(1).png",
-   "w": 1,
-   "h": 1,
-   "targetHeight": 31,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "flip": true,
-   "checked": true
-  },
-  {
-   "name": "b_fishershut_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/wooden_houses/image_1(1).png",
-   "w": 1,
-   "h": 1,
-   "targetHeight": 31,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_reedcutters_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/wooden_houses/image_2(1).png",
-   "w": 1,
-   "h": 1,
-   "targetHeight": 31,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_smokehouse_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/wooden_houses/image_3(2).png",
-   "w": 1,
-   "h": 1,
-   "targetHeight": 31,
-   "maxWidth": 34,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
    "name": "b_boneyard_v1",
    "set": "eda-lore-2",
    "src": "inspirations/eda-lore/cemeteries_16.png",
@@ -8602,103 +8484,6 @@
    "checked": true
   },
   {
-   "name": "b_watergarden_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/cemeteries_16.png",
-   "island": 13,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 44,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_hunterslodge_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/hunters_lodges_7.png",
-   "island": 2,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 50,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "flip": true,
-   "checked": true
-  },
-  {
-   "name": "b_hunterslodge_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/hunters_lodges_7.png",
-   "island": 3,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 50,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_hunterslodge_v2",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/hunters_lodges_7.png",
-   "island": 6,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 50,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_hunterslodge_v3",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/hunters_lodges_7.png",
-   "island": 7,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 50,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "flip": true,
-   "checked": true
-  },
-  {
    "name": "b_depot_v0",
    "set": "eda-lore-2",
    "src": "inspirations/trade_houses/image_0(1).png",
@@ -8742,78 +8527,6 @@
    "h": 2,
    "targetHeight": 62,
    "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_brickworks_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/brickmaker/image_0(1).png",
-   "w": 3,
-   "h": 3,
-   "targetHeight": 80,
-   "maxWidth": 98,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_brickworks_v1",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/brickmaker/image_1(1).png",
-   "w": 3,
-   "h": 3,
-   "targetHeight": 80,
-   "maxWidth": 98,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_brickworks_v2",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/brickmaker/image_2(1).png",
-   "w": 3,
-   "h": 3,
-   "targetHeight": 80,
-   "maxWidth": 98,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_brickworks_v3",
-   "set": "eda-lore-2",
-   "src": "inspirations/craft_houses/brickmaker/image_3(2).png",
-   "w": 3,
-   "h": 3,
-   "targetHeight": 80,
-   "maxWidth": 98,
    "anchor": "centre",
    "colors": 24,
    "sharpen": 0.8,
@@ -8880,45 +8593,6 @@
     "warm": 60,
     "maxBlob": 10
    },
-   "checked": true
-  },
-  {
-   "name": "b_ruindelve_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/magic_buildings_8.png",
-   "island": 55,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 56,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "checked": true
-  },
-  {
-   "name": "b_househall_v0",
-   "set": "eda-lore-2",
-   "src": "inspirations/eda-lore/magic_buildings_8.png",
-   "island": 57,
-   "w": 2,
-   "h": 2,
-   "targetHeight": 62,
-   "maxWidth": 66,
-   "anchor": "centre",
-   "colors": 24,
-   "sharpen": 0.8,
-   "glow": {
-    "minLum": 0.6,
-    "warm": 60,
-    "maxBlob": 10
-   },
-   "flip": true,
    "checked": true
   },
   {

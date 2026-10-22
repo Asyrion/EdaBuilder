@@ -6,7 +6,7 @@ import { createGame, placeBuildingRaw, waterReachOf } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { BUILDING_BY_KEY, BUILDINGS } from '../src/sim/catalog';
 import { SECONDARY_REACH, reachesOf, reachesOfBuilding } from '../src/sim/reach';
-import { HOSPICE_REACH, GLIMHOUSE_REACH } from '../src/sim/growth';
+import { HOSPICE_REACH } from '../src/sim/growth';
 import { flatten } from './helpers';
 
 describe('Reach rings', () => {
@@ -35,7 +35,6 @@ describe('Reach rings', () => {
     const s = createGame(56, 'Ringwick');
     const r = (key: string) => reachesOf(s, BUILDING_BY_KEY[key]).filter((x) => !x.primary).map((x) => x.r);
     expect(r('hospice')).toEqual([HOSPICE_REACH]);
-    expect(r('glimhouse')).toEqual([GLIMHOUSE_REACH]);
     expect(reachesOf(s, BUILDING_BY_KEY.hospice).find((x) => !x.primary)!.square).toBe(true);
   });
 });

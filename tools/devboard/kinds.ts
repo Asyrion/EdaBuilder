@@ -31,8 +31,6 @@ export const KINDS: Record<string, KindDef> = {
     summary: ['cost', 'upkeep', 'speed', 'capacity', 'unlock'] },
   milestones: { title: 'Milestones', group: 'Content', sources: [{ file: 'src/data/content/milestones.json' }], shape: 'list', labelKey: 'name',
     summary: ['pop', 'grant', 'unlocks'] },
-  relics: { title: 'Relic sets', group: 'Content', sources: [{ file: 'src/data/content/relics.json' }], shape: 'list', idKey: 'id', labelKey: 'name',
-    summary: ['pieces', 'bonus'] },
   edicts: { title: 'Edicts', group: 'Text', sources: [{ file: 'src/data/content/text/edicts.json' }], shape: 'map', labelKey: 'name',
     summary: ['desc', 'flavor'], textOnly: 'src/sim/edicts.ts' },
   quests: { title: 'Quests', group: 'Text', sources: [{ file: 'src/data/content/text/quests.json' }], shape: 'map', labelKey: 'title',

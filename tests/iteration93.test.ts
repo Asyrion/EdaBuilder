@@ -43,41 +43,34 @@ describe('Iteration 93: every task says what it still needs', () => {
     }
   });
 
-  it('a Cistern\'s line walks from not built, through being built, to unlit, then the task is done', () => {
+  it('a Ward-Lantern\'s line walks from not built, through being built, to unlit, then the task is done', () => {
     construction.instant = false; // the site rises over days here
-    const s = createGame(42, 'Cistern');
+    const s = createGame(42, 'Lantern');
     const f = s.founding;
     flatten(s, f.x - 12, f.y - 8, f.x + 12, f.y + 10);
     s.treasury = 99999; s.milestone = 1; s.sectors.fill(1);
-    expect(questStatus(s, Q('l_cistern'))).toMatch(/unlocks at/);
+    expect(questStatus(s, Q('g_ward'))).toMatch(/unlocks at/);
     s.milestone = 2;
-    expect(questStatus(s, Q('l_cistern'))).toMatch(/^Not built yet/);
+    expect(questStatus(s, Q('g_ward'))).toMatch(/^Not built yet/);
     buildRoad(s, 1, roadPath(f.x - 10, f.y + 2, f.x + 10, f.y + 2, false));
-    expect(placeBuilding(s, 'cistern', f.x - 6, f.y + 3).ok).toBe(true);
+    expect(placeBuilding(s, 'wardlantern', f.x - 6, f.y + 3).ok).toBe(true);
     recomputeAll(s);
-    expect(questStatus(s, Q('l_cistern'))).toMatch(/Being built: \d+ %/);
-    const site = s.buildings.find((b) => b && b.kind === 'cistern')!;
+    expect(questStatus(s, Q('g_ward'))).toMatch(/Being built: \d+ %/);
+    const site = s.buildings.find((b) => b && b.kind === 'wardlantern')!;
     site.work = Math.round(site.workTotal! / 2);
-    expect(questStatus(s, Q('l_cistern'))).toMatch(/Being built: 50 %/);
+    expect(questStatus(s, Q('g_ward'))).toMatch(/Being built: 50 %/);
     site.state = 'ok'; site.work = 0; site.lit = false;
-    expect(buildStatus(s, 'cistern')).toMatch(/unlit/);
+    expect(buildStatus(s, 'wardlantern')).toMatch(/unlit/);
     site.lit = true;
-    expect(buildStatus(s, 'cistern')).toBe('Built.');
+    expect(buildStatus(s, 'wardlantern')).toBe('Built.');
     site.state = 'ruin';
-    expect(buildStatus(s, 'cistern')).toMatch(/ruins/);
+    expect(buildStatus(s, 'wardlantern')).toMatch(/ruins/);
     construction.instant = true;
   });
 
   it('the counters follow the city', () => {
     const s = createGame(42, 'Counts');
-    s.milestone = 2;
-    s.buildings.push({ id: 9001, kind: 'wardlantern', x: 0, y: 0, w: 1, h: 1, state: 'ok', level: 1, lit: false } as never);
-    expect(questStatus(s, Q('g_burn'))).toMatch(/unlit/); // an unlit lantern burns nothing: the line says so first
-    (s.buildings.at(-1) as { lit: boolean }).lit = true;
-    s.stats.gloamBurned = 12;
-    expect(questStatus(s, Q('g_burn'))).toBe('12 of 50 tiles of Gloam burned back.');
-    s.stats.gloamBurned = 80;
-    expect(questStatus(s, Q('g_burn'))).toBe('50 of 50 tiles of Gloam burned back.');
+    s.milestone = 3;
     s.educated = 0.296; // not yet 30: never shown as met
     expect(questStatus(s, Q('a_academy'))).toMatch(/29 % of the folk educated, of 30 %/);
   });

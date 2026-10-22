@@ -5,8 +5,6 @@ import { recomputeAll } from '../src/sim/sim';
 import { RoadType, Zone } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
-import { QUESTS } from '../src/data/quests';
-import { checkQuests } from '../src/sim/quests';
 import { dailySurge } from '../src/sim/hazards';
 import { computeBuildingHappiness, dailyTrade } from '../src/sim/growth';
 import { EDICT_BY_KEY, edictUpkeep } from '../src/sim/edicts';
@@ -26,36 +24,6 @@ function town(seed = 41) {
   return s;
 }
 const ok = (b: { state: string; work: number }) => { b.state = 'ok'; b.work = 0; };
-
-describe('The sweep: quests', () => {
-  it('scenario goals pay only in their scenario; the failed daily leaves the Ledger', () => {
-    const s = town();
-    // a valley game at Burgh with ten clean days pays neither the one-node nor the inherited goal
-    s.milestone = 6; s.cleanDays = 10; s.day = 120;
-    const t0 = s.treasury;
-    checkQuests(s);
-    expect(s.questsDone).not.toContain('z_onenode');
-    expect(s.questsDone).not.toContain('z_inherited');
-    expect(s.treasury - t0).toBeLessThan(5000);
-    const c = createGame(7, 'Daily'); c.challenge = 'x' as never; c.day = 61;
-    expect(QUESTS.find((q) => q.id === 'z_daily')!.when(c)).toBe(false);
-  });
-
-  it('five full days, a named district of your own', () => {
-    const s = town();
-    const q = (id: string) => QUESTS.find((x) => x.id === id)!;
-    s.stats.fullDays = 4; s.day = 30;
-    for (let k = 0; k < 4; k++) placeBuildingRaw(s, 'market', s.founding.x - 8 + k * 2, s.founding.y + 1, 1);
-    expect(q('o_full').done(s)).toBe(false);
-    s.stats.fullDays = 5;
-    expect(q('o_full').done(s)).toBe(true);
-    s.daughter = { node: 0, x: 0, y: 0, name: 'Ashmere', day: 1, twin: -1 };
-    s.districtNames = { 2: 'Ashmere' };
-    expect(q('x_rename').done(s)).toBe(false);
-    s.districtNames[1] = 'Hearthside';
-    expect(q('x_rename').done(s)).toBe(true);
-  });
-});
 
 describe('The sweep: timing and counting', () => {
 
@@ -86,9 +54,10 @@ describe('The sweep: timing and counting', () => {
 describe('The sweep: edicts and promises', () => {
   it('city-only edicts are not billed per district and are hidden from a district scope', () => {
     const s = town();
-    s.districtEdicts['1:closeseason'] = true; // the bounty this test used is parked
+    s.trade.importCost = 40;
+    s.districtEdicts['1:imports'] = true;
     paintDistrict(s, 1, s.founding.x - 4, s.founding.y - 4, s.founding.x + 4, s.founding.y + 4);
-    expect(EDICT_BY_KEY.closeseason.cityOnly).toBe(true);
+    expect(EDICT_BY_KEY.imports.cityOnly).toBe(true);
     expect(edictUpkeep(s)).toBe(0);
     const h = placeBuildingRaw(s, 'hearth', s.founding.x - 2, s.founding.y + 1, 1); ok(h); h.residents = 4;
     s.districtEdicts['1:curfew'] = true;

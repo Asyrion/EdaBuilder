@@ -65,9 +65,6 @@ export function coverageAt(state: GameState, type: ServiceType, x: number, y: nu
   return state.coverage[type][idx(x, y)] / 255;
 }
 
-/** The marsh's miasma (iteration 85): per marsh tile, at its centre, fading to nothing past MARSH_MIASMA_REACH tiles. */
-export const MARSH_MIASMA = 0.4;
-export const MARSH_MIASMA_REACH = 2;
 
 export function updateMiasma(state: GameState): void {
   const n = MAP_W * MAP_H;
@@ -93,16 +90,6 @@ export function updateMiasma(state: GameState): void {
         acc[idx(x, y)] += amt * (1 - r / (r + 1)) * (1 - (d - r) / (spill + 1));
       }
   });
-  // the marsh breeds miasma (iteration 85): every marsh tile a small cloud within MARSH_MIASMA_REACH
-  for (let i = 0; i < n; i++) {
-    if (state.terrain[i] !== Terrain.Marsh) continue;
-    const mx = i % MAP_W; const my = (i / MAP_W) | 0;
-    for (let dy = -MARSH_MIASMA_REACH; dy <= MARSH_MIASMA_REACH; dy++) for (let dx = -MARSH_MIASMA_REACH; dx <= MARSH_MIASMA_REACH; dx++) {
-      const d = Math.abs(dx) + Math.abs(dy);
-      if (d > MARSH_MIASMA_REACH || !inBounds(mx + dx, my + dy)) continue;
-      acc[idx(mx + dx, my + dy)] += MARSH_MIASMA * (1 - d / (MARSH_MIASMA_REACH + 1));
-    }
-  }
   for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12));
 }
 

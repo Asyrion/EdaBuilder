@@ -22,10 +22,8 @@ describe('A save holding parked things', () => {
 
   it('an old walker is dropped and the nodes lose their aspects', () => {
     const o = raw();
-    const a = o.agents.find((x: { kind: number }) => x.kind !== 5);
-    expect(a).toBeDefined();
     const n = o.agents.length;
-    o.agents.push({ ...a, id: 99999, kind: 5, job: 'sexton', log: ['Salted a grave'] });
+    o.agents.push({ id: 99999, kind: 5, x: 40.5, y: 40.5, path: [], pathIdx: 0, speed: 1, homeId: -1, targetId: -1, timer: 0, variant: 0, dir: 0, load: 0, job: 'sexton', log: ['Salted a grave'] });
     for (const node of o.nodes) node.aspect = 'vein';
     const s = load(o)();
     expect(s.agents.length).toBe(n);
