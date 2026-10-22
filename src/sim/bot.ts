@@ -246,14 +246,42 @@ export class Bot {
     if (buildRoad(s, RoadType.Cobble, [door]).ok) this.doorsPaved++;
   }
 
-  /** Streets every 5 tiles in both directions within the current radius. */
+  /** Streets every 5 tiles in both directions within the current radius, a segment (one block side) at a time: the core
+      (8 around the stake) always, a segment with a building or a zoned lot within 3 of it, and the segments touching
+      those, the rim where new lots are painted (phase 2-3: whole lines across the radius left two in three street tiles
+      with nothing beside them, and their upkeep ate a third to a half of the taxes). */
   private ensureGrid(): void {
     const s = this.s;
     const r = this.radius;
-    for (let k = -r; k <= r; k += 5) {
-      const type = s.milestone >= 1 && Math.abs(k) % 10 === 0 ? RoadType.Cobble : RoadType.Track;
-      buildRoad(s, type, roadPath(this.cx - r, this.cy + k, this.cx + r, this.cy + k, false));
-      buildRoad(s, type, roadPath(this.cx + k, this.cy - r, this.cx + k, this.cy + r, true));
+    const cx = this.cx, cy = this.cy;
+    // a segment: along a line (horizontal: y fixed; vertical: x fixed) from a to a + 5
+    type Seg = { h: boolean; line: number; a: number; k: number };
+    const segs: Seg[] = [];
+    for (let k = -r; k <= r; k += 5) for (let j = -r; j + 5 <= r; j += 5) {
+      segs.push({ h: true, line: cy + k, a: cx + j, k });
+      segs.push({ h: false, line: cx + k, a: cy + j, k });
+    }
+    const used = (g: Seg): boolean => {
+      for (let t = 0; t <= 5; t++) for (let d = -3; d <= 3; d++) {
+        const x = g.h ? g.a + t : g.line + d, y = g.h ? g.line + d : g.a + t;
+        if (!inBounds(x, y)) continue;
+        const i = idx(x, y);
+        if (s.zone[i] || (s.bIndex[i] >= 0 && !s.road[i])) return true;
+      }
+      return false;
+    };
+    const core = (g: Seg) => Math.abs(g.line - (g.h ? cy : cx)) <= 8 && Math.abs(g.a + 2.5 - (g.h ? cx : cy)) <= 8;
+    const key = (g: Seg) => `${g.h ? 'h' : 'v'}${g.line},${g.a}`;
+    const on = new Set<string>();
+    for (const g of segs) if (core(g) || used(g)) on.add(key(g));
+    // the rim: a segment sharing an end with one in use
+    const ends = new Set<string>();
+    for (const g of segs) if (on.has(key(g))) for (const e of g.h ? [[g.a, g.line], [g.a + 5, g.line]] : [[g.line, g.a], [g.line, g.a + 5]]) ends.add(`${e[0]},${e[1]}`);
+    const touches = (g: Seg) => (g.h ? [[g.a, g.line], [g.a + 5, g.line]] : [[g.line, g.a], [g.line, g.a + 5]]).some((e) => ends.has(`${e[0]},${e[1]}`));
+    for (const g of segs) {
+      if (!on.has(key(g)) && !touches(g)) continue;
+      const type = s.milestone >= 1 && Math.abs(g.k) % 10 === 0 ? RoadType.Cobble : RoadType.Track;
+      buildRoad(s, type, g.h ? roadPath(g.a, g.line, g.a + 5, g.line, false) : roadPath(g.line, g.a, g.line, g.a + 5, true));
     }
   }
 

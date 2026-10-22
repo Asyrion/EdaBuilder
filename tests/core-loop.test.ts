@@ -39,9 +39,11 @@ function town(seed = 42) {
 // filling city keeps growing (2,855 folk, the Burgh; the six-seed mean +65 %). Re-anchored once more in phase 2-2,
 // downward: a lot grows only where light and water reach it, so the dark houses that paid taxes without drawing mana are
 // gone, and the Thrum Font gives 100 mana for 4,500 (1,139 folk, the Burgh; the six-seed mean −37 % against 2-1, +3 %
-// against 1d-1). The corridor stays wide on purpose: one extra roll can move a seed a long way.
-const BOT_POP_100 = 1139;
-const BOT_MILESTONE_100 = 6;
+// against 1d-1). Re-anchored upward in phase 2-3: the bot lays its streets only where its town is, and the upkeep of empty
+// streets no longer eats its taxes (2,648 folk, the Beacon of Eda; the six-seed mean +48 %). The rules did not change;
+// the measuring player did. The corridor stays wide on purpose: one extra roll can move a seed a long way.
+const BOT_POP_100 = 2648;
+const BOT_MILESTONE_100 = 8;
 
 describe('core loop', () => {
   it('grows homes along a road, lit by spires and watered by wells, in 30 days', () => {

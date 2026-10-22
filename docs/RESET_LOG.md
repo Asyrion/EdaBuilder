@@ -686,3 +686,77 @@ warnings each and no countdown.
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK, the hover says "Hearth lot: no light reaches it …" |
 | `npm run devboard:selftest` | OK (the Font is content) |
 | Playwright | the top bar reads "476 / 340 · surge in 3 d" with its tooltip; no page errors |
+
+## Phase 2-3: the bot lays its streets where its town is; the budget shows where the money goes (2026-10-22)
+
+The third iteration of phase 2. 2-2 left the corridor bound by income: the bot bought Fonts as fast as its taxes
+allowed. This iteration asked where the money went before it changed anything.
+
+**Why.** The ledger of the 2-2 bot cities (seed 42; seed 45 alike):
+
+| Seed 42 | tithes | road upkeep | building upkeep | net |
+|---|---|---|---|---|
+| Day 30 | 1,144 | 328 | 427 | 389 |
+| Day 100 | 1,186 | 524 | 601 | 61 |
+| Day 150 | 1,393 | 527 | 683 | 184 |
+
+- **The street upkeep ate a third to a half of the tithes:** 1,655 dirt tracks on day 100, of which 581 had a lot or a
+  building beside them.
+- **The cause:** the bot's `ensureGrid` laid whole lines every 5 tiles across its radius (up to 43) at each step.
+- **Not the game's economy.** A home of four pays about 4 crowns a day and needs half a street tile (0.15 a day), so
+  the rules were left alone and the measuring player was fixed (RESET_PLAN Phase 2: "the bot is a measuring
+  instrument").
+
+**Done.**
+- **`ensureGrid` lays the grid a block side at a time:**
+  - the core (8 around the stake);
+  - every segment with a building or a zoned lot within 3 tiles;
+  - the segments touching those, the rim where `zoneByDemand` paints new lots.
+  - The radius only bounds how far the rim may go.
+- **The Budget panel** shows the building upkeep by kind (ley, water, services, leisure, wonders), the road tiles by
+  type and the tithe a soul pays a day. `computeLedger` gives `upkeepBy` and `roadTiles`; the net is unchanged.
+- **A fix to 2-2's countdown:** after a surge, `overdrawDays` restarts at −4, and the top bar showed no countdown while
+  the daily message counted down (from 8). The top bar now shows the countdown whenever the ley is overdrawn.
+- **Tests:**
+  - The upkeep by kind adds up to the building upkeep, and the tiles to the road upkeep.
+  - On day 60 at least 60 % of the bot's street tiles have a lot or a building beside them, and it reaches the Hamlet
+    by day 5.
+
+**The rules did not change.** A game without the bot (`core-loop.test.ts`'s town, 60 days, seed 42) gives the same
+folk (204), treasury (23,283.099), rng state and map on main and on this branch.
+
+**Measured.** The bot corridor (six seeds × two draws, 150 days), against 2-2 (main):
+
+| Seed | 2-2 (main), draws 0 · 1 | 2-3, draws 0 · 1 |
+|---|---|---|
+| 42 | 1,139 · 1,332 | 1,574 · 1,488 |
+| 1 | 1,074 · 1,396 | 1,303 · 3,246 (Beacon) |
+| 7 | 1,232 · 1,040 | 1,785 · 1,316 |
+| 13 | 988 · 1,540 | 1,572 · 1,817 |
+| 21 | 1,769 · 1,529 | 2,725 · 2,792 (Beacon on both) |
+| 45 | 808 · 766 | 1,120 · 867 |
+| **Mean** | **1,218** | **1,800 (+583, +47.8 %, ± 360: seen)** |
+
+- **No losses:** all twelve draws are above main.
+- **Gates:** the Burgh in 11 of 12 runs (median day 35; main 9, day 39), the Free City in 7 (main 3), and the Beacon of
+  Eda in 3, the first since the reset began.
+- **Against the earlier stages:** the mean is under 2-1 (1,937, which rode on dark houses) and above every phase 1 table.
+  Seed 42 has 1,574 and 1,488 against phase 0's 3,194.
+- **Spread:** seed 1's two draws differ by 1,943 (the Beacon on one). Seed 45 stays the weakest; draw 1 ends at Market
+  Town.
+- **The bot's ledger after** (seed 42):
+
+| Seed 42 | street tiles (beside a lot) | road upkeep | net |
+|---|---|---|---|
+| Day 30 | 657 (371) | 209 | 694 |
+| Day 100 | 1,403 (958) | 457 | 1,338 |
+
+- **The corridor test is re-anchored, openly, upward:** seed 42 on day 100 has 2,648 folk at the Beacon of Eda (1,139
+  at the Burgh in 2-2).
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 357 KB (124 KB gzip) |
+| `npx vitest run` | 15 files, 279 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
+| Playwright | the Budget panel reads "(926 tiles: 882 track, 44 cobble)", "ley 296 · water 156 · services 228 · leisure 50" and 1.34 tithe a soul; no page errors |

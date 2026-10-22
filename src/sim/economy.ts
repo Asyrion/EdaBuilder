@@ -83,7 +83,7 @@ export function taxOf(state: GameState, zone: Zone): number {
 
 /** Projected ledger for the current day (used for the UI and for the actual daily collection). */
 export function computeLedger(state: GameState) {
-  const l = { taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, upkeepCharters: 0, charterTithe: 0, interest: 0, levy: 0, grants: 0, net: 0 };
+  const l = { upkeepBy: {} as Record<string, number>, roadTiles: {} as Record<number, number>, taxHearth: 0, taxMarket: 0, taxCraft: 0, taxArcane: 0, artifacts: 0, trade: 0, upkeepRoads: 0, upkeepBuildings: 0, upkeepEdicts: 0, upkeepCharters: 0, charterTithe: 0, interest: 0, levy: 0, grants: 0, net: 0 };
   const unrestMod = 1 - state.unrest * 0.5;
   // a Market Square's trade: markets within 8 of a square pay 15 % more
   const squares = state.buildings.filter((q) => q && q.kind === 'square' && q.state === 'ok') as Building[];
@@ -105,10 +105,12 @@ export function computeLedger(state: GameState) {
         case Zone.Arcane: l.taxArcane += t; break;
       }
     } else {
-      l.upkeepBuildings += def.upkeep * (b.state === 'abandoned' ? 0.5 : 1) * (quarterOf(state, b) === 'scholars' ? 1.1 : 1);
+      const up = def.upkeep * (b.state === 'abandoned' ? 0.5 : 1) * (quarterOf(state, b) === 'scholars' ? 1.1 : 1);
+      l.upkeepBuildings += up;
+      l.upkeepBy[def.category] = (l.upkeepBy[def.category] ?? 0) + up; // the budget's rows by kind (phase 2-3)
     }
   });
-  for (let i = 0; i < state.road.length; i++) if (state.road[i]) l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep;
+  for (let i = 0; i < state.road.length; i++) if (state.road[i]) { l.upkeepRoads += ROAD_BY_TYPE[state.road[i]].upkeep; l.roadTiles[state.road[i]] = (l.roadTiles[state.road[i]] ?? 0) + 1; }
   l.upkeepEdicts = edictUpkeep(state);
   l.upkeepCharters = charterUpkeep(state); // a crown a building a day in every chartered district (iteration 54)
   l.charterTithe = templeQuarterStands(state) ? l.taxMarket * TEMPLE_TITHE_SHARE : 0; // the Vigils take a tenth of the whole city's market tithe
