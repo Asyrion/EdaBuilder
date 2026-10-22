@@ -10,7 +10,7 @@ import { AgentKind, MAP_H, MAP_W, RoadType, Zone, idx, type Building, type GameS
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { isLeyMember, lakeFed, loadCapOf, priorityOf, waterCapAt } from '../sim/networks';
 import { SEAM, SPENT_RATE, ARCANE_SCHOOL, growthBlock } from '../sim/growth';
-import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
+import { GREY_DAYS, SURGE_DAYS, fontsRunHot } from '../sim/hazards';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
@@ -407,7 +407,16 @@ export class UI {
     this.q('#tb-jobs').textContent = `${s.employed}/${wf}${s.jobs > wf ? ' (+' + (s.jobs - wf) + ' open)' : ''}`;
     const mana = this.q('#tb-mana');
     mana.textContent = `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}${s.manaStorageMax > 0 ? ` · store ${Math.round(s.manaStorage)}/${Math.round(s.manaStorageMax)}` : ''}`;
-    mana.className = `v ${s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
+    if (s.overdrawDays > 0) mana.textContent += ` · surge in ${SURGE_DAYS - s.overdrawDays} d`;
+    mana.className = `v ${s.overdrawDays > 0 || s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
+    if (!mana.dataset.tip) {
+      // the mana field explains itself like the demand bars (phase 2-2): flow, draw, store, brownout and the surge's countdown
+      mana.dataset.tip = '1';
+      const stat = mana.parentElement as HTMLElement;
+      stat.onmouseenter = (e) => this.showTooltip(manaTip(this.host.state).split('\n').map((l, k) => (k ? l : `<div class="t">${l}</div>`)).join('<br>'), e.clientX, e.clientY + 16);
+      stat.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY + 16);
+      stat.onmouseleave = () => this.hideTooltip();
+    }
     const hp = this.q('#tb-happy');
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
     hp.className = `v ${s.happiness > 55 ? 'good' : s.happiness < 35 ? 'bad' : ''}`;
@@ -1029,7 +1038,7 @@ export class UI {
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
             <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why). Hover a lot or a house with Select to see why it does or does not grow; the <b>Growth</b> view (6) shows it for every lot.</li>
-            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
+            <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel). A lot grows only where light and water reach it. Overdrawn by more than a quarter, the top bar counts down five days to a wild surge; hover the mana for what stops it.</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Water-Mages\' Hall (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
             <li>Watch the <b>tithe</b>. Raise taxes carefully. Hit population milestones to unlock more.</li>
@@ -1520,6 +1529,8 @@ export function growthWhy(s: GameState, x: number, y: number): string | null {
   const text: Record<string, string> = {
     ok: b ? `climbing to level ${b.level + 1}.` : 'can grow: a house rises here when the bar calls for one.',
     noRoad: 'no road touches it. Build a road beside it (a corner counts).',
+    noMana: 'no light reaches it. A Ley Spire within 5 tiles, chained to the node, lights it.',
+    noWater: 'no well waters it. A Well within reach.',
     noDemand: `${bar} is at or below the line, so nothing of it grows. Hover the bar for why.`,
     gloam: 'the Gloam holds it. Light and Ward Lanterns push the Gloam back.',
     noSchool: `an Arcane lot needs schooling (coverage ${ARCANE_SCHOOL}): an Academy of the Ley near.`,
@@ -1532,4 +1543,14 @@ export function growthWhy(s: GameState, x: number, y: number): string | null {
     school: `level 3 needs schooling: a quarter of the city educated, or a school near${b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane ? ', and 35 % educated for Arcane' : ''}.`,
   };
   return `<div class="t">${b ? `${name}, level ${b.level}` : `${name} lot`}</div>${text[g]}`;
+}
+
+/** The top bar's mana field, in words (phase 2-2): supply and demand, the store, the brownout, and the surge's countdown. */
+export function manaTip(s: GameState): string {
+  const lines = [`Mana: ${Math.round(s.manaDemand)} drawn of ${Math.round(s.manaSupply)} flowing a day.`];
+  if (s.manaStorageMax > 0) lines.push(`Nexus store: ${Math.round(s.manaStorage)} of ${Math.round(s.manaStorageMax)}; it soaks up a shortfall first.`);
+  if (s.brownout > 0) lines.push(`Brownout: ${Math.round(s.brownout * 100)} % of the draw is dark (leisure first, then homes and works farthest from the nodes).`);
+  if (s.overdrawDays > 0) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps a few lit houses into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
+  else if (s.manaDemand > s.manaSupply) lines.push('The draw is over the flow: past a quarter over, a surge counts down from five days.');
+  return lines.join('\n');
 }

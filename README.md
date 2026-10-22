@@ -66,12 +66,14 @@ main node.
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.
    Hover a lot or a house with Select to see why it does or does not grow; the **Growth**
-   view (`6`) colours every lot by it (no road, no demand, the Gloam, no schooling).
+   view (`6`) colours every lot by it (no road, no light, no water, no demand, the Gloam, no
+   schooling). A lot grows only where light and water reach it.
 3. **Mana** — ley nodes give 90 mana/day each (the founding Wellspring 105; click one to
    see its flow). A **Ley Spire** within 6 tiles of a node
    (or of another lit spire) lights 5 tiles around it; lit buildings light the buildings
    they touch. Draw more than the Veins give and the spires flicker; overdraw for five days
-   and a **wild surge** warps buildings into ruins. Thrum Fonts and a Ley Nexus help later.
+   and a **wild surge** warps buildings into ruins; the top bar counts the days down. A Thrum
+   Font (100 mana a day, from Township) and a Ley Nexus help later.
 4. **Water** — **Wells** water 8 tiles (10 near water); **Cisterns** water 12 but need mana.
 5. **Services** — Watch (unrest, restless dead), Healer's Shrine (health), Water-Mages' Hall
    (fire brigade), Shrine of Aume (happiness), Academy (schooling), **Boneyard/Ossuary**

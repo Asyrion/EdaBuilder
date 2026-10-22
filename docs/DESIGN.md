@@ -33,10 +33,12 @@ Road → zone → demand → growth → services and supply → budget → happi
 3. **Demand** (`growth.ts`): four bars, one a zone, from jobs, homes, goods and shelves; each bar says why
    (`demandReasons`). **Growth** (phase 2-1): every 10 ticks three draws among the lots that can grow (empty, a road
    touching, out of the Gloam, schooled for Arcane, demand for their zone above zero), each growing with chance
-   min(1, demand) × 0.45. `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth
-   view (`6`) show it.
-4. **Supply:** mana from Ley Spires (and later the Nexus, the Thrum Font, the Crystal Mine), water from Wells and the
-   Cistern. A zone needs both, and a road, to grow.
+   min(1, demand) × 0.45. Since phase 2-2 a lot grows only where light and water reach it (`noMana`, `noWater`).
+   `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth view (`6`) show it.
+4. **Supply:** mana flows from the ley nodes (the founding one 105 a day, each other linked node 90), carried and
+   spread by Ley Spires (link 6, light 5, 80 mana of load each); a Thrum Font adds 100 a day for 4,500 crowns (phase
+   2-2; it was 40 for 6,500), a Nexus stores 120. Water from Wells and the Cistern. A lot needs both, and a road, to
+   grow. Overdrawn by more than a quarter with the store spent, the top bar counts five days down to a wild surge.
 5. **Services** (eight coverage layers: watch, health, fire, faith, school, death, ward, leisure), each from its
    buildings' reach.
 6. **Goods:** Craft works make goods, carts carry them to Markets over the roads (`agents.ts`); empty shelves and gluts
@@ -56,7 +58,7 @@ milestones (`src/sim/sim.ts`).
 
 | Kind | Buildings (cost, at) |
 |---|---|
-| Ley | Ley Spire (400, 0), Ley Nexus 2×2 (5,000, 4), Crystal Mine 2×2 (2,600, 4), Thrum Font 2×2 (6,500, 4) |
+| Ley | Ley Spire (400, 0), Ley Nexus 2×2 (5,000, 4), Crystal Mine 2×2 (2,600, 4), Thrum Font 2×2 (4,500, 4; 100 mana a day) |
 | Water | Well (300, 0), Cistern of Vesh 2×2 (1,800, 2) |
 | Services | Watch Post (800, 0), Shrine of Aume (500, 0), Healer's Shrine (1,200, 1), Boneyard 2×2 (700, 1), Water-Mages' Hall 2×2 (1,600, 2), Ward Lantern (900, 2), Watch House 2×2 (2,600, 3), Academy of the Ley 2×2 (3,200, 3), Ossuary 2×2 (3,800, 5), Hospice of Vesh 2×2 (4,200, 5), Temple of the Four Vigils 3×3 (7,000, 6), Grand Academy 3×3 (9,000, 6) |
 | Leisure | Garden of Aume (250, 1), Market Square 2×2 (1,400, 3), Trade Depot 2×2 (2,200, 3) |

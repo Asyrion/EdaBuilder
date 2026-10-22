@@ -468,3 +468,40 @@ describe('district names', () => {
     expect(districtName(b, 4)).toBe('Lanternrow');
   });
 });
+
+// Phase 2-2 of the scope reset: the spire chain is found through a grid of cells, not by testing every member each step.
+describe('the spire chain in linear time', () => {
+  it('lights exactly the members a plain search over all of them would, for 40 scattered spires and nexuses', () => {
+    for (const seed of [3, 11, 42]) {
+      const s = createGame(seed, 'Chain');
+      let r = seed * 2654435761 >>> 0;
+      const rnd = (n: number) => { r = (Math.imul(r, 1664525) + 1013904223) >>> 0; return r % n; };
+      const f = s.founding;
+      for (let k = 0; k < 40; k++) {
+        const x = f.x - 18 + rnd(36), y = f.y - 18 + rnd(36);
+        if (x < 1 || y < 1 || x > 125 || y > 125 || s.bIndex[idx(x, y)] >= 0 || s.bIndex[idx(x + 1, y + 1)] >= 0) continue;
+        const b = placeBuildingRaw(s, k % 7 === 0 ? 'nexus' : 'spire', x, y);
+        b.state = 'ok';
+      }
+      updateMana(s);
+      // the plain search: from every node, any member within its link of a lit point joins, until none does
+      const members = s.buildings.filter((b) => b && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake') && b.state !== 'ruin' && b.state !== 'building')!;
+      const link = (b: { kind: string }) => (b.kind === 'nexus' ? 9 : b.kind === 'stake' ? 4 : 6) + 0.5;
+      const centre = (b: { x: number; y: number; w: number; h: number }) => [b.x + (b.w - 1) / 2, b.y + (b.h - 1) / 2];
+      const on = new Set<number>();
+      const pts = s.nodes.map((n) => [n.x, n.y]);
+      for (let grew = true; grew;) {
+        grew = false;
+        for (const b of members) {
+          if (on.has(b!.id)) continue;
+          const [cx, cy] = centre(b!);
+          if (pts.some(([x, y]) => Math.hypot(cx - x, cy - y) <= link(b!))) { on.add(b!.id); pts.push([cx, cy]); grew = true; }
+        }
+      }
+      expect(members.length).toBeGreaterThan(20);
+      // a member of the chain carries a load (updateMana sets it); one off the chain has none (b.lit may still come from its neighbours)
+      for (const b of members) expect(b!.load !== undefined, `${b!.kind} at ${b!.x},${b!.y}`).toBe(on.has(b!.id));
+      expect(on.size).toBeGreaterThan(3);
+    }
+  });
+});

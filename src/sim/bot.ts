@@ -14,6 +14,7 @@ import { BUILDING_BY_KEY, MILESTONES, isBuildingUnlocked } from './catalog';
 import { MAP_H, MAP_W, RoadType, Terrain, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
 import { NODE_DEEPEN_COST, canDeepenNode, canPlaceBuilding, deepenNode, forEachBuilding } from './world';
 import { LOAN_INTEREST, loanLimit, repayLoan, takeLoan } from './economy';
+import { growthBlock } from './growth';
 
 /** The bot zones only beside a road's side: a corner lot is a door for the player's city, but in the bot's grid it sits where
  *  the next road would go, so the planner keeps its lots on the sides (iteration 49). */
@@ -302,13 +303,15 @@ export class Bot {
     }
   }
 
-  /** Place wells (or cisterns) near unwatered zone buildings. */
+  /** Place wells (or cisterns) near unwatered zone buildings and dry lots. */
   private keepWatered(): void {
     const s = this.s;
     const dry: { x: number; y: number }[] = [];
     forEachBuilding(s, (b) => {
       if (!b.watered && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') dry.push({ x: b.x, y: b.y });
     });
+    // lots by a road in the light that no well reaches (phase 2-2: a lot grows only where water reaches it)
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0 && !s.road[i] && growthBlock(s, i) === 'noWater') dry.push({ x: i % MAP_W, y: (i / MAP_W) | 0 });
     if (!dry.length) return;
     // a few dry homes wait for the next well; a well a day unless a twelfth are dry (iteration 55: seventy wells ate 280 a day on seed 44)
     const zone = zoneLight(s).zone;
@@ -357,19 +360,28 @@ export class Bot {
     if (path.length && s.treasury > path.length * 12 + 2000) buildRoad(s, RoadType.Track, path);
   }
 
-  /** Place spires near unlit buildings, chained to the lit network. */
+  /** Place spires near unlit buildings, and (phase 2-2, when a lot grows only in the light) near zoned lots no light
+      reaches, chained to the lit network. */
   private keepLit(): void {
     const s = this.s;
     if (s.manaDemand > s.manaSupply * 0.95) return; // no point lighting more
-    // the dark zone buildings nearest the centre first; up to six are tried for a spire that links (iteration 55: the first alone often had none)
+    // the dark zone buildings and dark lots nearest the centre first; up to six are tried for a spire that links (iteration 55: the first alone often had none)
     const darks: { x: number; y: number; r: number }[] = [];
     forEachBuilding(s, (b) => {
       if (!b.lit && BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') darks.push({ x: b.x, y: b.y, r: Math.abs(b.x - this.cx) + Math.abs(b.y - this.cy) });
     });
+    for (const i of this.darkLots()) { const x = i % MAP_W, y = (i / MAP_W) | 0; darks.push({ x, y, r: Math.abs(x - this.cx) + Math.abs(y - this.cy) }); }
     if (!darks.length) return;
     darks.sort((a, b) => a.r - b.r);
     for (const d of darks.slice(0, 6)) if (this.lightNear(d)) return;
     this.lightNear(darks[0], true);
+  }
+
+  /** Zoned lots by a road that no light reaches (growthBlock 'noMana'): a lot grows only in the light since phase 2-2. */
+  private darkLots(): number[] {
+    const s = this.s, out: number[] = [];
+    for (let i = 0; i < s.zone.length; i++) if (s.zone[i] && s.bIndex[i] < 0 && !s.road[i] && growthBlock(s, i) === 'noMana') out.push(i);
+    return out;
   }
 
   /** A spire within 5 of the dark building that links to the lit network; with `relay`, a spire chained toward it from the nearest lit source. */
@@ -382,6 +394,7 @@ export class Bot {
       if (b.lit && (b.kind === 'spire' || b.kind === 'nexus' || b.kind === 'stake')) lit.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, link: b.kind === 'spire' ? reach : b.kind === 'stake' ? 4 : 9 });
     });
     let best: { x: number; y: number; score: number } | null = null;
+    const dark = this.darkLots();
     for (let dy = -6; dy <= 6; dy++)
       for (let dx = -6; dx <= 6; dx++) {
         const x = d.x + dx;
@@ -392,11 +405,12 @@ export class Bot {
         let linked = false;
         for (const l of lit) if (Math.hypot(l.x - x, l.y - y) <= l.link + 0.5) linked = true;
         if (!linked) continue;
-        // prefer spots that light many unlit buildings
+        // prefer spots that light many unlit buildings and dark lots
         let score = 0;
         forEachBuilding(s, (b) => {
           if (!b.lit && Math.hypot(b.x - x, b.y - y) <= 5) score++;
         });
+        for (const i of dark) if (Math.hypot(i % MAP_W - x, ((i / MAP_W) | 0) - y) <= 5) score++;
         if (!best || score > best.score) best = { x, y, score };
       }
     if (best) return placeBuilding(s, 'spire', (best as { x: number }).x, (best as { y: number }).y).ok;

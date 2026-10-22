@@ -8,12 +8,13 @@ its open items are parked.
 
 ## Prioritized ideas for the next iteration
 
-1. **Phase 2: sharpen the core loop, the rest** (RESET_PLAN §3, Phase 2; DESIGN §2). Done in 2-1: growth draws among the
-   lots that can grow, and every lot says why it does or does not (hover, Growth view). Next, one change at a time with
-   the bot corridor: **mana** (the O(spires²) chain, the cap at 3–4k folk, the surge warned with a countdown; with faster
-   growth, unlit houses are now the common block: 273 in the checklist's day-40 city), demand with its factors shown,
-   traffic (whether jams steer carts again, deterministically), then the P2 items (services, the budget and the Crown
-   favour that stands still, happiness terms, milestone pacing, hazards' warnings).
+1. **Phase 2: sharpen the core loop, the rest** (RESET_PLAN §3, Phase 2; DESIGN §2). Done: 2-1 (growth from the lots
+   that can grow, why a lot does not) and 2-2 (a lot grows only in light and water; the Font 100 mana for 4,500; the
+   surge's countdown). Next, one change at a time with the bot corridor: **the city's income against its mana** (the
+   2-2 corridor, 1,218, is income-bound: the bot buys Fonts as fast as its taxes allow; candidates: the zones' mana use
+   by level, the taxes' yield, the node deepening's price and milestone), demand with its factors shown, traffic
+   (whether jams steer carts again, deterministically), then the P2 items (services, the budget and the Crown favour
+   that stands still, happiness terms, milestone pacing, hazards' warnings).
 2. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7).
 3. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 4. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
@@ -21,8 +22,9 @@ its open items are parked.
 
 ## Known issues
 
-- **The bot corridor** after 2-1: the six-seed mean is 1,937 folk on day 150 (1,177 in 1d-1); seed 42 has 1,397 and
-  2,606 against phase 0's 3,194. The two draws of a seed now differ more (seed 45: 2,356 and 910). RESET_LOG 2-1.
+- **The bot corridor** after 2-2: the six-seed mean is 1,218 folk on day 150 (1,937 in 2-1, which rode on dark houses
+  that drew no mana; 1,177 in 1d-1); seed 42 has 1,139 and 1,332 against phase 0's 3,194; seed 45 stays at Market Town.
+  RESET_LOG 2-2.
 - **The Crown favour stands still** at 50 since its movers, the tales (1c-1) and the relics (1c-2), were parked.
 - **Citizen looks 4 and 5** (the Grimmen and Tallowkin looks) can still be rolled in a Vellish game (RESET_PLAN §1.4,
   point 7; phase 3 with the citizens' sprites).

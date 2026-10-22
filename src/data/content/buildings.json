@@ -113,14 +113,14 @@
     "key": "font",
     "name": "Thrum Font",
     "category": "ley",
-    "desc": "A bored well into a deep Vein. Produces 40 mana a day anywhere. Expensive and dangerous when pressed: past nine tenths of the flow it may flare (one chance in fifty a day), burning its yard and smoking for ten days.",
+    "desc": "A bored well into a deep Vein. Produces 100 mana a day anywhere, about as much as a linked node. Expensive and dangerous when pressed: past nine tenths of the flow it may flare (one chance in fifty a day), burning its yard and smoking for ten days.",
     "flavor": "The Tallowkin who bore the shaft are paid triple and buried for free.",
     "w": 2,
     "h": 2,
-    "cost": 6500,
+    "cost": 4500,
     "upkeep": 50,
     "manaUse": 0,
-    "manaProduce": 40,
+    "manaProduce": 100,
     "unlock": 4
   },
   {

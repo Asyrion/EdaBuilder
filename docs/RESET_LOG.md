@@ -613,3 +613,76 @@ follows demand, and "why does this not grow?").
 | `npx vitest run` | 15 files, 275 tests, all green (the corridor test re-anchored, above) |
 | `scripts/smoke.mjs` | SMOKE OK, nine views, save and load the same |
 | `scripts/checklist.mjs` | CHECKLIST OK; the hover says "Hearth lot: can grow …" or "Craft lot: the Craft bar is at or below the line …" |
+
+## Phase 2-2: mana; a lot grows only in light and water, the Font carries a city, the surge counts down (2026-10-22)
+
+The second iteration of phase 2 (RESET_PLAN §3 "Phase 2", P1 mana and "why does this not grow?": no mana and no water
+per lot, which 2-1 left out). The plan was extended once, by the user's decision, after the first measurement (below).
+
+**Why.** A probe of the 2-1 bot cities on day 150: seed 42 had 779 of its 1,050 mana consumers dark, with mana to
+spare (565 flowing, 550 drawn, no brownout). They stood outside the light, drew nothing and still housed folk who paid
+taxes. Seed 45 was short in earnest: 280 flowing against 388 drawn, 28 % brownout, ten wild surges in 150 days, with two
+warnings each and no countdown.
+
+**Done.**
+- **The spire chain in linear time** (`updateMana`): the members sit in cells of the longest link, and each step tries
+  its 3×3 cells in the old index order. Bit-identical: `balance.ts 42 150` and `45 150` give the same JSON line before
+  and after. A test compares the chain with a plain search for 40 scattered spires and nexuses on three maps, and fails
+  with cells too small.
+- **A lot grows only where light and water reach it:** `growthBlock` adds `noMana` (no light on the lot, and no lit
+  building beside it) and `noWater`. The Growth view shows them (navy, cyan), the hover names them with what to do.
+- **The bot** (a measuring instrument, adjusted to the rule and reported apart): `keepLit` and `keepWatered` reacted to
+  dark and dry houses only; under the gate there are none, so it raised no spire at all. Both now aim at dark and dry
+  lots too.
+- **The Thrum Font gives 100 mana a day for 4,500 crowns** (was 40 for 6,500; upkeep 50, Township and its flare risk
+  unchanged).
+- **The surge counts down:** the top bar's mana field shows "surge in N d", and hovering it gives the flow, the draw,
+  the store, the brownout and what stops the surge; the warning comes every day of the overdraw (it came on days 1 and
+  4). The mechanism is unchanged (five days over 1.25 × the flow with the store spent).
+- Help, README, DESIGN §2 and §3. Test fixtures that grew lots without light or water got them (`core-loop.test.ts`'s
+  town: a spire and three wells by the works' rows; one lot in `roads.test.ts`).
+
+**Measured.** The bot corridor (six seeds × two draws, 150 days) at each stage, against 2-1 (main):
+
+| Stage | Mean folk | Δ against 2-1 | Burgh | Spread between a seed's draws |
+|---|---|---|---|---|
+| 2-1 (main) | 1,937 | | 12/12 | up to 1,446 |
+| The gate alone | 233 | −88.0 % | 0/12 | (the bot raised no spire) |
+| The gate, the bot lighting and watering lots | 926 | −52.2 % | 4/12 | 33 to 184 |
+| … and the Font at 100 mana (6,500 crowns) | 1,132 | −41.6 % | 9/12 | 30 to 351 |
+| … probe: the Font at 120 mana (6,500) | 1,093 | −43.5 % | 8/12 | 10 to 843 |
+| **… shipped: the Font at 100 mana for 4,500** | **1,218** | **−37.1 % (± 362, seen)** | **9/12** (median day 39), Free City 3/12 | 42 to 552 |
+
+| Seed | 2-1 (main), draws 0 · 1 | 2-2, draws 0 · 1 |
+|---|---|---|
+| 42 | 1,397 · 2,606 | 1,139 · 1,332 |
+| 1 | 2,018 · 2,052 | 1,074 · 1,396 |
+| 7 | 1,028 · 939 | 1,232 · 1,040 |
+| 13 | 2,958 · 3,035 | 988 · 1,540 |
+| 21 | 1,578 · 2,361 | 1,769 · 1,529 |
+| 45 | 2,356 · 910 | 808 · 766 (Market Town) |
+
+- **Losses:** the mean is 37 % under 2-1, and 3 % over 1d-1 (1,177). 2-1's numbers rode on dark houses that drew no
+  mana. Seed 45 stays at Market Town on both draws. Seed 7 gained on both draws, seed 21 on one.
+- **The plan's goal for the supply side was not met:** the mean is not inside 2-1's noise. Why the bot stops: it buys
+  Fonts as fast as its income allows (seed 42: one every 10 to 20 days, five by day 110), then saves for the Lantern of
+  Vell. Income, not the Font's mana, is the limit (the probe at 120 mana gained nothing; the cheaper Font gained). The
+  next lever is in NEXT_STEPS item 1.
+- **Mana, before and after** (seeds 42 and 45, day 150):
+
+| | dark consumers | flow / draw | brownout | wild surges |
+|---|---|---|---|---|
+| Seed 42, 2-1 | 779 of 1,050 | 565 / 550 | 0 % | 0 |
+| Seed 42, 2-2 | 24 of 388 | 675 / 684 | 1 % | 4 |
+| Seed 45, 2-1 | 60 of 213 | 280 / 388 | 28 % | 10 |
+| Seed 45, 2-2 | 37 of 279 | 640 / 537 | 0 % | 0 |
+
+- **The corridor test is re-anchored, openly, downward:** seed 42 on day 100 has 1,139 folk at the Burgh (2,855 in 2-1).
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 355 KB (123 KB gzip) |
+| `npx vitest run` | 15 files, 277 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK, the hover says "Hearth lot: no light reaches it …" |
+| `npm run devboard:selftest` | OK (the Font is content) |
+| Playwright | the top bar reads "476 / 340 · surge in 3 d" with its tooltip; no page errors |

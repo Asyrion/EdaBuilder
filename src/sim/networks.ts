@@ -70,9 +70,26 @@ export function updateMana(state: GameState): void {
   const reach = factionOf(state).rules.spireReach; // a people's spires may reach further (0 for the Vellish)
   const linkOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? SPIRE_LINK + 3 : b.kind === 'stake' ? 4 : SPIRE_LINK + reach);
   const radiusOf = (b: Building) => (b.kind === 'nexus' || LEY_HALLS.includes(b.kind) ? NEXUS_RADIUS : b.kind === 'stake' ? 4 : SPIRE_RADIUS + reach);
+  // the members in a coarse grid whose cell is the longest link, so each step looks at its 3×3 cells, not every member
+  // (phase 2-2; was O(members²)). Candidates are tried in their old index order, so the chain is found exactly as before.
+  let cell = 1;
+  for (const b of spires) cell = Math.max(cell, linkOf(b) + 0.5);
+  const cols = Math.ceil(MAP_W / cell) + 1;
+  const grid = new Map<number, number[]>();
+  const cellOf = (x: number, y: number) => Math.floor(Math.max(0, y) / cell) * cols + Math.floor(Math.max(0, x) / cell);
+  spires.forEach((b, k) => { const c = cellOf(b.x + (b.w - 1) / 2, b.y + (b.h - 1) / 2); const l = grid.get(c); if (l) l.push(k); else grid.set(c, [k]); });
+  const near: number[] = [];
   while (queue.length) {
     const q = queue.pop()!;
-    for (let k = 0; k < spires.length; k++) {
+    near.length = 0;
+    const gx = Math.floor(Math.max(0, q.x) / cell), gy = Math.floor(Math.max(0, q.y) / cell);
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (gx + dx < 0 || gy + dy < 0) continue;
+      const l = grid.get((gy + dy) * cols + gx + dx);
+      if (l) for (const k of l) if (!spireLit[k]) near.push(k);
+    }
+    near.sort((a, b) => a - b);
+    for (const k of near) {
       if (spireLit[k]) continue;
       const s = spires[k];
       const cx = s.x + (s.w - 1) / 2;

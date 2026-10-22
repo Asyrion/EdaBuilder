@@ -10,7 +10,8 @@ import { updateDemand } from '../src/sim/growth';
 import { Bot } from '../src/sim/bot';
 import { flatten } from './helpers';
 
-/** A street grid by the founding stake: three roads across, three down, four zones, two wells, two spires. */
+/** A street grid by the founding stake: three roads across, three down, four zones, five wells, three spires (since phase
+ *  2-2 a lot grows only where light and water reach it, so the works' rows get their own). */
 function town(seed = 42) {
   const s = createGame(seed, 'Core');
   const sx = s.founding.x + 2;
@@ -25,15 +26,21 @@ function town(seed = 42) {
   placeBuilding(s, 'well', sx + 11, sy + 6);
   placeBuilding(s, 'spire', sx - 4, sy + 1);
   placeBuilding(s, 'spire', sx + 4, sy + 6);
+  placeBuilding(s, 'spire', sx - 4, sy + 9);
+  placeBuilding(s, 'well', sx - 6, sy + 9);
+  placeBuilding(s, 'well', sx + 6, sy + 4);
+  placeBuilding(s, 'well', sx + 6, sy + 9);
   return s;
 }
 
 // Seed 42's bot run on day 100, re-anchored in phase 1d-1 (docs/RESET_LOG.md): the phase 0 baseline (1,945 folk, the
 // Burgh, at ac4e05f) held through 1c-2, and fell under its half when the carts stopped routing by the first day's jams
 // (926 folk, Market Town). Re-anchored again in phase 2-1, upward: growth draws only among the lots that can grow, so a
-// filling city keeps growing (2,855 folk, the Burgh; the six-seed mean +65 %). The corridor stays wide on purpose: one
-// extra roll can move a seed a long way.
-const BOT_POP_100 = 2855;
+// filling city keeps growing (2,855 folk, the Burgh; the six-seed mean +65 %). Re-anchored once more in phase 2-2,
+// downward: a lot grows only where light and water reach it, so the dark houses that paid taxes without drawing mana are
+// gone, and the Thrum Font gives 100 mana for 4,500 (1,139 folk, the Burgh; the six-seed mean −37 % against 2-1, +3 %
+// against 1d-1). The corridor stays wide on purpose: one extra roll can move a seed a long way.
+const BOT_POP_100 = 1139;
 const BOT_MILESTONE_100 = 6;
 
 describe('core loop', () => {

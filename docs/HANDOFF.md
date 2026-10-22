@@ -20,16 +20,19 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 
 ## The next item
 
-**Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Phase 2-1 (growth from the lots that can grow, and why a lot does
-not) is done; next is mana (RESET_PLAN §3 "Phase 2", P1), one change at a time against the bot corridor. Plan it on the
-Plan panel first.
+**Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Done: 2-1 (growth from the lots that can grow) and 2-2 (a lot grows
+only in light and water, the Font at 100 mana for 4,500, the surge's countdown). Next: the city's income against its
+mana (the corridor is income-bound since 2-2), one change at a time against the bot corridor. Plan it on the Plan panel
+first.
 
 ## Known issues
 
-- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,397 and 2,606 (two draws)
-  after phase 2-1; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 → 1,937. Phase 1 lost the caravan's
-  mid-game (1c-1) and the jam-free first paths (1d-1); 2-1 won it back by letting a filling city keep growing.
-  `core-loop.test.ts` holds seed 42 on day 100 at 2,855 folk and the Burgh (±50 %), re-anchored openly in 2-1.
+- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,397 and 2,606 after 2-1, 1,139
+  and 1,332 after 2-2; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 → 1,937 → 1,218. 2-1's gain rode
+  on houses that grew in the dark and paid taxes without drawing mana; 2-2 closed that. `core-loop.test.ts` holds seed
+  42 on day 100 at 1,139 folk and the Burgh (±50 %), re-anchored openly in 2-2.
+- **The bot is a measuring instrument and follows the rules:** in 2-2 its `keepLit`/`keepWatered` had to aim at dark
+  and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look.
 - **The Crown favour stands still** at 50 (its movers were parked). Phase 2 decides: a mover in the core, or it goes.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.

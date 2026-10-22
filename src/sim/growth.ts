@@ -22,7 +22,7 @@ export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
 }
-import { MAP_W, Zone, idx, type Building, type GameState } from './types';
+import { MAP_H, MAP_W, Zone, idx, type Building, type GameState } from './types';
 import { commitRng, forEachBuilding, markDirty, placeBuildingRaw, pushMessage, refreshZoneList, removeBuilding, rngOf, touchesRoad } from './world';
 
 export function capacityOf(b: Building, s?: GameState): number {
@@ -43,11 +43,12 @@ function demandFor(state: GameState, zone: Zone): number {
   }
 }
 
-/** Why a zoned tile does or does not grow (scope reset phase 2-1). An empty lot: `ok` (it can grow), `noRoad`, `noDemand`
-    (its zone's bar at or below zero), `gloam`, `noSchool` (an Arcane lot needs school coverage 40). A zone building: `ok`
+/** Why a zoned tile does or does not grow (scope reset phase 2-1). An empty lot: `ok` (it can grow), `noRoad`, `noMana` (no
+    light reaches it, phase 2-2), `noWater` (no well waters it, phase 2-2), `noDemand` (its zone's bar at or below zero),
+    `gloam`, `noSchool` (an Arcane lot needs school coverage 40). A zone building: `ok`
     (it is climbing a level), `top` (level 3), `abandoned`, or the first unmet level-up need from levelUpNeeds: `landValue`,
     `dark`, `dry`, `unhappy`, `school`. `none` for a tile that is not zoned or holds another building. */
-export type GrowthBlock = 'ok' | 'noRoad' | 'noDemand' | 'gloam' | 'noSchool' | 'top' | 'abandoned' | 'landValue' | 'dark' | 'dry' | 'unhappy' | 'school' | 'none';
+export type GrowthBlock = 'ok' | 'noRoad' | 'noMana' | 'noWater' | 'noDemand' | 'gloam' | 'noSchool' | 'top' | 'abandoned' | 'landValue' | 'dark' | 'dry' | 'unhappy' | 'school' | 'none';
 export const ARCANE_SCHOOL = 40;
 
 export function growthBlock(state: GameState, i: number): GrowthBlock {
@@ -64,14 +65,30 @@ export function growthBlock(state: GameState, i: number): GrowthBlock {
   }
   if (!z || state.road[i]) return 'none';
   if (state.gloam[i]) return 'gloam';
-  if (!touchesRoad(state, i % MAP_W, (i / MAP_W) | 0, 1, 1)) return 'noRoad';
+  const x = i % MAP_W, y = (i / MAP_W) | 0;
+  if (!touchesRoad(state, x, y, 1, 1)) return 'noRoad';
+  if (!lotLit(state, x, y)) return 'noMana';
+  if (!state.watered[i]) return 'noWater';
   if (demandFor(state, z) <= 0) return 'noDemand';
   if (z === Zone.Arcane && state.coverage.school[i] < ARCANE_SCHOOL) return 'noSchool';
   return 'ok';
 }
 
-/** Called every 10 ticks: up to `attempts` draws among the lots that can grow (empty, by a road, out of the Gloam, schooled
-    for Arcane, with demand for their zone); each grows with chance min(1, demand) × 0.45. Before phase 2-1 a draw took any
+/** A lot is lit when light falls on it, or a lit building stands beside it (a house there would take its light through
+    the neighbour, as updateMana spreads it). */
+function lotLit(state: GameState, x: number, y: number): boolean {
+  if (state.lit[idx(x, y)]) return true;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const nx = x + dx, ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+    const bi = state.bIndex[idx(nx, ny)];
+    if (bi >= 0 && state.buildings[bi]?.lit) return true;
+  }
+  return false;
+}
+
+/** Called every 10 ticks: up to `attempts` draws among the lots that can grow (empty, by a road, lit and watered (phase
+    2-2), out of the Gloam, schooled for Arcane, with demand for their zone); each grows with chance min(1, demand) × 0.45. Before phase 2-1 a draw took any
     zoned tile, built or not, so a full city wasted most of its draws. */
 export function trySpawnBuildings(state: GameState, attempts = 5): void {
   const list = refreshZoneList(state);
