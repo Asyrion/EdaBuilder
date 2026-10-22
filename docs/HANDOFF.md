@@ -20,11 +20,9 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 
 ## The next item
 
-**Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). The P1 items are done: 2-1 (growth from the lots that can grow),
-2-2 (light and water for a lot, the Font, the surge's countdown), 2-3 (the bot's streets, the budget by kind), 2-4 (the
-demand bars' factors) and 2-5 (paths follow every road, yesterday's jams steer the carts). Next: the Crown favour,
-services, happiness terms, milestone pacing, hazards' warnings, one change at a time against the bot corridor. Plan it
-on the Plan panel first.
+**Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5) and 2-6 (the Crown's favour
+struck out, the user's choice). Next: services, happiness terms, milestone pacing, hazards' warnings, one change at a
+time against the bot corridor. Plan it on the Plan panel first.
 
 ## Known issues
 
@@ -35,7 +33,6 @@ on the Plan panel first.
   and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look. In 2-3 its
   street grid was what bound its income (two in three street tiles empty); before turning an economic knob, look at the
   ledger (`computeLedger`, now with `upkeepBy` and `roadTiles`) and ask whether the player or the rules are at fault.
-- **The Crown favour stands still** at 50 (its movers were parked). Phase 2 decides: a mover in the core, or it goes.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.
 - **GitHub Actions** ran no jobs while the repositories were private (no runner assigned, `runner_id 0`). The user made

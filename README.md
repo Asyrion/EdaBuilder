@@ -223,7 +223,7 @@ Charter as `.json`.
   mana of buildings and its farthest go dark over that (a Load row), every building has a
   brownout tier, and lantern-ways dim first when the ley runs short.
 - Dev tools for playtesting behind the backtick key (uses are counted and mark the daily
-  result): among them jump to a day, complete a Charter task, set the Crown's favour, and reset
+  result): among them jump to a day, complete a Charter task, and reset
   the ledger history or the Chronicle.
 - Saves carry their version (8 since the scope reset): a save holds every layer of the city, so a
   charter saved at any moment and loaded again runs on exactly as it would have. A save or a replay

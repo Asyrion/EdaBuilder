@@ -1,5 +1,5 @@
 import { factionOf, milestonesOf } from '../data/factions';
-/** Daily tithe: taxes and upkeep; and, since iteration 54, the Crown that wants: favour, the Thaw levy, debt interest and a loan. */
+/** Daily tithe: taxes and upkeep; and, since iteration 54, the Crown that wants: the Thaw levy, debt interest and a loan (its favour was struck out in phase 2-6). */
 import { charterUpkeep, districtUnlockNotes, quarterOf, templeQuarterStands, TEMPLE_TITHE_SHARE } from './districts';
 import { BUILDING_BY_KEY, ROAD_BY_TYPE } from './catalog';
 import { Zone, type Building, type GameState } from './types';
@@ -12,19 +12,12 @@ import { marketRoadMultAt } from './roads';
 /** The Thaw levy: LEVY_RATE of the treasury above LEVY_FLOOR, each first day of the Thaw. */
 export const LEVY_FLOOR = 10000;
 export const LEVY_RATE = 0.05;
-/** Favour 0..100, FAVOUR_NEUTRAL at the start: each point from neutral is FAVOUR_STEP off the levy and the sector prices; under FAVOUR_AUDIT the Crown's auditors withhold the next grant. */
-export const FAVOUR_NEUTRAL = 50;
-export const FAVOUR_STEP = 0.003;
-export const FAVOUR_AUDIT = 20;
 /** A debt costs DEBT_INTEREST a day; the Crown's loan is LOAN_PER_MILESTONE × milestone at LOAN_INTEREST a day; the Charter is revoked after five days under debtLine. */
 export const DEBT_INTEREST = 0.01;
 export const LOAN_PER_MILESTONE = 10000;
 export const LOAN_INTEREST = 0.005;
 export const DEBT_DAYS = 5;
 
-export function favourFactor(state: GameState): number {
-  return 1 - (state.crownFavour - FAVOUR_NEUTRAL) * FAVOUR_STEP;
-}
 /** The treasury the Charter is revoked under, after DEBT_DAYS days: −8,000 × (1 + milestone/2). */
 export function debtLine(state: GameState): number {
   return -8000 * (1 + state.milestone / 2);
@@ -49,16 +42,16 @@ export function repayLoan(state: GameState): string | null {
   state.loan = 0;
   return null;
 }
-/** The grant a milestone pays this city: lifted a tenth by each lit wonder hall; withheld while the Crown's favour is under FAVOUR_AUDIT. */
+/** The grant a milestone pays this city: lifted a tenth by each lit wonder hall. (The Crown's favour, whose auditors held a
+    grant under 20, was struck out in scope reset phase 2-6: nothing had moved it since the tales and the relics were parked.) */
 export function grantFor(state: GameState, grant: number): number {
-  if (state.crownFavour < FAVOUR_AUDIT) return 0;
   return Math.round(grant * (1 + 0.1 * litWonders(state).length));
 }
 /** The levy the Crown would take at the next Thaw from the treasury as it stands. */
 export function levyDue(state: GameState): number {
-  return Math.round(Math.max(0, state.treasury - LEVY_FLOOR) * LEVY_RATE * favourFactor(state));
+  return Math.round(Math.max(0, state.treasury - LEVY_FLOOR) * LEVY_RATE);
 }
-/** The first day of the Thaw: the Crown levies LEVY_RATE of the treasury above LEVY_FLOOR, less or more by favour. */
+/** The first day of the Thaw: the Crown levies LEVY_RATE of the treasury above LEVY_FLOOR. */
 export function crownLevy(state: GameState): void {
   if (state.day % 120 !== 0 || state.day <= 0) return;
   const levy = levyDue(state);
@@ -67,8 +60,7 @@ export function crownLevy(state: GameState): void {
   state.stats.levies++;
   state.stats.levied += levy;
   state.ledger.levy = levy;
-  const f = favourFactor(state);
-  pushMessage(state, `The Crown's Thaw levy: ${levy.toLocaleString()} crowns, ${Math.round(LEVY_RATE * 100)} % of the treasury above ${LEVY_FLOOR.toLocaleString()}${f !== 1 ? ` (${f < 1 ? 'less' : 'more'} by ${Math.round(Math.abs(1 - f) * 100)} % for the Crown's favour)` : ''}, ride to Vell-on-Sable under guard.`, 'warn', true);
+  pushMessage(state, `The Crown's Thaw levy: ${levy.toLocaleString()} crowns, ${Math.round(LEVY_RATE * 100)} % of the treasury above ${LEVY_FLOOR.toLocaleString()}, ride to Vell-on-Sable under guard.`, 'warn', true);
 }
 
 export function taxOf(state: GameState, zone: Zone): number {
@@ -154,8 +146,7 @@ export function checkMilestones(state: GameState): void {
     const grant = grantFor(state, m.grant);
     state.treasury += grant;
     state.ledger.grants += grant;
-    if (grant > 0) pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} (+${grant.toLocaleString()} crowns${halls ? `, a tenth more for each of ${halls} lit wonder hall${halls === 1 ? '' : 's'}` : ''})`, 'milestone');
-    else pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text} The Crown's auditors hold the grant of ${m.grant.toLocaleString()} crowns: its favour stands at ${Math.round(state.crownFavour)}, under ${FAVOUR_AUDIT}.`, 'milestone');
+    pushMessage(state, `${state.cityName} is now a ${m.name}! ${m.text}${grant > 0 ? ` (+${grant.toLocaleString()} crowns${halls ? `, a tenth more for each of ${halls} lit wonder hall${halls === 1 ? '' : 's'}` : ''})` : ''}`, 'milestone');
     for (const line of districtUnlockNotes(state.milestone)) pushMessage(state, line, 'milestone');
   }
   if (stakeStage(state) !== stage0) {

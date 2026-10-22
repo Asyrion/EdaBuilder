@@ -60,10 +60,11 @@ function town(seed = 55) {
 describe('Saves carry their version', () => {
   it('a save round-trips its fields; an older or a newer save is refused with the reason (save version 8, phase 1d)', () => {
     const s = town();
-    s.crownFavour = 61;
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
+    // a version 8 save from before phase 2-6 carries the Crown's favour: it loads, and the field is dropped
+    const old = JSON.parse(serialize(s)); old.crownFavour = 61;
+    const r = deserialize(JSON.stringify(old), (seed) => createGame(seed));
     expect(r.version).toBe(SAVE_VERSION);
-    expect(r.crownFavour).toBe(61);
+    expect('crownFavour' in r).toBe(false);
     expect(r.stats).toEqual(s.stats);
     const o = JSON.parse(serialize(s));
     o.version = 99;

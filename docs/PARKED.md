@@ -98,6 +98,12 @@ refused (`parkedContentIn`); a replay using `terraform`, `daughter` or `quarry`,
 | Scenarios (one-node, island, inherited collapse); the daughter charter and the Twin Road; the daily challenge | `c60d405`, `5bc3920`, `170291f` (iterations 17–19) | `scenario.ts`, `charter.ts`, `trade.ts` (the Twin Road) | §4 (iterations 17–19) | `createGame`'s scenario argument, the title screen, `dailyDaughter`/`dailyTwinRoad`, the Ledger's score line |
 | Terraforming (the Land tab) | `170291f` (iteration 19) | `terraform` in `actions.ts`, the terrain tool in `ui/tools.ts` | §4 (iteration 19) | |
 
+## Struck out in phase 2
+
+| Feature | Introduced | Main files | DESIGN | Back |
+|---|---|---|---|---|
+| The Crown's favour (0..100, 50 neutral: ±0.3 % a point on the Thaw levy and the sector prices; under 20 the auditors held the next milestone grant; the "Set a standing" dev command) | `da18214` (iteration 54) | `favourFactor`, `FAVOUR_*` and the audit in `economy.ts`, `crownFavour` in `types.ts`/`world.ts`, the Budget row | §4.85 | struck out in 2-6 (the user's choice): its movers, the tales and the relics, were parked in 1c, so it stood at 50 and did nothing. To bring it back it needs a mover in the core (milestones on time, the levy paid, against debt days, surges and the restless) |
+
 ## Open work that is parked
 
 - NEXT_STEPS: the art still drawn in code, M18 part 2 (the Fen-Nex's game), M19 parts 1–3 (striders, the Belerial).

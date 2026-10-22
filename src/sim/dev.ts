@@ -83,15 +83,6 @@ export const DEV_COMMANDS: DevCommand[] = [
   { id: 'gloam', group: 'Hazards', name: 'Gloam pocket here', desc: 'Grey grass in a 7×7 at the camera centre.', run: (s, _a, at) => `${pocket(s, at, 3)} tiles greyed.` },
   { id: 'cleargloam', group: 'Hazards', name: 'Clear all Gloam', desc: 'Every grey tile burned back.', run: (s) => { let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { s.gloam[i] = 0; n++; } recomputeGloamDist(s); markAllDirty(s); return `${n} tiles cleared.`; } },
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
-  // the Crown
-  { id: 'standing', group: 'The Crown', name: 'Set a standing', desc: "The Crown's favour, 0 to 100 (50 is indifferent; under 20 the Crown withholds the next grant).", arg: { kind: 'select', options: [['crown', "The Crown's favour"]] }, arg2: { kind: 'number', min: 0, max: 100, value: 80 }, run: (s, a) => {
-    const [who, v] = a.split(':');
-    const val = Math.max(0, Math.min(100, Math.round(Number(v ?? 80))));
-    if (!Number.isFinite(val)) return 'A number from 0 to 100.';
-    if (who !== 'crown') return 'No such standing.';
-    s.crownFavour = val;
-    return `The Crown's favour: ${val}.`;
-  } },
   // tasks & map
   { id: 'quest', group: 'Tasks & map', name: 'Complete a task', desc: "One of this people's open Charter tasks, done now with its reward, as if its goal were met.", arg: { kind: 'select', options: (s) => { const done = new Set(s.questsDone); const open = questsFor(s).filter((q) => !done.has(q.id)).map((q) => [q.id, `${q.chapter}: ${q.title}`] as [string, string]); return open.length ? open : [['', 'every task is done']]; } }, run: (s, id) => {
     const q = QUESTS.find((x) => x.id === id);
