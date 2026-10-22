@@ -760,3 +760,40 @@ folk (204), treasury (23,283.099), rng state and map on main and on this branch.
 | `npx vitest run` | 15 files, 279 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK, CHECKLIST OK |
 | Playwright | the Budget panel reads "(926 tiles: 882 track, 44 cobble)", "ley 296 · water 156 · services 228 · leisure 50" and 1.34 tithe a soul; no page errors |
+
+## Phase 2-4: the demand bars show their factors (2026-10-22)
+
+The fourth iteration of phase 2 (RESET_PLAN §3 "Phase 2", P1 demand: "make the factors visible, check the smoothing").
+The sim does not change: the formulas stay to the bit, and only what the bars say grows.
+
+**Done.**
+- **`updateDemand` writes each bar's factors** beside its own sums, from the same sub-expressions, into the WeakMap the
+  UI already read (`demandTerms(state, zone)`: the factors, the target before the clamp, where the bar stands now). The
+  sim never reads them back.
+- **Hovering a bar** shows, under its verdict:
+  - the factors in points, biggest first ("−19 no work to spare: 488 jobs for 640 hands", "+12 happiness 63 (50 is
+    even)", "+8 Hearth tithe 8 %");
+  - where the bar is heading against where it stands ("heading to +35 %, now +35 %");
+  - the zone's empty lots, counted with `growthBlock` ("0 empty lots can grow · 18 cannot: 18 no light (Growth view,
+    6)").
+  - The checklist's city on day 40 shows why that matters: Hearths +35 %, and not one Hearth lot lit.
+- **The smoothing, checked and kept:** 40 % of the gap every 50 ticks brings a jump nine tenths of the way in 250 ticks
+  (a quarter day). A test holds it, and the tooltip's "heading to … now …" line shows the lag. No change proposed: the
+  bars do not flicker, and they arrive within hours of game time.
+- **Two UI bugs found on the way, fixed:**
+  - The bars' tooltip read the game state from the first refresh, so after "New charter" it explained the title
+    screen's valley.
+  - The map's "why does this not grow" hover (2-1) hid any tooltip when the pointer left the map, and with it a bar's
+    tooltip that had just opened.
+- Help ("?" by the bars), README, DESIGN §2.3, `CORE_CHECKLIST.md` line 7; `checklist.mjs` hovers the Hearth bar and
+  checks the factors and the lots.
+- **Tests:**
+  - The factors of each bar add up to its target (to 1e-9), on day 1 and day 25, with a tithe and unrest set.
+  - The smoothing closes a jump from −1 to nine tenths in five updates.
+
+| Check | Result |
+|---|---|
+| Bit-identity | `balance.ts 42 150` and `45 150` give the same JSON line before and after: no corridor run needed |
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 361 KB (125 KB gzip) |
+| `npx vitest run` | 15 files, 281 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK with the bar's factors and lots |

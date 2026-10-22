@@ -10,10 +10,10 @@ its open items are parked.
 
 1. **Phase 2: sharpen the core loop, the rest** (RESET_PLAN §3, Phase 2; DESIGN §2). Done: 2-1 (growth from the lots
    that can grow, why a lot does not), 2-2 (a lot grows only in light and water; the Font 100 mana for 4,500; the
-   surge's countdown) and 2-3 (the bot's streets only where its town is; the budget by kind). Next, one change at a time
-   with the bot corridor: demand with its factors shown (RESET_PLAN P1), traffic (whether jams steer carts again,
-   deterministically; P1), then the P2 items (services, the Crown favour that stands still, happiness terms, milestone
-   pacing now that three runs reach the Beacon, hazards' warnings).
+   surge's countdown), 2-3 (the bot's streets only where its town is; the budget by kind) and 2-4 (the demand bars show
+   their factors and their lots). Next, one change at a time with the bot corridor: traffic (whether jams steer carts
+   again, deterministically; RESET_PLAN P1), then the P2 items (services, the Crown favour that stands still, happiness
+   terms, milestone pacing now that three runs reach the Beacon, hazards' warnings).
 2. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7).
 3. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 4. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).

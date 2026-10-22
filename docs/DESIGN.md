@@ -31,7 +31,8 @@ Road → zone → demand → growth → services and supply → budget → happi
 2. **Zones** (1×1, grown, not built): Hearth (homes), Market, Craft and, from the Township, Arcane. Each grows through
    three levels with four looks a level.
 3. **Demand** (`growth.ts`): four bars, one a zone, from jobs, homes, goods and shelves; each bar says why
-   (`demandReasons`). **Growth** (phase 2-1): every 10 ticks three draws among the lots that can grow (empty, a road
+   (`demandReasons`); hovering a bar lists its factors in points, where it is heading (it moves 40 % of the way every
+   50 ticks, nine tenths in a quarter day) and how many of the zone's lots can grow (phase 2-4). **Growth** (phase 2-1): every 10 ticks three draws among the lots that can grow (empty, a road
    touching, out of the Gloam, schooled for Arcane, demand for their zone above zero), each growing with chance
    min(1, demand) × 0.45. Since phase 2-2 a lot grows only where light and water reach it (`noMana`, `noWater`).
    `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth view (`6`) show it.

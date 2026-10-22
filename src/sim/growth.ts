@@ -379,7 +379,16 @@ export function dailyBuildings(state: GameState): void {
 
 /** What the last updateDemand of a state found, for the bars' tooltips: one per state, never saved (scope reset phase 1d:
  *  it was a module global, which two states, a replay and the live game, would have shared). */
-const demandNotes = new WeakMap<GameState, { why: string[]; facts: DemandFacts }>();
+const demandNotes = new WeakMap<GameState, { why: string[]; facts: DemandFacts; terms?: Record<DemandZone, DemandTerm[]>; targets?: Record<DemandZone, number> }>();
+/** One factor of a demand bar (phase 2-4): what it is, and how much it lifts or lowers the bar's target (−1..1). */
+export interface DemandTerm { label: string; v: number }
+/** A bar's factors, the target they add up to (before the clamp) and where the smoothed bar stands now. For the UI only:
+    updateDemand writes them beside its own sums and never reads them. */
+export function demandTerms(state: GameState, zone: DemandZone): { terms: DemandTerm[]; target: number; now: number } | null {
+  const n = demandNotes.get(state);
+  if (!n?.terms || !n.targets) return null;
+  return { terms: n.terms[zone], target: n.targets[zone], now: state.demand[zone] };
+}
 /** One line per demand bar, from the last updateDemand. */
 export function demandReasons(state: GameState): string[] {
   return demandNotes.get(state)?.why ?? [];
@@ -493,7 +502,47 @@ export function updateDemand(state: GameState): void {
     `Craft: ${craftJobs} craft jobs, ${Math.round(craftWant)} wanted${state.goodsShort > 0 ? ` · ${state.goodsShort} markets ran dry` : ''}${unemployment > 0 ? ` · ${Math.round(unemployment * 100)} % idle hands` : ''}`,
     `Arcane: ${arcaneJobs} arcane jobs${state.educated < 0.2 ? ` · educated ${Math.round(state.educated * 100)} % (needs 20 %)` : ` · educated ${Math.round(state.educated * 100)} %`}`,
   ];
-  demandNotes.set(state, { why, facts });
+  // the factors of each bar, written beside the sums above (phase 2-4): the same sub-expressions, never read back by the sim
+  const terms = { hearth: [] as DemandTerm[], market: [] as DemandTerm[], craft: [] as DemandTerm[], arcane: [] as DemandTerm[] };
+  {
+    const t = terms.hearth;
+    let v = 0.35; t.push({ label: 'folk come to a wardlight', v: 0.35 });
+    const work = Math.min(0.6, jobSurplus * 0.8); v += work;
+    t.push({ label: jobSurplus > 0 ? `work to spare: ${jobs} jobs for ${workforce} hands` : `no work to spare: ${jobs} jobs for ${workforce} hands`, v: work });
+    const cheer = (happy - 0.5) * 0.9; v += cheer; t.push({ label: `happiness ${Math.round(state.happiness)} (50 is even)`, v: cheer });
+    const tax = -(state.taxRates.hearth - 10) * 0.04; v += tax; t.push({ label: `Hearth tithe ${state.taxRates.hearth} % (10 is what folk expect)`, v: tax });
+    if (facts.emptyHomes) { v -= 0.4; t.push({ label: `many homes stand empty (${hearthCap - hearthRes} beds)`, v: -0.4 }); }
+    if (pop < 30) { const floor = Math.max(v, 0.5) - v; v += floor; if (floor) t.push({ label: 'a young town draws settlers', v: floor }); }
+    t.push({ label: `unrest ${Math.round(state.unrest * 100)} %`, v: -state.unrest * 0.5 });
+  }
+  {
+    const t = terms.market;
+    if (pop < 12) t.push({ label: 'too few folk to shop', v: -0.2 });
+    else t.push({ label: `${marketJobs} market jobs, ${Math.round(marketWant)} wanted (one for five folk)`, v: Math.max(-1, Math.min(1, (marketWant - marketJobs) / Math.max(10, marketWant))) * 0.9 });
+    t.push({ label: `Market tithe ${state.taxRates.market} %`, v: -(state.taxRates.market - 10) * 0.04 });
+    t.push({ label: `idle hands ${Math.round(unemployment * 100)} %`, v: unemployment * 0.3 });
+    if (craftN > 0) t.push({ label: `${craftFull} of ${craftN} works cannot sell`, v: (craftFull / craftN) * 0.4 });
+  }
+  {
+    const t = terms.craft;
+    if (pop < 6) t.push({ label: 'a new town needs its works', v: 0.4 });
+    else t.push({ label: `${craftJobs} craft jobs, ${Math.round(craftWant)} wanted (one for 3.2 folk)`, v: Math.max(-1, Math.min(1, (craftWant - craftJobs) / Math.max(10, craftWant))) * 0.9 });
+    t.push({ label: `idle hands ${Math.round(unemployment * 100)} %`, v: unemployment * 0.5 });
+    t.push({ label: `Craft tithe ${state.taxRates.craft} %`, v: -(state.taxRates.craft - 10) * 0.04 });
+    if (marketJobs > 0 && state.goodsShort > 0) t.push({ label: `${state.goodsShort} markets ran dry`, v: Math.min(0.4, state.goodsShort / Math.max(4, marketJobs / 4)) });
+  }
+  {
+    const t = terms.arcane;
+    if (!isZoneUnlocked(state.milestone, Zone.Arcane)) t.push({ label: 'opens at the Township', v: -0.2 });
+    else {
+      const arcaneWant = state.educated > 0.2 ? (pop / 6) * Math.min(1, (state.educated - 0.2) * 3) : 0;
+      let v = Math.max(-1, Math.min(1, (arcaneWant - arcaneJobs) / Math.max(10, arcaneWant))) * 0.9;
+      t.push({ label: `${arcaneJobs} arcane jobs, ${Math.round(arcaneWant)} wanted (the schooled past a fifth)`, v });
+      const tax = -(state.taxRates.arcane - 10) * 0.04; v += tax; t.push({ label: `Arcane tithe ${state.taxRates.arcane} %`, v: tax });
+      if (state.educated < 0.2) t.push({ label: `educated ${Math.round(state.educated * 100)} %: nothing until a fifth`, v: -0.5 - v });
+    }
+  }
+  demandNotes.set(state, { why, facts, terms, targets: { hearth, market, craft, arcane } });
   const clamp = (v: number) => Math.max(-1, Math.min(1, v));
   // smooth
   const s = state.demand;
