@@ -8,12 +8,12 @@ its open items are parked.
 
 ## Prioritized ideas for the next iteration
 
-1. **Phase 2: sharpen the core loop** (RESET_PLAN §3, Phase 2; DESIGN §2). The CS1 loop made consistent, readable and
-   fair, in two or three iterations, one change at a time with the bot corridor. P1 first: growth that follows demand,
-   "why does this not grow?" per tile (hover and overlay), demand with its factors shown, mana (the O(spires²) and the cap
-   at 3–4k folk, the surge warned), traffic (whether jams steer carts again, deterministically). Also from phase 1: the
-   corridor's fall since phase 0 (the caravan carried the mid-game; RESET_LOG 1c-1 and 1d-1) and the Crown favour that
-   stands still.
+1. **Phase 2: sharpen the core loop, the rest** (RESET_PLAN §3, Phase 2; DESIGN §2). Done in 2-1: growth draws among the
+   lots that can grow, and every lot says why it does or does not (hover, Growth view). Next, one change at a time with
+   the bot corridor: **mana** (the O(spires²) chain, the cap at 3–4k folk, the surge warned with a countdown; with faster
+   growth, unlit houses are now the common block: 273 in the checklist's day-40 city), demand with its factors shown,
+   traffic (whether jams steer carts again, deterministically), then the P2 items (services, the budget and the Crown
+   favour that stands still, happiness terms, milestone pacing, hazards' warnings).
 2. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7).
 3. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 4. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
@@ -21,9 +21,8 @@ its open items are parked.
 
 ## Known issues
 
-- **The bot corridor is lower than in phase 0:** seed 42 has 1,011 folk on day 150 against 3,194, the six-seed mean
-  1,177 (RESET_LOG 1d-1). The caravan carried the mid-game economy (1c-1), and routing no longer rides on jam-free
-  first paths (1d-1). Phase 2's.
+- **The bot corridor** after 2-1: the six-seed mean is 1,937 folk on day 150 (1,177 in 1d-1); seed 42 has 1,397 and
+  2,606 against phase 0's 3,194. The two draws of a seed now differ more (seed 45: 2,356 and 910). RESET_LOG 2-1.
 - **The Crown favour stands still** at 50 since its movers, the tales (1c-1) and the relics (1c-2), were parked.
 - **Citizen looks 4 and 5** (the Grimmen and Tallowkin looks) can still be rolled in a Vellish game (RESET_PLAN §1.4,
   point 7; phase 3 with the citizens' sprites).

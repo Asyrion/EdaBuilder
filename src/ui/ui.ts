@@ -1,15 +1,15 @@
 import { buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, nextGate, specialLock, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
-import { BUILDINGS, BUILDING_BY_KEY, ROADS, ROAD_BY_TYPE, isDepot, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
+import { BUILDINGS, BUILDING_BY_KEY, ZONE_KEY, ROADS, ROAD_BY_TYPE, isDepot, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { DEBT_DAYS, FAVOUR_AUDIT, FAVOUR_NEUTRAL, FAVOUR_STEP, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, favourFactor, grantFor, levyDue, loanLimit } from '../sim/economy';
 import { HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
-import { AgentKind, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
+import { AgentKind, MAP_H, MAP_W, RoadType, Zone, idx, type Building, type GameState } from '../sim/types';
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { isLeyMember, lakeFed, loadCapOf, priorityOf, waterCapAt } from '../sim/networks';
-import { SEAM, SPENT_RATE } from '../sim/growth';
+import { SEAM, SPENT_RATE, ARCANE_SCHOOL, growthBlock } from '../sim/growth';
 import { GREY_DAYS, fontsRunHot } from '../sim/hazards';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
@@ -319,6 +319,15 @@ export class UI {
     if (d.waterRadius) bits.push(`waters ${d.waterRadius} tiles`);
     if (d.needsMana) bits.push('needs mana');
     return `<div class="t">${d.name}</div>${d.desc}<br><span class="muted">${bits.join(' · ')}</span><br><span class="flavor">${d.flavor}</span>${locked ? `<br><span class="warn">${this.host.state.milestone >= d.unlock && specialLock(this.host.state, d.key) ? specialLock(this.host.state, d.key) : `Unlocks at ${this.ms()[d.unlock].name} (${this.ms()[d.unlock].pop} folk)`}</span>` : ''}`;
+  }
+
+  private hoverWhy = false;
+  /** The map tile under the pointer with the Select tool (scope reset phase 2-1): on a zoned lot or a zone building, why it
+      does or does not grow, with what to do; the Growth view (6) shows the same for every lot. */
+  hoverTile(t: [number, number] | null, x: number, y: number): void {
+    const html = t ? growthWhy(this.host.state, t[0], t[1]) : null;
+    if (html) { this.showTooltip(html, x, y); this.hoverWhy = true; }
+    else if (this.hoverWhy) { this.hideTooltip(); this.hoverWhy = false; }
   }
 
   showTooltip(html: string, x: number, y: number): void {
@@ -1019,7 +1028,7 @@ export class UI {
           <h3>The loop</h3>
           <ol>
             <li><b>Draw roads</b> from the Founding Stake. Everything grows beside a road.</li>
-            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why).</li>
+            <li><b>Zone</b> Hearth (homes), Market, Craft (alchemy works) beside a road (a corner counts) where the demand bars ask: a bar above the line grows, at or below it nothing of that zone grows (hover a bar for why). Hover a lot or a house with Select to see why it does or does not grow; the <b>Growth</b> view (6) shows it for every lot.</li>
             <li><b>Light</b> them: Ley Spires within 6 tiles of a node light 5 tiles; lit buildings light their neighbours. An unlinked node seeps half its flow; a spire within 6 tiles draws the rest. A spire carries 80 mana of buildings (a Nexus 200) and its farthest go dark over that. When the ley runs short, lantern-ways dim first, then buildings by their Brownout tier (set it in a building's panel).</li>
             <li><b>Water</b> them with Wells.</li>
             <li><b>Serve</b>: Watch, Healers, Water-Mages\' Hall (fire), Boneyard (the dead!), Wards (the Gloam!).</li>
@@ -1497,3 +1506,30 @@ function row(k: string, v: string): string {
 }
 
 export { ROAD_BY_TYPE, RoadType };
+
+/** The "why does this not grow?" line of a tile, or null when the tile is neither a zoned lot nor a zone building. */
+export function growthWhy(s: GameState, x: number, y: number): string | null {
+  if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return null;
+  const i = idx(x, y);
+  const g = growthBlock(s, i);
+  if (g === 'none') return null;
+  const bi = s.bIndex[i];
+  const b = bi >= 0 ? s.buildings[bi] : null;
+  const name = (b ? BUILDING_BY_KEY[b.kind].name : BUILDING_BY_KEY[ZONE_KEY[s.zone[i]]]?.name ?? 'Zoned').split(' (')[0];
+  const bar = `the ${name} bar`;
+  const text: Record<string, string> = {
+    ok: b ? `climbing to level ${b.level + 1}.` : 'can grow: a house rises here when the bar calls for one.',
+    noRoad: 'no road touches it. Build a road beside it (a corner counts).',
+    noDemand: `${bar} is at or below the line, so nothing of it grows. Hover the bar for why.`,
+    gloam: 'the Gloam holds it. Light and Ward Lanterns push the Gloam back.',
+    noSchool: `an Arcane lot needs schooling (coverage ${ARCANE_SCHOOL}): an Academy of the Ley near.`,
+    top: 'at its highest level.',
+    abandoned: 'abandoned: it returns once lit, watered and content.',
+    landValue: `level ${b ? b.level + 1 : 2} needs more land value: roads, water, parks and services raise it.`,
+    dark: 'it has no light: a Ley Spire within reach.',
+    dry: 'it has no water: a Well within reach.',
+    unhappy: 'its folk are not content (happiness above 45). Select it for why.',
+    school: `level 3 needs schooling: a quarter of the city educated, or a school near${b && BUILDING_BY_KEY[b.kind].zone === Zone.Arcane ? ', and 35 % educated for Arcane' : ''}.`,
+  };
+  return `<div class="t">${b ? `${name}, level ${b.level}` : `${name} lot`}</div>${text[g]}`;
+}

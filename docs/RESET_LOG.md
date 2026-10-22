@@ -561,3 +561,54 @@ daughter wardlight as trade routes; the depot's Twin Road): gone. DESIGN §5 now
 does (the treasury under −8,000 × (1 + milestone ÷ 2) for five days, the Gloam at the founding node, forty restless dead).
 
 **Phase 1 is complete.** Next: phase 2, sharpen the core loop (`docs/NEXT_STEPS.md` item 1).
+
+## Phase 2-1: growth from the lots that can grow, and why a lot does not (2026-10-22)
+
+The first iteration of phase 2 (RESET_PLAN §3 "Phase 2", the two P1 items it calls the biggest lever: growth that
+follows demand, and "why does this not grow?").
+
+**Done.**
+- **`growthBlock(state, i)`** (`growth.ts`) names one reason per zoned tile. An empty lot is `ok`, `noRoad` (no road
+  touches it, a corner counts), `noDemand` (its bar at or below zero), `gloam` or `noSchool` (an Arcane lot under school
+  coverage 40). A zone house is `ok` (climbing), `top`, `abandoned`, or its first unmet level-up need from `levelUpNeeds`
+  (`landValue`, `dark`, `dry`, `unhappy`, `school`): one truth for the sim, the tooltip and the view.
+- **Growth draws among the lots that can grow.** Before, each of the three draws every 10 ticks took any zoned tile,
+  built or not, so a filling city wasted most of them and a small demand hardly grew. Now the draws take only lots whose
+  `growthBlock` is `ok`, with the same chance (min(1, demand) × 0.45). A tick with no such lot draws nothing.
+- **Hover with Select:** a zoned lot or a zone house says why it does or does not grow, and what to do ("Hearth lot: no
+  road touches it. Build a road beside it (a corner counts).").
+- **The Growth view (key `6`):** green can grow, red no road, grey no demand, violet the Gloam, blue no schooling; orange
+  a house that cannot climb a level, pale green one climbing.
+- Help, README, DESIGN §2 and §6, `CORE_CHECKLIST.md` line 3. `checklist.mjs` now hovers a lot and checks the tooltip,
+  and shoots the Growth view on fresh lots; `smoke.mjs` and `checklist.mjs` walk nine views.
+- Tests (`growth.test.ts`): one reason per case (ok, no road, no demand, the Gloam, Arcane without school, a dark house,
+  a climbing house, the top level, a road); a district with one lot left grows it within a day at demand 0.1, never the
+  lot without a road, and spends no draw when no lot can grow.
+
+**Measured.** The bot corridor, six seeds × two draws, 150 days, against main (1d-2, the same sim as 1d-1):
+
+| Seed | 1d-1 (main), draws 0 · 1 | 2-1, draws 0 · 1 |
+|---|---|---|
+| 42 | 1,011 · 1,040 (Market Town) | 1,397 · 2,606 (Burgh) |
+| 1 | 1,191 · 1,040 | 2,018 · 2,052 |
+| 7 | 1,011 · 1,175 | 1,028 · 939 |
+| 13 | 1,352 · 1,456 | 2,958 · 3,035 |
+| 21 | 1,756 · 1,246 | 1,578 · 2,361 |
+| 45 | 887 · 953 (Market Town) | 2,356 · 910 |
+| **Mean** | **1,177** | **1,937 (+760, +64.6 %, ± 354: seen)** |
+
+- **The Burgh:** 12 of 12 runs (main 7 of 12), on a median day 36 (main 45). Every earlier gate comes a day to four
+  sooner (Market Town median day 19 against 23).
+- **Against phase 0:** seed 42 has 1,397 and 2,606, against 3,194 in phase 0. The mean is above every phase 1 table.
+- **Losses:** seeds 7 and 45 (draw 1) are below main on one draw (939 against 1,175; 910 against 953). The spread
+  between the two draws of a seed grew on seeds 42 (1,209) and 45 (1,446): a faster city reaches the mana cap at
+  different times. The checklist's day-40 city shows it: 273 buildings without mana. Mana is phase 2's next item.
+- **The corridor test is re-anchored, openly, upward:** seed 42 on day 100 now has 2,855 folk at the Burgh (926 at Market
+  Town before). `core-loop.test.ts` holds 2,855 and the Burgh, with the same ±50 %, and names 926 and phase 0's 1,945.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 353 KB (122 KB gzip) |
+| `npx vitest run` | 15 files, 275 tests, all green (the corridor test re-anchored, above) |
+| `scripts/smoke.mjs` | SMOKE OK, nine views, save and load the same |
+| `scripts/checklist.mjs` | CHECKLIST OK; the hover says "Hearth lot: can grow …" or "Craft lot: the Craft bar is at or below the line …" |

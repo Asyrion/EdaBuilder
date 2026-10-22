@@ -31,7 +31,10 @@ Road → zone → demand → growth → services and supply → budget → happi
 2. **Zones** (1×1, grown, not built): Hearth (homes), Market, Craft and, from the Township, Arcane. Each grows through
    three levels with four looks a level.
 3. **Demand** (`growth.ts`): four bars, one a zone, from jobs, homes, goods and shelves; each bar says why
-   (`demandReasons`). Every 10 ticks up to three zoned tiles may spawn a building.
+   (`demandReasons`). **Growth** (phase 2-1): every 10 ticks three draws among the lots that can grow (empty, a road
+   touching, out of the Gloam, schooled for Arcane, demand for their zone above zero), each growing with chance
+   min(1, demand) × 0.45. `growthBlock` names why any zoned tile does or does not grow; the hover tooltip and the Growth
+   view (`6`) show it.
 4. **Supply:** mana from Ley Spires (and later the Nexus, the Thrum Font, the Crystal Mine), water from Wells and the
    Cistern. A zone needs both, and a road, to grow.
 5. **Services** (eight coverage layers: watch, health, fire, faith, school, death, ward, leisure), each from its
@@ -82,7 +85,7 @@ days, the Gloam reaching the founding ley node, or forty restless dead walking t
 ## 6. The world and the views
 
 One valley map from the seed (`terrain.ts`): meadow, forest, hills, ruins, a river, a lake and the ley node. Eight
-districts with per-district edicts. Info views: mana, water, land value, happiness, traffic, ward, district, miasma.
+districts with per-district edicts. Info views: growth, mana, water, land value, happiness, traffic, ward, goods, district, miasma.
 
 ## 7. Art direction
 

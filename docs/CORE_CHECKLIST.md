@@ -8,6 +8,7 @@ or `npm run dev`, in a fresh browser profile or after Menu → Back to title. Ti
        stands by a ley node.
 2. [ ] **Roads:** `R` and drag lay a Dirt Track. The cost shows while dragging, and Ctrl+Z takes it back.
 3. [ ] **Zones:** `Z` and drag paint Hearth beside the road, then Market and Craft. Zones away from a road do not grow.
+       With Select, hovering a lot says why it does or does not grow; the Growth view (`6`) colours every lot by it.
 4. [ ] **Mana:** a Ley Spire within 6 tiles of the node lights the tiles around it (Mana view, key `1`).
 5. [ ] **Water:** a Well waters its radius (Water view).
 6. [ ] **Growth:** at speed 3, houses rise on lit, watered Hearth tiles within a day or two, and builders walk to the sites.

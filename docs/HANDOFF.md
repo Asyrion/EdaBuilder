@@ -20,16 +20,16 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 
 ## The next item
 
-**Phase 2: sharpen the core loop** (`docs/NEXT_STEPS.md` item 1; RESET_PLAN §3 "Phase 2", a table of P1 to P3 items). It
-runs in two or three iterations, one change at a time, each against the bot corridor. Plan it on the Plan panel first.
+**Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Phase 2-1 (growth from the lots that can grow, and why a lot does
+not) is done; next is mana (RESET_PLAN §3 "Phase 2", P1), one change at a time against the bot corridor. Plan it on the
+Plan panel first.
 
 ## Known issues
 
-- **The bot corridor is lower than in phase 0.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 now; the six-seed mean
-  (42, 1, 7, 13, 21, 45; two draws) is 1,177. Two causes, both traced in RESET_LOG: the caravan carried the mid-game
-  economy (1c-1, −41 %), and since 1d-1 the carts route by the roads' speeds, not by first paths found on empty roads
-  (−17 %, within the noise). `core-loop.test.ts` holds seed 42 on day 100 at 926 folk and Market Town (±50 %), re-anchored
-  openly in 1d-1 from phase 0's 1,945.
+- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,397 and 2,606 (two draws)
+  after phase 2-1; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 → 1,937. Phase 1 lost the caravan's
+  mid-game (1c-1) and the jam-free first paths (1d-1); 2-1 won it back by letting a filling city keep growing.
+  `core-loop.test.ts` holds seed 42 on day 100 at 2,855 folk and the Burgh (±50 %), re-anchored openly in 2-1.
 - **The Crown favour stands still** at 50 (its movers were parked). Phase 2 decides: a mover in the core, or it goes.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.

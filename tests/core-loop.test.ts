@@ -30,9 +30,11 @@ function town(seed = 42) {
 
 // Seed 42's bot run on day 100, re-anchored in phase 1d-1 (docs/RESET_LOG.md): the phase 0 baseline (1,945 folk, the
 // Burgh, at ac4e05f) held through 1c-2, and fell under its half when the carts stopped routing by the first day's jams
-// (926 folk, Market Town). The corridor stays wide on purpose: one extra roll can move a seed a long way.
-const BOT_POP_100 = 926;
-const BOT_MILESTONE_100 = 5;
+// (926 folk, Market Town). Re-anchored again in phase 2-1, upward: growth draws only among the lots that can grow, so a
+// filling city keeps growing (2,855 folk, the Burgh; the six-seed mean +65 %). The corridor stays wide on purpose: one
+// extra roll can move a seed a long way.
+const BOT_POP_100 = 2855;
+const BOT_MILESTONE_100 = 6;
 
 describe('core loop', () => {
   it('grows homes along a road, lit by spires and watered by wells, in 30 days', () => {

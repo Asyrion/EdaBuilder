@@ -65,6 +65,8 @@ main node.
 2. **Zones** — drag rectangles next to roads: **Hearth** (homes), **Market** (trade),
    **Craft** (alchemy works: many jobs, emits miasma), **Arcane** (enchanters: needs
    schooling and lots of mana, unlocked at Township). Watch the **demand bars** bottom-left.
+   Hover a lot or a house with Select to see why it does or does not grow; the **Growth**
+   view (`6`) colours every lot by it (no road, no demand, the Gloam, no schooling).
 3. **Mana** — ley nodes give 90 mana/day each (the founding Wellspring 105; click one to
    see its flow). A **Ley Spire** within 6 tiles of a node
    (or of another lit spire) lights 5 tiles around it; lit buildings light the buildings
@@ -94,7 +96,7 @@ main node.
     problem. The *Chronicle* button (`C`) is the city's history: only things that really
     happened in the world, each with a ⌖ to go there.
 12. **Info views** — keys `1`–`0`, `-`, `=`, `g`, `m` or the *Views* button: mana, water,
-    land value, happiness, traffic, each service, wards & gloam, miasma. The **minimap**
+    land value, happiness, traffic, growth, each service, wards & gloam, miasma. The **minimap**
     (bottom right) jumps the camera where you click.
 
 Milestones: Founding Stake → Hamlet (40) → Thorp (100) → Village (220) → Township (400) →

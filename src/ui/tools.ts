@@ -36,6 +36,9 @@ export interface ToolHost {
   onSelectSector?: (index: number) => void;
   onKey: (key: string, ev: KeyboardEvent) => boolean;
   refreshUI: () => void;
+  /** The pointer over a tile of the map with the Select tool (null when it leaves the map or another tool is held): the
+      "why does this not grow?" tooltip (scope reset phase 2-1). */
+  onHover?: (tile: [number, number] | null, clientX: number, clientY: number) => void;
 }
 
 export class Tools {
@@ -138,6 +141,7 @@ export class Tools {
     }
     const t = this.tileAt(e);
     this.host.view.hover = t;
+    this.host.onHover?.(this.tool.kind === 'select' && e.target === this.host.canvas ? t : null, e.clientX, e.clientY);
     if (this.tool.kind === 'bulldoze' && this.dragButton === 0 && e.buttons & 1) this.doBulldoze(t);
     this.updatePreview();
   }

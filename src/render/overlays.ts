@@ -1,9 +1,15 @@
 /** Info-view overlays: per-tile colour functions. */
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { DISTRICT_NAMES, type GameState, type ServiceType } from '../sim/types';
-import { computeBuildingHappiness } from '../sim/growth';
+import { computeBuildingHappiness, growthBlock } from '../sim/growth';
 
-export type OverlayId = 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
+export type OverlayId = 'growth' | 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
+
+/** The Growth view's colours, by growthBlock. */
+export const GROWTH_COLOURS: Record<'ok' | 'noRoad' | 'noDemand' | 'gloam' | 'noSchool' | 'landValue' | 'climbing', string> = {
+  ok: 'rgba(60,240,90,0.8)', noRoad: 'rgba(255,55,55,0.8)', noDemand: 'rgba(175,175,190,0.75)', gloam: 'rgba(175,90,235,0.8)',
+  noSchool: 'rgba(60,130,255,0.8)', landValue: 'rgba(255,140,20,0.75)', climbing: 'rgba(150,255,170,0.45)',
+};
 
 export const DISTRICT_COLORS = ['#ff8a5c', '#5ee36f', '#5aa8ff', '#ffd166', '#c58cff', '#4fe3ff', '#ff6fa8', '#b9c46a'];
 
@@ -106,6 +112,16 @@ export const OVERLAY_LIST: OverlayDef[] = [
   coverageOverlay('death', 'Deathcare', '0', 'death', 'Boneyard coverage quiets the dead. Uncovered homes breed the restless.'),
   coverageOverlay('faith', 'Faith', '-', 'faith', 'Shrines and temples raise happiness and land value.'),
   coverageOverlay('leisure', 'Leisure', '=', 'leisure', 'Gardens and squares raise land value and joy.'),
+  {
+    id: 'growth', name: 'Growth', key: '6', desc: 'Why each zoned lot does or does not grow (scope reset phase 2-1). Empty lots: green can grow; red no road touches it (a corner counts); grey its demand bar is at or below the line; violet the Gloam; blue an Arcane lot without schooling. Zone buildings: yellow cannot climb a level (hover one for the need), pale green climbing.',
+    legend: [[GROWTH_COLOURS.ok, 'can grow'], [GROWTH_COLOURS.noRoad, 'no road'], [GROWTH_COLOURS.noDemand, 'no demand'], [GROWTH_COLOURS.gloam, 'Gloam'], [GROWTH_COLOURS.noSchool, 'no schooling'], [GROWTH_COLOURS.landValue, 'cannot level up'], [GROWTH_COLOURS.climbing, 'climbing a level']],
+    tile: (s, i) => {
+      const g = growthBlock(s, i);
+      if (g === 'none' || g === 'top') return null;
+      if (s.bIndex[i] >= 0) return g === 'ok' ? GROWTH_COLOURS.climbing : GROWTH_COLOURS.landValue;
+      return g in GROWTH_COLOURS ? GROWTH_COLOURS[g as keyof typeof GROWTH_COLOURS] : null;
+    },
+  },
   {
     id: 'ward', name: 'Wards & Gloam', key: 'g', desc: 'Ward coverage burns back the Gloam. Grey = Gloam, purple = whispering range.',
     legend: [['rgba(79,227,255,0.6)', 'warded'], ['rgba(120,100,160,0.6)', 'gloam nearby'], ['rgba(40,30,60,0.8)', 'Gloam']],
