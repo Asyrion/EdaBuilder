@@ -8,7 +8,6 @@ import { FACTIONS, NEUTRAL_RULES, buildsFor, canBuild, factionKey, factionOf, mi
 import { checkMilestones } from '../src/sim/economy';
 import { updateCoverage, updateLandValue } from '../src/sim/services';
 import { updateMana } from '../src/sim/networks';
-import { createScenario } from '../src/sim/scenario';
 import { SaveVersionError, serialize, deserialize } from '../src/sim/save';
 import { Zone } from '../src/sim/types';
 import { flatten } from './helpers';
@@ -23,7 +22,7 @@ FACTIONS.test = {
 afterAll(() => { delete FACTIONS.test; });
 
 function town(faction = 'vellish') {
-  const s = createGame(41, 'Peoples', 'valley', faction as 'vellish');
+  const s = createGame(41, 'Peoples', faction as 'vellish');
   const f = s.founding;
   flatten(s, f.x - 16, f.y - 12, f.x + 16, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 14, f.y + 2, f.x + 14, f.y + 2, false));
@@ -38,8 +37,6 @@ describe('The faction scaffold', () => {
     expect(milestonesOf(s)).toBe(MILESTONES);
     expect(factionKey(s, 'well')).toBe('well');
     expect(canBuild(s, 'well')).toBe(true);
-    const sc = createScenario(41, 'P', 'onenode', 'vellish');
-    expect(sc.faction).toBe('vellish');
     const r = deserialize(serialize(s), (seed) => createGame(seed));
     expect(r.faction).toBe('vellish');
     const o = JSON.parse(serialize(s)); delete o.faction;
@@ -78,7 +75,7 @@ describe('The faction scaffold', () => {
     // node flow halves; a hill building's mana doubles
     updateMana(v); updateMana(t);
     expect(t.manaSupply).toBeCloseTo(v.manaSupply * 0.5, 5);
-    for (const s of [v, t]) { s.terrain[idx(f.x + 8, f.y - 6)] = Terrain.Hills; s.terrain[idx(f.x + 9, f.y - 6)] = Terrain.Hills; s.terrain[idx(f.x + 8, f.y - 5)] = Terrain.Hills; s.terrain[idx(f.x + 9, f.y - 5)] = Terrain.Hills; placeBuildingRaw(s, 'torrentmill', f.x + 8, f.y - 6); }
+    for (const s of [v, t]) { s.terrain[idx(f.x + 8, f.y - 6)] = Terrain.Hills; s.terrain[idx(f.x + 9, f.y - 6)] = Terrain.Hills; s.terrain[idx(f.x + 8, f.y - 5)] = Terrain.Hills; s.terrain[idx(f.x + 9, f.y - 5)] = Terrain.Hills; placeBuildingRaw(s, 'font', f.x + 8, f.y - 6); }
     const before = [v.manaSupply, t.manaSupply];
     updateMana(v); updateMana(t);
     const dv = v.manaSupply - before[0];

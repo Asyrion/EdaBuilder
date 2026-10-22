@@ -3,28 +3,17 @@ import { LAKE_WELL_CAP, LAKE_WELL_REACH, lakeDistAt } from './water';
 export const LEY_HALLS = WONDER_HALLS;
 /** Mana (ley) and water networks. */
 import { BUILDING_BY_KEY, NODE_MANA, ROAD_BY_TYPE, ROADS, WONDER_HALLS } from './catalog';
-import { MAP_H, MAP_W, RoadType, Zone, cracked, idx, inBounds, type Building, type GameState, Terrain } from './types';
+import { MAP_H, MAP_W, RoadType, Zone, idx, inBounds, type Building, type GameState, Terrain } from './types';
 import { forEachBuilding, markDirty, nodeFlow, seasonOf, waterRadiusOf } from './world';
 import { modifierSum } from './edicts';
-import { relicDone } from './relics';
 import { factionOf } from '../data/factions';
 import { bumpRoadVersion } from './agents';
-import { floatingMana } from './vehicles';
 import { edictOn } from './edicts';
-import { treeStage, TREE_LEISURE_RADIUS } from './growth';
 
 const SPIRE_LINK = 6;
 const SPIRE_RADIUS = 5;
 const NEXUS_RADIUS = 9;
 const NODE_RADIUS = 3;
-/** A second Torrent Mill within 8 of an older one runs at this share: they share the river. */
-export const MILL_SHARE = 0.6;
-/** A second mill within this many tiles shares the river (a square); a Hanging Gardens keeps glowvine alive within GLOWVINE_REACH. Named for the reach rings (iteration 56). */
-export const MILL_SHARE_REACH = 8;
-export const GLOWVINE_REACH = 12;
-/** A Portal Arch carries this many crossings a day before the jump congests; each crossing draws PORTAL_MANA. */
-export const PORTAL_CAP = 60;
-export const PORTAL_MANA = 0.1;
 /** How much mana of buildings a member of the chain can light; over it, its farthest go dark. Nodes carry anything. */
 export const LOAD_CAP: Record<string, number> = { spire: 80, stake: 60, nexus: 200 };
 export function loadCapOf(b: Building): number {
@@ -68,13 +57,11 @@ export function updateMana(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
     if (def.manaProduce) {
-      // a mill with an older mill within 8 shares its river and runs at ×0.6
-      const shared = b.kind === 'torrentmill' && state.buildings.some((o) => o && o !== b && o.kind === 'torrentmill' && o.state === 'ok' && o.id < b.id && Math.abs(o.x - b.x) <= MILL_SHARE_REACH && Math.abs(o.y - b.y) <= MILL_SHARE_REACH);
-      const made = def.manaProduce * (b.kind === 'torrentmill' ? (seasonOf(state) === 0 ? 1.3 : 1) * factionOf(state).rules.millMana * (shared ? MILL_SHARE : 1) : 1) * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); 
+      const made = def.manaProduce * (state.terrain[idx(b.x, b.y)] === Terrain.Hills ? factionOf(state).rules.hillMana : 1); 
       supply += made;
       b.load = made;
     }
-    if (def.manaStorage && !cracked(b)) storageMax += def.manaStorage;
+    if (def.manaStorage) storageMax += def.manaStorage;
   });
 
   // 2. spire chain: BFS from nodes over spires/nexus
@@ -112,23 +99,11 @@ export function updateMana(state: GameState): void {
   state.nodeLinked = linked;
   supply += nodeFlow(state, linked) * factionOf(state).rules.nodeMana;
 
-  // 2b. self-lit buildings (Hanging Gardens) and living glowvine lanes are sources that need no Vein
-  const gardens: { x: number; y: number }[] = [];
+  // 2b. self-lit buildings are sources that need no Vein (the Hanging Gardens and their glowvine lanes were; parked, scope reset phase 1c)
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (def.selfLit && b.state === 'ok' && !cracked(b)) {
-      if (b.kind === 'hanginggardens') gardens.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2 }); // only the vines' own gardens keep a lane alive
-      sources.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, r: 2 });
-    }
+    if (def.selfLit && b.state === 'ok') sources.push({ x: b.x + (b.w - 1) / 2, y: b.y + (b.h - 1) / 2, r: 2 });
   });
-  if (gardens.length) {
-    for (let i = 0; i < n; i++) {
-      if (state.road[i] !== RoadType.Glowvine) continue;
-      const x = i % MAP_W;
-      const y = (i / MAP_W) | 0;
-      if (gardens.some((g) => Math.hypot(g.x - x, g.y - y) <= GLOWVINE_REACH)) lit[i] = 1;
-    }
-  }
   // 3. lit tiles from sources
   for (const s of sources) {
     const r = s.r;
@@ -146,8 +121,8 @@ export function updateMana(state: GameState): void {
   const litB: boolean[] = new Array(state.buildings.length).fill(false);
   const bq: number[] = [];
   const conductors = new Uint8Array(n); // road tiles that conduct (lantern-way)
-  // lantern-ways conduct; a living glowvine lane is lit already and lights what stands along it
-  for (let i = 0; i < n; i++) if (state.road[i] === RoadType.Lantern || (state.road[i] === RoadType.Glowvine && lit[i])) conductors[i] = 1;
+  // lantern-ways conduct
+  for (let i = 0; i < n; i++) if (state.road[i] === RoadType.Lantern) conductors[i] = 1;
   for (let s = 0; s < state.buildings.length; s++) {
     const b = state.buildings[s];
     if (!b || b.state === 'ruin') continue;
@@ -267,8 +242,6 @@ export function updateMana(state: GameState): void {
   }
   let roadDemand = 0;
   for (let i = 0; i < n; i++) if (roadLit[i] && state.road[i] === RoadType.Lantern) roadDemand += ROAD_BY_TYPE[RoadType.Lantern].manaUse;
-  demand += floatingMana(state);
-  forEachBuilding(state, (b) => { if (b.kind === 'portalarch' && b.lit && b.state === 'ok') demand += PORTAL_MANA * (b.load ?? 0); }); // each crossing today draws a tenth
   // lantern-ways are the first thing a shortfall dims: their draw leaves the demand and they go dark (with hysteresis, so they do not flicker)
   if (!state.roadsDim && demand + roadDemand > supply) state.roadsDim = true;
   else if (state.roadsDim && demand + roadDemand <= supply) state.roadsDim = false;
@@ -279,7 +252,6 @@ export function updateMana(state: GameState): void {
   }
   void f;
 
-  if (relicDone(state, 'lanterncores')) storageMax += 60;
   // storage buffers a deficit
   let effectiveSupply = supply;
   if (demand > supply) {
@@ -322,8 +294,7 @@ export function updateMana(state: GameState): void {
   });
   // dirty chunks where lit changed (for lantern-way glow rendering)
   for (let i = 0; i < n; i++) {
-    if (lit[i] !== oldLit[i] && (state.road[i] === RoadType.Lantern || state.road[i] === RoadType.Glowvine)) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
-    if (lit[i] !== oldLit[i] && state.bIndex[i] >= 0 && state.buildings[state.bIndex[i]]?.kind === 'portalarch') bumpRoadVersion();
+    if (lit[i] !== oldLit[i] && state.road[i] === RoadType.Lantern) markDirty(state, i % MAP_W, (i / MAP_W) | 0);
   }
   state.lit = lit;
 }

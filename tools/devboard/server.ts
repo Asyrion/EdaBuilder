@@ -1,5 +1,5 @@
 /* EdaBuilder's dev board (iteration 87, DESIGN 4.118): a local web page to browse, create, edit and delete the game's content
-   in src/data/content/ (buildings, roads, milestones, relic sets), with every building's sprites and art status, checked by
+   in src/data/content/ (buildings, roads, milestones), with every building's sprites and art status, checked by
    the game's own validateContent after every save. The project side (iteration 88): NEXT_STEPS, GitHub, balance, Send to
    Claude. The art side (iteration 89): the text of edicts, events, quests and guilds, the prompt studio (prompts.ts) and
    the pipelines (pipelines.ts: the paintings importer runs here, Tripo Studio and Aseprite hand off to Claude).

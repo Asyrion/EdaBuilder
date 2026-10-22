@@ -1,7 +1,6 @@
 /** Dev tools: commands for playtesting and checking mechanics. Every use is counted, marks the daily result, and writes one Chronicle line. See DESIGN.md 4.55. */
 import { milestonesOf } from '../data/factions';
 import { QUARTERS, QUARTER_BY_ID, setQuarter, type QuarterId } from './districts';
-import { RELIC_SETS, grantRelicSet } from './relics';
 import { construction, dailyConstruction, sites, tickConstruction } from './construction';
 import { dailySurge, igniteBuilding, recomputeGloamDist } from './hazards';
 import { roadTileOf, spawnRestless } from './agents';
@@ -85,13 +84,9 @@ export const DEV_COMMANDS: DevCommand[] = [
   { id: 'fire', group: 'Hazards', name: 'Fire in a random home', desc: 'Ignites one lit zone building.', run: (s) => { const list = s.buildings.filter((b) => b && b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone'); const b = list[Math.floor(list.length / 2)]; return b && igniteBuilding(s, b, 'Dev fire at') ? `Fire at (${b.x},${b.y}).` : 'Nothing to burn.'; } },
   { id: 'gloam', group: 'Hazards', name: 'Gloam pocket here', desc: 'Grey grass in a 7×7 at the camera centre.', run: (s, _a, at) => `${pocket(s, at, 3)} tiles greyed.` },
   { id: 'cleargloam', group: 'Hazards', name: 'Clear all Gloam', desc: 'Every grey tile burned back.', run: (s) => { let n = 0; for (let i = 0; i < s.gloam.length; i++) if (s.gloam[i]) { s.gloam[i] = 0; n++; } recomputeGloamDist(s); markAllDirty(s); return `${n} tiles cleared.`; } },
-  { id: 'gale', group: 'Hazards', name: 'Blow a sea-gale', desc: 'For three days, in any charter: the barges stay in port and every plain Track bridge over water is under the surf (Cobble holds, and a Quay or a Weir within six tiles holds the bridges round it).', run: (s) => {
-    s.modifiers.push({ kind: 'gale', value: 1, until: s.day + 3, label: 'Dev: a sea-gale' });
-    return 'A sea-gale blows for three days.';
-  } },
   { id: 'unquieted', group: 'Hazards', name: '+20 unquieted dead', desc: 'Pressure rises; the restless may walk.', run: (s) => { s.unquieted += 20; return `${Math.round(s.unquieted)} unquieted.`; } },
-  // the Crown & relics
-  { id: 'standing', group: 'The Crown & relics', name: 'Set a standing', desc: "The Crown's favour, 0 to 100 (50 is indifferent; under 20 the Crown withholds the next grant).", arg: { kind: 'select', options: [['crown', "The Crown's favour"]] }, arg2: { kind: 'number', min: 0, max: 100, value: 80 }, run: (s, a) => {
+  // the Crown
+  { id: 'standing', group: 'The Crown', name: 'Set a standing', desc: "The Crown's favour, 0 to 100 (50 is indifferent; under 20 the Crown withholds the next grant).", arg: { kind: 'select', options: [['crown', "The Crown's favour"]] }, arg2: { kind: 'number', min: 0, max: 100, value: 80 }, run: (s, a) => {
     const [who, v] = a.split(':');
     const val = Math.max(0, Math.min(100, Math.round(Number(v ?? 80))));
     if (!Number.isFinite(val)) return 'A number from 0 to 100.';
@@ -99,7 +94,6 @@ export const DEV_COMMANDS: DevCommand[] = [
     s.crownFavour = val;
     return `The Crown's favour: ${val}.`;
   } },
-  { id: 'relic', group: 'The Crown & relics', name: 'Complete a relic set', desc: 'The chosen set entire.', arg: { kind: 'select', options: RELIC_SETS.map((r) => [r.id, r.name]) }, run: (s, id) => { grantRelicSet(s, id); return `${RELIC_SETS.find((r) => r.id === id)?.name} entire.`; } },
   // tasks & map
   { id: 'quest', group: 'Tasks & map', name: 'Complete a task', desc: "One of this people's open Charter tasks, done now with its reward, as if its goal were met.", arg: { kind: 'select', options: (s) => { const done = new Set(s.questsDone); const open = questsFor(s).filter((q) => !done.has(q.id)).map((q) => [q.id, `${q.chapter}: ${q.title}`] as [string, string]); return open.length ? open : [['', 'every task is done']]; } }, run: (s, id) => {
     const q = QUESTS.find((x) => x.id === id);
@@ -108,7 +102,6 @@ export const DEV_COMMANDS: DevCommand[] = [
     if (s.questsDone.includes(q.id)) return 'Already done.';
     s.questsDone.push(q.id);
     if (q.reward > 0) s.treasury += q.reward;
-    if (q.id === 'z_daily') s.challengeDay = s.day;
     pushMessage(s, `Charter task done: ${q.title}${q.reward ? ` (+${q.reward} crowns)` : ''}.`, 'good', true);
     return `${q.title} done.`;
   } },

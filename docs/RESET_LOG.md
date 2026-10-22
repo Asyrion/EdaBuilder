@@ -289,3 +289,119 @@ health, tithe, craftTax, mana, gloamHold, watch, goods, price, barges, wrights.
 **Found.** The message on a hall stage still named the Guildhall among the growing halls; fixed in this phase
 (`economy.ts`). The Edicts panel still shows Close Season and Drainage, and those go in 1c-2. The text of the Scholars'
 Stipend still names "Grimmen and Tallowkin children", which is left over from 1a. It goes with the edict cut in 1c-2.
+
+## Phase 1c-2: the world add-ons and the content cut (2026-10-22)
+
+This is the second half of phase 1c, the plan's points 2 to 8, with the user's answers:
+- The quest rewards go with their quests, measured and not compensated.
+- Help moves into the Menu.
+
+**Done.**
+- **Parked:**
+  - the wild and the hunt (`wild.ts`: herds, wolves, hens, meat, trophies, the Hunters' Lodge, the Close Season edict)
+  - the water's extras: fishing, the Smokehouse, reeds and thatch, fords, the Weir, the Water Garden. `water.ts` keeps
+    only the lake and its land and well bonus. A road over water is always a bridge (×4).
+  - the marsh (no map has it; the Drainage edict, the causeway, its miasma and mist)
+  - the Patagoi Atoll, the isles, the sea-gales
+  - the vehicles: floating carts, barges and Quays, the airship and the Sky-Dock. `creatures.ts` is gone with its last
+    three species.
+  - the scenarios (one-node, island, inherited collapse), the daily challenge, the daughter charter and the Twin Road.
+    `createGame` takes no scenario, and the title screen founds the valley.
+  - terraforming (the Land tab)
+  - the relics and relic sets, the Ruin Delve, the Portal Arches, the World Tree. The Ruins of Lukuku stay on the map as
+    scenery.
+  - the four marvels and the Marvels tab
+  - the Torrent Mill, the Glimhouse, the Hanging Gardens with the Glowvine Lane, the Brickworks (and its build speed-up),
+    the Font of Quieting
+- **Content:**
+  - 20 buildings, which leaves 27 with the Lantern of Vell as the one wonder.
+  - The Glowvine Lane road.
+  - 2 edicts, which leaves 7. The Scholars' Stipend no longer names the Grimmen and Tallowkin.
+  - **The Ledger is down from 68 tasks to 21:** the eight of the founding, the seven milestones, and l_nexus, d_boneyard,
+    g_ward, o_depot, x_charter and a_academy.
+  - `relics.json`, and the relic sets kind of the dev board.
+  - The Free City milestone no longer opens the Font of Quieting, and the Beacon of Eda opens nothing.
+- **Neutral values:**
+  - `relicDone` is false: no happiness, mana store, sector price or deathcare boon.
+  - The World Tree's happiness, shade and Gloam terms are gone.
+  - The marvels' happiness and the Chart-Room's trade ×1.15 are gone.
+  - Fish, meat and thatch add no happiness, no price and no fire.
+  - The Hush Craft rate is ×0.8 everywhere.
+  - Build sites rise at their base rate.
+  - Carts have no floating variant.
+  - The bot no longer hunts, fishes, thatches or bridges fords; it builds a depot once the Craft surplus would fetch half
+    its price.
+- **UI:**
+  - The top bar has five buttons: Budget, Edicts, Chronicle, Views, Menu. Help is the Menu's first entry, and key H stays.
+  - The toolbar has the tabs Roads, Zones, Ley, Water, Services, Leisure and Districts; Marvels and Land are gone.
+  - The title screen has no scenario picker and no daily challenge.
+  - The node panel has no daughter charter.
+  - The inspector and the Budget lost the hunt, fish, thatch, quay, airship, arch, tree, delve, relic and marvel rows.
+  - The help's bullets on the parked systems are gone.
+- **Saves and replays:** `parkedContentIn` refuses a save with one of the 20 buildings, a glowvine lane, a scenario other
+  than the valley, a daughter or a daily challenge. `PARKED_OPS` takes `terraform`, `daughter` and `quarry`, and
+  `stateFromHeader` refuses a replay of another scenario or of the challenge. On load, creatures (agent kind 3), barges
+  and floating carts are dropped, the parked fields of buildings and agents are deleted, and marsh turns to meadow.
+  `tests/parked1c2.test.ts` (13 tests) holds it.
+- **Art:**
+  - Removed: 19 entries of `art/sources.json` (15 buildings, 4 animals) and their 32 PNGs, the drawn World Tree, the
+    Brickworks, the airship, the wild, the boats, the reeds, the marsh ground, the glowvine road and the floating cart's glow.
+  - The sheet is 2048×326 (was 2048×377), 694 images.
+- **Tests:** 16 files were deleted (the water, the wild, the Atoll, the marsh, the vehicles, relics, arches and tree, the
+  daughter, the Brickworks, the Font of Quieting, the bot's barge cue, the trade routes, the magical buildings). 25 mixed
+  files were cut to the core by three agents on separate files. One refusal test is new.
+
+**Measured.** The corridor ran against main, which is phase 1c-1, with two draws per seed
+(`table.ts --compare origin/main --seeds 42,1,7,13,21,45 --draws 2`).
+
+| Seed | 1c-1 (main), draw 0 | 1c-2, draw 0 | 1c-1, draw 1 | 1c-2, draw 1 |
+|---|---|---|---|---|
+| 42 | 1,566 (Burgh 136) | 1,700 (Market Town 30) | 1,524 (Market Town 25) | 2,712 (Market Town 29) |
+| 1 | 891 (Market Town 23) | 1,116 (Burgh 38) | 1,659 (Burgh 38) | 1,671 (Burgh 79) |
+| 7 | 900 (Market Town 24) | 946 (Burgh 40) | 1,014 (Burgh 39) | 1,228 (Burgh 34) |
+| 13 | 1,911 (Burgh 40) | 1,079 (Burgh 66) | 1,607 (Burgh 88) | 2,008 (Free City 141) |
+| 21 | 1,455 (Burgh 34) | 1,430 (Burgh 75) | 1,298 (Burgh 44) | 1,452 (Burgh 61) |
+| 45 | 1,180 (Market Town 23) | 1,003 (Market Town 24) | 799 (Market Town 24) | 695 (Market Town 23) |
+
+Folk on day 150 (the last gate, with its day).
+
+- **The verdict:** a mean of 1,420 folk against 1,317, Δ +103 (+7.8 %) paired by seed, within the noise (2·SE 300).
+  Against phase 0 (2,409) the reset now stands at −41 %, nearly all of it phase 1c-1's caravan.
+- **The gates:** Burgh in 8 of 12 runs (1c-1: 7 of 12), and Free City in 1 of 12 (0). The median day of Burgh moved
+  later (63 against 40), from fewer runs that reach it early. No run lost the charter.
+- **The corridor test** in `tests/core-loop.test.ts` (seed 42, day 100) stays green.
+- **The crowns the cut took**, from a bot run of 150 days (`crowns.mts` probe, seeds 42 and 45):
+  - Quest rewards fell from 9,100 to 1,400 and from 7,600 to 1,900 crowns, since 13 or 14 tasks are done instead of 24
+    to 26.
+  - The hunt and the fish paid 0 crowns on main too: the bot never sold any.
+  - The cities end about where they did, so the quest rewards were not what held them back.
+- The depot stands in 12 of 12 runs (11 of 12), median day 40, and the Gloam road pays 2,076 crowns a run (2,027).
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 60 files, 296 tests, all green, 71 s (was 75 files, 375 tests, 166 s) |
+| `scripts/smoke.mjs` | SMOKE OK; milestone 5 on day 30, every view draws, save and load the same, save 432 KB (was 465 KB), boot 318 ms |
+| Bundle | JS 358 KB (123 KB gzip), was 485 KB (166 KB) |
+| `npm run devboard:selftest` | OK (606 entries, 6 kinds) |
+| **Acceptance: daily systems** | 13 in `sim.ts`'s day: buildings, social, traffic, agents, fire, surge, death, Gloam, economy, Gloam pressure, construction, milestones, chatter; plus the season's levy and message (bar: at most 15) |
+| **Acceptance: top bar** | 5 buttons: Budget, Edicts, Chronicle, Views, Menu (bar: at most 5) |
+| `docs/CORE_CHECKLIST.md`, scripted with Playwright on the branch | the title screen without scenarios or challenge, Found a new wardlight starts the valley with its stake; Help from the Menu and from key H; the Ledger reads 12/21; F5 then F9 within a day gives the same city; every info view draws (the smoke); no page or console errors on main or the branch |
+| Screenshots, seed 42 at day 40, main against the branch | the title screen, the top bar, the Menu, the toolbar, the Ledger, the Edicts panel, the city by day and night |
+
+The checklist's hand-only lines were not walked by hand in this session: dragging a road and its cost (2), the reach rings
+while placing (8), and the bars' hover explanations (7).
+
+**What stays with a parked name, on purpose (for 1d):**
+- the refusal of parked saves and replays (`save.ts`, `commands.ts`) and the comments that say what was parked
+- `Terrain.Marsh` (9), now produced by nothing, kept so a loaded marsh can turn to meadow; the `t === Terrain.Marsh`
+  checks in `actions.ts` and `bot.ts`
+- the procedural painter's options for the parked buildings (`fishRack`, `reedBundles`, `smokeRack`, `waterWheel` and the
+  like in `sprites.ts`), and the barge's cart painter; no building uses them
+- the faction rules `riverFreezes` and `millMana` (the seam stays thin, §9)
+
+**Found.**
+- **The Crown's favour no longer moves.** Its movers were the tales (1c-1) and the relics (1c-2); `addFavour` has no
+  caller, so the favour stays at 50 and the sector price and Thaw levy run at their neutral rate. Phase 2 decides whether
+  the core gets a mover or the favour goes.
+- `scripts/balance.ts`'s json line had commented out its own `gameOver` field since 1c-1 (a comment swallowed it); fixed.

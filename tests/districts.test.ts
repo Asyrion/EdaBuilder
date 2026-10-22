@@ -116,11 +116,10 @@ describe('District charters', () => {
     expect(u.districtQuarters).toEqual({});
     expect(DISTRICT_UNLOCK).toBe(1);
     const chapter = QUESTS.filter((q) => q.chapter === 'Districts');
-    expect(chapter.map((q) => q.id)).toEqual(['x_paint', 'x_charter', 'x_pay', 'x_edict', 'x_rename']);
-    expect(chapter[0].when({ ...s, milestone: 0 })).toBe(false);
-    expect(chapter[1].done(s)).toBe(true);
-    s.stats.quarterDays = 2;
-    expect(chapter[2].done(s)).toBe(true);
+    expect(chapter.map((q) => q.id)).toEqual(['x_charter']); // the chapter's other tasks were parked in the scope reset
+    expect(chapter[0].when({ ...s, district: new Uint8Array(s.district.length) })).toBe(false);
+    expect(chapter[0].when(s)).toBe(true);
+    expect(chapter[0].done(s)).toBe(true);
   });
 
   it('the bot paints and charters its hearth square from the Village, once the ledger carries a crown a building', () => {

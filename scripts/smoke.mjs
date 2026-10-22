@@ -59,7 +59,7 @@ await page.keyboard.press('Escape');
 const saved = await page.evaluate(() => {
   const g = window.__game, W = window.__wardlight;
   const json = W.save.serialize(g.state);
-  const back = W.save.deserialize(json, (seed) => W.scenario.createScenario(seed, g.state.cityName, 'valley'));
+  const back = W.save.deserialize(json, (seed) => W.createGame(seed, g.state.cityName));
   return { same: back !== g.state && back.population === g.state.population && back.tick === g.state.tick && back.treasury === g.state.treasury, bytes: json.length };
 });
 // night

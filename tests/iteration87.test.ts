@@ -10,7 +10,7 @@ describe('content as data', () => {
   it('zones and road types are mapped from their names to the enums', () => {
     expect(BUILDINGS.find((b) => b.key === 'hearth')!.zone).toBe(1);
     expect(BUILDINGS.find((b) => b.key === 'arcane')!.zone).toBe(4);
-    expect(ROADS.map((r) => r.type)).toEqual([1, 2, 3, 4]);
+    expect(ROADS.map((r) => r.type)).toEqual([1, 2, 3]); // the glowvine lane (4) is parked (scope reset phase 1c)
   });
 
   it('catches a duplicate key, an unknown unlock and a zone house without levels', () => {

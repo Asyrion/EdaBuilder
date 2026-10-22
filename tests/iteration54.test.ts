@@ -1,16 +1,14 @@
-/** Iteration 54 (M14 part 4, the world pushes back): the Crown's levy, favour, interest and loan, the gates and the next-gate line, edicts as commitments, charters with a price, and the daily challenge that can be lost. The weather, the chains, the ill tidings and the festivals were parked in the scope reset (phase 1c). */
+/** Iteration 54 (M14 part 4, the world pushes back): the Crown's levy, favour, interest and loan, the gates and the next-gate line, edicts as commitments, and charters with a price. The daily challenge was parked in phase 1c-2; the weather, the chains, the ill tidings and the festivals were parked in the scope reset (phase 1c). */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
-import { RoadType, TICKS_PER_DAY, idx, CHALLENGE_DAYS } from '../src/sim/types';
+import { RoadType, TICKS_PER_DAY, idx } from '../src/sim/types';
 import { buildRoad, paintDistrict, roadPath } from '../src/sim/actions';
 import { DEBT_DAYS, FAVOUR_AUDIT, checkMilestones, computeLedger, crownLevy, dailyEconomy, debtLine, favourFactor, grantFor, levyDue, loanLimit, repayLoan, takeLoan } from '../src/sim/economy';
 import { sectorCost } from '../src/sim/sectors';
 import { updateMiasma } from '../src/sim/services';
 import { EDICT_MIN_DAYS, EDICT_REPEAL, edictLocked, setEdict } from '../src/sim/edicts';
 import { CHARTER_LOCK_DAYS, CHARTER_SMOKE_SPILL, TEMPLE_TITHE_SHARE, charterCostOf, charterHeld, charterUpkeep, setQuarter } from '../src/sim/districts';
-import { CHALLENGE_PEOPLES, challengePeople, challengeScore, challengeSeed, createChallenge } from '../src/sim/scenario';
-import { checkQuests } from '../src/sim/quests';
 import { VELLISH_HAPPINESS, gateMet, milestonesOf, nextGate } from '../src/data/factions';
 import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -199,29 +197,7 @@ describe('Edicts as commitments, charters with a price', () => {
   });
 });
 
-describe('The daily challenge', () => {
-
-  it('the daily challenge is the Vellish on every date, fails on day 61 and is scored by the days to spare and the crowns', () => {
-    const peoples = new Set(['2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'].map(challengePeople));
-    expect([...peoples]).toEqual(['vellish']); // the only people since the scope reset
-    const key = '2026-10-02';
-    const s = createChallenge('Daily', key);
-    expect(s.faction).toBe(CHALLENGE_PEOPLES[challengeSeed(key) % CHALLENGE_PEOPLES.length]);
-    expect(s.challenge).toBe(key);
-    expect(s.challengeDay).toBe(-1);
-    s.day = CHALLENGE_DAYS;
-    checkQuests(s);
-    expect(s.challengeDay).toBe(-1);
-    s.day = CHALLENGE_DAYS + 1;
-    const n0 = s.messages.length;
-    checkQuests(s);
-    expect(s.challengeDay).toBe(-2);
-    expect(s.messages.slice(n0).some((m) => m.kind === 'bad' && /challenge .* is lost/.test(m.text))).toBe(true);
-    expect(challengeScore(s)).toBe(0);
-    s.challengeDay = 40; s.treasury = 5000;
-    expect(challengeScore(s)).toBe(CHALLENGE_DAYS + 1 - 40 + 5);
-  });
-
+describe('The new state in a save', () => {
   it('round-trips the new state through a save, and an old save gets the defaults', () => {
     const s = town();
     s.crownFavour = 71; s.loan = 10000; s.remembranceDead = 24;

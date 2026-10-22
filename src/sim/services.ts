@@ -4,10 +4,10 @@ import { LAKE_LAND, LAKE_LAND_REACH, lakeDistAt } from './water';
 import { roadAt } from './roads';
 import { edictOn } from './edicts';
 import { quarterAt, quarterOf } from './districts';
-import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, cracked, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
+import { MAP_H, MAP_W, SERVICE_TYPES, Terrain, idx, inBounds, isWater, type Building, type GameState, type ServiceType } from './types';
 import { forEachBuilding } from './world';
 import { modifierSum } from './edicts';
-import { TREE_LEISURE_RADIUS, TREE_WARD_RADIUS, capacityOf, treeStage, worldTree } from './growth';
+import { capacityOf } from './growth';
 
 /** Land value lost within 4 tiles of any deathcare. */
 export const DEATHCARE_LV = 6;
@@ -31,13 +31,12 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
     if (b.state !== 'ok') return;
     let strength = def.service.strength * crewFactor(b, state);
     if (b.kind === 'wardlantern') strength *= factionOf(state).rules.lanternWard;
-    if (cracked(b)) strength = 0; // the Lantern of the Cores wards nothing while cracked
     if (b.kind === 'hospice' && b.stock <= 0) strength *= 0.6; // no draughts on the shelf
     if (b.kind === 'veshari' && !b.watered) strength *= 0.5; // a dry fire hall
     if (def.needsMana && !b.lit) strength *= type === 'ward' ? 0 : 0.5;
     else if (!b.lit && def.manaUse > 0) strength *= 0.75;
     if (strength <= 0) return;
-    const r = b.kind === 'worldtree' ? TREE_LEISURE_RADIUS[treeStage(b)] : def.service.radius;
+    const r = def.service.radius;
     const cx = b.x + (b.w - 1) / 2;
     const cy = b.y + (b.h - 1) / 2;
     for (let dy = -r; dy <= r; dy++)
@@ -51,22 +50,6 @@ export function updateCoverage(state: GameState, type: ServiceType): void {
         acc[idx(x, y)] += v;
       }
   });
-  if (type === 'ward') {
-    // the World Tree's roots hold the Gloam under its shade (no burning, just holding)
-    const tree = worldTree(state);
-    if (tree) {
-      const r = TREE_WARD_RADIUS[treeStage(tree)];
-      const cx = tree.x + 1;
-      const cy = tree.y + 1;
-      for (let dy = -r; dy <= r; dy++)
-        for (let dx = -r; dx <= r; dx++) {
-          const x = cx + dx;
-          const y = cy + dy;
-          if (!inBounds(x, y) || dx * dx + dy * dy > r * r) continue;
-          acc[idx(x, y)] += 0.6;
-        }
-    }
-  }
   if (type === 'watch' && modifierSum(state, 'watch') > 0) for (let i = 0; i < n; i++) acc[i] += modifierSum(state, 'watch');
   // the quarters: a temple quarter's faith counts half again, a scholars' quarter's schooling a quarter more
   if (type === 'faith' || type === 'school') for (let i = 0; i < n; i++) { const q = state.district[i] ? state.districtQuarters[state.district[i]] : undefined; if (type === 'faith' && q === 'temple') acc[i] *= 1.5; else if (type === 'school' && q === 'scholars') acc[i] *= 1.25; }
@@ -82,9 +65,6 @@ export function coverageAt(state: GameState, type: ServiceType, x: number, y: nu
   return state.coverage[type][idx(x, y)] / 255;
 }
 
-/** The marsh's miasma (iteration 85): per marsh tile, at its centre, fading to nothing past MARSH_MIASMA_REACH tiles. */
-export const MARSH_MIASMA = 0.4;
-export const MARSH_MIASMA_REACH = 2;
 
 export function updateMiasma(state: GameState): void {
   const n = MAP_W * MAP_H;
@@ -110,16 +90,6 @@ export function updateMiasma(state: GameState): void {
         acc[idx(x, y)] += amt * (1 - r / (r + 1)) * (1 - (d - r) / (spill + 1));
       }
   });
-  // the marsh breeds miasma (iteration 85): every marsh tile a small cloud within MARSH_MIASMA_REACH
-  for (let i = 0; i < n; i++) {
-    if (state.terrain[i] !== Terrain.Marsh) continue;
-    const mx = i % MAP_W; const my = (i / MAP_W) | 0;
-    for (let dy = -MARSH_MIASMA_REACH; dy <= MARSH_MIASMA_REACH; dy++) for (let dx = -MARSH_MIASMA_REACH; dx <= MARSH_MIASMA_REACH; dx++) {
-      const d = Math.abs(dx) + Math.abs(dy);
-      if (d > MARSH_MIASMA_REACH || !inBounds(mx + dx, my + dy)) continue;
-      acc[idx(mx + dx, my + dy)] += MARSH_MIASMA * (1 - d / (MARSH_MIASMA_REACH + 1));
-    }
-  }
   for (let i = 0; i < n; i++) state.miasma[i] = Math.min(255, Math.round(acc[i] * 12));
 }
 

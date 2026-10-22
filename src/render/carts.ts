@@ -2,8 +2,6 @@
 // Each cart keeps one painting for its life (picked by its id, so the renderer needs no rng and the sim is untouched) and
 // faces the way it drives: the paintings face right, and every one has a left-facing twin `<name>_l`.
 
-import { BARGE_VARIANT, FLOAT_VARIANT } from '../sim/vehicles';
-
 export const CART_GOODS_PREFIX = 'cartp_goods_';
 export const CART_STONE_PREFIX = 'cartp_stone_';
 
@@ -18,9 +16,8 @@ export function cartPick(id: number, n: number): number {
 }
 
 /** The sprite for a cart agent: a painted donkey cart for the goods (variants 1–2) and leystone (0) carts, facing its way;
- *  the procedural `cart_<variant>` for the floating carts and barges, or when no painting is loaded. */
+ *  the procedural `cart_<variant>` when no painting is loaded (the floating carts and barges are parked, scope reset phase 1c). */
 export function cartSpriteName(a: { id: number; variant: number; dir: number }, count: (prefix: string) => number): string {
-  if (a.variant === FLOAT_VARIANT || a.variant === BARGE_VARIANT) return `cart_${a.variant}`;
   const prefix = a.variant === 0 ? CART_STONE_PREFIX : CART_GOODS_PREFIX;
   const n = count(prefix);
   if (!n) return `cart_${a.variant}`;

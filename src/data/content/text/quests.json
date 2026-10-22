@@ -39,70 +39,20 @@
     "title": "Reach 40 folk: a Hamlet",
     "hint": "Keep zoning where the demand bars are high."
   },
-  "l_all": {
-    "chapter": "Light and water",
-    "title": "Light every building",
-    "hint": "Mana view (1) shows unlit buildings in red. Chain spires within 6 tiles of each other."
-  },
-  "l_water": {
-    "chapter": "Light and water",
-    "title": "Water every building",
-    "hint": "Water view (2). Dry homes lose folk after two weeks."
-  },
-  "l_cistern": {
-    "chapter": "Light and water",
-    "title": "Build a Cistern of Vesh",
-    "hint": "Waters 12 tiles but drinks mana."
-  },
   "l_nexus": {
     "chapter": "Mana",
     "title": "Build a Ley Nexus",
     "hint": "Stores 120 mana to soak up peaks before they become surges."
-  },
-  "l_font": {
-    "chapter": "Mana",
-    "title": "Raise a Thrum Font",
-    "hint": "A bored well into a deep Vein: +40 mana anywhere."
-  },
-  "l_deepen": {
-    "chapter": "Mana",
-    "title": "Deepen the Wellspring",
-    "hint": "Click the founding node; from Burgh it can be deepened for +45 mana."
   },
   "d_boneyard": {
     "chapter": "The dead",
     "title": "Build a Boneyard before the dead rise",
     "hint": "Unquieted dead become the restless. Services tab."
   },
-  "d_restless": {
-    "chapter": "The dead",
-    "title": "Lay a restless to rest",
-    "hint": "Watch coverage (6) and wards clear them."
-  },
-  "d_ossuary": {
-    "chapter": "The dead",
-    "title": "Build an Ossuary",
-    "hint": "Quiets 40 dead a day within 20 tiles."
-  },
   "g_ward": {
     "chapter": "The grey edge",
     "title": "Raise a Ward Lantern",
     "hint": "Burns back the Gloam within 10 tiles. Needs mana."
-  },
-  "g_burn": {
-    "chapter": "The grey edge",
-    "title": "Burn back 50 tiles of Gloam",
-    "hint": "Wards and Gloam view (g) show the grey and what holds it. A lit Ward Lantern burns the grey in its reach."
-  },
-  "o_cart": {
-    "chapter": "Goods",
-    "title": "See the first cart deliver",
-    "hint": "Donkey carts carry potions from the works to the markets by road. Show me finds one on the way."
-  },
-  "o_full": {
-    "chapter": "Goods",
-    "title": "Four markets, none short for five days",
-    "hint": "With four or more markets, keep every shelf stocked five days running. Goods view (o): zone works near the markets, or build a Trade Depot and import."
   },
   "o_depot": {
     "chapter": "Goods",
@@ -114,185 +64,10 @@
     "title": "Educate a third of the folk",
     "hint": "An Academy of the Ley schools within 14 tiles."
   },
-  "a_arcane": {
-    "chapter": "The arcane",
-    "title": "Grow the first Arcane building",
-    "hint": "Arcane zones need schooling coverage to grow."
-  },
-  "a_mine": {
-    "chapter": "The arcane",
-    "title": "Dig a Crystal Mine",
-    "hint": "Must be dug into hills; roads may cut through hills."
-  },
-  "a_artifact": {
-    "chapter": "The arcane",
-    "title": "Sell the first artifacts",
-    "hint": "Enchanters need leystone carted from a mine."
-  },
-  "x_paint": {
-    "chapter": "Districts",
-    "title": "Paint a district",
-    "hint": "Districts tab (from the Hamlet). Drag a rectangle over part of the city; a district is a place you can charter and rule apart."
-  },
   "x_charter": {
     "chapter": "Districts",
     "title": "Charter a district",
     "hint": "Edicts panel: pick the district in Scope and choose a charter. A Craft quarter makes a fifth more goods; a Hearth quarter is worth more to live in; each has a price."
-  },
-  "x_pay": {
-    "chapter": "Districts",
-    "title": "See the charter pay",
-    "hint": "Two days under a charter: watch the works, the shelves or the land value move in the district view (i)."
-  },
-  "x_edict": {
-    "chapter": "Districts",
-    "title": "Set an edict for a district",
-    "hint": "Edicts panel, choose the district in Scope."
-  },
-  "s_brownout": {
-    "chapter": "Mana",
-    "title": "Ride out a brownout",
-    "hint": "When demand passes the flow the spires flicker; cut consumers or add flow before the fifth day and no surge comes."
-  },
-  "x_rename": {
-    "chapter": "Districts",
-    "title": "Name a district",
-    "hint": "Edicts panel: pick the district in Scope and type a name."
-  },
-  "s_hush": {
-    "chapter": "Seasons",
-    "title": "Survive a Hush",
-    "hint": "Long nights: hearths drink more mana and the Gloam grows bold."
-  },
-  "k_mill": {
-    "chapter": "The riverbank",
-    "title": "Raise a Torrent Mill",
-    "hint": "Ley tab, Township. On the riverbank, touching water and a road: 30 mana a day from falling water."
-  },
-  "k_glim": {
-    "chapter": "Seasons",
-    "title": "Keep the works warm with a Glimhouse",
-    "hint": "Services tab. Craft works within 8 ignore the Hush and make 10% more."
-  },
-  "k_gardens": {
-    "chapter": "The riverbank",
-    "title": "Plant Hanging Gardens against the hills",
-    "hint": "Services tab, Township. Goods, health and light with no mana; unlocks the Glowvine Lane."
-  },
-  "k_glowvine": {
-    "chapter": "The riverbank",
-    "title": "Lay 12 tiles of Glowvine Lane",
-    "hint": "Roads tab. Lit by the vines within 12 tiles of a Hanging Gardens, no mana."
-  },
-  "p_arch": {
-    "chapter": "The arcane",
-    "title": "Raise a pair of Portal Arches",
-    "hint": "Ley tab, Market Town. Both lit, 12 mana each; carts step from one to the other."
-  },
-  "r_delve": {
-    "chapter": "The riverbank",
-    "title": "Dig at the Ruins of Lukuku",
-    "hint": "Flagstones in a forest, somewhere on the map. A Ruin Delve there brings up relics."
-  },
-  "t_plant": {
-    "chapter": "The Crown",
-    "title": "Plant the World Tree Sapling",
-    "hint": "Leisure tab, Free City. Twenty thousand crowns and three seasons of patience."
-  },
-  "t_grown": {
-    "chapter": "The Crown",
-    "title": "See the World Tree full-grown",
-    "hint": "Three seasons after planting its shade reaches 24 tiles."
-  },
-  "q_quay": {
-    "chapter": "Goods",
-    "title": "Send a barge between two Quays",
-    "hint": "Services tab, Village. Two quays on the same river or lake, works near one and markets near the other."
-  },
-  "q_float": {
-    "chapter": "The arcane",
-    "title": "See a floating cart",
-    "hint": "An Arcane workshop at level 3 sends two hovering carts onto the roads."
-  },
-  "q_airship": {
-    "chapter": "The Crown",
-    "title": "Launch the airship",
-    "hint": "Leisure tab, Beacon of Eda: the Sky-Dock. The ship leaves on day 3 of each season with your surplus."
-  },
-  "w_meat": {
-    "chapter": "Goods",
-    "title": "Put game on a market's shelves",
-    "hint": "A Hunters' Lodge's panel names its quarry: choose the deer or the boar in its grounds, with a market within 16. The hearths within 10 of that market are happier."
-  },
-  "w_fish": {
-    "chapter": "Goods",
-    "title": "Put fish on a market's shelves",
-    "hint": "Water tab: a Fishers' Hut touching river or lake water, a market within 12. Fish spoil in two days; the hearths within 10 of that market are happier."
-  },
-  "w_thatch": {
-    "chapter": "Goods",
-    "title": "Thatch ten homes",
-    "hint": "Water tab: Reed-Cutters' Hut on the shore. It thatches the level-1 homes within 10: +3 happiness, but thatch burns."
-  },
-  "w_ford": {
-    "chapter": "Goods",
-    "title": "Ford the river",
-    "hint": "A Dirt Track over a narrow river is a ford: a third of a bridge's price, but under water in the Thaw's first ten days (a Weir within 6 holds it)."
-  },
-  "n_font": {
-    "chapter": "The dead",
-    "title": "Raise the Font of Quieting",
-    "hint": "Services tab, Free City. Deathcare +50% and the restless lie down easily."
-  },
-  "y_quiet": {
-    "chapter": "The dead",
-    "title": "Keep the Gloam quiet through a Hush",
-    "hint": "Pressure below 45% on every day of a Hush: deathcare and faith coverage."
-  },
-  "k_twinroad": {
-    "chapter": "The Crown",
-    "title": "Open the Twin Road",
-    "hint": "A Trade Depot within 12 tiles of the daughter's stake and another in the mother city: 30 goods a day cross, and the Crown pays a toll."
-  },
-  "k_relics": {
-    "chapter": "The riverbank",
-    "title": "Complete a relic set",
-    "hint": "Every twelfth relic from the Ruin Delve is a piece of a set; an Academy catalogues one a day. Three pieces make a set and a lasting boon."
-  },
-  "k_relicbuild": {
-    "chapter": "The riverbank",
-    "title": "Raise a relic building",
-    "hint": "Each complete relic set unlocks a building in the Marvels tab: a lantern, a hall, a font or a chart-room."
-  },
-  "k_assessor": {
-    "chapter": "The riverbank",
-    "title": "Sell relics to the Crown",
-    "hint": "The depot sells two loose relics a day once the camp holds more than ten; the Crown's assessor pays more in person."
-  },
-  "z_daily": {
-    "chapter": "The Charter",
-    "title": "Daily challenge: the fifth milestone by day 60",
-    "hint": "The same valley for everyone today. Speed matters: zone early, light everything, keep the tithe at 10%. Day 61 is too late; the score is the days to spare and a point a thousand crowns."
-  },
-  "z_onenode": {
-    "chapter": "The Charter",
-    "title": "The one-node valley: reach Burgh",
-    "hint": "One Vein, running deep. Thrum Fonts, a Torrent Mill and the Nexus carry the rest."
-  },
-  "z_island": {
-    "chapter": "The Charter",
-    "title": "The Gloam-locked island: Township and 300 tiles burned back",
-    "hint": "Ward Lanterns outward from the Stake; the Watch for the restless."
-  },
-  "z_atoll": {
-    "chapter": "The Charter",
-    "title": "The Patagoi Atoll: Burgh, with four isles settled",
-    "hint": "Six isles, a ley node on each. The near isles lie over shallow bars: bridge them (Cobble holds in the Hush gales). The far two take barges. An isle is settled when six homes, markets, crafts or arcane houses stand on it."
-  },
-  "z_inherited": {
-    "chapter": "The Charter",
-    "title": "The inherited collapse: ten clean days, then Burgh",
-    "hint": "Bulldoze the ruins, lay the restless down, cut mana consumers, raise the tithe a little."
   },
   "c_thorp": {
     "chapter": "The Crown",
@@ -328,15 +103,5 @@
     "chapter": "The Crown",
     "title": "Become a Beacon of Eda (2200 folk)",
     "hint": "Reach 2200 folk and the happiness gate (the top bar names it), and raise and light the Lantern of Vell."
-  },
-  "c_daughter": {
-    "chapter": "The Crown",
-    "title": "Found a daughter wardlight",
-    "hint": "Click a ley node at least 30 tiles from the Stake: a second stake, a district and a 15,000-crown grant. One treasury, one Charter."
-  },
-  "c_twin": {
-    "chapter": "The Crown",
-    "title": "Twin Beacons: 500 folk at the daughter wardlight",
-    "hint": "Zone, light and water within 30 tiles of the daughter stake."
   }
 }

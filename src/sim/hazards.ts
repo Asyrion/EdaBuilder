@@ -1,8 +1,6 @@
 /** Fire, wild surges, the Gloam, and the restless dead. */
 import { BUILDING_BY_KEY } from './catalog';
-import { THATCH_FIRE, thatched } from './water';
 import { AgentKind, DAYS_PER_SEASON, MAP_H, MAP_W, Zone, idx, inBounds, isWater, type Building, type GameState } from './types';
-import { treeStage, worldTree } from './growth';
 import { commitRng, forEachBuilding, markDirty, pushMessage, removeBuilding, rngOf } from './world';
 import { distanceMap } from './terrain';
 import { spawnRestless, dailyRestless, restlessCount } from './agents';
@@ -10,10 +8,9 @@ import { crewFactor } from './services';
 import { factionOf } from '../data/factions';
 import { manaUseOf } from './networks';
 import { edictOn, modifierSum } from './edicts';
-import { relicDone } from './relics';
 import { seasonOf } from './world';
 
-export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | 'portal' | SoundCue;
+export type EffectKind = 'surge' | 'fire' | 'restless' | 'gloam' | 'ward' | SoundCue;
 /** Sound-only cues the sim raises at a place; the game pans and attenuates them by the camera. */
 export type SoundCue = 'horn' | 'bell' | 'hammer';
 export const SOUND_CUES: SoundCue[] = ['horn', 'bell', 'hammer'];
@@ -94,7 +91,6 @@ export function dailyFire(state: GameState): void {
     let p = 0.00025;
     if (def.zone === Zone.Craft) p *= 2.5;
     if (def.category === 'zone' && b.level === 1) p *= 1.4;
-    if (thatched(state, b)) p *= THATCH_FIRE; // thatch burns (water.ts, iteration 60)
     if (def.key === 'font') p *= 6;
     if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
     p *= 1 - fireCov * 0.5;
@@ -117,16 +113,7 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
   return true;
 }
 
-/** The Lantern of the Cores takes the first CORES_ABSORB of a surge's overdraw, then cracks for CORES_BROKEN_DAYS (iteration 53). */
-export const CORES_ABSORB = 30;
-export const CORES_BROKEN_DAYS = 10;
 export function dailySurge(state: GameState): void {
-  // a cracked Lantern of the Cores heals a day at a time
-  forEachBuilding(state, (b) => {
-    if ((b.broken ?? 0) <= 0) return;
-    b.broken = (b.broken ?? 0) - 1;
-    if (b.broken === 0) { markDirty(state, b.x, b.y); pushMessage(state, `The Lantern of the Cores at (${b.x},${b.y}) is whole again: the three cores light and the housing hums.`, 'good', true, { x: b.x, y: b.y }); }
-  });
   const threshold = 1.25;
   // a Nexus store soaks up the peak: the count runs only once the store is spent
   if (state.manaDemand > state.manaSupply * threshold && state.manaDemand > 20 && state.manaStorage <= 0.5) {
@@ -141,20 +128,6 @@ export function dailySurge(state: GameState): void {
   if (state.overdrawDays >= 5) {
     state.overdrawDays = -4;
     state.stats.brownoutOpen = 0;
-    // a whole Lantern of the Cores takes the first 30 of the overdraw and cracks; a surge no bigger than that burns nothing
-    const cores = state.buildings.find((b) => b && b.kind === 'corelantern' && b.state === 'ok' && (b.broken ?? 0) <= 0) ?? null;
-    if (cores) {
-      const deficit = state.manaDemand - state.manaSupply;
-      cores.broken = CORES_BROKEN_DAYS;
-      markDirty(state, cores.x, cores.y);
-      effects.push({ x: cores.x, y: cores.y, kind: 'surge', tick: state.tick });
-      if (deficit <= CORES_ABSORB) {
-        state.stats.surgesAbsorbed++;
-        pushMessage(state, `The Lantern of the Cores at (${cores.x},${cores.y}) takes the surge: the three cores flare white and crack. Nothing else burns; the Lantern is dark for ${CORES_BROKEN_DAYS} days.`, 'warn', true, { x: cores.x, y: cores.y });
-        return;
-      }
-      pushMessage(state, `The Lantern of the Cores at (${cores.x},${cores.y}) drinks ${CORES_ABSORB} of an overdraw of ${Math.round(deficit)} and cracks; the rest breaks loose.`, 'bad', true, { x: cores.x, y: cores.y });
-    }
     const rng = rngOf(state);
     const lit: Building[] = [];
     forEachBuilding(state, (b) => {
@@ -391,13 +364,8 @@ export function dailyDeath(state: GameState): void {
   let quietCap = 0;
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.kind === 'saltfont' && b.state === 'ok') {
-      // the font takes a loose relic every three days and quiets twice as many while it lasts
-      if ((b.cooldown ?? 0) <= 0 && state.relicStock >= 1) { state.relicStock--; b.cooldown = 3; }
-    }
-    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * (b.kind === 'saltfont' && (b.cooldown ?? 0) > 0 ? 2 : 1) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1) * (relicDone(state, 'saltspoons') ? 1.1 : 1);
+    if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1);
   });
-  if (fontOfQuieting(state)) quietCap *= 1.5;
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);
   pool -= quieted;
@@ -438,13 +406,8 @@ export function dailyDeath(state: GameState): void {
   }
 }
 
-/** A lit Font of Quieting makes the dead half again as easy to lay down (iteration 16; it lived in lore.ts until phase 1b). */
-export function fontOfQuieting(s: GameState): boolean {
-  return s.buildings.some((b) => b && b.kind === 'fontquieting' && b.state === 'ok' && b.lit);
-}
-
 // ---------- Gloam pressure (from the weave, which is parked: scope reset phase 1c) ----------
-/** 0..1: how hard the Gloam presses. Dead, restless and overdraw raise it; faith and the Tree lower it. */
+/** 0..1: how hard the Gloam presses. Dead, restless and overdraw raise it; faith lowers it. */
 export function computeGloamPressure(s: GameState): number {
   let p = 0.3;
   p += Math.min(0.3, s.unquieted / 80);
@@ -458,8 +421,6 @@ export function computeGloamPressure(s: GameState): number {
   let faithful = 0;
   forEachBuilding(s, (b) => { if (BUILDING_BY_KEY[b.kind].category === 'zone' && b.state === 'ok') { zoned++; if (s.coverage.faith[idx(b.x, b.y)] > 60) faithful++; } });
   if (zoned) p -= 0.25 * (faithful / zoned);
-  const tree = worldTree(s);
-  if (tree) p -= 0.04 * treeStage(tree);
   return Math.max(0, Math.min(1, p));
 }
 export function pressureWord(p: number): string {

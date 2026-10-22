@@ -1,16 +1,8 @@
 /** Fixed-tick orchestrator. Deterministic given the same state and commands. */
-import { dailyDrainage } from './marsh';
 import { factionOf } from '../data/factions';
 import { DAYS_PER_SEASON, SEASON_NAMES, SERVICE_TYPES, TICKS_PER_DAY, type GameState } from './types';
 import { seasonOf } from './world';
-import { tickCreatures, updateCreatures } from './creatures';
 import { checkQuests } from './quests';
-import { dailyAirship, dailyBarges } from './vehicles';
-import { dailyWild } from './wild';
-import { dailyWater } from './water';
-import { dailyDaughter } from './charter';
-import { dailyTwinRoad } from './trade';
-import { dailyRelics } from './relics';
 import { dailyConstruction, tickConstruction } from './construction';
 import { setQuarterSnapshot } from './districts';
 import { updateMana, updateWater } from './networks';
@@ -44,10 +36,8 @@ export function tick(state: GameState, hooks?: SimHooks): void {
   state.tick++;
   const t = state.tick;
   tickAgents(state);
-  tickCreatures(state);
   tickConstruction(state);
   if (t % 10 === 0) trySpawnBuildings(state, 3);
-  if (t % 50 === 20) updateCreatures(state);
   if (t % 50 === 30) checkQuests(state);
   const slice = t % 50;
   if (slice === 5) updateMana(state);
@@ -68,22 +58,13 @@ export function tick(state: GameState, hooks?: SimHooks): void {
     dailySurge(state);
     dailyDeath(state);
     dailyGloam(state);
-    dailyBarges(state);
-    dailyAirship(state);
-    dailyTwinRoad(state);
     dailyEconomy(state);
-    dailyWild(state); // the herds, the wolves and the hunt for game (iteration 58)
-    dailyWater(state); // the shoals, the fish, the reeds and the fords (iteration 60)
-    dailyDrainage(state); // the Drainage edict cuts the nearest marsh to meadow (iteration 85)
-    dailyDaughter(state);
     dailyGloamPressure(state);
     dailyConstruction(state);
-    dailyRelics(state);
-    state.cleanDays = state.treasury > 0 && !state.buildings.some((b) => b && b.state === 'ruin') && !state.agents.some((a) => a.kind === 2) ? state.cleanDays + 1 : 0;
     checkMilestones(state);
     state.modifiers = state.modifiers.filter((m) => m.until > state.day);
     if (Object.values(state.districtQuarters).some(Boolean)) state.stats.quarterDays++;
-  if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
+    if (state.day % DAYS_PER_SEASON === 0) seasonMessage(state);
     if (state.day % DAYS_PER_SEASON === 0 && state.day > 0) crownLevy(state); // the season tick: the Crown's Thaw levy (iteration 54)
     dailyChatter(state);
     hooks?.onDay?.(state);

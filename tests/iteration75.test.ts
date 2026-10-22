@@ -1,5 +1,5 @@
 /** Iteration 75 (DESIGN 4.106, markets want a good road; AUDIT B40): the road at a market's door scales its tithe (a dirt track
- *  a tenth less, a fifth in the mud; cobbles in full; a lit Lantern-way or a Glowvine Lane a tenth more); the panel says so; the
+ *  a tenth less, a fifth in the mud; cobbles in full; a lit Lantern-way a tenth more); the panel says so; the
  *  bot paves its market doors from Market Town. */
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
@@ -33,7 +33,7 @@ function street(): { s: GameState; west: Building; east: Building; works: Buildi
 }
 
 describe('The road at the door', () => {
-  it('scales by tier: a track a tenth less and a fifth in the mud, cobbles in full, a lit Lantern-way or a Glowvine Lane a tenth more, no road a fifth less', () => {
+  it('scales by tier: a track a tenth less and a fifth in the mud, cobbles in full, a lit Lantern-way a tenth more, no road a fifth less', () => {
     const { s, west } = street();
     const door = roadTileOf(s, west);
     expect(s.road[door]).toBe(RoadType.Track);
@@ -55,8 +55,6 @@ describe('The road at the door', () => {
     s.lit[door] = 0;
     expect(marketRoadMultAt(s, door)).toBe(1); // unlit: a cobbled road
     s.lit[door] = 1;
-    expect(marketRoadMultAt(s, door)).toBe(1.1);
-    s.road[door] = RoadType.Glowvine;
     expect(marketRoadMultAt(s, door)).toBe(1.1);
     expect(marketRoadMultAt(s, -1)).toBe(0.8);
   });

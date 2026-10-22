@@ -6,13 +6,12 @@ import { recomputeAll } from '../src/sim/sim';
 import { RoadType, idx } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
-import { EDUCATED_FLOOR_CAP, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, dailyBuildings, dailyTrade, grandAcademyBonus, idleScholars, theftAt } from '../src/sim/growth';
+import { HOSPICE_DRAUGHTS, IDLE_SCHOLARS, dailyBuildings, grandAcademyBonus, idleScholars, theftAt } from '../src/sim/growth';
 import { updateCoverage } from '../src/sim/services';
-import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
-  const s = createGame(seed, 'Teeth', 'valley');
+  const s = createGame(seed, 'Teeth');
   const f = s.founding;
   flatten(s, f.x - 20, f.y - 14, f.x + 20, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 18, f.y + 2, f.x + 18, f.y + 2, false));
@@ -78,7 +77,7 @@ describe('Halls with a difference', () => {
     expect(s.coverage.faith[idx(f.x - 10, f.y + 3 + 11)]).toBe(0); // 8 tiles
   });
 
-  it("the Grand Academy's prices rise with schooling; an Academy studies a loose relic every five days for a lasting floor", () => {
+  it("the Grand Academy's prices rise with schooling", () => {
     const s = town();
     const f = s.founding;
     expect(grandAcademyBonus(s)).toBe(1);
@@ -87,30 +86,13 @@ describe('Halls with a difference', () => {
     expect(grandAcademyBonus(s)).toBe(1);
     s.educated = 0.62;
     expect(grandAcademyBonus(s)).toBeCloseTo(1.1, 9);
-    s.relicStock = 3; s.day = 5;
-    dailyBuildings(s);
-    expect(s.relicStock).toBe(2);
-    expect(s.educatedFloor).toBeCloseTo(0.01, 9);
-    expect(ga.progress).toBe(1);
-    s.day = 6; dailyBuildings(s);
-    expect(s.relicStock).toBe(2); // not every day
-    s.educatedFloor = EDUCATED_FLOOR_CAP; s.day = 10; dailyBuildings(s);
-    expect(s.relicStock).toBe(2); // the floor is full
-    const r = deserialize(serialize(s), (seed) => createGame(seed));
-    expect(r.educatedFloor).toBe(EDUCATED_FLOOR_CAP);
   });
 });
 
 describe('The smaller rows', () => {
-  it("the Gloam road sells the lodge's hides; the kin rings", () => {
+  it("the kin rings", () => {
     const s = town();
     const f = s.founding;
-    const lodge = placeBuildingRaw(s, 'hunterslodge', f.x + 6, f.y + 3); ok(lodge); lodge.stock = 5;
-    const depot = placeBuildingRaw(s, 'depot', f.x - 6, f.y - 2); ok(depot);
-    const pelts = lodge.stock;
-    dailyTrade(s);
-    expect(s.trade.exported).toBeCloseTo(Math.min(8, pelts), 5);
-    expect(lodge.stock).toBeCloseTo(pelts - Math.min(8, pelts), 5);
     // the rings a new spire would join: every node and lit relay; a new well: every well
     const sp = placeBuildingRaw(s, 'spire', f.x + 3, f.y - 2); ok(sp);
     recomputeAll(s);

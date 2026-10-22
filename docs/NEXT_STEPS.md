@@ -8,18 +8,17 @@ per phase; what each phase did is in `docs/RESET_LOG.md`, and what was parked, a
 (the peoples down to the Vellish; six seeds bit-identical to main; RESET_LOG) and phase 1b (the creatures, dragons,
 wyrms, beasts, hounds, the Warding Wall and the Great Gate parked; the bot corridor against phase 0 in RESET_LOG) and
 phase 1c-1 (the tales, the weave, the guilds, the walkers, the forecast and the Annals parked; the corridor fell by 41 %,
-because the caravan carried the mid-game economy: RESET_LOG has the trace and the gap for phase 2).
+because the caravan carried the mid-game economy: RESET_LOG has the trace and the gap for phase 2) and phase 1c-2 (the
+wild, the water's extras, the marsh, the Atoll, the vehicles, the scenarios, the daughter, the challenge, terraforming, the
+relics, the marvels and the borderline buildings parked; the Ledger at 21 tasks, 7 edicts, 13 daily systems, a top bar of
+5; the corridor within the noise of 1c-1).
 
-1. **Phase 1c-2: park the world add-ons and cut the content** (the wild, water extras, marsh, Atoll/isles/gales, vehicles
-   with the Sky-Dock, the scenarios, the daughter charter, the daily challenge, terraforming, relics, ruins, portals, the
-   World Tree, marvels, the Torrent Mill and the other borderline buildings; quests to ~20, edicts to 7; at most 15 daily
-   systems and 5 top-bar buttons).
-2. **Phase 1d: clean up** (save version 8 and the demand step on load, tests, assets, docs, `inspirations/` to eda-lore).
-3. **Phase 2: sharpen the core loop.**
-4. **Phase 3: the art foundation and pixel art.**
-5. **Phase 4: shaders and effects.**
-6. **Phase 5: UX and feedback.**
-7. **Phase 6: performance and stability.**
+1. **Phase 1d: clean up** (save version 8 and the demand step on load, tests, assets, docs, `inspirations/` to eda-lore).
+2. **Phase 2: sharpen the core loop.**
+3. **Phase 3: the art foundation and pixel art.**
+4. **Phase 4: shaders and effects.**
+5. **Phase 5: UX and feedback.**
+6. **Phase 6: performance and stability.**
 
 Everything below is the history before the reset. Its open list at the end is **parked**.
 

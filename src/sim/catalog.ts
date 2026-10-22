@@ -6,13 +6,13 @@ import milestonesJson from '../data/content/milestones.json';
 
 /** The names the content files use for the zone and road enums. */
 export const ZONE_OF: Record<string, Zone> = { none: Zone.None, hearth: Zone.Hearth, market: Zone.Market, craft: Zone.Craft, arcane: Zone.Arcane };
-export const ROAD_TYPE_OF: Record<string, RoadType> = { none: RoadType.None, track: RoadType.Track, cobble: RoadType.Cobble, lantern: RoadType.Lantern, glowvine: RoadType.Glowvine };
+export const ROAD_TYPE_OF: Record<string, RoadType> = { none: RoadType.None, track: RoadType.Track, cobble: RoadType.Cobble, lantern: RoadType.Lantern };
 type Named<T, K extends keyof T> = Omit<T, K> & { [P in K]?: string };
 const buildingsData = buildingsJson as unknown as Named<BuildingDef, 'zone'>[];
 const roadsData = roadsJson as unknown as (Omit<RoadDef, 'type'> & { type: string })[];
 const milestonesData = milestonesJson as unknown as Milestone[];
 
-export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'marvel' | 'special';
+export type BuildingCategory = 'zone' | 'ley' | 'water' | 'service' | 'leisure' | 'wonder' | 'special';
 
 export interface ServiceDef {
   type: ServiceType;
@@ -54,7 +54,6 @@ export interface BuildingDef {
   goodsRate?: number; // goods produced per day, carted like a Craft works
   onRuins?: boolean; // footprint must be Ruins tiles
   maxCount?: number; // at most this many in the city
-  relic?: string; // needs this relic set entire (relics.ts)
   faction?: FactionId[]; // a people's own building; absent = every people
   leystone?: number; // leystone mined per day
 }
@@ -106,10 +105,9 @@ export interface Milestone {
 
 export const MILESTONES: Milestone[] = milestonesData;
 
-export function isBuildingUnlocked(milestone: number, key: string, relics?: string[]): boolean {
+export function isBuildingUnlocked(milestone: number, key: string): boolean {
   const def = BUILDING_BY_KEY[key];
   if (!def) return false;
-  if (def.relic && !(relics ?? []).includes(def.relic)) return false;
   return milestone >= def.unlock;
 }
 
@@ -133,6 +131,4 @@ export const START_TREASURY = 15000;
 export const NODE_MANA = 90;
 /** Great halls that relay the ley like a Nexus and light like the Lantern (the other peoples' halls are parked). */
 export const WONDER_HALLS = ['lantern'];
-/** Moorings: the buildings barges sail between (the Veshari's Landing is parked). */
-export const MOORINGS = ['quay'];
 

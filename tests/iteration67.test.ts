@@ -2,7 +2,7 @@
  *  for bit; a missing command found on the first day it shows; every op callable. */
 import { describe, expect, it } from 'vitest';
 import { COMMAND_OPS, CommandRunner, ReplayPlayer, checksum, stateFromHeader, verifyReplay, type ReplayHeader } from '../src/sim/commands';
-import { serialize } from '../src/sim/save';
+import { SaveVersionError, serialize } from '../src/sim/save';
 import { tick } from '../src/sim/sim';
 import { RoadType, TICKS_PER_DAY, Zone, idx, type GameState } from '../src/sim/types';
 import { roadPath } from '../src/sim/actions';
@@ -57,16 +57,13 @@ describe('A replay reproduces its recording', () => {
     expect(v.checksum).toBe(checksum(s));
   }, 120_000);
 
-  it('the daily challenge replays with its own date; a parked people\'s replay is refused', () => {
-    for (const h of [
-      { seed: 0, name: 'Dailywick', scenario: 'daily', faction: 'vellish', challenge: '2026-10-03' },
-    ] as ReplayHeader[]) {
-      const { runner } = play(h, 4);
-      const v = verifyReplay(JSON.parse(JSON.stringify(runner.toFile('test'))));
-      expect(v.matches, h.name).toBe(true);
-    }
+  it('a parked people\'s replay is refused, and so is a daily challenge\'s or another scenario\'s', () => {
     expect(() => stateFromHeader({ seed: 68, name: 'Deepwick', scenario: 'valley', faction: 'grimmen' as never })).toThrow(/parked/);
-  }, 240_000);
+    expect(() => stateFromHeader({ seed: 0, name: 'Dailywick', scenario: 'daily', faction: 'vellish', challenge: '2026-10-03' })).toThrow(SaveVersionError);
+    expect(() => stateFromHeader({ seed: 0, name: 'Dailywick', scenario: 'daily', faction: 'vellish', challenge: '2026-10-03' })).toThrow(/daily challenge/);
+    expect(() => stateFromHeader({ seed: 69, name: 'Reefwick', scenario: 'atoll', faction: 'vellish' })).toThrow(SaveVersionError);
+    expect(() => stateFromHeader({ seed: 69, name: 'Reefwick', scenario: 'atoll', faction: 'vellish' })).toThrow(/parked/);
+  });
 
   it('a missing command is found: the verifier names the first day the recording and the replay part', () => {
     const { runner } = play(vellish, 6);

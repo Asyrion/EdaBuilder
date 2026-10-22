@@ -1,25 +1,20 @@
 /** Headless balance run with the scripted bot. Usage: npx tsx scripts/balance.ts [seed] [days] [treasury] [faction] [roll=N|null]
  *  `roll=N` draws N extra rolls of the main stream on day 10 (`null` is roll=1): the seed's draws, the noise a change must clear
- *  (DESIGN 4.91–4.93). A charter other than the valley: `scenario=atoll` after roll=N (iteration 95; the json line then also names the isles).
+ *  (DESIGN 4.91–4.93). The valley only: the other scenarios are parked (scope reset phase 1c).
  *  The last line, `json: {…}`, is what scripts/table.ts reads. */
 import { createGame } from '../src/sim/world';
 import { ROLL_DAY, extraRolls, rollsOf } from './rolls';
-import { isFordTile, waterCensus } from '../src/sim/water';
 import { run } from '../src/sim/sim';
-import { TICKS_PER_DAY, type Scenario } from '../src/sim/types';
-import { createScenario } from '../src/sim/scenario';
+import { TICKS_PER_DAY } from '../src/sim/types';
 import { computeLedger } from '../src/sim/economy';
 import { Bot } from '../src/sim/bot';
-import { WILD_SPECIES, quarryOf, wildCensus } from '../src/sim/wild';
 import { milestonesOf, type FactionId } from '../src/data/factions';
 
 const seed = Number(process.argv[2] ?? 42);
 const days = Number(process.argv[3] ?? 120);
 const faction = (process.argv[5] ?? 'vellish') as FactionId;
 const rolls = rollsOf(process.argv[6]);
-const scenario = (process.argv.find((a) => a.startsWith('scenario='))?.slice(9) ?? 'valley') as Scenario; // iteration 95: a charter other than the valley, e.g. scenario=atoll (after roll=N)
-if (!['valley', 'onenode', 'island', 'atoll', 'inherited'].includes(scenario)) throw new Error(`unknown scenario "${scenario}"`);
-const state = scenario === 'valley' ? createGame(seed, 'Botwick', 'valley', faction) : createScenario(seed, 'Botwick', scenario, faction);
+const state = createGame(seed, 'Botwick', faction);
 if (process.argv[4] && process.argv[4] !== '-') state.treasury = Number(process.argv[4]);
 const bot = new Bot(state);
 const t0 = Date.now();
@@ -44,14 +39,11 @@ const ms = Date.now() - t0;
 console.log(`\n${days} days simulated in ${ms} ms (${(ms / (days * TICKS_PER_DAY)).toFixed(3)} ms/tick)`);
 console.log('milestones:', milestoneDays.map((d, i) => `${milestonesOf(state)[i].name}@d${d}`).join(', '));
 console.log('gameOver:', state.gameOver, '| fires', state.stats.firesTotal, 'surges', state.stats.surgesTotal, 'restless', state.stats.restlessTotal, 'stolen', Math.round(state.stats.goodsStolen), 'levies', `${state.stats.levies} (${state.stats.levied})`, 'favour', Math.round(state.crownFavour), 'loan', state.loan);
-console.log('bot:', `tax H${state.taxRates.hearth}/M${state.taxRates.market}/C${state.taxRates.craft}/A${state.taxRates.arcane}`, 'edicts', Object.keys(state.edicts).filter((k) => state.edicts[k]).join(',') || 'none', '| loans', bot.loans, 'out', Math.round(state.loan), '| depot', state.buildings.filter((b) => b && b.kind === 'depot').length, `(day ${bot.depotDay})`, 'road crowns', Math.round(roadCrowns), 'exported', state.trade.exported, '| fonts', state.buildings.filter((b) => b && b.kind === 'font').length, 'deep', state.nodes.map((n) => n.depth ?? 0).join(''), '| charter', Object.values(state.districtQuarters).filter(Boolean).length, '| goal', bot.goal ? `${bot.goal.kind}:${bot.goal.key} ${bot.goal.cost}` : 'none', '| halls', ['hallofwicks', 'lantern', 'greatweir', 'underkingseat', 'lanternofwicks'].filter((k) => state.buildings.some((b) => b && b.kind === k)).join(',') || 'none');
-{ const c = wildCensus(state); console.log('wild:', WILD_SPECIES.map((sp) => `${sp} ${c[sp].herds}/${Math.round(c[sp].head)}`).join(' '), '| lost', state.stats.herdsLost, 'hunted out', state.stats.herdsHunted, '| taken hides', state.stats.hides, 'meat', state.stats.meat, 'trophies', state.stats.trophies, '| hunt crowns', state.stats.huntCrowns, '| hens', state.stats.hensTaken, '| lodges', state.buildings.filter((b) => b && b.kind === 'hunterslodge').map((b) => quarryOf(state, b!) ?? '-').join(',') || 'none', 'quarry changes', bot.quarryChanges, '| meat markets', state.wild.meatAt.length / 2); }
-{ const c = waterCensus(state); console.log('water:', `bodies ${c.bodies} (lakes ${c.lakes}) shoals ${Math.round(c.shoal)}/${Math.round(c.cap)} fished out ${c.out}`, '| huts', state.buildings.filter((b) => b && b.kind === 'fishershut').length, 'smokehouses', state.buildings.filter((b) => b && b.kind === 'smokehouse').length, '| caught', state.stats.fishCaught, 'spoiled', state.stats.fishSpoiled, 'smoked', state.stats.fishSmoked, 'fish crowns', state.stats.fishCrowns, '| fish markets', state.water.fishAt.length / 2, '| thatched', state.stats.homesThatched, '| fords', (() => { let n = 0; for (let i = 0; i < state.road.length; i++) if (state.road[i] && isFordTile(state, i)) n++; return n; })(), 'ford days closed', state.stats.fordDaysClosed, '| bot built', bot.fishBuilt, 'cutters', bot.cuttersBuilt, 'weirs', bot.weirsBuilt, 'fords bridged', bot.fordsBridged); }
+console.log('bot:', `tax H${state.taxRates.hearth}/M${state.taxRates.market}/C${state.taxRates.craft}/A${state.taxRates.arcane}`, 'edicts', Object.keys(state.edicts).filter((k) => state.edicts[k]).join(',') || 'none', '| loans', bot.loans, 'out', Math.round(state.loan), '| depot', state.buildings.filter((b) => b && b.kind === 'depot').length, `(day ${bot.depotDay})`, 'road crowns', Math.round(roadCrowns), 'exported', state.trade.exported, '| fonts', state.buildings.filter((b) => b && b.kind === 'font').length, 'deep', state.nodes.map((n) => n.depth ?? 0).join(''), '| charter', Object.values(state.districtQuarters).filter(Boolean).length, '| goal', bot.goal ? `${bot.goal.kind}:${bot.goal.key} ${bot.goal.cost}` : 'none', '| halls', ['lantern'].filter((k) => state.buildings.some((b) => b && b.kind === k)).join(',') || 'none');
 console.log('last messages:\n' + state.messages.slice(-8).map((m) => `  [${m.kind}] ${m.text}`).join('\n'));
 // the machine line: scripts/table.ts reads this and nothing above it
 console.log('json: ' + JSON.stringify({
   seed, people: faction, rolls, days, folk: state.population, milestone: state.milestone,
   gates: milestoneDays.map((d, i) => ({ name: milestonesOf(state)[i].name, day: d })),
-  treasury: Math.round(state.treasury), loan: Math.round(state.loan), depotDay: bot.depotDay, roadCrowns: Math.round(roadCrowns), caravanCrowns: (state.stats as Record<string, number>).caravanCrowns ?? 0, // 0 since the caravan is parked (scope reset 1c); a ref before it still reports its own gameOver: !!state.gameOver,
-  ...(scenario === 'valley' ? {} : { scenario, isles: (await import('../src/sim/isles')).isleBuildings(state), goal: state.questsDone.includes(`z_${scenario}`), galeDays: state.stats.galeDays }),
+  treasury: Math.round(state.treasury), loan: Math.round(state.loan), depotDay: bot.depotDay, roadCrowns: Math.round(roadCrowns), caravanCrowns: (state.stats as Record<string, number>).caravanCrowns ?? 0, gameOver: !!state.gameOver, // caravanCrowns: 0 since the caravan is parked (scope reset 1c); a ref before it still reports its own
 }));

@@ -1,10 +1,10 @@
-// Iteration 46, M14 part 1b: the ground has limits. Wells with capacity, mud, mine seams, Font flares, shared rivers, portal crossings, the Gloam that takes.
+// Iteration 46, M14 part 1b: the ground has limits. Wells with capacity, mud, mine seams, Font flares, the Gloam that takes (the mills and the portals are parked: scope reset phase 1c).
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw, waterRadiusOf } from '../src/sim/world';
 import { recomputeAll } from '../src/sim/sim';
 import { RoadType, Terrain, idx } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
-import { MILL_SHARE, PORTAL_CAP, PORTAL_MANA, updateMana, updateWater, waterCapOf } from '../src/sim/networks';
+import { updateWater, waterCapOf } from '../src/sim/networks';
 import { MUD, roadSpeedAt } from '../src/sim/roads';
 import { ROAD_BY_TYPE } from '../src/sim/catalog';
 import { SEAM, SPENT_RATE, dailyBuildings } from '../src/sim/growth';
@@ -14,7 +14,7 @@ import { serialize, deserialize } from '../src/sim/save';
 import { flatten } from './helpers';
 
 function town(seed = 41) {
-  const s = createGame(seed, 'Ground', 'valley');
+  const s = createGame(seed, 'Ground');
   const f = s.founding;
   flatten(s, f.x - 20, f.y - 14, f.x + 20, f.y + 16);
   buildRoad(s, RoadType.Track, roadPath(f.x - 18, f.y + 2, f.x + 18, f.y + 2, false));
@@ -63,7 +63,7 @@ describe('Wells with capacity', () => {
   });
 });
 
-describe('Mud, seams, rivers, crossings', () => {
+describe('Mud and seams', () => {
   it('a dirt track runs at six tenths in the Thaw and the Hush; cobble does not', () => {
     const s = town();
     const t = idx(s.founding.x, s.founding.y + 2);
@@ -96,36 +96,6 @@ describe('Mud, seams, rivers, crossings', () => {
     expect(r.buildings.find((b) => b && b.id === mine.id)!.seam).toBe(0);
   });
 
-  it('a second mill within 8 of an older one shares the river; portal crossings count, draw mana and jam past 60', () => {
-    const s = town();
-    const f = s.founding;
-    for (let x = f.x - 12; x <= f.x + 12; x++) s.terrain[idx(x, f.y + 6)] = Terrain.Water;
-    const m1 = placeBuildingRaw(s, 'torrentmill', f.x - 4, f.y + 5); ok(m1);
-    updateMana(s);
-    const one = m1.load!;
-    expect(one).toBeGreaterThan(0);
-    const m2 = placeBuildingRaw(s, 'torrentmill', f.x + 2, f.y + 5); ok(m2);
-    updateMana(s);
-    expect(m1.load).toBeCloseTo(one, 6);
-    expect(m2.load).toBeCloseTo(one * MILL_SHARE, 6);
-    const m3 = placeBuildingRaw(s, 'torrentmill', f.x + 12, f.y + 5); ok(m3);
-    updateMana(s);
-    expect(m3.load).toBeCloseTo(one, 6); // ten tiles from the nearest: its own stretch
-    // crossings
-    const sp = placeBuildingRaw(s, 'spire', f.x + 4, f.y - 1); ok(sp); // lit by the founding node; lights 5 tiles
-    const a1 = placeBuildingRaw(s, 'portalarch', f.x + 2, f.y - 4); ok(a1);
-    const a2 = placeBuildingRaw(s, 'portalarch', f.x + 6, f.y + 1); ok(a2);
-    recomputeAll(s);
-    expect(a1.lit && a2.lit).toBe(true);
-    const base = s.manaDemand;
-    a1.load = 30; a2.load = 30;
-    updateMana(s);
-    expect(s.manaDemand).toBeCloseTo(base + 60 * PORTAL_MANA, 6);
-    a1.load = PORTAL_CAP + 1;
-    expect(a1.load > PORTAL_CAP).toBe(true);
-    dailyBuildings(s);
-    expect(a1.load).toBe(0); // a new day
-  });
 });
 
 describe('Fonts and the Gloam', () => {

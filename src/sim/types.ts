@@ -1,6 +1,5 @@
 import type { QuarterId } from './districts';
 import type { FactionId } from '../data/factions';
-import type { RelicState } from './relics';
 /** Plain-data simulation types. Nothing here touches the DOM. */
 
 export const MAP_W = 128;
@@ -22,8 +21,8 @@ export const enum Terrain {
   Forest = 5,
   Hills = 6,
   LeyNode = 7,
-  Ruins = 8, // the Ruins of Lukuku: flagstones and broken columns; only a Ruin Delve may be built here
-  Marsh = 9, // reed beds and standing pools beside slow water: nothing is built on it, a road crosses it as a causeway (iteration 85)
+  Ruins = 8, // the Ruins of Lukuku: flagstones and broken columns; nothing is built here (the Ruin Delve is parked, scope reset phase 1c)
+  Marsh = 9, // the marsh (iteration 85) is parked (scope reset phase 1c): no map has it, and a loaded save's marsh turns to meadow
 }
 
 export const enum Zone {
@@ -39,7 +38,7 @@ export const enum RoadType {
   Track = 1,
   Cobble = 2,
   Lantern = 3,
-  Glowvine = 4,
+  // 4 was the glowvine lane (parked, scope reset phase 1c)
 }
 
 export type ServiceType =
@@ -88,82 +87,27 @@ export interface Building {
   age: number; // days
   unhappyDays: number;
   dryDays: number;
-  cooldown: number; // days until an ability can be used again
   stock: number; // goods held (craft: produced, market: delivered)
   problemDays: number; // consecutive days unlit/dry (drives problem icons)
   relit?: number; // lit by a lamplighter's candle until this day (the Tallowkin, iteration 52)
   work: number; // construction work left in builder-ticks (0 when standing)
   workTotal: number;
   priority?: 0 | 1 | 2; // brownout tier: 0 essential, 1 normal, 2 dim (dark first); unset = by category
-  load?: number; // a member's load: a spire's mana of lit buildings, a well's levels drawn, a mill's output, an arch's crossings today (transient)
+  load?: number; // a member's load: a spire's mana of lit buildings, a well's levels drawn, a producer's output (transient)
   seam?: number; // a Crystal Mine's leystone left in the seam (unset = a full seam)
   flare?: number; // days a Thrum Font's bore flare still smokes
   greyDays?: number; // days the Gloam has stood at the door of this dark, unwarded building
   dryBy?: 'overdrawn'; // why a watered-by-radius building is dry (transient)
-  quarry?: WildSpecies; // a Hunters' Lodge's chosen quarry; unset = the first game in reach (the hounds are parked, scope reset)
-  meat?: number; // a lodge's meat in the salting shed, a market's meat on the shelves (iteration 58)
-  trophies?: number; // a lodge's trophies awaiting the Gloam road
-  took?: number; // a lodge: the day it last brought in game
-  tookSp?: string; // a lodge: what it brought in that day
-  wolfDay?: number; // a hearth: the day the wolves took a hen (−6 happiness for five days)
-  broken?: number; // the Lantern of the Cores: days it stays cracked after absorbing a surge (iteration 53)
-  fish?: number; // a Fishers' Hut: today's catch, fresh; a market: fish on the shelves (iteration 60)
-  fishOld?: number; // a Fishers' Hut: yesterday's catch, which spoils tonight unless a market or a smokehouse takes it
-  caught?: number; // a Fishers' Hut: what it caught today; a Reed-Cutters' hut: bundles cut today
-  spoiled?: number; // a Fishers' Hut: fish that spoiled last night
-  thatchUntil?: number; // a hearth: the day its thatch wears out (a level-1 home thatched by the reed-cutters)
-}
-
-/** The Lantern of the Cores is cracked after taking a surge: no light, no store, no ward until it heals (iteration 53). */
-export function cracked(b: Building): boolean {
-  return b.kind === 'corelantern' && (b.broken ?? 0) > 0;
 }
 
 export const enum AgentKind {
   Citizen = 0,
   Cart = 1,
   Restless = 2,
-  Creature = 3,
+  // 3 was the creature (the wild, the boats and the airship; parked, scope reset phases 1b and 1c)
   Builder = 4,
   // 5 was the walker (parked, scope reset phase 1c)
 }
-
-export type WildSpecies = 'deer' | 'elk' | 'boar' | 'otter' | 'heron' | 'goat' | 'wolf'; // the wild (M16 part 1, iteration 58)
-export type Species = 'airship' | 'boat' | WildSpecies;
-
-/** A herd, sounder, band or pack of the wild: a home tile, a head count (fractional: the young come in by the day) and the cap its land holds (iteration 58). */
-export interface Herd {
-  id: number;
-  sp: WildSpecies;
-  x: number;
-  y: number;
-  head: number;
-  cap: number; // the head its land holds today (habitat within HERD_RANGE)
-  bx: number; // where it beds down at night (deer and elk: the nearest forest), else its home
-  by: number;
-  taken: number; // the last day a lodge took one of it, -1
-  prey: number; // a wolf pack: the hearth it stalks tonight (building id), -1
-}
-
-export interface WildState {
-  herds: Herd[];
-  nextId: number;
-  seeded: boolean;
-  foldsUntil: number; // the wolf winter's lamps on the folds: no hen is taken before this day
-  thriveUntil: number; // the white hart let run: herds breed half again as fast until this day
-  hensDay: number; // the last day wolves took a hen, -99
-  meatAt: number[]; // markets with meat on the shelves today, as x, y pairs (read by the hearths' happiness)
-}
-
-/** The water (M16 part 2, iteration 60): a shoal of fish for each body of water, by the body's index (water.ts). */
-export interface WaterState {
-  fish: number[]; // each body's shoal; the bodies come from the terrain, ordered by their first tile
-  spawnUntil: number; // the spawning run let go: shoals regrow twice as fast until this day
-  fishAt: number[]; // markets with fish on the shelves today, as x, y pairs
-  closed: number[]; // ford tiles closed by high water today
-}
-
-export type Scenario = 'valley' | 'onenode' | 'island' | 'inherited' | 'atoll';
 
 export interface Agent {
   id: number;
@@ -179,13 +123,7 @@ export interface Agent {
   variant: number;
   dir: number; // 0..3 facing for sprites
   load: number; // goods carried (carts)
-  species?: Species; // creatures only
-  alt?: number; // altitude in px for flying agents
   phase?: number; // courier trip phase: 0 idle, 1 to source, 2 to destination
-  anchorId?: number; // building id (or -1) a creature is tied to
-  ax?: number; // anchor tile for free-moving creatures
-  ay?: number;
-  herdId?: number; // a wild animal's herd (iteration 58)
 }
 
 export interface TaxRates {
@@ -234,11 +172,8 @@ export interface DayLedger {
   net: number;
 }
 
-/** The daily challenge's length in days. */
-export const CHALLENGE_DAYS = 60;
-
 export interface Modifier {
-  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights' | 'gale'; // gale: forced from the dev panel (iteration 95)
+  kind: 'happiness' | 'unrest' | 'deaths' | 'health' | 'tithe' | 'craftTax' | 'mana' | 'gloamHold' | 'watch' | 'goods' | 'price' | 'barges' | 'wrights';
   value: number;
   until: number; // day
   label: string;
@@ -293,7 +228,6 @@ export interface GameState {
   happiness: number; // 0..100
   health: number; // 0..1
   unrest: number; // 0..1
-  educatedFloor: number; // the Academy's studied relics: a lasting floor under the educated share
   // mana
   manaSupply: number;
   manaDemand: number;
@@ -322,23 +256,13 @@ export interface GameState {
   districtEdicts: Record<string, boolean>; // key `${district}:${edict}`
   districtNames: Record<number, string>; // player renames
   districtQuarters: Record<number, QuarterId | undefined>; // a district's charter (districts.ts)
-  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number; relicsSold?: number; priceHides?: number; priceMeat?: number; priceTrophy?: number; hidesSold?: number; meatSold?: number; trophiesSold?: number; priceFish?: number; fishSold?: number }; // today; the hunt's prices and sales since iteration 58, smoked fish since 60
-  wild: WildState; // herds, packs and the hunt (wild.ts, iteration 58)
-  water: WaterState; // shoals, the fish shelves and the fords (water.ts, iteration 60)
+  trade: { exported: number; imported: number; importCost: number; priceGoods: number; priceLeystone: number }; // today
   edictSince: Record<string, number>; // the day each edict was turned on (key, or district:key): an edict runs ten days and costs 200 to repeal
   quarterSince: Record<number, number>; // the day each district took its charter: it holds thirty days
   remembranceDead: number; // unquieted dead the Remembrance stirred, drawn down as they rise
-  relics: RelicState; // relic sets from the delve (relics.ts)
-  relicStock: number; // loose relics the delve has brought up and not yet sold
-  scenario: Scenario;
   faction: FactionId; // the people (data/factions.ts)
   gloamPressure: number; // 0..1, recomputed daily (hazards.ts)
   sectors: Uint8Array; // 4x4 map sectors, 1 = within the Charter
-  challenge: string | null; // daily challenge date, e.g. '2026-10-01'
-  challengeDay: number; // day the challenge goal was met, -1
-  daughter: { node: number; x: number; y: number; name: string; day: number; twin: number } | null;
-  cleanDays: number; // inherited-collapse scenario: days in a row clean
-  airship: { status: 'none' | 'docked' | 'away'; goods: number; since: number; voyages: number };
   artifactsSold: number; // crowns from artifacts today
   tradeIncomeToday: number;
   modifiers: Modifier[];
@@ -356,45 +280,19 @@ export interface GameState {
     firesTotal: number;
     surgesTotal: number;
     restlessTotal: number;
-    relics: number;
-    portalTrips: number;
-    bargeTrips: number;
-    airshipVoyages: number;
-    airshipCrowns: number;
     fullDays: number; // days in a row with no market short
     brownoutsSurvived: number;
     brownoutOpen: number; // 1 while an overdraw is running
-    daughters: number;
-    terraformed: number;
-    stoneCut: number; // hills levelled or ground delved, and collapse rubble: what the Grimmen count as stone
     sectorsBought: number;
     quietHush: number;
     hushPressureBreaks: number; // days of the current Hush with pressure >= 0.45
     gloamTiles: number;
     peakPopulation: number;
-    twinGoods: number; // goods carried on the Twin Road
     devUses: number; // dev tools used in this charter (marks the daily result)
-    relicsSold: number; // loose relics sold to the Crown
-    galeDays: number; // days a sea-gale blew (the Atoll, iteration 95)
     quarterDays: number; // days with at least one chartered district
     goodsStolen: number; // goods taken from unwatched shelves
     levies: number; // the Crown's Thaw levies taken
     levied: number; // crowns they took
-    hides: number; // hides the lodges brought in from game (iteration 58)
-    meat: number; // meat the lodges brought in
-    trophies: number; // trophies taken (antlers, tusks, plumes, wolf heads, a white hart)
-    herdsLost: number; // herds the city's spread drove off
-    herdsHunted: number; // herds the hunters took to the last
-    hensTaken: number; // hens the Hush wolves took from the hearths
-    huntCrowns: number; // crowns the Gloam road paid for hides, meat and trophies
-    fishCaught: number; // fish the Fishers' Huts landed (iteration 60)
-    fishSpoiled: number; // fish no market or smokehouse took in two days
-    fishSmoked: number;
-    fishCrowns: number; // crowns the Gloam road paid for smoked fish
-    homesThatched: number; // level-1 homes the reed-cutters thatched
-    fordDaysClosed: number; // days a ford stood closed by high water
-    marshDrained?: number; // marsh tiles the Drainage edict turned to meadow (iteration 85; absent in older saves)
-    surgesAbsorbed: number; // surges the Lantern of the Cores took
   };
   // transient (rebuilt after load)
   dirtyChunks?: Set<number>;

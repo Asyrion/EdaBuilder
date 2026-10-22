@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { recomputeAll, run } from '../src/sim/sim';
-import { RoadType, SAVE_VERSION, TICKS_PER_DAY, idx, type GameState } from '../src/sim/types';
+import { RoadType, SAVE_VERSION, Terrain, TICKS_PER_DAY, idx, type GameState } from '../src/sim/types';
 import { buildRoad, roadPath } from '../src/sim/actions';
 import { Bot } from '../src/sim/bot';
 import { MIGRATIONS, SaveVersionError, deserialize, serialize } from '../src/sim/save';
@@ -15,7 +15,7 @@ import { flatten } from './helpers';
 
 
 function town(seed = 55) {
-  const s = createGame(seed, 'Annalwick', 'valley');
+  const s = createGame(seed, 'Annalwick');
   const f = s.founding;
   flatten(s, f.x - 18, f.y - 14, f.x + 18, f.y + 14);
   buildRoad(s, RoadType.Track, roadPath(f.x - 16, f.y + 2, f.x + 16, f.y + 2, false));
@@ -73,12 +73,13 @@ describe('The bot keeps a purse', () => {
     const s = town(55);
     s.milestone = 6;
     const bot = new Bot(s);
-    (bot as any).goal = { kind: 'hall', key: 'ruindelve', cost: 5400, mana: false };
+    (bot as any).goal = { kind: 'hall', key: 'mine', cost: 5400, mana: false };
     s.treasury = 60000;
-    // no flagstones near the town: the Delve cannot stand (the Great Gate and the Storm-Caller's Peak this test used are parked)
+    // no hills anywhere: the mine cannot stand (the Ruin Delve this test used is parked)
+    for (let i = 0; i < s.terrain.length; i++) if (s.terrain[i] === Terrain.Hills) s.terrain[i] = Terrain.Grass;
     for (let k = 0; k < 5; k++) (bot as any).pursueGoal();
     expect((bot as any).goal).toBeNull();
-    expect((bot as any).goalBlocked.ruindelve).toBe(s.day + 20);
+    expect((bot as any).goalBlocked.mine).toBe(s.day + 20);
   });
 });
 
@@ -141,14 +142,12 @@ describe('Saves branch on their version', () => {
     const o = JSON.parse(serialize(s));
     expect(o.version).toBe(SAVE_VERSION);
     o.version = 6;
-    delete o.crownFavour; delete o.edictSince; delete o.stats.levies; delete o.stats.stoneCut; delete o.sectors;
-    o.stats.terraformed = 7;
+    delete o.crownFavour; delete o.edictSince; delete o.stats.levies; delete o.sectors;
     const r = deserialize(JSON.stringify(o), (seed) => createGame(seed));
     expect(r.version).toBe(SAVE_VERSION);
     expect(r.crownFavour).toBe(50);
     expect(r.edictSince).toEqual({});
     expect(r.stats.levies).toBe(0);
-    expect(r.stats.stoneCut).toBe(7); // stone before iteration 38 was every terraform op
     expect([...r.sectors].every((v) => v === 1)).toBe(true);
     run(r, TICKS_PER_DAY);
     expect(r.day).toBe(s.day + 1);

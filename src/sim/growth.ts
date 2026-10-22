@@ -1,47 +1,23 @@
 /** Zoned building spawning, occupancy, happiness, levelling, abandonment, demand. */
 import { BUILDING_BY_KEY, ZONE_KEY, isDepot, isZoneUnlocked } from './catalog';
 import { edictOn, edictShare, modifierSum, modifierSumAt } from './edicts';
-import { relicDone } from './relics';
 import { bumpRoadVersion, marketStockCap } from './agents';
-import { PORTAL_CAP } from './networks';
 
 /** The Hospice holds this many goods of draughts; without them it heals at six tenths. */
 export const HOSPICE_DRAUGHTS = 10;
-/** The Hospice draws its draughts from markets within this many tiles (a square); a lit Glimhouse lifts the Hush works within GLIMHOUSE_REACH (a square). Named for the reach rings (iteration 56). */
+/** The Hospice draws its draughts from markets within this many tiles (a square). Named for the reach rings (iteration 56). */
 export const HOSPICE_REACH = 16;
-export const GLIMHOUSE_REACH = 8;
-/** The Academy's studied relics raise the educated floor by a hundredth each, up to this. */
-export const EDUCATED_FLOOR_CAP = 0.2;
 /** A Crystal Mine's seam: this much leystone, then dust. */
 export const SEAM = 2400;
 export const SPENT_RATE = 2;
-import { hasMarvel, litWonders, seasonOf } from './world';
+import { litWonders, seasonOf } from './world';
 import { quarterAt, quarterOf } from './districts';
 import { factionOf } from '../data/factions';
-import { HEN_DAYS, HEN_HAPPY, LODGE_MEAT_KEEP, MEAT_HAPPY, TROPHIES_PER_DAY, meatNear } from './wild';
-import { FISH_HAPPY, FISH_PRICE, SMOKE_KEEP, THATCH_HAPPY, fishNear, thatched } from './water';
 
-/** The World Tree grows a stage each season: 0 sapling .. 3 full-grown. */
-export const TREE_LEISURE_RADIUS = [6, 12, 18, 24];
-export const TREE_WARD_RADIUS = [4, 8, 14, 20];
-export function treeStage(b: Building): 0 | 1 | 2 | 3 {
-  return Math.min(3, Math.floor(b.age / 30)) as 0 | 1 | 2 | 3;
-}
-export function worldTree(state: GameState): Building | null {
-  return (state.buildings.find((b) => b && b.kind === 'worldtree' && b.state === 'ok') as Building | undefined) ?? null;
-}
-export function delveActive(state: GameState): boolean {
-  return state.buildings.some((b) => b && b.kind === 'ruindelve' && b.state === 'ok');
-}
-
-/** Craft output multiplier in the Hush (a lit Glimhouse within 8 lifts it). */
+/** Craft output multiplier in the Hush (the Glimhouse that lifted it is parked, scope reset phase 1c). */
 export const HUSH_CRAFT = 0.8;
 
-export function glimhouseNear(state: GameState, b: Building): boolean {
-  return state.buildings.some((g) => g && g.kind === 'glimhouse' && g.state === 'ok' && g.lit && Math.abs(g.x - b.x) <= GLIMHOUSE_REACH && Math.abs(g.y - b.y) <= GLIMHOUSE_REACH);
-}
-
-/** Buildings whose goods carts collect: Craft works and any producer with a goodsRate (Hanging Gardens). */
+/** Buildings whose goods carts collect: Craft works and any producer with a goodsRate (none since the Hanging Gardens were parked). */
 export function isGoodsSource(b: Building): boolean {
   const def = BUILDING_BY_KEY[b.kind];
   return def.zone === Zone.Craft || !!def.goodsRate;
@@ -114,16 +90,10 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   if (gd < 7) add('the Gloam near', -(7 - gd) * 3 * (1 - cov.ward[i] / 255));
   add('traffic', -(state.trafficSmooth[i] / 255) * 10);
   add('unrest', -state.unrest * 15);
-  // the restless and the wolves nearby frighten everyone
+  // the restless nearby frighten everyone
   let fear = 0;
-  for (const a of state.agents) {
-    if (a.kind === 2) {
-      if (Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 8;
-    } else if (a.kind === 3 && a.species === 'wolf') {
-      if (Math.abs(a.x - b.x) < 3 && Math.abs(a.y - b.y) < 3) fear -= 5;
-    }
-  }
-  add('the restless and beasts near', fear);
+  for (const a of state.agents) if (a.kind === 2 && Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 8;
+  add('the restless near', fear);
   let tax = 10;
   switch (def.zone) {
     case Zone.Hearth: tax = state.taxRates.hearth; break;
@@ -133,18 +103,10 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
   }
   add('the tithe', -(tax - 10) * 1.6);
   add('effects', modifierSumAt(state, 'happiness', state.district[i]));
-  const tree = worldTree(state);
-  if (tree) add('the World Tree', treeStage(tree));
   for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
-  if (relicDone(state, 'ninehouses')) add('the Nine Houses', 3);
-  if (hasMarvel(state, 'househall')) add('the House-Hall', 2);
   if (edictOn(state, 'curfew', b)) add('the curfew', -4);
   if (seasonOf(state) === 1) add('Bloom', 2);
   if (def.zone === Zone.Hearth) {
-    if (meatNear(state, b.x, b.y)) add('meat on the shelves', MEAT_HAPPY); // a market within 10 with game from a lodge (iteration 58)
-    if (b.wolfDay !== undefined && state.day - b.wolfDay < HEN_DAYS) add('the wolves took a hen', HEN_HAPPY);
-    if (fishNear(state, b.x, b.y)) add('fish on the shelves', FISH_HAPPY); // a market within 10 with the huts' catch (iteration 60)
-    if (thatched(state, b)) add('a new thatch', THATCH_HAPPY);
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
     add('no work', -unemployment * 20);
     add('health of the city', (state.health - 0.5) * 15);
@@ -217,7 +179,6 @@ export function dailyBuildings(state: GameState): void {
   const extraJobs: Building[] = []; // non-zone buildings with a capacity (the Quarry): jobs, not part of the happiness average
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.cooldown > 0) b.cooldown--;
     if (def.category !== 'zone') {
       b.age++;
       // the Hospice draws two goods of draughts a day from the fullest market within 16 (it holds ten)
@@ -227,12 +188,6 @@ export function dailyBuildings(state: GameState): void {
         if (best) { const m = best as Building; const take = Math.min(2, m.stock, HOSPICE_DRAUGHTS - b.stock); m.stock -= take; b.stock += take; }
       }
       if (b.kind === 'hospice' && b.state === 'ok') b.stock = Math.max(0, b.stock - 1); // a day's draughts used
-      // the Academy studies a loose relic every five days: a lasting floor under the educated share
-      if ((b.kind === 'academy' || b.kind === 'grandacademy') && b.state === 'ok' && b.lit && state.day > 0 && state.day % 5 === 0 && state.relicStock >= 1 && state.educatedFloor < EDUCATED_FLOOR_CAP) {
-        state.relicStock--;
-        state.educatedFloor = Math.min(EDUCATED_FLOOR_CAP, state.educatedFloor + 0.01);
-        b.progress++; // relics studied here
-      }
       if (def.goodsRate && b.state === 'ok') {
         const made = Math.min(craftStockCap(b) - b.stock, def.goodsRate * (b.lit ? 1 : 0.5) * (def.capacity ? Math.max(0.25, Math.min(1, b.workers / Math.max(1, capacityOf(b, state)))) : 1)); // a works makes by its hands; unwatered gardens wilt in a drought
         b.stock += Math.max(0, made);
@@ -241,16 +196,6 @@ export function dailyBuildings(state: GameState): void {
       if (def.capacity && b.state === 'ok') {
         extraJobs.push(b);
         jobs += capacityOf(b, state);
-      }
-      if (b.kind === 'worldtree' && b.age % 30 === 0 && b.age <= 90) {
-        markDirty(state, b.x, b.y);
-        const st = treeStage(b);
-        if (st > 0) pushMessage(state, st === 3 ? `The World Tree at (${b.x},${b.y}) is full-grown: its crown stands above the Lantern of Vell, and the Gloam will not cross its shade.` : `The World Tree at (${b.x},${b.y}) has grown another season; its shade now reaches ${TREE_LEISURE_RADIUS[st]} tiles.`, 'milestone', true, { x: b.x, y: b.y });
-      }
-      if (b.kind === 'ruindelve' && b.state === 'ok') {
-        state.stats.relics++;
-        state.relicStock++;
-        state.unquieted += 0.5;
       }
       return;
     }
@@ -313,8 +258,7 @@ export function dailyBuildings(state: GameState): void {
     }
     // goods: craft produces, markets sell
     if (def.zone === Zone.Craft) {
-      const glim = glimhouseNear(state, b);
-      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 && !glim ? HUSH_CRAFT : 1) * (1 + modifierSum(state, 'goods') + (glim ? 0.1 : 0));
+      let rate = 0.7 * (edictOn(state, 'herbgardens', b) ? 1.25 : 1) * (seasonOf(state) === 1 ? 1.15 : seasonOf(state) === 3 ? HUSH_CRAFT : 1) * (1 + modifierSum(state, 'goods'));
       if (!b.lit) rate *= 0.5;
       { const q = quarterOf(state, b); if (q === 'craft') rate *= 1.2; else if (q === 'hearth') rate *= 0.8; }
       const hands = b.workers;
@@ -330,7 +274,7 @@ export function dailyBuildings(state: GameState): void {
       // enchanters turn leystone into artifacts sold for crowns
       const use = Math.min(b.stock, b.workers * 0.25 * (b.lit ? 1 : 0.3) * (quarterOf(state, b) === 'scholars' ? 1.2 : 1));
       b.stock -= use;
-      state.artifactsSold += use * 5 * (delveActive(state) ? 1.15 : 1) * grandAcademyBonus(state);
+      state.artifactsSold += use * 5 * grandAcademyBonus(state);
     }
     // levelling
     const i = idx(b.x, b.y);
@@ -378,7 +322,6 @@ export function dailyBuildings(state: GameState): void {
       }
       b.stock = Math.min(60, b.stock + cut);
     }
-    if (b.kind === 'portalarch') { if ((b.load ?? 0) > PORTAL_CAP) bumpRoadVersion(); b.load = 0; } // a new day's crossings
     if (b.flare && b.flare > 0) b.flare--;
   });
   state.population = pop;
@@ -540,7 +483,7 @@ export function updateSocial(state: GameState): void {
   const watchCov = watch / res;
   const miasmaAvg = miasma / res;
   const waterCov = water / res;
-  state.educated += (Math.min(0.95, 0.05 + state.educatedFloor + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
+  state.educated += (Math.min(0.95, 0.05 + schoolCov * 0.85) - state.educated) * (0.08 + 0.04 * edictShare(state, 'scholars'));
   const targetHealth = Math.max(0, Math.min(1, 0.35 + healthCov * 0.45 + waterCov * 0.25 - miasmaAvg * 0.5 + 0.12 * edictShare(state, 'draughts') + modifierSum(state, 'health')));
   state.health += (targetHealth - state.health) * 0.15;
   const workforce = workforceOf(state);
@@ -583,30 +526,14 @@ export function tileHasLitNeighbor(state: GameState, x: number, y: number, r: nu
   return false;
 }
 
-/** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. */
-export const RELIC_PRICE = 60;
-/** The hunt's prices on the Gloam road by season (Thaw, Bloom, Ember, Hush; iteration 58). */
-export const HIDE_PRICE = [3, 2.5, 3, 4];
-export const MEAT_PRICE = [1.5, 1.5, 2, 2.5];
-export const TROPHY_PRICE = [30, 30, 40, 30];
-export const RELIC_KEEP = 10;
-export const RELICS_PER_DAY = 2;
-
+/** Trade Depot: sells surplus from full works and buyerless mines; imports for dry markets under the edict. The hunt's,
+ *  the fishers' and the relics' goods are parked (scope reset phase 1c). */
 export function dailyTrade(state: GameState): void {
   const t = state.trade;
   const season = seasonOf(state);
   // seasonal prices: potions dear in the Hush, leystone dear in Bloom (spire-wright season)
   t.priceGoods = [2, 2, 2.5, 3][season] * (1 + modifierSum(state, 'price'));
   t.priceLeystone = [3, 4, 3, 2.5][season];
-  // the hunt's goods (iteration 58): hides dear in the Hush, salted meat cheap, trophies dear in the Ember (the lords' hunting season)
-  t.priceHides = HIDE_PRICE[season];
-  t.priceMeat = MEAT_PRICE[season];
-  t.priceTrophy = TROPHY_PRICE[season];
-  t.hidesSold = 0;
-  t.meatSold = 0;
-  t.trophiesSold = 0;
-  t.priceFish = FISH_PRICE[season]; // smoked fish (iteration 60)
-  t.fishSold = 0;
   t.exported = 0;
   t.imported = 0;
   t.importCost = 0;
@@ -620,37 +547,11 @@ export function dailyTrade(state: GameState): void {
   const full: Building[] = [];
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
-    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8 || (b.kind === 'hunterslodge' && (b.stock >= 1 || (b.meat ?? 0) >= LODGE_MEAT_KEEP + 1)) || (b.kind === 'smokehouse' && b.stock >= SMOKE_KEEP + 1))) full.push(b); // hides and salted meat go too (iteration 58), smoked fish (60)
+    if (b.state === 'ok' && ((def.zone === Zone.Craft || def.goodsRate) && b.stock >= craftStockCap(b) * 0.8)) full.push(b);
   });
   full.sort((a, b) => b.stock / craftStockCap(b) - a.stock / craftStockCap(a));
-  let hunt = 0;
-  let fish = 0;
   for (const b of full) {
     if (budget <= 0) break;
-    if (b.kind === 'hunterslodge') {
-      // hides at their own price, then the salted meat over what the shelves want
-      const hides = Math.min(b.stock, budget);
-      b.stock -= hides;
-      budget -= hides;
-      const meat = Math.min(Math.max(0, Math.floor((b.meat ?? 0) - LODGE_MEAT_KEEP)), budget);
-      b.meat = (b.meat ?? 0) - meat;
-      budget -= meat;
-      t.exported += hides + meat;
-      t.hidesSold! += hides;
-      t.meatSold! += meat;
-      hunt += hides * t.priceHides + meat * t.priceMeat;
-      continue;
-    }
-    if (b.kind === 'smokehouse') {
-      const n = Math.min(Math.floor(b.stock - SMOKE_KEEP), budget);
-      if (n <= 0) continue;
-      b.stock -= n;
-      budget -= n;
-      t.exported += n;
-      t.fishSold! += n;
-      fish += n * t.priceFish;
-      continue;
-    }
     const sell = Math.min(b.stock - craftStockCap(b) * 0.5, budget);
     if (sell > 0) {
       b.stock -= sell;
@@ -659,18 +560,6 @@ export function dailyTrade(state: GameState): void {
       crowns += sell * t.priceGoods;
     }
   }
-  // trophies: the Crown's buyers take two a day, outside the carts' budget (like the relics)
-  forEachBuilding(state, (b) => {
-    if (b.kind !== 'hunterslodge' || b.state !== 'ok' || (b.trophies ?? 0) < 1) return;
-    const n = Math.min(b.trophies ?? 0, TROPHIES_PER_DAY - t.trophiesSold!);
-    if (n <= 0) return;
-    b.trophies = (b.trophies ?? 0) - n;
-    t.trophiesSold! += n;
-    hunt += n * t.priceTrophy!;
-  });
-  crowns += hunt + fish;
-  state.stats.huntCrowns += Math.round(hunt * (hasMarvel(state, 'chartroom') ? 1.15 : 1));
-  state.stats.fishCrowns += Math.round(fish * (hasMarvel(state, 'chartroom') ? 1.15 : 1));
   forEachBuilding(state, (b) => {
     const def = BUILDING_BY_KEY[b.kind];
     if (b.state !== 'ok') return;
@@ -681,15 +570,6 @@ export function dailyTrade(state: GameState): void {
       crowns += sell * t.priceLeystone;
     }
   });
-  // loose relics: the Crown buys up to two a day at the depot, leaving ten for the Academy
-  t.relicsSold = 0;
-  if (state.relicStock > RELIC_KEEP) {
-    const n = Math.min(RELICS_PER_DAY, state.relicStock - RELIC_KEEP);
-    state.relicStock -= n;
-    t.relicsSold = n;
-    state.stats.relicsSold += n;
-    crowns += n * RELIC_PRICE;
-  }
   if (edictOn(state, 'imports')) {
     forEachBuilding(state, (b) => {
       if (BUILDING_BY_KEY[b.kind].zone !== Zone.Market || b.state !== 'ok') return;
@@ -700,7 +580,6 @@ export function dailyTrade(state: GameState): void {
       t.importCost += buy * t.priceGoods * 2;
     });
   }
-  if (hasMarvel(state, 'chartroom')) crowns *= 1.15;
   state.treasury += crowns; // exports are cash on the day
   t.exported = Math.round(t.exported);
   state.tradeIncomeToday = Math.round(crowns);

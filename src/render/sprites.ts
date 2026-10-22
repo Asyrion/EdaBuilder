@@ -7,7 +7,7 @@ import { Painter, h2 } from './painter';
 import { drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3, drawDepot, drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3 } from './painted';
 /** The zone houses drawn by hand after their paintings (iteration 81), by `${zone}_l${level}` then variant. */
 const PAINTED: Record<string, (() => { p: Painter; glow: Painter; ax: number; ay: number })[]> = { hearth_l2: [drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3], craft_l1: [drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3] };
-import { drawBrickworks, drawLanternOfVell, drawTemple } from './drawn';
+import { drawLanternOfVell, drawTemple } from './drawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {
@@ -55,37 +55,6 @@ function groundVariants(name: string, base: Col[], speck: Col[], density: number
   return out;
 }
 
-/** Marsh ground (iteration 85): moss and mud with dark standing pools, a glint on each, and reed stubble. */
-function marshGround(n: number): SpriteDef[] {
-  const out: SpriteDef[] = [];
-  for (let k = 0; k < n; k++) {
-    const p = diamond((u, v, px, py) => {
-      const pool = h2(px >> 2, py >> 1, 40 + k * 7) < 0.45 || h2((px + 2) >> 2, (py + 1) >> 1, 41 + k * 7) < 0.25;
-      if (pool) return h2(px, py, 44 + k) < 0.07 ? 'waterHi' : h2(px >> 1, py, 45 + k) < 0.6 ? 'water1' : 'water2';
-      const r = h2(px, py, 46 + k * 3);
-      if (r < 0.14) return r < 0.06 ? 'leaf2' : 'grass3';
-      return (['moss', 'forestFloor', 'leaf1', 'moss'] as Col[])[Math.floor(h2(px >> 1, py >> 1, 47 + k) * 4)];
-    });
-    out.push({ name: `marsh_${k}`, p, ax: 16, ay: 0 });
-  }
-  return out;
-}
-
-/** A reed clump (iteration 85): stems in two greens, bowed, with cattail heads; about a citizen tall. */
-function reeds(k: number): Painter {
-  const p = new Painter(11, 13);
-  const stems = 5 + k;
-  for (let j = 0; j < stems; j++) {
-    const x = 1 + Math.floor(h2(j, k, 61) * 9);
-    const top = 1 + Math.floor(h2(k, j, 62) * 5);
-    const lean = h2(j, j + k, 63) < 0.5 ? -1 : 1;
-    for (let y = 12; y >= top; y--) p.px(Math.max(0, Math.min(10, x + (y < top + 3 ? lean : 0))), y, j % 2 ? 'leaf2' : 'grass3');
-    if (h2(j, k, 64) < 0.5) { p.px(x, top, 'trunk'); p.px(x, top + 1, 'trunk'); }
-  }
-  p.outline('outline');
-  return p;
-}
-
 function waterFrames(name: string, base: Col, mid: Col, hi: Col, frames: number, seed: number): SpriteDef[] {
   const out: SpriteDef[] = [];
   for (let f = 0; f < frames; f++) {
@@ -101,12 +70,11 @@ function waterFrames(name: string, base: Col, mid: Col, hi: Col, frames: number,
   return out;
 }
 
-function roadTile(type: 'track' | 'cobble' | 'lantern' | 'glowvine', mask: number): Painter {
+function roadTile(type: 'track' | 'cobble' | 'lantern', mask: number): Painter {
   const cols: Record<string, [Col, Col, Col]> = {
     track: ['dirt1', 'dirt2', 'dirt3'],
     cobble: ['cobble1', 'cobble2', 'cobble3'],
     lantern: ['lantern1', 'lantern2', 'cobble3'],
-    glowvine: ['cobble1', 'cobble2', 'glimleaf'],
   };
   const [c1, c2, c3] = cols[type];
   const half = type === 'track' ? 0.26 : 0.3;
@@ -130,20 +98,6 @@ function roadTile(type: 'track' | 'cobble' | 'lantern' | 'glowvine', mask: numbe
     if (type === 'track') {
       if (r < 0.12) return c3;
       if (r < 0.25 || edge) return c2;
-      return c1;
-    }
-    if (type === 'glowvine') {
-      // cobbles with a vine running down each side and glowing berries
-      const cx = (px + (py & 2 ? 2 : 0)) % 4;
-      const cy = py % 2;
-      const edgeBand = (e || w) && Math.abs(v - 0.5) > half - 0.09 || (n || s) && Math.abs(u - 0.5) > half - 0.09 || mask === 0;
-      if (edgeBand) {
-        if (r < 0.2) return 'leyGlow';
-        if (r < 0.7) return 'glimleaf';
-        return 'leaf2';
-      }
-      if (cx === 0 || cy === 0) return c2;
-      if (r < 0.08) return c3;
       return c1;
     }
     if (type === 'cobble') {
@@ -890,46 +844,6 @@ function mushrooms(variant: number): { p: Painter; glow: Painter } {
 }
 
 
-/** The World Tree over four growth stages, on a 3x3 footprint. */
-function drawWorldTree(stage: number): { p: Painter; glow: Painter; ax: number; ay: number } {
-  const W = 98;
-  const canopyH = [14, 30, 52, 78][stage];
-  const H = 56 + canopyH;
-  const p = new Painter(W, H);
-  const glow = new Painter(W, H);
-  const cx = 49;
-  const groundY = H - 24; // footprint diamond centre
-  // footprint: roots and moss
-  p.poly([[cx, groundY - 24], [97, groundY], [cx, groundY + 24], [1, groundY]], 'shadow', 90);
-  p.poly([[cx, groundY - 22], [95, groundY], [cx, groundY + 22], [3, groundY]], 'forestFloor');
-  for (let k = 0; k < 40; k++) { const a = (k / 40) * Math.PI * 2; const r = 8 + h2(k, stage, 1) * 12; p.px(Math.round(cx + Math.cos(a) * r * 2), Math.round(groundY + Math.sin(a) * r), k % 3 ? 'meadow2' : 'glimleaf'); }
-  // trunk
-  const trunkW = [3, 5, 8, 12][stage];
-  const trunkH = [10, 20, 34, 50][stage];
-  p.rect(cx - (trunkW >> 1), groundY - trunkH, trunkW, trunkH, 'trunk');
-  p.rect(cx - (trunkW >> 1), groundY - trunkH, Math.max(1, trunkW >> 2), trunkH, 'wood3');
-  // roots
-  for (let k = 0; k < 2 + stage * 2; k++) { const dir = k % 2 ? 1 : -1; const len = 4 + stage * 4; p.line(cx, groundY - 2, cx + dir * (len * 2), groundY + (k % 3) * 3, 'trunk'); }
-  // canopy: layered blobs, glim leaves; glow points
-  const top = groundY - trunkH;
-  const layers = 1 + stage;
-  for (let l = 0; l < layers; l++) {
-    const ry = Math.round(canopyH / (layers + 1)) + 4;
-    const rx = [10, 18, 28, 40][stage] - l * 4;
-    const cy = top - l * ry * 0.9 + 2;
-    for (let y = -ry; y <= ry; y++)
-      for (let x = -rx; x <= rx; x++) {
-        if ((x * x) / (rx * rx) + (y * y) / (ry * ry) > 1) continue;
-        const r = h2(x + 100, y + 100 + l * 7, stage + 11);
-        const c: Col = y < -ry * 0.3 ? (r < 0.2 ? 'glimleaf' : 'leaf1') : y > ry * 0.4 ? 'leaf3' : r < 0.12 ? 'glimleaf' : 'leaf2';
-        p.px(cx + x, Math.round(cy + y), c);
-        if (r < 0.03 + stage * 0.01) { p.px(cx + x, Math.round(cy + y), 'leyGlow'); glow.px(cx + x, Math.round(cy + y), 'leyGlow', 200); }
-      }
-  }
-  p.outline('outline');
-  return { p, glow, ax: cx, ay: groundY - 24 };
-}
-
 function rock(variant: number): Painter {
   const p = new Painter(14, 10);
   const pts: [number, number][] = variant === 0 ? [[2, 8], [1, 4], [5, 1], [10, 2], [13, 6], [11, 9]] : variant === 1 ? [[1, 7], [3, 2], [8, 1], [12, 4], [10, 9], [4, 9]] : [[3, 9], [2, 5], [6, 3], [9, 4], [11, 8]];
@@ -1179,15 +1093,6 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   nexus: { w: 2, h: 2, height: 6, roofH: 4, wall: 'stone', roof: 'flat', crystal: true, leyLamps: true, seed: 3, orbit: true, runeBand: true },
   font: { w: 2, h: 2, height: 10, roofH: 6, wall: 'darkstone', roof: 'flat', crystal: true, seed: 4, runeBand: true, orbit: true },
   mine: { w: 2, h: 2, height: 8, roofH: 6, wall: 'darkstone', roof: 'shingle', windows: 0, door: true, seed: 23, crystal: true, lanternPost: true },
-  hunterslodge: { w: 2, h: 2, height: 11, roofH: 8, wall: 'timber', roof: 'moss', windows: 2, windowRows: 1, door: true, chimney: true, banner: true, glowWindows: true, seed: 26, ridgeOrnament: true, lanternPost: true },
-  torrentmill: { w: 1, h: 1, height: 9, roofH: 5, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 1, door: true, seed: 34, waterWheel: true, glowWindows: true },
-  glimhouse: { w: 2, h: 2, height: 8, roofH: 6, wall: 'plaster', roof: 'green', windows: 3, windowRows: 1, glowWindows: true, seed: 31, glassDome: true, runeBand: true },
-  hanginggardens: { w: 2, h: 2, height: 10, roofH: 4, wall: 'stone', roof: 'moss', windows: 0, seed: 33, vines: true, wisps: true },
-  fontquieting: { w: 2, h: 2, height: 10, roofH: 6, wall: 'whitewash', roof: 'dome', windows: 2, windowRows: 1, seed: 42, runeBand: true, wisps: true, leyLamps: true },
-  quay: { w: 1, h: 1, height: 4, roofH: 3, wall: 'stone', roof: 'none', windows: 0, seed: 40, lanternPost: true },
-  skydock: { w: 2, h: 2, height: 30, roofH: 4, wall: 'stone', roof: 'flat', windows: 2, windowRows: 4, door: true, glowWindows: true, seed: 41, runeBand: true, leyLamps: true, spire: true, banner: true },
-  portalarch: { w: 1, h: 1, height: 16, roofH: 2, wall: 'arcane', roof: 'flat', windows: 0, seed: 35, runeBand: true, orbit: true, leyLamps: true },
-  ruindelve: { w: 2, h: 2, height: 6, roofH: 5, wall: 'timber', roof: 'awning', windows: 1, windowRows: 1, door: true, seed: 36, lanternPost: true, standingStones: true },
   well: { w: 1, h: 1, height: 4, roofH: 5, wall: 'stone', roof: 'shingle', seed: 5 },
   cistern: { w: 2, h: 2, height: 12, roofH: 8, wall: 'stone', roof: 'dome', windows: 1, seed: 6, runeBand: true },
   watchpost: { w: 1, h: 1, height: 18, roofH: 6, wall: 'timber', roof: 'shingle', windows: 1, windowRows: 3, door: true, banner: true, glowWindows: true, seed: 7, hip: true, lanternPost: true },
@@ -1205,19 +1110,7 @@ const SERVICE_SPECS: Record<string, BuildingSpec> = {
   garden: { w: 1, h: 1, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 19 },
   square: { w: 2, h: 2, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 20 },
   depot: { w: 2, h: 2, height: 16, roofH: 8, wall: 'plaster', roof: 'slate', windows: 3, windowRows: 2, door: true, chimney: true, brickChimney: true, sign: true, banner: true, stalls: true, lanternPost: true, flowerBox: true, overhang: true, dormer: true, glowWindows: true, seed: 24 }, // the trade_houses painting redrawn (iteration 79): a half-timbered hall over a slate roof, awnings and a stall along its front
-  ring: { w: 3, h: 3, height: 1, roofH: 1, wall: 'stone', roof: 'none', seed: 30 },
   lantern: { w: 3, h: 3, height: 40, roofH: 10, wall: 'stone', roof: 'cone', windows: 2, windowRows: 5, door: true, glowWindows: true, seed: 22, crystal: true, orbit: true, runeBand: true },
-  // the water (iteration 60)
-  fishershut: { w: 1, h: 1, height: 7, roofH: 6, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 71, fishRack: true, lanternPost: true, glowWindows: true },
-  smokehouse: { w: 1, h: 1, height: 8, roofH: 5, wall: 'stone', roof: 'shingle', windows: 0, door: true, chimney: true, seed: 72, smokeRack: true },
-  reedcutters: { w: 1, h: 1, height: 6, roofH: 7, wall: 'timber', roof: 'thatch', windows: 1, door: true, seed: 73, reedBundles: true },
-  weir: { w: 1, h: 1, height: 4, roofH: 2, wall: 'stone', roof: 'flat', windows: 0, seed: 74, weirStones: true, lanternPost: true },
-  watergarden: { w: 2, h: 2, height: 7, roofH: 6, wall: 'plaster', roof: 'copper', windows: 0, seed: 75, lilyPond: true, ridgeOrnament: true, lanternPost: true },
-  // the nine that drew nothing until iteration 50 (the Carters' Yard, the Lyceum and the Sextons' Chapel also have paintings)
-  chartroom: { w: 2, h: 2, height: 14, roofH: 7, wall: 'stone', roof: 'copper', windows: 2, windowRows: 2, door: true, glassDome: true, banner: true, glowWindows: true, seed: 65 },
-  corelantern: { w: 2, h: 2, height: 12, roofH: 4, wall: 'stone', roof: 'flat', windows: 2, windowRows: 2, leyLamps: true, glowWindows: true, crystal: true, orbit: true, seed: 63 },
-  househall: { w: 2, h: 2, height: 16, roofH: 8, wall: 'timber', roof: 'shingle', windows: 3, windowRows: 2, door: true, banner: true, ridgeOrnament: true, lanternPost: true, glowWindows: true, seed: 64 },
-  saltfont: { w: 2, h: 2, height: 4, roofH: 2, wall: 'stone', roof: 'flat', crystal: true, runeBand: true, wisps: true, seed: 62 },
   // halls that grow with the city (iteration 51): stage 1 from the Village, stage 2 from the Burgh
   temple_s1: { w: 3, h: 3, height: 26, roofH: 13, wall: 'whitewash', roof: 'dome', windows: 3, windowRows: 4, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true, banner: true, bellTower: true },
   temple_s2: { w: 3, h: 3, height: 32, roofH: 14, wall: 'whitewash', roof: 'dome', windows: 4, windowRows: 5, door: true, glowWindows: true, leyLamps: true, seed: 13, runeBand: true, orbit: true, banner: true, bellTower: true, crystal: true, glassDome: true },
@@ -1425,7 +1318,6 @@ export function generateSprites(): SpriteDef[] {
   out.push(...groundVariants('hills', ['rock1', 'rock2', 'hillGrass'], ['rock3', 'rock2'], 0.18, 4, 3));
   out.push(...groundVariants('shore', ['sand', 'sand2', 'sand'], ['sand2', 'grass3'], 0.1, 5, 2));
   out.push(...groundVariants('ruins', ['stone2', 'stone1', 'grass3', 'stone2'], ['stone3', 'outline', 'moss', 'grass2'], 0.16, 9, 3));
-  out.push(...marshGround(3)); // reed beds and standing pools (iteration 85)
   out.push(...groundVariants('gloam', ['gloam1', 'gloam2', 'gloamGrass', 'deepPurple'], ['gloam3', 'outline', 'bone'], 0.14, 6, 3));
   out.push(...waterFrames('water', 'water2', 'water3', 'waterHi', 4, 7));
   out.push(...waterFrames('deep', 'water1', 'water2', 'water3', 4, 8));
@@ -1462,7 +1354,7 @@ export function generateSprites(): SpriteDef[] {
     out.push({ name: 'leynode', p, glow, ax: 17, ay: 14 });
   }
   // roads
-  for (const t of ['track', 'cobble', 'lantern', 'glowvine'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
+  for (const t of ['track', 'cobble', 'lantern'] as const) for (let m = 0; m < 16; m++) out.push({ name: `road_${t}_${m}`, p: roadTile(t, m), ax: 16, ay: 0 });
   // zone overlays
   const zoneCols: [string, Col][] = [['hearth', 'zoneHearth'], ['market', 'zoneMarket'], ['craft', 'zoneCraft'], ['arcane', 'zoneArcane']];
   for (const [z, c] of zoneCols) {
@@ -1495,7 +1387,6 @@ export function generateSprites(): SpriteDef[] {
   for (let i = 0; i < 2; i++) { const g = gloamTree(i); out.push({ name: `gloamtree_${i}`, p: g.p, glow: g.glow, ax: 8, ay: 22 }); }
   for (let i = 0; i < 2; i++) { const g = mushrooms(i); out.push({ name: `mushroom_${i}`, p: g.p, glow: g.glow, ax: 5, ay: 8 }); }
   for (let i = 0; i < 3; i++) out.push({ name: `rock_${i}`, p: rock(i), ax: 7, ay: 10 });
-  for (let i = 0; i < 3; i++) out.push({ name: `reeds_${i}`, p: reeds(i), ax: 5, ay: 12 }); // the marsh's reed beds (iteration 85)
   {
     const p = new Painter(10, 8);
     p.circle(5, 4, 3, 'leaf2');
@@ -1567,117 +1458,10 @@ export function generateSprites(): SpriteDef[] {
   for (let v = 0; v < 6; v++)
     for (let f = 0; f < 4; f++) { const c = citizen(v, f, v === 4, v === 5); out.push({ name: `cit_${v}_${f}`, p: c.p, glow: v === 5 ? c.glow : undefined, ax: 4, ay: 12 }); }
   for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) out.push({ name: `builder_${v}_${f}`, p: builder(v, f), ax: 4, ay: 12 });
-  for (let v = 0; v < 5; v++) {
-    const p = cart(v);
-    if (v === 3) { const glow = new Painter(18, 12); glow.rect(6, 8, 9, 2, 'ley1', 160); glow.rect(7, 2, 6, 2, 'arcane2', 120); out.push({ name: `cart_${v}`, p, glow, ax: 9, ay: 11 }); }
-    else out.push({ name: `cart_${v}`, p, ax: 9, ay: 11 });
-  }
-  // airship: a ley-lamp envelope over a wooden gondola
-  for (let f = 0; f < 2; f++) {
-    const p = new Painter(44, 26);
-    const glow = new Painter(44, 26);
-    for (let y = 0; y <= 14; y++) for (let x = 2; x <= 41; x++) { const u = (x - 21.5) / 20; const v = (y - 7) / 7; if (u * u + v * v <= 1) p.px(x, y, (x + y) % 7 === 0 ? 'cloth5' : y < 4 ? 'whitewash' : 'whitewash2'); }
-    p.rect(12, 8, 20, 1, 'wood3');
-    for (let k = 0; k < 4; k++) p.line(14 + k * 5, 14, 15 + k * 4, 18, 'ironDark');
-    p.rect(13, 18, 18, 5, 'wood2');
-    p.rect(13, 18, 18, 1, 'wood1');
-    p.rect(15, 20, 2, 1, 'windowLit');
-    p.rect(20, 20, 2, 1, 'windowLit');
-    p.rect(25, 20, 2, 1, 'windowLit');
-    glow.rect(15, 20, 12, 1, 'lampWarm', 120);
-    p.rect(31, 19, 3, 3, 'ironDark');
-    if (f === 0) { p.px(35, 19, 'stone3'); p.px(35, 22, 'stone3'); } else { p.px(36, 20, 'stone3'); p.px(34, 21, 'stone3'); }
-    p.px(6, 7, 'ley1');
-    glow.px(6, 7, 'ley1', 200);
-    p.outline('outline');
-    out.push({ name: `airship_${f}`, p, glow, ax: 22, ay: 24 });
-  }
+  for (let v = 0; v < 3; v++) out.push({ name: `cart_${v}`, p: cart(v), ax: 9, ay: 11 }); // the floating cart (3) and the barge (4) are parked (scope reset phase 1c)
   for (let f = 0; f < 2; f++) {
     const r = restlessSprite(0, f);
     out.push({ name: `restless_${f}`, p: r.p, glow: r.glow, ax: 4, ay: 12 });
-  }
-  for (let st = 0; st < 4; st++) push(`b_worldtree_${st}`, drawWorldTree(st));
-  push('b_brickworks', drawBrickworks()); // drawn after the user's painting (iteration 80), the Brickworks (83)
-  // the wild (iteration 58): deer, elk, boar, goats, wolves, otters and herons, two stride frames each, facing right
-  const beast = (w: number, h: number, body: string, belly: string, f: number, o: { bodyX: number; bodyY: number; bodyW: number; bodyH: number; legH: number; headX: number; headY: number; headW: number; headH: number; neck?: boolean; tail?: [number, number][] }) => {
-    const p = new Painter(w, h);
-    const { bodyX, bodyY, bodyW, bodyH, legH, headX, headY, headW, headH } = o;
-    p.rect(bodyX, bodyY, bodyW, bodyH, body);
-    p.rect(bodyX + 1, bodyY + bodyH - 1, bodyW - 2, 1, belly);
-    if (o.neck) p.rect(headX - 1, headY + headH - 1, 2, bodyY - headY - headH + 2, body);
-    p.rect(headX, headY, headW, headH, body);
-    p.px(headX + headW - 1, headY + 1, 'outline'); // the eye
-    for (const [tx, ty] of o.tail ?? []) p.px(tx, ty, body);
-    const ly = bodyY + bodyH;
-    const legs = f === 0 ? [bodyX, bodyX + 2, bodyX + bodyW - 3, bodyX + bodyW - 1] : [bodyX + 1, bodyX + 2, bodyX + bodyW - 2, bodyX + bodyW - 2];
-    legs.forEach((lx, k) => p.rect(lx, ly, 1, legH - (f === 1 && k % 2 ? 1 : 0), belly));
-    return p;
-  };
-  for (let f = 0; f < 2; f++) {
-    // deer: tawny, white rump, a small rack
-    const d = beast(12, 12, 'leafAutumn', 'sand2', f, { bodyX: 2, bodyY: 5, bodyW: 7, bodyH: 3, legH: 4, headX: 9, headY: 2, headW: 2, headH: 2, neck: true, tail: [[1, 5]] });
-    d.px(2, 6, 'whitewash');
-    d.px(9, 1, 'wood1'); d.px(10, 0, 'wood1'); d.px(11, 1, 'wood1');
-    d.outline('outline');
-    out.push({ name: `deer_${f}`, p: d, ax: 6, ay: 12 });
-    // elk: bigger, darker, a broad rack
-    const e = beast(16, 15, 'wood2', 'wood1', f, { bodyX: 2, bodyY: 6, bodyW: 9, bodyH: 4, legH: 5, headX: 12, headY: 3, headW: 3, headH: 2, neck: true, tail: [[1, 6]] });
-    e.rect(3, 6, 7, 1, 'sand2');
-    for (const [x, y] of [[11, 2], [12, 1], [13, 0], [14, 1], [15, 0], [12, 0], [11, 0]]) e.px(x, y, 'parchment');
-    e.outline('outline');
-    out.push({ name: `elk_${f}`, p: e, ax: 8, ay: 15 });
-    // boar: low, dark, bristled, white tusks
-    const b = beast(12, 8, 'dirt3', 'dirt1', f, { bodyX: 1, bodyY: 2, bodyW: 8, bodyH: 4, legH: 2, headX: 9, headY: 3, headW: 3, headH: 3 });
-    for (let x = 2; x < 8; x += 2) b.px(x, 1, 'dirt1');
-    b.px(11, 5, 'bone');
-    b.outline('outline');
-    out.push({ name: `boar_${f}`, p: b, ax: 6, ay: 8 });
-    // goat: pale, a beard and curled horns
-    const g = beast(11, 11, 'whitewash2', 'stone3', f, { bodyX: 2, bodyY: 4, bodyW: 6, bodyH: 3, legH: 4, headX: 8, headY: 2, headW: 2, headH: 2, neck: true, tail: [[1, 4]] });
-    g.px(7, 1, 'stone1'); g.px(7, 0, 'stone1'); g.px(6, 0, 'stone1');
-    g.px(9, 4, 'stone2');
-    g.outline('outline');
-    out.push({ name: `goat_${f}`, p: g, ax: 5, ay: 11 });
-    // wolf: grey, long tail, pricked ears
-    const w = beast(13, 9, 'stone2', 'stone3', f, { bodyX: 2, bodyY: 3, bodyW: 8, bodyH: 3, legH: 3, headX: 10, headY: 2, headW: 3, headH: 2, tail: [[1, 3], [0, 4], [0, 5]] });
-    w.px(10, 1, 'stone1'); w.px(12, 1, 'stone1');
-    w.rect(3, 3, 6, 1, 'stone1');
-    w.outline('outline');
-    out.push({ name: `wolf_${f}`, p: w, ax: 6, ay: 9 });
-    // otter: long and low, a sleek brown body and a thick tail
-    const ot = new Painter(12, 5);
-    ot.rect(2, 1, 7, 3, 'wood2');
-    ot.rect(3, 3, 5, 1, 'sand2');
-    ot.rect(9, 1, 2, 2, 'wood2');
-    ot.px(10, 1, 'outline');
-    ot.rect(0, f === 0 ? 2 : 3, 2, 1, 'wood1');
-    ot.outline('outline');
-    out.push({ name: `otter_${f}`, p: ot, ax: 6, ay: 5 });
-    // heron: grey-blue, long legs and neck, a dagger bill
-    const hn = new Painter(9, 14);
-    hn.rect(2, 5, 4, 3, 'bluewash2');
-    hn.rect(1, 6, 1, 2, 'stone1');
-    hn.rect(5, 2, 1, 4, 'bluewash');
-    hn.rect(5, 1, 2, 2, 'whitewash');
-    hn.px(6, 1, 'outline');
-    hn.rect(7, 2, 2, 1, 'gold');
-    hn.px(4, 1, 'stone1');
-    if (f === 0) { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(4, 8, 1, 6, 'gold'); } else { hn.rect(3, 8, 1, 6, 'gold'); hn.rect(5, 8, 1, 5, 'gold'); }
-    hn.outline('outline');
-    out.push({ name: `heron_${f}`, p: hn, ax: 4, ay: 14 });
-    // a fishers' boat (iteration 60): a clinker hull, a fisher with a hat, an oar dipping on the stroke; the bow faces right
-    const bt = new Painter(16, 10);
-    bt.poly([[0, 5], [15, 5], [13, 8], [2, 8]], 'wood2');
-    bt.rect(1, 5, 14, 1, 'wood1');
-    bt.rect(2, 7, 11, 1, 'wood3');
-    bt.px(15, 4, 'wood2');
-    bt.rect(6, 1, 3, 4, 'cloth3');
-    bt.rect(6, 0, 3, 1, 'thatch1');
-    bt.px(7, 1, 'skin');
-    if (f === 0) bt.line(5, 3, 1, 8, 'wood1'); else bt.line(9, 3, 13, 9, 'wood1');
-    bt.rect(10, 4, 3, 1, 'stone3'); // the catch
-    bt.outline('outline');
-    out.push({ name: `boat_${f}`, p: bt, ax: 8, ay: 8 });
   }
   // icons
   for (const k of ['nomana', 'nowater', 'fire', 'unhappy', 'gloam', 'abandoned', 'nojobs', 'nogoods', 'noroad']) out.push({ name: `icon_${k}`, p: icon(k), ax: 4, ay: 9 });

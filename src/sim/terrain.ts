@@ -1,17 +1,15 @@
 import { Noise2D } from '../core/noise';
 import { Rng } from '../core/rng';
 import { MAP_H, MAP_W, Terrain, idx, inBounds, isWater } from './types';
-import { generateAtoll } from './atoll';
 
 export interface TerrainResult {
   terrain: Uint8Array;
   gloam: Uint8Array;
-  nodes: { x: number; y: number; aspect?: 'vein' }[];
+  nodes: { x: number; y: number }[];
   founding: { x: number; y: number };
 }
 
 /** Procedural map: rolling grass, forests, hills, a river, a lake, ley nodes, gloam on the rim. */
-export interface TerrainOptions { nodes?: number; island?: boolean; atoll?: boolean }
 
 /** The shore rule: a land tile (not hills, not a node, not ruins) with water among its eight neighbours. */
 function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
@@ -23,47 +21,8 @@ function shoreTile(terrain: Uint8Array, x: number, y: number): boolean {
   return false;
 }
 
-/** Marsh (iteration 85, DESIGN §17.1): low land within MARSH_REACH of water, in patches where a noise passes a bound, never
- *  within MARSH_FOUNDING of the founding or MARSH_NODE of a node. Hills, nodes and ruins stay. Its own noise, no rng: the
- *  generator's stream is unchanged. */
-export const MARSH_REACH = 3;
-export const MARSH_FOUNDING = 9;
-const MARSH_NODE = 4;
-export const MARSH_LOW = 0.02;
-export const MARSH_NOISE = 0.12;
-function markMarsh(terrain: Uint8Array, height: Float32Array, nz: Noise2D, fx: number, fy: number, nodes: { x: number; y: number }[]): void {
-  const dist = new Uint8Array(MAP_W * MAP_H).fill(255);
-  let frontier: number[] = [];
-  for (let i = 0; i < terrain.length; i++) if (isWater(terrain[i])) { dist[i] = 0; frontier.push(i); }
-  for (let d = 1; d <= MARSH_REACH; d++) {
-    const next: number[] = [];
-    for (const i of frontier) {
-      const x = i % MAP_W; const y = (i / MAP_W) | 0;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        if (!inBounds(x + dx, y + dy)) continue;
-        const j = idx(x + dx, y + dy);
-        if (dist[j] > d) { dist[j] = d; next.push(j); }
-      }
-    }
-    frontier = next;
-  }
-  for (let y = 0; y < MAP_H; y++) for (let x = 0; x < MAP_W; x++) {
-    const i = idx(x, y);
-    const t = terrain[i];
-    if (dist[i] < 1 || dist[i] > MARSH_REACH) continue;
-    if (t !== Terrain.Shore && t !== Terrain.Grass && t !== Terrain.Meadow && t !== Terrain.Forest) continue;
-    const df = Math.hypot(x - fx, y - fy);
-    if (df <= MARSH_FOUNDING) continue;
-    if (nodes.some((n) => Math.hypot(n.x - x, n.y - y) <= MARSH_NODE)) continue;
-    const low = height[i] - (MARSH_REACH - dist[i]) * 0.06; // the nearer the water, the wetter
-    if (low > MARSH_LOW) continue;
-    if (nz.fbm(x / 9, y / 9, 3) < MARSH_NOISE) continue;
-    terrain[i] = Terrain.Marsh;
-  }
-}
-
-export function generateTerrain(seed: number, opts: TerrainOptions = {}): TerrainResult {
-  if (opts.atoll) return generateAtoll(seed, opts); // a ring of isles in open water (iteration 95): its own generator, the valley's is untouched
+/** The valley (the one-node, island and atoll maps and the marsh are parked, scope reset phase 1c). */
+export function generateTerrain(seed: number): TerrainResult {
   const rng = new Rng(seed ^ 0x9e3779b9);
   const nz = new Noise2D(seed);
   const nz2 = new Noise2D(seed + 1337);
@@ -141,7 +100,7 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
     for (let x = 0; x < MAP_W; x++) if (shoreTile(terrain, x, y)) terrain[idx(x, y)] = Terrain.Shore;
 
   // Ley nodes: one near centre (founding), 3-5 others spread out on buildable land.
-  const nodes: { x: number; y: number; aspect?: 'vein' }[] = [];
+  const nodes: { x: number; y: number }[] = [];
   const buildable = (x: number, y: number) => {
     if (!inBounds(x, y)) return false;
     const t = terrain[idx(x, y)];
@@ -168,7 +127,7 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
     }
   }
   nodes.push({ x: fx, y: fy });
-  const targetNodes = opts.nodes ?? 4 + rng.int(3);
+  const targetNodes = 4 + rng.int(3);
   for (let tries = 0; tries < 3000 && nodes.length < targetNodes; tries++) {
     const x = 10 + rng.int(MAP_W - 20);
     const y = 10 + rng.int(MAP_H - 20);
@@ -187,8 +146,6 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
   clearAround(fx, fy, 5);
 
   terrain[idx(fx, fy)] = Terrain.LeyNode;
-
-  markMarsh(terrain, height, new Noise2D(seed + 9091), fx, fy, nodes);
 
   // The Ruins of Lukuku: one flagstone cluster in a forest, well away from the founding node.
   for (let tries = 0; tries < 400; tries++) {
@@ -222,7 +179,6 @@ export function generateTerrain(seed: number, opts: TerrainOptions = {}): Terrai
       const n = nz2.noise(x / 11 + 200, y / 11 + 200);
       const threshold = 3 + n * 3;
       if (edge < threshold) gloam[i] = 1;
-      if (opts.island && Math.hypot(x - fx, y - fy) + n * 4 > 36) gloam[i] = 1;
     }
   // never near founding
   for (let y = 0; y < MAP_H; y++)
