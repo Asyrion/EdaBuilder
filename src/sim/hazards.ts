@@ -113,6 +113,8 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
   return true;
 }
 
+/** Days of overdraw (demand over 1.25 × supply with the store spent) before the wild surge; the top bar counts them down. */
+export const SURGE_DAYS = 5;
 export function dailySurge(state: GameState): void {
   const threshold = 1.25;
   // a Nexus store soaks up the peak: the count runs only once the store is spent
@@ -120,12 +122,13 @@ export function dailySurge(state: GameState): void {
     state.overdrawDays++;
     state.stats.brownoutOpen = 1;
     if (state.overdrawDays === 1) pushMessage(state, 'The spires flicker: mana demand far exceeds the Veins. A wild surge comes in five days unless you raise a Thrum Font, store it in a Nexus, or cut consumers.', 'warn', true);
+    else if (state.overdrawDays < 4) pushMessage(state, `The ley still runs over: a wild surge in ${SURGE_DAYS - state.overdrawDays} days. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`, 'warn');
     else if (state.overdrawDays === 4) pushMessage(state, 'The ley is howling in the spires. Tomorrow it breaks loose.', 'warn');
   } else {
     if (state.stats.brownoutOpen) { state.stats.brownoutsSurvived++; state.stats.brownoutOpen = 0; }
     state.overdrawDays = Math.max(-4, state.overdrawDays - 1);
   }
-  if (state.overdrawDays >= 5) {
+  if (state.overdrawDays >= SURGE_DAYS) {
     state.overdrawDays = -4;
     state.stats.brownoutOpen = 0;
     const rng = rngOf(state);

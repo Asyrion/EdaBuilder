@@ -112,12 +112,23 @@ function works(seed = 31) {
 // Phase 2-1 of the scope reset: every zoned tile has one reason it grows or not, and growth draws only among lots that can.
 describe('why a lot grows or not, and growth from the lots that can', () => {
   const lot = (s: ReturnType<typeof town>, dx: number, dy: number) => idx(s.founding.x + 2 + dx, s.founding.y + 1 + dy);
-  it('names one reason per lot: ok, no road, no demand, the Gloam, an Arcane lot without school; a dark house', () => {
+  it('names one reason per lot: ok, no road, no light, no water, no demand, the Gloam, an Arcane lot without school; a dark house', () => {
     const s = town();
     recomputeAll(s);
     const near = lot(s, -5, 1), far = lot(s, -5, 2);
     s.demand.hearth = 0.5;
+    s.lit[near] = 1; s.watered[near] = 1;
     expect(growthBlock(s, near)).toBe('ok');
+    // phase 2-2: a lot grows only where light and water reach it
+    s.lit[near] = 0;
+    const lights = [1, -1, 128, -128].map((d) => s.bIndex[near + d]).filter((bi) => bi >= 0).map((bi) => s.buildings[bi]!);
+    const was = lights.map((b) => b.lit);
+    for (const b of lights) b.lit = false; // the spire beside it would light it otherwise
+    expect(growthBlock(s, near)).toBe('noMana');
+    lights.forEach((b, k) => { b.lit = was[k]; });
+    s.lit[near] = 1; s.watered[near] = 0;
+    expect(growthBlock(s, near)).toBe('noWater');
+    s.watered[near] = 1;
     expect(growthBlock(s, far)).toBe('noRoad');
     s.demand.hearth = 0;
     expect(growthBlock(s, near)).toBe('noDemand');
@@ -147,6 +158,7 @@ describe('why a lot grows or not, and growth from the lots that can', () => {
     const s = town();
     recomputeAll(s);
     const open = lot(s, -5, 1), noRoad = lot(s, -5, 2);
+    for (const i of [open, noRoad]) { s.lit[i] = 1; s.watered[i] = 1; }
     for (const i of refreshLots(s)) if (i !== open && i !== noRoad && s.zone[i] === Zone.Hearth && s.bIndex[i] < 0) placeBuildingRaw(s, 'hearth', i % 128, (i / 128) | 0);
     s.demand.hearth = 0.1; s.demand.market = 0; s.demand.craft = 0;
     let calls = 0;
@@ -158,6 +170,37 @@ describe('why a lot grows or not, and growth from the lots that can', () => {
     for (let k = 0; k < 200; k++) trySpawnBuildings(s, 3);
     expect(s.buildings.length).toBe(before);
     expect(s.rngState).toBe(rng);
+  });
+});
+
+describe('a lot grows only where light and water reach it (phase 2-2)', () => {
+  it('a dark lot never grows; lit by a spire beside it, it does; a lot beside a lit house counts as lit', () => {
+    const s = town();
+    recomputeAll(s);
+    const f = s.founding;
+    // a lot by the road far from every spire: dark
+    let dark = -1;
+    for (let x = f.x - 8; x <= f.x + 12 && dark < 0; x++) for (const y of [f.y + 1, f.y + 4]) {
+      const i = idx(x, y);
+      if (s.zone[i] && s.bIndex[i] < 0 && !s.road[i] && !s.lit[i] && growthBlock(s, i) === 'noMana') { dark = i; break; }
+    }
+    if (dark < 0) {
+      // the town's spires light the whole district: make a dark lot by switching the light off around one
+      dark = idx(s.founding.x + 10, s.founding.y + 5);
+      s.lit[dark] = 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const bi = s.bIndex[dark + dx + dy * 128]; if (bi >= 0) s.buildings[bi]!.lit = false; }
+    }
+    s.watered[dark] = 1;
+    s.demand.hearth = 1; s.demand.market = 1; s.demand.craft = 1;
+    expect(growthBlock(s, dark)).toBe('noMana');
+    for (let k = 0; k < 300; k++) trySpawnBuildings(s, 3);
+    expect(s.bIndex[dark]).toBe(-1);
+    // a lit house beside it lights the lot
+    const x = dark % 128, y = (dark / 128) | 0;
+    const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([nx, ny]) => s.bIndex[idx(nx, ny)] < 0 && !s.road[idx(nx, ny)])!;
+    const h = placeBuildingRaw(s, 'hearth', nb[0], nb[1]);
+    h.lit = true;
+    expect(growthBlock(s, dark)).not.toBe('noMana');
   });
 });
 

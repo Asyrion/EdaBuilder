@@ -6,8 +6,8 @@ import { computeBuildingHappiness, growthBlock } from '../sim/growth';
 export type OverlayId = 'growth' | 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
 
 /** The Growth view's colours, by growthBlock. */
-export const GROWTH_COLOURS: Record<'ok' | 'noRoad' | 'noDemand' | 'gloam' | 'noSchool' | 'landValue' | 'climbing', string> = {
-  ok: 'rgba(60,240,90,0.8)', noRoad: 'rgba(255,55,55,0.8)', noDemand: 'rgba(175,175,190,0.75)', gloam: 'rgba(175,90,235,0.8)',
+export const GROWTH_COLOURS: Record<'ok' | 'noRoad' | 'noMana' | 'noWater' | 'noDemand' | 'gloam' | 'noSchool' | 'landValue' | 'climbing', string> = {
+  ok: 'rgba(60,240,90,0.8)', noRoad: 'rgba(255,55,55,0.8)', noMana: 'rgba(30,40,95,0.85)', noWater: 'rgba(90,225,235,0.8)', noDemand: 'rgba(175,175,190,0.75)', gloam: 'rgba(175,90,235,0.8)',
   noSchool: 'rgba(60,130,255,0.8)', landValue: 'rgba(255,140,20,0.75)', climbing: 'rgba(150,255,170,0.45)',
 };
 
@@ -113,8 +113,8 @@ export const OVERLAY_LIST: OverlayDef[] = [
   coverageOverlay('faith', 'Faith', '-', 'faith', 'Shrines and temples raise happiness and land value.'),
   coverageOverlay('leisure', 'Leisure', '=', 'leisure', 'Gardens and squares raise land value and joy.'),
   {
-    id: 'growth', name: 'Growth', key: '6', desc: 'Why each zoned lot does or does not grow (scope reset phase 2-1). Empty lots: green can grow; red no road touches it (a corner counts); grey its demand bar is at or below the line; violet the Gloam; blue an Arcane lot without schooling. Zone buildings: yellow cannot climb a level (hover one for the need), pale green climbing.',
-    legend: [[GROWTH_COLOURS.ok, 'can grow'], [GROWTH_COLOURS.noRoad, 'no road'], [GROWTH_COLOURS.noDemand, 'no demand'], [GROWTH_COLOURS.gloam, 'Gloam'], [GROWTH_COLOURS.noSchool, 'no schooling'], [GROWTH_COLOURS.landValue, 'cannot level up'], [GROWTH_COLOURS.climbing, 'climbing a level']],
+    id: 'growth', name: 'Growth', key: '6', desc: 'Why each zoned lot does or does not grow (scope reset phase 2-1). Empty lots: green can grow; red no road touches it (a corner counts); navy no light reaches it; cyan no well waters it; grey its demand bar is at or below the line; violet the Gloam; blue an Arcane lot without schooling. Zone buildings: yellow cannot climb a level (hover one for the need), pale green climbing.',
+    legend: [[GROWTH_COLOURS.ok, 'can grow'], [GROWTH_COLOURS.noRoad, 'no road'], [GROWTH_COLOURS.noMana, 'no light'], [GROWTH_COLOURS.noWater, 'no water'], [GROWTH_COLOURS.noDemand, 'no demand'], [GROWTH_COLOURS.gloam, 'Gloam'], [GROWTH_COLOURS.noSchool, 'no schooling'], [GROWTH_COLOURS.landValue, 'cannot level up'], [GROWTH_COLOURS.climbing, 'climbing a level']],
     tile: (s, i) => {
       const g = growthBlock(s, i);
       if (g === 'none' || g === 'top') return null;
