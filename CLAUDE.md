@@ -8,7 +8,7 @@ order of the list is itself a decision the user made.
 ## Scope reset (since 2026-10-21; the user's decision, it overrides the rules below until the reset is done)
 
 The game is being cut back to its core with one people, the Vellish (`docs/RESET_PLAN.md`, the user's answers in its §9).
-- **The list is `docs/RESET_PLAN.md`**, phase by phase (0, 1a–1d, 2–6). NEXT_STEPS' milestones M18/M19 and GitHub issues
+- **The list is `docs/RESET_PLAN.md`**, phase by phase (0, 1a–1d, 2–6). The old NEXT_STEPS' milestones M18/M19 (`docs/archive/`) and GitHub issues
   labelled `parked` are parked; nothing parked comes back without the user's approval (`docs/PARKED.md` says how).
 - **Unchanged:** one plan per "Continue" on the Plan panel, and shipping autonomously (PR to `main` per phase, merge,
   fast-forward, Pages check).
@@ -37,13 +37,13 @@ The game is being cut back to its core with one people, the Vellish (`docs/RESET
    `npm run build`, a Playwright playtest script (`scripts/playtestNN.mjs` against
    `npx vite preview --port 4173`), and for any sim change the wide balance bar
    (`npx tsx scripts/table.ts --bar wide --compare origin/main`: six seeds a people, draws added
-   until each people's floor is a tenth of its folk; DESIGN §4.95), with each people's verdict
+   until each people's floor is a tenth of its folk; `docs/archive/DESIGN.md` §4.95), with each people's verdict
    and gates reported; the quick table (no `--bar`) is for probes during an iteration; one control
    seed (`npx tsx scripts/balance.ts 42 150`) for art-only changes. The bar's runs are cached in
-   `balance/cache/` by what they read (DESIGN §4.102): commit that folder with the iteration, so the
+   `balance/cache/` by what they read (`docs/archive/DESIGN.md` §4.102): commit that folder with the iteration, so the
    next bar finds main's side already run. Report the numbers honestly,
    losses included, and a floor not met as not met.
-5. **Docs stay current:** DESIGN.md gets a `### 4.NN` section per iteration with the
+5. **Docs stay current:** DESIGN.md gets a `### 4.NN` section per iteration (that DESIGN is `docs/archive/DESIGN.md`) with the
    balance table and a decision-log entry; NEXT_STEPS.md gets "Done in iteration NN" and the
    reordered list; README.md's feature list and the in-game help follow.
 6. **Determinism:** no `Math.random` in `src/sim`; use `rngOf`/`commitRng`. New state

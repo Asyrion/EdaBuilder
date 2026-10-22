@@ -7,7 +7,7 @@ says where to start.
 **General way back:** `git checkout archive/full-scope -- <files>`. Then reconnect the hooks the reset cut. The phase
 that parked it lists them in `docs/RESET_LOG.md`. Then add the feature's content back (buildings in
 `src/data/content/buildings.json`, quests, text, sprites in `art/sources.json`), and the save fields with a new save
-version. The DESIGN sections are in `docs/DESIGN.md` on the archive branch.
+version. The DESIGN sections are in `docs/archive/DESIGN.md` (and in `docs/DESIGN.md` on the archive branch).
 
 **Saves and replays (since phase 1d):** save version 8 refuses every save and replay from before it, whatever it holds,
 with one message (`oldSaveMessage`, `src/sim/save.ts`). The per-phase refusals the sections below name (`parkedContentIn`,

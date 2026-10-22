@@ -12,7 +12,7 @@ The dev board runs all three from a building's **Art** panel, or from any sprite
 tab (`tools/devboard/pipelines.json`). Each one can also go to a Claude session through Send to Claude.
 
 The Tripo and Aseprite steps come from the user's Azyrion Tamer project, where they are proven: docs 06 §0 and §2b, and
-docs 04 §2 and §11 there. The decisions are in DESIGN §4.80–§4.87 and §4.122.
+docs 04 §2 and §11 there. The decisions are in `docs/archive/DESIGN.md` §4.80–§4.87 and §4.122 (a `§4.NN` below points there too).
 
 ## The house rules every sprite keeps
 

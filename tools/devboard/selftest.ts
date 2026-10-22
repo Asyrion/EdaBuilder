@@ -23,7 +23,7 @@ import { generate, roundState, roundsOf, roundFile, whoami } from './tripo';
 import { exportStep, traceStep } from '../../scripts/aseprite';
 import { createServer as httpServer } from 'node:http';
 import { encodePng } from '../../scripts/lib/png.mjs';
-import { balance, designIndex, designSection, nextSteps } from './tracker';
+import { balance, designIndex, designSection, nextSteps, resetLog } from './tracker';
 
 const REPO = resolve(import.meta.dirname, '../..');
 const fails: string[] = [];
@@ -162,14 +162,17 @@ const tmpArt = tmp;   // removed after the importer's run below
 {
   const ns = nextSteps(readFileSync(join(REPO, 'docs/NEXT_STEPS.md'), 'utf8'));
   check(ns.open.length >= 3 && ns.open.every((o, i) => o.n === i + 1 && o.title), 'NEXT_STEPS: the open list is read in order, each with a title');
-  check(ns.done.length >= 80 && ns.done[0].n > ns.done[ns.done.length - 1].n && ns.done.every((d) => d.bullets.length), 'NEXT_STEPS: every "Done in iteration" is read, newest first, with its bullets');
-  const fixture = '## Prioritized ideas for the next iteration\n\n1. **First** one\n   more\n2. **Second §4.7** two\n\n## Done in iteration 3 (x)\n\n- a\n  b\n';
+  const done = resetLog(readFileSync(join(REPO, 'docs/RESET_LOG.md'), 'utf8'));
+  check(done.length >= 6 && done[done.length - 1].label === 'Phase 0' && done[0].n > done[done.length - 1].n && done.every((d) => d.bullets.length), 'RESET_LOG: every "## Phase" is read, newest first, with its bullets');
+  const fixture = '## Prioritized ideas for the next iteration\n\n1. **First** one\n   more\n2. **Second DESIGN §2** two\n\n## Done in iteration 3 (x)\n\n- a\n  b\n';
   const f = nextSteps(fixture);
-  check(f.open.length === 2 && f.open[0].text === 'one more' && f.open[1].design[0] === '§4.7' && f.done[0].bullets[0] === 'a b', 'NEXT_STEPS: the fixture parses');
-  const di = designIndex(readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8'));
-  const nums = di.map((h) => Number(h.id.split('.')[1])), headings = (readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8').match(/^### 4\.\d+/gm) ?? []).length;
-  check(nums.length === headings && new Set(nums).size === nums.length && nums.includes(1) && Math.max(...nums) >= 118, 'DESIGN: every 4.NN section is indexed once (in the file\'s own order)');
-  check((designSection(readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8'), '4.118') ?? '').includes('content as data'), 'DESIGN: a section is read whole');
+  check(f.open.length === 2 && f.open[0].text === 'one more' && f.open[1].design[0] === '§2' && f.done[0].bullets[0] === 'a b', 'NEXT_STEPS: the fixture parses');
+  const g = resetLog('# Log\n\n## Phase 0: safeguards (2026-10-21)\n\n- a\n  b\n  - deeper\n\n## Phase 1a: the peoples (2026-10-21)\n\n- c, after DESIGN §3\n');
+  check(g.length === 2 && g[0].label === 'Phase 1a' && g[0].design[0] === '§3' && g[1].title === 'safeguards' && g[1].bullets.length === 1 && g[1].bullets[0] === 'a b', 'RESET_LOG: the fixture parses');
+  const design = readFileSync(join(REPO, 'docs/DESIGN.md'), 'utf8'), di = designIndex(design);
+  const nums = di.map((h) => Number(h.id)), headings = (design.match(/^## \d+\./gm) ?? []).length;
+  check(nums.length === headings && headings >= 5 && new Set(nums).size === nums.length && nums[0] === 1, 'DESIGN: every "## N." section is indexed once (in the file\'s own order)');
+  check((designSection(design, '2') ?? '').includes('core loop') && !(designSection(design, '2') ?? '').includes('## 3.'), 'DESIGN: a section is read whole, and only it');
   const b = balance(REPO);
   check(b.files.length > 0 && b.files.every((x) => Object.keys(x.stats).length > 0) && b.files.some((x) => 'vellish' in x.stats), 'balance: every cache file read (a bar still running writes a partial one), one with the Vellish (scope reset: one people)');
 
@@ -221,7 +224,7 @@ server.listen(0, '127.0.0.1', async () => {
   check(await call(port, 'GET', '/../package.json', h) === 404, 'no files outside the page');
   for (const p of ['/api/send', '/api/github/issue', '/api/github/comment', '/api/github/milestone', '/api/prompt/save', '/api/refine', '/api/upload', '/api/pipeline/import', '/api/pipeline/handoff'])
     check(await call(port, 'POST', p, { ...h, 'Content-Type': 'application/json' }, '{}') === 403, `${p} without X-Dev-Board is refused`);
-  check(await call(port, 'GET', '/api/tracker', h) === 200 && await call(port, 'GET', '/api/design/4.118', h) === 200, 'the tracker and a DESIGN section are served');
+  check(await call(port, 'GET', '/api/tracker', h) === 200 && await call(port, 'GET', '/api/design/2', h) === 200, 'the tracker and a DESIGN section are served');
   check(await call(port, 'GET', '/api/pipelines', h) === 200 && await call(port, 'GET', '/api/prompt/b_spire', h) === 200 && await call(port, 'GET', '/api/prompts', h) === 200, 'the pipelines and a prompt are served');
   check(await call(port, 'GET', '/painting?src=../package.json', h) === 400, 'no painting outside inspirations/');
   for (const p of ['/api/tripo/generate', '/api/aseprite/run'])

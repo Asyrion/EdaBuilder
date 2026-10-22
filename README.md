@@ -247,7 +247,7 @@ Charter as `.json`.
 - Sprites are generated at startup into an atlas with a manifest. `public/art/sprites.json`
   lists per-sprite PNG overrides (with a footprint anchor and an optional glow) that are
   merged over the procedural atlas by name; `npm run art` makes them from the reference
-  paintings in `inspirations/` as `art/sources.json` says, and packs them into one or a few
+  paintings in eda-lore's `inspirations/` as `art/sources.json` says, and packs them into one or a few
   sheets (`public/art/sheets/`) that the page loads at once, with a loading line until the
   town is up. Drop `public/art/atlas.png` + `atlas.json` to replace the whole set instead.
 - Procedural WebAudio effects, a wind / ley-hum / cricket ambience, positional cues (the
@@ -256,11 +256,17 @@ Charter as `.json`.
 
 ## Docs
 
-- `docs/DESIGN.md` — design, systems, numbers, tech choices, decision log.
+- `docs/HANDOFF.md` — where the project stands and how a session works on it.
+- `docs/DESIGN.md` — the design of the core after the scope reset: the loop, the systems with their numbers, the art.
+- `docs/NEXT_STEPS.md` — the open list (the reset's phases 2 to 6) and the known issues.
+- `docs/RESET_PLAN.md`, `docs/RESET_LOG.md`, `docs/PARKED.md` — the scope reset: the plan, what each phase did, and what
+  was parked and how it comes back.
+- `docs/CORE_CHECKLIST.md` — the checklist walked when the UI changes (`scripts/checklist.mjs` walks what a script can).
+- `docs/ART_PIPELINES.md` — the art pipelines (paintings, Tripo Studio, Aseprite).
 - `docs/EDA_LORE.md` — the world bible (history, peoples, gods, magic rules).
 - `docs/EDA_CITY_LORE.md` — what was canon vs. what Wardlight proposes.
-- `docs/NEXT_STEPS.md` — known issues and the prioritized next iteration.
-- `docs/AUDIT.md` — the iteration 44 review: every building and mechanic rated for depth, seventy findings, and the design of M14.
+- `docs/archive/` — the docs before the reset: the full DESIGN (iterations 1 to 96, its `§4.NN` sections), NEXT_STEPS,
+  the iteration 44 AUDIT and the old HANDOFF.
 
 ## Project layout
 

@@ -27,7 +27,7 @@ import { toClaude, toIssue } from './session';
 import { blank, draftFor, houseRules, jobOf, loreFor, promptFile, refineTask, startRefine, type PromptData } from './prompts';
 import { Busy, asepriteState, handoffTask, importState, islands, paintingPath, paintings, pipelines, runAseprite, runImport, savePainting } from './pipelines';
 import { Busy as TripoBusy, generate, roundFile, roundState, roundsOf, whoami } from './tripo';
-import { balance, designIndex, designSection, nextSteps } from './tracker';
+import { balance, designIndex, designSection, nextSteps, resetLog } from './tracker';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2), opt = (k: string, d: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -190,11 +190,11 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       return send(res, 200, { sig: `${content.signature()}.${artSig()}`, kinds, code, errors, unions: unions(ROOT), hints: hints(ROOT), art: await artStatus() });
     }
     if (path === '/api/tracker') {
-      const ns = nextSteps(readFileSync(join(ROOT, 'docs/NEXT_STEPS.md'), 'utf8'));
+      const ns = { open: nextSteps(readFileSync(join(ROOT, 'docs/NEXT_STEPS.md'), 'utf8')).open, done: resetLog(readFileSync(join(ROOT, 'docs/RESET_LOG.md'), 'utf8')) };
       const design = designIndex(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8')).map(({ id, title, iteration }) => ({ id, title, iteration }));
       return send(res, 200, { ...ns, design, balance: balance(ROOT) });
     }
-    const dm = /^\/api\/design\/(4\.\d+)$/.exec(path);
+    const dm = /^\/api\/design\/(\d+)$/.exec(path);
     if (dm) {
       const text = designSection(readFileSync(join(ROOT, 'docs/DESIGN.md'), 'utf8'), dm[1]);
       return text ? send(res, 200, { id: dm[1], text }) : send(res, 404, { error: `no section ${dm[1]}` });

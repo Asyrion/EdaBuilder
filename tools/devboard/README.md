@@ -33,8 +33,8 @@ second one on another port.
   The code scan matches the key as any quoted string, so a short common key can be refused by an unrelated match; that
   errs on the side of keeping data the code needs.
 
-- **Project tabs** (DESIGN §4.119): **Next steps** (`docs/NEXT_STEPS.md`'s open list and the iterations done; a `§4.NN`
-  chip opens that DESIGN section), **GitHub** (milestones and issues through the logged-in `gh api`: add, edit, comment,
+- **Project tabs** (DESIGN §4.119): **Next steps** (`docs/NEXT_STEPS.md`'s open list and the reset's phases done from
+  `docs/RESET_LOG.md`; a "DESIGN §N" chip opens that section of `docs/DESIGN.md`), **GitHub** (milestones and issues through the logged-in `gh api`: add, edit, comment,
   close, new and closed milestones; cached 12 s, stale data kept offline) and **Balance** (`balance/cache` as a chart of
   mean folk ±2·SE per people, and a table per seed; the file of the working tree's sim key is marked "this tree").
 - **Send to Claude** on every next-steps item, issue, card and editor, and from **New element** (the composer): the task
@@ -64,7 +64,7 @@ hints in `hints.json`, and its checks in `src/sim/contentCheck.ts`. No page code
 | `kinds.ts`, `hints.json`, `schema.ts` | what is shown and how its fields are edited |
 | `art.ts` | each building's looks and art status; the sprites drawn in code as PNG |
 | `validate.ts` | `validateContent` and the sprite rule, one `VALIDATE_JSON` line |
-| `tracker.ts` | NEXT_STEPS, the DESIGN index and sections, the balance cache (read-only) |
+| `tracker.ts` | NEXT_STEPS, RESET_LOG's phases, the DESIGN index and sections, the balance cache (read-only) |
 | `github.ts` | milestones, issues, labels and their writes through `gh api` |
 | `session.ts` | Send to Claude: the `claude-cli://` link, a console, or a GitHub issue |
 | `selftest.ts` | edits every entry on a temp copy and restores it byte for byte; refusals; HTTP guards |

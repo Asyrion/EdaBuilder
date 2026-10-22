@@ -28,8 +28,8 @@ const ProjectUI = (() => {
     const sec = ids => ids.map(id => `<a class="chip" data-design="${esc(id.slice(1))}">${esc(id)}</a>`).join(" ");
     const open = T.open.map(o => `<div class="card"><h3><span class="n-badge">${o.n}</span> ${esc(o.title)}</h3><div class="small">${esc(o.text)}</div>
       <div class="acts">${sec(o.design)}<button class="btn small" data-send-next="${o.n}">Send to Claude</button></div></div>`).join("");
-    const done = T.done.map(d => `<details class="done"><summary><b>Iteration ${d.n}</b> ${esc(d.title)} ${sec(d.design)}</summary><ul>${d.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></details>`).join("");
-    return `<div class="toolbar"><strong>Next steps</strong><span class="dim">docs/NEXT_STEPS.md, in the user's order</span><button class="btn small ghost" data-reload="tracker">Reload</button></div>
+    const done = T.done.map(d => `<details class="done"><summary><b>${esc(d.label)}</b> ${esc(d.title)} ${sec(d.design)}</summary><ul>${d.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></details>`).join("");
+    return `<div class="toolbar"><strong>Next steps</strong><span class="dim">docs/NEXT_STEPS.md, in the user's order; done: docs/RESET_LOG.md</span><button class="btn small ghost" data-reload="tracker">Reload</button></div>
       <div class="grid one">${open}</div><h2>Done</h2><div class="donelist">${done}</div>`;
   }
   const nextTask = o => `Read CLAUDE.md and docs/HANDOFF.md, then continue with the next item in docs/NEXT_STEPS.md: ${o.title}. Plan it on the Plan panel first.\n\n(From the dev board. The item as the list has it: ${o.n}. ${o.title}. ${o.text})`;
@@ -156,8 +156,8 @@ const ProjectUI = (() => {
   }
   function composed(created) {
     const v = id => $(id).value.trim(), kind = v("#ck"), peoples = [...document.querySelectorAll("#modal .checks input:checked")].map(x => x.value);
-    const art = { yes: "Art: wanted, a painting through the art pipeline (DESIGN §4.80–4.87; the asset pipelines are written into the docs later).", code: "Art: drawn in code for now (src/render/sprites.ts).", no: "Art: none needed." }[v("#ca")];
-    return `${PROCESS}\n\nA new ${kind} for the game: ${v("#cn") || "[name]"}${v("#cy") ? ` (key \`${v("#cy")}\`)` : ""}.\n\nThe idea: ${v("#ci") || "[the idea]"}\nNumbers: ${v("#cm") || "to be proposed in the plan"}.\nPeoples: ${peoples.length ? peoples.join(", ") : "every people"}.\n${art}\n${created ? `\nThe entry already exists in src/data/content/buildings.json (made on the dev board from the Ley Spire's layout, so its numbers are placeholders). What still needs work: its numbers and rules, its sprite (the board shows "needs art"), its help and the bot, and the balance bar if it changes the sim.` : kind === "building" ? "\nAdd it to src/data/content/buildings.json (content is data, DESIGN §4.118), with its sprite and checks." : ""}\nPropose it as an iteration: where it goes in docs/NEXT_STEPS.md and which DESIGN section it gets.`;
+    const art = { yes: "Art: wanted, a painting through the art pipeline (docs/ART_PIPELINES.md).", code: "Art: drawn in code for now (src/render/sprites.ts).", no: "Art: none needed." }[v("#ca")];
+    return `${PROCESS}\n\nA new ${kind} for the game: ${v("#cn") || "[name]"}${v("#cy") ? ` (key \`${v("#cy")}\`)` : ""}.\n\nThe idea: ${v("#ci") || "[the idea]"}\nNumbers: ${v("#cm") || "to be proposed in the plan"}.\nPeoples: ${peoples.length ? peoples.join(", ") : "every people"}.\n${art}\n${created ? `\nThe entry already exists in src/data/content/buildings.json (made on the dev board from the Ley Spire's layout, so its numbers are placeholders). What still needs work: its numbers and rules, its sprite (the board shows "needs art"), its help and the bot, and the balance bar if it changes the sim.` : kind === "building" ? "\nAdd it to src/data/content/buildings.json (content is data, DESIGN §8), with its sprite and checks." : ""}\nPropose it as an iteration: where it goes in docs/NEXT_STEPS.md and which DESIGN section it gets.`;
   }
   async function composeCreate() {
     const key = $("#cy").value.trim(), name = $("#cn").value.trim();
