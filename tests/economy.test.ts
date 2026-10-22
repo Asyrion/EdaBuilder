@@ -212,3 +212,20 @@ describe('The new state in a save', () => {
     run(t, TICKS_PER_DAY);
   });
 });
+
+// Phase 2-3 of the scope reset: the budget shows where the upkeep goes.
+describe('the budget by kind', () => {
+  it('the upkeep by kind adds up to the building upkeep, and the road tiles to the road upkeep', () => {
+    const s = createGame(42, 'Ledger');
+    const f = s.founding;
+    buildRoad(s, RoadType.Track, roadPath(f.x - 6, f.y + 3, f.x + 6, f.y + 3, false));
+    buildRoad(s, RoadType.Cobble, roadPath(f.x - 6, f.y + 4, f.x - 2, f.y + 4, false));
+    for (const [k, dx] of [['spire', -4], ['well', -2], ['healer', 0], ['garden', 2], ['watchpost', 4]] as [string, number][]) placeBuildingRaw(s, k, f.x + dx, f.y + 2).state = 'ok';
+    const l = computeLedger(s);
+    const sum = Object.values(l.upkeepBy).reduce((a, b) => a + b, 0);
+    expect(sum).toBeCloseTo(l.upkeepBuildings, 6);
+    expect(Object.keys(l.upkeepBy)).toEqual(expect.arrayContaining(['ley', 'water', 'service', 'leisure']));
+    const tiles = l.roadTiles;
+    expect(tiles[RoadType.Track] * 0.3 + (tiles[RoadType.Cobble] ?? 0) * 0.8).toBeCloseTo(l.upkeepRoads, 6);
+  });
+});

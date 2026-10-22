@@ -46,6 +46,8 @@ Road → zone → demand → growth → services and supply → budget → happi
 7. **Budget** (`economy.ts`): taxes and tithes in, upkeep out. Start with 15,000 crowns. A debt pays 1 % a day (the
    ways to lose, §5); the Crown lends 10,000 a milestone at 0.5 % a day. The Crown's levy each Thaw takes 5 % of
    a treasury over 10,000. Crown favour (neutral 50) exists but stands still since phase 1c (a known issue).
+   The Budget panel shows the upkeep by kind (ley, water, services, leisure, wonders), the road tiles by type and the
+   tithe a soul pays a day (phase 2-3).
 8. **Happiness:** the services, land value, miasma, the Gloam and the edicts; the inspector shows the terms.
 
 **Time:** 900 ticks a day (90 s at 1×), 30 days a season, four seasons (the Thaw, Bloom, Ember, the Hush). Each day runs,

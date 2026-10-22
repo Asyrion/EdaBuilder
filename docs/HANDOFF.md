@@ -20,19 +20,21 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 
 ## The next item
 
-**Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Done: 2-1 (growth from the lots that can grow) and 2-2 (a lot grows
-only in light and water, the Font at 100 mana for 4,500, the surge's countdown). Next: the city's income against its
-mana (the corridor is income-bound since 2-2), one change at a time against the bot corridor. Plan it on the Plan panel
-first.
+**Phase 2, the rest** (`docs/NEXT_STEPS.md` item 1). Done: 2-1 (growth from the lots that can grow), 2-2 (a lot grows
+only in light and water, the Font at 100 mana for 4,500, the surge's countdown) and 2-3 (the bot's streets only where its
+town is, the budget by kind). Next: demand with its factors shown, then traffic, one change at a time against the bot
+corridor. Plan it on the Plan panel first.
 
 ## Known issues
 
-- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,397 and 2,606 after 2-1, 1,139
-  and 1,332 after 2-2; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 → 1,937 → 1,218. 2-1's gain rode
-  on houses that grew in the dark and paid taxes without drawing mana; 2-2 closed that. `core-loop.test.ts` holds seed
-  42 on day 100 at 1,139 folk and the Burgh (±50 %), re-anchored openly in 2-2.
+- **The bot corridor.** Seed 42 on day 150: 3,194 folk in phase 0, 1,011 after 1d-1, 1,397 · 2,606 after 2-1, 1,139 ·
+  1,332 after 2-2, 1,574 · 1,488 after 2-3; the six-seed mean (42, 1, 7, 13, 21, 45; two draws) went 1,177 → 1,937 →
+  1,218 → 1,800. `core-loop.test.ts` holds seed 42 on day 100 at 2,648 folk and the Beacon of Eda (±50 %), re-anchored
+  openly in 2-3.
 - **The bot is a measuring instrument and follows the rules:** in 2-2 its `keepLit`/`keepWatered` had to aim at dark
-  and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look.
+  and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look. In 2-3 its
+  street grid was what bound its income (two in three street tiles empty); before turning an economic knob, look at the
+  ledger (`computeLedger`, now with `upkeepBy` and `roadTiles`) and ask whether the player or the rules are at fault.
 - **The Crown favour stands still** at 50 (its movers were parked). Phase 2 decides: a mover in the core, or it goes.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.

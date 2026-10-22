@@ -407,8 +407,8 @@ export class UI {
     this.q('#tb-jobs').textContent = `${s.employed}/${wf}${s.jobs > wf ? ' (+' + (s.jobs - wf) + ' open)' : ''}`;
     const mana = this.q('#tb-mana');
     mana.textContent = `${Math.round(s.manaDemand)} / ${Math.round(s.manaSupply)}${s.manaStorageMax > 0 ? ` · store ${Math.round(s.manaStorage)}/${Math.round(s.manaStorageMax)}` : ''}`;
-    if (s.overdrawDays > 0) mana.textContent += ` · surge in ${SURGE_DAYS - s.overdrawDays} d`;
-    mana.className = `v ${s.overdrawDays > 0 || s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
+    if (overdrawn(s)) mana.textContent += ` · surge in ${SURGE_DAYS - s.overdrawDays} d`;
+    mana.className = `v ${overdrawn(s) || s.manaDemand > s.manaSupply * 1.25 ? 'bad' : s.manaDemand > s.manaSupply ? 'warn' : 'ley'}`;
     if (!mana.dataset.tip) {
       // the mana field explains itself like the demand bars (phase 2-2): flow, draw, store, brownout and the surge's countdown
       mana.dataset.tip = '1';
@@ -1256,10 +1256,11 @@ export class UI {
           <tr><td>Market tithe</td><td class="r good" data-k="taxMarket"></td></tr>
           <tr><td>Craft tithe</td><td class="r good" data-k="taxCraft"></td></tr>
           <tr><td>Arcane tithe</td><td class="r good" data-k="taxArcane"></td></tr>
+          <tr><td class="muted">Tithes per soul a day</td><td class="r muted" data-k="perFolk"></td></tr>
           <tr><td>Artifacts sold</td><td class="r good" data-k="artifacts"></td></tr>
           <tr><td>Exports (banked on the day)</td><td class="r good" data-k="trade"></td></tr>
-          <tr><td>Road upkeep</td><td class="r bad" data-k="upkeepRoads"></td></tr>
-          <tr><td>Building upkeep</td><td class="r bad" data-k="upkeepBuildings"></td></tr>
+          <tr><td>Road upkeep <span class="muted" data-k="roadTiles"></span></td><td class="r bad" data-k="upkeepRoads"></td></tr>
+          <tr><td>Building upkeep<div class="muted" data-k="upkeepBy"></div></td><td class="r bad" data-k="upkeepBuildings"></td></tr>
           <tr><td>Edicts</td><td class="r bad" data-k="upkeepEdicts"></td></tr>
           <tr><td>Charters (a crown a building)</td><td class="r bad" data-k="upkeepCharters"></td></tr>
           <tr><td>Temple quarter's share of the market tithe</td><td class="r bad" data-k="charterTithe"></td></tr>
@@ -1300,6 +1301,15 @@ export class UI {
     set('trade', `${l.trade >= 0 ? '+' : ''}${l.trade.toFixed(0)}${st.trade.imported ? ` · imported ${st.trade.imported} for ${Math.round(st.trade.importCost)}` : ''}`);
     set('upkeepRoads', `−${l.upkeepRoads.toFixed(0)}`);
     set('upkeepBuildings', `−${l.upkeepBuildings.toFixed(0)}`);
+    // where the upkeep goes (phase 2-3): the buildings by kind, the roads by tiles
+    const kinds: [string, string][] = [['ley', 'ley'], ['water', 'water'], ['service', 'services'], ['leisure', 'leisure'], ['wonder', 'wonders']];
+    const by = l.upkeepBy ?? {};
+    set('upkeepBy', kinds.filter(([k]) => (by[k] ?? 0) > 0).map(([k, n]) => `${n} ${Math.round(by[k]).toLocaleString()}`).join(' · '));
+    const tiles = l.roadTiles ?? {};
+    const nTiles = Object.values(tiles).reduce((a, b) => a + b, 0);
+    set('roadTiles', nTiles ? `(${nTiles.toLocaleString()} tiles: ${ROADS.filter((r) => tiles[r.type]).map((r) => `${tiles[r.type].toLocaleString()} ${r.key}`).join(', ')})` : '');
+    const tithes = l.taxHearth + l.taxMarket + l.taxCraft + l.taxArcane;
+    set('perFolk', st.population > 0 ? (tithes / st.population).toFixed(2) : '–');
     set('upkeepEdicts', `−${l.upkeepEdicts.toFixed(0)}`);
     set('upkeepCharters', `−${l.upkeepCharters.toFixed(0)}`);
     set('charterTithe', `−${l.charterTithe.toFixed(0)}`);
@@ -1545,12 +1555,18 @@ export function growthWhy(s: GameState, x: number, y: number): string | null {
   return `<div class="t">${b ? `${name}, level ${b.level}` : `${name} lot`}</div>${text[g]}`;
 }
 
+/** The ley is overdrawn as dailySurge counts it (over 1.25 × the flow, the store spent), or the count is running: the
+    countdown shows from the first such day, also when it starts below zero after a surge (phase 2-3's fix of 2-2). */
+function overdrawn(s: GameState): boolean {
+  return s.overdrawDays > 0 || (s.manaDemand > s.manaSupply * 1.25 && s.manaDemand > 20 && s.manaStorage <= 0.5);
+}
+
 /** The top bar's mana field, in words (phase 2-2): supply and demand, the store, the brownout, and the surge's countdown. */
 export function manaTip(s: GameState): string {
   const lines = [`Mana: ${Math.round(s.manaDemand)} drawn of ${Math.round(s.manaSupply)} flowing a day.`];
   if (s.manaStorageMax > 0) lines.push(`Nexus store: ${Math.round(s.manaStorage)} of ${Math.round(s.manaStorageMax)}; it soaks up a shortfall first.`);
   if (s.brownout > 0) lines.push(`Brownout: ${Math.round(s.brownout * 100)} % of the draw is dark (leisure first, then homes and works farthest from the nodes).`);
-  if (s.overdrawDays > 0) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps a few lit houses into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
+  if (overdrawn(s)) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps a few lit houses into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
   else if (s.manaDemand > s.manaSupply) lines.push('The draw is over the flow: past a quarter over, a surge counts down from five days.');
   return lines.join('\n');
 }

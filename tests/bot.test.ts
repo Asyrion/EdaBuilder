@@ -273,3 +273,29 @@ describe('The bot reads the caravan', () => {
     expect((bot as any).pickGoal()?.kind).toBe('depot');
   });
 });
+
+// Phase 2-3 of the scope reset: the bot lays its street grid a block side at a time, where the town is and one ring past it.
+describe('the bot builds streets where the town is', () => {
+  it('on day 60 most of its street tiles have a lot or a building beside them, and it still reaches the Hamlet by day 5', async () => {
+    const { run } = await import('../src/sim/sim');
+    const s = createGame(42, 'Streets');
+    const bot = new Bot(s);
+    let hamlet = -1;
+    run(s, 900 * 60, { onDay: () => { bot.step(); if (hamlet < 0 && s.milestone >= 1) hamlet = s.day; } });
+    let roads = 0, beside = 0;
+    for (let i = 0; i < s.road.length; i++) {
+      if (!s.road[i]) continue;
+      roads++;
+      const x = i % 128, y = (i / 128) | 0;
+      let n = false;
+      for (let dy = -1; dy <= 1 && !n; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const j = (y + dy) * 128 + x + dx;
+        if (j >= 0 && j < s.road.length && (s.zone[j] || (s.bIndex[j] >= 0 && !s.road[j]))) { n = true; break; }
+      }
+      if (n) beside++;
+    }
+    expect(hamlet).toBeGreaterThan(0);
+    expect(hamlet).toBeLessThanOrEqual(5);
+    expect(beside / roads).toBeGreaterThanOrEqual(0.6);
+  }, 120_000);
+});
