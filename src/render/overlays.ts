@@ -51,18 +51,21 @@ function rampLegend(): [string, string][] {
     : [['rgba(255,60,60,0.55)', 'low'], ['rgba(255,255,60,0.55)', 'middling'], ['rgba(60,255,60,0.55)', 'high']];
 }
 
+/** An uncovered building in a service view: full strength, since the tint lies over the sprites at 35 % and a red roof
+ *  read the same as the old half-strength red (phase 2-10, the hand walk). */
+const UNCOVERED = 'rgb(240,50,50)';
 function coverageOverlay(id: OverlayId, name: string, key: string, type: ServiceType, desc: string): OverlayDef {
   return {
     id,
     name,
     key,
     desc,
-    legend: [['rgba(80,220,120,0.7)', 'covered'], ['rgba(230,80,80,0.6)', 'uncovered buildings']],
+    legend: [['rgba(80,220,120,0.7)', 'covered'], [UNCOVERED, 'uncovered buildings']],
     tile: (s, i) => {
       const c = s.coverage[type][i] / 255;
       const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
       if (c > 0) return `rgba(80,220,120,${0.15 + c * 0.5})`;
-      if (b && BUILDING_BY_KEY[b.kind].category === 'zone') return 'rgba(230,80,80,0.6)';
+      if (b && BUILDING_BY_KEY[b.kind].category === 'zone') return UNCOVERED;
       return null;
     },
   };

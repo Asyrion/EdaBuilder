@@ -16,7 +16,8 @@ The game is being cut back to its core with one people, the Vellish (`docs/RESET
   `node scripts/smoke.mjs` against `npx vite preview --port 4173` (instead of a new `playtestNN.mjs`), and for a sim
   change the bot corridor: `npx tsx scripts/balance.ts <seed> 150` for seed 42 and five more (Vellish only, instead of
   the wide bar over five peoples), its numbers against the phase 0 baseline in `docs/RESET_LOG.md`. Losses are reported
-  as losses. The checklist `docs/CORE_CHECKLIST.md` is walked when the UI changes.
+  as losses. The checklist `docs/CORE_CHECKLIST.md` is walked when the UI changes: `node scripts/handwalk.mjs` (a real
+  mouse and keys), and its shots looked at.
 - **Docs** (instead of rule 5 below): a section per phase in `docs/RESET_LOG.md`, not a `### 4.NN` in DESIGN.md;
   README and the in-game help follow what is removed. `docs/PARKED.md` gets a row for everything parked.
 - **Saves:** the reset breaks old saves on purpose (version 8 refuses older ones with a message); no migrations from 7.

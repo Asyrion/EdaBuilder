@@ -8,16 +8,12 @@ its open items are parked.
 
 ## Prioritized ideas for the next iteration
 
-1. **Phase 2: sharpen the core loop, the P2 items** (RESET_PLAN §3, Phase 2; DESIGN §2). Done: the P1 items (2-1 to
-   2-5), 2-6 (the Crown's favour struck out), 2-7 (the bot serves its town by the gaps; the Growth view on N) and 2-8
-   (hazards measured; a herald, a remedy and a view for each; the fire's spread kept, DESIGN §5) and 2-9 (happiness in
-   six groups, listed in the inspector and on the top bar; the formula unchanged). Next, with the bot corridor:
-   milestone pacing (the thresholds 40 … 2,200 against a 30–60 minute session, the Lantern of Vell gate; half the runs
-   reach the Beacon in 150 days), the last P2 item of phase 2.
-2. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7).
-3. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
-4. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
-5. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).
+1. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7). Phase 2 is done (2-1 to 2-10;
+   RESET_LOG has its acceptance, with the one point only a hand session can prove: a new player at the Village in 20
+   minutes).
+2. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
+3. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
+4. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).
 
 ## Known issues
 
