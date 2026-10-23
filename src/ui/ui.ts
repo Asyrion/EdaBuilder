@@ -10,7 +10,7 @@ import { AgentKind, MAP_H, MAP_W, RoadType, Zone, idx, type Building, type GameS
 import { CITY_NAMES, NODE_DEEPEN_COST, NODE_DEEPEN_MANA, NODE_SEEP, districtName, nodeFlowOf, timeOfDay, waterRadiusOf, stakeHallName, GROWING_HALLS } from '../sim/world';
 import { isLeyMember, lakeFed, loadCapOf, priorityOf, waterCapAt } from '../sim/networks';
 import { SEAM, SPENT_RATE, ARCANE_SCHOOL, growthBlock, demandTerms } from '../sim/growth';
-import { GREY_DAYS, SURGE_DAYS, fontsRunHot } from '../sim/hazards';
+import { GLOAM_NEAR_NODE, GREY_DAYS, RESTLESS_AT, RESTLESS_LOSS, RESTLESS_WARN, SURGE_DAYS, fontsRunHot } from '../sim/hazards';
 import { OVERLAY_LIST, OVERLAYS } from '../render/overlays';
 import { builderTarget, buildersAt, construction, sites } from '../sim/construction';
 import { DEV_COMMANDS, DEV_GROUPS, devNumber, devOptions, type DevArg } from '../sim/dev';
@@ -19,7 +19,7 @@ import { TIPS } from '../data/flavor';
 import { EDICT_MIN_DAYS, EDICT_REPEAL, districtsInUse, edictLocked, edictsFor } from '../sim/edicts';
 import { CHARTER_LOCK_DAYS, DISTRICT_UNLOCK, QUARTERS, QUARTER_BY_ID, type QuarterId, districtSlots, districtInUse, districtUnlockNotes, charterCostOf, charterHeld, charterLocked, districtOpenAt } from '../sim/districts';
 import { DISTRICT_COLORS } from '../render/overlays';
-import { marketStockCap, roadTileOf } from '../sim/agents';
+import { marketStockCap, restlessCount, roadTileOf } from '../sim/agents';
 import { marketRoadMultAt, marketRoadWords } from '../sim/roads';
 import { craftStockCap } from '../sim/growth';
 import { SEASON_NAMES, DAYS_PER_SEASON, MAX_DISTRICTS } from '../sim/types';
@@ -129,6 +129,7 @@ export class UI {
         <div class="stat"><span class="v ley" id="tb-mana"></span><span class="l">mana use / flow</span></div>
         <div class="stat"><span class="v" id="tb-happy"></span><span class="l">happiness</span></div>
         <div class="stat"><span class="v" id="tb-unrest"></span><span class="l">unrest</span></div>
+        <div class="stat hidden" id="tb-dead-stat"><span class="v bad" id="tb-dead"></span><span class="l" id="tb-dead-l">dead</span></div>
         <div class="stat opt"><span class="v" id="tb-goods"></span><span class="l">goods sold / short</span></div>
         <div class="spacer"></div>
         <div class="speed">
@@ -417,6 +418,20 @@ export class UI {
       stat.onmouseenter = (e) => this.showTooltip(manaTip(this.host.state).split('\n').map((l, k) => (k ? l : `<div class="t">${l}</div>`)).join('<br>'), e.clientX, e.clientY + 16);
       stat.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY + 16);
       stat.onmouseleave = () => this.hideTooltip();
+    }
+    // the restless herald (phase 2-8): shown only while the dead wait or walk
+    const dead = restlessShown(s);
+    const deadStat = this.q('#tb-dead-stat');
+    deadStat.classList.toggle('hidden', !dead);
+    if (dead) {
+      this.q('#tb-dead').textContent = dead.value;
+      this.q('#tb-dead-l').textContent = dead.label;
+      if (!deadStat.dataset.tip) {
+        deadStat.dataset.tip = '1';
+        deadStat.onmouseenter = (e) => this.showTooltip(restlessTip(this.host.state).split('\n').map((l, k) => (k ? l : `<div class="t">${l}</div>`)).join('<br>'), e.clientX, e.clientY + 16);
+        deadStat.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY + 16);
+        deadStat.onmouseleave = () => this.hideTooltip();
+      }
     }
     const hp = this.q('#tb-happy');
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
@@ -1059,9 +1074,15 @@ export class UI {
           </ol>
           <h3>Ways to lose</h3>
           <ul>
-            <li>Treasury below −8,000 × (1 + milestone ÷ 2) for ${DEBT_DAYS} days.</li>
-            <li>The Gloam reaches the founding ley node.</li>
-            <li>Forty restless dead walk your streets.</li>
+            <li>Treasury below −8,000 × (1 + milestone ÷ 2) for ${DEBT_DAYS} days. <i>Herald:</i> the treasury turns red; the Budget shows where the money goes.</li>
+            <li>The Gloam reaches the founding ley node. <i>Herald:</i> a warning when it comes within ${GLOAM_NEAR_NODE} tiles. <i>Remedy:</i> Ward Lanterns and light. <i>View:</i> Wards &amp; Gloam (G).</li>
+            <li>${RESTLESS_LOSS} restless dead walk your streets. <i>Herald:</i> the top bar counts the dead waiting from ${RESTLESS_WARN} (at ${RESTLESS_AT} one rises) and the restless walking. <i>Remedy:</i> a Boneyard, the Rite Subsidy, the Watch. <i>View:</i> Deathcare (0).</li>
+          </ul>
+          <h3>Hazards</h3>
+          <ul>
+            <li><b>Fire.</b> <i>Herald:</i> a warning on the first day of Ember, the dry season. <i>Remedy:</i> a Water-Mages' Hall puts out fires in its reach; outside it a fire burns down in two days and may catch its neighbours. <i>View:</i> Fire brigade (8), with the uncovered buildings by risk.</li>
+            <li><b>The wild surge.</b> <i>Herald:</i> the mana field counts down five days once the draw is a quarter over the flow. <i>Remedy:</i> a Thrum Font, a Nexus's store, fewer lit buildings. <i>View:</i> Mana (1).</li>
+            <li><b>The Gloam at the door.</b> <i>Herald:</i> a dark building with the grey at its door is named and has three days. <i>Remedy:</i> light it or ward it. <i>View:</i> Wards &amp; Gloam (G), pink.</li>
           </ul>
         </div>
       </div>
@@ -1558,11 +1579,26 @@ function overdrawn(s: GameState): boolean {
 }
 
 /** The top bar's mana field, in words (phase 2-2): supply and demand, the store, the brownout, and the surge's countdown. */
+/** The top bar's restless field (phase 2-8): null while nothing threatens; else the restless walking of forty, or the dead waiting of twenty. */
+export function restlessShown(s: GameState): { value: string; label: string } | null {
+  const walking = restlessCount(s);
+  if (walking > 0) return { value: `${walking} / ${RESTLESS_LOSS}`, label: 'restless' };
+  if (s.unquieted >= RESTLESS_WARN) return { value: `${Math.floor(s.unquieted)} / ${RESTLESS_AT}`, label: 'dead waiting' };
+  return null;
+}
+export function restlessTip(s: GameState): string {
+  const walking = restlessCount(s);
+  const lines = [walking > 0 ? `${walking} restless walk the streets. At ${RESTLESS_LOSS} the charter is lost.` : `${Math.floor(s.unquieted)} dead lie unquieted. At ${RESTLESS_AT} one rises and walks.`];
+  lines.push(`Deathcare quiets ${Math.round(s.quietCap)} a day; ${s.deathsToday} died today and ${Math.round(s.quietedToday)} were quieted.`);
+  lines.push('A Boneyard or an Ossuary quiets the dead in its reach (Deathcare view, 0); the Rite Subsidy quiets half again. The Watch lays the restless to rest (Watch view, 6).');
+  return lines.join('\n');
+}
+
 export function manaTip(s: GameState): string {
   const lines = [`Mana: ${Math.round(s.manaDemand)} drawn of ${Math.round(s.manaSupply)} flowing a day.`];
   if (s.manaStorageMax > 0) lines.push(`Nexus store: ${Math.round(s.manaStorage)} of ${Math.round(s.manaStorageMax)}; it soaks up a shortfall first.`);
   if (s.brownout > 0) lines.push(`Brownout: ${Math.round(s.brownout * 100)} % of the draw is dark (leisure first, then homes and works farthest from the nodes).`);
-  if (overdrawn(s)) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps a few lit houses into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
+  if (overdrawn(s)) lines.push(`Overdrawn by more than a quarter: a wild surge in ${SURGE_DAYS - s.overdrawDays} day${SURGE_DAYS - s.overdrawDays === 1 ? '' : 's'} warps two to five lit zone buildings into ruin. A Thrum Font, a Nexus's store, or fewer lit buildings stop it.`);
   else if (s.manaDemand > s.manaSupply) lines.push('The draw is over the flow: past a quarter over, a surge counts down from five days.');
   return lines.join('\n');
 }

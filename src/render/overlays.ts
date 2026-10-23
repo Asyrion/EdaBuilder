@@ -2,6 +2,7 @@
 import { BUILDING_BY_KEY } from '../sim/catalog';
 import { DISTRICT_NAMES, type GameState, type ServiceType } from '../sim/types';
 import { computeBuildingHappiness, growthBlock } from '../sim/growth';
+import { FIRE_BASE, fireRisk } from '../sim/hazards';
 
 export type OverlayId = 'growth' | 'mana' | 'water' | 'landvalue' | 'happiness' | 'traffic' | 'watch' | 'health' | 'fire' | 'faith' | 'school' | 'death' | 'ward' | 'leisure' | 'miasma' | 'goods' | 'district';
 
@@ -10,6 +11,9 @@ export const GROWTH_COLOURS: Record<'ok' | 'noRoad' | 'noMana' | 'noWater' | 'no
   ok: 'rgba(60,240,90,0.8)', noRoad: 'rgba(255,55,55,0.8)', noMana: 'rgba(30,40,95,0.85)', noWater: 'rgba(90,225,235,0.8)', noDemand: 'rgba(175,175,190,0.75)', gloam: 'rgba(175,90,235,0.8)',
   noSchool: 'rgba(60,130,255,0.8)', landValue: 'rgba(255,140,20,0.75)', climbing: 'rgba(150,255,170,0.45)',
 };
+
+/** The Fire brigade view's colours. */
+export const FIRE_COLOURS = { covered: 'rgba(80,220,120,0.6)', burning: 'rgb(255,170,0)', ruin: 'rgb(20,14,18)', high: 'rgb(255,30,30)', low: 'rgba(255,150,120,0.8)' };
 
 export const DISTRICT_COLORS = ['#ff8a5c', '#5ee36f', '#5aa8ff', '#ffd166', '#c58cff', '#4fe3ff', '#ff6fa8', '#b9c46a'];
 
@@ -107,7 +111,23 @@ export const OVERLAY_LIST: OverlayDef[] = [
   },
   coverageOverlay('watch', 'Watch', '6', 'watch', 'Watch coverage lowers unrest and lays the restless to rest.'),
   coverageOverlay('health', 'Healing', '7', 'health', 'Healer coverage raises health and lowers deaths.'),
-  coverageOverlay('fire', 'Fire brigade', '8', 'fire', 'The Water-Mages\' Hall puts out fires.'),
+  {
+    // the fire's view (phase 2-8): the hall's reach, what burns and what is left, and where a fire would start unchecked
+    id: 'fire', name: 'Fire brigade', key: '8',
+    desc: 'The Water-Mages\' Hall puts out fires in its reach. Outside it a fire burns down in two days and may catch its neighbours. Uncovered buildings show their risk: Craft and level 1 burn most, and Ember is the dry season.',
+    legend: [[FIRE_COLOURS.covered, 'in a hall\'s reach'], [FIRE_COLOURS.burning, 'burning'], [FIRE_COLOURS.ruin, 'ruin'], [FIRE_COLOURS.high, 'uncovered, high risk'], [FIRE_COLOURS.low, 'uncovered']],
+    tile: (s, i) => {
+      const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
+      if (b?.state === 'burning') return FIRE_COLOURS.burning;
+      if (b?.state === 'ruin') return FIRE_COLOURS.ruin;
+      const c = s.coverage.fire[i] / 255;
+      if (c > 0) return `rgba(80,220,120,${0.15 + c * 0.5})`;
+      if (!b) return null;
+      const p = fireRisk(s, b);
+      if (p <= 0) return null;
+      return p >= FIRE_BASE * 2 ? FIRE_COLOURS.high : FIRE_COLOURS.low;
+    },
+  },
   coverageOverlay('school', 'Schooling', '9', 'school', 'Schooling makes educated folk: needed for Arcane districts and level 3.'),
   coverageOverlay('death', 'Deathcare', '0', 'death', 'Boneyard coverage quiets the dead. Uncovered homes breed the restless.'),
   coverageOverlay('faith', 'Faith', '-', 'faith', 'Shrines and temples raise happiness and land value.'),
@@ -123,10 +143,12 @@ export const OVERLAY_LIST: OverlayDef[] = [
     },
   },
   {
-    id: 'ward', name: 'Wards & Gloam', key: 'g', desc: 'Ward coverage burns back the Gloam. Grey = Gloam, purple = whispering range.',
-    legend: [['rgba(79,227,255,0.6)', 'warded'], ['rgba(120,100,160,0.6)', 'gloam nearby'], ['rgba(40,30,60,0.8)', 'Gloam']],
+    id: 'ward', name: 'Wards & Gloam', key: 'g', desc: 'Ward coverage burns back the Gloam. Grey = Gloam, purple = whispering range, pink = a dark building the grey waits at: light it or ward it, or the Gloam takes it in three days. If the Gloam reaches the founding node, the charter is lost.',
+    legend: [['rgba(79,227,255,0.6)', 'warded'], ['rgba(120,100,160,0.6)', 'gloam nearby'], ['rgba(40,30,60,0.8)', 'Gloam'], ['rgba(255,60,200,0.85)', 'grey at the door']],
     tile: (s, i) => {
       if (s.gloam[i]) return 'rgba(40,30,60,0.8)';
+      const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
+      if (b && (b.greyDays ?? 0) > 0) return 'rgba(255,60,200,0.85)'; // the grey waits at its door: light or ward it
       const c = s.coverage.ward[i] / 255;
       if (c > 0) return `rgba(79,227,255,${0.15 + c * 0.45})`;
       if (s.gloamDist[i] < 7) return `rgba(120,100,160,${0.5 - s.gloamDist[i] * 0.06})`;

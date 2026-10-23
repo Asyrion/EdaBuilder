@@ -114,7 +114,7 @@ export function createGame(seed: number, cityName?: string, faction: FactionId =
     goodsShort: 0,
     gameOver: null,
     lostTo: undefined, // present from the start, so a save carries it (phase 1d)
-    stats: { firesTotal: 0, surgesTotal: 0, restlessTotal: 0, brownoutsSurvived: 0, brownoutOpen: 0, sectorsBought: 0, gloamTiles: 0, peakPopulation: 0, devUses: 0, quarterDays: 0, goodsStolen: 0, levies: 0, levied: 0 },
+    stats: { firesTotal: 0, firesSpread: 0, firesUncovered: 0, burnedDown: 0, surgeRuined: 0, gloamTaken: 0, surgesTotal: 0, restlessTotal: 0, brownoutsSurvived: 0, brownoutOpen: 0, sectorsBought: 0, gloamTiles: 0, peakPopulation: 0, devUses: 0, quarterDays: 0, goodsStolen: 0, levies: 0, levied: 0 },
     dirtyChunks: new Set(),
     zoneListDirty: true,
     zoneList: [],

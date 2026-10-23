@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-7 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-8 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -21,11 +21,10 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
 ## The next item
 
 **Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5), 2-6 (the Crown's favour
-struck out) and 2-7 (the bot serves its town by the gaps; the Growth view on N). Next: hazards (the fire's spread and a
-herald, a remedy and a view for each), happiness terms, milestone pacing, one change at a time against the bot corridor.
-Measure before turning a knob: in 2-7 seed 42 still had 222 fires by day 150 (`dailyFire` in `src/sim/hazards.ts`: 22 %
-a day to an uncovered neighbour, two days to burn down); count fires, burned buildings, surges, restless and Gloam per
-seed with the 2-7 bot first, then decide whether the rule or the player is at fault. Plan it on the Plan panel first.
+struck out), 2-7 (the bot serves its town by the gaps; the Growth view on N) and 2-8 (hazards: measured with
+`scripts/hazards.ts`, a herald, a remedy and a view for each, the fire's spread kept because only 38 % of fires spread).
+Next: **happiness terms** (about six, listed in the inspector), then milestone pacing, one change at a time against the
+bot corridor. Plan it on the Plan panel first.
 
 ## Known issues
 
@@ -36,6 +35,9 @@ seed with the 2-7 bot first, then decide whether the rule or the player is at fa
   and dry lots, or it raised no spire at all. A rule change that hides the bot's trigger needs the same look. In 2-3 its
   street grid was what bound its income (two in three street tiles empty); before turning an economic knob, look at the
   ledger (`computeLedger`, now with `upkeepBy` and `roadTiles`) and ask whether the player or the rules are at fault.
+- **Hazards (2-8):** fire costs the bot 66 buildings a run, nearly all outside a hall's reach; two of twelve runs end
+  with no hall reaching any zone building. The surge, the restless and the Gloam barely touch the bot (one Gloam taking
+  in twelve runs): whether they have teeth is for milestone pacing and a hand session.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.
 - **GitHub Actions** ran no jobs while the repositories were private (no runner assigned, `runner_id 0`). The user made
@@ -83,6 +85,10 @@ seed with the 2-7 bot first, then decide whether the rule or the player is at fa
   room. Without the day-30 rule seed 42 crashed to about 500 folk on Academy upkeep.
 - The draws of one seed spread wide (up to 2,376 folk on day 150): judge a change by the six-seed mean and the count of
   runs above and below main, never by one run.
+- `scripts/hazards.ts` is the hazards table (fires spread / uncovered, burned, surges, restless, Gloam, fire reach), read
+  from the counters in `state.stats`; `fireRisk` (`hazards.ts`) is the one ignition formula the sim and the view share.
+- An info view's tint lies over buildings at 35 % (`renderer.ts`), so a colour meant to read on a building needs full
+  alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - Two views must not share a key (`ui.test.ts` holds it); the Growth view's `6` silently opened Watch for six iterations.
 
 ## What the user cares about
