@@ -51,7 +51,12 @@ Road → zone → demand → growth → services and supply → budget → happi
    a treasury over 10,000. (The Crown's favour, which moved these by its standing, was struck out in phase 2-6.)
    The Budget panel shows the upkeep by kind (ley, water, services, leisure, wonders), the road tiles by type and the
    tithe a soul pays a day (phase 2-3).
-8. **Happiness:** the services, land value, miasma, the Gloam and the edicts; the inspector shows the terms.
+8. **Happiness:** 50 plus six groups (phase 2-9): **place** (land value, a quarter), **light & water**, **services**
+   (faith, leisure, health, watch; schooling for Arcane), **nuisances** (miasma, traffic, the Gloam near, the restless near),
+   **the city** (unrest, the tithe, edicts, a lit wonder, Bloom, the city's health) and **work & trade** (no work for homes,
+   shelves and customers for markets, buyers for works, leystone for Arcane). The inspector lists the six with their terms
+   and the lever of the worst; the top bar's tooltip shows the city's mean (homes weighed by their folk, workplaces by two)
+   against the next gate.
 
 **Time:** 900 ticks a day (90 s at 1×), 30 days a season, four seasons (the Thaw, Bloom, Ember, the Hush). Each day runs,
 in order: buildings, social, traffic, agents, fire, surge, death, Gloam, economy, Gloam pressure, construction,

@@ -115,31 +115,41 @@ export function trySpawnBuildings(state: GameState, attempts = 5): void {
 }
 
 /** Per-building happiness 0..100. */
-export interface Term { label: string; v: number }
+export interface Term { label: string; v: number; group?: HappinessGroup }
+/** The six groups a building's happiness terms fall into (scope reset phase 2-9); the base of 50 has none. */
+export type HappinessGroup = 'place' | 'supply' | 'services' | 'nuisance' | 'city' | 'work';
+export const HAPPINESS_GROUPS: { id: HappinessGroup; name: string; lever: string }[] = [
+  { id: 'place', name: 'Place', lever: 'Raise the land value: a better road, a garden or square, services near; a Hearth quarter charter.' },
+  { id: 'supply', name: 'Light & water', lever: 'Bring a spire within reach, and a well.' },
+  { id: 'services', name: 'Services', lever: 'A shrine, a garden or square, a healer and the watch within reach; an Academy for Arcane.' },
+  { id: 'nuisance', name: 'Nuisances', lever: 'Keep homes from Craft smoke and jammed roads; ward back the Gloam; quiet the dead.' },
+  { id: 'city', name: 'The city', lever: 'Lower the tithe (Budget), repeal a harsh edict, and post the watch against unrest.' },
+  { id: 'work', name: 'Work & trade', lever: 'Zone work for the folk, keep markets stocked, and give the works buyers.' },
+];
 /** The terms of a building's happiness, in the order they are summed; computeBuildingHappiness is their sum, clamped to 0..100. */
 export function happinessTerms(state: GameState, b: Building): Term[] {
   const def = BUILDING_BY_KEY[b.kind];
   const i = idx(b.x, b.y);
   const cov = state.coverage;
   const t: Term[] = [{ label: 'base', v: 50 }];
-  const add = (label: string, v: number) => { if (v !== 0) t.push({ label, v }); };
-  add('land value', (state.landValue[i] - 30) * 0.3);
-  add('faith', (cov.faith[i] / 255) * 8);
-  add('leisure', (cov.leisure[i] / 255) * 8);
-  add('health', (cov.health[i] / 255) * 6);
-  add('watch', (cov.watch[i] / 255) * 5);
-  add(b.lit ? 'lit' : 'unlit', b.lit ? 6 : -9);
-  if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') add('Hearth quarter', 3); else if (q === 'craft') add('Craft quarter', -4); else if (q === 'temple') add('Temple quarter', 2); }
-  add(b.watered ? 'watered' : 'dry', b.watered ? 6 : -11);
-  add('miasma', -(state.miasma[i] / 255) * 30);
+  const add = (group: HappinessGroup, label: string, v: number) => { if (v !== 0) t.push({ label, v, group }); };
+  add('place', 'land value', (state.landValue[i] - 30) * 0.3);
+  add('services', 'faith', (cov.faith[i] / 255) * 8);
+  add('services', 'leisure', (cov.leisure[i] / 255) * 8);
+  add('services', 'health', (cov.health[i] / 255) * 6);
+  add('services', 'watch', (cov.watch[i] / 255) * 5);
+  add('supply', b.lit ? 'lit' : 'unlit', b.lit ? 6 : -9);
+  if (def.zone === Zone.Hearth) { const q = quarterAt(state, i); if (q === 'hearth') add('place', 'Hearth quarter', 3); else if (q === 'craft') add('place', 'Craft quarter', -4); else if (q === 'temple') add('place', 'Temple quarter', 2); }
+  add('supply', b.watered ? 'watered' : 'dry', b.watered ? 6 : -11);
+  add('nuisance', 'miasma', -(state.miasma[i] / 255) * 30);
   const gd = state.gloamDist[i];
-  if (gd < 7) add('the Gloam near', -(7 - gd) * 3 * (1 - cov.ward[i] / 255));
-  add('traffic', -(state.trafficSmooth[i] / 255) * 10);
-  add('unrest', -state.unrest * 15);
+  if (gd < 7) add('nuisance', 'the Gloam near', -(7 - gd) * 3 * (1 - cov.ward[i] / 255));
+  add('nuisance', 'traffic', -(state.trafficSmooth[i] / 255) * 10);
+  add('city', 'unrest', -state.unrest * 15);
   // the restless nearby frighten everyone
   let fear = 0;
   for (const a of state.agents) if (a.kind === 2 && Math.abs(a.x - b.x) < 4 && Math.abs(a.y - b.y) < 4) fear -= 8;
-  add('the restless near', fear);
+  add('nuisance', 'the restless near', fear);
   let tax = 10;
   switch (def.zone) {
     case Zone.Hearth: tax = state.taxRates.hearth; break;
@@ -147,29 +157,29 @@ export function happinessTerms(state: GameState, b: Building): Term[] {
     case Zone.Craft: tax = state.taxRates.craft; break;
     case Zone.Arcane: tax = state.taxRates.arcane; break;
   }
-  add('the tithe', -(tax - 10) * 1.6);
-  for (const w of litWonders(state)) add(`the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
-  if (edictOn(state, 'curfew', b)) add('the curfew', -4);
-  if (seasonOf(state) === 1) add('Bloom', 2);
+  add('city', 'the tithe', -(tax - 10) * 1.6);
+  for (const w of litWonders(state)) add('city', `the ${BUILDING_BY_KEY[w.kind].name}`, 5); // every lit wonder hall delights the whole city
+  if (edictOn(state, 'curfew', b)) add('city', 'the curfew', -4);
+  if (seasonOf(state) === 1) add('city', 'Bloom', 2);
   if (def.zone === Zone.Hearth) {
     const unemployment = state.population > 0 ? 1 - state.employed / Math.max(1, workforceOf(state)) : 0;
-    add('no work', -unemployment * 20);
-    add('health of the city', (state.health - 0.5) * 15);
+    add('work', 'no work', -unemployment * 20);
+    add('city', 'health of the city', (state.health - 0.5) * 15);
   } else if (def.zone === Zone.Market) {
     // markets like customers, leisure and full shelves
-    add('leisure for the trade', (cov.leisure[i] / 255) * 6);
-    if (state.population < 20) add('no customers', -8);
+    add('services', 'leisure for the trade', (cov.leisure[i] / 255) * 6);
+    if (state.population < 20) add('work', 'no customers', -8);
     const fill = b.stock / marketStockCap(state, b);
-    if (fill <= 0.05) add('empty shelves', -14);
-    else if (fill > 0.5) add('full shelves', 5);
-    if (edictOn(state, 'lanternlevy', b)) add('the Lantern Levy', -6);
+    if (fill <= 0.05) add('work', 'empty shelves', -14);
+    else if (fill > 0.5) add('work', 'full shelves', 5);
+    if (edictOn(state, 'lanternlevy', b)) add('city', 'the Lantern Levy', -6);
   } else if (def.zone === Zone.Craft) {
-    add('industry tolerates', 4); // industry tolerates more
-    if (b.stock >= craftStockCap(b) * 0.95) add('nobody is buying', -10); // nobody is buying
+    add('work', 'industry tolerates', 4); // industry tolerates more
+    if (b.stock >= craftStockCap(b) * 0.95) add('work', 'nobody is buying', -10); // nobody is buying
   } else if (def.zone === Zone.Arcane) {
-    add('schooling', (cov.school[i] / 255) * 10 - 6);
-    if (b.stock <= 0.5 && b.age > 3) add('no leystone', -10); // no leystone to enchant
-    else if (b.stock > 5) add('leystone in store', 4);
+    add('services', 'schooling', (cov.school[i] / 255) * 10 - 6);
+    if (b.stock <= 0.5 && b.age > 3) add('work', 'no leystone', -10); // no leystone to enchant
+    else if (b.stock > 5) add('work', 'leystone in store', 4);
   }
   return t;
 }
@@ -178,6 +188,27 @@ export function computeBuildingHappiness(state: GameState, b: Building): number 
   let h = 0;
   for (const x of happinessTerms(state, b)) h += x.v;
   return Math.max(0, Math.min(100, h));
+}
+
+export interface GroupSum { id: HappinessGroup; name: string; lever: string; v: number; terms: Term[] }
+/** A building's happiness in its six groups, in the fixed order (a group with no term reads 0). */
+export function happinessGroups(state: GameState, b: Building): GroupSum[] {
+  const terms = happinessTerms(state, b);
+  return HAPPINESS_GROUPS.map((g) => { const ts = terms.filter((x) => x.group === g.id); return { ...g, v: ts.reduce((a, x) => a + x.v, 0), terms: ts }; });
+}
+/** The city's happiness in the six groups: the mean over the standing zone buildings, weighted as state.happiness is
+ *  (a home by its folk, at least one; a workplace by two). The groups are summed before a building's clamp to 0..100. */
+export function cityHappinessGroups(state: GameState): GroupSum[] {
+  const sum = new Map<HappinessGroup, number>();
+  let w = 0;
+  forEachBuilding(state, (b) => {
+    const def = BUILDING_BY_KEY[b.kind];
+    if (def.category !== 'zone' || b.state !== 'ok') return;
+    const wt = def.zone === Zone.Hearth ? Math.max(1, b.residents) : 2;
+    w += wt;
+    for (const x of happinessTerms(state, b)) if (x.group) sum.set(x.group, (sum.get(x.group) ?? 0) + x.v * wt);
+  });
+  return HAPPINESS_GROUPS.map((g) => ({ ...g, v: w > 0 ? (sum.get(g.id) ?? 0) / w : 0, terms: [] }));
 }
 
 /** What the next level needs, each with whether it is met today (for the panel). */

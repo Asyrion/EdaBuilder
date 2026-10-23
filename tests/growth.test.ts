@@ -8,7 +8,9 @@ import { RoadType, TICKS_PER_DAY, Zone, AgentKind, DAYS_PER_SEASON, idx } from '
 import { serialize, deserialize } from '../src/sim/save';
 import { computeLedger, checkMilestones } from '../src/sim/economy';
 import { findPath, dailyAgents, marketStockCap } from '../src/sim/agents';
-import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings, growthBlock, demandTerms } from '../src/sim/growth';
+import { happinessListHtml, happinessTip } from '../src/ui/ui';
+import { Bot } from '../src/sim/bot';
+import { dailyBuildings, craftStockCap, HOSPICE_DRAUGHTS, IDLE_SCHOLARS, grandAcademyBonus, idleScholars, theftAt, computeBuildingHappiness, happinessTerms, happinessGroups, cityHappinessGroups, HAPPINESS_GROUPS, levelUpNeeds, demandReasons, updateDemand, dailyTrade, trySpawnBuildings, growthBlock, demandTerms } from '../src/sim/growth';
 import { edictUpkeep, EDICT_BY_KEY } from '../src/sim/edicts';
 import { BUILDING_BY_KEY } from '../src/sim/catalog';
 import { updateCoverage, crewFactor, landBonusMap, landValueTerms, updateLandValue, DEATHCARE_LV } from '../src/sim/services';
@@ -465,6 +467,37 @@ describe('Crews', () => {
 });
 
 describe('The breakdowns', () => {
+  it('every happiness term but the base sits in one of six groups, and the groups sum to the happiness (phase 2-9)', () => {
+    const s = townStakes();
+    const f = s.founding;
+    const h = placeBuildingRaw(s, 'hearth', f.x - 2, f.y + 1, 2); ok(h); h.residents = 6;
+    const m = placeBuildingRaw(s, 'market', f.x + 1, f.y + 1, 1); ok(m);
+    for (const b of s.buildings) if (b && b.state === 'building') ok(b);
+    s.unrest = 0.2;
+    recomputeAll(s);
+    for (const b of [h, m]) {
+      const terms = happinessTerms(s, b);
+      expect(terms.filter((x) => !x.group).map((x) => x.label)).toEqual(['base']);
+      const groups = happinessGroups(s, b);
+      expect(groups.map((g) => g.id)).toEqual(HAPPINESS_GROUPS.map((g) => g.id));
+      expect(groups.length).toBe(6);
+      const sum = 50 + groups.reduce((v, g) => v + g.v, 0);
+      expect(computeBuildingHappiness(s, b)).toBeCloseTo(Math.max(0, Math.min(100, sum)), 9);
+    }
+    expect(happinessGroups(s, h).find((g) => g.id === 'city')!.terms.some((x) => x.label === 'unrest')).toBe(true);
+    const list = happinessListHtml(happinessGroups(s, h));
+    for (const g of HAPPINESS_GROUPS) expect(list).toContain(g.name);
+    expect(happinessTip(s)).toMatch(/next gate/);
+  });
+
+  it("the city's six groups average to its happiness, weighted as the top bar's is", () => {
+    const s = createGame(42, 'Mood', 'vellish');
+    const bot = new Bot(s);
+    run(s, TICKS_PER_DAY * 30, { onDay: () => bot.step() });
+    const mean = 50 + cityHappinessGroups(s).reduce((v, g) => v + g.v, 0);
+    expect(Math.abs(mean - s.happiness)).toBeLessThan(4);
+  });
+
   it('happiness and land value are the sums of their terms; the level-up needs name the unmet condition; the demand bars have reasons', () => {
     const s = townStakes();
     const f = s.founding;
