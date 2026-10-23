@@ -4,10 +4,10 @@
  * any sprite by name via public/art/atlas.json (see atlas.ts).
  */
 import { Painter, h2 } from './painter';
-import { drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3, drawDepot, drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3 } from './painted';
+import { drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3, drawDepot, drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3 } from './handdrawn';
 /** The zone houses drawn by hand after their paintings (iteration 81), by `${zone}_l${level}` then variant. */
 const PAINTED: Record<string, (() => { p: Painter; glow: Painter; ax: number; ay: number })[]> = { hearth_l2: [drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3], craft_l1: [drawCraftL1v0, drawCraftL1v1, drawCraftL1v2, drawCraftL1v3] };
-import { drawLanternOfVell, drawTemple } from './drawn';
+import { drawLanternOfVell, drawTemple } from './handdrawn';
 import { PAL, type PalName } from './palette';
 
 export interface SpriteDef {

@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-3 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-4 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -30,11 +30,12 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
   - 3-2: every sprite snapped to the palette, with tests.
   - 3-3: pixel-exact on every display (`devicePixelRatio`, `zoomScales`, `src/render/pixels.ts`;
     `scripts/pixelgrid.mjs` measures).
-- **Next: the pipeline** (RESET_PLAN Phase 3 task 3):
-  - bake the procedural and drawn sprites into the sheet at build time instead of painting them at boot;
-  - merge `painted.ts`/`drawn.ts`;
-  - keep boot under the baseline.
-- **Then:** the sprite list with a status per sprite, and the renderer decision.
+  - 3-4: the sprites drawn in code baked at build time (`scripts/bakeAtlas.ts` in `npm run build`; the dev server
+    paints at boot); `painted.ts` + `drawn.ts` → `handdrawn.ts`.
+- **Next: the sprite list** (RESET_PLAN Phase 3 task 4): every sprite the game draws with a status (fine / rework /
+  new), from the catalog, the atlas and the sheet, with the art bible's rules as the measure; it decides what the art
+  production of phase 3 makes.
+- **Then:** the renderer decision (task 5).
 
 Graphics change: screenshots before and after (CLAUDE.md rule 7). Plan it on the Plan panel first.
 
@@ -107,6 +108,8 @@ Graphics change: screenshots before and after (CLAUDE.md rule 7). Plan it on the
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
   them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
+- **`public/art/atlas.*` are build output** (3-4): `npm run build` bakes them, `.gitignore` keeps them out. The preview
+  of a build loads them (`__wardlight.atlasSource === 'baked'`); the dev server ignores them on purpose.
 - **The camera's `zoom` is the player's level (1..4); `scale` is device pixels per art pixel** (3-3). Mouse
   coordinates stay CSS pixels: `screenToWorld`, `pan` and `setZoom` convert. A screen-space loop in the renderer uses
   `cssW`/`cssH`, not `viewW` (device px). `handwalk.mjs` takes `HANDWALK_DPR`, `perf.mjs` `PERF_DPR`/`PERF_PORT`.

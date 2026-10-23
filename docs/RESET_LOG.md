@@ -1296,3 +1296,45 @@ antialiasing in the game picture". It closes a known issue open since phase 1.
 | `npx tsc --noEmit -p .`, `npm run build` | clean |
 | `npx vitest run` | 15 files, 302 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` (×3 ratios) | SMOKE OK; CHECKLIST OK; HANDWALK OK |
+
+## Phase 3-4: the sprites drawn in code baked at build time; painted.ts and drawn.ts in one file (2026-10-23)
+
+Phase 3, task 3 (RESET_PLAN §3 "Phase 3", the pipeline: "bake the procedural sprites at build time instead of at boot",
+"merge painted.ts/drawn.ts"; the phase's acceptance "boot under the baseline"). The importer's part of the task was
+3-2's.
+
+**Done.**
+- **`scripts/bakeAtlas.ts`** (new; `npm run bake`, and the first step of `npm run build`):
+  - It paints the 231 sprites of `sprites.ts`/`handdrawn.ts` in Node, snaps the bodies to the master palette and packs
+    them as the boot would. `packLayout` and `atlasPixels`, pulled out of `pack()` in `atlas.ts`, are shared by both.
+  - It writes `public/art/atlas.<hash>.png` (1024×543, 51 KB) and `atlas.json`. Both are build output, kept out of git;
+    the Pages workflow's `npm run build` makes them.
+- **The game loads the baked atlas** through the load path that existed and was never fed (`SpriteAtlas.fromOverride`).
+  - The console and `__wardlight.atlasSource` say which atlas was used.
+  - **The dev server always paints at boot,** so an edit to `sprites.ts` shows at once and a baked atlas left over from a
+    build never hides it. This was found while checking the fallback; the plan had said "falls back when missing".
+- **`painted.ts` + `drawn.ts` → `src/render/handdrawn.ts`:** one header with the rules both followed, the functions
+  unchanged. A hash over all 231 generated sprites before and after the move is the same (`efba4c2e…`). It was checked
+  once, not kept as a test: a pinned hash would break on every intended art change.
+- **Test** (`render-atlas.test.ts`, "the baked atlas"): the bake into a scratch folder holds, at every rect of its
+  manifest, exactly the pixels and anchors the boot would paint; every body pixel is on the palette.
+
+**Measured** (main against this branch, the same Playwright procedure, five loads each, alternating):
+
+| | load 1 | 2 | 3 | 4 | 5 | median |
+|---|---|---|---|---|---|---|
+| main, to the title (ms) | 766 | 392 | 322 | 371 | 314 | **371** |
+| 3-4, to the title (ms) | 346 | 216 | 286 | 201 | 222 | **222** |
+
+- **The boot is 40 % shorter.** The baked sheet costs 51 KB more to fetch.
+- **The town of seed 42 on day 30:** 0.9 % of the pixels differ between the builds. Two loads of the same build differ by
+  0.8–6 % (citizens, particles, the flicker), so the change is inside the noise. The shots are the same by eye.
+- **The rules did not change:** the twelve bot runs are 3-3's line for line.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` (bakes) | clean |
+| `npx vitest run` | 15 files, 303 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |
+| `npm run devboard:selftest` | DEV BOARD SELFTEST OK |
+| `npm run dev` with and without a baked atlas | paints at boot, starts |

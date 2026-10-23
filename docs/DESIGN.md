@@ -111,13 +111,13 @@ The rules are in `docs/ART_BIBLE.md` (scale, light, outline, the master palette 
 2:1 dimetric pixel art, lit from the front right, crisp pixels and a dark 1 px outline on everything, so the set reads as
 one. Sprites are the user's paintings from eda-lore's `inspirations/` through `npm run art` (`art/sources.json`,
 hand-set anchors), shipped as one packed sheet (`public/art/sheets/`, `sprites.json`), or drawn in code
-(`src/render/sprites.ts`, `painted.ts`, `drawn.ts`). Every building needs a sprite (a test holds it). The pipelines are
+(`src/render/sprites.ts`, `handdrawn.ts`). Every building needs a sprite (a test holds it). The pipelines are
 in `docs/ART_PIPELINES.md`. Day and night: the light pass and the lamps (`lights.ts`).
 
 ## 8. Tech
 
 TypeScript + Vite, Canvas 2D, no engine; the canvas in device pixels with a whole number of them per art pixel at
-every zoom level and display (phase 3-3). A deterministic fixed-tick sim in `src/sim` (no `Math.random`: `rngOf`,
+every zoom level and display (phase 3-3); the sprites drawn in code are baked into a sheet at build time (phase 3-4). A deterministic fixed-tick sim in `src/sim` (no `Math.random`: `rngOf`,
 `commitRng`), the renderer never changes the sim. Saves are version 8 and hold every layer; older ones are refused with a
 message. Commands go through a command layer with replays (format 2). Content is data in `src/data/content/`, edited on
 the dev board (`npm run devboard`). Tests are 15 themed suites in `tests/`; the browser checks are `scripts/smoke.mjs`,

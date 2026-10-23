@@ -100,6 +100,10 @@ ramp, not a new ramp.
 - **The procedural and drawn sprites** are snapped as the atlas packs them (`pack()` in `src/render/atlas.ts`), so the
   painter's alpha blends land on the palette as well. `PAL` stays the painter's list of names; where each name lands
   is the swatch's lower half. The glow layers keep their colours.
+- **Baked at build time** (phase 3-4): `npm run build` runs `scripts/bakeAtlas.ts`, which paints, snaps and packs
+  them exactly as the boot would (`packLayout`, `atlasPixels`) into `public/art/atlas.<hash>.png` + `atlas.json`. The
+  game loads that; the dev server always paints at boot. A test holds the baked sheet to the painted one pixel for
+  pixel.
 - **Not snapped, by intent:** the renderer's own tints (lights, the night, the views, particles), the UI.
 - **A new sprite needs nothing extra:** it is snapped on import or at boot. A colour it cannot keep needs a palette
   change (§4).

@@ -9,3 +9,5 @@ art/aseprite/*.trace.png
 art/aseprite/*_8x.png
 art/aseprite/export/*_8x.png
 art/build
+public/art/atlas.json
+public/art/atlas.*.png

@@ -11,9 +11,9 @@ its open items are parked.
 1. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7; `docs/ART_BIBLE.md`). Done:
    3-1 (the art bible and the master palette, 77 colours, decided by the user) and 3-2 (every sprite snapped to it,
    imported and painted; a test holds it) and 3-3 (pixel-exact on every display: `devicePixelRatio`, whole-pixel
-   diamonds, rings and lines, the bloom at a whole factor). Next: the pipeline (the painted sprites baked into the
-   sheet at build time instead of at boot; `painted.ts`/`drawn.ts` merged), then the sprite list, the renderer
-   decision. Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
+   diamonds, rings and lines, the bloom at a whole factor) and 3-4 (the sprites drawn in code baked at build time,
+   boot to the title 371 → 222 ms; `painted.ts` and `drawn.ts` merged into `handdrawn.ts`). Next: the sprite list (a
+   status per sprite: fine / rework / new; RESET_PLAN Phase 3 task 4), then the renderer decision (task 5). Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
 2. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 3. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
 4. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).
