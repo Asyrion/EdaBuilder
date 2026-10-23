@@ -8,8 +8,15 @@ sheet and the painted sprites to the palette (`tests/render-atlas.test.ts`, "the
 
 - **2:1 dimetric.** A tile is 32 × 16 px; a building of w × h tiles stands on a diamond 32·(w+h)/2 wide.
 - **A citizen is 12 px tall.** That is the yardstick: a door is about 10 px, a storey 8–10 px, a tree 1–2 storeys.
-- **Integer zoom only,** smoothing off, the camera on whole pixels. No vector antialiasing in the game picture: shadows,
-  fog and glows become pixel sprites in phase 3.
+- **Integer zoom in device pixels** (phase 3-3): the canvas is the window's size times `devicePixelRatio`. Each of
+  the four zoom levels is a whole number of device pixels per art pixel (`zoomScales`, `camera.ts`): at 100 % 1, 2, 3,
+  4; at 125 % 1, 3, 4, 5; at 150 % 2, 3, 5, 6. So the grid is even on every display. Smoothing off, the camera on
+  whole pixels.
+- **No vector antialiasing in the game picture:**
+  - the views' diamonds, the reach rings and their fills, the selection, the grid, the rune rings and the ley lines are
+    whole pixels (`src/render/pixels.ts`);
+  - the light map and the bloom are soft by design, scaled by a whole factor;
+  - the one exception is the reach labels' text, an interface over the scene.
 
 ## 2. Light
 

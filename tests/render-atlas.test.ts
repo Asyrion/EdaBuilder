@@ -927,3 +927,55 @@ describe('the master palette', () => {
     expect(off).toBe(0);
   });
 });
+
+/** Pixel-exact drawing and device pixels (scope reset phase 3-3, docs/ART_BIBLE.md §1). */
+describe('pixels on every display', () => {
+  it('the view diamond is exactly the ground tile diamond', async () => {
+    const { DIAMOND_SPANS } = await import('../src/render/pixels');
+    const tile = generateSprites().find((d) => d.name === 'grass_0')!;
+    for (let y = 0; y < 16; y++) {
+      const [a, b] = DIAMOND_SPANS[y];
+      for (let x = 0; x < 32; x++) {
+        const inSprite = tile.p.data[(y * 32 + x) * 4 + 3] > 0;
+        const inSpan = x - 16 >= a && x - 16 < b;
+        expect(inSpan).toBe(inSprite);
+      }
+    }
+  });
+
+  it('a line is gapless and every polyline pixel is drawn once', async () => {
+    const { linePixels, polylinePixels } = await import('../src/render/pixels');
+    for (const [x1, y1] of [[17, 5], [-9, 13], [3, -20], [0, 0], [12, 12]]) {
+      const px = linePixels(0, 0, x1, y1);
+      expect(px[0]).toEqual([0, 0]);
+      expect(px[px.length - 1]).toEqual([x1, y1]);
+      for (let k = 1; k < px.length; k++) expect(Math.max(Math.abs(px[k][0] - px[k - 1][0]), Math.abs(px[k][1] - px[k - 1][1]))).toBe(1);
+    }
+    const ring = polylinePixels([[0, 0], [16, 8], [0, 16], [-16, 8]], true);
+    expect(new Set(ring.map(([x, y]) => `${x},${y}`)).size).toBe(ring.length);
+  });
+
+  it('every zoom level is a whole number of device pixels, rising, at 100, 125, 150 and 200 %', async () => {
+    const { zoomScales } = await import('../src/render/camera');
+    expect(zoomScales(1)).toEqual([1, 2, 3, 4]);
+    expect(zoomScales(1.25)).toEqual([1, 3, 4, 5]);
+    expect(zoomScales(1.5)).toEqual([2, 3, 5, 6]);
+    expect(zoomScales(2)).toEqual([2, 4, 6, 8]);
+  });
+
+  it('a mouse point in CSS pixels lands on the same tile at any pixel ratio', async () => {
+    const { Camera } = await import('../src/render/camera');
+    for (const dpr of [1, 1.25, 1.5, 2]) {
+      const c = new Camera();
+      c.dpr = dpr;
+      c.viewW = Math.round(1280 * dpr);
+      c.viewH = Math.round(860 * dpr);
+      c.centerOnTile(60, 60);
+      // the screen's centre is the camera's centre, whatever the ratio
+      const [wx, wy] = c.screenToWorld(640, 430);
+      expect(Math.abs(wx - c.cx)).toBeLessThan(1);
+      expect(Math.abs(wy - c.cy)).toBeLessThan(1);
+      expect(Number.isInteger(c.scale)).toBe(true);
+    }
+  });
+});

@@ -10,7 +10,8 @@ import { mkdirSync } from 'node:fs';
 const out = 'shots';
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 } });
+// HANDWALK_DPR=1.5 walks it on a 150 % display (phase 3-3): the clicks must land on the same tiles
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, deviceScaleFactor: Number(process.env.HANDWALK_DPR ?? 1) });
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
@@ -170,7 +171,7 @@ await page.click('#sp-0');
 
 r.l10days = await page.evaluate(() => { const g = window.__game, W = window.__wardlight, s = g.state, bot = new W.Bot(s), d = s.day; while (s.milestone < 1 && s.day < d + 40) { for (let i = 0; i < 900; i++) W.tick(s); bot.step(); } W.recomputeAll(s); g.renderer.invalidateAll(); g.ui.refresh(); return s.day - d; });
 await wait(600);
-r.l10 = { ...(await S()), msg: await page.evaluate(() => window.__game.state.messages.filter((m) => /Hamlet/.test(m.text)).map((m) => m.text).slice(-1)[0] ?? null) };
+r.l10 = { ...(await S()), msg: await page.evaluate(() => window.__game.state.messages.filter((m) => /is now a Hamlet/.test(m.text)).map((m) => m.text).slice(-1)[0] ?? null) };
 await shot('10_hamlet');
 p = await roadSpot(2) ?? await roadSpot(1);
 r.l10healer = await place('Services', 'Healer', p[0], p[1], '10_healer_placing');

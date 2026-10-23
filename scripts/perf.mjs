@@ -2,10 +2,11 @@
 import { chromium } from 'playwright';
 const days = Number(process.argv[2] ?? 110);
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+// PERF_DPR=1.5 measures a 150 % display (phase 3-3: the canvas then has 2.25 times the device pixels)
+const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: Number(process.env.PERF_DPR ?? 1) });
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
-await page.goto('http://localhost:4173/');
+await page.goto(`http://localhost:${process.env.PERF_PORT ?? 4173}/`);
 await page.waitForFunction(() => window.__game);
 await page.evaluate(() => { window.__game.newGame(42, 'Thornwick'); document.getElementById('help').classList.add('hidden'); document.getElementById('title').classList.add('hidden'); });
 const t0 = Date.now();
