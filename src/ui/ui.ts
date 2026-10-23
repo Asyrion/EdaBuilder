@@ -1,8 +1,8 @@
-import { buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, nextGate, specialLock, costOf } from '../data/factions';
+import { VELLISH_HAPPINESS, buildsFor, canBuild, factionKey, factionOf, gateMet, milestonesOf, nextGate, specialLock, costOf } from '../data/factions';
 /** DOM UI: top bar, toolbar, info views, demand, log, building info, modals. */
 import { BUILDINGS, BUILDING_BY_KEY, ZONE_KEY, ROADS, ROAD_BY_TYPE, isDepot, isRoadUnlocked, isZoneUnlocked, type BuildingDef } from '../sim/catalog';
 import { DEBT_DAYS, LEVY_FLOOR, LEVY_RATE, LOAN_INTEREST, computeLedger, debtLine, grantFor, levyDue, loanLimit } from '../sim/economy';
-import { HOSPICE_DRAUGHTS, capacityOf, computeBuildingHappiness, grandAcademyBonus, happinessTerms, idleScholars, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
+import { HOSPICE_DRAUGHTS, capacityOf, cityHappinessGroups, computeBuildingHappiness, grandAcademyBonus, happinessGroups, idleScholars, type GroupSum, levelUpNeeds, theftAt, workforceOf, type Term, demandExplain, type DemandZone } from '../sim/growth';
 import { crewFactor, landBonusMap, landValueTerms } from '../sim/services';
 import { greyInReach, wardBurnBudget } from '../sim/hazards';
 import { manaUseOf } from '../sim/networks';
@@ -434,6 +434,14 @@ export class UI {
       }
     }
     const hp = this.q('#tb-happy');
+    if (!hp.dataset.tip) {
+      // the happiness field explains itself (phase 2-9): the city's six groups and the gate it must clear
+      hp.dataset.tip = '1';
+      const stat = hp.parentElement as HTMLElement;
+      stat.onmouseenter = (e) => this.showTooltip(happinessTip(this.host.state), e.clientX, e.clientY + 16);
+      stat.onmousemove = (e) => this.moveTooltip(e.clientX, e.clientY + 16);
+      stat.onmouseleave = () => this.hideTooltip();
+    }
     hp.textContent = `${Math.round(s.happiness)}${s.happiness > 60 ? ' ☺' : s.happiness < 35 ? ' ☹' : ''}`;
     hp.className = `v ${s.happiness > 55 ? 'good' : s.happiness < 35 ? 'bad' : ''}`;
     const gd = this.q('#tb-goods');
@@ -709,7 +717,7 @@ export class UI {
       else rows.push(row('Workers', `${b.workers} / ${cap}`));
       const hp = b.state === 'ok' ? computeBuildingHappiness(s, b) : 0;
       rows.push(row('Happiness', `${Math.round(hp)}`));
-      if (b.state === 'ok') rows.push(`<div class="why muted">${whyLine(happinessTerms(s, b))}</div>`);
+      if (b.state === 'ok') rows.push(happinessListHtml(happinessGroups(s, b)));
       rows.push(row('Land value', `${s.landValue[i]}`));
       rows.push(`<div class="why muted">${whyLine(landValueTerms(s, i, this.landBonus(s)))}</div>`);
       rows.push(row('Level-up progress', `${Math.max(0, Math.round(b.progress))}%`));
@@ -1071,6 +1079,7 @@ export class UI {
             <li><b>Unrest</b>: an unwatched market loses a tenth of its shelves a night while unrest is over 30 %. While placing a spire, a well or a service hall, the reach of the ones already standing is drawn, so you can see where the new one links or where the gaps are. Selecting a building rings everything it reaches, labelled (its water, watch or light, and the rest: the Hospice's draughts), above the houses and through the night, with its kin's reach faint around it.</li>
             <li><b>Districts</b> open in steps: two at the Hamlet, four at the Village, six at the Market Town, all eight at the Burgh; charters the same way (Hearth and Craft first, Market at the Village, Scholars' at the Township, Temple at the Market Town). A charter costs a crown a building a day and holds ${CHARTER_LOCK_DAYS} days; a Craft quarter's smoke drifts four tiles past its edge, a Temple quarter takes a tenth of the city's market tithe. An <b>edict</b> holds ${EDICT_MIN_DAYS} days and costs ${EDICT_REPEAL} crowns to repeal. A road at a building's corner counts as its door.</li>
             <li><b>The Crown</b> levies 5 % of the treasury above 10,000 each Thaw, lends 10,000 a milestone at half a percent a day (Ledger), and charges 1 % a day on a debt. The top bar names the <b>next gate</b>: happiness 45 + 3 × the milestone, and for the Beacon the Lantern of Vell lit.</li>
+            <li><b>Happiness</b> starts at 50 and moves in six groups: place (land value, quarters), light &amp; water, services, nuisances (miasma, traffic, the Gloam, the restless), the city (tithe, edicts, unrest) and work &amp; trade. A selected building lists them with what mends the worst; the top bar's happiness shows the city's mean and the next gate.</li>
           </ol>
           <h3>Ways to lose</h3>
           <ul>
@@ -1536,6 +1545,23 @@ function whyLine(terms: Term[]): string {
   const minus = t.filter((x) => x.v < 0).sort((a, b) => a.v - b.v).slice(0, 3);
   const f = (x: Term) => `${x.v > 0 ? '+' : ''}${Math.round(x.v)} ${x.label}`;
   return `${plus.map(f).join(' · ') || 'nothing for it'}${minus.length ? ` <span class="warn">| ${minus.map(f).join(' · ')}</span>` : ''}`;
+}
+/** The six happiness groups as a list (phase 2-9): each with its value and its terms; the worst negative group names its lever. */
+export function happinessListHtml(groups: GroupSum[], withTerms = true): string {
+  const worst = groups.reduce<GroupSum | null>((w, g) => (g.v < -0.5 && (!w || g.v < w.v) ? g : w), null);
+  const f = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(Math.round(v))}`;
+  const lines = groups.map((g) => {
+    const terms = withTerms && g.terms.length ? ` <span class="muted">${g.terms.map((x) => `${f(x.v)} ${x.label}`).join(' · ')}</span>` : '';
+    return `<li><span class="${g.v > 0.5 ? 'good' : g.v < -0.5 ? 'warn' : 'muted'}">${f(g.v)}</span> ${g.name}${terms}</li>`;
+  });
+  return `<ul class="happy-groups"><li class="muted">starts at 50</li>${lines.join('')}</ul>${worst ? `<div class="why muted">To mend ${worst.name.toLowerCase()}: ${worst.lever}</div>` : ''}`;
+}
+/** The top bar's happiness tooltip: the city's value, the next gate's need, and the six groups in the city's mean. */
+export function happinessTip(s: GameState): string {
+  const next = s.milestone + 1;
+  const ms = milestonesOf(s);
+  const gate = next < ms.length ? ` The next gate, ${ms[next].name}, wants ${VELLISH_HAPPINESS(next)}.` : '';
+  return `<div class="t">Happiness ${Math.round(s.happiness)}, the mean of the zone buildings (a home counts by its folk).${gate}</div>${happinessListHtml(cityHappinessGroups(s), false)}<div class="muted">Select a building for its own list; the Happiness view (4) colours them.</div>`;
 }
 function row(k: string, v: string): string {
   return `<div class="row"><span class="muted">${k}</span><span>${v}</span></div>`;

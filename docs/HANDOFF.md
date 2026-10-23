@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-8 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-9 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -21,10 +21,11 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
 ## The next item
 
 **Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5), 2-6 (the Crown's favour
-struck out), 2-7 (the bot serves its town by the gaps; the Growth view on N) and 2-8 (hazards: measured with
-`scripts/hazards.ts`, a herald, a remedy and a view for each, the fire's spread kept because only 38 % of fires spread).
-Next: **happiness terms** (about six, listed in the inspector), then milestone pacing, one change at a time against the
-bot corridor. Plan it on the Plan panel first.
+struck out), 2-7 (the bot serves its town by the gaps; the Growth view on N), 2-8 (hazards: measured with
+`scripts/hazards.ts`, a herald, a remedy and a view for each, the fire's spread kept) and 2-9 (happiness in six groups,
+in the inspector and the top bar's tooltip; the formula unchanged, the user's choice). Next: **milestone pacing**
+(RESET_PLAN P2: the thresholds 40 … 2,200 against a 30–60 minute session, the Lantern of Vell gate), the last P2 item;
+after it phase 2's acceptance (RESET_PLAN §3) and phase 3. Plan it on the Plan panel first.
 
 ## Known issues
 
@@ -89,6 +90,8 @@ bot corridor. Plan it on the Plan panel first.
   from the counters in `state.stats`; `fireRisk` (`hazards.ts`) is the one ignition formula the sim and the view share.
 - An info view's tint lies over buildings at 35 % (`renderer.ts`), so a colour meant to read on a building needs full
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
+- A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
+  them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
 - Two views must not share a key (`ui.test.ts` holds it); the Growth view's `6` silently opened Watch for six iterations.
 
 ## What the user cares about

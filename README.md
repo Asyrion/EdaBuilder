@@ -177,7 +177,9 @@ Charter as `.json`.
   a debt and a loan from the Budget, a bankruptcy line that grows with the city; the next
   milestone's gate named in the top bar (happiness, and the Lantern of Vell lit for the Beacon).
 - Services have crews filled from the city's hands and watch, heal, teach and quiet by how
-  many are filled; every happiness and land value shows its largest terms; a home lists what
+  many are filled; happiness is listed in six groups (place, light & water, services,
+  nuisances, the city, work & trade) with the lever of the worst, for a building and, on the
+  top bar, for the city; land value shows its largest terms; a home lists what
   its next level needs; wards burn the grey on a daily budget, the nearest first.
 - Unrest has teeth: an unwatched market loses a tenth of its shelves a night while the city
   is unquiet. The Hospice runs on draughts from the markets, and placing a spire, a

@@ -1050,3 +1050,42 @@ question of reach (the player's, and the bot's), not of the rule. No sim number 
 | `npx vitest run` | 15 files, 292 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK |
 | The bot's twelve runs | folk identical to 2-7 on every run; no corridor run needed (no rule changed) |
+
+## Phase 2-9: happiness in six groups, listed in the inspector and on the top bar (2026-10-23)
+
+A P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 happiness: "the terms down to about six, listed in the inspector").
+A building's happiness was the sum of up to 22 terms; the inspector showed the three largest each way in one line, and
+the top bar's happiness, which the milestone gates read (45 + 3 × the milestone), explained nothing.
+
+**The user's decision (2026-10-23):** six groups, the formula unchanged. Cutting the formula itself was offered and
+declined for now.
+
+**Done.**
+- **Six groups** (`HAPPINESS_GROUPS`, `growth.ts`). Every term but the base of 50 carries one; the order and the
+  arithmetic of the sum did not change.
+  - **Place:** land value, a Hearth/Craft/Temple quarter.
+  - **Light & water:** lit or unlit, watered or dry.
+  - **Services:** faith, leisure, health, watch; schooling (Arcane), leisure for the trade (Market).
+  - **Nuisances:** miasma, traffic, the Gloam near, the restless near.
+  - **The city:** unrest, the tithe, the curfew, the Lantern Levy, a lit wonder, Bloom, the city's health.
+  - **Work & trade:** no work (homes), customers and shelves (markets), industry tolerates and nobody buying (works),
+    leystone (Arcane).
+- **`happinessGroups(state, b)`** gives a building's six with their terms; **`cityHappinessGroups(state)`** the city's
+  mean, weighted as `state.happiness` is (a home by its folk, at least one; a workplace by two).
+- **The inspector** lists the six (value coloured, the terms behind each) under "starts at 50", and names the lever of
+  the worst negative group ("To mend work & trade: …"). Land value keeps its line.
+- **The top bar's happiness** has a tooltip: the city's value, the next gate and what it wants, the six groups in the
+  city's mean, and the lever of the worst.
+- **The Happiness view's** description, the help, DESIGN §2 and README name the six groups.
+- **Tests** (`growth.test.ts`, two new): every term but the base has a group; there are six; they sum to the happiness;
+  the list and the tooltip name them. Seed 42's city mean on day 30 lies within 4 of `state.happiness`: the groups are
+  summed before a building's clamp to 0–100, and the day's weights are today's.
+
+**The rules did not change.** The twelve bot runs of `scripts/hazards.ts` (six seeds × two draws, 150 days) are 2-8's
+line for line; no corridor run.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 368 KB (127 KB gzip) |
+| `npx vitest run` | 15 files, 294 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK |

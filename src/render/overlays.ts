@@ -95,7 +95,7 @@ export const OVERLAY_LIST: OverlayDef[] = [
     tile: (s, i) => (s.road[i] ? null : ramp(s.landValue[i] / 80)),
   },
   {
-    id: 'happiness', name: 'Happiness', key: '4', desc: 'How content each building is. Below 15 for long, folk leave.',
+    id: 'happiness', name: 'Happiness', key: '4', desc: 'How content each building is. Below 15 for long, folk leave. It starts at 50 and moves in six groups: place, light & water, services, nuisances, the city (tithe, edicts, unrest) and work & trade. Select a building for its list; hover the top bar\'s happiness for the city\'s.',
     get legend() { return rampLegend(); },
     tile: (s, i) => {
       const b = s.bIndex[i] >= 0 ? s.buildings[s.bIndex[i]] : null;
