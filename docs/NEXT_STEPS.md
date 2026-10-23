@@ -12,8 +12,10 @@ its open items are parked.
    3-1 (the art bible and the master palette, 77 colours, decided by the user) and 3-2 (every sprite snapped to it,
    imported and painted; a test holds it) and 3-3 (pixel-exact on every display: `devicePixelRatio`, whole-pixel
    diamonds, rings and lines, the bloom at a whole factor) and 3-4 (the sprites drawn in code baked at build time,
-   boot to the title 371 → 222 ms; `painted.ts` and `drawn.ts` merged into `handdrawn.ts`). Next: the sprite list (a
-   status per sprite: fine / rework / new; RESET_PLAN Phase 3 task 4), then the renderer decision (task 5). Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
+   boot to the title 371 → 222 ms; `painted.ts` and `drawn.ts` merged into `handdrawn.ts`) and 3-5 (the sprite list,
+   `docs/SPRITE_LIST.md`: 437 ok, 260 rework, 18 new, 79 replaced; the production list waits for the user's order).
+   Next: the renderer decision (RESET_PLAN Phase 3 task 5: keep Canvas 2D or a WebGL2 path), then the art production
+   in the order the user sets. Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
 2. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 3. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
 4. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).

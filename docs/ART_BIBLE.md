@@ -104,6 +104,8 @@ ramp, not a new ramp.
   them exactly as the boot would (`packLayout`, `atlasPixels`) into `public/art/atlas.<hash>.png` + `atlas.json`. The
   game loads that; the dev server always paints at boot. A test holds the baked sheet to the painted one pixel for
   pixel.
+- **Where every sprite stands against this bible:** `docs/SPRITE_LIST.md` (phase 3-5; measured by
+  `scripts/spriteList.ts`).
 - **Not snapped, by intent:** the renderer's own tints (lights, the night, the views, particles), the UI.
 - **A new sprite needs nothing extra:** it is snapped on import or at boot. A colour it cannot keep needs a palette
   change (§4).
