@@ -11,7 +11,7 @@ import { SpriteAtlas, lookName, mirrorRect, zoneSpriteName, type ImportManifest 
 import { CART_GOODS_PREFIX, CART_STONE_PREFIX, cartPick, cartSpriteName, facesRight } from '../src/render/carts';
 import { faceLeft } from '../src/render/facing';
 import { ANCIENT, AUTUMN_PLAIN, BLOSSOM, BROADLEAF, CONIFER, CRYSTAL, CRYSTAL_REACH, MAGIC_REACH, SPIRIT, WET_REACH, WILLOW, groveCtx, treeFor, type GroveCtx } from '../src/render/groves';
-import { drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3, drawCraftL1v0, drawCraftL1v2, drawDepot } from '../src/render/painted';
+import { drawHearthL2v0, drawHearthL2v1, drawHearthL2v2, drawHearthL2v3, drawCraftL1v0, drawCraftL1v2, drawDepot } from '../src/render/handdrawn';
 import { PAL, ambientFor, liftAmbient, nightFactor } from '../src/render/palette';
 import { VIEW_LIFT } from '../src/render/renderer';
 import { generateSprites, type SpriteDef } from '../src/render/sprites';
@@ -422,7 +422,7 @@ describe('The paintings redrawn in code, part 1', () => {
 });
 
 /** The twelve redrawn again, each after its own painting: the level-2 hearths, the level-1 crafts and the depot are composed
- *  by hand in src/render/painted.ts (boxes, gables along either axis, porches, verandas, dormers, chimneys and props where the
+ *  by hand in src/render/handdrawn.ts (boxes, gables along either axis, porches, verandas, dormers, chimneys and props where the
  *  painting has them), not built from one spec; the citizen yardstick holds; the outline closes them. */
 const hexOf = (d: { p: { w: number; data: Uint8ClampedArray } }, x: number, y: number) => { const i = (y * d.p.w + x) * 4; return '#' + [0, 1, 2].map((k) => d.p.data[i + k].toString(16).padStart(2, '0')).join(''); };
 const colourCount = (d: { p: { w: number; h: number; data: Uint8ClampedArray; get: (x: number, y: number) => number } }, colour: string) => { let n = 0; for (let y = 0; y < d.p.h; y++) for (let x = 0; x < d.p.w; x++) if (d.p.get(x, y) > 0 && hexOf(d, x, y) === colour) n++; return n; };
@@ -978,4 +978,42 @@ describe('pixels on every display', () => {
       expect(Number.isInteger(c.scale)).toBe(true);
     }
   });
+});
+
+/** The procedural atlas baked at build time (scope reset phase 3-4): the build's sheet is the boot's, pixel for pixel. */
+describe('the baked atlas', () => {
+  it('holds at every rect exactly the pixels the boot would paint, with the same anchors, on the master palette', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { atlasPixels, packLayout } = await import('../src/render/atlas');
+    const { onPalette } = await import('../src/render/master');
+    const dir = mkdtempSync(join(tmpdir(), 'bake-'));
+    try {
+      execFileSync(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'scripts/bakeAtlas.ts', dir], { stdio: 'pipe' });
+      const m = JSON.parse(readFileSync(join(dir, 'atlas.json'), 'utf8'));
+      const img = decodePng(readFileSync(join(dir, m.image)));
+      const defs = generateSprites();
+      const { rects } = packLayout(defs);
+      expect(Object.keys(m.sprites).length).toBe(defs.length);
+      let off = 0;
+      for (const d of defs) {
+        const r = m.sprites[d.name];
+        expect(r).toEqual(rects[d.name]);
+        for (const [glow, at] of [[false, r], [true, r.glow]] as const) {
+          if (glow && !d.glow) continue;
+          const want = atlasPixels(d, glow), p = glow ? d.glow! : d.p;
+          for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) {
+            const o = ((at.y + y) * img.w + at.x + x) * 4, q = (y * p.w + x) * 4;
+            expect(img.data[o + 3]).toBe(want[q + 3]);
+            if (want[q + 3] === 0) continue;
+            expect([img.data[o], img.data[o + 1], img.data[o + 2]]).toEqual([want[q], want[q + 1], want[q + 2]]);
+            if (!glow && !onPalette((img.data[o] << 16) | (img.data[o + 1] << 8) | img.data[o + 2])) off++;
+          }
+        }
+      }
+      expect(off).toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }, 60000);
 });

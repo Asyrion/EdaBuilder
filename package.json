@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && tsx scripts/bakeAtlas.ts && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "headless": "tsx scripts/headless.ts",
     "art": "node scripts/importSprites.mjs",
     "art:check": "node scripts/importSprites.mjs --check",
     "devboard": "tsx tools/devboard/server.ts",
-    "devboard:selftest": "tsx tools/devboard/selftest.ts"
+    "devboard:selftest": "tsx tools/devboard/selftest.ts",
+    "bake": "tsx scripts/bakeAtlas.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

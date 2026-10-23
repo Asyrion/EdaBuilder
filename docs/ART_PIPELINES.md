@@ -33,6 +33,9 @@ docs 04 §2 and §11 there. The decisions are in `docs/archive/DESIGN.md` §4.80
 - **Every sprite is then snapped to the master palette** (`art/palette.json`, `docs/ART_BIBLE.md` §6; phase 3-2), the
   pixel sprites too. The glow layers are not. A colour a painting needs and the palette lacks is a palette change,
   never a skipped snap.
+- **The sprites drawn in code** (`src/render/sprites.ts`, `handdrawn.ts`) are baked into `public/art/atlas.<hash>.png`
+  by `npm run build` (`scripts/bakeAtlas.ts`, `npm run bake` alone; phase 3-4). The files are build output, not
+  committed. `npm run dev` paints them at boot, so an edit shows at once.
 - **Paintings live in eda-lore's `inspirations/<folder>/` and are committed there** (since the scope reset, 1d-2): a
   sibling checkout, `EDA_LORE` or `../eda-lore` (`scripts/lib/lore.mjs`); `npm run art` stops with a message without
   it, the build and the tests do not need it. An entry's `src` is the path inside eda-lore. Only images that are used go in. Rounds, contact

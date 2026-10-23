@@ -502,12 +502,15 @@ async function boot(): Promise<void> {
   const line = document.getElementById('boot'); // the page's loading line (iteration 90): never a blank screen while the art loads
   const say = (text: string) => { if (line) line.textContent = text; };
   say('Unpacking the sprites…');
-  const override = await SpriteAtlas.fromOverride(base);
+  // the build bakes the procedural sprites (scripts/bakeAtlas.ts); the dev server always paints them, so an edit to sprites.ts
+  // shows at once and a baked atlas left over from an earlier build never hides it (phase 3-4)
+  const override = import.meta.env.DEV ? null : await SpriteAtlas.fromOverride(base);
   const atlas = override ?? SpriteAtlas.fromGenerated();
+  console.info(`Wardlight: the procedural sprites ${atlas.source === 'baked' ? 'baked at build time' : (import.meta.env.DEV ? 'painted at boot (the dev server always paints)' : 'painted at boot (no public/art/atlas.json: npm run build bakes it)')}.`);
   await atlas.mergeOverrides(base, (done, total) => say(`Unpacking the sprites… ${Math.floor((100 * done) / Math.max(1, total))} %`)); // imported sprites (public/art/sprites.json) over either atlas
   say('Raising the town…');
   await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0))); // let the line paint before the town is built
-  (window as any).__wardlight = { atlas, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, createGame, economy, edicts, districts, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, water, facing: { faceLeft } };
+  (window as any).__wardlight = { atlas, atlasSource: atlas.source, MILESTONES, actions, tick, recomputeAll, Bot, place: placeBuildingRaw, createGame, economy, edicts, districts, save: { serialize, deserialize }, dev: { runDev }, factions: { canBuild, specialLock }, water, facing: { faceLeft } };
   const game = new Game(atlas);
   (window as any).__game = game;
   line?.remove();

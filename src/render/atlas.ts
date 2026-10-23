@@ -37,6 +37,8 @@ export class SpriteAtlas {
   sprites: Record<string, SpriteRect> = {};
   /** Names that came from public/art/sprites.json: an imported painting is the look for every people (iteration 51). */
   imported = new Set<string>();
+  /** Where the procedural sprites came from: baked at build time (public/art/atlas.json, scripts/bakeAtlas.ts) or painted at boot. */
+  source: 'baked' | 'painted' = 'painted';
   private missing = new Set<string>();
   private mirrorSheet: HTMLCanvasElement | null = null;
   private mirrorOf: unknown = null;
@@ -105,6 +107,7 @@ export class SpriteAtlas {
       const atlas = new SpriteAtlas();
       atlas.image = img;
       atlas.sprites = manifest.sprites;
+      atlas.source = 'baked';
       return atlas;
     } catch {
       return null;
@@ -246,8 +249,9 @@ export function shelfPack(items: { w: number; h: number }[], W = 1024, startY = 
   return { pos, height: y + shelf + 1 };
 }
 
-function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<string, SpriteRect> } {
-  // shelf packing sorted by height
+/** Where each generated sprite (and its glow) goes in the atlas, without a canvas: the boot's pack() and the build's
+ *  scripts/bakeAtlas.ts lay out the same sheet from it (scope reset phase 3-4). Shelf packing, tallest first. */
+export function packLayout(defs: SpriteDef[]): { W: number; H: number; items: { def: SpriteDef; glow: boolean; x: number; y: number }[]; rects: Record<string, SpriteRect> } {
   const items: { def: SpriteDef; w: number; h: number; glow: boolean }[] = [];
   for (const d of defs) {
     items.push({ def: d, w: d.p.w, h: d.p.h, glow: false });
@@ -256,21 +260,30 @@ function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<str
   items.sort((a, b) => b.h - a.h);
   const W = 1024;
   const { pos, height: H } = shelfPack(items, W, 0);
+  const rects: Record<string, SpriteRect> = {};
+  items.forEach((it, i) => { if (!it.glow) rects[it.def.name] = { x: pos[i].x, y: pos[i].y, w: it.w, h: it.h, ax: it.def.ax, ay: it.def.ay }; });
+  items.forEach((it, i) => { if (it.glow) rects[it.def.name].glow = { x: pos[i].x, y: pos[i].y }; });
+  return { W, H, items: items.map((it, i) => ({ def: it.def, glow: it.glow, x: pos[i].x, y: pos[i].y })), rects };
+}
+
+/** A sprite's pixels as the atlas holds them: the body snapped to the master palette (phase 3-2), a glow as it is. */
+export function atlasPixels(def: SpriteDef, glow: boolean): Uint8ClampedArray<ArrayBuffer> {
+  const p = glow ? def.glow! : def.p;
+  const data = new Uint8ClampedArray(p.data.length);
+  data.set(p.data);
+  if (!glow) snapRgba(data); // a glow layer is light, not paint, and keeps its colours
+  return data;
+}
+
+function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<string, SpriteRect> } {
+  const { W, H, items, rects } = packLayout(defs);
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
-  const rects: Record<string, SpriteRect> = {};
-  items.forEach((it, i) => {
+  for (const it of items) {
     const p = it.glow ? it.def.glow! : it.def.p;
-    const data = new Uint8ClampedArray(p.data);
-    if (!it.glow) snapRgba(data); // the master palette (phase 3-2); a glow layer is light, not paint, and keeps its colours
-    const img = new ImageData(data, p.w, p.h);
-    ctx.putImageData(img, pos[i].x, pos[i].y);
-    if (!it.glow) rects[it.def.name] = { x: pos[i].x, y: pos[i].y, w: p.w, h: p.h, ax: it.def.ax, ay: it.def.ay };
-  });
-  items.forEach((it, i) => {
-    if (it.glow) rects[it.def.name].glow = { x: pos[i].x, y: pos[i].y };
-  });
+    ctx.putImageData(new ImageData(atlasPixels(it.def, it.glow), p.w, p.h), it.x, it.y);
+  }
   return { canvas, rects };
 }

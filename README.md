@@ -198,7 +198,7 @@ Charter as `.json`.
   shrine two and a half, a shed or a cottage under three; the towers rise as they did. Since
   iteration 79 the wells, the level-2 hearths, the level-1 crafts and the depot are drawn in
   code after their paintings, and since iteration 81 each is composed by hand after its own
-  painting (`src/render/painted.ts`: boxes, gables along either axis, porches, verandas,
+  painting (`src/render/handdrawn.ts`: boxes, gables along either axis, porches, verandas,
   dormers, chimneys and props where the painting has them), crisp at the citizen scale and
   one set with the procedural buildings. Since iteration 82 the zone houses are the user's own
   houses from the eda-lore sheets (48 for the Vellish, none used twice; the other peoples' 144 are parked), and since
