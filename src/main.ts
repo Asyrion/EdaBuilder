@@ -66,6 +66,9 @@ class Game {
     this.renderer = new Renderer(canvas, atlas);
     this.renderer.resize();
     window.addEventListener('resize', () => this.renderer.resize());
+    // a move to a screen of another pixel ratio (or the browser's zoom) changes devicePixelRatio without always firing resize
+    const watchDpr = () => matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener('change', () => { this.renderer.resize(); watchDpr(); }, { once: true });
+    watchDpr();
     this.state = createGame(1, 'Thornwick');
     this.runner = new CommandRunner(this.state, null); // the valley behind the title records nothing
     this.tools = new Tools({

@@ -1,4 +1,5 @@
 /** Canvas2D renderer: chunk-cached ground, depth-sorted objects, light map, glow, particles. */
+import { diamondRects, linePixels, pixelRects, polygonRects, polylinePixels } from './pixels';
 import { factionOf } from '../data/factions';
 import { QUARTER_BY_ID } from '../sim/districts';
 import { SOUND_CUES, type EffectKind, type SoundCue } from '../sim/hazards';
@@ -108,10 +109,15 @@ export class Renderer {
     for (const t of ['grass', 'meadow', 'forest', 'hills', 'shore', 'ruins']) this.groundCount[t] = Math.max(1, atlas.countVariants(`${t}_`)); // the user's tiles add to the drawn ones (iteration 83)
   }
 
+  /** The canvas in device pixels (scope reset phase 3-3): its style stays the window's CSS size, its backing store is that
+   *  times devicePixelRatio, so the browser never rescales it and each art pixel is a whole block of device pixels. */
   resize(): void {
-    const dpr = 1; // integer scaling only; ignore devicePixelRatio for crispness
-    this.screen.width = Math.floor(window.innerWidth * dpr);
-    this.screen.height = Math.floor(window.innerHeight * dpr);
+    const dpr = window.devicePixelRatio || 1;
+    this.camera.dpr = dpr;
+    this.screen.style.width = `${window.innerWidth}px`;
+    this.screen.style.height = `${window.innerHeight}px`;
+    this.screen.width = Math.round(window.innerWidth * dpr);
+    this.screen.height = Math.round(window.innerHeight * dpr);
     this.camera.viewW = this.screen.width;
     this.camera.viewH = this.screen.height;
   }
@@ -259,10 +265,7 @@ export class Renderer {
           // beyond the Charter: dimmed, with a surveyor's hatch
           ctx.fillStyle = (x + y) % 4 === 0 ? 'rgba(10,8,16,0.55)' : 'rgba(10,8,16,0.42)';
           ctx.beginPath();
-          ctx.moveTo(dx, dy);
-          ctx.lineTo(dx + 16, dy + 8);
-          ctx.lineTo(dx, dy + 16);
-          ctx.lineTo(dx - 16, dy + 8);
+          diamondRects(ctx, dx, dy);
           ctx.fill();
         }
         const r = state.road[i];
@@ -274,10 +277,7 @@ export class Renderer {
               // bridge: draw plank base
               ctx.fillStyle = PAL.wood1;
               ctx.beginPath();
-              ctx.moveTo(dx, dy + 1);
-              ctx.lineTo(dx + 16, dy + 9);
-              ctx.lineTo(dx, dy + 17);
-              ctx.lineTo(dx - 16, dy + 9);
+              diamondRects(ctx, dx, dy + 1);
               ctx.fill();
             }
             ctx.drawImage(img, s.x, s.y, s.w, s.h, dx - s.ax, dy - s.ay, s.w, s.h);
@@ -372,10 +372,7 @@ export class Renderer {
         const dy = wy - oy;
         ctx.fillStyle = c;
         ctx.beginPath();
-        ctx.moveTo(dx, dy);
-        ctx.lineTo(dx + 16, dy + 8);
-        ctx.lineTo(dx, dy + 16);
-        ctx.lineTo(dx - 16, dy + 8);
+        diamondRects(ctx, dx, dy);
         ctx.fill();
       }
     return canvas;
@@ -443,9 +440,9 @@ export class Renderer {
     const tGround = performance.now();
     // visible tile bounds (generous)
     const tl = cam.screenToTile(0, 0);
-    const tr = cam.screenToTile(cam.viewW, 0);
-    const bl = cam.screenToTile(0, cam.viewH);
-    const br = cam.screenToTile(cam.viewW, cam.viewH);
+    const tr = cam.screenToTile(cam.cssW, 0);
+    const bl = cam.screenToTile(0, cam.cssH);
+    const br = cam.screenToTile(cam.cssW, cam.cssH);
     const minX = Math.max(0, Math.min(tl[0], bl[0]) - 2);
     const maxX = Math.min(MAP_W - 1, Math.max(tr[0], br[0]) + 3);
     const minY = Math.max(0, Math.min(tl[1], tr[1]) - 2);
@@ -730,7 +727,7 @@ export class Renderer {
     // blit to screen
     const sctx = this.sctx;
     sctx.imageSmoothingEnabled = false;
-    sctx.drawImage(this.back, 0, 0, nw, nh, 0, 0, nw * cam.zoom, nh * cam.zoom);
+    sctx.drawImage(this.back, 0, 0, nw, nh, 0, 0, nw * cam.scale, nh * cam.scale);
     const tEnd = performance.now();
     this.stats.ms = tEnd - t0;
     this.stats.ground = tGround - t0;
@@ -770,12 +767,9 @@ export class Renderer {
     const L = this.camera.left;
     const T = this.camera.top;
     ctx.beginPath();
-    ctx.moveTo(tx - L + 0.5, ty - T + 0.5);
-    ctx.lineTo(rx - L + 0.5, ry - T + 0.5);
-    ctx.lineTo(bx - L + 0.5, by - T + 0.5);
-    ctx.lineTo(lx - L + 0.5, ly - T + 0.5);
-    ctx.closePath();
-    ctx.stroke();
+    pixelRects(ctx, polylinePixels([[tx - L, ty - T], [rx - L, ry - T], [bx - L, by - T], [lx - L, ly - T]], true));
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
   }
 
   private drawRuneRings(state: GameState, night: number, minX: number, maxX: number, minY: number, maxY: number): void {
@@ -793,16 +787,16 @@ export class Renderer {
       const cx = b.x + b.w / 2;
       const cy = b.y + b.h / 2;
       const r = b.kind === 'spire' ? 1.6 : b.kind === 'wardlantern' ? 2.2 : 2.6;
-      ctx.strokeStyle = `rgba(79,227,255,${(0.18 + 0.12 * pulse) * night})`;
-      ctx.beginPath();
-      for (let k = 0; k <= 24; k++) {
+      ctx.fillStyle = `rgba(79,227,255,${(0.18 + 0.12 * pulse) * night})`;
+      const ring: [number, number][] = [];
+      for (let k = 0; k < 24; k++) {
         const a = (k / 24) * Math.PI * 2;
         const [wx, wy] = tileToWorld(cx + Math.cos(a) * r - 0.5, cy + Math.sin(a) * r - 0.5);
-        if (k === 0) ctx.moveTo(wx - L, wy - T + 8);
-        else ctx.lineTo(wx - L, wy - T + 8);
+        ring.push([wx - L, wy - T + 8]);
       }
-      ctx.closePath();
-      ctx.stroke();
+      ctx.beginPath();
+      pixelRects(ctx, polylinePixels(ring, true));
+      ctx.fill();
       // glyph dots on the ring
       ctx.fillStyle = `rgba(255,217,138,${(0.5 + 0.4 * pulse) * night})`;
       for (let k = 0; k < 6; k++) {
@@ -855,17 +849,17 @@ export class Renderer {
       const sy = Math.round(wy - this.camera.top);
       const q = state.districtQuarters[d];
       const name = (state.districtNames[d] || DISTRICT_NAMES[d - 1]) + (q ? ` · ${QUARTER_BY_ID[q].name}` : '');
-      const w = ctx.measureText(name).width + 6;
+      const w = Math.round(ctx.measureText(name).width) + 6;
       ctx.fillStyle = 'rgba(10,8,16,0.75)';
-      ctx.fillRect(sx - w / 2, sy - 7, w, 11);
+      ctx.fillRect(sx - (w >> 1), sy - 7, w, 11);
       ctx.fillStyle = DISTRICT_COLORS[d - 1];
       ctx.fillText(name, sx, sy + 2);
       if (bits.length) {
         const line = bits.join(' · ');
         ctx.font = '8px sans-serif';
-        const w2 = ctx.measureText(line).width + 6;
+        const w2 = Math.round(ctx.measureText(line).width) + 6;
         ctx.fillStyle = 'rgba(10,8,16,0.75)';
-        ctx.fillRect(sx - w2 / 2, sy + 5, w2, 10);
+        ctx.fillRect(sx - (w2 >> 1), sy + 5, w2, 10);
         ctx.fillStyle = PAL.fire2;
         ctx.fillText(line, sx, sy + 13);
         ctx.font = 'bold 9px sans-serif';
@@ -876,24 +870,21 @@ export class Renderer {
 
   private drawGrid(minX: number, maxX: number, minY: number, maxY: number): void {
     const ctx = this.ctx;
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
     const L = this.camera.left;
     const T = this.camera.top;
     ctx.beginPath();
     for (let x = minX; x <= maxX + 1; x++) {
       const [ax, ay] = tileToWorld(x, minY);
       const [bx, by] = tileToWorld(x, maxY + 1);
-      ctx.moveTo(ax - L, ay - T);
-      ctx.lineTo(bx - L, by - T);
+      pixelRects(ctx, linePixels(ax - L, ay - T, bx - L, by - T));
     }
     for (let y = minY; y <= maxY + 1; y++) {
       const [ax, ay] = tileToWorld(minX, y);
       const [bx, by] = tileToWorld(maxX + 1, y);
-      ctx.moveTo(ax - L, ay - T);
-      ctx.lineTo(bx - L, by - T);
+      pixelRects(ctx, linePixels(ax - L, ay - T, bx - L, by - T));
     }
-    ctx.stroke();
+    ctx.fill();
   }
 
   private drawPreviews(state: GameState, view: ViewState): void {
@@ -908,10 +899,7 @@ export class Renderer {
       if (view.previewDistrict >= 0) {
         ctx.fillStyle = view.previewDistrict === 0 ? 'rgba(255,255,255,0.25)' : DISTRICT_COLORS[view.previewDistrict - 1] + '88';
         ctx.beginPath();
-        ctx.moveTo(wx - L, wy - T);
-        ctx.lineTo(wx - L + 16, wy - T + 8);
-        ctx.lineTo(wx - L, wy - T + 16);
-        ctx.lineTo(wx - L - 16, wy - T + 8);
+        diamondRects(ctx, wx - L, wy - T);
         ctx.fill();
       } else if (zoneName && p.ok) this.draw(this.atlas.get(`zone_${zoneName}`), wx, wy, 0.9);
       else this.draw(this.atlas.get(p.ok ? 'cursor_ok' : 'cursor_bad'), wx, wy, 0.9);
@@ -948,7 +936,8 @@ export class Renderer {
   /** A reach: its soft fill now, under the objects; its outline and label queued for after the lighting, above everything (iteration 56:
    *  drawn under the houses and darkened by the night, a well's ring was all but hidden in a built street). */
   private reachRing(cx: number, cy: number, r: number, square: boolean, fill: string, stroke: string, label?: string): void {
-    this.ringPath(cx, cy, r, square);
+    this.ctx.beginPath();
+    polygonRects(this.ctx, this.ringPoints(cx, cy, r, square));
     this.ctx.fillStyle = fill;
     this.ctx.fill();
     this.topRings.push({ cx, cy, r, square, stroke, label });
@@ -958,13 +947,16 @@ export class Renderer {
   private drawTopRings(): void {
     const ctx = this.ctx;
     for (const t of this.topRings) {
-      ctx.strokeStyle = 'rgba(10,8,18,0.55)';
-      ctx.lineWidth = 3;
-      this.ringPath(t.cx, t.cy, t.r, t.square);
-      ctx.stroke();
-      ctx.strokeStyle = t.stroke;
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      // a dark halo a pixel each side, then the ring: whole pixels, no antialiased stroke (phase 3-3)
+      const px = polylinePixels(this.ringPoints(t.cx, t.cy, t.r, t.square), true);
+      ctx.fillStyle = 'rgba(10,8,18,0.55)';
+      ctx.beginPath();
+      pixelRects(ctx, px, 1);
+      ctx.fill();
+      ctx.fillStyle = t.stroke;
+      ctx.beginPath();
+      pixelRects(ctx, px);
+      ctx.fill();
     }
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
@@ -986,24 +978,21 @@ export class Renderer {
   }
 
   /** The outline of a reach in screen space: a circle of tiles, or a square of tiles drawn as its diamond. */
-  private ringPath(cx: number, cy: number, r: number, square: boolean): void {
-    const ctx = this.ctx;
+  private ringPoints(cx: number, cy: number, r: number, square: boolean): [number, number][] {
     const L = this.camera.left;
     const T = this.camera.top;
-    ctx.beginPath();
+    const pts: [number, number][] = [];
     if (square) {
-      const pts: [number, number][] = [[cx - r, cy - r], [cx + r + 1, cy - r], [cx + r + 1, cy + r + 1], [cx - r, cy + r + 1]];
-      pts.forEach(([tx, ty], k) => { const [wx, wy] = tileToWorld(tx, ty); if (k === 0) ctx.moveTo(wx - L, wy - T); else ctx.lineTo(wx - L, wy - T); });
+      for (const [tx, ty] of [[cx - r, cy - r], [cx + r + 1, cy - r], [cx + r + 1, cy + r + 1], [cx - r, cy + r + 1]]) { const [wx, wy] = tileToWorld(tx, ty); pts.push([wx - L, wy - T]); }
     } else {
       const steps = 48;
-      for (let k = 0; k <= steps; k++) {
+      for (let k = 0; k < steps; k++) {
         const a = (k / steps) * Math.PI * 2;
         const [wx, wy] = tileToWorld(cx + 0.5 + Math.cos(a) * r, cy + 0.5 + Math.sin(a) * r);
-        if (k === 0) ctx.moveTo(wx - L, wy - T);
-        else ctx.lineTo(wx - L, wy - T);
+        pts.push([wx - L, wy - T]);
       }
     }
-    ctx.closePath();
+    return pts;
   }
 
   private drawLeyLines(state: GameState, night: number): void {
@@ -1018,10 +1007,8 @@ export class Renderer {
     }
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    ctx.strokeStyle = `rgba(79,227,255,${0.55 * night})`;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 6]);
-    ctx.lineDashOffset = -this.time * 12;
+    ctx.fillStyle = `rgba(79,227,255,${0.55 * night})`;
+    const dashOffset = Math.floor(this.time * 12); // the dashes run along the line, a whole pixel at a time
     ctx.beginPath();
     for (const s of spires) {
       // link to the nearest source (node or another spire) within link range
@@ -1038,10 +1025,9 @@ export class Renderer {
       if (!best) continue;
       const [ax, ay] = tileToWorld(s.x - 0.5, s.y - 0.5);
       const [bx, by] = tileToWorld(best.x - 0.5, best.y - 0.5);
-      ctx.moveTo(ax - L, ay - T + 8);
-      ctx.lineTo(bx - L, by - T + 8);
+      pixelRects(ctx, linePixels(ax - L, ay - T + 8, bx - L, by - T + 8), 0, [4, 6, dashOffset]);
     }
-    ctx.stroke();
+    ctx.fill();
     ctx.restore();
   }
 
@@ -1113,7 +1099,8 @@ export class Renderer {
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'multiply';
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(this.light, 0, 0, this.light.width, this.light.height, 0, 0, this.back.width, this.back.height);
+    // the light map at a whole multiple (lightDiv), cropped by the canvas: soft by design, but on the pixel grid (phase 3-3)
+    ctx.drawImage(this.light, 0, 0, this.light.width, this.light.height, 0, 0, this.light.width * dv, this.light.height * dv);
     ctx.imageSmoothingEnabled = false;
     ctx.globalCompositeOperation = 'source-over'; // before the early return: at dawn and dusk (night under 0.05, no emissive layer) it stayed 'multiply' into the next frame
     // the emissive layer (already in depth order, already cut out behind sprites), added twice: once soft (bloom) and once crisp
@@ -1137,7 +1124,7 @@ export class Renderer {
     ctx.globalCompositeOperation = 'lighter';
     ctx.imageSmoothingEnabled = true;
     ctx.globalAlpha = 0.55;
-    ctx.drawImage(this.bloom, 0, 0, bw, bh, -2, -2, this.back.width + 4, this.back.height + 4);
+    ctx.drawImage(this.bloom, 0, 0, bw, bh, 0, 0, bw * 4, bh * 4); // exactly ×4 (it was stretched by a fraction to w + 4)
     ctx.globalAlpha = 1;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(emissive, 0, 0);

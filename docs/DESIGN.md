@@ -116,7 +116,8 @@ in `docs/ART_PIPELINES.md`. Day and night: the light pass and the lamps (`lights
 
 ## 8. Tech
 
-TypeScript + Vite, Canvas 2D, no engine. A deterministic fixed-tick sim in `src/sim` (no `Math.random`: `rngOf`,
+TypeScript + Vite, Canvas 2D, no engine; the canvas in device pixels with a whole number of them per art pixel at
+every zoom level and display (phase 3-3). A deterministic fixed-tick sim in `src/sim` (no `Math.random`: `rngOf`,
 `commitRng`), the renderer never changes the sim. Saves are version 8 and hold every layer; older ones are refused with a
 message. Commands go through a command layer with replays (format 2). Content is data in `src/data/content/`, edited on
 the dev board (`npm run devboard`). Tests are 15 themed suites in `tests/`; the browser checks are `scripts/smoke.mjs`,

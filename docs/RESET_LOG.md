@@ -1242,3 +1242,57 @@ load; for phase 4 (lights) or phase 6.
 | `npx vitest run` | 15 files, 298 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |
 | `npm run devboard:selftest` | DEV BOARD SELFTEST OK |
+
+## Phase 3-3: pixel-exact on every display, and no vector antialiasing in the game picture (2026-10-23)
+
+Phase 3, task 2 (RESET_PLAN §3 "Phase 3": `devicePixelRatio`, `zoom × dpr` whole, shadows and fog as pixel sprites, the
+bloom on whole pixels). The acceptance: "an even pixel grid on 100/125/150 % displays (screenshots)", "no vector
+antialiasing in the game picture". It closes a known issue open since phase 1.
+
+**Done.**
+- **The canvas in device pixels:**
+  - `resize()` sets the backing store to the window's CSS size times `devicePixelRatio`, the style to the CSS size;
+    a ratio change (another screen, the browser's zoom) resizes again.
+  - The camera keeps the player's zoom level (1..4) as `zoom`, and its `scale` is the device pixels per art pixel from
+    `zoomScales(dpr)`: round(level × dpr), each level at least one more than the one below (100 %: 1, 2, 3, 4;
+    125 %: 1, 3, 4, 5; 150 %: 2, 3, 5, 6).
+  - Mouse points stay CSS pixels; `screenToWorld`, `pan` and `setZoom` convert, so `tools.ts` and `ui.ts` did not change.
+- **Whole pixels instead of paths** (`src/render/pixels.ts`):
+  - the tile diamond as row spans, the same pixels as a ground tile (a test holds it), for the views, the land beyond
+    the Charter, the bridges and the previews;
+  - Bresenham lines for the selection, the reach rings (a 1 px dark halo each side instead of a 3 px soft stroke), the
+    grid, the rune rings and the ley lines (dashes a whole pixel at a time);
+  - span fills for the reach rings' soft area;
+  - the district labels' boxes on whole pixels.
+  - Left as is: the reach labels' text (an interface over the scene; ART_BIBLE §1).
+  - The shadow and fog ellipses the plan named went with the weather in phase 1c.
+- **The light map and the bloom** are drawn back at an exact whole factor (the bloom was stretched to w + 4 at −2, −2).
+- **Tests** (`render-atlas.test.ts`, four new): the diamond equals the tile's; a line is gapless and a ring draws each
+  pixel once; the zoom scales at 100/125/150/200 %; a mouse point lands at the camera's centre at any ratio.
+- **The tools:**
+  - `scripts/pixelgrid.mjs` (new): the grid's evenness and colours at three ratios.
+  - `handwalk.mjs` takes `HANDWALK_DPR`. It also had a script bug, now fixed: it took the Ledger's "Reach 40 folk"
+    line for Hamlet's message, a flake that showed only now.
+  - `perf.mjs` takes `PERF_DPR` and `PERF_PORT`.
+
+**Measured** (`scripts/pixelgrid.mjs`, a town of seed 42 on day 20 at zoom level 2; main against this branch):
+
+| Display | Even runs, before → after | Art pixel in device px | Back-buffer colours with a view on, before → after |
+|---|---|---|---|
+| 100 % | 1.000 → 1.000 | 2 → 2 | 2,604 → 1,284 |
+| 125 % | **0.205 → 1.000** | 2.5 (the browser's rescale) → 3 | 2,585 → 1,078 |
+| 150 % | 1.000 → 1.000 | 3 (the browser's rescale) → 3 | 2,571 → 1,301 |
+
+- **At 125 % four in five runs of one colour were the wrong width:** an art pixel was 2 or 3 device pixels by turns.
+  Now every run is a whole multiple of 3.
+- **The blended colours along the views' diamonds and rings are halved.**
+- **Frame time** (`perf.mjs`, 1600×900, zoom level 2): at 100 % 16.8 ms as before (render 8.0 ms). At 150 % 16.7 ms on
+  main and 17.9 ms on this branch (render 8.9 → 8.5 ms). The last blit fills 2.25 times the device pixels.
+- **The hand walk passes at 100, 125 and 150 %.** The clicks land on the same tiles.
+- **The rules did not change:** the twelve bot runs are 3-2's line for line.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 15 files, 302 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` (×3 ratios) | SMOKE OK; CHECKLIST OK; HANDWALK OK |
