@@ -107,7 +107,8 @@ Market Town (650) → Burgh (1000) → Free City (1500, unlocks the Lantern of V
 Beacon of Eda (2200).
 
 **Ways to lose:** treasury below −8,000 for five days; the Gloam reaches the founding
-node; forty restless dead walk the streets.
+node (warned at ten tiles); forty restless dead walk the streets (the top bar counts the dead
+waiting from ten, and the restless walking).
 
 ## Controls
 
@@ -144,7 +145,9 @@ Charter as `.json`.
   different sprites, 20+ civic buildings, a wonder.
 - Mana network (spire chains, adjacency spread, brownouts, wild surges), water coverage,
   8 service coverage types, land value, happiness, health, unrest, education, demand.
-- Hazards from the lore: Gloam creep and pockets, restless dead, wild surges, fire.
+- Hazards from the lore: Gloam creep and pockets, restless dead, wild surges, fire; each with a
+  herald, a remedy and a view (the Fire brigade view shows the fires, the ruins and the uncovered
+  buildings by risk; Wards & Gloam marks the dark buildings the grey waits at).
 - Goods flow by cart (potions and leystone), four seasons, edicts city-wide or per district,
   eight paintable districts.
 - Menu settings for colour-blind overlay ramps and UI scale; camera-driven ambience.

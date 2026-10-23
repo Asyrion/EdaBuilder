@@ -80,10 +80,14 @@ Scholars' Stipend, settable per district.
 
 ## 5. Hazards (the ways to lose)
 
-- **Fire**, held by the fire coverage.
-- **The wild surge:** a ley overload that twists buildings.
-- **The restless dead:** deathcare failing (Boneyard, Ossuary, the Rite Subsidy).
-- **The Gloam:** the dark at the map's edge, pushed back by light and Ward Lanterns; it greys and takes tiles.
+Each hazard has a herald, a remedy and a view (phase 2-8):
+
+| Hazard | Herald | Remedy | View |
+|---|---|---|---|
+| **Fire**: a building catches at 0.025 % a day (Craft ×2.5, level 1 ×1.4, Font ×6, Ember ×1.3, half off in a hall's reach); outside a hall's reach it spreads at 22 % a day to each edge neighbour and burns down on its second day | a warning on Ember's first day with the uncovered share; the message of an uncovered fire says it burns down in two days | the Water-Mages' Hall (reach 12) | Fire brigade (8): reach, fires, ruins, uncovered buildings by risk |
+| **The wild surge**: a ley overload that twists 2–5 lit zone buildings into ruin | the mana field counts down five days once the draw is a quarter over the flow | a Thrum Font, a Nexus's store, fewer lit buildings | Mana (1) |
+| **The restless dead**: deathcare failing; 20 unquieted dead raise one restless | a warning at 10 unquieted; the top bar shows the dead waiting (from 10) and the restless walking (of 40) | Boneyard, Ossuary, the Rite Subsidy; the Watch lays them down | Deathcare (0) |
+| **The Gloam**: the dark at the map's edge; it greys tiles and takes a dark building after three days at its door | the building is named on its first day; a warning when the Gloam comes within 10 tiles of the founding node | light, Ward Lanterns | Wards & Gloam (G), the waiting buildings in pink |
 - **Miasma** from crafts, which spoils land value and health.
 
 The charter is lost three ways (the help's "Ways to lose"): the treasury below −8,000 × (1 + milestone ÷ 2) for five

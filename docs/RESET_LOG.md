@@ -985,3 +985,68 @@ and map on main and on this branch.
 | `npx tsc --noEmit -p .`, `npm run build` | clean; JS 360 KB (125 KB gzip) |
 | `npx vitest run` | 15 files, 286 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK, N opens the Growth view |
+
+## Phase 2-8: hazards; measured first, then a herald, a remedy and a view for each (2026-10-23)
+
+A P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 hazards: "the restless dead, the Gloam and the surge: each a clear
+herald, a remedy and an overlay"; P2 services: "fire fair, the brigade's reach visible"). As HANDOFF asked, the hazards
+were measured with the 2-7 bot before any knob was touched.
+
+**Measured** (`npx tsx scripts/hazards.ts 42,1,7,13,21,45 150 2`, new; six seeds × two draws, 150 days; the folk are
+2-7's to the person, so the counters changed nothing):
+
+| seed | draw | folk | fires | spread | uncovered | burned down | surges | warped | restless risen | restless peak | dead waiting, peak | taken by the Gloam | Gloam tiles | in a fire hall's reach, % |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 42 | 0 | 3254 | 95 | 28 | 63 | 58 | 0 | 0 | 0 | 0 | 0 | 0 | 3630 | 61 |
+| 42 | 1 | 2148 | 137 | 54 | 107 | 88 | 3 | 8 | 0 | 0 | 0 | 0 | 3696 | 23 |
+| 1 | 0 | 1300 | 136 | 71 | 135 | 105 | 1 | 3 | 7 | 4 | 24 | 0 | 4020 | 0 |
+| 1 | 1 | 3676 | 46 | 16 | 26 | 20 | 0 | 0 | 0 | 0 | 0 | 0 | 3444 | 87 |
+| 7 | 0 | 1519 | 141 | 84 | 121 | 104 | 2 | 7 | 0 | 0 | 0 | 0 | 4011 | 44 |
+| 7 | 1 | 1780 | 51 | 13 | 35 | 25 | 0 | 0 | 0 | 0 | 0 | 0 | 3608 | 90 |
+| 13 | 0 | 1379 | 105 | 36 | 78 | 68 | 0 | 0 | 0 | 0 | 2 | 0 | 3645 | 53 |
+| 13 | 1 | 829 | 77 | 45 | 77 | 64 | 7 | 22 | 0 | 0 | 2 | 0 | 4145 | 0 |
+| 21 | 0 | 4860 | 211 | 50 | 91 | 83 | 0 | 0 | 0 | 0 | 0 | 0 | 3775 | 70 |
+| 21 | 1 | 2572 | 162 | 77 | 112 | 93 | 2 | 8 | 0 | 0 | 0 | 1 | 4021 | 55 |
+| 45 | 0 | 3684 | 84 | 30 | 35 | 30 | 0 | 0 | 0 | 0 | 0 | 0 | 3645 | 90 |
+| 45 | 1 | 4734 | 158 | 32 | 56 | 55 | 0 | 0 | 0 | 0 | 3 | 0 | 3631 | 80 |
+| **mean** | | **2,645** | **117** | **45** | **78** | **66** | **1.3** | **4** | **0.6** | | **3** | **0.1** | **3,773** | **54** |
+
+- **Fire is the one hazard that costs the bot:** 66 buildings burned down a run on average. Of 1,403 fires, 536 (38 %)
+  caught from a neighbour and 936 (67 %) were lit where no hall reached; the burned are nearly all uncovered ones. The
+  worst runs (seed 1 draw 0, seed 13 draw 1, seed 7 draw 0) are the ones whose town lay outside the halls' reach
+  (0–44 % on the last day); the best (seed 45, seed 1 draw 1, seed 7 draw 1) are served at 80–90 %.
+- **2-7 counted 222 fires for seed 42** with its own probe; this table, with the counters in the sim, has 95 and 137.
+- **The surge, the restless and the Gloam barely touch the bot:** 16 surges and 48 buildings warped in twelve runs,
+  seven restless in one run, one building taken by the Gloam. They are fair now in the sense that the bot avoids them;
+  whether they have enough teeth is a question for milestone pacing and the hand sessions, not for a knob here.
+
+**Decision (the plan's rule):** spread is under half of the fires (38 %), so the spread stays at 22 %. The fires are a
+question of reach (the player's, and the bot's), not of the rule. No sim number changed in this iteration.
+
+**Done.**
+- **Counters** in `state.stats`: `firesSpread`, `firesUncovered`, `burnedDown`, `surgeRuined`, `gloamTaken`. A save
+  merges `stats` over the fresh defaults, so a version-8 save from before them loads them at 0.
+- **`fireRisk(state, b)`** (`hazards.ts`): a building's chance a day to catch fire, the one formula `dailyFire` and the
+  view read (same arithmetic as before; the twelve runs are bit for bit 2-7's).
+- **Fire.** Herald: on Ember's first day a warning with the share of zone buildings outside a hall's reach; an uncovered
+  fire's message says it burns down in two days and may catch its neighbours, and a spread fire says "The fire spreads
+  to …". View: the Fire brigade view (8) shows the halls' reach, the fires (amber), the ruins (black) and the uncovered
+  buildings by risk (red for Craft and level 1, pale for the rest).
+- **The restless.** Herald: a warning when the unquieted dead reach 10 (one rises at 20); the top bar shows a field only
+  while there is danger: "n / 20 dead waiting", then "n / 40 restless", with a tooltip (deathcare's rate, today's dead,
+  the remedies and their views).
+- **The Gloam.** Herald: a warning when it comes within 10 tiles of the founding node (lost at 3). View: Wards & Gloam (G)
+  marks in pink the dark buildings the grey waits at.
+- **The surge** kept its countdown and the Mana view; its tooltip says it warps two to five lit zone buildings.
+- **Help:** "Ways to lose" names each loss's herald, remedy and view; a new "Hazards" list does the same for fire, the
+  surge and the Gloam at the door. DESIGN §5 has the table; README follows.
+- **Tests** (`hazards.test.ts`, six new): the counters, the Ember warning, the warning at ten waiting dead and the top
+  bar's field, the Gloam's warning near the node, the Fire brigade view's colours and risk, an old save's counters.
+- **Not done:** the bot does not react to the heralds (it does not read messages); nothing was tuned.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean; JS 365 KB (126 KB gzip) |
+| `npx vitest run` | 15 files, 292 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK |
+| The bot's twelve runs | folk identical to 2-7 on every run; no corridor run needed (no rule changed) |

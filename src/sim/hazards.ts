@@ -34,9 +34,31 @@ export function fontsRunHot(state: GameState): boolean {
   return state.manaDemand > state.manaSupply * FLARE_AT && state.buildings.some((b) => b && b.kind === 'font' && b.lit && b.state === 'ok');
 }
 
+/** A building's chance a day to catch fire by itself (0 for kinds that never burn, and while it is not standing). */
+export const FIRE_BASE = 0.00025;
+export function fireRisk(state: GameState, b: Building): number {
+  const def = BUILDING_BY_KEY[b.kind];
+  if (b.state !== 'ok' || def.category === 'special' || def.category === 'water' || (def.category === 'ley' && b.kind !== 'font') || b.kind === 'garden' || b.kind === 'square') return 0;
+  let p = FIRE_BASE;
+  if (def.zone === Zone.Craft) p *= 2.5;
+  if (def.category === 'zone' && b.level === 1) p *= 1.4;
+  if (def.key === 'font') p *= 6;
+  if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
+  p *= 1 - (state.coverage.fire[idx(b.x, b.y)] / 255) * 0.5;
+  return p;
+}
+
 export function dailyFire(state: GameState): void {
   const rng = rngOf(state);
   const toIgnite: Building[] = [];
+  const spread = new Set<Building>();
+  // the herald of the dry season: on Ember's first day, how much of the town no hall reaches
+  if (state.day > 0 && state.day % DAYS_PER_SEASON === 0 && seasonOf(state) === 2) {
+    let zoned = 0;
+    let open = 0;
+    forEachBuilding(state, (b) => { if (b.state === 'ok' && BUILDING_BY_KEY[b.kind].category === 'zone') { zoned++; if (state.coverage.fire[idx(b.x, b.y)] === 0) open++; } });
+    if (open > 0) pushMessage(state, `Ember, the dry season: fires catch a third more often. ${open} of ${zoned} zone buildings lie outside a Water-Mages' Hall's reach (Fire brigade view, 8).`, 'warn', true);
+  }
   // a hot Font: pressed past nine tenths of the flow, a lit Font may flare: it and the zone buildings beside it burn, and it smokes for ten days
   if (state.manaDemand > state.manaSupply * FLARE_AT) {
     forEachBuilding(state, (b) => {
@@ -70,7 +92,8 @@ export function dailyFire(state: GameState): void {
         b.residents = 0;
         b.workers = 0;
         markDirty(state, b.x, b.y);
-        pushMessage(state, `${def.name} at (${b.x},${b.y}) burned to the ground.`, 'bad');
+        state.stats.burnedDown++;
+        pushMessage(state, `${def.name} at (${b.x},${b.y}) burned to the ground.`, 'bad', false, { x: b.x, y: b.y });
         return;
       }
       // spread
@@ -83,20 +106,14 @@ export function dailyFire(state: GameState): void {
           const s = state.bIndex[idx(x, y)];
           if (s < 0) continue;
           const nb = state.buildings[s];
-          if (nb && nb !== b && nb.state === 'ok' && rng.chance(0.22 * (1 - fireCov))) toIgnite.push(nb);
+          if (nb && nb !== b && nb.state === 'ok' && rng.chance(0.22 * (1 - fireCov))) { toIgnite.push(nb); spread.add(nb); }
         }
       return;
     }
-    if (b.state !== 'ok' || def.category === 'special' || def.category === 'water' || (def.category === 'ley' && b.kind !== 'font') || b.kind === 'garden' || b.kind === 'square') return;
-    let p = 0.00025;
-    if (def.zone === Zone.Craft) p *= 2.5;
-    if (def.category === 'zone' && b.level === 1) p *= 1.4;
-    if (def.key === 'font') p *= 6;
-    if (seasonOf(state) === 2) p *= 1.3; // Ember, the dry season
-    p *= 1 - fireCov * 0.5;
-    if (rng.chance(p)) toIgnite.push(b);
+    const p = fireRisk(state, b);
+    if (p > 0 && rng.chance(p)) toIgnite.push(b);
   });
-  for (const b of toIgnite) igniteBuilding(state, b);
+  for (const b of toIgnite) if (igniteBuilding(state, b, spread.has(b) ? 'The fire spreads to' : '')) { if (spread.has(b)) state.stats.firesSpread++; }
   commitRng(state, rng);
 }
 
@@ -109,7 +126,8 @@ export function igniteBuilding(state: GameState, b: Building, why = ''): boolean
   state.stats.firesTotal++;
   effects.push({ x: b.x, y: b.y, kind: 'fire', tick: state.tick });
   const cov = state.coverage.fire[idx(b.x, b.y)];
-  pushMessage(state, `${why || 'Fire at'} ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Water-Mages\' Hall covers it.' : ''}`, 'bad');
+  if (cov === 0) state.stats.firesUncovered++;
+  pushMessage(state, `${why || 'Fire at'} ${BUILDING_BY_KEY[b.kind].name} (${b.x},${b.y})!${cov === 0 ? ' No Water-Mages\' Hall covers it: it burns down in two days and may catch its neighbours.' : ''}`, 'bad', false, { x: b.x, y: b.y });
   return true;
 }
 
@@ -144,6 +162,7 @@ export function dailySurge(state: GameState): void {
       b.residents = 0;
       b.workers = 0;
       markDirty(state, b.x, b.y);
+      state.stats.surgeRuined++;
       effects.push({ x: b.x, y: b.y, kind: 'surge', tick: state.tick });
     }
     state.stats.surgesTotal++;
@@ -210,6 +229,8 @@ export function gloamAtDoor(state: GameState, b: Building): boolean {
   return false;
 }
 
+/** Within this many tiles of the founding node the Gloam raises its warning. */
+export const GLOAM_NEAR_NODE = 10;
 /** Ward Lanterns burn back gloam daily; gloam creeps every few days. */
 export function dailyGloam(state: GameState): void {
   const rng = rngOf(state);
@@ -321,11 +342,19 @@ export function dailyGloam(state: GameState): void {
     } else if (b.greyDays) b.greyDays = 0;
   });
   for (const b of taken) {
+    state.stats.gloamTaken++;
     pushMessage(state, `${BUILDING_BY_KEY[b.kind].name} at (${b.x},${b.y}) was swallowed by the Gloam.`, 'bad', true, { x: b.x, y: b.y });
     removeBuilding(state, b);
     changed = true;
   }
-  if (changed) recomputeGloamDist(state);
+  if (changed) {
+    const f = idx(state.founding.x, state.founding.y);
+    const before = state.gloamDist[f];
+    recomputeGloamDist(state);
+    // the herald of the last loss: the grey within ten tiles of the founding node (it is lost at three)
+    if (before > GLOAM_NEAR_NODE && state.gloamDist[f] <= GLOAM_NEAR_NODE && !state.gameOver)
+      pushMessage(state, `The Gloam is ${state.gloamDist[f]} tiles from the founding node. If it reaches the node, the charter is lost: ward it back (Wards & Gloam view, G).`, 'bad', true, { x: state.founding.x, y: state.founding.y });
+  }
   // 5. fail: gloam at the founding node
   const f = state.founding;
   for (let dy = -3; dy <= 3; dy++)
@@ -341,6 +370,10 @@ export function dailyGloam(state: GameState): void {
   commitRng(state, rng);
 }
 
+/** Unquieted dead that raise one restless; at RESTLESS_WARN the town is warned. Forty restless walking end the charter. */
+export const RESTLESS_AT = 20;
+export const RESTLESS_WARN = 10;
+export const RESTLESS_LOSS = 40;
 /** Deaths, quieting, and the restless. */
 export function dailyDeath(state: GameState): void {
   const rng = rngOf(state);
@@ -368,6 +401,7 @@ export function dailyDeath(state: GameState): void {
     const def = BUILDING_BY_KEY[b.kind];
     if (def.service?.type === 'death' && b.state === 'ok') quietCap += (def.service.quietRate ?? 0) * crewFactor(b, state) * (edictOn(state, 'rites', b) ? 1.5 : 1);
   });
+  const waitingBefore = state.unquieted;
   let pool = state.unquieted + covered;
   const quieted = Math.min(pool, quietCap);
   pool -= quieted;
@@ -379,10 +413,13 @@ export function dailyDeath(state: GameState): void {
   state.quietCap = quietCap;
   state.quietedToday = quieted + fetched;
   state.waitingDead = pool;
+  // the herald of the restless: at half the count that raises one, the town is told while there is time to build
+  if (waitingBefore < RESTLESS_WARN && pool >= RESTLESS_WARN && pool < RESTLESS_AT)
+    pushMessage(state, `${Math.round(pool)} dead lie unquieted. At ${RESTLESS_AT} they rise and walk: build a Boneyard or pass the Rite Subsidy (Deathcare view, 0).`, 'warn', true);
   // restless rise
   let rose = 0;
-  while (state.unquieted >= 20 && homes.length) {
-    state.unquieted -= 20;
+  while (state.unquieted >= RESTLESS_AT && homes.length) {
+    state.unquieted -= RESTLESS_AT;
     const b = rng.pick(homes);
     commitRng(state, rng);
     if (spawnRestless(state, b.x, b.y)) {
@@ -401,7 +438,7 @@ export function dailyDeath(state: GameState): void {
   const cleared = dailyRestless(state);
   if (cleared > 0 && rng.chance(0.5)) pushMessage(state, `The Watch and the wards lay ${cleared} restless to rest.`, 'good');
   const rc = restlessCount(state);
-  if (rc >= 40 && !state.gameOver) {
+  if (rc >= RESTLESS_LOSS && !state.gameOver) {
     state.gameOver = 'The Long Night: the restless outnumber the Watch, the living flee, and the wardlight gutters out.';
     state.lostTo = 'restless';
     pushMessage(state, state.gameOver, 'bad');

@@ -62,6 +62,7 @@ export function deserialize(json: string, fresh: (seed: number) => GameState): G
     if (!(k in state)) continue;
     if (isPacked(v)) (state as any)[k] = unpackArray(v);
     else if (k === 'coverage') state.coverage = Object.fromEntries(Object.entries(v as Record<string, Record<string, string>>).map(([t, a]) => [t, unpackArray(a)])) as GameState['coverage'];
+    else if (k === 'stats') state.stats = { ...state.stats, ...(v as GameState['stats']) }; // a counter added since keeps its fresh 0
     else (state as any)[k] = v;
   }
   state.zoneListDirty = true;

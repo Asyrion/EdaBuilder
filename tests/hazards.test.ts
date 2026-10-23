@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { createGame, placeBuildingRaw } from '../src/sim/world';
 import { run, recomputeAll } from '../src/sim/sim';
 import { buildRoad, paintZone, placeBuilding, roadPath } from '../src/sim/actions';
-import { AgentKind, RoadType, TICKS_PER_DAY, Zone, idx } from '../src/sim/types';
-import { dailyDeath, dailyGloam, dailySurge, dailyFire, computeGloamPressure, dailyGloamPressure } from '../src/sim/hazards';
+import { AgentKind, DAYS_PER_SEASON, RoadType, TICKS_PER_DAY, Zone, idx } from '../src/sim/types';
+import { dailyDeath, dailyGloam, dailySurge, dailyFire, computeGloamPressure, dailyGloamPressure, fireRisk, recomputeGloamDist, GLOAM_NEAR_NODE, RESTLESS_AT, RESTLESS_WARN } from '../src/sim/hazards';
+import { FIRE_COLOURS, OVERLAYS } from '../src/render/overlays';
+import { restlessShown, restlessTip } from '../src/ui/ui';
 import { updateMana } from '../src/sim/networks';
 import { deserialize, serialize } from '../src/sim/save';
 import { flatten } from './helpers';
@@ -178,5 +180,99 @@ describe('Causes and old saves', () => {
     delete o.lostTo;
     const old = deserialize(JSON.stringify(o), (seed) => createGame(seed, 'x'));
     expect(old.lostTo).toBeUndefined();
+  });
+});
+
+/** Phase 2-8: each hazard has a herald, a remedy and a view, and the run counts what the fire did. */
+describe('Heralds and views (phase 2-8)', () => {
+  it('counts the fires that spread, those no hall reached, and the buildings burned down', () => {
+    const s = createGame(16, 'Burn');
+    const f = s.founding;
+    flatten(s, f.x - 12, f.y - 4, f.x + 12, f.y + 12);
+    const houses = [];
+    for (let x = f.x - 9; x <= f.x + 9; x++) houses.push(placeBuildingRaw(s, 'hearth', x, f.y + 4, 1));
+    s.coverage.fire.fill(0);
+    houses[9].state = 'burning';
+    for (let d = 0; d < 6; d++) dailyFire(s);
+    expect(s.stats.firesSpread).toBeGreaterThan(0);
+    expect(s.stats.firesUncovered).toBe(s.stats.firesTotal);
+    const lit = houses.find((h) => h.state === 'burning')!;
+    lit.stateDays = 2;
+    const before = s.stats.burnedDown;
+    dailyFire(s);
+    expect(lit.state).toBe('ruin');
+    expect(s.stats.burnedDown).toBeGreaterThan(before);
+  });
+
+  it('warns on the first day of Ember how much of the town no hall reaches', () => {
+    const s = createGame(17, 'Dry');
+    const f = s.founding;
+    flatten(s, f.x - 6, f.y - 4, f.x + 6, f.y + 8);
+    placeBuildingRaw(s, 'hearth', f.x, f.y + 4, 1);
+    s.coverage.fire.fill(0);
+    s.day = DAYS_PER_SEASON * 2;
+    dailyFire(s);
+    expect(s.messages.some((m) => /Ember, the dry season/.test(m.text) && /1 of 1 zone buildings/.test(m.text))).toBe(true);
+  });
+
+  it('warns at ten waiting dead, before the first restless rises at twenty', () => {
+    const s = createGame(11, 'Grave');
+    const f = s.founding;
+    flatten(s, f.x - 6, f.y - 4, f.x + 6, f.y + 8);
+    const b = placeBuildingRaw(s, 'hearth', f.x, f.y + 4, 3);
+    b.residents = 1000;
+    s.population = 1000;
+    s.health = 0;
+    s.unquieted = RESTLESS_WARN - 1;
+    expect(restlessShown(s)).toBeNull();
+    dailyDeath(s);
+    expect(s.unquieted).toBeGreaterThanOrEqual(RESTLESS_WARN);
+    expect(s.unquieted).toBeLessThan(RESTLESS_AT);
+    expect(s.messages.some((m) => /dead lie unquieted\. At 20 they rise/.test(m.text))).toBe(true);
+    expect(restlessShown(s)?.label).toBe('dead waiting');
+    expect(restlessTip(s)).toMatch(/Boneyard/);
+  });
+
+  it('warns when the Gloam comes within ten tiles of the founding node', () => {
+    const s = createGame(14, 'Near');
+    const f = s.founding;
+    flatten(s, f.x - 12, f.y - 4, f.x + 12, f.y + 4);
+    recomputeGloamDist(s);
+    const far = s.gloamDist[idx(f.x, f.y)];
+    expect(far).toBeGreaterThan(GLOAM_NEAR_NODE);
+    const b = placeBuildingRaw(s, 'hearth', f.x + 8, f.y, 1);
+    s.gloam[idx(b.x, b.y)] = 1; // the grey on a building: it is taken, and the distance is measured again
+    dailyGloam(s);
+    expect(s.gloamDist[idx(f.x, f.y)]).toBeLessThanOrEqual(GLOAM_NEAR_NODE);
+    expect(s.gameOver).toBeNull();
+    expect(s.messages.some((m) => /tiles from the founding node/.test(m.text))).toBe(true);
+  });
+
+  it('the Fire brigade view shows a fire, a ruin, and an uncovered Craft works as high risk', () => {
+    const s = createGame(18, 'View');
+    const f = s.founding;
+    flatten(s, f.x - 6, f.y - 4, f.x + 6, f.y + 8);
+    const a = placeBuildingRaw(s, 'hearth', f.x - 3, f.y + 4, 1);
+    const r = placeBuildingRaw(s, 'hearth', f.x - 1, f.y + 4, 1);
+    const c = placeBuildingRaw(s, 'craft', f.x + 2, f.y + 4, 1);
+    s.coverage.fire.fill(0);
+    a.state = 'burning';
+    r.state = 'ruin';
+    const view = OVERLAYS.fire;
+    expect(view.tile(s, idx(a.x, a.y), a.x, a.y)).toBe(FIRE_COLOURS.burning);
+    expect(view.tile(s, idx(r.x, r.y), r.x, r.y)).toBe(FIRE_COLOURS.ruin);
+    expect(view.tile(s, idx(c.x, c.y), c.x, c.y)).toBe(FIRE_COLOURS.high);
+    expect(fireRisk(s, c)).toBeGreaterThan(fireRisk(s, placeBuildingRaw(s, 'hearth', f.x + 4, f.y + 4, 2)));
+  });
+
+  it('a save from before these counters loads them at nought', () => {
+    const s = createGame(70, 'Countwick');
+    const o = JSON.parse(serialize(s));
+    delete o.stats.firesSpread;
+    delete o.stats.gloamTaken;
+    const back = deserialize(JSON.stringify(o), (seed) => createGame(seed, 'x'));
+    expect(back.stats.firesSpread).toBe(0);
+    expect(back.stats.gloamTaken).toBe(0);
+    expect(back.stats.firesTotal).toBe(s.stats.firesTotal);
   });
 });

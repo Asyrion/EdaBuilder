@@ -265,6 +265,11 @@ export interface GameState {
   lostTo?: LossKind; // what ended the charter (iteration 70)
   stats: {
     firesTotal: number;
+    firesSpread: number; // of firesTotal, caught from a burning neighbour (phase 2-8)
+    firesUncovered: number; // of firesTotal, lit where no Water-Mages' Hall reached
+    burnedDown: number; // buildings the fire left in ruin
+    surgeRuined: number; // buildings a wild surge warped into ruin
+    gloamTaken: number; // buildings the Gloam swallowed
     surgesTotal: number;
     restlessTotal: number;
     brownoutsSurvived: number;
