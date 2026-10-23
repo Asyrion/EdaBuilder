@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date at the end of phase 2 (2-10, 2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-1 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -24,11 +24,12 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
 
 ## The next item
 
-**Phase 3: the art foundation and pixel art** (`docs/NEXT_STEPS.md` item 1; RESET_PLAN §3 "Phase 3", DESIGN §7). Its
-tasks in the plan's order: the Art Bible (`docs/ART_BIBLE.md`: tile 32×16, light from the front right, the outline, one
-master palette of 48–64 colours in ramps), pixel-perfect drawing (`devicePixelRatio`, shadows and fog as pixel sprites),
-the pipeline tidied, the sprite list with a status per sprite, and the renderer decision at the end. Phase 3 changes
-graphics: show the user screenshots before and after (CLAUDE.md rule 7). Plan the first step on the Plan panel first.
+**Phase 3: the art foundation and pixel art** (`docs/NEXT_STEPS.md` item 1; RESET_PLAN §3 "Phase 3", DESIGN §7). Done:
+3-1, `docs/ART_BIBLE.md` and `art/palette.json` (77 colours in 17 ramps, proposed; `scripts/palette.mjs` measures,
+derives, and draws the A/B sheets and the swatch). **Next: 3-2, once the user has decided the palette:** the importer
+snaps every sprite to it (OKLab, chroma weight 2), `PAL`'s names map onto it, a test holds the sheet and the painted
+sprites to it. Then pixel-perfect drawing, the pipeline, the sprite list, the renderer decision. Graphics change:
+screenshots before and after (CLAUDE.md rule 7). Plan it on the Plan panel first.
 
 ## Known issues
 
@@ -97,6 +98,9 @@ graphics: show the user screenshots before and after (CLAUDE.md rule 7). Plan th
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
   them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
+- `scripts/palette.mjs --scene` swaps the sheet in the page (`page.route`) to show the game on a snapped sheet without
+  touching `public/art/`; `--ab` writes the snapped sheet to `shots/palette_sheet_0.png` first. Judge the A/B by the
+  numbers too: the eye called the snapped town "clearly duller", the pixels said 4 % less saturation.
 - A button clicked with the mouse gives its focus back (`ui.ts`, 2-10); without that, `shortcutTarget` gave the focused
   button every key and the game's shortcuts died until a click on the map. A test with `page.keyboard` must click a
   button first to catch a regression; `handwalk.mjs` does (the speed bar, then the seventeen view keys).

@@ -105,6 +105,8 @@ districts with per-district edicts. Info views: growth, mana, water, land value,
 
 ## 7. Art direction
 
+The rules are in `docs/ART_BIBLE.md` (scale, light, outline, the master palette `art/palette.json`; proposed in phase 3-1).
+
 2:1 dimetric pixel art, lit from the front right, crisp pixels and a dark 1 px outline on everything, so the set reads as
 one. Sprites are the user's paintings from eda-lore's `inspirations/` through `npm run art` (`art/sources.json`,
 hand-set anchors), shipped as one packed sheet (`public/art/sheets/`, `sprites.json`), or drawn in code

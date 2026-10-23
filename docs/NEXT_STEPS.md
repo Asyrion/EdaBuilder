@@ -8,9 +8,11 @@ its open items are parked.
 
 ## Prioritized ideas for the next iteration
 
-1. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7). Phase 2 is done (2-1 to 2-10;
-   RESET_LOG has its acceptance, with the one point only a hand session can prove: a new player at the Village in 20
-   minutes).
+1. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7; `docs/ART_BIBLE.md`). Done:
+   3-1 (the art bible and a master palette of 77 colours proposed, with A/B sheets; waiting for the user's decision).
+   Next: 3-2, the palette at work (the importer snaps to it, `PAL` maps onto it, a test holds the sheet to it), then
+   pixel-perfect drawing (`devicePixelRatio`, shadows and fog as pixel sprites), the pipeline, the sprite list, the
+   renderer decision. Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
 2. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 3. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
 4. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).

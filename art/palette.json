@@ -1,0 +1,320 @@
+{
+  "note": "The master palette (docs/ART_BIBLE.md). Each ramp runs dark to light. Derived by scripts/palette.mjs --derive (65 colours), then by hand: eight colours the paintings missed most (seven from --gaps, a sage for the grey-green roofs), a turf ramp of six for the ground tiles' texture and two thatch steps, three near twins dropped. Proposed in phase 3-1, not yet decided.",
+  "ramps": [
+    {
+      "id": "ink",
+      "roles": [
+        "shadow",
+        "outline"
+      ],
+      "colors": [
+        "#0e0a14",
+        "#1a1420"
+      ]
+    },
+    {
+      "id": "grass",
+      "roles": [
+        "grass1",
+        "grass2",
+        "grass3",
+        "meadow",
+        "meadow2",
+        "hillGrass",
+        "forestFloor",
+        "moss",
+        "green1",
+        "green2",
+        "cloth4"
+      ],
+      "colors": [
+        "#2e522d",
+        "#46753c",
+        "#5a8f3f",
+        "#75ac4b",
+        "#96c45f"
+      ]
+    },
+    {
+      "id": "turf",
+      "roles": [
+        "(the ground tiles: grass, meadow, forest, hills)"
+      ],
+      "colors": [
+        "#194d2c",
+        "#2c7439",
+        "#3a783f",
+        "#4b9939",
+        "#5da73b",
+        "#81a83f"
+      ]
+    },
+    {
+      "id": "foliage",
+      "roles": [
+        "leaf1",
+        "leaf2",
+        "leaf3"
+      ],
+      "colors": [
+        "#103d1c",
+        "#2b6b33",
+        "#33812c",
+        "#56a339",
+        "#7ccc7d"
+      ]
+    },
+    {
+      "id": "earth",
+      "roles": [
+        "dirt1",
+        "dirt2",
+        "dirt3",
+        "sand",
+        "sand2",
+        "sod",
+        "sod2"
+      ],
+      "colors": [
+        "#7a6748",
+        "#947557",
+        "#b09369",
+        "#cab47a"
+      ]
+    },
+    {
+      "id": "wood",
+      "roles": [
+        "trunk",
+        "wood1",
+        "wood2",
+        "wood3",
+        "cartWood",
+        "copper2"
+      ],
+      "colors": [
+        "#544433",
+        "#7e5337",
+        "#aa794b",
+        "#c79b63"
+      ]
+    },
+    {
+      "id": "stone",
+      "roles": [
+        "rock1",
+        "rock2",
+        "rock3",
+        "stone1",
+        "stone2",
+        "stone3",
+        "cobble1",
+        "cobble2",
+        "cobble3",
+        "lantern1",
+        "lantern2",
+        "smoke",
+        "ironDark"
+      ],
+      "colors": [
+        "#38352e",
+        "#615f58",
+        "#807e79",
+        "#9c9991",
+        "#b2b5b9"
+      ]
+    },
+    {
+      "id": "plaster",
+      "roles": [
+        "whitewash",
+        "whitewash2",
+        "plaster",
+        "plaster2",
+        "parchment",
+        "bone"
+      ],
+      "colors": [
+        "#bfad8b",
+        "#e0c893",
+        "#d3cbc2",
+        "#eadec0"
+      ]
+    },
+    {
+      "id": "thatch",
+      "roles": [
+        "thatch1",
+        "thatch2",
+        "gold",
+        "cloth5",
+        "flower1"
+      ],
+      "colors": [
+        "#805e2c",
+        "#946d39",
+        "#b2893c",
+        "#c19b49",
+        "#e2cc61"
+      ]
+    },
+    {
+      "id": "roofRed",
+      "roles": [
+        "tile1",
+        "tile2",
+        "shingle1",
+        "shingle2",
+        "brick1",
+        "brick2",
+        "cloth2",
+        "banner",
+        "leafAutumn",
+        "copper"
+      ],
+      "colors": [
+        "#4c1215",
+        "#593429",
+        "#923741",
+        "#784332",
+        "#a9513c",
+        "#cb7d40"
+      ]
+    },
+    {
+      "id": "roofSlate",
+      "roles": [
+        "slate1",
+        "slate2",
+        "bluewash",
+        "bluewash2",
+        "cloth3"
+      ],
+      "colors": [
+        "#414b53",
+        "#5a7ba8",
+        "#8da5c9"
+      ]
+    },
+    {
+      "id": "roofGreen",
+      "roles": [
+        "mossRoof",
+        "mossRoof2",
+        "copperRoof",
+        "copperRoof2",
+        "verdigris"
+      ],
+      "colors": [
+        "#5a6757",
+        "#4a6f46",
+        "#407d7f",
+        "#71903a",
+        "#4fa697"
+      ]
+    },
+    {
+      "id": "water",
+      "roles": [
+        "water1",
+        "water2",
+        "water3",
+        "waterHi",
+        "mist"
+      ],
+      "colors": [
+        "#2e5585",
+        "#3a77a4",
+        "#599fc3",
+        "#aadcee",
+        "#dfe6e3"
+      ]
+    },
+    {
+      "id": "ley",
+      "roles": [
+        "ley1",
+        "ley2",
+        "ley3",
+        "leyGlow",
+        "leyStone",
+        "glass",
+        "glassGlow",
+        "glimleaf",
+        "restless"
+      ],
+      "colors": [
+        "#1c6087",
+        "#2ca6d8",
+        "#6adbf1",
+        "#8ce5cc",
+        "#b7faeb"
+      ]
+    },
+    {
+      "id": "light",
+      "roles": [
+        "windowLit",
+        "lampWarm",
+        "ember",
+        "fire1",
+        "fire2",
+        "lanternLight",
+        "rune"
+      ],
+      "colors": [
+        "#dc4e3a",
+        "#fea34f",
+        "#fed067",
+        "#fcec8e"
+      ]
+    },
+    {
+      "id": "gloam",
+      "roles": [
+        "windowDark",
+        "deepPurple",
+        "gloam1",
+        "gloam2",
+        "gloam3",
+        "gloamGrass",
+        "arcane1",
+        "arcane2",
+        "arcane3",
+        "cloth1"
+      ],
+      "colors": [
+        "#2c2624",
+        "#2f3360",
+        "#3c3a53",
+        "#595766",
+        "#714d92",
+        "#9c7dcf"
+      ]
+    },
+    {
+      "id": "accent",
+      "roles": [
+        "flower2",
+        "crystalPink",
+        "flower3",
+        "skin",
+        "skinGrey",
+        "gloamEye",
+        "runeViolet",
+        "mushroom"
+      ],
+      "colors": [
+        "#cf88d0",
+        "#d992ac",
+        "#f4f7f1"
+      ]
+    }
+  ],
+  "count": 77,
+  "snap": {
+    "space": "OKLab",
+    "chroma": 2,
+    "dither": false
+  }
+}
