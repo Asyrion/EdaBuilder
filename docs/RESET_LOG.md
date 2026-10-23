@@ -1338,3 +1338,43 @@ Phase 3, task 3 (RESET_PLAN §3 "Phase 3", the pipeline: "bake the procedural sp
 | `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |
 | `npm run devboard:selftest` | DEV BOARD SELFTEST OK |
 | `npm run dev` with and without a baked atlas | paints at boot, starts |
+
+## Phase 3-5: the sprite list, every sprite measured against the art bible (2026-10-23)
+
+Phase 3, task 4 (RESET_PLAN §3 "Phase 3": "a sprite list after the cut, with the status fine / rework / new"). No
+graphics changed.
+
+**Done.**
+- **`scripts/spriteList.ts`** (new) reads the sprites drawn in code, the imported sheet and the catalog. For every sprite
+  it notes the source (painting, code, or replaced: drawn in code but covered by a painting) and measures it against the
+  bible:
+  - the outline's share of the edge in ink (§3);
+  - right against left lightness about the anchor (§2);
+  - the colours, the drawn height, citizens at 12 px, and the zone houses rising from level 1 to 3 (§1).
+  - It proposes a status per family, with the points RESET_PLAN and the logs already name set in. It writes
+    `docs/SPRITE_LIST.generated.md` and a sheet per area (`shots/spritelist_<area>.png`).
+- **`docs/SPRITE_LIST.md`:** the list as judged, with the count per area and status, the production list (new, then
+  rework), what the eye changed and why, and the replaced sprites.
+
+**Judged by eye.**
+- **The light check is a pointer, not a verdict.** At 0.97 it flagged the procedural boxes, plainly lit from the right
+  (a roof slope across the anchor fools the halves), and the material fools it too. Under 0.8 the eye agreed for the
+  clearest (a mossy tower, a thatched cottage), so a row there says "to check by eye".
+- **Exempt from the outline and the "flat" checks:** the lot marks and cursors (translucent tile marks), and the flames
+  and the restless (effects).
+- **Fallbacks, not art to make:** the procedural carts, shown only when no painted cart exists.
+
+**The count:** 794 sprites (797 less three aliases) in 116 families: 437 ok, 260 rework, 18 new, 79 replaced.
+- **New:** water and deep water; eight buildings still drawn in code (Watch House, Brigade Hall, Temple, Ward Lantern,
+  Garden, Market Square, Thrum Font, Mine); bridges, which have no sprite.
+- **Rework:** the roads; the ruins; bushes and glimwood (the palette's weakest); the gloam trees (flat); the citizen
+  looks 4 and 5 (strike from the Vellish roll); two icons' outlines; the paintings probably lit from the left (to check
+  by eye).
+- **Replaced:** the 79 replaced sprites take 41 % of the baked atlas's area. Dropping them is small pipeline work and
+  waits for the user's word.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean (no change in `src/`) |
+| `npx vitest run` | 15 files, 303 tests, all green |
+| `npx tsx scripts/spriteList.ts` | runs; 116 families, every catalog building has a row; the sheets looked at |
