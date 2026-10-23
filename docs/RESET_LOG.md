@@ -1153,3 +1153,44 @@ shots in `shots/handwalk_*.png`). Its first walk, on 2-9, found:
 | `npx tsc --noEmit -p .`, `npm run build` | clean |
 | `npx vitest run` | 15 files, 295 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |
+
+## Phase 3-1: the art bible and a master palette, proposed with A/B sheets (2026-10-23)
+
+Phase 3, task 1 (RESET_PLAN §3 "Phase 3": "an art bible … one master palette of about 48–64 colours in ramps"; the risk
+"snapping can flatten the paintings, hence A/B sheets first"). Nothing in the game changed; the palette waits for the
+user's decision, and 3-2 puts it to work.
+
+**Done.**
+- **`docs/ART_BIBLE.md`:** the scale (tile 32×16, a citizen 12 px), the light (front right, a ramp's steps are the
+  shading), the outline (1 px `#1a1420` outside, inside only between masses of one ramp), the palette with its rule for a
+  new colour, how it was made and what it costs, what 3-2 does with it, and what is open.
+- **`art/palette.json`: 77 colours in 17 ramps** (ink, grass, turf, foliage, earth, wood, stone, plaster, thatch,
+  roof red, slate and green, water, ley, light, gloam, accent).
+- **`scripts/palette.mjs`:**
+  - `--measure`, `--derive`, `--gaps` (the colours the palette misses most);
+  - `--ab` (`shots/palette_ab.png`: original, master, `PAL` at 3×, and ΔE per sprite);
+  - `--swatch` (the ramps, and where each `PAL` colour lands);
+  - `--scene` (a town before and after, the sheet swapped in the page).
+
+**Measured.**
+- **The sheet:** 566 sprites, 8,857 distinct colours, 15 % of the pixels on `PAL` exactly, 56 % within ΔE 0.03.
+- **How the palette got from 65 to 77,** each step from the A/B sheet:
+  - The derived 65 turned the red barn brown and a grey-green roof grey. Seven colours were added from `--gaps`, and a
+    sage.
+  - The snap weighs hue and chroma twice: at 1 the barn stayed brown; at 3 the bushes smeared (mean ΔE 0.027).
+  - The ground tiles' texture fell onto one green, so a turf ramp of six was added.
+  - Thatch got two steps; three near twins went.
+- **The cost on 77:**
+  - The whole sheet: mean ΔE 0.023; 1.4 % of the pixels end farther than ΔE 0.06.
+  - The sample of 32: the master palette is closer than `PAL` for 30.
+  - The town of seed 42 on day 40: 1.6 % of the screen's pixels change by more than 20 levels, and the mean saturation
+    falls about 4 %.
+  - Hardest hit: bushes and glimwood (ΔE 0.04–0.06).
+- **For the decision:** 77 is over the plan's 48–64. Fewer colours flattened the ground and the reds; that was
+  measured.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean (no change in `src/`) |
+| `npx vitest run` | 15 files, 295 tests, all green |
+| `scripts/palette.mjs --measure --derive --gaps --ab --swatch --scene` | runs; the shots looked at |
