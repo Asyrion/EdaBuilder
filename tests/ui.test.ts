@@ -445,3 +445,17 @@ describe('the info views keep their own keys', () => {
     expect(OVERLAY_LIST.find((o) => o.key === 'n')!.id).toBe('growth');
   });
 });
+
+describe('the toolbar shows the tab of the tool in hand (phase 2-10)', () => {
+  it('R, Z and a building pick their tab; Select and Bulldoze keep the one shown', async () => {
+    const { categoryOfTool } = await import('../src/ui/ui');
+    expect(categoryOfTool({ kind: 'road', type: RoadType.Track })).toBe('roads');
+    expect(categoryOfTool({ kind: 'zone', zone: Zone.Craft })).toBe('zones');
+    expect(categoryOfTool({ kind: 'district', id: 2 })).toBe('districts');
+    expect(categoryOfTool({ kind: 'build', key: 'well' })).toBe('water');
+    expect(categoryOfTool({ kind: 'build', key: 'spire' })).toBe('ley');
+    expect(categoryOfTool({ kind: 'build', key: 'watchpost' })).toBe('service');
+    expect(categoryOfTool({ kind: 'select' })).toBeNull();
+    expect(categoryOfTool({ kind: 'bulldoze' })).toBeNull();
+  });
+});

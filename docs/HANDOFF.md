@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-9 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date at the end of phase 2 (2-10, 2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -13,6 +13,10 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
   tales, the weave, guilds, walkers, forecast, Annals), 1c-2 (the world add-ons, the content cut, Help into the Menu),
   1d-1 (save version 8, the save bugs, dead code, module globals) and 1d-2 (themed test suites, five browser scripts, the
   single sprites out of the build, the paintings in eda-lore, the docs archived and rewritten).
+- **Phase 2 is complete** (2-1 to 2-10): growth from the lots that can grow and why a lot does not, mana and the surge's
+  countdown, the bot's streets, the demand bars' factors, traffic, the Crown's favour struck out, services by the gaps,
+  the hazards' heralds and views, happiness in six groups, the hand walk as a script. Its acceptance is in RESET_LOG
+  2-10; the one point a machine cannot prove (a new player at the Village in 20 minutes) waits for the user's own session.
 - **The game now:** 27 buildings, 3 roads, 9 milestones, 21 Ledger tasks, 7 edicts, 13 daily systems, a top bar of 5
   buttons. `docs/DESIGN.md` is the slim design with the numbers.
 - **The archive:** branches `archive/full-scope` (`main` before the reset, `ac4e05f`), `archive/core-iter4`,
@@ -20,12 +24,11 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
 
 ## The next item
 
-**Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5), 2-6 (the Crown's favour
-struck out), 2-7 (the bot serves its town by the gaps; the Growth view on N), 2-8 (hazards: measured with
-`scripts/hazards.ts`, a herald, a remedy and a view for each, the fire's spread kept) and 2-9 (happiness in six groups,
-in the inspector and the top bar's tooltip; the formula unchanged, the user's choice). Next: **milestone pacing**
-(RESET_PLAN P2: the thresholds 40 … 2,200 against a 30–60 minute session, the Lantern of Vell gate), the last P2 item;
-after it phase 2's acceptance (RESET_PLAN §3) and phase 3. Plan it on the Plan panel first.
+**Phase 3: the art foundation and pixel art** (`docs/NEXT_STEPS.md` item 1; RESET_PLAN §3 "Phase 3", DESIGN §7). Its
+tasks in the plan's order: the Art Bible (`docs/ART_BIBLE.md`: tile 32×16, light from the front right, the outline, one
+master palette of 48–64 colours in ramps), pixel-perfect drawing (`devicePixelRatio`, shadows and fog as pixel sprites),
+the pipeline tidied, the sprite list with a status per sprite, and the renderer decision at the end. Phase 3 changes
+graphics: show the user screenshots before and after (CLAUDE.md rule 7). Plan the first step on the Plan panel first.
 
 ## Known issues
 
@@ -48,8 +51,10 @@ after it phase 2's acceptance (RESET_PLAN §3) and phase 3. Plan it on the Plan 
 ## How a session works now
 
 - **Verification per iteration** (CLAUDE.md "Scope reset"): `npx tsc --noEmit -p .`, `npx vitest run` (15 suites, about
-  273 tests), `npm run build`, `node scripts/smoke.mjs` against `npx vite preview --port 4173 --strictPort`; for a UI
-  change `node scripts/checklist.mjs` (prints CHECKLIST OK) and the hand lines of `docs/CORE_CHECKLIST.md`; for a sim
+  295 tests), `npm run build`, `node scripts/smoke.mjs` against `npx vite preview --port 4173 --strictPort`; for a UI
+  change `node scripts/checklist.mjs` (prints CHECKLIST OK) and `node scripts/handwalk.mjs` (the lines of
+  `docs/CORE_CHECKLIST.md` with a real mouse and keys, prints HANDWALK OK), **and look at its shots**
+  (`shots/handwalk_*.png`: the views' colours, the night, the reach rings); report a line not walked as not walked; for a sim
   change the bot corridor, six seeds: `npx tsx scripts/table.ts --compare origin/main --seeds 42,1,7,13,21,45 --draws 2
   --days 150` (cached in `balance/cache/`: commit the folder), against RESET_LOG's numbers. Losses are reported as losses.
 - **Docs:** a `## Phase …` section in `docs/RESET_LOG.md` per PR (the dev board's Done list reads it); `docs/NEXT_STEPS.md`
@@ -92,6 +97,11 @@ after it phase 2's acceptance (RESET_PLAN §3) and phase 3. Plan it on the Plan 
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
   them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
+- A button clicked with the mouse gives its focus back (`ui.ts`, 2-10); without that, `shortcutTarget` gave the focused
+  button every key and the game's shortcuts died until a click on the map. A test with `page.keyboard` must click a
+  button first to catch a regression; `handwalk.mjs` does (the speed bar, then the seventeen view keys).
+- An info view's colour on a building needs full strength (the 35 % tint over the sprites): the service views' red was
+  as faint as a red roof until 2-10.
 - Two views must not share a key (`ui.test.ts` holds it); the Growth view's `6` silently opened Watch for six iterations.
 
 ## What the user cares about

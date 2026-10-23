@@ -1089,3 +1089,67 @@ line for line; no corridor run.
 | `npx tsc --noEmit -p .`, `npm run build` | clean; JS 368 KB (127 KB gzip) |
 | `npx vitest run` | 15 files, 294 tests, all green |
 | `scripts/smoke.mjs`, `scripts/checklist.mjs` | SMOKE OK; CHECKLIST OK |
+
+## Phase 2-10: the hand walk as a script, its findings fixed; milestone pacing measured; phase 2's acceptance (2026-10-23)
+
+The last P2 item of phase 2 (RESET_PLAN §3 "Phase 2", P2 milestones: "the thresholds 40 … 2,200 against a 30–60 minute
+session; the Lantern of Vell gate"), and phase 2's acceptance.
+
+**Milestone pacing, measured** (the bot, six seeds × two draws, 150 days, 2-9's rules; a day is 90 s at 1× and 30 s
+at 3×):
+
+| Gate (folk) | Day the bot passes it | At 3× |
+|---|---|---|
+| Hamlet (40) | 3 | 1.5 min |
+| Village (220) | 11–12 | 6 min |
+| Market Town (650) | 20–32 | 10–16 min |
+| Burgh (1,000) | 27–57 (11 of 12) | 14–29 min |
+| Free City (1,500) | 43–150 (9 of 12) | 22–75 min |
+| Beacon of Eda (2,200, the Lantern of Vell lit) | 72–136 (6 of 12) | 36–68 min |
+
+- **What holds a gate:** the folk. Only one run in twelve waited on the happiness gate (seed 42 draw 1, eight days at
+  Free City); at the Beacon the Lantern is lit on days 59–138 and the folk come later or never.
+- **The user's decision (2026-10-23):** the thresholds stay. The plan's mark (half the runs at the Beacon in 150 days,
+  a session of 30–60 minutes at 3×) is met; the early gates come fast (six in ten minutes) and the last two slow, which
+  the user accepted.
+
+**The hand walk.** The user asked why the hand lines of `docs/CORE_CHECKLIST.md` were never walked: there was no good
+reason; "by hand" had been read as "needs a person", while a browser driven by a real mouse and keys can walk all of
+them, and the shots can be looked at. **`scripts/handwalk.mjs`** now does (lines 1–14, `HANDWALK OK` or the failed lines;
+shots in `shots/handwalk_*.png`). Its first walk, on 2-9, found:
+1. **The game's keys died after a mouse click on any button** (the speed bar, a toolbar tab, the top bar): the button
+   kept the focus, and `shortcutTarget` (iteration 66) gives a focused control its own keys, so the views, R, Z and Space
+   did nothing until a click on the map. All seventeen views failed by key. **Fixed:** a button clicked with the mouse
+   (`click` with `detail > 0`) gives its focus back; a keyboard press keeps it.
+2. **R and Z did not switch the toolbar's tab:** the tool changed, the tab still showed Roads, and Market and Craft
+   were out of sight. **Fixed:** the toolbar shows the tab of the tool in hand however it was picked (`categoryOfTool`,
+   a test).
+3. **Line 8 asked for the Healer's Shrine, which opens at Hamlet, two lines early.** Now a Watch Post and a Shrine of
+   Aume; the Healer's Shrine moved to line 10.
+4. **By eye: the service views' red for an uncovered building was too faint** (half strength under the 35 % tint over
+   the sprites, the same as a red roof). Now at full strength, as the Fire brigade view's since 2-8.
+5. **In order:** the founding by the node; the road's cost while dragging (the toolbar's hint) and Ctrl+Z's refund; the
+   far lot's "no road touches it"; the spire, the well; houses on day 2 at 3×; the demand bars' hover; the tithe (20 %:
+   the net −35 → −29 a day, the Hearth bar 0.43 → 0.41 next day); Hamlet with its message and grant; F5/F9, and
+   Continue after a reload; dusk to dawn in 25-tick steps with the brightness gliding (45 → 36 → 116), no black frame;
+   no console error.
+6. **Not reached by hand:** Hamlet in five real minutes with the walk's small town (13 Hearth lots, Craft unlit): day
+   13, 20 folk. The layout's, not a rule's; the script now fast-forwards with the bot zoning (Hamlet six days later).
+
+**Phase 2's acceptance** (RESET_PLAN §3):
+- *"A new player reaches the Village (220) without guidance in 20 minutes and always understands why something does or
+  does not grow."* **Not provable by a machine.** The bot reaches it on day 11–12 (6 minutes at 3×; 20 minutes is 40
+  days at 3×, 13 at 1×); the why is on every lot's hover, the Growth view (N), the demand bars' factors, the six
+  happiness groups and the hazards' heralds. A hand session by the user is the real test.
+- *"The bot corridor stable."* Six-seed mean 2,645 folk since 2-7 (2,063 after 2-5), every run identical through 2-8,
+  2-9 and 2-10.
+- *"No known P1 weakness open."* The P1 items 2-1 to 2-5 are done; the open known issues (citizen looks 4–5,
+  `devicePixelRatio`) are phase 3's by the plan.
+
+**The rules did not change:** the twelve bot runs are 2-9's line for line.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 15 files, 295 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |

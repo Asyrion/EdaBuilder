@@ -96,10 +96,19 @@ const CATEGORIES: { id: string; name: string; filter: (d: BuildingDef) => boolea
   { id: 'districts', name: 'Districts', filter: () => false },
 ];
 
+/** The toolbar tab a tool belongs to (phase 2-10: R and Z switch the tab too); null for Select and Bulldoze, which keep it. */
+export function categoryOfTool(t: Tool): string | null {
+  if (t.kind === 'road') return 'roads';
+  if (t.kind === 'zone') return 'zones';
+  if (t.kind === 'district') return 'districts';
+  if (t.kind === 'build') { const def = BUILDING_BY_KEY[t.key]; return (def && CATEGORIES.find((c) => c.filter(def))?.id) ?? null; }
+  return null;
+}
 
 export class UI {
   root: HTMLElement;
   category = 'roads';
+  private lastToolKey = '';
   private el: Record<string, HTMLElement> = {};
   private lastLogLen = -1;
   private lastLogMsg: unknown = null;
@@ -176,6 +185,12 @@ export class UI {
       <div id="dev" class="modal hidden" role="dialog" aria-label="Dev tools"></div>
     `;
     for (const id of ['topbar', 'toolbar', 'tooltip', 'views', 'demand', 'log', 'info', 'toast', 'title', 'help', 'budget', 'menu', 'gameover', 'perf', 'clock', 'tasks', 'edicts', 'chronicle', 'minimap', 'dev', 'lesson']) this.el[id] = this.q(`#${id}`);
+    // a button clicked with the mouse gives its focus back to the page, so the game's keys (views, R, Z, Space) work at once;
+    // a keyboard press (Enter or Space: detail 0) keeps it, as since iteration 66 (phase 2-10, found by the hand walk)
+    this.root.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement | null)?.closest?.('button');
+      if (b && e.detail > 0 && document.activeElement === b) b.blur();
+    });
     for (let s = 0; s <= 3; s++) this.q(`#sp-${s}`).onclick = () => (s === 0 ? this.host.togglePause() : this.host.setSpeed(s));
     this.q('#btn-budget').onclick = () => this.toggleBudget();
     this.q('#btn-edicts').onclick = () => this.toggleEdicts();
@@ -385,6 +400,13 @@ export class UI {
   refresh(): void {
     const s = this.host.state;
     const h = this.host;
+    // the toolbar shows the tab of the tool in hand, however it was picked (a key, the Ledger, the toolbar)
+    const toolKey = JSON.stringify(h.tool);
+    if (toolKey !== this.lastToolKey) {
+      this.lastToolKey = toolKey;
+      const cat = categoryOfTool(h.tool);
+      if (cat && cat !== this.category) { this.category = cat; this.refreshItems(); }
+    }
     this.q('#tb-name').textContent = s.cityName;
     this.q('#tb-replay').classList.toggle('hidden', !h.replaying);
     const gate = nextGate(s);
