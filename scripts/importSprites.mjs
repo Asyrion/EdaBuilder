@@ -15,13 +15,16 @@
 // stop the background key.
 // pixel: true (iteration 91, docs/ART_PIPELINES.md): a sprite drawn at its game size (an Aseprite export, transparent where
 // empty) is taken as drawn: cropped to its pixels and anchored, flipped if asked, never keyed, scaled, sharpened,
-// quantized or outlined.
+// quantized or outlined; like every sprite it is snapped to the master palette (phase 3-2, docs/ART_BIBLE.md).
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { decodePng, encodePng } from './lib/png.mjs';
 import { needLore } from './lib/lore.mjs';
 import { packSheets } from './lib/sprite.mjs';
+import { loadPalette, snapImage } from './lib/palette.mjs';
+const PALETTE = loadPalette();
+const SNAP_MEMO = new Map();
 import { autoAnchor, boxScale, centreAnchor, checkSheet, colourCount, crop, cropRect, dropSpecks, flapFrame, glowLayer, groundDiamond, isoTopDiamond, islands, keepLargest, keyBackground, meanMatch, outline, pad, propAnchor, quantize, quantizeShared, recolour, sharpen } from './lib/sprite.mjs';
 
 /** The image mirrored left to right. */
@@ -126,7 +129,8 @@ for (const list of families.values()) {
 for (const r of results) {
   const { e, kind } = r;
   // buildings and props get the procedural set's dark outline (the sprite grows a pixel each side; the anchors follow)
-  const sprite = kind === 'ground' || e.pixel ? r.img : e.outline === false ? quantize(r.img, e.colors ?? 32) : outline(pad(quantize(r.img, e.colors ?? 32), 1));
+  // then onto the master palette (phase 3-2, docs/ART_BIBLE.md): every sprite, the ground families too; a glow layer keeps its colours
+  const sprite = snapImage(kind === 'ground' || e.pixel ? r.img : e.outline === false ? quantize(r.img, e.colors ?? 32) : outline(pad(quantize(r.img, e.colors ?? 32), 1)), PALETTE, SNAP_MEMO).img;
   if (kind !== 'ground' && !e.pixel && e.outline !== false) r.img = pad(r.img, 1); // the glow source keeps the same frame
   let anchor;
   if (kind === 'ground') anchor = { ax: 16, ay: 0 };

@@ -10,6 +10,7 @@
 // --derive overwrites art/palette.json; once the palette is decided (ART_BIBLE.md) it is edited by hand and only read.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { decodePng, encodePng } from './lib/png.mjs';
+import { dE, fromOklab, hex, oklab, rgbOf } from './lib/palette.mjs';
 
 const args = new Set(process.argv.slice(2));
 mkdirSync('shots', { recursive: true });
@@ -17,28 +18,9 @@ const manifest = JSON.parse(readFileSync('public/art/sprites.json', 'utf8'));
 const sheetFiles = Array.isArray(manifest.sheets) ? manifest.sheets : Object.values(manifest.sheets);
 const sheets = sheetFiles.map((f) => decodePng(readFileSync(`public/art/${typeof f === 'string' ? f : f.file}`)));
 
-// ---------- colour ----------
-const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
-/** sRGB 0..255 → OKLab. */
-function oklab([r, g, b]) {
-  r = lin(r); g = lin(g); b = lin(b);
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
-}
-const unlin = (c) => Math.round(255 * Math.max(0, Math.min(1, c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055)));
-function fromOklab([L, a, b]) {
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  return [unlin(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s), unlin(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s), unlin(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s)];
-}
-const dE = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
-/** The snap's distance: hue and chroma (a, b) count CHROMA times as much as lightness, so a deep red stays red rather than
- *  turning the brown of the same lightness (phase 3-1: the red barn and the grey-green roof of the A/B sheet). */
+// ---------- colour (scripts/lib/palette.mjs) ----------
 const CHROMA = Number([...args].find((a) => a.startsWith('--chroma='))?.slice(9) ?? 2);
 const dSnap = (p, q) => Math.hypot(p[0] - q[0], CHROMA * (p[1] - q[1]), CHROMA * (p[2] - q[2]));
-const hex = ([r, g, b]) => '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
-const rgbOf = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 
 // ---------- PAL, read from the source so this script never drifts from it ----------
 const PAL = Object.fromEntries([...readFileSync('src/render/palette.ts', 'utf8').matchAll(/^\s+(\w+): '(#[0-9a-fA-F]{6})'/gm)].map((m) => [m[1], m[2].toLowerCase()]));

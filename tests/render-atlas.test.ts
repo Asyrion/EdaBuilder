@@ -875,3 +875,55 @@ describe('Trees by region', () => {
     for (const [k, [no, yes]] of Object.entries(seen)) { expect(no, `${k} false`).toBeGreaterThan(0); expect(yes, `${k} true`).toBeGreaterThan(0); }
   });
 });
+
+/** The master palette (scope reset phase 3-2, docs/ART_BIBLE.md §4): every sprite the game shows is painted from it. */
+describe('the master palette', () => {
+  it('the game and the art scripts snap a colour to the same palette colour', async () => {
+    const { snapColour } = await import('../src/render/master');
+    const { loadPalette, nearest } = await import('../scripts/lib/palette.mjs');
+    const pal = loadPalette();
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) & 255);
+    for (let k = 0; k < 2000; k++) {
+      const rgb: [number, number, number] = [rnd(), rnd(), rnd()];
+      const a = snapColour((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]);
+      const b = nearest(rgb, pal.colors, pal.chroma).c.rgb;
+      expect(a).toBe((b[0] << 16) | (b[1] << 8) | b[2]);
+    }
+  });
+
+  it('every pixel of every procedural sprite lies on the palette once packed (the glow layers are light and keep theirs)', async () => {
+    const { snapRgba, onPalette, MASTER } = await import('../src/render/master');
+    expect(MASTER.length).toBe(77);
+    let off = 0, total = 0;
+    for (const d of generateSprites()) {
+      const data = new Uint8ClampedArray(d.p.data);
+      snapRgba(data);
+      for (let o = 0; o < data.length; o += 4) if (data[o + 3] > 0) { total++; if (!onPalette((data[o] << 16) | (data[o + 1] << 8) | data[o + 2])) off++; }
+    }
+    expect(total).toBeGreaterThan(10000);
+    expect(off).toBe(0);
+  });
+
+  it('every opaque pixel of the imported sheet lies on the palette, outside the glow layers', async () => {
+    const { onPalette } = await import('../src/render/master');
+    const m = JSON.parse(readFileSync('public/art/sprites.json', 'utf8'));
+    const sheets = m.sheets.map((s: { file: string }) => decodePng(readFileSync(`public/art/${s.file}`)));
+    let off = 0, total = 0;
+    const seen = new Set<string>();
+    for (const sp of Object.values(m.sprites) as { sheet?: number; sx: number; sy: number; w: number; h: number }[]) {
+      const key = `${sp.sheet ?? 0}:${sp.sx}:${sp.sy}`;
+      if (seen.has(key)) continue; // an alias shares its source's pixels
+      seen.add(key);
+      const img = sheets[sp.sheet ?? 0];
+      for (let y = 0; y < sp.h; y++) for (let x = 0; x < sp.w; x++) {
+        const o = ((sp.sy + y) * img.w + sp.sx + x) * 4;
+        if (img.data[o + 3] === 0) continue;
+        total++;
+        if (!onPalette((img.data[o] << 16) | (img.data[o + 1] << 8) | img.data[o + 2])) off++;
+      }
+    }
+    expect(total).toBeGreaterThan(100000);
+    expect(off).toBe(0);
+  });
+});

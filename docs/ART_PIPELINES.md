@@ -30,6 +30,9 @@ docs 04 §2 and §11 there. The decisions are in `docs/archive/DESIGN.md` §4.80
 - **The front is on the right face** (§4.90). A painting fronted on its left gets `flip: true`.
 - **The importer sharpens and outlines a painting,** so the set reads as one. A sprite drawn at its game size
   (`pixel: true`) is taken as drawn.
+- **Every sprite is then snapped to the master palette** (`art/palette.json`, `docs/ART_BIBLE.md` §6; phase 3-2), the
+  pixel sprites too. The glow layers are not. A colour a painting needs and the palette lacks is a palette change,
+  never a skipped snap.
 - **Paintings live in eda-lore's `inspirations/<folder>/` and are committed there** (since the scope reset, 1d-2): a
   sibling checkout, `EDA_LORE` or `../eda-lore` (`scripts/lib/lore.mjs`); `npm run art` stops with a message without
   it, the build and the tests do not need it. An entry's `src` is the path inside eda-lore. Only images that are used go in. Rounds, contact

@@ -180,7 +180,9 @@ function drawing(): Img {
 }
 
 describe('the importer takes a pixel: true sprite as drawn', () => {
-  it('keeps every pixel, crops to them and anchors it', () => {
+  it('keeps every pixel, crops to them and anchors it; its colours snap to the master palette like every sprite (phase 3-2)', async () => {
+    const { loadPalette, nearest } = await import('../scripts/lib/palette.mjs');
+    const pal = loadPalette();
     const dir = mkdtempSync(join(tmpdir(), 'iter91-')), script = resolve('scripts/importSprites.mjs');
     try {
       mkdirSync(join(dir, 'art'), { recursive: true });
@@ -194,7 +196,9 @@ describe('the importer takes a pixel: true sprite as drawn', () => {
       expect([out.w, out.h]).toEqual([4, 4]);
       for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
         const a = (y * 4 + x) * 4, b = ((y + 1) * 6 + x + 1) * 4;
-        expect([...out.data.subarray(a, a + 4)]).toEqual([...img.data.subarray(b, b + 4)]);
+        const src = [...img.data.subarray(b, b + 4)];
+        const want = src[3] > 0 ? [...nearest([src[0], src[1], src[2]], pal.colors, pal.chroma).c.rgb, src[3]] : src;
+        expect([...out.data.subarray(a, a + 4)]).toEqual(want);
       }
       const m = JSON.parse(readFileSync(join(dir, 'public/art/sprites.json'), 'utf8')).sprites.b_test;
       expect([m.w, m.h]).toEqual([4, 4]);
