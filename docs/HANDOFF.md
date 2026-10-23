@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 2-7 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -23,7 +23,9 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22). The ha
 **Phase 2, the P2 items** (`docs/NEXT_STEPS.md` item 1). Done: the P1 items (2-1 to 2-5), 2-6 (the Crown's favour
 struck out) and 2-7 (the bot serves its town by the gaps; the Growth view on N). Next: hazards (the fire's spread and a
 herald, a remedy and a view for each), happiness terms, milestone pacing, one change at a time against the bot corridor.
-Plan it on the Plan panel first.
+Measure before turning a knob: in 2-7 seed 42 still had 222 fires by day 150 (`dailyFire` in `src/sim/hazards.ts`: 22 %
+a day to an uncovered neighbour, two days to burn down); count fires, burned buildings, surges, restless and Gloam per
+seed with the 2-7 bot first, then decide whether the rule or the player is at fault. Plan it on the Plan panel first.
 
 ## Known issues
 
@@ -69,6 +71,19 @@ Plan it on the Plan panel first.
 - The path cache is per state and a pure memo of the roads and their speeds (emptied on `roadVersion` and each season),
   so a run and a loaded save route the same. Letting the day's jams steer A* again costs 28 % (1d-1's first attempt).
 - `construction.instant` stays a module switch: the test setup turns it on, a replay turns it off.
+
+## Learned in phase 2 (not said elsewhere)
+
+- `growthBlock(state, i)` (`growth.ts`) is the one answer to "why does this lot not grow"; the hover tooltip, the Growth
+  view (N) and the bot's `darkLots`/dry lots all read it. A new growth condition gets a reason there first.
+- The road version is per state (`bumpRoadVersion` in `agents.ts`, called from `actions.ts`); the path cache is emptied
+  daily in `dailyTraffic`, so yesterday's jams steer A* (`JAM_ROUTE = 0.5`) without a per-tick cost.
+- The bot's `fillServiceGap` runs first in its day: widest coverage gap (≥ 10 % of zoned buildings) first, barred by
+  upkeep (net − upkeep < 100, except before day 30 with upkeep ≤ 20), mana (an Academy is allowed at ≤ 5 % brownout) or
+  room. Without the day-30 rule seed 42 crashed to about 500 folk on Academy upkeep.
+- The draws of one seed spread wide (up to 2,376 folk on day 150): judge a change by the six-seed mean and the count of
+  runs above and below main, never by one run.
+- Two views must not share a key (`ui.test.ts` holds it); the Growth view's `6` silently opened Watch for six iterations.
 
 ## What the user cares about
 
