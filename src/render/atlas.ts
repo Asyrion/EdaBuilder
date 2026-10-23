@@ -4,6 +4,7 @@
  * so hand-made art can be dropped in without touching code. The manifest format:
  * { "image": "atlas.png", "sprites": { name: { x, y, w, h, ax, ay, glow?: {x,y} } } }
  */
+import { snapRgba } from './master';
 import { generateSprites, type SpriteDef } from './sprites';
 
 export interface SpriteRect {
@@ -262,7 +263,9 @@ function pack(defs: SpriteDef[]): { canvas: HTMLCanvasElement; rects: Record<str
   const rects: Record<string, SpriteRect> = {};
   items.forEach((it, i) => {
     const p = it.glow ? it.def.glow! : it.def.p;
-    const img = new ImageData(new Uint8ClampedArray(p.data), p.w, p.h);
+    const data = new Uint8ClampedArray(p.data);
+    if (!it.glow) snapRgba(data); // the master palette (phase 3-2); a glow layer is light, not paint, and keeps its colours
+    const img = new ImageData(data, p.w, p.h);
     ctx.putImageData(img, pos[i].x, pos[i].y);
     if (!it.glow) rects[it.def.name] = { x: pos[i].x, y: pos[i].y, w: p.w, h: p.h, ax: it.def.ax, ay: it.def.ay };
   });

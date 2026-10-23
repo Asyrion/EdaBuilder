@@ -1,8 +1,8 @@
 # Wardlight: the art bible
 
-**Status: a proposal (phase 3-1, 2026-10-23), waiting for the user's decision.** Once the user decides, this file and
-`art/palette.json` bind every sprite: the importer, the procedural painter and anything drawn in code. Until phase 3-2
-puts it to work, the game still draws as it did.
+**Status: decided by the user on 2026-10-23 ("Palette passt so"); at work since phase 3-2.** This file and
+`art/palette.json` bind every sprite: the importer, the procedural painter and anything drawn in code. A test holds the
+sheet and the painted sprites to the palette (`tests/render-atlas.test.ts`, "the master palette").
 
 ## 1. Scale and projection
 
@@ -82,17 +82,24 @@ ramp, not a new ramp.
   against 0.032) and the mushroom (0.017 against 0.020). The master palette's largest change is the bush (0.036), `PAL`'s
   the shore (0.060).
 
-## 6. What phase 3-2 does with it (once decided)
+## 6. How the palette is put to work (phase 3-2)
 
-- **The importer** (`scripts/importSprites.mjs`) snaps every sprite to the master palette after its own quantize and
-  outline. The ground families keep their shared quantize onto the turf and grass ramps.
-- **The procedural painter and the drawn sprites** take their colours from the master palette: `PAL` stays as the
-  names, each name mapped to its master colour (the swatch shows the map).
-- **A test** holds every opaque pixel of the sheet and of the painted sprites to the palette.
+- **One snap, written twice:**
+  - `scripts/lib/palette.mjs` for the art scripts, `src/render/master.ts` for the game.
+  - The nearest colour in OKLab, hue and chroma weighed by `snap.chroma`, no dither, the alpha kept.
+  - A test holds the two to the same choice on 2,000 colours.
+- **The importer** (`scripts/importSprites.mjs`) snaps every sprite after its quantize and outline: the ground families,
+  the vehicles and the `pixel: true` sprites too. The glow layers keep their colours (light, not paint).
+- **The procedural and drawn sprites** are snapped as the atlas packs them (`pack()` in `src/render/atlas.ts`), so the
+  painter's alpha blends land on the palette as well. `PAL` stays the painter's list of names; where each name lands
+  is the swatch's lower half. The glow layers keep their colours.
+- **Not snapped, by intent:** the renderer's own tints (lights, the night, the views, particles), the UI.
+- **A new sprite needs nothing extra:** it is snapped on import or at boot. A colour it cannot keep needs a palette
+  change (§4).
 
-## 7. Open for the decision
+## 7. Decided, and open
 
-- **77 colours, not the 48–64 RESET_PLAN guessed.** Fewer would flatten the ground tiles and the reds again; that was
-  measured, not assumed.
-- **The snap's chroma weight of 2** is a judgement on the barn, the roofs and the bushes; it can be tuned per ramp.
-- **Bushes and glimwood** are the weakest. Two more steps for them, or repainting them in phase 3's sprite list.
+- **Decided:** 77 colours (not the 48–64 RESET_PLAN guessed; fewer flattened the ground and the reds) and the chroma
+  weight of 2.
+- **Open:** bushes and glimwood are the weakest (ΔE 0.04–0.06). In phase 3's sprite list, two more steps for them, or
+  repainting.

@@ -1194,3 +1194,51 @@ user's decision, and 3-2 puts it to work.
 | `npx tsc --noEmit -p .`, `npm run build` | clean (no change in `src/`) |
 | `npx vitest run` | 15 files, 295 tests, all green |
 | `scripts/palette.mjs --measure --derive --gaps --ab --swatch --scene` | runs; the shots looked at |
+
+## Phase 3-2: the master palette at work: the importer, the painted sprites, a test (2026-10-23)
+
+Phase 3, task 1 finished and task 3's first step (RESET_PLAN §3 "Phase 3": "the importer snaps to the master palette";
+the acceptance "every sprite in the sheet on the master palette, a test holds it"). The user decided the palette of 3-1
+on 2026-10-23 ("Palette passt so").
+
+**Done.**
+- **One snap, written twice and held equal:**
+  - `scripts/lib/palette.mjs` for the art scripts, `src/render/master.ts` for the game.
+  - OKLab, chroma weight 2, no dither, alpha kept; a test compares the two on 2,000 colours.
+  - `scripts/palette.mjs` now takes its colour sums from the library.
+- **The importer** snaps every sprite after its quantize and outline: ground families, vehicles and `pixel: true`
+  sprites too. The glow layers are left alone.
+  - First checked: `npm run art` on main rebuilt the sheet bit for bit.
+  - The new sheet is `sheet_0.42829d48ce80.png`; `npm run art:check` was looked at.
+- **The procedural and drawn sprites** are snapped as the atlas packs them (`pack()`, `atlas.ts`), so the painter's
+  alpha blends land on the palette too. `PAL` keeps its names; the glow layers keep their colours.
+- **Tests** (`render-atlas.test.ts`, "the master palette", three new):
+  - the two snaps agree;
+  - every pixel of every procedural sprite lies on the palette once packed;
+  - every opaque pixel of the imported sheet lies on it.
+
+  `art-pipeline.test.ts`: a `pixel: true` sprite keeps its every pixel's place, crop and anchor, and its colours are
+  the palette's.
+- **The dev board's self-test** copies `art/palette.json` into its scratch project (the importer needs it).
+- **The bible's status** is "decided"; §6 says how the palette is put to work. `ART_PIPELINES.md` and DESIGN §7 follow.
+
+**Measured.**
+- **The atlas as the game holds it:** 18.0 % of the opaque pixels on the palette before, 98.1 % after; the rest are the
+  glow layers, which the tests leave out by intent.
+- **The town of seed 42 on day 40, main against this branch** (the same procedure, one browser each): 2.0 % of the
+  pixels change by more than 20 levels by day, 1.9 % by night.
+  - Seen in the shots: the water and the gold spire a shade paler, the grass and the houses as they were.
+- **Boot to an atlas:** 420–550 ms on main, 420–490 ms after, five runs each.
+- **The rules did not change:** the twelve bot runs are 2-10's line for line.
+
+**Found on the way (not this iteration's):** the same build shows more or fewer lit windows at night from one page
+load to the next (two loads of main: one bright, one dim, at the same tick and town). An earlier before/after looked
+like the palette dimmed the night; a third shot showed that it does not. The windows' light is not deterministic per
+load; for phase 4 (lights) or phase 6.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean |
+| `npx vitest run` | 15 files, 298 tests, all green |
+| `scripts/smoke.mjs`, `scripts/checklist.mjs`, `scripts/handwalk.mjs` | SMOKE OK; CHECKLIST OK; HANDWALK OK |
+| `npm run devboard:selftest` | DEV BOARD SELFTEST OK |

@@ -9,10 +9,10 @@ its open items are parked.
 ## Prioritized ideas for the next iteration
 
 1. **Phase 3: the art foundation and pixel art** (RESET_PLAN §3, Phase 3; DESIGN §7; `docs/ART_BIBLE.md`). Done:
-   3-1 (the art bible and a master palette of 77 colours proposed, with A/B sheets; waiting for the user's decision).
-   Next: 3-2, the palette at work (the importer snaps to it, `PAL` maps onto it, a test holds the sheet to it), then
-   pixel-perfect drawing (`devicePixelRatio`, shadows and fog as pixel sprites), the pipeline, the sprite list, the
-   renderer decision. Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
+   3-1 (the art bible and the master palette, 77 colours, decided by the user) and 3-2 (every sprite snapped to it,
+   imported and painted; a test holds it). Next: pixel-perfect drawing (`devicePixelRatio`, shadows and fog as pixel
+   sprites, the bloom on whole pixels), then the pipeline (the painted sprites baked at build time), the sprite list,
+   the renderer decision. Phase 2 is done (2-1 to 2-10; RESET_LOG has its acceptance).
 2. **Phase 4: shaders and effects** (RESET_PLAN §3, Phase 4).
 3. **Phase 5: UX and feedback** (RESET_PLAN §3, Phase 5).
 4. **Phase 6: performance and stability** (RESET_PLAN §3, Phase 6).
@@ -25,6 +25,7 @@ its open items are parked.
 - **Fire is the one hazard that costs the bot** (2-8: 66 buildings burned a run, nearly all outside a hall's reach;
   two runs end with no hall reaching any zone building). The surge, the restless and the Gloam barely touch it.
   RESET_LOG 2-8.
+- **The night's lit windows vary from one page load to the next** on the same build (RESET_LOG 3-2); phase 4 (lights).
 - **Citizen looks 4 and 5** (the Grimmen and Tallowkin looks) can still be rolled in a Vellish game (RESET_PLAN §1.4,
   point 7; phase 3 with the citizens' sprites).
 - **`devicePixelRatio` is ignored** (`renderer.ts`): on a 125 % or 150 % display the browser scales the canvas and the

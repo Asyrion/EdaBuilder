@@ -259,6 +259,7 @@ async function artRuns() {
   const root = tmpArt;
   cpSync(join(REPO, 'scripts/importSprites.mjs'), join(root, 'scripts/importSprites.mjs'));
   cpSync(join(REPO, 'scripts/lib'), join(root, 'scripts/lib'), { recursive: true });
+  cpSync(join(REPO, 'art/palette.json'), join(root, 'art/palette.json')); // the importer snaps to the master palette (phase 3-2)
   const src = 'inspirations/selftest/my_well.png';
   writeFileSync(join(root, 'art/sources.json'), JSON.stringify({ sprites: [{ name: 'b_selftestwell', src, island: 0, w: 1, h: 1, targetHeight: 16, anchor: 'centre', shift: { x: 0, y: 6 } }] }, null, 1));
   const isl = islands(root, src);

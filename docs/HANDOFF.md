@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-1 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-2 (2026-10-23). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -25,10 +25,11 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
 ## The next item
 
 **Phase 3: the art foundation and pixel art** (`docs/NEXT_STEPS.md` item 1; RESET_PLAN §3 "Phase 3", DESIGN §7). Done:
-3-1, `docs/ART_BIBLE.md` and `art/palette.json` (77 colours in 17 ramps, proposed; `scripts/palette.mjs` measures,
-derives, and draws the A/B sheets and the swatch). **Next: 3-2, once the user has decided the palette:** the importer
-snaps every sprite to it (OKLab, chroma weight 2), `PAL`'s names map onto it, a test holds the sheet and the painted
-sprites to it. Then pixel-perfect drawing, the pipeline, the sprite list, the renderer decision. Graphics change:
+3-1 (`docs/ART_BIBLE.md`, `art/palette.json`: 77 colours, decided by the user) and 3-2 (every sprite snapped to the
+palette: the importer, and the atlas's `pack()` for the painted ones; tests hold it). **Next: pixel-perfect drawing**
+(RESET_PLAN Phase 3 task 2: `devicePixelRatio` with a zoom whose `zoom × dpr` is whole, shadows and fog as pixel
+sprites, the bloom blit on whole pixels; acceptance: an even pixel grid at 100/125/150 %, shown by screenshots). Then
+the pipeline (bake the painted sprites at build time), the sprite list, the renderer decision. Graphics change:
 screenshots before and after (CLAUDE.md rule 7). Plan it on the Plan panel first.
 
 ## Known issues
@@ -43,6 +44,8 @@ screenshots before and after (CLAUDE.md rule 7). Plan it on the Plan panel first
 - **Hazards (2-8):** fire costs the bot 66 buildings a run, nearly all outside a hall's reach; two of twelve runs end
   with no hall reaching any zone building. The surge, the restless and the Gloam barely touch the bot (one Gloam taking
   in twelve runs): whether they have teeth is for milestone pacing and a hand session.
+- **The night's lit windows vary per page load** on one build (3-2: two loads of main, one bright, one dim, same tick and
+  town). Compare night shots of two builds only with several loads each.
 - **Citizen looks 4 and 5** can be rolled in a Vellish game (`agents.ts`, `rng.int(6)`); **`devicePixelRatio` is
   ignored** (`renderer.ts`). Both phase 3.
 - **GitHub Actions** ran no jobs while the repositories were private (no runner assigned, `runner_id 0`). The user made
@@ -98,6 +101,8 @@ screenshots before and after (CLAUDE.md rule 7). Plan it on the Plan panel first
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
   them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
+- A new art script that runs the importer elsewhere (a test's or the dev board's scratch folder) needs
+  `art/palette.json` there: `scripts/lib/palette.mjs` reads it beside the scripts (`../../art/palette.json`).
 - `scripts/palette.mjs --scene` swaps the sheet in the page (`page.route`) to show the game on a snapped sheet without
   touching `public/art/`; `--ab` writes the snapped sheet to `shots/palette_sheet_0.png` first. Judge the A/B by the
   numbers too: the eye called the snapped town "clearly duller", the pixels said 4 % less saturation.
