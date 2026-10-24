@@ -25,7 +25,7 @@ await page.evaluate((days) => {
 console.log('built city in', Date.now() - t0, 'ms');
 const stats = await page.evaluate(() => { const s = window.__game.state; return { pop: s.population, bld: s.buildings.filter(Boolean).length, agents: s.agents.length, day: s.day, ms: s.milestone }; });
 console.log(stats);
-await page.evaluate(() => { const g = window.__game; g.renderer.camera.centerOnTile(g.state.founding.x + 2, g.state.founding.y + 6); g.state.tick = Math.floor(g.state.tick / 900) * 900 + 180; });
+await page.evaluate((tod) => { const g = window.__game; g.renderer.camera.centerOnTile(g.state.founding.x + 2, g.state.founding.y + 6); g.state.tick = Math.floor(g.state.tick / 900) * 900 + Number(tod); }, process.env.PERF_TOD ?? 180); // PERF_TOD=640 measures the night (phase 3-6)
 for (const zoom of [1, 2, 3]) {
   await page.evaluate((z) => { window.__game.renderer.camera.setZoom(z); }, zoom);
   await page.waitForTimeout(300);
