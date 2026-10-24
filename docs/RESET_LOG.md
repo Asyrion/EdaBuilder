@@ -1378,3 +1378,35 @@ graphics changed.
 | `npx tsc --noEmit -p .`, `npm run build` | clean (no change in `src/`) |
 | `npx vitest run` | 15 files, 303 tests, all green |
 | `npx tsx scripts/spriteList.ts` | runs; 116 families, every catalog building has a row; the sheets looked at |
+
+## Phase 3-6: the renderer decision prepared, with measurements and a probe (2026-10-24)
+
+Phase 3, task 5 (RESET_PLAN §3 "Phase 3": "the renderer decision at the end of phase 3: keep Canvas 2D, or a WebGL2 path";
+§8 point 3). The decision is the user's. `docs/RENDERER_DECISION.md` lays it out; nothing in the game changed.
+
+**Done.**
+- **`perf.mjs` takes `PERF_TOD`** (the time of day). The frame cost was measured at 100 and 150 %, zoom 1 to 3, by day
+  and by night.
+- **`scripts/probe_palette.mjs`** (new) remaps the loaded atlas through a rough night table of the 77 colours, times it,
+  sizes it, and shoots the day, today's night and the palette's night.
+- **PixiJS v8.22's minified size** was read from its package (`npm pack` into a scratch folder, not installed).
+
+**Measured** (a container without a GPU; the ratios count, the absolute times will be lower on an accelerated canvas):
+- **By day**, zoom 2: 17.3 ms a frame (the screen's beat); zoom 1: 37.5 ms, mostly the final blit.
+- **By night** every frame costs two to three times as much: zoom 2 37.0 ms, zoom 1 97.1 ms. The lighting pass is the
+  cause (69 ms at zoom 1).
+- **The palette night:**
+  - The remap takes 33 ms once, for an atlas of 1024×1293 and 5.1 MB.
+  - The glow layers' 14,545 pixels are off the palette and stay.
+  - The first table kept the light ramp, and the thatched roofs glowed: the palette is shared across materials, so a
+    night darkens every ramp and takes its light from the glow layers.
+- **PixiJS v8.22:** 841 KB minified, 237 KB gzipped. The game is 374 KB of JS.
+
+**Recommended:** keep Canvas 2D and build phase 4's prio 1 on the indexed palette. Revisit WebGL2 at phase 6 if the
+night on the user's machine stays under 60 frames a second at zoom 2. The user decides.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .`, `npm run build` | clean (no change in `src/`) |
+| `npx vitest run` | 15 files, 303 tests, all green |
+| `perf.mjs` (4 runs), `probe_palette.mjs` | run; the shots looked at |

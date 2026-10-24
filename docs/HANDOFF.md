@@ -1,6 +1,6 @@
 # Handoff: where Wardlight stands
 
-Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-5 (2026-10-23). The handoff before the reset, with its
+Written for a new session, after phase 1 of the scope reset (2026-10-22), brought up to date after phase 3-6 (2026-10-24). The handoff before the reset, with its
 "Learned in iteration NN" notes, is `docs/archive/HANDOFF.md`.
 
 ## State of play
@@ -33,9 +33,10 @@ Written for a new session, after phase 1 of the scope reset (2026-10-22), brough
   - 3-4: the sprites drawn in code baked at build time (`scripts/bakeAtlas.ts` in `npm run build`; the dev server
     paints at boot); `painted.ts` + `drawn.ts` → `handdrawn.ts`.
   - 3-5: the sprite list (`docs/SPRITE_LIST.md`, measured by `scripts/spriteList.ts`).
-- **Next: the renderer decision** (RESET_PLAN Phase 3 task 5): keep Canvas 2D, or a WebGL2 path (PixiJS v8 or a batch
-  renderer of our own) for a palette LUT, a water shader and true bloom. It is a decision for the user, made from
-  measurements: the frame budget today, what phase 4 wants.
+  - 3-6: the renderer decision prepared (`docs/RENDERER_DECISION.md`; `scripts/probe_palette.mjs`; `perf.mjs` takes
+    `PERF_TOD`).
+- **Next: the user's renderer decision** (A: keep Canvas 2D and build the palette night on the indexed palette,
+  recommended; B: WebGL2 now). Write it into `docs/RENDERER_DECISION.md`.
 - **Then:** the art production in the user's order. The new items are water, eight buildings and bridges; the rework
   items are roads, ruins, bushes and glimwood, the citizen looks 4 and 5 (a code change), two icons, and the paintings
   lit from the left.
@@ -112,6 +113,8 @@ Graphics change: screenshots before and after (CLAUDE.md rule 7). Plan it on the
   alpha (the Fire brigade view's red and amber); the ground pass is the only one under the sprites.
 - A happiness term needs a group (`add(group, label, v)` in `happinessTerms`); `happinessGroups` and the inspector read
   them, and the test fails on a term without one. Cutting the formula to six real terms was offered in 2-9 and declined.
+- **A palette night darkens every ramp; the light comes from the glow layers** (3-6). Keeping the light ramp lit made
+  every thatched roof glow, since thatch shares its yellows.
 - **`scripts/spriteList.ts`'s light check is a pointer, not a verdict** (3-5): right/left lightness about the anchor is
   fooled by a roof slope or the material, so only under 0.8 does it count, and then "to check by eye".
 - **`public/art/atlas.*` are build output** (3-4): `npm run build` bakes them, `.gitignore` keeps them out. The preview
